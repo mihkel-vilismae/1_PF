@@ -37,7 +37,7 @@ Implemented:
 - sidebar navigation
 - current-truth side panel
 - event history panel
-- topbar action area
+- topbar context header
 - shared rendering helpers
 
 Evidence:
@@ -196,7 +196,7 @@ Primary files:
 Current state:
 
 - implemented as a frontend presentation of mock last-run states
-- can show none / error / ready modes in-memory
+- can show explicit no-run / error / ready demo states in-memory
 - restore action is a placeholder
 - no real durable state loading exists
 
@@ -210,7 +210,7 @@ Primary files:
 Current state:
 
 - implemented as a frontend-only monitoring layout
-- “real run” activation is simulated inside the frontend state service
+- simulated runtime-preview activation is local to the D view and handled inside the frontend state service
 - worker rows and heartbeats are mock projections, not live process telemetry
 
 Primary files:

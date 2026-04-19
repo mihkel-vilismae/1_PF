@@ -7,15 +7,16 @@ export function renderRunningProcessView(state) {
       <div class="view-hero">
         <div>
           <p class="eyebrow">D — Running Process</p>
-          <h2>Monitor the real runtime without mixing it with simulation controls.</h2>
-          <p class="hero-copy">The first worker loops through five stages in order. The playback and screen workers remain single-process watchdog-driven services.</p>
+          <h2>Preview the runtime monitor without implying live backend activity.</h2>
+          <p class="hero-copy">This view is still a frontend-only runtime preview. It shows the intended pipeline and watchdog layout, but all data here remains simulated until <code>/api/runtime/*</code> exists.</p>
         </div>
         <div class="hero-pill-group">
-          <span class="hero-pill ${disabled ? '' : 'hero-pill--success'}">${disabled ? 'No real run active' : 'Real run active'}</span>
+          <span class="hero-pill ${disabled ? '' : 'hero-pill--success'}">${disabled ? 'Preview inactive' : 'Preview active'}</span>
+          <button class="button button--secondary" data-action="start-real-run">Start simulated runtime preview</button>
         </div>
       </div>
 
-      ${disabled ? '<div class="notice notice--neutral">No real run is currently active.</div>' : ''}
+      ${disabled ? '<div class="notice notice--neutral">No simulated runtime preview is currently active.</div>' : '<div class="notice notice--neutral">Frontend-only runtime preview is active. Worker rows and heartbeats below are still simulated.</div>'}
 
       <div class="section-grid ${disabled ? 'section-grid--muted' : ''}">
         <article class="card card--feature">
@@ -65,7 +66,7 @@ export function renderRunningProcessView(state) {
       </div>
 
       <article class="card">
-        <header class="card__header"><div><p class="card__code">D4</p><h3>Runtime log</h3></div></header>
+        <header class="card__header"><div><p class="card__code">D4</p><h3>Preview log</h3></div></header>
         <div class="log-surface">${renderLogEntries(state.logs.D)}</div>
       </article>
     </section>

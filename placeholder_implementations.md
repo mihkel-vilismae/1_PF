@@ -6,8 +6,8 @@
 |------|------------|---------|--------|----------------------|------------------|----------|----------|
 | A Init | `dashboard/views/initView.js`, `dashboard/app.js`, `dashboard/services/runtimeTruth.js`, `dashboard/services/initService.js`, `dashboard/services/apiClient.js`, `server/index.js`, `server/scheduler_host.js`, `server/scripts/sqlite_admin.py`, `server/scripts/windows_task_scheduler.ps1`, `docs/VIEW_A_INIT.md`, `docs/13_FRONTEND_BACKEND_CONTRACT.md` | Prepare configuration, database, and scheduler readiness before tests or real runs. | Partial | A now has real env verification, real SQLite status/inspect/delete/recreate-empty endpoints, destructive-action confirmation, and a Windows Task Scheduler bootstrap implementation behind the legacy cron routes. The remaining gap is not the platform contract anymore; it is the absence of real runtime services behind the installed scheduler host. | Wire real runtime services into the scheduler host, decide whether A should preload status on entry, and refine the env/config schema assumptions if product requirements differ from the checked-in `.env`. | High | The scheduler host currently reports tick/heartbeat state only, non-Windows scheduler targets are still unsupported, and the env verification rules are currently derived from the checked-in `.env` rather than a separately approved config spec. |
 | B Test | `dashboard/views/testView.js`, `dashboard/app.js`, `dashboard/services/runtimeTruth.js`, `docs/VIEW_B_TEST.md`, `docs/07_PIPELINE_STAGES.md`, `docs/13_FRONTEND_BACKEND_CONTRACT.md` | Exercise test-only flows for login, staged pipeline runs, playback emulation, and screen simulation without touching real runtime state. | Partial | The hero says simulation only, B3.1 is mock by design, B2/B3.2-B3.5/B4/B5 all use in-memory mutations, and several success messages are fabricated in `runtimeTruth.js`. | Introduce a dedicated test service layer, wire stage endpoints, fetch playback and screen state from backend projections, and stop using hard-coded media/checkpoint values. | Medium | The area is broad, several contracts depend on backend services that do not exist yet, and docs drift on B5 controls. |
-| C Last Run info | `dashboard/views/lastRunView.js`, `dashboard/app.js`, `dashboard/services/runtimeTruth.js`, `docs/VIEW_C_LAST_RUN_INFO.md`, `docs/12_STATE_AND_RECOVERY.md`, `docs/13_FRONTEND_BACKEND_CONTRACT.md` | Show the last durable runtime snapshot and offer a controlled restore entry point. | Partial | View-state buttons manually force `none`, `error`, and `ready`; `seedDemoState()` fabricates last-run data; `resume-last-run` is a generic placeholder action. | Load the last-run snapshot from durable backend state, render actual recovery evidence, and replace the resume button with a real administrative restore flow. | High | Durable state, checkpoint, and recovery services are only documented; they are not implemented in this repository. |
-| D Running process | `dashboard/views/runningProcessView.js`, `dashboard/app.js`, `dashboard/services/runtimeTruth.js`, `docs/VIEW_D_RUNNING_PROCESS.md`, `docs/07_PIPELINE_STAGES.md`, `docs/09_CRON_AND_WATCHDOG.md`, `docs/13_FRONTEND_BACKEND_CONTRACT.md` | Monitor the real runtime pipeline and watchdog workers without mixing in simulation controls. | Partial | `startRealRun()` fabricates worker state in memory, there is no polling, and D2/D3 summaries are generated locally rather than read from worker heartbeats. | Replace local fake runtime state with `/api/runtime/*` projections, add polling/refresh behavior, and expose real worker health plus runtime control paths. | High | There is no runtime backend here, and the UI exposes `Start real run` but no stop/refresh control even though the contract includes them. |
+| C Last Run info | `dashboard/views/lastRunView.js`, `dashboard/app.js`, `dashboard/services/runtimeTruth.js`, `docs/VIEW_C_LAST_RUN_INFO.md`, `docs/12_STATE_AND_RECOVERY.md`, `docs/13_FRONTEND_BACKEND_CONTRACT.md` | Show the last durable runtime snapshot and offer a controlled restore entry point. | Partial | View-level demo buttons now explicitly force `none`, `error`, and `ready`; `seedDemoState()` fabricates last-run data; `resume-last-run` remains a labeled placeholder action. | Load the last-run snapshot from durable backend state, render actual recovery evidence, and replace the resume button with a real administrative restore flow. | High | Durable state, checkpoint, and recovery services are only documented; they are not implemented in this repository. |
+| D Running process | `dashboard/views/runningProcessView.js`, `dashboard/app.js`, `dashboard/services/runtimeTruth.js`, `docs/VIEW_D_RUNNING_PROCESS.md`, `docs/07_PIPELINE_STAGES.md`, `docs/09_CRON_AND_WATCHDOG.md`, `docs/13_FRONTEND_BACKEND_CONTRACT.md` | Preview the intended runtime pipeline and watchdog monitor without mixing it with simulation controls. | Partial | `startRealRun()` still fabricates worker state in memory, there is no polling, and D2/D3 summaries are generated locally rather than read from worker heartbeats. The trigger is now a local `Start simulated runtime preview` button instead of a global topbar action. | Replace local fake runtime state with `/api/runtime/*` projections, add polling/refresh behavior, and expose real worker health plus runtime control paths. | High | There is no runtime backend here, and the UI only exposes a frontend-only preview start path even though the contract includes `start` and `stop` endpoints. |
 
 ## Detailed Analysis
 
@@ -175,7 +175,7 @@ This area is intended to show the last durable runtime snapshot so an operator c
 | `dashboard/app.js` | lines 154-173 | `data-last-run-mode` buttons set `none`, `error`, or `ready`, and `ready` calls `seedDemoState()`. | State transitions are manual demo controls. |
 | `dashboard/services/runtimeTruth.js` | lines 82-88 | Initializes `lastRunMode` to `none` and `lastRunData` to empty objects. | No durable load occurs at startup. |
 | `dashboard/services/runtimeTruth.js` | lines 172-218 | `seedDemoState()` fabricates media, playback, stage, and screen details for last-run view. | This is the main ready-state placeholder path. |
-| `dashboard/services/runtimeTruth.js` | line 266 | `resume-last-run` uses `genericAction()` with a placeholder message. | Restore is not implemented. |
+| `dashboard/services/runtimeTruth.js` | line 266 | `resume-last-run` uses `genericAction()` with a placeholder message and no backend request. | Restore is not implemented. |
 | `docs/VIEW_C_LAST_RUN_INFO.md` | lines 6-36 | Docs require no-run, error, and existing-run states plus a restore placeholder button. | Docs and UI shape align. |
 | `docs/12_STATE_AND_RECOVERY.md` | lines 7-55 | Defines recovery inputs, checkpoint rules, and deterministic recovery behavior. | This is the real data model C should surface. |
 | `docs/13_FRONTEND_BACKEND_CONTRACT.md` | lines 65-72 | Defines `GET /api/runtime/last-run` and `POST /api/runtime/restore-last-known-state`. | These are the documented real integration points. |
@@ -184,7 +184,7 @@ This area is intended to show the last durable runtime snapshot so an operator c
 
 | Item | Status | Evidence | Why |
 |------|--------|----------|-----|
-| UI structure | Implemented | `dashboard/views/lastRunView.js` lines 9-43 | The cards, notices, mode buttons, and disabled resume path are all present. |
+| UI structure | Implemented | `dashboard/views/lastRunView.js` lines 9-43 | The cards, notices, explicit demo-state buttons, and disabled resume path are all present. |
 | Data loading | Placeholder | `dashboard/app.js` lines 154-173; `dashboard/services/runtimeTruth.js` lines 82-88, 172-218 | No real snapshot is read; the view either stays empty or uses seeded demo data. |
 | Event handling | Partial | `dashboard/app.js` lines 154-173; `dashboard/services/runtimeTruth.js` line 266 | Mode switches and the resume button are wired, but only to local state mutations. |
 | Business logic | Placeholder | `dashboard/services/runtimeTruth.js` lines 172-218, 266, 387-404 | Last-run details and resume behavior are simulated instead of derived from durable runtime state. |
@@ -195,9 +195,9 @@ This area is intended to show the last durable runtime snapshot so an operator c
 
 | Placeholder or Mock Behavior | Evidence | Why It Is Placeholder | Required Real Behavior |
 |------------------------------|----------|-----------------------|------------------------|
-| The view state is chosen by demo buttons instead of backend snapshot results. | `dashboard/views/lastRunView.js` lines 17-21; `dashboard/app.js` lines 154-173 | `none`, `error`, and `ready` are manually forced rather than inferred from `GET /api/runtime/last-run`. | Load last-run status from backend on view entry or refresh and derive UI mode from the response. |
+| The view state is chosen by explicit demo buttons instead of backend snapshot results. | `dashboard/views/lastRunView.js` lines 17-21; `dashboard/app.js` lines 154-173 | `none`, `error`, and `ready` are manually forced rather than inferred from `GET /api/runtime/last-run`. | Load last-run status from backend on view entry or refresh and derive UI mode from the response. |
 | Ready-state content comes from `seedDemoState()`. | `dashboard/services/runtimeTruth.js` lines 172-218 | Media, playback, stage, and screen details are hard-coded demo values. | Render last known checkpoint, playback item, stage context, and interruption details from durable state. |
-| Resume uses a generic placeholder action. | `dashboard/services/runtimeTruth.js` line 266 | The button only writes `Resume placeholder activated from last known state.` | Call `POST /api/runtime/restore-last-known-state`, surface progress or result, and gate the action appropriately. |
+| Resume uses a generic placeholder action. | `dashboard/services/runtimeTruth.js` line 266 | The button only writes a local placeholder success message and does not call any backend restore path. | Call `POST /api/runtime/restore-last-known-state`, surface progress or result, and gate the action appropriately. |
 | The error state is purely manual. | `dashboard/app.js` lines 161-165 | There is no failed transport or parse path producing this state. | Set error mode from real backend read failures and show actionable recovery messaging. |
 
 ### 5. Real Integration Requirements
@@ -235,15 +235,15 @@ This area is intended to show the last durable runtime snapshot so an operator c
 ## D Running process
 
 ### 1. Purpose
-This area is meant to monitor the real runtime pipeline and watchdog workers using authoritative runtime projections. The frontend structure is already separated correctly from the simulation view, but the current data comes entirely from a local placeholder start action.
+This area is meant to monitor the real runtime pipeline and watchdog workers using authoritative runtime projections. The frontend structure is already separated correctly from the simulation view, but the current repo still presents it as a frontend-only runtime preview and the data comes entirely from a local placeholder start action.
 
 ### 2. Evidence
 
 | File | Lines or Location | Evidence | Notes |
 |------|-------------------|----------|-------|
 | `dashboard/views/runningProcessView.js` | lines 3-73 | Renders D1 pipeline worker, D2 playback worker, D3 screen worker, and D4 runtime log. | Monitoring layout is present. |
-| `dashboard/views/runningProcessView.js` | lines 4-18 | Shows empty-state messaging when no real run is active. | Good separation from view B. |
-| `dashboard/app.js` | lines 87-90, 120-124 | Topbar exposes `Start real run`, which dispatches `runAction('start-real-run')`. | D control entry point exists outside the D view itself. |
+| `dashboard/views/runningProcessView.js` | lines 4-18 | Shows empty-state messaging when no simulated runtime preview is active. | Good separation from view B. |
+| `dashboard/views/runningProcessView.js` | lines 12-18 | The view now exposes a local `Start simulated runtime preview` button that dispatches `runAction('start-real-run')`. | The trigger is scoped to D instead of implying a repo-wide live runtime control. |
 | `dashboard/services/runtimeTruth.js` | lines 89-111 | Seeds pipeline worker, playback worker, and screen worker with local placeholder status. | Initial D state is synthetic. |
 | `dashboard/services/runtimeTruth.js` | lines 535-572 | `startRealRun()` flips `realRunActive`, fabricates worker statuses, and writes placeholder summaries and heartbeats. | This is the main D placeholder path. |
 | `docs/VIEW_D_RUNNING_PROCESS.md` | lines 12-55 | Docs describe D1-D3 blocks, one-stage-at-a-time pipeline behavior, and heartbeat-driven workers. | This matches the intended monitoring surface. |
@@ -255,7 +255,7 @@ This area is meant to monitor the real runtime pipeline and watchdog workers usi
 
 | Item | Status | Evidence | Why |
 |------|--------|----------|-----|
-| UI structure | Implemented | `dashboard/views/runningProcessView.js` lines 6-73 | The monitoring cards, worker list, badges, and runtime log area already exist. |
+| UI structure | Implemented | `dashboard/views/runningProcessView.js` lines 6-73 | The monitoring cards, worker list, badges, local preview-start control, and preview log area already exist. |
 | Data loading | Missing | `dashboard/services/runtimeTruth.js` lines 89-111, 535-572; no polling logic in `dashboard/app.js` lines 100-174 | D never reads `/api/runtime/current` or `/api/runtime/workers`; it only mutates local state. |
 | Event handling | Partial | `dashboard/app.js` lines 87-90, 120-124 | The start action is wired, but there is no stop or refresh action even though the contract includes them. |
 | Business logic | Placeholder | `dashboard/services/runtimeTruth.js` lines 535-572 | Real-run state is invented by the frontend with canned summaries and local timestamps. |
@@ -266,10 +266,10 @@ This area is meant to monitor the real runtime pipeline and watchdog workers usi
 
 | Placeholder or Mock Behavior | Evidence | Why It Is Placeholder | Required Real Behavior |
 |------------------------------|----------|-----------------------|------------------------|
-| `Start real run` turns D on by mutating local state. | `dashboard/app.js` lines 87-90, 120-124; `dashboard/services/runtimeTruth.js` lines 535-572 | No backend start request or runtime query occurs. | Call `POST /api/runtime/start`, then read runtime projections from backend. |
+| `Start simulated runtime preview` turns D on by mutating local state. | `dashboard/views/runningProcessView.js`; `dashboard/services/runtimeTruth.js` lines 535-572 | No backend start request or runtime query occurs. | Call `POST /api/runtime/start`, then read runtime projections from backend. |
 | D1 stage status and summaries are fabricated with static copy. | `dashboard/services/runtimeTruth.js` lines 549-554 | The frontend decides that download is running and others are waiting without reading worker state. | Render authoritative stage name, status, timestamps, and summaries from `/api/runtime/current` or `/api/runtime/workers`. |
 | D2 and D3 heartbeat fields are local timestamps and canned summaries. | `dashboard/services/runtimeTruth.js` lines 555-568 | Worker health is not read from real heartbeats or leases. | Consume real playback and screen worker projections, including status, heartbeat, and degraded-state details. |
-| D4 runtime log is only the frontend log stream. | `dashboard/services/runtimeTruth.js` lines 70-71, 570-571 | There is no durable event or runtime log source behind it. | Feed D4 from structured runtime events or a backend log projection tied to the current run. |
+| D4 preview log is only the frontend log stream. | `dashboard/services/runtimeTruth.js` lines 70-71, 570-571 | There is no durable event or runtime log source behind it. | Feed D4 from structured runtime events or a backend log projection tied to the current run. |
 
 ### 5. Real Integration Requirements
 
@@ -299,7 +299,7 @@ This area is meant to monitor the real runtime pipeline and watchdog workers usi
 
 | Issue | Evidence | Why It Matters | What Is Needed To Resolve It |
 |-------|----------|----------------|------------------------------|
-| The UI exposes `Start real run`, but the documented contract also includes `POST /api/runtime/stop` and there is no corresponding stop control. | `dashboard/app.js` lines 87-90; `docs/13_FRONTEND_BACKEND_CONTRACT.md` lines 76-79 | The intended operator control surface is incomplete or the contract is too broad. | Decide whether D should support stop from this UI and align contract and controls. |
+| The UI exposes `Start simulated runtime preview`, but the documented contract also includes `POST /api/runtime/stop` and there is no corresponding stop control. | `dashboard/views/runningProcessView.js`; `docs/13_FRONTEND_BACKEND_CONTRACT.md` lines 76-79 | The current UI is intentionally honest about being preview-only, but the eventual operator control surface is still incomplete. | Decide whether D should support stop from this UI and align contract and controls. |
 | View D docs mention D2 and D3 summary/log areas, but the implementation only renders summary fields plus a shared D4 log. | `docs/VIEW_D_RUNNING_PROCESS.md` lines 32-47; `dashboard/views/runningProcessView.js` lines 43-70 | The final observability layout is not fully settled. | Choose whether per-worker logs belong in D2/D3 or if D4 remains the single runtime log surface, then update docs or code. |
 | Runtime projection payloads are not defined in detail. | `docs/13_FRONTEND_BACKEND_CONTRACT.md` lines 76-83 | The frontend cannot replace local fake worker state without a stable schema. | Define response fields for stage rows, worker summaries, heartbeats, log entries, and run status. |
 
