@@ -1,11 +1,9 @@
-# Changelog
+# CHANGELOG
 
-## 0.2.0 — 2026-04-19 17:48 EEST
-- Reworked the dashboard frontend into a more user-friendly operator interface.
-- Split the frontend into separate view modules for A, B, C, and D.
-- Added a Vite-friendly project setup so the frontend can be run with `npm run dev` after install.
-- Upgraded layout, visual hierarchy, cards, status badges, logs, and playback preview styling.
-- Added a shared in-memory runtime truth service to centralize mock frontend state.
-
-## 0.1.0 — 2026-04-19 17:34 EEST
-- Initial unwired dashboard frontend, docs, and generated test data bundle.
+## 2026-04-19 18:22 EEST — v0.3.0
+- Performed safe inclusion and validation pass across the incoming frontend bundle and the audited system-documentation bundle.
+- Kept the stronger modular frontend from the incoming project, including separate view files for A, B, C, and D, shared runtime-truth mock state, generated test data, and the Vite-based package setup.
+- Included the stronger audited system documents `00_TABLE_OF_CONTENTS.md` through `14_VERSIONING_AND_CHANGELOG_RULES.md`.
+- Preserved the frontend view documentation files because they remained consistent with the current UI surface and did not contradict the stronger system documents.
+- Added `vite.config.js` so `npm run dev` works from the repository root while keeping the frontend files under `dashboard/`.
+- Updated top-level README and documentation control text to clarify precedence between system documents and frontend view documents.
