@@ -25,7 +25,7 @@ Found in the repo:
 - built frontend output in `dist/`
 - generated test-data assets under `generated_test_data/`
 - no DB migrations/schema implementation files
-- no cron scripts or worker runtime code
+- no worker runtime code beyond a small 3A scheduler bootstrap host
 
 ### Documentation findings
 
@@ -108,7 +108,7 @@ This reconciliation updates documentation clarity, but it still does not create 
 
 - persistence
 - workers
-- resolved cron integration
+- fully resolved scheduler-driven runtime integration
 - real runtime telemetry
 
 Those remain future implementation work.

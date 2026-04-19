@@ -17,11 +17,11 @@ This section provides separate action buttons for:
 The panel also includes a shared log area and a status badge.
 The latest triggered backend response is also rendered inside the card.
 
-### 3A — Cron controls
+### 3A — Scheduler controls
 This section provides separate action buttons for:
-- Install cron
-- Check cron
-- Print cron
+- Install scheduler
+- Check scheduler
+- Print scheduler
 
 The panel also includes a shared log area and a status badge.
 The latest triggered backend response is also rendered inside the card.
@@ -33,12 +33,13 @@ The latest triggered backend response is also rendered inside the card.
 - the frontend now calls a repo-local backend implementation of `/api/init/*`
 - delete and recreate DB actions require explicit confirmation before the request is sent
 - env verification and DB actions are implemented in the repo-local backend
-- cron actions currently return structured blocked/error responses because the scheduler contract is unresolved
+- the legacy cron routes now manage a Windows Task Scheduler bootstrap path and render scheduler task plus host status directly in the card
 
 ## Future Backend Wiring Notes
 - **1A** now has an implemented backend path plus a response schema derived from the checked-in `.env` contract.
 - **2A** now has implemented backend endpoints for status, inspect, delete, and recreate-empty, with confirmation gating for destructive actions.
-- **3A** still needs a resolved scheduler decision because Windows plus the documented 5-second tick model cannot honestly map to standard cron.
+- **3A** now resolves the Windows platform contradiction by installing an AtLogOn Task Scheduler bootstrap task that starts a repo-local scheduler host.
+- the remaining 3A gap is not installation semantics anymore; it is wiring real pipeline/playback/screen/recovery services behind that host.
 
 ## UI States
 The view currently supports:

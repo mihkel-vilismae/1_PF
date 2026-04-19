@@ -6,8 +6,15 @@ This document defines how time-based triggering and worker supervision operate.
 
 ## Model
 
-Cron is a **triggering mechanism**, not the business authority.
+Cron or scheduler bootstrap is a **triggering mechanism**, not the business authority.
 Workers and services remain responsible for state validation, lease acquisition, and duplicate prevention.
+
+## Current Windows Implementation Note
+
+- the current repo-local 3A implementation keeps the legacy `/api/init/cron/*` route names for compatibility
+- on Windows, those routes install and inspect an `AtLogOn` Task Scheduler task that launches a repo-local scheduler host
+- the scheduler host, not Task Scheduler itself, owns the 5-second and 15-second timers because Task Scheduler repetition intervals have a documented 1-minute minimum
+- the current host only reports heartbeat and tick state; it does not yet invoke real pipeline, playback, screen, or recovery services
 
 ## Scheduled Jobs
 
@@ -44,8 +51,8 @@ These values may later become configuration entries but must remain explicit in 
 
 ## Duplicate Trigger Rule
 
-A cron tick may fire multiple times or overlap, but only the request that successfully acquires the relevant lease may proceed. Others must exit without side effects beyond duplicate-rejected observability.
+A scheduler tick may fire multiple times or overlap, but only the request that successfully acquires the relevant lease may proceed. Others must exit without side effects beyond duplicate-rejected observability.
 
 ## Evidence Basis
 
-Derived from the user's requirement that playback and screen workers be checked repeatedly (for example every five seconds) and that cron-related backend/frontend services exist without allowing duplicate active processes.
+Derived from the user's requirement that playback and screen workers be checked repeatedly (for example every five seconds) and that scheduler-related backend/frontend services exist without allowing duplicate active processes.

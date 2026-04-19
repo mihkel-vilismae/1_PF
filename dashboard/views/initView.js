@@ -7,7 +7,7 @@ export function renderInitView(state) {
         <div>
           <p class="eyebrow">A — Init</p>
           <h2>Prepare the system before any test or real run.</h2>
-          <p class="hero-copy">This view now calls the documented init endpoints for environment, database, and cron work, while the rest of the dashboard remains prototype-driven.</p>
+          <p class="hero-copy">This view now calls the documented init endpoints for environment, database, and scheduler work, while the rest of the dashboard remains prototype-driven.</p>
         </div>
         <div class="hero-pill-group">
           <span class="hero-pill hero-pill--success">Backend contract wired</span>
@@ -34,15 +34,15 @@ export function renderInitView(state) {
 
       ${renderCard(
         '3A',
-        'Cron controls',
+        'Scheduler controls',
         state,
         '3A',
           `
-            <button class="button button--secondary" data-action="install-cron">Install cron</button>
-            <button class="button button--secondary" data-action="check-cron">Check cron</button>
-            <button class="button button--secondary" data-action="print-cron">Print cron</button>
+            <button class="button button--secondary" data-action="install-cron">Install scheduler</button>
+            <button class="button button--secondary" data-action="check-cron">Check scheduler</button>
+            <button class="button button--secondary" data-action="print-cron">Print scheduler</button>
           `,
-          'Cron controls now call the documented backend contract and display the latest backend payload below the action row.',
+          'The legacy cron routes now manage the real platform scheduler target and display the latest backend payload below the action row.',
       )}
     </section>
   `;

@@ -72,7 +72,7 @@ Implemented:
 
 - shared request/error handling for wired frontend calls
 - dedicated init service module targeting `/api/init/*`
-- async init action handling for `.env`, database, and cron actions
+- async init action handling for `.env`, database, and scheduler actions
 - per-card backend result rendering for View A
 
 Evidence:
@@ -91,7 +91,8 @@ Implemented:
 - real `.env` verification against a checked-in config schema
 - real SQLite status, inspect, delete, and recreate-empty endpoints
 - frontend confirmation gating for destructive DB actions
-- structured blocked/error responses for unresolved cron endpoints
+- Windows Task Scheduler install/status/print endpoints behind the legacy cron routes
+- a repo-local scheduler host that preserves the documented 5-second and 15-second timing model
 
 Evidence:
 
@@ -140,7 +141,7 @@ Not present in this repository snapshot:
 - real pipeline worker
 - real playback worker
 - real screen worker
-- cron-installed execution loop
+- real pipeline/playback/screen/recovery services behind the scheduler host
 - watchdog process
 - durable last-run restoration
 
@@ -148,7 +149,6 @@ Not present in this repository snapshot:
 
 Not present in this repository snapshot:
 
-- resolved backend implementation for real cron install/check/print actions
 - real login/download/test execution
 - real playback control
 - real screen hardware activity handling
@@ -164,7 +164,8 @@ Current state:
 - the frontend renders the latest backend payload or error for each A card
 - repo-local backend endpoints exist for env verification and SQLite status/inspect/delete/recreate-empty
 - destructive DB actions require explicit frontend confirmation
-- cron endpoints exist but currently return structured blocked/error responses because the scheduler contract is unresolved on this platform
+- legacy cron endpoints now implement a Windows Task Scheduler bootstrap path and expose scheduler task plus host-heartbeat status
+- the installed scheduler host currently emits tick and heartbeat state only; it does not yet own real runtime business services
 
 Primary files:
 
