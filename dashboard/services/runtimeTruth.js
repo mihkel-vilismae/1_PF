@@ -1,6 +1,9 @@
 const stamp = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
 const listeners = new Set();
+const STAGE_ACTION_KEYS = new Set(['B3.1', 'B3.2', 'B3.3', 'B3.4', 'B3.5']);
+const PROCESS_ACTION_KEYS = new Set(['B4', 'D2', 'D3']);
+
 
 function createInitialState() {
   const now = stamp();
@@ -41,6 +44,9 @@ function createInitialState() {
       stageLock: 'No stage lock active',
       playbackLock: 'Playback worker lock available',
       screenLock: 'Screen worker lock available',
+      pipelineActiveKey: null,
+      playbackActive: false,
+      realRunStartCount: 0,
     },
     history: [
       { id: crypto.randomUUID(), at: now, source: 'BOOT', type: 'info', message: 'Dashboard shell initialized.' },
@@ -254,6 +260,53 @@ export function runAction(action) {
   }
 }
 
+
+function isPipelineBusy() {
+  return Boolean(state.truth.pipelineActiveKey);
+}
+
+function startPipelineLock(key) {
+  patchState((draft) => {
+    draft.truth.pipelineActiveKey = key;
+    draft.truth.stageLock = `Pipeline lock held by ${key}`;
+  });
+}
+
+function releasePipelineLock(key) {
+  patchState((draft) => {
+    if (draft.truth.pipelineActiveKey === key) {
+      draft.truth.pipelineActiveKey = null;
+      draft.truth.stageLock = `${key} finished and released the pipeline lock`;
+    }
+  });
+}
+
+function rejectWhileBusy(key, source, message) {
+  setStatus(key, 'error');
+  pushLog(key, 'error', message);
+  pushHistory(source, 'error', message);
+}
+
+function withPlaybackGuard(fn) {
+  if (state.truth.playbackActive) {
+    rejectWhileBusy('B4', 'PLAYBACK', 'Playback emulation is already active; duplicate playback start was blocked.');
+    return false;
+  }
+  patchState((draft) => {
+    draft.truth.playbackActive = true;
+    draft.truth.playbackLock = 'Playback worker lock held';
+  });
+  fn();
+  return true;
+}
+
+function releasePlaybackGuard() {
+  patchState((draft) => {
+    draft.truth.playbackActive = false;
+    draft.truth.playbackLock = draft.truth.realRunActive ? 'Playback worker lock held by real runtime' : 'Playback worker lock available';
+  });
+}
+
 function genericAction(key, source, message) {
   setStatus(key, 'running');
   pushLog(key, 'info', `Started action: ${message}`);
@@ -303,7 +356,13 @@ function runLoginFlow() {
   }, 920);
 }
 
-function runPipelineStage(key, message) {
+function runPipelineStage(key, message, onComplete = () => {}) {
+  if (isPipelineBusy()) {
+    const owner = state.truth.pipelineActiveKey;
+    rejectWhileBusy(key, 'PIPELINE', `${key} was blocked because ${owner} already holds the pipeline lock.`);
+    return;
+  }
+  startPipelineLock(key);
   setStatus(key, 'running');
   setStatus('B3', 'running');
   pushLog(key, 'info', `Started ${key}.`);
@@ -315,13 +374,14 @@ function runPipelineStage(key, message) {
     pushHistory('PIPELINE', 'success', message);
     patchState((draft) => {
       draft.truth.lastStageCompleted = key;
-      draft.truth.stageLock = `${key} finished and released the pipeline lock`;
     });
+    releasePipelineLock(key);
+    onComplete();
   }, 420);
 }
 
-function runEnqueueStage() {
-  runPipelineStage('B3.5', 'Queue stage added 1 media item for playback.');
+function runEnqueueStage(onComplete = () => {}) {
+  runPipelineStage('B3.5', 'Queue stage added 1 media item for playback.', onComplete);
   setTimeout(() => {
     patchState((draft) => {
       draft.truth.queueLength = Math.max(1, draft.truth.queueLength + 1);
@@ -339,16 +399,28 @@ function runEnqueueStage() {
 }
 
 function runAutoPipeline() {
+  if (isPipelineBusy()) {
+    rejectWhileBusy('B3', 'PIPELINE', `Auto pipeline start was blocked because ${state.truth.pipelineActiveKey} already holds the pipeline lock.`);
+    return;
+  }
   const stages = ['B3.1', 'B3.2', 'B3.3', 'B3.4', 'B3.5'];
-  stages.forEach((stage, index) => {
-    setTimeout(() => {
-      if (stage === 'B3.5') {
-        runEnqueueStage();
-      } else {
-        runPipelineStage(stage, `${stage} completed in auto mode.`);
-      }
-    }, index * 480);
-  });
+  const runNextStage = (index = 0) => {
+    const stage = stages[index];
+    if (!stage) {
+      setStatus('B3', 'success');
+      pushHistory('PIPELINE', 'success', 'Auto pipeline completed without overlapping stages.');
+      return;
+    }
+
+    const action = stage === 'B3.5'
+      ? () => runEnqueueStage(() => runNextStage(index + 1))
+      : () => runPipelineStage(stage, `${stage} completed in auto mode.`, () => runNextStage(index + 1));
+
+    action();
+  };
+
+  setStatus('B3', 'running');
+  runNextStage();
 }
 
 function runPlaybackEmulation() {
@@ -357,24 +429,35 @@ function runPlaybackEmulation() {
     pushLog('B4', 'error', 'Cannot start playback emulation without queued media.');
     return;
   }
-  setStatus('B4', 'running');
-  pushHistory('PLAYBACK', 'info', 'Playback emulation started.');
-  pushLog('B4', 'info', `Showing ${state.truth.currentMedia.name}.`);
-  patchState((draft) => {
-    draft.truth.playbackStatus = 'Displaying media';
-    draft.truth.lastCheckpoint = `${stamp()} image display checkpoint saved`;
-  });
-  setTimeout(() => {
-    setStatus('B4', 'success');
-    pushLog('B4', 'success', 'Playback emulation rendered the current media card.');
-  }, 400);
+  if (!withPlaybackGuard(() => {
+    setStatus('B4', 'running');
+    pushHistory('PLAYBACK', 'info', 'Playback emulation started.');
+    pushLog('B4', 'info', `Showing ${state.truth.currentMedia.name}.`);
+    patchState((draft) => {
+      draft.truth.playbackStatus = 'Displaying media';
+      draft.truth.lastCheckpoint = `${stamp()} image display checkpoint saved`;
+    });
+    setTimeout(() => {
+      setStatus('B4', 'success');
+      pushLog('B4', 'success', 'Playback emulation rendered the current media card without duplicate starts.');
+      releasePlaybackGuard();
+    }, 400);
+  })) {
+    return;
+  }
 }
 
 function startRealRun() {
+  if (state.truth.realRunActive) {
+    pushHistory('RUNTIME', 'info', 'Duplicate real run start request ignored because runtime is already active.');
+    pushLog('D', 'info', 'Real runtime start request ignored; runtime is already active.');
+    return;
+  }
   patchState((draft) => {
     draft.truth.realRunActive = true;
-    draft.truth.playbackLock = 'Playback worker lock held';
-    draft.truth.screenLock = 'Screen worker lock held';
+    draft.truth.realRunStartCount += 1;
+    draft.truth.playbackLock = 'Playback worker lock held by real runtime';
+    draft.truth.screenLock = 'Screen worker lock held by real runtime';
     draft.statusByKey.D1 = 'running';
     draft.statusByKey.D2 = 'running';
     draft.statusByKey.D3 = 'running';
@@ -399,6 +482,6 @@ function startRealRun() {
       summary: 'Screen activity watchdog would verify process health every few seconds.',
     };
   });
-  pushHistory('RUNTIME', 'success', 'Real run placeholder started.');
+  pushHistory('RUNTIME', 'success', 'Real run placeholder started with single-instance guard enabled.');
   pushLog('D', 'success', 'Real runtime monitoring is now active.');
 }
