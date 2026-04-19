@@ -3,6 +3,7 @@ const stamp = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute:
 const listeners = new Set();
 const STAGE_ACTION_KEYS = new Set(['B3.1', 'B3.2', 'B3.3', 'B3.4', 'B3.5']);
 const PROCESS_ACTION_KEYS = new Set(['B4', 'D2', 'D3']);
+const ACTION_LOCK_KEYS = new Set(['1A', '2A', '3A', 'B1', 'B2', 'B3', 'B3.1', 'B3.2', 'B3.3', 'B3.4', 'B3.5', 'B4', 'B5', 'C', 'D1', 'D2', 'D3']);
 
 
 function createInitialState() {
@@ -30,6 +31,7 @@ function createInitialState() {
       D2: 'disabled',
       D3: 'disabled',
     },
+    activeActions: {},
     truth: {
       queueLength: 0,
       currentMedia: null,
@@ -224,11 +226,22 @@ export function setLastRunMode(mode) {
 export function setSimulationValue(key, value) {
   patchState((draft) => {
     draft.simulation[key] = value;
+    if (key === 'simulateAllEnabled') {
+      draft.simulation.pirEnabled = Boolean(value);
+      draft.simulation.mouseEnabled = Boolean(value);
+      draft.simulation.keyboardEnabled = Boolean(value);
+    }
+    if (['pirEnabled', 'mouseEnabled', 'keyboardEnabled'].includes(key) && !value) {
+      draft.simulation.simulateAllEnabled = false;
+    }
     if (key === 'inactivityTimeoutSeconds') {
       draft.truth.inactivityTimeoutSeconds = Number(value);
       draft.runningProcess.screenWorker.timeout = `${value}s`;
     }
   });
+  if (['pirEnabled', 'mouseEnabled', 'keyboardEnabled', 'simulateAllEnabled', 'inactivityTimeoutSeconds'].includes(key)) {
+    applyScreenSimulationState(`${key} changed`);
+  }
 }
 
 export function runAction(action) {
@@ -307,7 +320,74 @@ function releasePlaybackGuard() {
   });
 }
 
+
+function isActionActive(key) {
+  return Boolean(state.activeActions[key]);
+}
+
+function beginAction(key) {
+  patchState((draft) => {
+    draft.activeActions[key] = true;
+  });
+}
+
+function endAction(key) {
+  patchState((draft) => {
+    delete draft.activeActions[key];
+  });
+}
+
+function guardAction(key, source, message) {
+  if (!ACTION_LOCK_KEYS.has(key)) {
+    return true;
+  }
+  if (isActionActive(key)) {
+    rejectWhileBusy(key, source, message);
+    return false;
+  }
+  beginAction(key);
+  return true;
+}
+
+function applyScreenSimulationState(reason) {
+  const simulation = state.simulation;
+  const anyEnabled = simulation.simulateAllEnabled || simulation.pirEnabled || simulation.mouseEnabled || simulation.keyboardEnabled;
+  const nextScreenState = anyEnabled ? 'ON' : 'OFF';
+  const nextActivity = simulation.simulateAllEnabled
+    ? 'All simulated activity sources enabled'
+    : simulation.pirEnabled
+      ? 'PIR sensor activity enabled'
+      : simulation.mouseEnabled
+        ? 'Mouse movement enabled'
+        : simulation.keyboardEnabled
+          ? 'Keyboard activity enabled'
+          : 'No simulated activity sources enabled';
+
+  patchState((draft) => {
+    draft.truth.screenState = nextScreenState;
+    draft.truth.lastActivitySource = nextActivity;
+    draft.truth.inactivityTimeoutSeconds = Number(simulation.inactivityTimeoutSeconds);
+    draft.runningProcess.screenWorker.screenState = nextScreenState;
+    draft.runningProcess.screenWorker.lastActivity = nextActivity;
+    draft.runningProcess.screenWorker.timeout = `${Number(simulation.inactivityTimeoutSeconds)}s`;
+    if (nextScreenState === 'OFF') {
+      draft.truth.playbackStatus = 'Paused by inactivity';
+      draft.truth.lastCheckpoint = `${stamp()} screen-off checkpoint saved`;
+    } else if (draft.truth.currentMedia) {
+      draft.truth.playbackStatus = 'Ready for emulation';
+    } else {
+      draft.truth.playbackStatus = 'Waiting for queued media';
+    }
+  });
+
+  pushLog('B5', 'info', `Screen simulation updated: ${reason}. Screen is now ${nextScreenState}.`);
+  pushHistory('SCREEN', nextScreenState === 'OFF' ? 'warning' : 'success', `Screen simulation updated: ${reason}. Screen is now ${nextScreenState}.`);
+}
+
 function genericAction(key, source, message) {
+  if (!guardAction(key, source, `${key} action is already running; duplicate trigger was blocked.`)) {
+    return;
+  }
   setStatus(key, 'running');
   pushLog(key, 'info', `Started action: ${message}`);
   setTimeout(() => {
@@ -319,10 +399,14 @@ function genericAction(key, source, message) {
         draft.truth.lastStageCompleted = key;
       });
     }
+    endAction(key);
   }, 420);
 }
 
 function runLoginFlow() {
+  if (!guardAction('B1', 'TEST', 'B1 login flow is already running; duplicate start was blocked.')) {
+    return;
+  }
   setStatus('B1', 'running');
   patchState((draft) => {
     draft.loginSteps = draft.loginSteps.map((step, index) => ({ ...step, status: index === 0 ? 'active' : 'waiting' }));
@@ -353,6 +437,7 @@ function runLoginFlow() {
     setStatus('B1', 'success');
     pushLog('B1', 'success', '2FA completed in placeholder mode.');
     pushHistory('TEST', 'success', 'B1 login flow completed.');
+    endAction('B1');
   }, 920);
 }
 
