@@ -11,7 +11,20 @@ const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
 const envFilePath = path.join(repoRoot, '.env');
 const sqliteScriptPath = path.join(__dirname, 'scripts', 'sqlite_admin.py');
+const windowsTaskSchedulerScriptPath = path.join(__dirname, 'scripts', 'windows_task_scheduler.ps1');
+const schedulerHostPath = path.join(__dirname, 'scheduler_host.js');
 const port = Number(process.env.PORT || 4301);
+const schedulerTaskName = 'PhotoFrame-1PF-SchedulerHost';
+const schedulerRuntimeDirectory = path.join(repoRoot, 'runtime_data', 'scheduler');
+const schedulerStatusFilePath = path.join(schedulerRuntimeDirectory, 'host-status.json');
+const schedulerSchemaVersion = 2;
+const schedulerHeartbeatGraceSeconds = 20;
+const schedulerTickSeconds = Object.freeze({
+  pipeline: 5,
+  playbackWatchdog: 5,
+  screenWatchdog: 5,
+  recoveryReconciliation: 15,
+});
 
 const envSchema = [
   { key: 'user', label: 'Account email', required: true, sensitive: true, kind: 'string' },
@@ -216,15 +229,45 @@ async function recreateEmptyDatabaseHandler({ body, context }) {
 }
 
 async function installCronHandler({ context }) {
-  throw cronUnsupportedError(context);
+  const scheduler = await installScheduler(context);
+  return {
+    statusCode: 200,
+    payload: {
+      status: 'ok',
+      messages: [
+        'Installed the Windows Task Scheduler bootstrap task for the repo-local scheduler host.',
+        'The scheduler host preserves the documented 5-second timing model inside one long-running process.',
+      ],
+      scheduler,
+      schemaVersion: schedulerSchemaVersion,
+    },
+  };
 }
 
 async function cronStatusHandler({ context }) {
-  throw cronUnsupportedError(context);
+  const scheduler = await getSchedulerStatus(context);
+  return {
+    statusCode: 200,
+    payload: {
+      status: scheduler.status,
+      messages: scheduler.messages,
+      scheduler,
+      schemaVersion: schedulerSchemaVersion,
+    },
+  };
 }
 
 async function printCronHandler({ context }) {
-  throw cronUnsupportedError(context);
+  const scheduler = await printSchedulerDefinition(context);
+  return {
+    statusCode: 200,
+    payload: {
+      status: scheduler.status,
+      messages: scheduler.messages,
+      scheduler,
+      schemaVersion: schedulerSchemaVersion,
+    },
+  };
 }
 
 async function buildRequestContext() {
@@ -232,6 +275,8 @@ async function buildRequestContext() {
   return {
     envValues,
     platform: process.platform,
+    nodePath: process.execPath,
+    username: process.env.USERNAME || process.env.USER || null,
   };
 }
 
@@ -423,16 +468,218 @@ function cronUnsupportedError(context) {
   return new HttpError(
     501,
     'cron_contract_blocked',
-    'Cron endpoints are intentionally blocked because this environment and contract cannot honestly satisfy them yet.',
+    'The legacy /api/init/cron/* endpoints are only implemented for the Windows Task Scheduler bootstrap path in this repository.',
     {
       platform: context.platform,
       blockers: [
-        'This repository is currently running on Windows, where standard cron is not available.',
-        'The documented watchdog design requires 5-second ticks, which standard cron cannot express.',
+        'This repository only implements the Windows bootstrap path today.',
+        'Standard cron is unavailable on Windows and the documented 5-second cadence cannot be expressed directly by Task Scheduler repetition either.',
       ],
-      nextStep: 'Clarify whether this surface should target a Unix crontab, Windows Task Scheduler, or a non-cron scheduler abstraction.',
+      nextStep: 'Use the Windows Task Scheduler bootstrap host on win32 or add another platform-specific scheduler implementation.',
     },
   );
+}
+
+async function installScheduler(context) {
+  const definition = ensureWindowsSchedulerContext(context);
+  await fs.mkdir(definition.logDirectory, { recursive: true });
+  await fs.mkdir(definition.runtimeDirectory, { recursive: true });
+
+  const task = await runWindowsSchedulerCommand('install', definition);
+  const host = await readSchedulerHostStatus();
+  return buildSchedulerPayload({
+    context,
+    definition,
+    task,
+    host,
+    includeExportedXml: false,
+  });
+}
+
+async function getSchedulerStatus(context) {
+  const definition = ensureWindowsSchedulerContext(context);
+  const task = await runWindowsSchedulerCommand('status', definition);
+  const host = await readSchedulerHostStatus();
+  return buildSchedulerPayload({
+    context,
+    definition,
+    task,
+    host,
+    includeExportedXml: false,
+  });
+}
+
+async function printSchedulerDefinition(context) {
+  const definition = ensureWindowsSchedulerContext(context);
+  const task = await runWindowsSchedulerCommand('print', definition);
+  const host = await readSchedulerHostStatus();
+  return buildSchedulerPayload({
+    context,
+    definition,
+    task,
+    host,
+    includeExportedXml: true,
+  });
+}
+
+function ensureWindowsSchedulerContext(context) {
+  if (context.platform !== 'win32') {
+    throw cronUnsupportedError(context);
+  }
+  return buildSchedulerDefinition(context);
+}
+
+function buildSchedulerDefinition(context) {
+  const logDirectory = resolveRepoPath(context.envValues.LOG_DIR || 'runtime_data/logs');
+  return {
+    routeLabel: '/api/init/cron/*',
+    taskName: schedulerTaskName,
+    platformTarget: 'windows-task-scheduler',
+    schedulerMode: 'bootstrap-host',
+    nodePath: context.nodePath,
+    scriptPath: schedulerHostPath,
+    repoRoot,
+    logDirectory,
+    runtimeDirectory: schedulerRuntimeDirectory,
+    statusFilePath: schedulerStatusFilePath,
+    username: context.username,
+    cadence: schedulerTickSeconds,
+    notes: [
+      'The existing cron endpoint names are kept for compatibility with the current frontend contract.',
+      'On Windows, installation creates an AtLogOn Task Scheduler task that starts one long-running Node scheduler host.',
+      'The scheduler host preserves the 5-second and 15-second timing model because Task Scheduler repetition intervals have a 1-minute minimum.',
+      'The host currently emits heartbeat/tick state only; runtime business services are still future work.',
+    ],
+  };
+}
+
+async function runWindowsSchedulerCommand(operation, definition) {
+  const args = [
+    '-NoProfile',
+    '-ExecutionPolicy',
+    'Bypass',
+    '-File',
+    windowsTaskSchedulerScriptPath,
+    '-Operation',
+    operation,
+    '-TaskName',
+    definition.taskName,
+    '-NodePath',
+    definition.nodePath,
+    '-ScriptPath',
+    definition.scriptPath,
+    '-RepoRoot',
+    definition.repoRoot,
+  ];
+  const { stdout, stderr, code } = await runProcess('powershell.exe', args);
+  const parsed = parseJsonOutput(stdout);
+
+  if (code !== 0) {
+    throw new HttpError(500, 'windows_scheduler_failed', 'Windows Task Scheduler command failed.', {
+      operation,
+      stderr: stderr.trim() || null,
+      stdout: stdout.trim() || null,
+      scriptError: parsed?.message || null,
+    });
+  }
+
+  return parsed;
+}
+
+function parseJsonOutput(raw) {
+  const trimmed = raw.trim();
+  if (!trimmed) {
+    return null;
+  }
+  try {
+    return JSON.parse(trimmed);
+  } catch (error) {
+    throw new HttpError(500, 'invalid_scheduler_json', 'Scheduler helper returned invalid JSON.', {
+      stdout: trimmed,
+    });
+  }
+}
+
+async function readSchedulerHostStatus() {
+  if (!(await fileExists(schedulerStatusFilePath))) {
+    return {
+      observed: false,
+      state: 'not-observed',
+      statusFilePath: schedulerStatusFilePath,
+      message: 'The scheduler host has not written a status file yet.',
+    };
+  }
+
+  try {
+    const raw = await fs.readFile(schedulerStatusFilePath, 'utf8');
+    const payload = JSON.parse(raw);
+    const heartbeatAt = payload.heartbeatAt || payload.lastTickAt || null;
+    const heartbeatAgeSeconds = heartbeatAt ? Math.max(0, Math.round((Date.now() - Date.parse(heartbeatAt)) / 1000)) : null;
+    return {
+      observed: true,
+      state: heartbeatAgeSeconds !== null && heartbeatAgeSeconds <= schedulerHeartbeatGraceSeconds ? 'running' : 'stale',
+      heartbeatAgeSeconds,
+      statusFilePath: schedulerStatusFilePath,
+      payload,
+    };
+  } catch (error) {
+    return {
+      observed: true,
+      state: 'invalid-status-file',
+      statusFilePath: schedulerStatusFilePath,
+      message: error.message,
+    };
+  }
+}
+
+function buildSchedulerPayload({ context, definition, task, host, includeExportedXml }) {
+  const installed = Boolean(task?.installed);
+  const hostRunning = host?.state === 'running';
+  const status = !installed ? 'warning' : hostRunning ? 'ok' : 'warning';
+  const messages = [];
+
+  if (!installed) {
+    messages.push('Scheduler bootstrap task is not installed for the current Windows user.');
+  } else {
+    messages.push('Scheduler bootstrap task is installed through Windows Task Scheduler.');
+  }
+
+  if (hostRunning) {
+    messages.push('The repo-local scheduler host is emitting fresh heartbeats.');
+  } else if (host?.observed) {
+    messages.push(`The scheduler host status file is present but not fresh (${host.state}).`);
+  } else {
+    messages.push('No scheduler host heartbeat has been observed yet.');
+  }
+
+  messages.push('Business services for pipeline, playback, screen, and recovery remain future implementation work.');
+
+  const payload = {
+    status,
+    messages,
+    routeCompatibility: definition.routeLabel,
+    platform: context.platform,
+    schedulerTarget: definition.platformTarget,
+    schedulerMode: definition.schedulerMode,
+    taskName: definition.taskName,
+    cadence: definition.cadence,
+    command: {
+      executable: definition.nodePath,
+      arguments: [definition.scriptPath, '--repo-root', definition.repoRoot],
+      workingDirectory: definition.repoRoot,
+    },
+    task: task ?? {
+      installed: false,
+    },
+    host,
+    notes: definition.notes,
+  };
+
+  if (!includeExportedXml && payload.task?.exportedXml) {
+    delete payload.task.exportedXml;
+  }
+
+  return payload;
 }
 
 function sendJson(response, statusCode, payload) {

@@ -12,7 +12,7 @@ This repository currently contains:
   - **current implementation reality**, and
   - **target backend architecture / future wiring contracts**
 
-It does **not** currently contain the full planned backend, real worker processes, durable runtime persistence, or a resolved cron/watchdog runtime implementation. It now does contain a repo-local backend implementation for A `.env` verification and SQLite file operations.
+It does **not** currently contain the full planned backend, real worker processes, or durable runtime persistence. It now does contain a repo-local backend implementation for A `.env` verification, SQLite file operations, and a Windows-first scheduler bootstrap path for 3A.
 
 ## Run locally
 
@@ -96,7 +96,7 @@ Not implemented now:
 
 - backend API for B/C/D and the rest of the planned system
 - durable database schema/runtime persistence beyond empty SQLite file creation and inspection
-- real cron installation/checking that matches the documented 5-second watchdog contract
+- real pipeline/playback/screen/recovery services behind the installed 3A scheduler host
 - real playback worker
 - real screen worker
 - real pipeline worker

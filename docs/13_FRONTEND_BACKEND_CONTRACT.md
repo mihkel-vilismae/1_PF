@@ -16,7 +16,7 @@ These are frontend abstractions only; they do not own business logic.
 
 - `apiClient` — transport wrapper
 - `runtimeService` — read current runtime state and last-run projections
-- `cronService` — invoke cron-related API actions from view A
+- `cronService` — invoke the legacy `/api/init/cron/*` scheduler-management actions from view A
 - `screenService` — invoke screen-related control and read state for views B/D
 - `databaseService` — invoke database inspection/reset endpoints from view A
 - `testService` — invoke simulation endpoints for view B
@@ -85,20 +85,36 @@ Current response schema:
     - `database`
     - `schemaVersion`
 
-### 3A Cron controls
+### 3A Scheduler controls
 - `POST /api/init/cron/install`
 - `GET /api/init/cron/status`
 - `GET /api/init/cron/print`
 
 Current response schema:
 
-- success shape is not finalized because the scheduling contract is unresolved
-- the currently implemented backend returns structured error payloads when cron cannot be satisfied honestly:
-  - `status: "error"`
-  - `error`
-  - `message`
-  - `details`
+- top-level response:
+  - `status`
+  - `messages`
+  - `scheduler`
   - `schemaVersion`
+- `scheduler` includes:
+  - `status`
+  - `messages`
+  - `routeCompatibility`
+  - `platform`
+  - `schedulerTarget`
+  - `schedulerMode`
+  - `taskName`
+  - `cadence`
+  - `command`
+  - `task`
+  - `host`
+  - `notes`
+- current implementation note:
+  - the route names stay `/api/init/cron/*` for frontend compatibility
+  - on Windows, the backend installs an `AtLogOn` Task Scheduler task that launches a repo-local scheduler host
+  - the host preserves the documented `5s/5s/5s/15s` timing model because Task Scheduler repetition intervals have a documented 1-minute minimum
+  - the host currently reports heartbeat/tick state only; it does not yet run the real runtime services
 
 ## View B Contract (test / simulation only)
 
@@ -146,7 +162,7 @@ Current response schema:
 
 ## Evidence Basis
 
-Derived from the user's dashboard definition for views A/B/C/D, the request for shared frontend service layers for cron, screen, and database access, and the need to distinguish test simulation from real runtime.
+Derived from the user's dashboard definition for views A/B/C/D, the request for shared frontend service layers for scheduler/cron, screen, and database access, and the need to distinguish test simulation from real runtime.
 
 ## Frontend File Alignment
 

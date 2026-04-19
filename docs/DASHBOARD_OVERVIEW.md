@@ -14,7 +14,7 @@ This dashboard is a mostly prototype operator surface for the photo-frame system
 - `dashboard/styles.css` — all visual styling for the dashboard.
 - `dashboard/app.js` — shell composition, event binding, and view dispatch.
 - `dashboard/services/apiClient.js` — shared request and error handling for wired frontend calls.
-- `dashboard/services/initService.js` — frontend init contract wiring for `.env`, database, and cron actions.
+- `dashboard/services/initService.js` — frontend init contract wiring for `.env`, database, and legacy cron/scheduler actions.
 - `server/index.js` — backend implementation for the current A init endpoints.
 - `docs/VIEW_A_INIT.md` — view-specific documentation for Init.
 - `docs/VIEW_B_TEST.md` — view-specific documentation for Test.
@@ -35,8 +35,7 @@ This dashboard is a mostly prototype operator surface for the photo-frame system
 
 ### Not implemented yet
 - backend implementation for B/C/D and the rest of the documented API contracts
-- real database actions
-- real cron management that satisfies the documented scheduler contract
+- real pipeline/playback/screen/recovery services behind the installed scheduler host
 - real file downloads
 - real media playback engine
 - real source-of-truth queries
