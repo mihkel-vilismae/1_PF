@@ -2,14 +2,26 @@
 
 ## Purpose
 
-The system manages a media-processing and playback workflow with four user-facing dashboard areas:
+This document defines the **target system** that future backend implementation should follow.
+It is not a claim that the backend already exists in this repository.
+
+The currently implemented repository contents are documented separately in:
+
+- `15_CURRENT_IMPLEMENTATION_STATUS.md`
+- `16_DOCUMENTATION_RECONCILIATION_REPORT.md`
+- `DASHBOARD_OVERVIEW.md`
+- the four view-specific docs
+
+## Target System Shape
+
+The intended system manages a media-processing and playback workflow with four user-facing dashboard areas:
 
 - **A = Init** — environment, database, and cron preparation
 - **B = Test** — simulation and controlled test execution
 - **C = Last Run Info** — inspection and resume context for the latest known run
 - **D = Running Process** — live view of the real runtime
 
-The backend does not exist yet in this package. These documents define it before implementation.
+The backend does not exist yet in this package. This document defines it before implementation.
 
 ## Core System Goals
 
@@ -64,6 +76,10 @@ The backend does not exist yet in this package. These documents define it before
 - Allowing multiple playback workers for the same device or target
 - Allowing unordered or parallel execution of the five pipeline stages
 
+## Implementation Boundary Note
+
+As of the inspected repository snapshot, the implemented code is a frontend-only prototype with in-memory mock state and demo actions. That current reality must not be confused with the target backend system described here.
+
 ## Evidence Basis
 
-Derived from the user's dashboard specification in this chat, especially the distinction between test/simulation and real runtime, the five-stage loop, the separate playback and screen workers, and the requirement to inspect the last run and recover after interruption.
+Derived from the user's dashboard specification and reconciled against the uploaded repository, which currently contains the frontend prototype but not the target backend implementation.
