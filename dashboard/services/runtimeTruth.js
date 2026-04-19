@@ -1,0 +1,404 @@
+const stamp = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+const listeners = new Set();
+
+function createInitialState() {
+  const now = stamp();
+  return {
+    activeView: 'A',
+    currentViewTitle: 'A — Init',
+    modeBanner: 'Unwired frontend prototype with mock state only',
+    statusByKey: {
+      '1A': 'idle',
+      '2A': 'idle',
+      '3A': 'idle',
+      B1: 'idle',
+      B2: 'idle',
+      B3: 'idle',
+      'B3.1': 'idle',
+      'B3.2': 'idle',
+      'B3.3': 'idle',
+      'B3.4': 'idle',
+      'B3.5': 'idle',
+      B4: 'disabled',
+      B5: 'idle',
+      C: 'info',
+      D1: 'disabled',
+      D2: 'disabled',
+      D3: 'disabled',
+    },
+    truth: {
+      queueLength: 0,
+      currentMedia: null,
+      playbackStatus: 'Waiting for queued media',
+      screenState: 'ON',
+      lastActivitySource: 'Mouse movement',
+      inactivityTimeoutSeconds: 5,
+      lastCheckpoint: 'No checkpoint yet',
+      lastStageCompleted: 'None',
+      realRunActive: false,
+      sourceOfTruth: 'frontend://runtime-truth',
+      stageLock: 'No stage lock active',
+      playbackLock: 'Playback worker lock available',
+      screenLock: 'Screen worker lock available',
+    },
+    history: [
+      { id: crypto.randomUUID(), at: now, source: 'BOOT', type: 'info', message: 'Dashboard shell initialized.' },
+      { id: crypto.randomUUID(), at: now, source: 'TRUTH', type: 'info', message: 'Single source of truth loaded in memory.' },
+    ],
+    logs: {
+      '1A': [{ at: now, type: 'info', message: 'Ready to verify .env.' }],
+      '2A': [{ at: now, type: 'info', message: 'Database controls waiting for action.' }],
+      '3A': [{ at: now, type: 'info', message: 'Cron controls waiting for action.' }],
+      B1: [{ at: now, type: 'info', message: 'Login flow is idle.' }],
+      B2: [{ at: now, type: 'info', message: 'No download batch has run yet.' }],
+      'B3.1': [{ at: now, type: 'info', message: 'Mock download will read from /generated_test_data.' }],
+      'B3.2': [{ at: now, type: 'info', message: 'Index stage waiting.' }],
+      'B3.3': [{ at: now, type: 'info', message: 'GPS parser waiting.' }],
+      'B3.4': [{ at: now, type: 'info', message: 'Geocode stage waiting.' }],
+      'B3.5': [{ at: now, type: 'info', message: 'Queue stage waiting.' }],
+      B4: [{ at: now, type: 'info', message: 'Playback emulation disabled until media exists.' }],
+      B5: [{ at: now, type: 'info', message: 'Screen simulation controls ready.' }],
+      C: [{ at: now, type: 'info', message: 'Last run source not loaded yet.' }],
+      D: [{ at: now, type: 'info', message: 'Real runtime is inactive.' }],
+    },
+    simulation: {
+      executionMode: 'auto',
+      inputMode: 'single',
+      pirEnabled: true,
+      mouseEnabled: true,
+      keyboardEnabled: true,
+      inactivityTimeoutSeconds: 5,
+      simulateAllEnabled: true,
+    },
+    lastRunMode: 'none',
+    lastRunData: {
+      media: {},
+      playback: {},
+      stage: {},
+      screen: {},
+    },
+    runningProcess: {
+      pipelineStages: [
+        { key: 'download', name: 'Download', status: 'Idle', lastRun: 'Never', summary: 'Waiting for the real pipeline.' },
+        { key: 'index', name: 'Index', status: 'Idle', lastRun: 'Never', summary: 'Waiting for the real pipeline.' },
+        { key: 'gps', name: 'Get GPS', status: 'Idle', lastRun: 'Never', summary: 'Waiting for the real pipeline.' },
+        { key: 'geocode', name: 'Geocode', status: 'Idle', lastRun: 'Never', summary: 'Waiting for the real pipeline.' },
+        { key: 'queue', name: 'Queue Slideshow', status: 'Idle', lastRun: 'Never', summary: 'Waiting for the real pipeline.' },
+      ],
+      playbackWorker: {
+        status: 'Inactive',
+        heartbeat: 'Never',
+        currentMedia: 'None',
+        summary: 'Playback worker has not been started.',
+      },
+      screenWorker: {
+        status: 'Inactive',
+        heartbeat: 'Never',
+        screenState: 'ON',
+        lastActivity: 'None',
+        timeout: '5s',
+        summary: 'Screen worker has not been started.',
+      },
+    },
+    loginSteps: [
+      { key: 'login', label: 'Login', status: 'waiting' },
+      { key: 'file', label: 'Required file', status: 'waiting' },
+      { key: '2fa', label: '2FA', status: 'waiting' },
+    ],
+  };
+}
+
+let state = createInitialState();
+
+export function getState() {
+  return state;
+}
+
+export function subscribe(listener) {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+function emit() {
+  listeners.forEach((listener) => listener(state));
+}
+
+export function setActiveView(viewId, title) {
+  state = { ...state, activeView: viewId, currentViewTitle: title };
+  emit();
+}
+
+export function patchState(mutator) {
+  const nextState = structuredClone(state);
+  mutator(nextState);
+  state = nextState;
+  emit();
+}
+
+export function resetHistory() {
+  patchState((draft) => {
+    draft.history = [{ id: crypto.randomUUID(), at: stamp(), source: 'USER', type: 'info', message: 'History cleared.' }];
+  });
+}
+
+export function pushHistory(source, type, message) {
+  patchState((draft) => {
+    draft.history.unshift({ id: crypto.randomUUID(), at: stamp(), source, type, message });
+  });
+}
+
+export function pushLog(key, type, message) {
+  patchState((draft) => {
+    draft.logs[key] ??= [];
+    draft.logs[key].unshift({ at: stamp(), type, message });
+  });
+}
+
+export function setStatus(key, status) {
+  patchState((draft) => {
+    draft.statusByKey[key] = status;
+  });
+}
+
+export function seedDemoState() {
+  patchState((draft) => {
+    const now = stamp();
+    draft.truth.queueLength = 3;
+    draft.truth.currentMedia = {
+      name: 'same_gps_03.jpg',
+      type: 'Image',
+      position: '2 of 3',
+      overlay: 'Tallinn, Harjumaa, Estonia',
+    };
+    draft.truth.playbackStatus = 'Paused by inactivity';
+    draft.truth.lastCheckpoint = `${now} checkpoint saved`;
+    draft.truth.lastStageCompleted = 'Queue Slideshow';
+    draft.truth.stageLock = 'Pipeline lock held by geocode loop';
+    draft.lastRunMode = 'ready';
+    draft.lastRunData = {
+      media: {
+        file: 'same_gps_03.jpg',
+        type: 'Image',
+        queuePosition: '2 of 3',
+        checkpoint: `${now} checkpoint saved`,
+      },
+      playback: {
+        status: 'Paused by inactivity',
+        lastCheckpoint: `${now}`,
+        resumeMarker: 'same_gps_03.jpg :: display-start',
+        crashState: 'Recovered after simulated power loss',
+      },
+      stage: {
+        active: 'Playback',
+        lastCompleted: 'Queue Slideshow',
+        previousStage: 'Geocode',
+        stageError: 'None',
+      },
+      screen: {
+        state: 'OFF',
+        lastActivitySource: 'PIR timeout elapsed',
+        timeout: '5 seconds',
+        transition: 'screen_off_due_to_inactivity',
+      },
+    };
+    draft.runningProcess.pipelineStages[0] = { ...draft.runningProcess.pipelineStages[0], status: 'Success', lastRun: now, summary: 'Downloaded 5 files in the last cycle.' };
+    draft.runningProcess.pipelineStages[1] = { ...draft.runningProcess.pipelineStages[1], status: 'Running', lastRun: now, summary: 'Indexing current batch right now.' };
+    draft.statusByKey.B4 = 'idle';
+  });
+  pushHistory('DEMO', 'success', 'Demo state seeded for playback and recovery views.');
+}
+
+export function setLastRunMode(mode) {
+  patchState((draft) => {
+    draft.lastRunMode = mode;
+  });
+}
+
+export function setSimulationValue(key, value) {
+  patchState((draft) => {
+    draft.simulation[key] = value;
+    if (key === 'inactivityTimeoutSeconds') {
+      draft.truth.inactivityTimeoutSeconds = Number(value);
+      draft.runningProcess.screenWorker.timeout = `${value}s`;
+    }
+  });
+}
+
+export function runAction(action) {
+  const actionMap = {
+    'verify-env': () => genericAction('1A', 'INIT', 'Mock .env verification completed with 12 required keys visible.'),
+    'check-db': () => genericAction('2A', 'DB', 'Database existence check would run here.'),
+    'inspect-db': () => genericAction('2A', 'DB', 'Database inspection placeholder returned 7 logical tables.'),
+    'delete-db': () => genericAction('2A', 'DB', 'Delete DB request marked destructive and currently unwired.'),
+    'recreate-db': () => genericAction('2A', 'DB', 'Fresh empty DB recreation placeholder completed.'),
+    'install-cron': () => genericAction('3A', 'CRON', 'Cron install placeholder completed.'),
+    'check-cron': () => genericAction('3A', 'CRON', 'Cron health check placeholder returned no errors.'),
+    'print-cron': () => genericAction('3A', 'CRON', 'Current crontab would be printed here.'),
+    'run-b1': () => runLoginFlow(),
+    'run-b2': () => genericAction('B2', 'TEST', 'Mock batch download finished with 5 files.'),
+    'run-b3-1': () => runPipelineStage('B3.1', 'Mock download copied 1 file from /generated_test_data.'),
+    'run-b3-2': () => runPipelineStage('B3.2', 'Index stage produced 1 indexed asset.'),
+    'run-b3-3': () => runPipelineStage('B3.3', 'GPS parser extracted location metadata.'),
+    'run-b3-4': () => runPipelineStage('B3.4', 'Geocode stage resolved coordinates to address text.'),
+    'run-b3-5': () => runEnqueueStage(),
+    'run-b3-auto': () => runAutoPipeline(),
+    'run-b4': () => runPlaybackEmulation(),
+    'resume-last-run': () => genericAction('C', 'RECOVERY', 'Resume placeholder activated from last known state.'),
+    'start-real-run': () => startRealRun(),
+  };
+
+  const handler = actionMap[action];
+  if (handler) {
+    handler();
+  }
+}
+
+function genericAction(key, source, message) {
+  setStatus(key, 'running');
+  pushLog(key, 'info', `Started action: ${message}`);
+  setTimeout(() => {
+    setStatus(key, 'success');
+    pushLog(key, 'success', message);
+    pushHistory(source, 'success', message);
+    if (key.startsWith('B3')) {
+      patchState((draft) => {
+        draft.truth.lastStageCompleted = key;
+      });
+    }
+  }, 420);
+}
+
+function runLoginFlow() {
+  setStatus('B1', 'running');
+  patchState((draft) => {
+    draft.loginSteps = draft.loginSteps.map((step, index) => ({ ...step, status: index === 0 ? 'active' : 'waiting' }));
+  });
+  pushLog('B1', 'info', 'Login flow started.');
+  pushHistory('TEST', 'info', 'B1 login flow started.');
+
+  setTimeout(() => {
+    patchState((draft) => {
+      draft.loginSteps[0].status = 'done';
+      draft.loginSteps[1].status = 'active';
+    });
+    pushLog('B1', 'success', 'Primary credentials accepted.');
+  }, 260);
+
+  setTimeout(() => {
+    patchState((draft) => {
+      draft.loginSteps[1].status = 'done';
+      draft.loginSteps[2].status = 'active';
+    });
+    pushLog('B1', 'info', 'Required file prepared.');
+  }, 560);
+
+  setTimeout(() => {
+    patchState((draft) => {
+      draft.loginSteps[2].status = 'done';
+    });
+    setStatus('B1', 'success');
+    pushLog('B1', 'success', '2FA completed in placeholder mode.');
+    pushHistory('TEST', 'success', 'B1 login flow completed.');
+  }, 920);
+}
+
+function runPipelineStage(key, message) {
+  setStatus(key, 'running');
+  setStatus('B3', 'running');
+  pushLog(key, 'info', `Started ${key}.`);
+  pushHistory('PIPELINE', 'info', `${key} started.`);
+  setTimeout(() => {
+    setStatus(key, 'success');
+    setStatus('B3', 'success');
+    pushLog(key, 'success', message);
+    pushHistory('PIPELINE', 'success', message);
+    patchState((draft) => {
+      draft.truth.lastStageCompleted = key;
+      draft.truth.stageLock = `${key} finished and released the pipeline lock`;
+    });
+  }, 420);
+}
+
+function runEnqueueStage() {
+  runPipelineStage('B3.5', 'Queue stage added 1 media item for playback.');
+  setTimeout(() => {
+    patchState((draft) => {
+      draft.truth.queueLength = Math.max(1, draft.truth.queueLength + 1);
+      draft.truth.currentMedia = {
+        name: 'same_gps_03.jpg',
+        type: 'Image',
+        position: `${draft.truth.queueLength} of ${draft.truth.queueLength}`,
+        overlay: 'Tallinn, Harjumaa, Estonia',
+      };
+      draft.truth.playbackStatus = 'Ready for emulation';
+      draft.statusByKey.B4 = 'idle';
+    });
+    pushLog('B4', 'success', 'Playback emulation is now enabled because the queue has media.');
+  }, 520);
+}
+
+function runAutoPipeline() {
+  const stages = ['B3.1', 'B3.2', 'B3.3', 'B3.4', 'B3.5'];
+  stages.forEach((stage, index) => {
+    setTimeout(() => {
+      if (stage === 'B3.5') {
+        runEnqueueStage();
+      } else {
+        runPipelineStage(stage, `${stage} completed in auto mode.`);
+      }
+    }, index * 480);
+  });
+}
+
+function runPlaybackEmulation() {
+  if (!state.truth.currentMedia) {
+    setStatus('B4', 'disabled');
+    pushLog('B4', 'error', 'Cannot start playback emulation without queued media.');
+    return;
+  }
+  setStatus('B4', 'running');
+  pushHistory('PLAYBACK', 'info', 'Playback emulation started.');
+  pushLog('B4', 'info', `Showing ${state.truth.currentMedia.name}.`);
+  patchState((draft) => {
+    draft.truth.playbackStatus = 'Displaying media';
+    draft.truth.lastCheckpoint = `${stamp()} image display checkpoint saved`;
+  });
+  setTimeout(() => {
+    setStatus('B4', 'success');
+    pushLog('B4', 'success', 'Playback emulation rendered the current media card.');
+  }, 400);
+}
+
+function startRealRun() {
+  patchState((draft) => {
+    draft.truth.realRunActive = true;
+    draft.truth.playbackLock = 'Playback worker lock held';
+    draft.truth.screenLock = 'Screen worker lock held';
+    draft.statusByKey.D1 = 'running';
+    draft.statusByKey.D2 = 'running';
+    draft.statusByKey.D3 = 'running';
+    draft.runningProcess.pipelineStages = draft.runningProcess.pipelineStages.map((stage, index) => ({
+      ...stage,
+      status: index === 0 ? 'Running' : 'Waiting',
+      lastRun: index === 0 ? stamp() : stage.lastRun,
+      summary: index === 0 ? 'Download stage is active in the real loop.' : 'Waiting for its turn in the real loop.',
+    }));
+    draft.runningProcess.playbackWorker = {
+      status: 'Running',
+      heartbeat: stamp(),
+      currentMedia: draft.truth.currentMedia?.name ?? 'No media queued yet',
+      summary: 'Playback watchdog would verify the process every few seconds.',
+    };
+    draft.runningProcess.screenWorker = {
+      status: 'Running',
+      heartbeat: stamp(),
+      screenState: draft.truth.screenState,
+      lastActivity: draft.truth.lastActivitySource,
+      timeout: `${draft.truth.inactivityTimeoutSeconds}s`,
+      summary: 'Screen activity watchdog would verify process health every few seconds.',
+    };
+  });
+  pushHistory('RUNTIME', 'success', 'Real run placeholder started.');
+  pushLog('D', 'success', 'Real runtime monitoring is now active.');
+}
