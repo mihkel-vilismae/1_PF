@@ -24,6 +24,46 @@ export function renderDefinitionList(data = {}) {
   return `<dl class="definition-list">${rows}</dl>`;
 }
 
+export function renderResultSurface(result) {
+  if (!result) {
+    return `
+      <div class="result-surface result-surface--empty">
+        <p class="result-empty">No backend result yet. This card will call the documented API endpoint when triggered.</p>
+      </div>
+    `;
+  }
+
+  const meta = {
+    Operation: result.operation,
+    Endpoint: `${result.method} ${result.endpoint}`,
+    Updated: result.receivedAt,
+  };
+
+  if (result.status) {
+    meta['HTTP status'] = String(result.status);
+  }
+
+  const payload = result.payload ?? result.errorPayload;
+  const payloadLabel = result.outcome === 'success' ? 'Response payload' : 'Error payload';
+
+  return `
+    <section class="result-surface result-surface--${result.outcome}">
+      <div class="result-surface__header">
+        <h4>Latest backend result</h4>
+        <span class="mini-badge">${result.outcome === 'success' ? 'Success' : 'Error'}</span>
+      </div>
+      ${renderDefinitionList(meta)}
+      ${result.message ? `<p class="result-message">${escapeHtml(result.message)}</p>` : ''}
+      ${payload !== undefined && payload !== null ? `
+        <div class="result-json-block">
+          <p class="result-json-label">${payloadLabel}</p>
+          <pre class="result-json">${escapeHtml(formatPayload(payload))}</pre>
+        </div>
+      ` : ''}
+    </section>
+  `;
+}
+
 export function renderHistory(entries = []) {
   return entries
     .map(
@@ -49,7 +89,21 @@ export function renderStepList(steps = []) {
             </li>
           `,
         )
-        .join('')}
+      .join('')}
     </ol>
   `;
+}
+
+function formatPayload(payload) {
+  if (typeof payload === 'string') {
+    return payload;
+  }
+  return JSON.stringify(payload, null, 2);
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
 }

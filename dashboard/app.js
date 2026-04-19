@@ -34,7 +34,7 @@ function render() {
         <div class="brand-card">
           <p class="eyebrow">Photo frame operator workspace</p>
           <h1>Control Dashboard</h1>
-          <p class="brand-copy">A higher-clarity unwired frontend built for later backend wiring, with stronger separation between setup, testing, recovery, and real runtime monitoring.</p>
+          <p class="brand-copy">A higher-clarity dashboard where A now calls documented init endpoints, while B, C, and D still preserve their explicit prototype/runtime separation.</p>
         </div>
 
         <nav class="nav-card" aria-label="Views">
