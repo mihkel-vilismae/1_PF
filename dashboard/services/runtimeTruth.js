@@ -261,13 +261,13 @@ export function setSimulationValue(key, value) {
   }
 }
 
-export function runAction(action) {
+export function runAction(action, payload = {}) {
   const actionMap = {
     'verify-env': () => runInitAction('1A', 'INIT', 'Verify .env', INIT_ENDPOINTS.verifyEnv, verifyEnv),
     'check-db': () => runInitAction('2A', 'DB', 'Check DB', INIT_ENDPOINTS.checkDatabaseStatus, checkDatabaseStatus),
     'inspect-db': () => runInitAction('2A', 'DB', 'Inspect DB', INIT_ENDPOINTS.inspectDatabase, inspectDatabase),
-    'delete-db': () => runInitAction('2A', 'DB', 'Delete DB', INIT_ENDPOINTS.deleteDatabase, deleteDatabase),
-    'recreate-db': () => runInitAction('2A', 'DB', 'Recreate DB', INIT_ENDPOINTS.recreateEmptyDatabase, recreateEmptyDatabase),
+    'delete-db': () => runInitAction('2A', 'DB', 'Delete DB', INIT_ENDPOINTS.deleteDatabase, deleteDatabase, payload),
+    'recreate-db': () => runInitAction('2A', 'DB', 'Recreate DB', INIT_ENDPOINTS.recreateEmptyDatabase, recreateEmptyDatabase, payload),
     'install-cron': () => runInitAction('3A', 'CRON', 'Install cron', INIT_ENDPOINTS.installCron, installCron),
     'check-cron': () => runInitAction('3A', 'CRON', 'Check cron', INIT_ENDPOINTS.checkCronStatus, checkCronStatus),
     'print-cron': () => runInitAction('3A', 'CRON', 'Print cron', INIT_ENDPOINTS.printCron, printCron),
@@ -420,7 +420,7 @@ function genericAction(key, source, message) {
   }, 420);
 }
 
-async function runInitAction(key, source, operation, endpoint, request) {
+async function runInitAction(key, source, operation, endpoint, request, payload = {}) {
   if (!guardAction(key, source, `${operation} is already running; duplicate trigger was blocked.`)) {
     return;
   }
@@ -429,8 +429,8 @@ async function runInitAction(key, source, operation, endpoint, request) {
   pushLog(key, 'info', `${operation} started via ${endpoint.method} ${endpoint.path}.`);
 
   try {
-    const payload = await request();
-    const message = summarizeInitPayload(operation, payload);
+    const responsePayload = await request(payload);
+    const message = summarizeInitPayload(operation, responsePayload);
     patchState((draft) => {
       draft.initResults[key] = {
         outcome: 'success',
@@ -439,7 +439,7 @@ async function runInitAction(key, source, operation, endpoint, request) {
         endpoint: endpoint.path,
         receivedAt: stamp(),
         message,
-        payload,
+        payload: responsePayload,
       };
     });
     setStatus(key, 'success');

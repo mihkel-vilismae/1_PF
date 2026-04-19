@@ -9,5 +9,8 @@ export default defineConfig({
   },
   server: {
     open: false,
+    proxy: {
+      '/api': 'http://127.0.0.1:4301',
+    },
   },
 });

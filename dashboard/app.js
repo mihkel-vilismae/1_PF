@@ -121,6 +121,24 @@ function bindEvents() {
         runAction('start-real-run');
         return;
       }
+      if (action === 'delete-db') {
+        const confirmed = window.confirm('Delete the configured SQLite database file and any WAL/SHM sidecar files?');
+        if (!confirmed) {
+          pushHistory('DB', 'warning', 'Delete DB was cancelled before the request was sent.');
+          return;
+        }
+        runAction(action, { confirmationSource: 'window.confirm' });
+        return;
+      }
+      if (action === 'recreate-db') {
+        const confirmed = window.confirm('Recreate the configured SQLite database as an empty file? This will remove the current file first if it exists.');
+        if (!confirmed) {
+          pushHistory('DB', 'warning', 'Recreate DB was cancelled before the request was sent.');
+          return;
+        }
+        runAction(action, { confirmationSource: 'window.confirm' });
+        return;
+      }
       runAction(action);
     });
   });

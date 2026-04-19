@@ -23,12 +23,24 @@ export function inspectDatabase() {
   return callInitEndpoint(INIT_ENDPOINTS.inspectDatabase);
 }
 
-export function deleteDatabase() {
-  return callInitEndpoint(INIT_ENDPOINTS.deleteDatabase);
+export function deleteDatabase(confirmation) {
+  return callInitEndpoint(INIT_ENDPOINTS.deleteDatabase, {
+    body: {
+      confirm: true,
+      action: 'delete-db',
+      ...confirmation,
+    },
+  });
 }
 
-export function recreateEmptyDatabase() {
-  return callInitEndpoint(INIT_ENDPOINTS.recreateEmptyDatabase);
+export function recreateEmptyDatabase(confirmation) {
+  return callInitEndpoint(INIT_ENDPOINTS.recreateEmptyDatabase, {
+    body: {
+      confirm: true,
+      action: 'recreate-db',
+      ...confirmation,
+    },
+  });
 }
 
 export function installCron() {
@@ -43,6 +55,6 @@ export function printCron() {
   return callInitEndpoint(INIT_ENDPOINTS.printCron);
 }
 
-function callInitEndpoint(endpoint) {
-  return requestJson(endpoint.path, { method: endpoint.method });
+function callInitEndpoint(endpoint, options = {}) {
+  return requestJson(endpoint.path, { method: endpoint.method, ...options });
 }

@@ -21,10 +21,9 @@ Found in the repo:
 
 - Vite frontend project metadata
 - dashboard UI implementation under `dashboard/`
+- a minimal backend source tree under `server/` for A init endpoints
 - built frontend output in `dist/`
 - generated test-data assets under `generated_test_data/`
-- no backend source tree
-- no API server files
 - no DB migrations/schema implementation files
 - no cron scripts or worker runtime code
 
@@ -105,12 +104,11 @@ Use:
 
 ## Residual limitations
 
-This reconciliation updates documentation clarity, but it does not create:
+This reconciliation updates documentation clarity, but it still does not create the full planned backend/runtime system. The repo now includes a minimal A backend slice, but it does not create:
 
-- a backend
 - persistence
 - workers
-- cron integration
+- resolved cron integration
 - real runtime telemetry
 
 Those remain future implementation work.

@@ -27,16 +27,78 @@ These are frontend abstractions only; they do not own business logic.
 - `POST /api/init/verify-env`
 - response: status, checks, messages
 
+Current response schema:
+
+- `status`: `ok` | `warning` | `error`
+- `messages`: string array
+- `checks`: array of:
+  - `key`
+  - `label`
+  - `required`
+  - `present`
+  - `valid`
+  - `severity`
+  - `message`
+  - `valuePreview`
+  - `details`
+- `schemaVersion`
+- `verifiedAt`
+
 ### 2A Database controls
 - `GET /api/init/database/status`
 - `POST /api/init/database/inspect`
 - `POST /api/init/database/delete`
 - `POST /api/init/database/recreate-empty`
 
+Current response schema:
+
+- `GET /api/init/database/status`
+  - `status`
+  - `messages`
+  - `database`
+  - `schemaVersion`
+- `POST /api/init/database/inspect`
+  - `status`
+  - `messages`
+  - `database`
+  - `inspection`
+  - `schemaVersion`
+- `POST /api/init/database/delete`
+  - request body must include:
+    - `confirm: true`
+    - `action: "delete-db"`
+  - response includes:
+    - `status`
+    - `messages`
+    - `confirmed`
+    - `database`
+    - `removedPaths`
+    - `schemaVersion`
+- `POST /api/init/database/recreate-empty`
+  - request body must include:
+    - `confirm: true`
+    - `action: "recreate-db"`
+  - response includes:
+    - `status`
+    - `messages`
+    - `confirmed`
+    - `database`
+    - `schemaVersion`
+
 ### 3A Cron controls
 - `POST /api/init/cron/install`
 - `GET /api/init/cron/status`
 - `GET /api/init/cron/print`
+
+Current response schema:
+
+- success shape is not finalized because the scheduling contract is unresolved
+- the currently implemented backend returns structured error payloads when cron cannot be satisfied honestly:
+  - `status: "error"`
+  - `error`
+  - `message`
+  - `details`
+  - `schemaVersion`
 
 ## View B Contract (test / simulation only)
 
@@ -97,4 +159,3 @@ The current frontend implementation is organized as:
 - `dashboard/shared/constants.js` — frontend constants and view metadata
 
 The future frontend service layer should preserve this separation and replace mock state transitions with backend-backed service calls without collapsing the view structure.
-
