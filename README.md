@@ -5,21 +5,26 @@
 This repository currently contains:
 
 - a **Vite-based frontend prototype** under `dashboard/`
+- a **minimal Node backend slice for View A** under `server/`
 - an already-built frontend output under `dist/`
 - a **generated test-data bundle** under `generated_test_data/`
 - a **documentation set** under `docs/` that now explicitly separates:
   - **current implementation reality**, and
   - **target backend architecture / future wiring contracts**
 
-It does **not** currently contain a real backend, real worker processes, real cron integration, or a real database implementation.
+It does **not** currently contain the full planned backend, real worker processes, durable runtime persistence, or a resolved cron/watchdog runtime implementation. It now does contain a repo-local backend implementation for A `.env` verification and SQLite file operations.
 
 ## Run locally
 
 1. Install dependencies:
    `npm install`
-2. Start the development server:
+2. Start the init API server in one terminal:
+   `npm run api`
+3. Start the Vite development server in another terminal:
    `npm run dev`
-3. Open the local URL printed by Vite.
+4. Open the local URL printed by Vite.
+
+The Vite dev server proxies `/api/*` requests to `http://127.0.0.1:4301`.
 
 ## Build locally
 
@@ -35,6 +40,9 @@ It does **not** currently contain a real backend, real worker processes, real cr
   - `services/runtimeTruth.js` — in-memory mock state and action simulation
   - `services/renderers.js` — shared render helpers
   - `shared/constants.js` — shared labels and view metadata
+- `server/` — current backend implementation slice for View A
+  - `index.js` — Node HTTP API exposing `/api/init/*`
+  - `scripts/sqlite_admin.py` — SQLite inspect/recreate helper used by the A backend
 - `docs/` — implementation docs, architecture docs, and reconciliation docs
 - `generated_test_data/` — sample media assets used by the mock/test UI
 - `dist/` — current production build output
@@ -79,14 +87,16 @@ Implemented now:
 - in-memory runtime truth model
 - mock state transitions and log/history rendering
 - guarded simulation behavior for pipeline/playback/screen-related UI actions
+- minimal A backend endpoints for env verification and SQLite file operations
+- destructive-action confirmation for DB delete/recreate in A
 - production frontend build via Vite
 - generated media/test-data bundle for UI simulation
 
 Not implemented now:
 
-- backend API
-- real database
-- real cron installation/checking
+- backend API for B/C/D and the rest of the planned system
+- durable database schema/runtime persistence beyond empty SQLite file creation and inspection
+- real cron installation/checking that matches the documented 5-second watchdog contract
 - real playback worker
 - real screen worker
 - real pipeline worker
@@ -116,6 +126,8 @@ Derived from direct inspection of the uploaded repository contents, especially:
 - `dashboard/services/runtimeTruth.js`
 - `dashboard/services/renderers.js`
 - `dashboard/views/initView.js`
+- `server/index.js`
+- `server/scripts/sqlite_admin.py`
 - `dashboard/views/testView.js`
 - `dashboard/views/lastRunView.js`
 - `dashboard/views/runningProcessView.js`

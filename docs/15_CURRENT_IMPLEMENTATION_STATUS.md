@@ -7,8 +7,8 @@ It is the primary implementation-truth document for this repo.
 
 ## Repository Reality Summary
 
-The repository currently implements a **dashboard-first frontend prototype** built with Vite.
-Most runtime behavior is still driven by an **in-memory mock state service**, but View A now includes a frontend service layer that calls the documented init endpoints.
+The repository currently implements a **dashboard-first frontend prototype** built with Vite plus a **minimal backend slice for View A**.
+Most runtime behavior is still driven by an **in-memory mock state service**, but View A now includes both a frontend service layer and repo-local backend endpoints for env verification and SQLite file operations.
 
 The repository also includes a substantial target-state documentation bundle for later backend implementation, but that backend is not present yet.
 
@@ -83,6 +83,23 @@ Evidence:
 - `dashboard/views/initView.js`
 - `dashboard/services/renderers.js`
 
+### Init backend slice
+
+Implemented:
+
+- a repo-local Node HTTP server for `/api/init/*`
+- real `.env` verification against a checked-in config schema
+- real SQLite status, inspect, delete, and recreate-empty endpoints
+- frontend confirmation gating for destructive DB actions
+- structured blocked/error responses for unresolved cron endpoints
+
+Evidence:
+
+- `server/index.js`
+- `server/scripts/sqlite_admin.py`
+- `dashboard/app.js`
+- `dashboard/services/initService.js`
+
 ### Generated test data
 
 Implemented:
@@ -101,10 +118,9 @@ Evidence:
 
 Not present in this repository snapshot:
 
-- backend server code
-- HTTP API endpoints
-- request validation layer
-- backend services for cron, database, playback, screen, pipeline, or recovery
+- backend services for B/C/D runtime features
+- request validation and auth layers beyond the current A confirmation flow
+- backend services for playback, screen, pipeline, or recovery
 
 ### Durable storage
 
@@ -132,9 +148,7 @@ Not present in this repository snapshot:
 
 Not present in this repository snapshot:
 
-- backend implementation for real `.env` verification
-- backend implementation for real database inspect/delete/recreate actions
-- backend implementation for real cron install/check/print actions
+- resolved backend implementation for real cron install/check/print actions
 - real login/download/test execution
 - real playback control
 - real screen hardware activity handling
@@ -148,7 +162,9 @@ Current state:
 - implemented as frontend cards, buttons, status labels, and logs
 - actions now dispatch through a dedicated frontend init service layer
 - the frontend renders the latest backend payload or error for each A card
-- no backend implementation for environment/database/cron operations exists in this repo
+- repo-local backend endpoints exist for env verification and SQLite status/inspect/delete/recreate-empty
+- destructive DB actions require explicit frontend confirmation
+- cron endpoints exist but currently return structured blocked/error responses because the scheduler contract is unresolved on this platform
 
 Primary files:
 
@@ -156,6 +172,8 @@ Primary files:
 - `dashboard/services/initService.js`
 - `dashboard/services/apiClient.js`
 - `dashboard/services/runtimeTruth.js`
+- `server/index.js`
+- `server/scripts/sqlite_admin.py`
 
 ### View B — Test
 
