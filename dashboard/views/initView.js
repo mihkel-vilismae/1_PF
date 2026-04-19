@@ -1,4 +1,4 @@
-import { statusBadge, renderLogEntries } from '../services/renderers.js';
+import { statusBadge, renderLogEntries, renderResultSurface } from '../services/renderers.js';
 
 export function renderInitView(state) {
   return `
@@ -7,16 +7,16 @@ export function renderInitView(state) {
         <div>
           <p class="eyebrow">A — Init</p>
           <h2>Prepare the system before any test or real run.</h2>
-          <p class="hero-copy">This view groups environment readiness, database lifecycle controls, and cron setup into a clearer operator flow.</p>
+          <p class="hero-copy">This view now calls the documented init endpoints for environment, database, and cron work, while the rest of the dashboard remains prototype-driven.</p>
         </div>
         <div class="hero-pill-group">
-          <span class="hero-pill">Frontend only</span>
-          <span class="hero-pill">Ready for future wiring</span>
+          <span class="hero-pill hero-pill--success">Backend contract wired</span>
+          <span class="hero-pill">Backend still required</span>
         </div>
       </div>
 
       <div class="section-grid section-grid--two">
-        ${renderCard('1A', 'Verify .env', state, '1A', '<button class="button button--primary" data-action="verify-env">Run</button>', 'Validate required configuration keys and display placeholder readiness feedback.')}
+        ${renderCard('1A', 'Verify .env', state, '1A', '<button class="button button--primary" data-action="verify-env">Run</button>', 'Validate required configuration keys and render the backend response payload directly in this card.')}
         ${renderCard(
           '2A',
           'Database controls',
@@ -28,7 +28,7 @@ export function renderInitView(state) {
             <button class="button button--danger" data-action="delete-db">Delete DB</button>
             <button class="button button--secondary" data-action="recreate-db">Recreate DB</button>
           `,
-          'Keep the destructive path visible, but clearly separated from the safer inspection actions.',
+          'Database actions now target the documented init endpoints and should surface backend summaries or failures here.',
         )}
       </div>
 
@@ -37,12 +37,12 @@ export function renderInitView(state) {
         'Cron controls',
         state,
         '3A',
-        `
-          <button class="button button--secondary" data-action="install-cron">Install cron</button>
-          <button class="button button--secondary" data-action="check-cron">Check cron</button>
-          <button class="button button--secondary" data-action="print-cron">Print cron</button>
-        `,
-        'Future cron wiring should be shared across setup and runtime views, so this section surfaces the core actions cleanly.',
+          `
+            <button class="button button--secondary" data-action="install-cron">Install cron</button>
+            <button class="button button--secondary" data-action="check-cron">Check cron</button>
+            <button class="button button--secondary" data-action="print-cron">Print cron</button>
+          `,
+          'Cron controls now call the documented backend contract and display the latest backend payload below the action row.',
       )}
     </section>
   `;
@@ -60,6 +60,7 @@ function renderCard(code, title, state, logKey, actions, copy) {
       </header>
       <p class="card__copy">${copy}</p>
       <div class="button-row">${actions}</div>
+      ${renderResultSurface(state.initResults[code])}
       <div class="log-surface">${renderLogEntries(state.logs[logKey])}</div>
     </article>
   `;

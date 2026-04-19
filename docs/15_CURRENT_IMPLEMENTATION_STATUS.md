@@ -7,8 +7,8 @@ It is the primary implementation-truth document for this repo.
 
 ## Repository Reality Summary
 
-The repository currently implements a **frontend-only dashboard prototype** built with Vite.
-Its runtime behavior is driven by an **in-memory mock state service** rather than a real backend.
+The repository currently implements a **dashboard-first frontend prototype** built with Vite.
+Most runtime behavior is still driven by an **in-memory mock state service**, but View A now includes a frontend service layer that calls the documented init endpoints.
 
 The repository also includes a substantial target-state documentation bundle for later backend implementation, but that backend is not present yet.
 
@@ -66,6 +66,23 @@ Evidence:
 - `dashboard/services/runtimeTruth.js`
 - `docs/issues_errors_discrepancies.md`
 
+### Init contract wiring
+
+Implemented:
+
+- shared request/error handling for wired frontend calls
+- dedicated init service module targeting `/api/init/*`
+- async init action handling for `.env`, database, and cron actions
+- per-card backend result rendering for View A
+
+Evidence:
+
+- `dashboard/services/apiClient.js`
+- `dashboard/services/initService.js`
+- `dashboard/services/runtimeTruth.js`
+- `dashboard/views/initView.js`
+- `dashboard/services/renderers.js`
+
 ### Generated test data
 
 Implemented:
@@ -115,9 +132,9 @@ Not present in this repository snapshot:
 
 Not present in this repository snapshot:
 
-- real `.env` verification
-- real database inspect/delete/recreate actions
-- real cron install/check/print actions
+- backend implementation for real `.env` verification
+- backend implementation for real database inspect/delete/recreate actions
+- backend implementation for real cron install/check/print actions
 - real login/download/test execution
 - real playback control
 - real screen hardware activity handling
@@ -129,12 +146,15 @@ Not present in this repository snapshot:
 Current state:
 
 - implemented as frontend cards, buttons, status labels, and logs
-- actions are placeholders against in-memory state
-- no real environment/database/cron operation exists
+- actions now dispatch through a dedicated frontend init service layer
+- the frontend renders the latest backend payload or error for each A card
+- no backend implementation for environment/database/cron operations exists in this repo
 
 Primary files:
 
 - `dashboard/views/initView.js`
+- `dashboard/services/initService.js`
+- `dashboard/services/apiClient.js`
 - `dashboard/services/runtimeTruth.js`
 
 ### View B — Test

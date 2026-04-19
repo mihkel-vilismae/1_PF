@@ -1,3 +1,15 @@
+import {
+  INIT_ENDPOINTS,
+  verifyEnv,
+  checkDatabaseStatus,
+  inspectDatabase,
+  deleteDatabase,
+  recreateEmptyDatabase,
+  installCron,
+  checkCronStatus,
+  printCron,
+} from './initService.js';
+
 const stamp = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
 const listeners = new Set();
@@ -11,7 +23,7 @@ function createInitialState() {
   return {
     activeView: 'A',
     currentViewTitle: 'A — Init',
-    modeBanner: 'Unwired frontend prototype with mock state only',
+    modeBanner: 'Hybrid prototype: A uses backend contract calls, B-D remain mock-driven',
     statusByKey: {
       '1A': 'idle',
       '2A': 'idle',
@@ -55,9 +67,9 @@ function createInitialState() {
       { id: crypto.randomUUID(), at: now, source: 'TRUTH', type: 'info', message: 'Single source of truth loaded in memory.' },
     ],
     logs: {
-      '1A': [{ at: now, type: 'info', message: 'Ready to verify .env.' }],
-      '2A': [{ at: now, type: 'info', message: 'Database controls waiting for action.' }],
-      '3A': [{ at: now, type: 'info', message: 'Cron controls waiting for action.' }],
+      '1A': [{ at: now, type: 'info', message: 'Ready to call POST /api/init/verify-env.' }],
+      '2A': [{ at: now, type: 'info', message: 'Database controls are ready to call /api/init/database/* endpoints.' }],
+      '3A': [{ at: now, type: 'info', message: 'Cron controls are ready to call /api/init/cron/* endpoints.' }],
       B1: [{ at: now, type: 'info', message: 'Login flow is idle.' }],
       B2: [{ at: now, type: 'info', message: 'No download batch has run yet.' }],
       'B3.1': [{ at: now, type: 'info', message: 'Mock download will read from /generated_test_data.' }],
@@ -69,6 +81,11 @@ function createInitialState() {
       B5: [{ at: now, type: 'info', message: 'Screen simulation controls ready.' }],
       C: [{ at: now, type: 'info', message: 'Last run source not loaded yet.' }],
       D: [{ at: now, type: 'info', message: 'Real runtime is inactive.' }],
+    },
+    initResults: {
+      '1A': null,
+      '2A': null,
+      '3A': null,
     },
     simulation: {
       executionMode: 'auto',
@@ -246,14 +263,14 @@ export function setSimulationValue(key, value) {
 
 export function runAction(action) {
   const actionMap = {
-    'verify-env': () => genericAction('1A', 'INIT', 'Mock .env verification completed with 12 required keys visible.'),
-    'check-db': () => genericAction('2A', 'DB', 'Database existence check would run here.'),
-    'inspect-db': () => genericAction('2A', 'DB', 'Database inspection placeholder returned 7 logical tables.'),
-    'delete-db': () => genericAction('2A', 'DB', 'Delete DB request marked destructive and currently unwired.'),
-    'recreate-db': () => genericAction('2A', 'DB', 'Fresh empty DB recreation placeholder completed.'),
-    'install-cron': () => genericAction('3A', 'CRON', 'Cron install placeholder completed.'),
-    'check-cron': () => genericAction('3A', 'CRON', 'Cron health check placeholder returned no errors.'),
-    'print-cron': () => genericAction('3A', 'CRON', 'Current crontab would be printed here.'),
+    'verify-env': () => runInitAction('1A', 'INIT', 'Verify .env', INIT_ENDPOINTS.verifyEnv, verifyEnv),
+    'check-db': () => runInitAction('2A', 'DB', 'Check DB', INIT_ENDPOINTS.checkDatabaseStatus, checkDatabaseStatus),
+    'inspect-db': () => runInitAction('2A', 'DB', 'Inspect DB', INIT_ENDPOINTS.inspectDatabase, inspectDatabase),
+    'delete-db': () => runInitAction('2A', 'DB', 'Delete DB', INIT_ENDPOINTS.deleteDatabase, deleteDatabase),
+    'recreate-db': () => runInitAction('2A', 'DB', 'Recreate DB', INIT_ENDPOINTS.recreateEmptyDatabase, recreateEmptyDatabase),
+    'install-cron': () => runInitAction('3A', 'CRON', 'Install cron', INIT_ENDPOINTS.installCron, installCron),
+    'check-cron': () => runInitAction('3A', 'CRON', 'Check cron', INIT_ENDPOINTS.checkCronStatus, checkCronStatus),
+    'print-cron': () => runInitAction('3A', 'CRON', 'Print cron', INIT_ENDPOINTS.printCron, printCron),
     'run-b1': () => runLoginFlow(),
     'run-b2': () => genericAction('B2', 'TEST', 'Mock batch download finished with 5 files.'),
     'run-b3-1': () => runPipelineStage('B3.1', 'Mock download copied 1 file from /generated_test_data.'),
@@ -401,6 +418,53 @@ function genericAction(key, source, message) {
     }
     endAction(key);
   }, 420);
+}
+
+async function runInitAction(key, source, operation, endpoint, request) {
+  if (!guardAction(key, source, `${operation} is already running; duplicate trigger was blocked.`)) {
+    return;
+  }
+
+  setStatus(key, 'running');
+  pushLog(key, 'info', `${operation} started via ${endpoint.method} ${endpoint.path}.`);
+
+  try {
+    const payload = await request();
+    const message = summarizeInitPayload(operation, payload);
+    patchState((draft) => {
+      draft.initResults[key] = {
+        outcome: 'success',
+        operation,
+        method: endpoint.method,
+        endpoint: endpoint.path,
+        receivedAt: stamp(),
+        message,
+        payload,
+      };
+    });
+    setStatus(key, 'success');
+    pushLog(key, 'success', message);
+    pushHistory(source, 'success', `${operation} completed through ${endpoint.path}.`);
+  } catch (error) {
+    const message = formatInitError(operation, error);
+    patchState((draft) => {
+      draft.initResults[key] = {
+        outcome: 'error',
+        operation,
+        method: endpoint.method,
+        endpoint: endpoint.path,
+        receivedAt: stamp(),
+        status: error.status ?? null,
+        message,
+        errorPayload: error.payload ?? null,
+      };
+    });
+    setStatus(key, 'error');
+    pushLog(key, 'error', message);
+    pushHistory(source, 'error', `${operation} failed through ${endpoint.path}.`);
+  } finally {
+    endAction(key);
+  }
 }
 
 function runLoginFlow() {
@@ -569,4 +633,31 @@ function startRealRun() {
   });
   pushHistory('RUNTIME', 'success', 'Real run placeholder started with single-instance guard enabled.');
   pushLog('D', 'success', 'Real runtime monitoring is now active.');
+}
+
+function summarizeInitPayload(operation, payload) {
+  if (!payload) {
+    return `${operation} completed with an empty response body.`;
+  }
+  if (typeof payload === 'string') {
+    return `${operation} completed: ${payload}`;
+  }
+  if (typeof payload.message === 'string') {
+    return `${operation} completed: ${payload.message}`;
+  }
+  if (typeof payload.status === 'string') {
+    return `${operation} completed with status ${payload.status}.`;
+  }
+  const topLevelKeys = Object.keys(payload);
+  return `${operation} completed and returned ${topLevelKeys.length} top-level field${topLevelKeys.length === 1 ? '' : 's'}.`;
+}
+
+function formatInitError(operation, error) {
+  if (error?.status) {
+    return `${operation} failed with HTTP ${error.status}: ${error.message}`;
+  }
+  if (error?.message) {
+    return `${operation} failed: ${error.message}`;
+  }
+  return `${operation} failed for an unknown reason.`;
 }

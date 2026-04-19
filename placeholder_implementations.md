@@ -4,7 +4,7 @@
 
 | Area | Main Files | Purpose | Status | Placeholder Evidence | Real Code Needed | Priority | Blockers |
 |------|------------|---------|--------|----------------------|------------------|----------|----------|
-| A Init | `dashboard/views/initView.js`, `dashboard/app.js`, `dashboard/services/runtimeTruth.js`, `docs/VIEW_A_INIT.md`, `docs/13_FRONTEND_BACKEND_CONTRACT.md` | Prepare configuration, database, and cron readiness before tests or real runs. | Partial | `renderInitView` labels the screen as ready for future wiring, and `runAction()` maps every A action to `genericAction()` placeholder messages instead of service calls. | Replace mock `.env`, database, and cron actions with backend-backed init services and real result payload rendering. | High | No backend exists in this repo today, and destructive DB actions need explicit backend safety rules before wiring. |
+| A Init | `dashboard/views/initView.js`, `dashboard/app.js`, `dashboard/services/runtimeTruth.js`, `dashboard/services/initService.js`, `dashboard/services/apiClient.js`, `docs/VIEW_A_INIT.md`, `docs/13_FRONTEND_BACKEND_CONTRACT.md` | Prepare configuration, database, and cron readiness before tests or real runs. | Partial | The frontend now calls the documented `/api/init/*` endpoints and renders payload/error data, but there is still no backend implementation in this repo and no destructive-action confirmation flow. | Implement the actual backend endpoints, formalize response schemas, and add destructive-action safeguards around DB lifecycle actions. | High | No backend exists in this repo today, and destructive DB actions still need explicit backend safety rules plus UI confirmation. |
 | B Test | `dashboard/views/testView.js`, `dashboard/app.js`, `dashboard/services/runtimeTruth.js`, `docs/VIEW_B_TEST.md`, `docs/07_PIPELINE_STAGES.md`, `docs/13_FRONTEND_BACKEND_CONTRACT.md` | Exercise test-only flows for login, staged pipeline runs, playback emulation, and screen simulation without touching real runtime state. | Partial | The hero says simulation only, B3.1 is mock by design, B2/B3.2-B3.5/B4/B5 all use in-memory mutations, and several success messages are fabricated in `runtimeTruth.js`. | Introduce a dedicated test service layer, wire stage endpoints, fetch playback and screen state from backend projections, and stop using hard-coded media/checkpoint values. | Medium | The area is broad, several contracts depend on backend services that do not exist yet, and docs drift on B5 controls. |
 | C Last Run info | `dashboard/views/lastRunView.js`, `dashboard/app.js`, `dashboard/services/runtimeTruth.js`, `docs/VIEW_C_LAST_RUN_INFO.md`, `docs/12_STATE_AND_RECOVERY.md`, `docs/13_FRONTEND_BACKEND_CONTRACT.md` | Show the last durable runtime snapshot and offer a controlled restore entry point. | Partial | View-state buttons manually force `none`, `error`, and `ready`; `seedDemoState()` fabricates last-run data; `resume-last-run` is a generic placeholder action. | Load the last-run snapshot from durable backend state, render actual recovery evidence, and replace the resume button with a real administrative restore flow. | High | Durable state, checkpoint, and recovery services are only documented; they are not implemented in this repository. |
 | D Running process | `dashboard/views/runningProcessView.js`, `dashboard/app.js`, `dashboard/services/runtimeTruth.js`, `docs/VIEW_D_RUNNING_PROCESS.md`, `docs/07_PIPELINE_STAGES.md`, `docs/09_CRON_AND_WATCHDOG.md`, `docs/13_FRONTEND_BACKEND_CONTRACT.md` | Monitor the real runtime pipeline and watchdog workers without mixing in simulation controls. | Partial | `startRealRun()` fabricates worker state in memory, there is no polling, and D2/D3 summaries are generated locally rather than read from worker heartbeats. | Replace local fake runtime state with `/api/runtime/*` projections, add polling/refresh behavior, and expose real worker health plus runtime control paths. | High | There is no runtime backend here, and the UI exposes `Start real run` but no stop/refresh control even though the contract includes them. |
@@ -14,18 +14,20 @@
 ## A Init
 
 ### 1. Purpose
-This area is meant to validate installation readiness before any test or real runtime starts. The code and docs agree that it should cover environment verification, database lifecycle actions, and cron management, but the current implementation stops at frontend placeholders.
+This area is meant to validate installation readiness before any test or real runtime starts. The frontend now includes a real init service layer that calls the documented endpoints and renders returned payloads or failures, but the repository still lacks the backend implementation those calls depend on.
 
 ### 2. Evidence
 
 | File | Lines or Location | Evidence | Notes |
 |------|-------------------|----------|-------|
 | `dashboard/views/initView.js` | lines 3-47 | Renders 1A, 2A, and 3A cards with action buttons and log surfaces. | UI structure is present and separated by init concern. |
-| `dashboard/views/initView.js` | lines 13-15, 19-46 | Hero pills say `Frontend only` and `Ready for future wiring`; card copy mentions placeholder readiness feedback and future cron wiring. | The view itself declares unwired status. |
+| `dashboard/views/initView.js` | lines 3-67 | The view imports `renderResultSurface()`, labels A as backend-contract wired, and renders a latest-backend-result panel inside each card. | A now exposes real endpoint results instead of placeholder-only status text. |
 | `dashboard/app.js` | lines 109-125 | All `data-action` buttons dispatch through `runAction(action)`. | Event binding exists centrally. |
-| `dashboard/services/runtimeTruth.js` | lines 57-60 | Seeds A logs in memory at startup. | There is no backend read for initial status. |
-| `dashboard/services/runtimeTruth.js` | lines 247-256, 387-404 | `verify-env`, DB actions, and cron actions all map to `genericAction()` placeholder success strings. | This is the main replacement point. |
-| `docs/VIEW_A_INIT.md` | lines 27-36 | Docs say every subsection is frontend-only today and later should wire to backend checks. | Docs match current code reality. |
+| `dashboard/services/apiClient.js` | full file | Adds shared request/error handling for JSON and text responses. | This is the new transport layer for A. |
+| `dashboard/services/initService.js` | full file | Encodes the documented `/api/init/*` endpoints as dedicated service calls. | This is the new init service layer. |
+| `dashboard/services/runtimeTruth.js` | init logs plus `runInitAction()` | A actions now call `runInitAction()` with endpoint metadata, store structured results, and record success/error outcomes honestly. | Placeholder success timers were removed for A. |
+| `dashboard/services/renderers.js` | `renderResultSurface()` | Adds a reusable result renderer for backend payloads and failures. | Enables UI-side evidence of real responses. |
+| `docs/VIEW_A_INIT.md` | updated sections | Docs now describe backend-contract calls in the frontend and the missing backend dependency separately. | Docs match the new current code reality. |
 | `docs/13_FRONTEND_BACKEND_CONTRACT.md` | lines 24-39 | Defines concrete endpoints for env verification, database status/inspect/delete/recreate, and cron install/status/print. | These are the documented real integration targets. |
 | `README.md` | lines 14, 85-90 | Repository explicitly lacks real backend, real cron integration, and real database implementation. | Confirms the blocker is repository scope, not a missing import. |
 
@@ -34,29 +36,28 @@ This area is meant to validate installation readiness before any test or real ru
 | Item | Status | Evidence | Why |
 |------|--------|----------|-----|
 | UI structure | Implemented | `dashboard/views/initView.js` lines 3-47 | The three cards, buttons, badges, and log areas already exist in the correct view structure. |
-| Data loading | Missing | `dashboard/services/runtimeTruth.js` lines 57-60; no API reads in `dashboard/app.js` lines 100-174 | The view never loads real env, DB, or cron state from outside in-memory defaults. |
-| Event handling | Partial | `dashboard/app.js` lines 109-125 | Buttons are wired and dispatch consistently, but only to local mock handlers. |
-| Business logic | Placeholder | `dashboard/services/runtimeTruth.js` lines 249-256, 387-404 | All init actions complete via a timer and hard-coded success text rather than real checks or commands. |
-| Error handling | Partial | `dashboard/services/runtimeTruth.js` lines 340-404 | Duplicate-trigger guards exist, but there is no transport, validation, or backend failure handling. |
-| Backend integration | Missing | `README.md` lines 14, 85-90; `docs/13_FRONTEND_BACKEND_CONTRACT.md` lines 24-39 | The contract exists on paper, but no service layer or endpoint implementation exists in this repo. |
+| Data loading | Partial | `dashboard/services/initService.js`; `dashboard/services/runtimeTruth.js` `runInitAction()` | A now performs real request/response loading when the operator triggers an action, but it still does not preload init state on view load. |
+| Event handling | Implemented | `dashboard/app.js` lines 109-125; `dashboard/services/runtimeTruth.js` `runAction()` | Buttons are wired to concrete init request handlers instead of local placeholder timers. |
+| Business logic | Partial | `dashboard/services/runtimeTruth.js` `runInitAction()`; `dashboard/services/initService.js` | The frontend now performs real transport and result storage, but the business behavior still depends on backend services not present in the repo. |
+| Error handling | Partial | `dashboard/services/apiClient.js`; `dashboard/services/runtimeTruth.js` `formatInitError()` | Transport failures and HTTP errors are now surfaced honestly, but destructive-action confirmation and backend validation semantics are still missing. |
+| Backend integration | Partial | `dashboard/services/initService.js`; `docs/13_FRONTEND_BACKEND_CONTRACT.md` lines 24-39 | The frontend is wired to the documented contract, but the backend endpoints themselves do not exist in this repository. |
 
 ### 4. Placeholder Logic To Replace
 
 | Placeholder or Mock Behavior | Evidence | Why It Is Placeholder | Required Real Behavior |
 |------------------------------|----------|-----------------------|------------------------|
-| `.env` verification always resolves to a canned success narrative. | `dashboard/services/runtimeTruth.js` line 249 | The handler never inspects config values; it only emits `Mock .env verification completed with 12 required keys visible.` | Call `POST /api/init/verify-env`, render returned checks/messages, and show real pass/fail details. |
-| Database check and inspect actions return fake status summaries. | `dashboard/services/runtimeTruth.js` lines 250-251 | Results such as `would run here` and `returned 7 logical tables` are fabricated. | Read actual DB existence/health and inspection metadata from backend endpoints. |
-| Delete and recreate DB actions simulate destructive flows without any backend safety. | `dashboard/services/runtimeTruth.js` lines 252-253 | The UI shows destructive controls, but nothing verifies permissions, confirms impact, or performs the action. | Route these buttons through guarded backend commands with confirmation, idempotency, and explicit failure results. |
-| Cron install/check/print only write mock log lines. | `dashboard/services/runtimeTruth.js` lines 254-256 | No cron state is queried and no system command is run. | Call cron endpoints, surface schedule/status details, and show install or inspection errors from backend responses. |
+| Init actions still fail unless an external backend implements the documented endpoints. | `dashboard/services/initService.js`; `README.md` lines 14, 85-90 | The frontend now issues real requests, but this repo does not provide the receiving backend. | Implement the `/api/init/*` endpoints or connect the frontend to an existing backend service. |
+| Delete and recreate DB actions still lack a confirmation or safety handshake in the UI. | `dashboard/views/initView.js` database action buttons; `dashboard/services/runtimeTruth.js` `runInitAction()` | The transport path is real now, but the destructive controls can still be triggered directly from the UI. | Add confirmation UX, auth/safety rules, and explicit backend response semantics for destructive DB operations. |
+| A does not yet preload current env/DB/cron status when the view opens. | `dashboard/services/runtimeTruth.js`; no init preload path in `dashboard/app.js` | Operators only see results after manual actions, not a current readiness snapshot. | Add initial read endpoints or a refresh action if always-on status visibility is required. |
 
 ### 5. Real Integration Requirements
 
 | Requirement Type | Needed For This Area | Evidence | Notes |
 |------------------|----------------------|----------|-------|
-| Backend endpoint | `POST /api/init/verify-env`, `GET /api/init/database/status`, `POST /api/init/database/inspect`, `POST /api/init/database/delete`, `POST /api/init/database/recreate-empty`, `POST /api/init/cron/install`, `GET /api/init/cron/status`, `GET /api/init/cron/print` | `docs/13_FRONTEND_BACKEND_CONTRACT.md` lines 24-39 | The contract is already spelled out and should drive the service layer shape. |
+| Backend endpoint | `POST /api/init/verify-env`, `GET /api/init/database/status`, `POST /api/init/database/inspect`, `POST /api/init/database/delete`, `POST /api/init/database/recreate-empty`, `POST /api/init/cron/install`, `GET /api/init/cron/status`, `GET /api/init/cron/print` | `docs/13_FRONTEND_BACKEND_CONTRACT.md` lines 24-39; `dashboard/services/initService.js` | The frontend service layer now targets this exact contract. |
 | Data source | OS environment, DB file/schema state, cron installation state | `docs/VIEW_A_INIT.md` lines 33-36; `.env` lines 3-5 | Inputs live outside the frontend and need backend access. |
 | State model | Per-card request state plus structured response payloads for checks and action results | `dashboard/views/initView.js` lines 19-46; `dashboard/services/runtimeTruth.js` lines 15-33 | Current status/log model can stay, but payload shape must become real. |
-| Polling or refresh logic | Not found | `dashboard/app.js` lines 100-174 | A manual refresh may be enough for this area unless live cron or DB status becomes important. |
+| Polling or refresh logic | Still not found | `dashboard/app.js` lines 100-174 | The new wiring is request-based only; there is still no preload or refresh loop for A. |
 | Validation | Required for destructive DB actions and env verification payloads | `docs/13_FRONTEND_BACKEND_CONTRACT.md` lines 9-11, 24-39 | Backend should validate requests; frontend should validate confirmation flows. |
 | Error reporting | Required | `dashboard/views/initView.js` lines 51-64; `dashboard/services/runtimeTruth.js` lines 297-301 | Existing log surfaces can display backend errors once wired. |
 | Loading state | Already needed and partially present | `dashboard/services/runtimeTruth.js` lines 391-403 | Current `running` status badge behavior can be reused with real requests. |
@@ -66,20 +67,20 @@ This area is meant to validate installation readiness before any test or real ru
 
 | Step | Action | Files Likely Affected | Dependency | Risk |
 |------|--------|-----------------------|------------|------|
-| 1 | Add an `apiClient` plus `databaseService` and `cronService` modules to replace direct `genericAction()` usage for A actions. | `dashboard/services/apiClient.js`, `dashboard/services/databaseService.js`, `dashboard/services/cronService.js`, `dashboard/services/runtimeTruth.js` | Backend contract in `docs/13_FRONTEND_BACKEND_CONTRACT.md` | Low |
-| 2 | Split A action handlers in `runtimeTruth.js` so each button maps to a dedicated async flow with real response payload handling. | `dashboard/services/runtimeTruth.js` | Service modules from step 1 | Medium |
-| 3 | Extend init state shape to store structured check results instead of only log strings. | `dashboard/services/runtimeTruth.js`, `dashboard/views/initView.js` | Response schemas for env, DB, and cron endpoints | Medium |
-| 4 | Add confirmation and failure handling for delete/recreate DB actions. | `dashboard/views/initView.js`, `dashboard/app.js`, `dashboard/services/runtimeTruth.js` | Backend safety semantics | High |
-| 5 | Update card bodies and logs to render real check details such as missing env keys, DB tables, and cron status text. | `dashboard/views/initView.js`, `dashboard/services/renderers.js` | Real response payloads | Low |
-| 6 | Reconcile docs after wiring so A docs describe the real transport and safety behavior. | `docs/VIEW_A_INIT.md`, `docs/DASHBOARD_OVERVIEW.md` | Completed implementation | Low |
+| 1 | Add an `apiClient` plus a dedicated `initService` that encodes the documented `/api/init/*` contract. | `dashboard/services/apiClient.js`, `dashboard/services/initService.js`, `dashboard/services/runtimeTruth.js` | Backend contract in `docs/13_FRONTEND_BACKEND_CONTRACT.md` | Completed |
+| 2 | Replace A's generic placeholder actions with dedicated async request flows that store structured results and failures. | `dashboard/services/runtimeTruth.js` | Service layer from step 1 | Completed |
+| 3 | Extend init state and rendering so each A card shows the latest backend result payload or error. | `dashboard/services/runtimeTruth.js`, `dashboard/views/initView.js`, `dashboard/services/renderers.js`, `dashboard/styles.css` | Service layer from step 1 | Completed |
+| 4 | Add confirmation and failure handling for delete/recreate DB actions. | `dashboard/views/initView.js`, `dashboard/app.js`, `dashboard/services/runtimeTruth.js` | Backend safety semantics | Open |
+| 5 | Introduce an initial-read or refresh path if A should show readiness state before a button click. | `dashboard/app.js`, `dashboard/services/runtimeTruth.js`, possible backend additions | Product decision and endpoint support | Open |
+| 6 | Keep the current-truth docs aligned with the new hybrid state of the repo. | `docs/VIEW_A_INIT.md`, `docs/DASHBOARD_OVERVIEW.md`, `docs/15_CURRENT_IMPLEMENTATION_STATUS.md` | Code changes completed | Completed |
 
 ### 7. Unknowns and Blockers
 
 | Issue | Evidence | Why It Matters | What Is Needed To Resolve It |
 |-------|----------|----------------|------------------------------|
-| There is no backend implementation in this repository. | `README.md` lines 14, 85-90 | Frontend wiring alone cannot make A real. | Add backend modules or connect this frontend to an existing backend service. |
-| Delete and recreate DB semantics are not fully specified beyond endpoint names. | `docs/13_FRONTEND_BACKEND_CONTRACT.md` lines 30-35 | Destructive actions need confirmation rules, auth scope, and rollback expectations. | Define backend safety contract and UI confirmation behavior before wiring. |
-| Response schemas are implied but not formalized. | `docs/13_FRONTEND_BACKEND_CONTRACT.md` lines 26-39 | The frontend cannot render detailed results consistently without stable payload shapes. | Document concrete JSON payloads for env, DB, and cron responses. |
+| There is no backend implementation in this repository. | `README.md` lines 14, 85-90 | Frontend wiring alone cannot make A fully operational. | Add backend modules or connect this frontend to an existing backend service. |
+| Delete and recreate DB semantics are not fully specified beyond endpoint names. | `docs/13_FRONTEND_BACKEND_CONTRACT.md` lines 30-35 | Destructive actions still need confirmation rules, auth scope, and rollback expectations. | Define backend safety contract and UI confirmation behavior before enabling destructive flows confidently. |
+| Response schemas are implied but not formalized. | `docs/13_FRONTEND_BACKEND_CONTRACT.md` lines 26-39 | The frontend now renders generic payloads, but richer A cards need stable JSON shapes. | Document concrete JSON payloads for env, DB, and cron responses. |
 
 ## B Test
 
@@ -299,7 +300,16 @@ This area is meant to monitor the real runtime pipeline and watchdog workers usi
 
 | Rank | Area | Readiness | Recommended Next Action | Reason |
 |------|------|-----------|-------------------------|--------|
-| 1 | A Init | Highest | Implement the init service layer and wire env/DB/cron actions to the documented endpoints. | A already has clear UI boundaries, explicit endpoint contracts, and the smallest replacement surface. |
+| 1 | A Init | High | Implement the actual `/api/init/*` backend endpoints, add destructive-action confirmation, and formalize A response schemas. | The frontend service layer is now in place, so the fastest remaining path is completing the backend and safety semantics behind it. |
 | 2 | C Last Run info | High | Define the `GET /api/runtime/last-run` snapshot schema and replace demo mode buttons with a real load path. | C has the right UI states already and only needs one read path plus one controlled restore action. |
 | 3 | D Running process | Medium | Define runtime projection schemas, then wire start plus active polling for D1-D4. | D's layout is ready, but it depends on real runtime and watchdog infrastructure that does not exist in this repo yet. |
 | 4 | B Test | Lowest | Split out a dedicated test service layer and implement B incrementally after runtime contracts are stable. | B is the broadest area, mixes several subdomains, and has the most placeholder logic plus a small docs/UI mismatch in B5. |
+
+## Implementation Notes
+
+| Note | Evidence | Impact | Follow-up |
+|------|----------|--------|-----------|
+| A Init frontend wiring was implemented in this pass. | `dashboard/services/apiClient.js`, `dashboard/services/initService.js`, `dashboard/services/runtimeTruth.js`, `dashboard/views/initView.js` | A no longer reports fake success locally; it now makes real requests and surfaces payload/error results honestly. | Back the new frontend path with a real backend implementation. |
+| The repository still does not contain the `/api/init/*` backend. | `README.md` lines 14, 85-90 | Clicking A actions without an external backend will now surface transport or HTTP errors rather than placeholder success text. | Build or attach the documented backend service before expecting successful A actions. |
+| A dedicated reusable skill was added for future contract-wiring tasks. | `C:/Users/mihke/.codex/skills/photo-frame-dashboard-contract-wiring/SKILL.md` | Future work on B/C/D can follow a stable contract-first, current-truth-first workflow. | Reuse that skill when wiring the next dashboard area. |
+| Validation was limited to the frontend build. | `npm run build` succeeded after the change | The UI compiles, but there is no backend integration test because the backend does not exist in this repo. | Add endpoint-level or mocked service tests once response schemas are decided. |
