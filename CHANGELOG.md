@@ -12,3 +12,8 @@
 - Added the central `docs/issues_errors_discrepancies.md` registry and recorded the first verified HIGH issues.
 - Fixed overlapping B3 pipeline stage execution in the frontend runtime-truth layer by enforcing a shared pipeline lock and sequential auto-stage execution.
 - Fixed duplicate B4 playback and real-run start behavior by adding single-instance guards and idempotent start handling.
+
+## 2026-04-20 19:16 EEST — v0.3.2
+- Fixed B5 screen simulation so toggle and timeout changes now drive shared screen/playback truth and the B4 preview state.
+- Added re-entrant action guards for generic control actions and the B1 login flow to prevent overlapping timers and duplicate UI runs.
+- Recorded and verified ISSUE-0003 and ISSUE-0004 in the central issues registry.
