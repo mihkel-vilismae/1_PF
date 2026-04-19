@@ -7,3 +7,8 @@
 - Preserved the frontend view documentation files because they remained consistent with the current UI surface and did not contradict the stronger system documents.
 - Added `vite.config.js` so `npm run dev` works from the repository root while keeping the frontend files under `dashboard/`.
 - Updated top-level README and documentation control text to clarify precedence between system documents and frontend view documents.
+
+## 2026-04-20 19:00 EEST — v0.3.1
+- Added the central `docs/issues_errors_discrepancies.md` registry and recorded the first verified HIGH issues.
+- Fixed overlapping B3 pipeline stage execution in the frontend runtime-truth layer by enforcing a shared pipeline lock and sequential auto-stage execution.
+- Fixed duplicate B4 playback and real-run start behavior by adding single-instance guards and idempotent start handling.

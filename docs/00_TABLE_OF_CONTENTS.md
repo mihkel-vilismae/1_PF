@@ -67,3 +67,9 @@ The following frontend-facing documents are included and are valid as long as th
 
 These view documents describe the current UI surface. If a view document conflicts with a numbered system document, the numbered system document wins.
 
+
+
+## Operational Registry
+
+- `issues_errors_discrepancies.md` is the append-only operational issue registry.
+- It records open, in-progress, resolved, and verified issues without deleting history.

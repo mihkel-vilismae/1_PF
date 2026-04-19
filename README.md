@@ -19,7 +19,8 @@
 
 1. `docs/00_TABLE_OF_CONTENTS.md`
 2. system architecture docs `01` through `14`
-3. frontend view docs:
+3. `docs/issues_errors_discrepancies.md`
+4. frontend view docs:
    - `docs/DASHBOARD_OVERVIEW.md`
    - `docs/VIEW_A_INIT.md`
    - `docs/VIEW_B_TEST.md`
