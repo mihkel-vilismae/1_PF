@@ -51,7 +51,7 @@ function render() {
         <article class="side-panel">
           <div class="side-panel__header">
             <h2>Current truth</h2>
-            <span class="pill">Mock</span>
+            <span class="pill">A wired, B-D simulated</span>
           </div>
           ${renderDefinitionList({
             'Source of truth': state.truth.sourceOfTruth,
@@ -84,10 +84,6 @@ function render() {
             <p class="eyebrow">${state.modeBanner}</p>
             <h1>${state.currentViewTitle}</h1>
           </div>
-          <div class="topbar__actions">
-            <button class="button button--secondary" data-action="seed-demo">Seed demo state</button>
-            <button class="button button--primary" data-action="start-real-run">Start real run</button>
-          </div>
         </header>
         ${viewMarkup}
       </main>
@@ -111,14 +107,6 @@ function bindEvents() {
       const action = button.dataset.action;
       if (action === 'clear-history') {
         resetHistory();
-        return;
-      }
-      if (action === 'seed-demo') {
-        seedDemoState();
-        return;
-      }
-      if (action === 'start-real-run') {
-        runAction('start-real-run');
         return;
       }
       if (action === 'delete-db') {

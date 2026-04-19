@@ -23,7 +23,7 @@ function createInitialState() {
   return {
     activeView: 'A',
     currentViewTitle: 'A — Init',
-    modeBanner: 'Hybrid prototype: A uses backend contract calls, B-D remain mock-driven',
+    modeBanner: 'Hybrid UI: A uses backend contract calls, while B-D remain frontend demos and previews',
     statusByKey: {
       '1A': 'idle',
       '2A': 'idle',
@@ -79,8 +79,8 @@ function createInitialState() {
       'B3.5': [{ at: now, type: 'info', message: 'Queue stage waiting.' }],
       B4: [{ at: now, type: 'info', message: 'Playback emulation disabled until media exists.' }],
       B5: [{ at: now, type: 'info', message: 'Screen simulation controls ready.' }],
-      C: [{ at: now, type: 'info', message: 'Last run source not loaded yet.' }],
-      D: [{ at: now, type: 'info', message: 'Real runtime is inactive.' }],
+      C: [{ at: now, type: 'info', message: 'Last run demo state is idle until one of the view-level demo buttons is pressed.' }],
+      D: [{ at: now, type: 'info', message: 'Simulated runtime preview is inactive.' }],
     },
     initResults: {
       '1A': null,
@@ -105,17 +105,17 @@ function createInitialState() {
     },
     runningProcess: {
       pipelineStages: [
-        { key: 'download', name: 'Download', status: 'Idle', lastRun: 'Never', summary: 'Waiting for the real pipeline.' },
-        { key: 'index', name: 'Index', status: 'Idle', lastRun: 'Never', summary: 'Waiting for the real pipeline.' },
-        { key: 'gps', name: 'Get GPS', status: 'Idle', lastRun: 'Never', summary: 'Waiting for the real pipeline.' },
-        { key: 'geocode', name: 'Geocode', status: 'Idle', lastRun: 'Never', summary: 'Waiting for the real pipeline.' },
-        { key: 'queue', name: 'Queue Slideshow', status: 'Idle', lastRun: 'Never', summary: 'Waiting for the real pipeline.' },
+        { key: 'download', name: 'Download', status: 'Idle', lastRun: 'Never', summary: 'Waiting for the simulated runtime preview.' },
+        { key: 'index', name: 'Index', status: 'Idle', lastRun: 'Never', summary: 'Waiting for the simulated runtime preview.' },
+        { key: 'gps', name: 'Get GPS', status: 'Idle', lastRun: 'Never', summary: 'Waiting for the simulated runtime preview.' },
+        { key: 'geocode', name: 'Geocode', status: 'Idle', lastRun: 'Never', summary: 'Waiting for the simulated runtime preview.' },
+        { key: 'queue', name: 'Queue Slideshow', status: 'Idle', lastRun: 'Never', summary: 'Waiting for the simulated runtime preview.' },
       ],
       playbackWorker: {
         status: 'Inactive',
         heartbeat: 'Never',
         currentMedia: 'None',
-        summary: 'Playback worker has not been started.',
+        summary: 'Playback worker preview has not been started.',
       },
       screenWorker: {
         status: 'Inactive',
@@ -123,7 +123,7 @@ function createInitialState() {
         screenState: 'ON',
         lastActivity: 'None',
         timeout: '5s',
-        summary: 'Screen worker has not been started.',
+        summary: 'Screen worker preview has not been started.',
       },
     },
     loginSteps: [
@@ -280,7 +280,7 @@ export function runAction(action, payload = {}) {
     'run-b3-5': () => runEnqueueStage(),
     'run-b3-auto': () => runAutoPipeline(),
     'run-b4': () => runPlaybackEmulation(),
-    'resume-last-run': () => genericAction('C', 'RECOVERY', 'Resume placeholder activated from last known state.'),
+    'resume-last-run': () => genericAction('C', 'RECOVERY', 'Restore placeholder activated from the current last-run demo state.'),
     'start-real-run': () => startRealRun(),
   };
 
@@ -333,7 +333,7 @@ function withPlaybackGuard(fn) {
 function releasePlaybackGuard() {
   patchState((draft) => {
     draft.truth.playbackActive = false;
-    draft.truth.playbackLock = draft.truth.realRunActive ? 'Playback worker lock held by real runtime' : 'Playback worker lock available';
+    draft.truth.playbackLock = draft.truth.realRunActive ? 'Playback worker lock held by simulated runtime preview' : 'Playback worker lock available';
   });
 }
 
@@ -598,15 +598,15 @@ function runPlaybackEmulation() {
 
 function startRealRun() {
   if (state.truth.realRunActive) {
-    pushHistory('RUNTIME', 'info', 'Duplicate real run start request ignored because runtime is already active.');
-    pushLog('D', 'info', 'Real runtime start request ignored; runtime is already active.');
+    pushHistory('RUNTIME', 'info', 'Duplicate simulated runtime preview start request ignored because the preview is already active.');
+    pushLog('D', 'info', 'Simulated runtime preview start request ignored; the preview is already active.');
     return;
   }
   patchState((draft) => {
     draft.truth.realRunActive = true;
     draft.truth.realRunStartCount += 1;
-    draft.truth.playbackLock = 'Playback worker lock held by real runtime';
-    draft.truth.screenLock = 'Screen worker lock held by real runtime';
+    draft.truth.playbackLock = 'Playback worker lock held by simulated runtime preview';
+    draft.truth.screenLock = 'Screen worker lock held by simulated runtime preview';
     draft.statusByKey.D1 = 'running';
     draft.statusByKey.D2 = 'running';
     draft.statusByKey.D3 = 'running';
@@ -614,13 +614,13 @@ function startRealRun() {
       ...stage,
       status: index === 0 ? 'Running' : 'Waiting',
       lastRun: index === 0 ? stamp() : stage.lastRun,
-      summary: index === 0 ? 'Download stage is active in the real loop.' : 'Waiting for its turn in the real loop.',
+      summary: index === 0 ? 'Download stage is active in the simulated preview loop.' : 'Waiting for its turn in the simulated preview loop.',
     }));
     draft.runningProcess.playbackWorker = {
       status: 'Running',
       heartbeat: stamp(),
       currentMedia: draft.truth.currentMedia?.name ?? 'No media queued yet',
-      summary: 'Playback watchdog would verify the process every few seconds.',
+      summary: 'Playback watchdog preview would verify the process every few seconds.',
     };
     draft.runningProcess.screenWorker = {
       status: 'Running',
@@ -628,11 +628,11 @@ function startRealRun() {
       screenState: draft.truth.screenState,
       lastActivity: draft.truth.lastActivitySource,
       timeout: `${draft.truth.inactivityTimeoutSeconds}s`,
-      summary: 'Screen activity watchdog would verify process health every few seconds.',
+      summary: 'Screen activity watchdog preview would verify process health every few seconds.',
     };
   });
-  pushHistory('RUNTIME', 'success', 'Real run placeholder started with single-instance guard enabled.');
-  pushLog('D', 'success', 'Real runtime monitoring is now active.');
+  pushHistory('RUNTIME', 'success', 'Simulated runtime preview started with single-instance guard enabled.');
+  pushLog('D', 'success', 'Simulated runtime preview is now active.');
 }
 
 function summarizeInitPayload(operation, payload) {
