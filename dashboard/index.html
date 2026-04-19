@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Photo Frame Dashboard Prototype</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="sidebar__header">
+          <p class="eyebrow">Unwired frontend prototype</p>
+          <h1>Photo Frame Dashboard</h1>
+          <p class="sidebar__description">
+            A frontend-only operator surface for init, testing, recovery, and real-runtime monitoring.
+          </p>
+        </div>
+
+        <nav class="view-nav" aria-label="Dashboard views">
+          <button class="view-nav__button is-active" data-view-target="view-a">
+            <span class="view-nav__code">A</span>
+            <span class="view-nav__label">Init</span>
+          </button>
+          <button class="view-nav__button" data-view-target="view-b">
+            <span class="view-nav__code">B</span>
+            <span class="view-nav__label">Test</span>
+          </button>
+          <button class="view-nav__button" data-view-target="view-c">
+            <span class="view-nav__code">C</span>
+            <span class="view-nav__label">Last Run Info</span>
+          </button>
+          <button class="view-nav__button" data-view-target="view-d">
+            <span class="view-nav__code">D</span>
+            <span class="view-nav__label">Running Process</span>
+          </button>
+        </nav>
+
+        <section class="sidebar-panel">
+          <div class="sidebar-panel__title-row">
+            <h2>Current State</h2>
+            <span class="status-badge status-badge--info">Mock</span>
+          </div>
+          <dl class="key-value-list" id="current-state-panel"></dl>
+        </section>
+
+        <section class="sidebar-panel sidebar-panel--history">
+          <div class="sidebar-panel__title-row">
+            <h2>Event History</h2>
+            <button id="clear-history-button" class="ghost-button" type="button">Clear</button>
+          </div>
+          <div id="history-panel" class="history-panel" aria-live="polite"></div>
+        </section>
+      </aside>
+
+      <main class="main-content">
+        <header class="main-header">
+          <div>
+            <p class="eyebrow">Frontend-only operator workspace</p>
+            <h2 id="active-view-title">A — Init</h2>
+          </div>
+          <div class="main-header__actions">
+            <button id="seed-demo-button" class="secondary-button" type="button">Seed demo state</button>
+            <button id="start-real-run-button" class="primary-button" type="button">Start real run</button>
+          </div>
+        </header>
+
+        <section id="view-a" class="view-section is-active" aria-labelledby="active-view-title">
+          <div class="view-intro">
+            <h3>A — Init</h3>
+            <p>Setup and verification controls for environment, database, and cron preparation.</p>
+          </div>
+
+          <div class="card-grid card-grid--two-up">
+            <article class="panel-card">
+              <div class="panel-card__header">
+                <div>
+                  <p class="panel-code">1A</p>
+                  <h4>Verify .env</h4>
+                </div>
+                <span id="status-1a" class="status-badge status-badge--idle">Idle</span>
+              </div>
+              <p class="panel-copy">Validate required configuration keys and surface placeholder status for future wiring.</p>
+              <div class="panel-actions">
+                <button class="action-button" data-action="verify-env" type="button">Run</button>
+              </div>
+              <div class="log-panel" id="log-1a"></div>
+            </article>
+
+            <article class="panel-card">
+              <div class="panel-card__header">
+                <div>
+                  <p class="panel-code">2A</p>
+                  <h4>Database controls</h4>
+                </div>
+                <span id="status-2a" class="status-badge status-badge--idle">Idle</span>
+              </div>
+              <p class="panel-copy">Frontend-only controls for future database lifecycle actions.</p>
+              <div class="panel-actions panel-actions--wrap">
+                <button class="action-button" data-action="check-db" type="button">Check DB</button>
+                <button class="action-button" data-action="inspect-db" type="button">Inspect DB</button>
+                <button class="action-button action-button--danger" data-action="delete-db" type="button">Delete DB</button>
+                <button class="action-button" data-action="recreate-db" type="button">Recreate DB</button>
+              </div>
+              <div class="log-panel" id="log-2a"></div>
+            </article>
+          </div>
+
+          <article class="panel-card">
+            <div class="panel-card__header">
+              <div>
+                <p class="panel-code">3A</p>
+                <h4>Cron controls</h4>
+              </div>
+              <span id="status-3a" class="status-badge status-badge--idle">Idle</span>
+            </div>
+            <p class="panel-copy">Placeholder controls for installing, checking, and printing cron configuration.</p>
+            <div class="panel-actions panel-actions--wrap">
+              <button class="action-button" data-action="install-cron" type="button">Install cron</button>
+              <button class="action-button" data-action="check-cron" type="button">Check cron</button>
+              <button class="action-button" data-action="print-cron" type="button">Print cron</button>
+            </div>
+            <div class="log-panel" id="log-3a"></div>
+          </article>
+        </section>
+
+        <section id="view-b" class="view-section" aria-labelledby="active-view-title">
+          <div class="view-intro">
+            <h3>B — Test</h3>
+            <p>Simulation and validation view. This area is intentionally separate from the real runtime.</p>
+          </div>
+
+          <div class="card-grid card-grid--two-up">
+            <article class="panel-card">
+              <div class="panel-card__header">
+                <div>
+                  <p class="panel-code">B1</p>
+                  <h4>Login flow</h4>
+                </div>
+                <span id="status-b1" class="status-badge status-badge--idle">Idle</span>
+              </div>
+              <p class="panel-copy">Run a placeholder login sequence that shows login, file preparation, and 2FA steps.</p>
+              <ol class="step-list" id="b1-step-list">
+                <li data-step="login">Login</li>
+                <li data-step="file">Required file</li>
+                <li data-step="2fa">2FA</li>
+              </ol>
+              <div class="panel-actions">
+                <button class="action-button" data-action="run-b1" type="button">Run</button>
+              </div>
+              <div class="log-panel" id="log-b1"></div>
+            </article>
+
+            <article class="panel-card">
+              <div class="panel-card__header">
+                <div>
+                  <p class="panel-code">B2</p>
+                  <h4>Download 5 files</h4>
+                </div>
+                <span id="status-b2" class="status-badge status-badge--idle">Idle</span>
+              </div>
+              <p class="panel-copy">Trigger a frontend-only placeholder batch download of five files.</p>
+              <div class="panel-actions">
+                <button class="action-button" data-action="run-b2" type="button">Run</button>
+              </div>
+              <div class="log-panel" id="log-b2"></div>
+            </article>
+          </div>
+
+          <article class="panel-card panel-card--spacious">
+            <div class="panel-card__header">
+              <div>
+                <p class="panel-code">B3</p>
+                <h4>Pipeline stages</h4>
+              </div>
+              <span id="status-b3" class="status-badge status-badge--idle">Idle</span>
+            </div>
+            <p class="panel-copy">B3.1 is the only mock stage. B3.2–B3.5 are presented as real-code-intended stages for future backend wiring.</p>
+
+            <div class="b3-toolbar">
+              <fieldset class="toggle-group">
+                <legend>Execution mode</legend>
+                <label><input type="radio" name="execution-mode" value="auto" checked /> Auto pipeline</label>
+                <label><input type="radio" name="execution-mode" value="manual" /> Manual pipeline</label>
+              </fieldset>
+
+              <fieldset class="toggle-group">
+                <legend>Mock input mode</legend>
+                <label><input type="radio" name="input-mode" value="single" checked /> One file at a time</label>
+                <label><input type="radio" name="input-mode" value="all" disabled /> All files (disabled)</label>
+              </fieldset>
+
+              <div class="panel-actions">
+                <button class="action-button" data-action="run-b3-auto" type="button">Run all stages</button>
+              </div>
+            </div>
+
+            <div class="pipeline-stage-list">
+              <article class="pipeline-stage">
+                <div class="pipeline-stage__meta">
+                  <div>
+                    <p class="panel-code">B3.1</p>
+                    <h5>Mock download</h5>
+                    <p class="pipeline-stage__subcopy">Source folder: <code>/generated_test_data</code></p>
+                  </div>
+                  <span id="status-b3-1" class="status-badge status-badge--idle">Idle</span>
+                </div>
+                <div class="panel-actions">
+                  <button class="action-button" data-action="run-b3-1" type="button">Run</button>
+                </div>
+                <div class="log-panel" id="log-b3-1"></div>
+              </article>
+
+              <article class="pipeline-stage">
+                <div class="pipeline-stage__meta">
+                  <div>
+                    <p class="panel-code">B3.2</p>
+                    <h5>Index</h5>
+                  </div>
+                  <span id="status-b3-2" class="status-badge status-badge--idle">Idle</span>
+                </div>
+                <div class="panel-actions">
+                  <button class="action-button" data-action="run-b3-2" type="button">Run</button>
+                </div>
+                <div class="log-panel" id="log-b3-2"></div>
+              </article>
+
+              <article class="pipeline-stage">
+                <div class="pipeline-stage__meta">
+                  <div>
+                    <p class="panel-code">B3.3</p>
+                    <h5>Parse GPS</h5>
+                  </div>
+                  <span id="status-b3-3" class="status-badge status-badge--idle">Idle</span>
+                </div>
+                <div class="panel-actions">
+                  <button class="action-button" data-action="run-b3-3" type="button">Run</button>
+                </div>
+                <div class="log-panel" id="log-b3-3"></div>
+              </article>
+
+              <article class="pipeline-stage">
+                <div class="pipeline-stage__meta">
+                  <div>
+                    <p class="panel-code">B3.4</p>
+                    <h5>Geocode</h5>
+                  </div>
+                  <span id="status-b3-4" class="status-badge status-badge--idle">Idle</span>
+                </div>
+                <div class="panel-actions">
+                  <button class="action-button" data-action="run-b3-4" type="button">Run</button>
+                </div>
+                <div class="log-panel" id="log-b3-4"></div>
+              </article>
+
+              <article class="pipeline-stage">
+                <div class="pipeline-stage__meta">
+                  <div>
+                    <p class="panel-code">B3.5</p>
+                    <h5>Enqueue playback</h5>
+                  </div>
+                  <span id="status-b3-5" class="status-badge status-badge--idle">Idle</span>
+                </div>
+                <div class="panel-actions">
+                  <button class="action-button" data-action="run-b3-5" type="button">Run</button>
+                </div>
+                <div class="log-panel" id="log-b3-5"></div>
+              </article>
+            </div>
+          </article>
+
+          <div class="card-grid card-grid--playback">
+            <article class="panel-card">
+              <div class="panel-card__header">
+                <div>
+                  <p class="panel-code">B4</p>
+                  <h4>Playback emulation</h4>
+                </div>
+                <span id="status-b4" class="status-badge status-badge--disabled">Disabled</span>
+              </div>
+              <p class="panel-copy">Preview image or video playback exactly as the future runtime intends, using placeholder frontend state only.</p>
+              <div class="playback-preview" id="playback-preview" data-screen-state="on">
+                <div class="playback-preview__overlay">
+                  <span class="status-badge status-badge--info" id="screen-state-indicator">Screen ON</span>
+                </div>
+                <div class="playback-preview__content" id="playback-preview-content">
+                  No queued media. Run B3.5 first.
+                </div>
+              </div>
+              <div class="current-media-panel" id="current-media-panel"></div>
+              <div class="panel-actions">
+                <button class="action-button" data-action="run-b4" id="run-b4-button" type="button" disabled>Run</button>
+              </div>
+              <div class="log-panel" id="log-b4"></div>
+            </article>
+
+            <article class="panel-card">
+              <div class="panel-card__header">
+                <div>
+                  <p class="panel-code">B5</p>
+                  <h4>Screen on-off simulation</h4>
+                </div>
+                <span id="status-b5" class="status-badge status-badge--idle">Idle</span>
+              </div>
+              <p class="panel-copy">Configure activity sources and an inactivity timeout that visibly affects the playback preview.</p>
+              <div class="toggle-stack">
+                <label class="toggle-row"><input type="checkbox" id="toggle-pir" checked /> Enable PIR sensor</label>
+                <label class="toggle-row"><input type="checkbox" id="toggle-mouse" checked /> Enable mouse movement</label>
+                <label class="toggle-row"><input type="checkbox" id="toggle-keyboard" checked /> Enable keyboard activity</label>
+                <label class="toggle-row"><input type="checkbox" id="toggle-all" /> Enable all</label>
+              </div>
+              <label class="field-label" for="timeout-input">Inactivity timeout (seconds)</label>
+              <input id="timeout-input" class="text-input" type="number" min="1" step="1" value="5" />
+              <div class="panel-actions panel-actions--wrap">
+                <button class="action-button" data-action="apply-b5" type="button">Apply</button>
+                <button class="action-button" data-action="simulate-screen-off" type="button">Simulate screen OFF</button>
+                <button class="action-button" data-action="simulate-screen-on" type="button">Simulate screen ON</button>
+              </div>
+              <div class="log-panel" id="log-b5"></div>
+            </article>
+          </div>
+        </section>
+
+        <section id="view-c" class="view-section" aria-labelledby="active-view-title">
+          <div class="view-intro">
+            <h3>C — Last Run Info</h3>
+            <p>Recovery and inspection view backed by mock source-of-truth states.</p>
+          </div>
+
+          <article class="panel-card panel-card--spacious">
+            <div class="panel-card__header">
+              <div>
+                <p class="panel-code">C</p>
+                <h4>Last Run Info</h4>
+              </div>
+              <span id="status-c" class="status-badge status-badge--info">Mock source</span>
+            </div>
+            <div class="panel-actions panel-actions--wrap">
+              <button class="action-button" data-action="show-no-run" type="button">No run</button>
+              <button class="action-button" data-action="show-last-run-error" type="button">Error state</button>
+              <button class="action-button" data-action="show-last-run-success" type="button">Existing run</button>
+            </div>
+
+            <div id="last-run-empty-state" class="state-banner state-banner--muted">
+              No run has been active.
+            </div>
+            <div id="last-run-error-state" class="state-banner state-banner--error is-hidden">
+              Failed to load last run info.
+            </div>
+
+            <div id="last-run-details" class="details-grid is-disabled">
+              <section class="detail-card">
+                <h5>Last shown media</h5>
+                <dl class="key-value-list" id="last-run-media"></dl>
+              </section>
+              <section class="detail-card">
+                <h5>Playback state</h5>
+                <dl class="key-value-list" id="last-run-playback"></dl>
+              </section>
+              <section class="detail-card">
+                <h5>Stage state</h5>
+                <dl class="key-value-list" id="last-run-stage"></dl>
+              </section>
+              <section class="detail-card">
+                <h5>Screen state</h5>
+                <dl class="key-value-list" id="last-run-screen"></dl>
+              </section>
+            </div>
+
+            <div class="panel-actions">
+              <button class="action-button" id="resume-button" data-action="resume-last-run" type="button" disabled>Restore last known state</button>
+            </div>
+            <div class="log-panel" id="log-c"></div>
+          </article>
+        </section>
+
+        <section id="view-d" class="view-section" aria-labelledby="active-view-title">
+          <div class="view-intro">
+            <h3>D — Running Process</h3>
+            <p>Real-runtime monitoring view for an active production run only.</p>
+          </div>
+
+          <div id="real-run-inactive-banner" class="state-banner state-banner--muted">
+            No real run is currently active.
+          </div>
+
+          <div id="running-process-grid" class="card-grid card-grid--three-up is-disabled">
+            <article class="panel-card">
+              <div class="panel-card__header">
+                <div>
+                  <p class="panel-code">D1</p>
+                  <h4>Pipeline worker</h4>
+                </div>
+                <span id="status-d1" class="status-badge status-badge--disabled">Inactive</span>
+              </div>
+              <div class="worker-list" id="pipeline-worker-list"></div>
+            </article>
+
+            <article class="panel-card">
+              <div class="panel-card__header">
+                <div>
+                  <p class="panel-code">D2</p>
+                  <h4>Playback worker</h4>
+                </div>
+                <span id="status-d2" class="status-badge status-badge--disabled">Inactive</span>
+              </div>
+              <div class="worker-summary" id="playback-worker-summary"></div>
+            </article>
+
+            <article class="panel-card">
+              <div class="panel-card__header">
+                <div>
+                  <p class="panel-code">D3</p>
+                  <h4>Screen on-off worker</h4>
+                </div>
+                <span id="status-d3" class="status-badge status-badge--disabled">Inactive</span>
+              </div>
+              <div class="worker-summary" id="screen-worker-summary"></div>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

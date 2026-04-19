@@ -1,0 +1,432 @@
+{
+  "generator": "generate_photo_frame_test_dataset.py",
+  "seed": 20260401,
+  "arguments": {
+    "output": "runtime_data\\\\downloads",
+    "clean": true,
+    "seed": 20260401,
+    "include_heic": false,
+    "include_videos": false,
+    "valid_gps_count": 10,
+    "same_gps_count": 4,
+    "no_gps_count": 8,
+    "invalid_gps_count": 2,
+    "rotated_count": 2,
+    "corrupted_count": 2,
+    "duplicate_count": 2,
+    "heic_count": 2,
+    "video_gps_count": 2,
+    "video_no_gps_count": 2
+  },
+  "summary": {
+    "gps_valid": 10,
+    "gps_same_location": 4,
+    "no_gps": 8,
+    "invalid_gps": 2,
+    "rotated": 2,
+    "duplicates": 2,
+    "corrupted": 2,
+    "mixed_batch": 7
+  },
+  "records": [
+    {
+      "category": "gps_valid",
+      "path": "gps_valid\\gps_valid_01.jpg",
+      "kind": "image/jpeg",
+      "gps": [
+        58.3776,
+        26.729
+      ],
+      "notes": [
+        "happy path"
+      ]
+    },
+    {
+      "category": "gps_valid",
+      "path": "gps_valid\\gps_valid_02.jpg",
+      "kind": "image/jpeg",
+      "gps": [
+        59.437,
+        24.7536
+      ],
+      "notes": [
+        "happy path"
+      ]
+    },
+    {
+      "category": "gps_valid",
+      "path": "gps_valid\\gps_valid_03.jpg",
+      "kind": "image/jpeg",
+      "gps": [
+        48.8584,
+        2.2945
+      ],
+      "notes": [
+        "happy path"
+      ]
+    },
+    {
+      "category": "gps_valid",
+      "path": "gps_valid\\gps_valid_04.jpg",
+      "kind": "image/jpeg",
+      "gps": [
+        40.6892,
+        -74.0445
+      ],
+      "notes": [
+        "happy path"
+      ]
+    },
+    {
+      "category": "gps_valid",
+      "path": "gps_valid\\gps_valid_05.jpg",
+      "kind": "image/jpeg",
+      "gps": [
+        35.6586,
+        139.7454
+      ],
+      "notes": [
+        "happy path"
+      ]
+    },
+    {
+      "category": "gps_valid",
+      "path": "gps_valid\\gps_valid_06.jpg",
+      "kind": "image/jpeg",
+      "gps": [
+        -33.8568,
+        151.2153
+      ],
+      "notes": [
+        "happy path"
+      ]
+    },
+    {
+      "category": "gps_valid",
+      "path": "gps_valid\\gps_valid_07.jpg",
+      "kind": "image/jpeg",
+      "gps": [
+        51.5007,
+        -0.1246
+      ],
+      "notes": [
+        "happy path"
+      ]
+    },
+    {
+      "category": "gps_valid",
+      "path": "gps_valid\\gps_valid_08.jpg",
+      "kind": "image/jpeg",
+      "gps": [
+        41.8902,
+        12.4922
+      ],
+      "notes": [
+        "happy path"
+      ]
+    },
+    {
+      "category": "gps_valid",
+      "path": "gps_valid\\gps_valid_09.jpg",
+      "kind": "image/jpeg",
+      "gps": [
+        37.8199,
+        -122.4783
+      ],
+      "notes": [
+        "happy path"
+      ]
+    },
+    {
+      "category": "gps_valid",
+      "path": "gps_valid\\gps_valid_10.jpg",
+      "kind": "image/jpeg",
+      "gps": [
+        27.1751,
+        78.0421
+      ],
+      "notes": [
+        "happy path"
+      ]
+    },
+    {
+      "category": "gps_same_location",
+      "path": "gps_same_location\\same_gps_01.jpg",
+      "kind": "image/jpeg",
+      "gps": [
+        59.437,
+        24.7536
+      ],
+      "notes": [
+        "same coordinates",
+        "cache test"
+      ]
+    },
+    {
+      "category": "gps_same_location",
+      "path": "gps_same_location\\same_gps_02.jpg",
+      "kind": "image/jpeg",
+      "gps": [
+        59.437,
+        24.7536
+      ],
+      "notes": [
+        "same coordinates",
+        "cache test"
+      ]
+    },
+    {
+      "category": "gps_same_location",
+      "path": "gps_same_location\\same_gps_03.jpg",
+      "kind": "image/jpeg",
+      "gps": [
+        59.437,
+        24.7536
+      ],
+      "notes": [
+        "same coordinates",
+        "cache test"
+      ]
+    },
+    {
+      "category": "gps_same_location",
+      "path": "gps_same_location\\same_gps_04.jpg",
+      "kind": "image/jpeg",
+      "gps": [
+        59.437,
+        24.7536
+      ],
+      "notes": [
+        "same coordinates",
+        "cache test"
+      ]
+    },
+    {
+      "category": "no_gps",
+      "path": "no_gps\\no_gps_01.jpg",
+      "kind": "image/jpeg",
+      "gps": null,
+      "notes": [
+        "should end as NO_GPS_FOUND or equivalent"
+      ]
+    },
+    {
+      "category": "no_gps",
+      "path": "no_gps\\no_gps_02.jpg",
+      "kind": "image/jpeg",
+      "gps": null,
+      "notes": [
+        "should end as NO_GPS_FOUND or equivalent"
+      ]
+    },
+    {
+      "category": "no_gps",
+      "path": "no_gps\\no_gps_03.jpg",
+      "kind": "image/jpeg",
+      "gps": null,
+      "notes": [
+        "should end as NO_GPS_FOUND or equivalent"
+      ]
+    },
+    {
+      "category": "no_gps",
+      "path": "no_gps\\no_gps_04.jpg",
+      "kind": "image/jpeg",
+      "gps": null,
+      "notes": [
+        "should end as NO_GPS_FOUND or equivalent"
+      ]
+    },
+    {
+      "category": "no_gps",
+      "path": "no_gps\\no_gps_05.jpg",
+      "kind": "image/jpeg",
+      "gps": null,
+      "notes": [
+        "should end as NO_GPS_FOUND or equivalent"
+      ]
+    },
+    {
+      "category": "no_gps",
+      "path": "no_gps\\no_gps_06.jpg",
+      "kind": "image/jpeg",
+      "gps": null,
+      "notes": [
+        "should end as NO_GPS_FOUND or equivalent"
+      ]
+    },
+    {
+      "category": "no_gps",
+      "path": "no_gps\\no_gps_07.jpg",
+      "kind": "image/jpeg",
+      "gps": null,
+      "notes": [
+        "should end as NO_GPS_FOUND or equivalent"
+      ]
+    },
+    {
+      "category": "no_gps",
+      "path": "no_gps\\no_gps_08.jpg",
+      "kind": "image/jpeg",
+      "gps": null,
+      "notes": [
+        "should end as NO_GPS_FOUND or equivalent"
+      ]
+    },
+    {
+      "category": "invalid_gps",
+      "path": "invalid_gps\\invalid_gps_01.jpg",
+      "kind": "image/jpeg",
+      "gps": [
+        95.0,
+        20.0
+      ],
+      "notes": [
+        "invalid coordinate test",
+        "geocode failure path"
+      ]
+    },
+    {
+      "category": "invalid_gps",
+      "path": "invalid_gps\\invalid_gps_02.jpg",
+      "kind": "image/jpeg",
+      "gps": [
+        12.0,
+        200.0
+      ],
+      "notes": [
+        "invalid coordinate test",
+        "geocode failure path"
+      ]
+    },
+    {
+      "category": "rotated",
+      "path": "rotated\\rotated_01.jpg",
+      "kind": "image/jpeg",
+      "gps": [
+        40.6892,
+        -74.0445
+      ],
+      "notes": [
+        "180-degree EXIF orientation",
+        "slideshow orientation test"
+      ]
+    },
+    {
+      "category": "rotated",
+      "path": "rotated\\rotated_02.jpg",
+      "kind": "image/jpeg",
+      "gps": [
+        35.6586,
+        139.7454
+      ],
+      "notes": [
+        "90-degree clockwise EXIF orientation",
+        "slideshow orientation test"
+      ]
+    },
+    {
+      "category": "duplicates",
+      "path": "duplicates\\duplicate_copy_01.jpg",
+      "kind": "image/jpeg",
+      "gps": null,
+      "notes": [
+        "copied byte-for-byte from gps_valid_01.jpg",
+        "index dedup test"
+      ]
+    },
+    {
+      "category": "duplicates",
+      "path": "duplicates\\duplicate_copy_02.jpg",
+      "kind": "image/jpeg",
+      "gps": null,
+      "notes": [
+        "copied byte-for-byte from gps_valid_02.jpg",
+        "index dedup test"
+      ]
+    },
+    {
+      "category": "corrupted",
+      "path": "corrupted\\corrupted_random_01.jpg",
+      "kind": "image/jpeg",
+      "gps": null,
+      "notes": [
+        "random bytes; not a real image",
+        "parser failure / retry test"
+      ]
+    },
+    {
+      "category": "corrupted",
+      "path": "corrupted\\corrupted_truncated_02.jpg",
+      "kind": "image/jpeg",
+      "gps": null,
+      "notes": [
+        "truncated JPEG header only",
+        "parser failure / retry test"
+      ]
+    },
+    {
+      "category": "mixed_batch",
+      "path": "mixed_batch\\gps_valid_01.jpg",
+      "kind": "image/jpeg",
+      "gps": null,
+      "notes": [
+        "representative mixed-batch copy of gps_valid_01.jpg"
+      ]
+    },
+    {
+      "category": "mixed_batch",
+      "path": "mixed_batch\\same_gps_01.jpg",
+      "kind": "image/jpeg",
+      "gps": null,
+      "notes": [
+        "representative mixed-batch copy of same_gps_01.jpg"
+      ]
+    },
+    {
+      "category": "mixed_batch",
+      "path": "mixed_batch\\no_gps_01.jpg",
+      "kind": "image/jpeg",
+      "gps": null,
+      "notes": [
+        "representative mixed-batch copy of no_gps_01.jpg"
+      ]
+    },
+    {
+      "category": "mixed_batch",
+      "path": "mixed_batch\\invalid_gps_01.jpg",
+      "kind": "image/jpeg",
+      "gps": null,
+      "notes": [
+        "representative mixed-batch copy of invalid_gps_01.jpg"
+      ]
+    },
+    {
+      "category": "mixed_batch",
+      "path": "mixed_batch\\rotated_01.jpg",
+      "kind": "image/jpeg",
+      "gps": null,
+      "notes": [
+        "representative mixed-batch copy of rotated_01.jpg"
+      ]
+    },
+    {
+      "category": "mixed_batch",
+      "path": "mixed_batch\\duplicate_copy_01.jpg",
+      "kind": "image/jpeg",
+      "gps": null,
+      "notes": [
+        "representative mixed-batch copy of duplicate_copy_01.jpg"
+      ]
+    },
+    {
+      "category": "mixed_batch",
+      "path": "mixed_batch\\corrupted_random_01.jpg",
+      "kind": "image/jpeg",
+      "gps": null,
+      "notes": [
+        "representative mixed-batch copy of corrupted_random_01.jpg"
+      ]
+    }
+  ]
+}
