@@ -33,6 +33,7 @@ function createInitialState() {
   const now = stamp();
   return {
     activeView: 'A',
+    inspectMode: false,
     currentViewTitle: 'A — Init',
     modeBanner: 'Hybrid UI: A uses backend contract calls, while B-D remain frontend demos and previews',
     statusByKey: {
@@ -163,6 +164,11 @@ function emit() {
 
 export function setActiveView(viewId, title) {
   state = { ...state, activeView: viewId, currentViewTitle: title };
+  emit();
+}
+
+export function toggleInspectMode() {
+  state = { ...state, inspectMode: !state.inspectMode };
   emit();
 }
 

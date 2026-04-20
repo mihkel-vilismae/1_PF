@@ -461,6 +461,74 @@ code {
   border-color: rgba(148, 163, 184, 0.2);
 }
 
+.inspect-toggle {
+  min-width: 180px;
+  justify-content: center;
+}
+
+.inspectable-control {
+  transition:
+    transform 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    outline-color 180ms ease;
+}
+
+.inspect-mode .inspectable-control {
+  outline: 2px solid rgba(94, 234, 212, 0.78);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 1px rgba(94, 234, 212, 0.18), 0 0 22px rgba(94, 234, 212, 0.12);
+}
+
+.inspect-mode .inspectable-control[data-inspect-active="true"] {
+  outline-color: rgba(251, 191, 36, 0.95);
+  box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.32), 0 0 30px rgba(251, 191, 36, 0.18);
+}
+
+.inspect-mode .inspectable-control:is(.toggle-card, .selector-option, .field-label, .log-entry, .history-item, .nav-link) {
+  border-color: rgba(94, 234, 212, 0.32);
+  background: linear-gradient(135deg, rgba(94, 234, 212, 0.12), rgba(15, 23, 42, 0.82));
+}
+
+.inspect-tooltip {
+  position: fixed;
+  z-index: 120;
+  width: min(320px, calc(100vw - 2rem));
+  padding: 0.95rem 1rem;
+  border-radius: 18px;
+  border: 1px solid rgba(251, 191, 36, 0.34);
+  background: linear-gradient(180deg, rgba(8, 15, 31, 0.98), rgba(4, 10, 20, 0.98));
+  box-shadow: 0 24px 60px rgba(2, 8, 23, 0.56);
+  pointer-events: none;
+}
+
+.inspect-tooltip[hidden] {
+  display: none;
+}
+
+.inspect-tooltip__eyebrow {
+  margin: 0 0 0.35rem;
+  color: var(--amber);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.inspect-tooltip__title {
+  margin: 0;
+  color: var(--heading);
+  font-size: 0.98rem;
+}
+
+.inspect-tooltip__body {
+  margin: 0.45rem 0 0;
+  color: var(--muted);
+  line-height: 1.45;
+  font-size: 0.88rem;
+}
+
 .status-badge {
   display: inline-flex;
   align-items: center;
