@@ -34,6 +34,7 @@ function createInitialState() {
   return {
     activeView: 'A',
     inspectMode: false,
+    valueInspectMode: false,
     currentViewTitle: 'A — Init',
     modeBanner: 'Hybrid UI: A uses backend contract calls, while B-D remain frontend demos and previews',
     statusByKey: {
@@ -168,7 +169,22 @@ export function setActiveView(viewId, title) {
 }
 
 export function toggleInspectMode() {
-  state = { ...state, inspectMode: !state.inspectMode };
+  const nextInspectMode = !state.inspectMode;
+  state = {
+    ...state,
+    inspectMode: nextInspectMode,
+    valueInspectMode: nextInspectMode ? false : state.valueInspectMode,
+  };
+  emit();
+}
+
+export function toggleValueInspectMode() {
+  const nextValueInspectMode = !state.valueInspectMode;
+  state = {
+    ...state,
+    valueInspectMode: nextValueInspectMode,
+    inspectMode: nextValueInspectMode ? false : state.inspectMode,
+  };
   emit();
 }
 

@@ -10,6 +10,7 @@ import {
   seedDemoState,
   setActiveView,
   toggleInspectMode,
+  toggleValueInspectMode,
   setLastRunMode,
   setSimulationValue,
   subscribe,
@@ -34,10 +35,38 @@ const INSPECTABLE_SELECTOR = [
   '[data-log-entry-open]',
   '[data-history-entry-open]',
 ].join(', ');
+const VALUE_INSPECTABLE_SELECTOR = [
+  '.topbar h1',
+  '.definition-row dd',
+  '.status-badge',
+  '.result-surface .mini-badge',
+  '.result-message',
+  '.result-json',
+  '.log-entry__message',
+  '.log-entry__meta > span:first-child',
+  '.log-entry__status-chip > span:first-child',
+  '.history-item__message',
+  '.history-item__meta > span:first-child',
+  '.history-item__status-chip > span:first-child',
+  '.preview-frame__bar .screen-indicator',
+  '.preview-frame__content strong',
+  '.preview-frame__content span',
+  '.preview-frame__content small',
+  '.worker-row__main span',
+  '.worker-row__meta .mini-badge',
+  '.worker-row__meta > span:last-child',
+  '.notice',
+  '.modal-panel__subtitle',
+  '.modal-panel__json',
+].join(', ');
 const ACTION_INSPECT_COPY = {
   'toggle-inspect-mode': {
     label: 'Explain controls mode',
     description: 'Highlights every interactive control and shows a tooltip that explains what it does when you hover or focus it.',
+  },
+  'toggle-value-inspect-mode': {
+    label: 'Explain values mode',
+    description: 'Highlights live values and shows a tooltip that explains where each value comes from.',
   },
   'clear-history': {
     label: 'Clear event history',
@@ -134,8 +163,23 @@ const LAST_RUN_MODE_INSPECT_COPY = {
     description: 'Loads the seeded last-run demo so the recovery layout shows realistic saved-run data.',
   },
 };
+const CURRENT_TRUTH_VALUE_SOURCES = {
+  'Source of truth': 'state.truth.sourceOfTruth, updated whenever the shared truth snapshot is replaced or reseeded.',
+  'Queue length': 'state.truth.queueLength, updated by queue-stage actions and demo-state seeding.',
+  'Current media': 'state.truth.currentMedia, populated when media is queued or demo state is loaded.',
+  'Playback status': 'state.truth.playbackStatus, updated by playback runs, screen simulation, and demo seeding.',
+  'Screen state': 'state.truth.screenState, updated by screen-simulation toggles and runtime preview state changes.',
+  'Last activity': 'state.truth.lastActivitySource, derived from the currently enabled simulated activity inputs.',
+  Timeout: 'state.truth.inactivityTimeoutSeconds, updated from the B5 inactivity timeout input.',
+  'Last checkpoint': 'state.truth.lastCheckpoint, updated by playback and screen checkpoint events.',
+  'Last stage': 'state.truth.lastStageCompleted, updated when pipeline stages complete.',
+  'Stage lock': 'state.truth.stageLock, updated when pipeline lock ownership changes.',
+  'Playback lock': 'state.truth.playbackLock, updated when playback emulation or runtime preview acquires the worker lock.',
+  'Screen lock': 'state.truth.screenLock, updated when the simulated runtime preview acquires the screen worker lock.',
+};
 
 let inspectTooltipElement;
+let inspectTooltipEyebrowElement;
 let inspectTooltipTitleElement;
 let inspectTooltipBodyElement;
 let activeInspectTarget = null;
@@ -225,6 +269,13 @@ function render() {
             >
               ${state.inspectMode ? 'Hide control guide' : 'Explain controls'}
             </button>
+            <button
+              class="button ${state.valueInspectMode ? 'button--primary' : 'button--secondary'} inspect-toggle"
+              type="button"
+              data-action="toggle-value-inspect-mode"
+            >
+              ${state.valueInspectMode ? 'Hide value guide' : 'Explain values'}
+            </button>
           </div>
         </header>
         ${viewMarkup}
@@ -249,6 +300,7 @@ function render() {
   hideInspectTooltip();
   bindEvents();
   bindInspectMode(state.inspectMode);
+  bindValueInspectMode(state.valueInspectMode);
 }
 
 function bindEvents() {
@@ -301,6 +353,10 @@ function bindEvents() {
       const action = button.dataset.action;
       if (action === 'toggle-inspect-mode') {
         toggleInspectMode();
+        return;
+      }
+      if (action === 'toggle-value-inspect-mode') {
+        toggleValueInspectMode();
         return;
       }
       if (action === 'clear-history') {
@@ -409,6 +465,40 @@ function bindInspectMode(enabled) {
   });
 
   document.body.classList.toggle('inspect-mode', Boolean(enabled));
+  if (!enabled) {
+    hideInspectTooltip();
+  }
+}
+
+function bindValueInspectMode(enabled) {
+  const valueElements = Array.from(app.querySelectorAll(VALUE_INSPECTABLE_SELECTOR));
+
+  valueElements.forEach((element) => {
+    const meta = describeValueElement(element);
+    if (!meta) {
+      return;
+    }
+
+    element.classList.add('value-inspectable');
+    element.dataset.valueLabel = meta.label;
+    element.dataset.valueDescription = meta.description;
+    element.addEventListener('mouseenter', handleValueInspectEnter);
+    element.addEventListener('mouseleave', handleInspectLeave);
+    element.addEventListener('focus', handleValueInspectEnter);
+    element.addEventListener('blur', handleInspectLeave);
+
+    if (enabled && !element.hasAttribute('tabindex')) {
+      element.dataset.valueGuideTabindexAdded = 'true';
+      element.tabIndex = 0;
+    }
+
+    if (!enabled && element.dataset.valueGuideTabindexAdded === 'true') {
+      element.removeAttribute('tabindex');
+      delete element.dataset.valueGuideTabindexAdded;
+    }
+  });
+
+  document.body.classList.toggle('value-inspect-mode', Boolean(enabled));
   if (!enabled) {
     hideInspectTooltip();
   }
@@ -540,6 +630,194 @@ function describeSimulationControl(input) {
   return null;
 }
 
+function describeValueElement(element) {
+  if (element.matches('.topbar h1')) {
+    return buildValueMeta(
+      'Current view title',
+      element,
+      'state.currentViewTitle, updated when the active navigation view changes.',
+    );
+  }
+
+  if (element.matches('.status-badge')) {
+    const cardContext = getCardContext(element);
+    if (cardContext?.code) {
+      return buildValueMeta(
+        `${cardContext.code} status`,
+        element,
+        `state.statusByKey["${cardContext.code}"], updated when that section starts, succeeds, fails, or becomes disabled.`,
+      );
+    }
+  }
+
+  if (element.matches('.definition-row dd')) {
+    return describeDefinitionValue(element);
+  }
+
+  if (element.matches('.result-surface .mini-badge')) {
+    const cardContext = getCardContext(element);
+    if (cardContext?.code) {
+      return buildValueMeta(
+        `${cardContext.code} backend outcome`,
+        element,
+        `state.initResults["${cardContext.code}"].outcome, derived from the latest backend request state for that card.`,
+      );
+    }
+  }
+
+  if (element.matches('.result-message, .result-json')) {
+    const cardContext = getCardContext(element);
+    if (cardContext?.code) {
+      return buildValueMeta(
+        `${cardContext.code} backend result`,
+        element,
+        `state.initResults["${cardContext.code}"], filled from the latest request/response payload for that backend action.`,
+      );
+    }
+  }
+
+  if (element.matches('.log-entry__message, .log-entry__meta > span:first-child, .log-entry__status-chip > span:first-child')) {
+    const logEntry = element.closest('[data-log-source-key]');
+    const sourceKey = logEntry?.dataset.logSourceKey ?? 'LOG';
+    return buildValueMeta(
+      `Log entry (${sourceKey})`,
+      element,
+      `state.logs["${sourceKey}"], appended whenever that section records a new log line.`,
+    );
+  }
+
+  if (element.matches('.history-item__message, .history-item__meta > span:first-child, .history-item__status-chip > span:first-child')) {
+    return buildValueMeta(
+      'History event',
+      element,
+      'state.history, appended when dashboard actions, simulation changes, or backend calls create new history events.',
+    );
+  }
+
+  if (element.matches('.preview-frame__bar .screen-indicator')) {
+    const text = compactWhitespace(element.textContent).toLowerCase();
+    if (text.startsWith('screen')) {
+      return buildValueMeta(
+        'Playback preview screen state',
+        element,
+        'state.truth.screenState, updated by B5 simulation controls and runtime preview state.',
+      );
+    }
+    return buildValueMeta(
+      'Playback preview queue readiness',
+      element,
+      'derived from state.truth.currentMedia; it changes when queue-stage actions create or remove the current media item.',
+    );
+  }
+
+  if (element.matches('.preview-frame__content strong, .preview-frame__content span, .preview-frame__content small')) {
+    return buildValueMeta(
+      'Playback preview value',
+      element,
+      'state.truth.currentMedia and related playback truth, updated when media is queued or demo state changes.',
+    );
+  }
+
+  if (element.matches('.worker-row__main span, .worker-row__meta .mini-badge, .worker-row__meta > span:last-child')) {
+    const row = element.closest('.worker-row');
+    const stageName = compactWhitespace(row?.querySelector('.worker-row__main strong')?.textContent) || 'pipeline stage';
+    return buildValueMeta(
+      `${stageName} worker value`,
+      element,
+      'state.runningProcess.pipelineStages, updated when the simulated runtime preview or demo seeding changes worker status.',
+    );
+  }
+
+  if (element.matches('.notice')) {
+    const viewPage = element.closest('.view-page');
+    const eyebrow = compactWhitespace(viewPage?.querySelector('.eyebrow')?.textContent);
+    if (eyebrow.startsWith('C')) {
+      return buildValueMeta(
+        'Last-run notice',
+        element,
+        'state.lastRunMode, updated by the C-view demo-mode buttons.',
+      );
+    }
+    return buildValueMeta(
+      'Runtime preview notice',
+      element,
+      'state.truth.realRunActive, updated when the simulated runtime preview starts.',
+    );
+  }
+
+  if (element.matches('.modal-panel__subtitle, .modal-panel__json')) {
+    return buildValueMeta(
+      'Modal detail value',
+      element,
+      'state.modal.entry, populated from the selected log or history record when the modal opens.',
+    );
+  }
+
+  return null;
+}
+
+function describeDefinitionValue(element) {
+  const row = element.closest('.definition-row');
+  const label = compactWhitespace(row?.querySelector('dt')?.textContent) || 'Value';
+  const sidePanelTitle = compactWhitespace(element.closest('.side-panel')?.querySelector('.side-panel__header h2')?.textContent);
+
+  if (sidePanelTitle === 'Current truth' && CURRENT_TRUTH_VALUE_SOURCES[label]) {
+    return buildValueMeta(label, element, CURRENT_TRUTH_VALUE_SOURCES[label]);
+  }
+
+  const cardContext = getCardContext(element);
+  if (cardContext?.code === 'C1') {
+    return buildValueMeta(label, element, `state.lastRunData.media, updated when the C-view demo mode changes or demo state is seeded.`);
+  }
+  if (cardContext?.code === 'C2') {
+    return buildValueMeta(label, element, `state.lastRunData.playback, updated when the C-view demo mode changes or demo state is seeded.`);
+  }
+  if (cardContext?.code === 'C3') {
+    return buildValueMeta(label, element, `state.lastRunData.stage, updated when the C-view demo mode changes or demo state is seeded.`);
+  }
+  if (cardContext?.code === 'C4') {
+    return buildValueMeta(label, element, `state.lastRunData.screen, updated when the C-view demo mode changes or demo state is seeded.`);
+  }
+  if (cardContext?.code === 'D2') {
+    return buildValueMeta(label, element, `state.runningProcess.playbackWorker, updated when the simulated runtime preview starts or changes.`);
+  }
+  if (cardContext?.code === 'D3') {
+    return buildValueMeta(label, element, `state.runningProcess.screenWorker, updated when the simulated runtime preview or screen simulation changes.`);
+  }
+  if (cardContext?.code && ['1A', '2A', '3A'].includes(cardContext.code) && element.closest('.result-surface')) {
+    return buildValueMeta(label, element, `state.initResults["${cardContext.code}"], filled from the latest backend response metadata for that action.`);
+  }
+  if (element.closest('.modal-panel')) {
+    return buildValueMeta(label, element, 'state.modal.entry, derived from the log or history entry you opened.');
+  }
+
+  return buildValueMeta(
+    `${cardContext?.title ?? sidePanelTitle ?? label} value`,
+    element,
+    `the rendered state backing this section${cardContext?.code ? ` (${cardContext.code})` : ''}; it updates when the related dashboard state changes.`,
+  );
+}
+
+function buildValueMeta(label, element, source) {
+  const value = compactWhitespace(element.textContent) || 'Empty';
+  return {
+    label: `${label}: ${value}`,
+    description: `Source: ${source}`,
+  };
+}
+
+function getCardContext(element) {
+  const card = element.closest('.card, .stage-card');
+  if (!card) {
+    return null;
+  }
+
+  return {
+    code: compactWhitespace(card.querySelector('.card__code')?.textContent),
+    title: compactWhitespace(card.querySelector('h3, h4')?.textContent),
+  };
+}
+
 function fallbackInspectCopy(element) {
   const label = compactWhitespace(element.textContent) || 'Interactive control';
   return {
@@ -558,7 +836,26 @@ function handleInspectEnter(event) {
   }
 
   const element = event.currentTarget;
-  showInspectTooltip(element);
+  showGuideTooltip({
+    element,
+    label: element.dataset.inspectLabel,
+    description: element.dataset.inspectDescription,
+    eyebrow: 'Control guide',
+  });
+}
+
+function handleValueInspectEnter(event) {
+  if (!getState().valueInspectMode) {
+    return;
+  }
+
+  const element = event.currentTarget;
+  showGuideTooltip({
+    element,
+    label: element.dataset.valueLabel,
+    description: element.dataset.valueDescription,
+    eyebrow: 'Value source',
+  });
 }
 
 function handleInspectLeave(event) {
@@ -568,9 +865,7 @@ function handleInspectLeave(event) {
   }
 }
 
-function showInspectTooltip(element) {
-  const label = element.dataset.inspectLabel;
-  const description = element.dataset.inspectDescription;
+function showGuideTooltip({ element, label, description, eyebrow }) {
   if (!label || !description) {
     return;
   }
@@ -578,6 +873,7 @@ function showInspectTooltip(element) {
   const tooltip = ensureInspectTooltip();
   clearInspectTargetState();
 
+  inspectTooltipEyebrowElement.textContent = eyebrow ?? 'Guide';
   inspectTooltipTitleElement.textContent = label;
   inspectTooltipBodyElement.textContent = description;
   tooltip.hidden = false;
@@ -609,10 +905,11 @@ function ensureInspectTooltip() {
   inspectTooltipElement.className = 'inspect-tooltip';
   inspectTooltipElement.hidden = true;
   inspectTooltipElement.innerHTML = `
-    <p class="inspect-tooltip__eyebrow">Control guide</p>
+    <p class="inspect-tooltip__eyebrow"></p>
     <h3 class="inspect-tooltip__title"></h3>
     <p class="inspect-tooltip__body"></p>
   `;
+  inspectTooltipEyebrowElement = inspectTooltipElement.querySelector('.inspect-tooltip__eyebrow');
   inspectTooltipTitleElement = inspectTooltipElement.querySelector('.inspect-tooltip__title');
   inspectTooltipBodyElement = inspectTooltipElement.querySelector('.inspect-tooltip__body');
   document.body.appendChild(inspectTooltipElement);

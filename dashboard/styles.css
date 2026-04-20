@@ -466,6 +466,10 @@ code {
   justify-content: center;
 }
 
+.topbar__actions {
+  align-items: center;
+}
+
 .inspectable-control {
   transition:
     transform 180ms ease,
@@ -473,6 +477,14 @@ code {
     border-color 180ms ease,
     box-shadow 180ms ease,
     outline-color 180ms ease;
+}
+
+.value-inspectable {
+  transition:
+    background 180ms ease,
+    box-shadow 180ms ease,
+    outline-color 180ms ease,
+    color 180ms ease;
 }
 
 .inspect-mode .inspectable-control {
@@ -489,6 +501,39 @@ code {
 .inspect-mode .inspectable-control:is(.toggle-card, .selector-option, .field-label, .log-entry, .history-item, .nav-link) {
   border-color: rgba(94, 234, 212, 0.32);
   background: linear-gradient(135deg, rgba(94, 234, 212, 0.12), rgba(15, 23, 42, 0.82));
+}
+
+.value-inspect-mode .value-inspectable {
+  outline: 2px solid rgba(96, 165, 250, 0.8);
+  outline-offset: 3px;
+  border-radius: 10px;
+  background: rgba(96, 165, 250, 0.12);
+  box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.18), 0 0 22px rgba(96, 165, 250, 0.12);
+}
+
+.value-inspect-mode .value-inspectable[data-inspect-active="true"] {
+  outline-color: rgba(251, 191, 36, 0.95);
+  background: rgba(251, 191, 36, 0.12);
+  box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.28), 0 0 30px rgba(251, 191, 36, 0.18);
+}
+
+.value-inspect-mode .definition-row dd.value-inspectable,
+.value-inspect-mode .log-entry__message.value-inspectable,
+.value-inspect-mode .history-item__message.value-inspectable,
+.value-inspect-mode .worker-row__main span.value-inspectable,
+.value-inspect-mode .worker-row__meta span.value-inspectable,
+.value-inspect-mode .preview-frame__content strong.value-inspectable,
+.value-inspect-mode .preview-frame__content span.value-inspectable,
+.value-inspect-mode .preview-frame__content small.value-inspectable,
+.value-inspect-mode .modal-panel__subtitle.value-inspectable {
+  display: inline-block;
+  padding: 0.15rem 0.35rem;
+}
+
+.value-inspect-mode .result-json.value-inspectable,
+.value-inspect-mode .modal-panel__json.value-inspectable,
+.value-inspect-mode .notice.value-inspectable {
+  border-radius: 14px;
 }
 
 .inspect-tooltip {
