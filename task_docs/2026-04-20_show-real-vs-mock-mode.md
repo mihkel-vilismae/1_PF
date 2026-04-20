@@ -14,17 +14,23 @@ The goal is to let operators and reviewers understand at a glance which parts of
 
 ## Status
 
-proposed
+implemented
 
 ## Current Repo Truth
 
-- The repo already has two related guide-mode concepts:
+- The repo now has three related guide-mode concepts:
   - `Explain controls`
   - `Explain values`
+  - `Show real vs mock`
 - The dashboard docs explicitly distinguish wired vs prototype-driven areas.
 - View A has real backend wiring for init endpoints.
 - Views B, C, and D still contain substantial simulated, demo, or frontend-only behavior.
-- There is not yet a dedicated UI mode that classifies elements as real vs mock directly inside the rendered dashboard.
+- The real-vs-mock mode is implemented in the dashboard shell and classifies rendered UI elements as:
+  - `real`
+  - `mock`
+  - `mixed`
+  - `unknown`
+- The current implementation uses explicit classification rules in the shell instead of runtime code introspection.
 
 ## Goals
 
@@ -125,7 +131,7 @@ Good examples:
 - Existing dashboard behavior still works.
 - The UI remains readable and accessible while the mode is active.
 
-## Files Likely To Change
+## Files Changed In This Repo
 
 - `dashboard/app.js`
 - `dashboard/styles.css`

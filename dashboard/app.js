@@ -10,6 +10,7 @@ import {
   seedDemoState,
   setActiveView,
   toggleInspectMode,
+  toggleRealityInspectMode,
   toggleValueInspectMode,
   setLastRunMode,
   setSimulationValue,
@@ -59,6 +60,27 @@ const VALUE_INSPECTABLE_SELECTOR = [
   '.modal-panel__subtitle',
   '.modal-panel__json',
 ].join(', ');
+const REALITY_INSPECTABLE_SELECTOR = [
+  '.nav-link',
+  '.button',
+  '.hero-pill',
+  '.pill',
+  '.status-badge',
+  '.notice',
+  '.result-surface',
+  '.definition-row',
+  '.preview-frame',
+  '.screen-indicator',
+  '.worker-row',
+  '[data-log-entry-open]',
+  '[data-history-entry-open]',
+].join(', ');
+const REALITY_STATE_TITLES = {
+  real: 'Real',
+  mock: 'Mock',
+  mixed: 'Mixed',
+  unknown: 'Unknown',
+};
 const ACTION_INSPECT_COPY = {
   'toggle-inspect-mode': {
     label: 'Explain controls mode',
@@ -67,6 +89,10 @@ const ACTION_INSPECT_COPY = {
   'toggle-value-inspect-mode': {
     label: 'Explain values mode',
     description: 'Highlights live values and shows a tooltip that explains where each value comes from.',
+  },
+  'toggle-reality-inspect-mode': {
+    label: 'Show real vs mock mode',
+    description: 'Highlights the current view by implementation truth so real wiring, mock behavior, and mixed areas are easy to spot.',
   },
   'clear-history': {
     label: 'Clear event history',
@@ -177,6 +203,118 @@ const CURRENT_TRUTH_VALUE_SOURCES = {
   'Playback lock': 'state.truth.playbackLock, updated when playback emulation or runtime preview acquires the worker lock.',
   'Screen lock': 'state.truth.screenLock, updated when the simulated runtime preview acquires the screen worker lock.',
 };
+const ACTION_REALITY_COPY = {
+  'toggle-inspect-mode': {
+    state: 'real',
+    reason: 'Implemented dashboard-shell guide button that explains interactive controls.',
+  },
+  'toggle-value-inspect-mode': {
+    state: 'real',
+    reason: 'Implemented dashboard-shell guide button that explains where live values come from.',
+  },
+  'toggle-reality-inspect-mode': {
+    state: 'real',
+    reason: 'Implemented dashboard-shell guide button that classifies UI elements by implementation truth.',
+  },
+  'clear-history': {
+    state: 'real',
+    reason: 'Implemented local UI action that really clears the sidebar history list.',
+  },
+  'verify-env': {
+    state: 'real',
+    reason: 'Calls the live `/api/init/verify-env` backend endpoint.',
+  },
+  'check-db': {
+    state: 'real',
+    reason: 'Calls the live `/api/init/database/status` backend endpoint.',
+  },
+  'inspect-db': {
+    state: 'real',
+    reason: 'Calls the live `/api/init/database/inspect` backend endpoint.',
+  },
+  'delete-db': {
+    state: 'real',
+    reason: 'Calls the live destructive backend path for deleting the configured SQLite database.',
+  },
+  'recreate-db': {
+    state: 'real',
+    reason: 'Calls the live backend path that recreates the SQLite database file.',
+  },
+  'install-cron': {
+    state: 'real',
+    reason: 'Calls the live scheduler-install backend endpoint.',
+  },
+  'check-cron': {
+    state: 'real',
+    reason: 'Calls the live scheduler-status backend endpoint.',
+  },
+  'print-cron': {
+    state: 'real',
+    reason: 'Calls the live scheduler-print backend endpoint.',
+  },
+  'run-b1': {
+    state: 'mock',
+    reason: 'Runs a frontend-only simulated login flow; there is no live auth backend in this view.',
+  },
+  'run-b2': {
+    state: 'mock',
+    reason: 'Runs a simulated batch download action in the demo test view.',
+  },
+  'run-b3-1': {
+    state: 'mock',
+    reason: 'Runs the explicit mock-download stage backed by generated test data.',
+  },
+  'run-b3-2': {
+    state: 'mock',
+    reason: 'Runs a simulated index stage; no live backend pipeline wiring exists here yet.',
+  },
+  'run-b3-3': {
+    state: 'mock',
+    reason: 'Runs a simulated GPS parsing stage; no live backend pipeline wiring exists here yet.',
+  },
+  'run-b3-4': {
+    state: 'mock',
+    reason: 'Runs a simulated geocode stage; no live backend pipeline wiring exists here yet.',
+  },
+  'run-b3-5': {
+    state: 'mock',
+    reason: 'Runs a simulated queue stage in the frontend-only test workflow.',
+  },
+  'run-b3-auto': {
+    state: 'mock',
+    reason: 'Runs the full B3 sequence as a frontend-only simulated pipeline.',
+  },
+  'run-b4': {
+    state: 'mock',
+    reason: 'Starts the playback emulation preview rather than a real media playback engine.',
+  },
+  'resume-last-run': {
+    state: 'mock',
+    reason: 'Triggers a placeholder recovery action; no live runtime restore endpoint exists yet.',
+  },
+  'start-real-run': {
+    state: 'mock',
+    reason: 'Starts a simulated runtime preview; it does not launch the real runtime workers.',
+  },
+};
+const VIEW_REALITY_COPY = {
+  A: {
+    state: 'mixed',
+    reason: 'The Init view has real backend wiring for its main actions, but it still lives inside a hybrid dashboard shell with local UI state.',
+  },
+  B: {
+    state: 'mock',
+    reason: 'The Test view is explicitly simulation-only in the current repo.',
+  },
+  C: {
+    state: 'mock',
+    reason: 'The Last Run view currently uses seeded demo state and placeholder recovery behavior.',
+  },
+  D: {
+    state: 'mock',
+    reason: 'The Running Process view is a frontend-only runtime preview in the current repo.',
+  },
+};
 
 let inspectTooltipElement;
 let inspectTooltipEyebrowElement;
@@ -276,6 +414,13 @@ function render() {
             >
               ${state.valueInspectMode ? 'Hide value guide' : 'Explain values'}
             </button>
+            <button
+              class="button ${state.realityInspectMode ? 'button--primary' : 'button--secondary'} inspect-toggle"
+              type="button"
+              data-action="toggle-reality-inspect-mode"
+            >
+              ${state.realityInspectMode ? 'Hide real vs mock' : 'Show real vs mock'}
+            </button>
           </div>
         </header>
         ${viewMarkup}
@@ -301,6 +446,7 @@ function render() {
   bindEvents();
   bindInspectMode(state.inspectMode);
   bindValueInspectMode(state.valueInspectMode);
+  bindRealityInspectMode(state.realityInspectMode);
 }
 
 function bindEvents() {
@@ -357,6 +503,10 @@ function bindEvents() {
       }
       if (action === 'toggle-value-inspect-mode') {
         toggleValueInspectMode();
+        return;
+      }
+      if (action === 'toggle-reality-inspect-mode') {
+        toggleRealityInspectMode();
         return;
       }
       if (action === 'clear-history') {
@@ -487,7 +637,7 @@ function bindValueInspectMode(enabled) {
     element.addEventListener('focus', handleValueInspectEnter);
     element.addEventListener('blur', handleInspectLeave);
 
-    if (enabled && !element.hasAttribute('tabindex')) {
+    if (enabled && !isNaturallyFocusable(element) && !element.hasAttribute('tabindex')) {
       element.dataset.valueGuideTabindexAdded = 'true';
       element.tabIndex = 0;
     }
@@ -502,6 +652,332 @@ function bindValueInspectMode(enabled) {
   if (!enabled) {
     hideInspectTooltip();
   }
+}
+
+function bindRealityInspectMode(enabled) {
+  const realityElements = Array.from(app.querySelectorAll(REALITY_INSPECTABLE_SELECTOR));
+
+  realityElements.forEach((element) => {
+    const meta = describeRealityElement(element);
+    if (!meta) {
+      return;
+    }
+
+    element.classList.add('reality-inspectable');
+    element.dataset.realityState = meta.state;
+    element.dataset.realityLabel = meta.label;
+    element.dataset.realityDescription = meta.description;
+    element.addEventListener('mouseenter', handleRealityInspectEnter);
+    element.addEventListener('mouseleave', handleInspectLeave);
+    element.addEventListener('focus', handleRealityInspectEnter);
+    element.addEventListener('blur', handleInspectLeave);
+
+    if (enabled && !isNaturallyFocusable(element) && !element.hasAttribute('tabindex')) {
+      element.dataset.realityGuideTabindexAdded = 'true';
+      element.tabIndex = 0;
+    }
+
+    if (!enabled && element.dataset.realityGuideTabindexAdded === 'true') {
+      element.removeAttribute('tabindex');
+      delete element.dataset.realityGuideTabindexAdded;
+    }
+  });
+
+  document.body.classList.toggle('reality-inspect-mode', Boolean(enabled));
+  if (!enabled) {
+    hideInspectTooltip();
+  }
+}
+
+function isNaturallyFocusable(element) {
+  return element.matches('button, a[href], input, select, textarea, summary, [tabindex]:not([tabindex="-1"])');
+}
+
+function describeRealityElement(element) {
+  if (element.matches('.nav-link')) {
+    return describeViewReality(element.dataset.view);
+  }
+
+  if (element.matches('.button')) {
+    return describeButtonReality(element);
+  }
+
+  if (element.matches('.hero-pill')) {
+    return describeHeroPillReality(element);
+  }
+
+  if (element.matches('.pill')) {
+    return describePillReality(element);
+  }
+
+  if (element.matches('.status-badge')) {
+    return describeStatusBadgeReality(element);
+  }
+
+  if (element.matches('.result-surface')) {
+    return describeResultSurfaceReality(element);
+  }
+
+  if (element.matches('.definition-row')) {
+    return describeDefinitionRealityRow(element);
+  }
+
+  if (element.matches('.preview-frame')) {
+    return buildRealityMeta('mock', 'Playback preview surface', 'Frontend-only playback emulation panel; it does not represent a real media playback engine.');
+  }
+
+  if (element.matches('.screen-indicator')) {
+    return buildRealityMeta(
+      'mock',
+      compactWhitespace(element.textContent) || 'Preview indicator',
+      'Derived from simulated B4/B5 preview state rather than live screen hardware state.',
+    );
+  }
+
+  if (element.matches('.worker-row')) {
+    const stageName = compactWhitespace(element.querySelector('.worker-row__main strong')?.textContent) || 'Runtime worker';
+    return buildRealityMeta('mock', `${stageName} worker row`, 'Frontend-only runtime preview row; no live worker process data is wired yet.');
+  }
+
+  if (element.matches('.notice')) {
+    return describeNoticeReality(element);
+  }
+
+  if (element.matches('[data-log-entry-open]')) {
+    return describeLogReality(element);
+  }
+
+  if (element.matches('[data-history-entry-open]')) {
+    return describeHistoryReality(element);
+  }
+
+  return null;
+}
+
+function describeViewReality(viewId) {
+  const view = VIEW_ORDER.find((entry) => entry.id === viewId);
+  const meta = VIEW_REALITY_COPY[viewId];
+  if (!view || !meta) {
+    return buildRealityMeta('unknown', `Open view ${viewId ?? 'unknown'}`, 'No explicit real/mock classification metadata is defined for this navigation target yet.');
+  }
+
+  return buildRealityMeta(meta.state, `Open ${view.id} - ${view.name}`, meta.reason);
+}
+
+function describeButtonReality(element) {
+  const label = compactWhitespace(element.textContent) || 'Button';
+  const action = element.dataset.action;
+
+  if (action && ACTION_REALITY_COPY[action]) {
+    const meta = ACTION_REALITY_COPY[action];
+    return buildRealityMeta(meta.state, label, meta.reason);
+  }
+
+  if (element.dataset.lastRunMode) {
+    return buildRealityMeta('mock', label, 'Switches the C-view demo state; it does not call a live recovery or runtime endpoint.');
+  }
+
+  if (element.hasAttribute('data-modal-close')) {
+    return buildRealityMeta('real', label, 'Implemented local UI action that closes the details modal.');
+  }
+
+  return buildRealityMeta('unknown', label, 'No explicit real/mock classification metadata is defined for this button yet.');
+}
+
+function describeHeroPillReality(element) {
+  const label = compactWhitespace(element.textContent) || 'Hero pill';
+  const text = label.toLowerCase();
+
+  if (text.includes('backend contract wired')) {
+    return buildRealityMeta('real', label, 'This statement reflects live backend wiring that already exists for View A init actions.');
+  }
+  if (text.includes('backend still required')) {
+    return buildRealityMeta('mixed', label, 'View A has real endpoint wiring, but the broader dashboard is still only partially implemented.');
+  }
+  if (text.includes('simulation only') || text.includes('mock stage')) {
+    return buildRealityMeta('mock', label, 'This view is intentionally documented as simulation-only in the current repo.');
+  }
+  if (text.includes('preview active') || text.includes('preview inactive')) {
+    return buildRealityMeta('mock', label, 'This pill describes the frontend-only runtime preview, not a live runtime process.');
+  }
+
+  return buildRealityMeta('unknown', label, 'No explicit real/mock classification metadata is defined for this hero pill yet.');
+}
+
+function describePillReality(element) {
+  const label = compactWhitespace(element.textContent) || 'Pill';
+  const text = label.toLowerCase();
+
+  if (text.includes('a wired') && text.includes('simulated')) {
+    return buildRealityMeta('mixed', label, 'This summary intentionally describes a hybrid dashboard where View A is wired and Views B-D remain simulated.');
+  }
+  if (text.includes('live gateway traffic')) {
+    return buildRealityMeta('real', label, 'The transit terminal is currently showing real gateway events produced by dashboard API traffic.');
+  }
+  if (text.includes('placeholder')) {
+    return buildRealityMeta('mock', label, 'This panel is currently presenting placeholder output rather than live data.');
+  }
+
+  return buildRealityMeta('unknown', label, 'No explicit real/mock classification metadata is defined for this pill yet.');
+}
+
+function describeStatusBadgeReality(element) {
+  const cardContext = getCardContext(element);
+  if (!cardContext?.code) {
+    return buildRealityMeta('unknown', compactWhitespace(element.textContent) || 'Status badge', 'No explicit real/mock classification metadata is defined for this status badge yet.');
+  }
+
+  return getSectionRealityByCode(cardContext.code, `${cardContext.code} status badge`);
+}
+
+function describeResultSurfaceReality(element) {
+  const cardContext = getCardContext(element);
+  if (!cardContext?.code) {
+    return buildRealityMeta('unknown', 'Backend result panel', 'No explicit real/mock classification metadata is defined for this result panel yet.');
+  }
+
+  if (['1A', '2A', '3A'].includes(cardContext.code)) {
+    return buildRealityMeta('real', `${cardContext.code} backend result panel`, 'Rendered from the latest real backend request made by this View A card.');
+  }
+
+  return getSectionRealityByCode(cardContext.code, `${cardContext.code} result panel`);
+}
+
+function describeDefinitionRealityRow(element) {
+  const label = compactWhitespace(element.querySelector('dt')?.textContent) || 'Value';
+  const sidePanelTitle = compactWhitespace(element.closest('.side-panel')?.querySelector('.side-panel__header h2')?.textContent);
+  const cardContext = getCardContext(element);
+
+  if (sidePanelTitle === 'Current truth') {
+    return buildRealityMeta('mock', `${label} value`, 'Rendered from local in-memory dashboard truth state, not a live backend runtime truth source.');
+  }
+
+  if (cardContext?.code && ['1A', '2A', '3A'].includes(cardContext.code) && element.closest('.result-surface')) {
+    return buildRealityMeta('real', `${label} value`, `Rendered from the latest real backend response captured for ${cardContext.code}.`);
+  }
+
+  if (cardContext?.code && ['C1', 'C2', 'C3', 'C4', 'C5'].includes(cardContext.code)) {
+    return buildRealityMeta('mock', `${label} value`, 'Rendered from C-view demo state and placeholder recovery data.');
+  }
+
+  if (cardContext?.code && ['D2', 'D3'].includes(cardContext.code)) {
+    return buildRealityMeta('mock', `${label} value`, 'Rendered from the frontend-only runtime preview state.');
+  }
+
+  if (element.closest('.modal-panel')) {
+    return describeModalReality(label);
+  }
+
+  return buildRealityMeta('unknown', `${label} value`, 'No explicit real/mock classification metadata is defined for this displayed value yet.');
+}
+
+function describeNoticeReality(element) {
+  const label = compactWhitespace(element.textContent) || 'Notice';
+  return buildRealityMeta('mock', label, 'This notice belongs to a demo-only or preview-only area of the dashboard.');
+}
+
+function describeLogReality(element) {
+  const sourceKey = element.dataset.logSourceKey;
+  const label = `${sourceKey ?? 'Unknown'} log entry`;
+
+  if (!sourceKey) {
+    return buildRealityMeta('unknown', label, 'No explicit source key is available for this log entry.');
+  }
+
+  if (['1A', '2A', '3A'].includes(sourceKey)) {
+    return buildRealityMeta('real', label, 'This log entry comes from a View A action that calls a live backend endpoint.');
+  }
+
+  if (sourceKey.startsWith('B') || sourceKey === 'C' || sourceKey === 'D') {
+    return buildRealityMeta('mock', label, 'This log entry comes from a simulated, demo, or preview-only dashboard section.');
+  }
+
+  return buildRealityMeta('unknown', label, 'No explicit real/mock classification metadata is defined for this log source.');
+}
+
+function describeHistoryReality(element) {
+  const index = Number(element.dataset.historyEntryIndex);
+  const entry = getState().history[index];
+  const source = entry?.source ?? 'Unknown';
+
+  if (['INIT', 'DB', 'SCHEDULER', 'USER'].includes(source)) {
+    return buildRealityMeta('real', `${source} history event`, 'This history event was produced by a real backend-backed or genuinely implemented local UI action.');
+  }
+
+  if (['TEST', 'PIPELINE', 'PLAYBACK', 'SCREEN', 'RUNTIME', 'DEMO', 'RECOVERY'].includes(source)) {
+    return buildRealityMeta('mock', `${source} history event`, 'This history event comes from simulated, preview, or placeholder behavior.');
+  }
+
+  if (['BOOT', 'TRUTH'].includes(source)) {
+    return buildRealityMeta('mixed', `${source} history event`, 'This history event describes real dashboard shell behavior, but not a live backend-backed runtime feature.');
+  }
+
+  return buildRealityMeta('unknown', `${source} history event`, 'No explicit real/mock classification metadata is defined for this history source.');
+}
+
+function describeModalReality(label) {
+  const modal = getState().modal;
+
+  if (modal?.kind === 'log') {
+    const sourceKey = modal.entry?.sourceKey;
+    if (['1A', '2A', '3A'].includes(sourceKey)) {
+      return buildRealityMeta('real', `${label} modal value`, 'This modal is showing details for a real backend-backed View A log entry.');
+    }
+    if (typeof sourceKey === 'string' && (sourceKey.startsWith('B') || sourceKey === 'C' || sourceKey === 'D')) {
+      return buildRealityMeta('mock', `${label} modal value`, 'This modal is showing details for a simulated, demo, or preview-only log entry.');
+    }
+  }
+
+  if (modal?.kind === 'history') {
+    const source = modal.entry?.source;
+    if (['INIT', 'DB', 'SCHEDULER', 'USER'].includes(source)) {
+      return buildRealityMeta('real', `${label} modal value`, 'This modal is showing details for a real backend-backed or genuinely implemented local UI history event.');
+    }
+    if (['TEST', 'PIPELINE', 'PLAYBACK', 'SCREEN', 'RUNTIME', 'DEMO', 'RECOVERY'].includes(source)) {
+      return buildRealityMeta('mock', `${label} modal value`, 'This modal is showing details for simulated, preview, or placeholder history data.');
+    }
+  }
+
+  return buildRealityMeta('unknown', `${label} modal value`, 'No explicit real/mock classification metadata is defined for this modal field yet.');
+}
+
+function getSectionRealityByCode(code, label) {
+  if (['1A', '2A', '3A'].includes(code)) {
+    return buildRealityMeta('real', label, 'This section is backed by live init or scheduler backend endpoints.');
+  }
+
+  if (code === 'IO') {
+    return buildRealityMeta(
+      transitHasLiveTraffic ? 'real' : 'mixed',
+      label,
+      transitHasLiveTraffic
+        ? 'The terminal is currently showing real gateway traffic emitted by dashboard API requests.'
+        : 'The terminal shell is implemented, but it is still showing placeholder output until live traffic appears.',
+    );
+  }
+
+  if (typeof code === 'string' && code.startsWith('B')) {
+    return buildRealityMeta('mock', label, 'This section belongs to the simulation-only test area.');
+  }
+
+  if (typeof code === 'string' && code.startsWith('C')) {
+    return buildRealityMeta('mock', label, 'This section is driven by demo state and placeholder recovery behavior.');
+  }
+
+  if (typeof code === 'string' && code.startsWith('D')) {
+    return buildRealityMeta('mock', label, 'This section belongs to the frontend-only runtime preview.');
+  }
+
+  return buildRealityMeta('unknown', label, 'No explicit real/mock classification metadata is defined for this section yet.');
+}
+
+function buildRealityMeta(state, label, description) {
+  const title = REALITY_STATE_TITLES[state] ?? REALITY_STATE_TITLES.unknown;
+  return {
+    state,
+    label: `${title}: ${label}`,
+    description,
+  };
 }
 
 function describeInspectableElement(element) {
@@ -855,6 +1331,20 @@ function handleValueInspectEnter(event) {
     label: element.dataset.valueLabel,
     description: element.dataset.valueDescription,
     eyebrow: 'Value source',
+  });
+}
+
+function handleRealityInspectEnter(event) {
+  if (!getState().realityInspectMode) {
+    return;
+  }
+
+  const element = event.currentTarget;
+  showGuideTooltip({
+    element,
+    label: element.dataset.realityLabel,
+    description: element.dataset.realityDescription,
+    eyebrow: 'Implementation truth',
   });
 }
 
