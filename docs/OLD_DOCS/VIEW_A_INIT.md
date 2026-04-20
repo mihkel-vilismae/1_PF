@@ -25,6 +25,7 @@ This section provides separate action buttons for:
 
 The panel also includes a shared log area and a status badge.
 The latest triggered backend response is also rendered inside the card.
+The card now reads a shared scheduler capability profile and can disable install actions when support is deferred or unsupported for the active platform.
 
 ## UI Behavior
 - every subsection shows a visible status badge
@@ -33,7 +34,9 @@ The latest triggered backend response is also rendered inside the card.
 - the frontend now calls a repo-local backend implementation of `/api/init/*`
 - delete and recreate DB actions require explicit confirmation before the request is sent
 - env verification and DB actions are implemented in the repo-local backend
-- the legacy cron routes now manage a Windows Task Scheduler bootstrap path and render scheduler task plus host status directly in the card
+- the legacy cron routes now return a platform-aware scheduler payload with explicit support levels (`supported`, `deferred`, `unsupported`)
+- Windows 11 keeps the real Task Scheduler bootstrap-host path for install/status/print
+- Raspberry Pi OS profile currently keeps install deferred while status/print expose honest capability metadata
 
 ## Operational Dependency
 - View A is only backend-wired if the repo-local init API is actually running and reachable from the frontend.
@@ -47,7 +50,8 @@ The latest triggered backend response is also rendered inside the card.
 ## Future Backend Wiring Notes
 - **1A** now has an implemented backend path plus a response schema derived from the checked-in `.env` contract.
 - **2A** now has implemented backend endpoints for status, inspect, delete, and recreate-empty, with confirmation gating for destructive actions.
-- **3A** now resolves the Windows platform contradiction by installing an AtLogOn Task Scheduler bootstrap task that starts a repo-local scheduler host.
+- **3A** now uses one shared capability model across backend and frontend so platform behavior is explicit and reusable.
+- **3A** resolves the Windows platform contradiction by installing an AtLogOn Task Scheduler bootstrap task that starts a repo-local scheduler host.
 - the remaining 3A gap is not installation semantics anymore; it is wiring real pipeline/playback/screen/recovery services behind that host.
 
 ## UI States

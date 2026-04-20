@@ -12,7 +12,9 @@ Workers and services remain responsible for state validation, lease acquisition,
 ## Current Windows Implementation Note
 
 - the current repo-local 3A implementation keeps the legacy `/api/init/cron/*` route names for compatibility
-- on Windows, those routes install and inspect an `AtLogOn` Task Scheduler task that launches a repo-local scheduler host
+- one shared scheduler capability model now classifies platform support as `supported`, `deferred`, or `unsupported`
+- on Windows 11 profile, those routes install and inspect an `AtLogOn` Task Scheduler task that launches a repo-local scheduler host
+- on Raspberry Pi OS profile (`linux` runtime), install is currently deferred and status/print return informational capability payloads
 - the scheduler host, not Task Scheduler itself, owns the 5-second and 15-second timers because Task Scheduler repetition intervals have a documented 1-minute minimum
 - the current host only reports heartbeat and tick state; it does not yet invoke real pipeline, playback, screen, or recovery services
 - the schedule and watchdog rules below remain target-state behavior until those services exist
