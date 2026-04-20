@@ -52,6 +52,11 @@ Read these second when the question is: **what should the later backend implemen
 20. `12_STATE_AND_RECOVERY.md` — crash, restart, and resume behavior
 21. `13_FRONTEND_BACKEND_CONTRACT.md` — dashboard/API/service contract for future wiring
 22. `14_VERSIONING_AND_CHANGELOG_RULES.md` — change-management rules
+23. `18_CANONICAL_BACKEND_CONTRACT_SET.md` — canonical backend contract strategy, reconciliation notes, and migration map
+24. `19_BACKEND_RUNTIME_CONTRACT.md` — seven-stage runtime contract and normalized stage handoffs
+25. `20_STATE_AND_TRUTH_CONTRACT.md` — truth surfaces, ownership, vocabulary, and invalid states
+26. `21_EXECUTION_AND_RECOVERY_CONTRACT.md` — retry, locking, reclaim, concurrency, and restart rules
+27. `22_ACCEPTANCE_AND_VALIDATION_CONTRACT.md` — proof standard, DB checklist expectations, and validation priorities
 
 ## Authority Rules
 
@@ -73,7 +78,11 @@ The following documents take precedence:
 2. `04_SINGLE_SOURCE_OF_TRUTH.md`
 3. `05_STATE_MACHINE.md`
 4. `10_CONCURRENCY_AND_LOCKING.md`
-5. the more specific target-state operational document
+5. `19_BACKEND_RUNTIME_CONTRACT.md`
+6. `20_STATE_AND_TRUTH_CONTRACT.md`
+7. `21_EXECUTION_AND_RECOVERY_CONTRACT.md`
+8. `22_ACCEPTANCE_AND_VALIDATION_CONTRACT.md`
+9. the more specific target-state operational document
 
 ## Additional Interpretation Rules
 
@@ -92,6 +101,7 @@ The following documents take precedence:
 | Canonical state target | — | `04_SINGLE_SOURCE_OF_TRUTH.md` |
 | Locking target | issue registry + frontend guards | `10_CONCURRENCY_AND_LOCKING.md` |
 | Recovery target | view C current placeholder behavior | `12_STATE_AND_RECOVERY.md` |
+| Canonical backend contract layer | — | `18_CANONICAL_BACKEND_CONTRACT_SET.md` through `22_ACCEPTANCE_AND_VALIDATION_CONTRACT.md` |
 
 ## Change Control
 
@@ -99,6 +109,7 @@ The following documents take precedence:
 - New target-architecture docs must also be added here before they become authoritative.
 - Removing a file requires updating all references that point to it.
 - Backend implementation proposals must preserve the distinction between current reality and target architecture unless the repo is actually updated to close that gap.
+- The numbered canonical backend contract docs in `18` through `22` are the most implementation-ready target-state references when they overlap broader target docs.
 
 ## Operational Registry
 
