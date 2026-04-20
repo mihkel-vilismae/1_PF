@@ -18,7 +18,7 @@ Rules:
 | Path | Title | Purpose | Status | Created | Last Updated | Latest Commit | Notes |
 |---|---|---|---|---|---|---|---|
 | `2026-04-20_view-e-database-viewer.md` | `Task Doc — View E Database Viewer` | Add a new dashboard view named E - Database Viewer. | `proposed` | `2026-04-20` | `2026-04-20` | `8b2a5fa` | Includes both a Codex-ready implementation prompt and a GitHub issue / spec-style task description. |
-| `README.md` | `Task Docs` | This folder stores implementation-oriented notes for larger functionality changes so they stay easy to inspect later. | `reference` | `2026-04-20` | `2026-04-20` | `15f6b91` | Has uncommitted changes. Companion process doc for task_docs/ maintenance. |
+| `README.md` | `Task Docs` | This folder stores implementation-oriented notes for larger functionality changes so they stay easy to inspect later. | `reference` | `2026-04-20` | `2026-04-20` | `610d9c7` | Has uncommitted changes. Companion process doc for task_docs/ maintenance. |
 
 ## Maintenance Check
 

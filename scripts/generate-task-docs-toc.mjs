@@ -6,6 +6,7 @@ import { spawnSync } from 'node:child_process';
 const repoRoot = process.cwd();
 const taskDocsDir = path.join(repoRoot, 'task_docs');
 const tocPath = path.join(taskDocsDir, '_TABLE_OF_CONTENTS.md');
+const checkMode = process.argv.includes('--check');
 
 const CONTROLLED_STATUSES = [
   'proposed',
@@ -23,9 +24,21 @@ const files = listFiles(taskDocsDir)
 
 const entries = files.map(buildEntry);
 const output = renderToc(entries);
+const relativeTocPath = path.relative(repoRoot, tocPath);
 
-writeFileSync(tocPath, output, 'utf8');
-console.log(`Wrote ${path.relative(repoRoot, tocPath)} with ${entries.length} entries.`);
+if (checkMode) {
+  const current = readCurrentToc();
+  if (current !== output) {
+    console.error(`task_docs TOC drift detected in ${relativeTocPath}.`);
+    console.error('Run `npm run task-docs:toc` and stage the updated file before committing.');
+    process.exit(1);
+  }
+
+  console.log(`${relativeTocPath} is up to date (${entries.length} entries).`);
+} else {
+  writeFileSync(tocPath, output, 'utf8');
+  console.log(`Wrote ${relativeTocPath} with ${entries.length} entries.`);
+}
 
 function listFiles(directory) {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -52,6 +65,17 @@ function buildEntry(filePath) {
     latestCommit: gitInfo.latestCommit,
     notes: detectNotes(relativePath, content, gitInfo),
   };
+}
+
+function readCurrentToc() {
+  try {
+    return readFileSync(tocPath, 'utf8');
+  } catch (error) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT') {
+      return '';
+    }
+    throw error;
+  }
 }
 
 function isMarkdown(filePath) {
