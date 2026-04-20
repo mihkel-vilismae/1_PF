@@ -11,6 +11,17 @@ import {
 } from './initService.js';
 
 const stamp = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+const formatTallinnTimestamp = () =>
+  new Intl.DateTimeFormat('et-EE', {
+    timeZone: 'Europe/Tallinn',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).format(new Date());
 
 const listeners = new Set();
 const STAGE_ACTION_KEYS = new Set(['B3.1', 'B3.2', 'B3.3', 'B3.4', 'B3.5']);
@@ -173,11 +184,76 @@ export function pushHistory(source, type, message) {
   });
 }
 
-export function pushLog(key, type, message) {
+export function pushLog(key, type, message, details = null) {
   patchState((draft) => {
     draft.logs[key] ??= [];
-    draft.logs[key].unshift({ at: stamp(), type, message });
+    const now = new Date();
+    draft.logs[key].unshift({
+      at: stamp(),
+      atIso: now.toISOString(),
+      atTallinn: formatTallinnTimestamp(),
+      type,
+      message,
+      details,
+    });
   });
+}
+
+function buildRequestHeaders(body) {
+  const headers = {
+    Accept: 'application/json, text/plain;q=0.9, */*;q=0.8',
+  };
+
+  if (body !== undefined) {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  return headers;
+}
+
+function normalizeActionResult(result) {
+  if (result && typeof result === 'object' && 'payload' in result && 'meta' in result) {
+    return result;
+  }
+
+  return { payload: result, meta: null };
+}
+
+function buildTimelineDetails() {
+  const now = new Date();
+  return {
+    local: stamp(),
+    tallinn: formatTallinnTimestamp(),
+    iso: now.toISOString(),
+  };
+}
+
+function buildInitLogDetails({ operation, endpoint, requestBody, apiMeta, responsePayload, outcome }) {
+  const request = apiMeta?.request ?? {
+    method: endpoint.method,
+    path: endpoint.path,
+    headers: buildRequestHeaders(requestBody),
+    body: requestBody === undefined ? null : requestBody,
+  };
+  const responseMeta = apiMeta?.response ?? null;
+
+  return {
+    timeline: buildTimelineDetails(),
+    operation,
+    endpoint: `${endpoint.method} ${endpoint.path}`,
+    outcome,
+    request,
+    response: responseMeta
+      ? {
+          status: responseMeta.status,
+          statusText: responseMeta.statusText,
+          ok: responseMeta.ok,
+          url: responseMeta.url,
+          headers: responseMeta.headers,
+          body: responsePayload ?? responseMeta.body ?? null,
+        }
+      : null,
+  };
 }
 
 export function setStatus(key, status) {
@@ -420,17 +496,47 @@ function genericAction(key, source, message) {
   }, 420);
 }
 
-async function runInitAction(key, source, operation, endpoint, request, payload = {}) {
+async function runInitAction(key, source, operation, endpoint, request, payload = undefined) {
   if (!guardAction(key, source, `${operation} is already running; duplicate trigger was blocked.`)) {
     return;
   }
 
   setStatus(key, 'running');
-  pushLog(key, 'info', `${operation} started via ${endpoint.method} ${endpoint.path}.`);
+  const startDetails = buildInitLogDetails({
+    operation,
+    endpoint,
+    requestBody: payload,
+    apiMeta: null,
+    responsePayload: null,
+    outcome: 'running',
+  });
+  patchState((draft) => {
+    draft.initResults[key] = {
+      outcome: 'running',
+      operation,
+      method: endpoint.method,
+      endpoint: endpoint.path,
+      receivedAt: stamp(),
+      message: `${operation} request sent. Waiting for backend response...`,
+      request: startDetails.request,
+      response: null,
+    };
+  });
+  pushLog(key, 'info', `${operation} started via ${endpoint.method} ${endpoint.path}.`, startDetails);
 
   try {
-    const responsePayload = await request(payload);
+    const responseEnvelope = normalizeActionResult(await request(payload));
+    const responsePayload = responseEnvelope.payload;
+    const responseMeta = responseEnvelope.meta;
     const message = summarizeInitPayload(operation, responsePayload);
+    const successDetails = buildInitLogDetails({
+      operation,
+      endpoint,
+      requestBody: payload,
+      apiMeta: responseMeta,
+      responsePayload,
+      outcome: 'success',
+    });
     patchState((draft) => {
       draft.initResults[key] = {
         outcome: 'success',
@@ -440,13 +546,23 @@ async function runInitAction(key, source, operation, endpoint, request, payload 
         receivedAt: stamp(),
         message,
         payload: responsePayload,
+        request: successDetails.request,
+        response: successDetails.response,
       };
     });
     setStatus(key, 'success');
-    pushLog(key, 'success', message);
+    pushLog(key, 'success', message, successDetails);
     pushHistory(source, 'success', `${operation} completed through ${endpoint.path}.`);
   } catch (error) {
     const message = formatInitError(operation, error);
+    const errorDetails = buildInitLogDetails({
+      operation,
+      endpoint,
+      requestBody: payload,
+      apiMeta: error.meta ?? null,
+      responsePayload: error.payload ?? null,
+      outcome: 'error',
+    });
     patchState((draft) => {
       draft.initResults[key] = {
         outcome: 'error',
@@ -457,10 +573,12 @@ async function runInitAction(key, source, operation, endpoint, request, payload 
         status: error.status ?? null,
         message,
         errorPayload: error.payload ?? null,
+        request: errorDetails.request,
+        response: errorDetails.response,
       };
     });
     setStatus(key, 'error');
-    pushLog(key, 'error', message);
+    pushLog(key, 'error', message, errorDetails);
     pushHistory(source, 'error', `${operation} failed through ${endpoint.path}.`);
   } finally {
     endAction(key);
