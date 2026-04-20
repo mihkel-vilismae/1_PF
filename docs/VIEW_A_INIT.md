@@ -50,4 +50,4 @@ The view currently supports:
 - result rendering for the latest backend payload or error
 
 ## Evidence Basis
-Derived from the user dashboard specification in this chat plus direct inspection of the current implementation, especially `dashboard/views/initView.js`, `dashboard/services/initService.js`, `dashboard/services/apiClient.js`, `dashboard/services/runtimeTruth.js`, `server/index.js`, and `server/scripts/sqlite_admin.py`.
+Derived from direct inspection of the current implementation, especially `dashboard/views/initView.js`, `dashboard/services/initService.js`, `dashboard/services/apiClient.js`, `dashboard/services/runtimeTruth.js`, `server/index.js`, `server/scheduler_host.js`, `server/scripts/sqlite_admin.py`, and `server/scripts/windows_task_scheduler.ps1`.

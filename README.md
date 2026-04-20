@@ -42,7 +42,9 @@ The Vite dev server proxies `/api/*` requests to `http://127.0.0.1:4301`.
   - `shared/constants.js` — shared labels and view metadata
 - `server/` — current backend implementation slice for View A
   - `index.js` — Node HTTP API exposing `/api/init/*`
+  - `scheduler_host.js` — repo-local scheduler host used by the Windows bootstrap path
   - `scripts/sqlite_admin.py` — SQLite inspect/recreate helper used by the A backend
+  - `scripts/windows_task_scheduler.ps1` — Windows Task Scheduler install/status/print helper
 - `docs/` — implementation docs, architecture docs, and reconciliation docs
 - `generated_test_data/` — sample media assets used by the mock/test UI
 - `dist/` — current production build output
@@ -78,6 +80,13 @@ The Vite dev server proxies `/api/*` requests to `http://127.0.0.1:4301`.
 21. `docs/12_STATE_AND_RECOVERY.md`
 22. `docs/13_FRONTEND_BACKEND_CONTRACT.md`
 23. `docs/14_VERSIONING_AND_CHANGELOG_RULES.md`
+24. `docs/18_CANONICAL_BACKEND_CONTRACT_SET.md`
+25. `docs/19_BACKEND_RUNTIME_CONTRACT.md`
+26. `docs/20_STATE_AND_TRUTH_CONTRACT.md`
+27. `docs/21_EXECUTION_AND_RECOVERY_CONTRACT.md`
+28. `docs/22_ACCEPTANCE_AND_VALIDATION_CONTRACT.md`
+
+When broader target-state docs overlap, prefer the canonical contract set in `docs/18` through `docs/22`.
 
 ## Current implementation summary
 
@@ -127,6 +136,8 @@ Derived from direct inspection of the uploaded repository contents, especially:
 - `dashboard/services/renderers.js`
 - `dashboard/views/initView.js`
 - `server/index.js`
+- `server/scheduler_host.js`
+- `server/scripts/windows_task_scheduler.ps1`
 - `server/scripts/sqlite_admin.py`
 - `dashboard/views/testView.js`
 - `dashboard/views/lastRunView.js`

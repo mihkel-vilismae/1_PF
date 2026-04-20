@@ -38,4 +38,4 @@ This view should later read from a persisted source of truth that captures:
 The current frontend exposes `Resume from saved state (placeholder)` but does not implement any actual restore logic. Its purpose is to reserve the correct operator control for later backend integration.
 
 ## Evidence Basis
-Derived from the user dashboard specification in this chat. The source basis includes the C view called Last Run Info, the no-run disabled state, the explicit error display requirement, and the requirement to show last file shown, crash/interruption details, and restore-oriented information when a previous run exists.
+Derived from direct inspection of the current implementation and the current target contract split, especially `dashboard/views/lastRunView.js`, `dashboard/app.js`, `dashboard/services/runtimeTruth.js`, `docs/12_STATE_AND_RECOVERY.md`, and `docs/13_FRONTEND_BACKEND_CONTRACT.md`.

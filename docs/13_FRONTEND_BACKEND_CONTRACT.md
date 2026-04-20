@@ -9,6 +9,7 @@ This document defines the API and service contract needed to support dashboard v
 - Frontend reads authoritative data through backend APIs only.
 - Frontend never writes database records directly.
 - All write endpoints must be idempotent where practical or explicitly reject duplicates.
+- In the current repo snapshot, that backend-authority rule is implemented for View A only; Views B, C, and D remain planned contracts.
 
 ## Shared Frontend Services
 
@@ -22,6 +23,15 @@ These are frontend abstractions only; they do not own business logic.
 - `testService` — invoke simulation endpoints for view B
 
 ## View A Contract
+
+Current error envelope for implemented A endpoints:
+
+- `status: "error"`
+- `error`
+- `message`
+- `details` when available
+
+Known live error cases in the current repo include missing confirmation for destructive DB actions, missing DB path or database file conditions, and `cron_contract_blocked` on unsupported platforms.
 
 ### 1A Verify `.env`
 - `POST /api/init/verify-env`
@@ -118,6 +128,8 @@ Current response schema:
 
 ## View B Contract (test / simulation only)
 
+These endpoints are planned only in the current repo snapshot; no `/api/test/*` handlers exist yet in `server/index.js`.
+
 ### B1 Login flow
 - `POST /api/test/login/run`
 
@@ -142,6 +154,8 @@ Current response schema:
 
 ## View C Contract
 
+These endpoints are planned only in the current repo snapshot; no `/api/runtime/last-run` or restore handlers exist yet.
+
 - `GET /api/runtime/last-run`
 - returns one of:
   - no run yet
@@ -150,6 +164,8 @@ Current response schema:
 - `POST /api/runtime/restore-last-known-state` (administrative placeholder endpoint)
 
 ## View D Contract
+
+These endpoints are planned only in the current repo snapshot; no `/api/runtime/current`, `/api/runtime/workers`, `/api/runtime/start`, or `/api/runtime/stop` handlers exist yet.
 
 - `GET /api/runtime/current`
 - `GET /api/runtime/workers`
@@ -162,7 +178,7 @@ Current response schema:
 
 ## Evidence Basis
 
-Derived from the user's dashboard definition for views A/B/C/D, the request for shared frontend service layers for scheduler/cron, screen, and database access, and the need to distinguish test simulation from real runtime.
+Derived from direct inspection of the current repo plus the target dashboard contract split, especially `dashboard/services/initService.js`, `server/index.js`, `server/scheduler_host.js`, `docs/09_CRON_AND_WATCHDOG.md`, and the current dashboard view docs.
 
 ## Frontend File Alignment
 
