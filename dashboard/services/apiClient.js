@@ -9,8 +9,42 @@ export class ApiRequestError extends Error {
   }
 }
 
+const transitSubscribers = new Set();
+let nextTransitId = 1;
+
+export function subscribeTransit(listener) {
+  if (typeof listener !== 'function') {
+    throw new TypeError('subscribeTransit(listener) requires a function.');
+  }
+  transitSubscribers.add(listener);
+  return () => transitSubscribers.delete(listener);
+}
+
+function emitTransit(record) {
+  transitSubscribers.forEach((listener) => {
+    try {
+      listener(record);
+    } catch {
+      // Transit listeners must not break the request path.
+    }
+  });
+
+  if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+    try {
+      const event = typeof CustomEvent === 'function'
+        ? new CustomEvent('dashboard:transit', { detail: record })
+        : null;
+      if (event) {
+        window.dispatchEvent(event);
+      }
+    } catch {
+      // Best-effort browser event emission.
+    }
+  }
+}
+
 export async function requestJson(path, options = {}) {
-  const { method = 'GET', body, headers = {}, captureMeta = false } = options;
+  const { method = 'GET', body, headers = {}, captureMeta = false, operation } = options;
   const requestHeaders = {
     Accept: 'application/json, text/plain;q=0.9, */*;q=0.8',
     ...headers,
@@ -26,6 +60,11 @@ export async function requestJson(path, options = {}) {
     init.body = JSON.stringify(body);
   }
 
+  const transitId = nextTransitId++;
+  const transitOperation = typeof operation === 'string' && operation.trim()
+    ? operation.trim()
+    : `${method} ${path}`;
+
   const requestMeta = {
     method,
     path,
@@ -33,10 +72,32 @@ export async function requestJson(path, options = {}) {
     body: body === undefined ? null : body,
   };
 
+  emitTransit({
+    id: transitId,
+    atIso: new Date().toISOString(),
+    direction: 'outbound',
+    operation: transitOperation,
+    method,
+    path,
+    hasBody: body !== undefined,
+  });
+
   let response;
   try {
     response = await fetch(path, init);
   } catch (error) {
+    emitTransit({
+      id: transitId,
+      atIso: new Date().toISOString(),
+      direction: 'inbound',
+      operation: transitOperation,
+      method,
+      path,
+      ok: false,
+      status: null,
+      statusText: null,
+      error: error?.message ?? String(error),
+    });
     throw new ApiRequestError(`Network request failed for ${method} ${path}.`, {
       cause: error,
       meta: {
@@ -58,6 +119,18 @@ export async function requestJson(path, options = {}) {
 
   if (!response.ok) {
     const message = extractMessage(payload) ?? `Request failed with status ${response.status}.`;
+    emitTransit({
+      id: transitId,
+      atIso: new Date().toISOString(),
+      direction: 'inbound',
+      operation: transitOperation,
+      method,
+      path,
+      ok: false,
+      status: response.status,
+      statusText: response.statusText,
+      error: message,
+    });
     throw new ApiRequestError(message, {
       status: response.status,
       payload,
@@ -67,6 +140,18 @@ export async function requestJson(path, options = {}) {
       },
     });
   }
+
+  emitTransit({
+    id: transitId,
+    atIso: new Date().toISOString(),
+    direction: 'inbound',
+    operation: transitOperation,
+    method,
+    path,
+    ok: true,
+    status: response.status,
+    statusText: response.statusText,
+  });
 
   if (captureMeta) {
     return {
