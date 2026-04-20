@@ -4,6 +4,19 @@
 
 This document defines the allowed states and transitions for the real runtime. Illegal states are rejected by design.
 
+## Canonical Backend Contract Alignment
+
+This document is the older high-level target-state state-machine description.
+
+For the implementation-ready backend transition contract, also read:
+
+- [`18_CANONICAL_BACKEND_CONTRACT_SET.md`](18_CANONICAL_BACKEND_CONTRACT_SET.md)
+- [`19_BACKEND_RUNTIME_CONTRACT.md`](19_BACKEND_RUNTIME_CONTRACT.md)
+- [`20_STATE_AND_TRUTH_CONTRACT.md`](20_STATE_AND_TRUTH_CONTRACT.md)
+- [`22_ACCEPTANCE_AND_VALIDATION_CONTRACT.md`](22_ACCEPTANCE_AND_VALIDATION_CONTRACT.md)
+
+Use the newer canonical docs for stage-specific vocabulary, ownership boundaries, queue transitions, and invalid-state rules.
+
 ## Top-Level System States
 
 - `idle` — no real run active

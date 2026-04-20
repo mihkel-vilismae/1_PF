@@ -4,6 +4,18 @@
 
 This document defines the authoritative state holder for both **what is running now** and **what last happened**.
 
+## Canonical Backend Contract Alignment
+
+This document remains the high-level target-state statement for durable authority.
+
+For the implementation-ready backend contract layer, also read:
+
+- [`18_CANONICAL_BACKEND_CONTRACT_SET.md`](18_CANONICAL_BACKEND_CONTRACT_SET.md)
+- [`20_STATE_AND_TRUTH_CONTRACT.md`](20_STATE_AND_TRUTH_CONTRACT.md)
+- [`19_BACKEND_RUNTIME_CONTRACT.md`](19_BACKEND_RUNTIME_CONTRACT.md)
+
+If this document is broader or more abstract than the newer canonical backend docs, the newer numbered canonical docs should guide backend implementation details.
+
 ## Canonical Decision
 
 The single source of truth is a **durable database-backed state model**, not a frontend memory object and not a loose JSON file.
