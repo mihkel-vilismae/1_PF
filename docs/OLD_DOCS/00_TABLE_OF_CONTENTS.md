@@ -10,6 +10,8 @@ It distinguishes between:
 
 It does not replace runtime state. It organizes documentation authority and reading order.
 
+Feature/task-spec documentation tracked outside `docs/` is indexed separately in `task_docs/_TABLE_OF_CONTENTS.md`.
+
 ## Most Important Interpretation Rule
 
 The documentation set has two different truth modes:
