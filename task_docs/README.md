@@ -2,7 +2,7 @@
 
 This folder stores implementation-oriented notes for larger functionality changes so they stay easy to inspect later.
 
-`_TABLE_OF_CONTENTS.md` is the authoritative index for this folder. Every file in `task_docs/` must be listed there, and any add/remove/rename/material update in this folder must update `_TABLE_OF_CONTENTS.md` in the same patch.
+`_TABLE_OF_CONTENTS.md` is the authoritative index for this folder. Every file in `task_docs/` must be listed there, and any add/remove/rename/material update in this folder must update `_TABLE_OF_CONTENTS.md` in the same patch. Regenerate it with `npm run task-docs:toc`.
 
 ## When to add a doc
 
