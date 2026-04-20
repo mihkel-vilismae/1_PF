@@ -15,8 +15,9 @@ Workers and services remain responsible for state validation, lease acquisition,
 - on Windows, those routes install and inspect an `AtLogOn` Task Scheduler task that launches a repo-local scheduler host
 - the scheduler host, not Task Scheduler itself, owns the 5-second and 15-second timers because Task Scheduler repetition intervals have a documented 1-minute minimum
 - the current host only reports heartbeat and tick state; it does not yet invoke real pipeline, playback, screen, or recovery services
+- the schedule and watchdog rules below remain target-state behavior until those services exist
 
-## Scheduled Jobs
+## Target Scheduled Jobs
 
 Recommended default schedule for the real runtime:
 
@@ -27,7 +28,7 @@ Recommended default schedule for the real runtime:
 
 These values may later become configuration entries but must remain explicit in implementation.
 
-## Tick Behavior
+## Target Tick Behavior
 
 ### Pipeline tick
 - asks `PipelineService` to reconcile whether the next stage should run
@@ -43,13 +44,13 @@ These values may later become configuration entries but must remain explicit in 
 - verifies the screen worker lease and heartbeat
 - restarts or recreates the screen worker only if lease recovery rules permit
 
-## Restart Policy
+## Target Restart Policy
 
 - first transient failure: retry on next scheduled tick
 - repeated failures within a short window: back off and mark component degraded
 - non-recoverable configuration/storage failure: move system to `failed`
 
-## Duplicate Trigger Rule
+## Target Duplicate Trigger Rule
 
 A scheduler tick may fire multiple times or overlap, but only the request that successfully acquires the relevant lease may proceed. Others must exit without side effects beyond duplicate-rejected observability.
 

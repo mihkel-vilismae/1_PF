@@ -25,7 +25,7 @@ export function renderTestView(state) {
           <p class="card__copy">Show the user exactly where the test flow is: login, required file preparation, and 2FA.</p>
           ${renderStepList(state.loginSteps)}
           <div class="button-row"><button class="button button--primary" data-action="run-b1">Run</button></div>
-          <div class="log-surface">${renderLogEntries(state.logs.B1)}</div>
+          <div class="log-surface">${renderLogEntries(state.logs.B1, { sourceKey: 'B1' })}</div>
         </article>
 
         <article class="card">
@@ -35,7 +35,7 @@ export function renderTestView(state) {
           </header>
           <p class="card__copy">A fast single-purpose test action that is visually lighter than the multi-stage pipeline panel below.</p>
           <div class="button-row"><button class="button button--primary" data-action="run-b2">Run</button></div>
-          <div class="log-surface">${renderLogEntries(state.logs.B2)}</div>
+          <div class="log-surface">${renderLogEntries(state.logs.B2, { sourceKey: 'B2' })}</div>
         </article>
       </div>
 
@@ -93,7 +93,7 @@ export function renderTestView(state) {
             'Playback status': state.truth.playbackStatus,
           })}</div>
           <div class="button-row"><button class="button button--primary" data-action="run-b4" ${queueReady ? '' : 'disabled'}>Run</button></div>
-          <div class="log-surface">${renderLogEntries(state.logs.B4)}</div>
+          <div class="log-surface">${renderLogEntries(state.logs.B4, { sourceKey: 'B4' })}</div>
         </article>
 
         <article class="card card--feature">
@@ -121,7 +121,7 @@ export function renderTestView(state) {
             'Shared timeout': `${state.truth.inactivityTimeoutSeconds}s`,
             'Playback checkpoint': state.truth.lastCheckpoint,
           })}</div>
-          <div class="log-surface">${renderLogEntries(state.logs.B5)}</div>
+          <div class="log-surface">${renderLogEntries(state.logs.B5, { sourceKey: 'B5' })}</div>
         </article>
       </div>
     </section>
@@ -140,7 +140,7 @@ function renderStageCard(code, title, subtitle, state) {
         ${statusBadge(state.statusByKey[code])}
       </div>
       <div class="button-row"><button class="button button--secondary" data-action="run-${code.toLowerCase().replace('.', '-')}">Run</button></div>
-      <div class="log-surface">${renderLogEntries(state.logs[code])}</div>
+      <div class="log-surface">${renderLogEntries(state.logs[code], { sourceKey: code })}</div>
     </article>
   `;
 }

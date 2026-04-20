@@ -4,12 +4,13 @@ export class ApiRequestError extends Error {
     this.name = 'ApiRequestError';
     this.status = options.status ?? null;
     this.payload = options.payload;
+    this.meta = options.meta ?? null;
     this.cause = options.cause;
   }
 }
 
 export async function requestJson(path, options = {}) {
-  const { method = 'GET', body, headers = {} } = options;
+  const { method = 'GET', body, headers = {}, captureMeta = false } = options;
   const requestHeaders = {
     Accept: 'application/json, text/plain;q=0.9, */*;q=0.8',
     ...headers,
@@ -25,20 +26,56 @@ export async function requestJson(path, options = {}) {
     init.body = JSON.stringify(body);
   }
 
+  const requestMeta = {
+    method,
+    path,
+    headers: normalizeHeaders(requestHeaders),
+    body: body === undefined ? null : body,
+  };
+
   let response;
   try {
     response = await fetch(path, init);
   } catch (error) {
-    throw new ApiRequestError(`Network request failed for ${method} ${path}.`, { cause: error });
+    throw new ApiRequestError(`Network request failed for ${method} ${path}.`, {
+      cause: error,
+      meta: {
+        request: requestMeta,
+        response: null,
+      },
+    });
   }
 
   const payload = await readResponsePayload(response);
+  const responseMeta = {
+    status: response.status,
+    statusText: response.statusText,
+    ok: response.ok,
+    url: response.url,
+    headers: normalizeHeaders(response.headers),
+    body: payload,
+  };
+
   if (!response.ok) {
     const message = extractMessage(payload) ?? `Request failed with status ${response.status}.`;
     throw new ApiRequestError(message, {
       status: response.status,
       payload,
+      meta: {
+        request: requestMeta,
+        response: responseMeta,
+      },
     });
+  }
+
+  if (captureMeta) {
+    return {
+      payload,
+      meta: {
+        request: requestMeta,
+        response: responseMeta,
+      },
+    };
   }
 
   return payload;
@@ -80,4 +117,14 @@ function extractMessage(payload) {
     return payload.error;
   }
   return null;
+}
+
+function normalizeHeaders(headers) {
+  if (headers instanceof Headers) {
+    return Object.fromEntries(headers.entries());
+  }
+
+  return Object.fromEntries(
+    Object.entries(headers).map(([key, value]) => [key, value == null ? '' : String(value)]),
+  );
 }

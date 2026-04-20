@@ -4,6 +4,24 @@
 
 This document defines exact restart behavior after interruption.
 
+## Canonical Backend Contract Alignment
+
+This document remains the older high-level recovery design.
+
+For the implementation-ready recovery contract, also read:
+
+- [`18_CANONICAL_BACKEND_CONTRACT_SET.md`](18_CANONICAL_BACKEND_CONTRACT_SET.md)
+- [`21_EXECUTION_AND_RECOVERY_CONTRACT.md`](21_EXECUTION_AND_RECOVERY_CONTRACT.md)
+- [`20_STATE_AND_TRUTH_CONTRACT.md`](20_STATE_AND_TRUTH_CONTRACT.md)
+- [`22_ACCEPTANCE_AND_VALIDATION_CONTRACT.md`](22_ACCEPTANCE_AND_VALIDATION_CONTRACT.md)
+
+Use the newer canonical docs for restart-safe current-item truth, reclaim behavior, resume boundaries, and the validation scenarios that must prove recovery correctness.
+
+## Current Implementation Note
+
+The recovery algorithm below is target-state design only.
+This repository snapshot does not yet implement durable runtime-state persistence, checkpoint persistence, worker leases, or a recovery engine.
+
 ## Recovery Entry Conditions
 
 Recovery begins when the backend starts and detects any of the following:

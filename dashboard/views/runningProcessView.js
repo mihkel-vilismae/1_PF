@@ -67,7 +67,7 @@ export function renderRunningProcessView(state) {
 
       <article class="card">
         <header class="card__header"><div><p class="card__code">D4</p><h3>Preview log</h3></div></header>
-        <div class="log-surface">${renderLogEntries(state.logs.D)}</div>
+        <div class="log-surface">${renderLogEntries(state.logs.D, { sourceKey: 'D' })}</div>
       </article>
     </section>
   `;

@@ -61,7 +61,7 @@ function renderCard(code, title, state, logKey, actions, copy) {
       <p class="card__copy">${copy}</p>
       <div class="button-row">${actions}</div>
       ${renderResultSurface(state.initResults[code])}
-      <div class="log-surface">${renderLogEntries(state.logs[logKey])}</div>
+      <div class="log-surface">${renderLogEntries(state.logs[logKey], { sourceKey: logKey })}</div>
     </article>
   `;
 }

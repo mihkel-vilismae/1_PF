@@ -74,6 +74,7 @@ Implemented:
 - dedicated init service module targeting `/api/init/*`
 - async init action handling for `.env`, database, and scheduler actions
 - per-card backend result rendering for View A
+- View A wiring assumes a separate repo-local init API process is reachable at runtime; the frontend build does not embed that server
 
 Evidence:
 
@@ -97,6 +98,8 @@ Implemented:
 Evidence:
 
 - `server/index.js`
+- `server/scheduler_host.js`
+- `server/scripts/windows_task_scheduler.ps1`
 - `server/scripts/sqlite_admin.py`
 - `dashboard/app.js`
 - `dashboard/services/initService.js`
@@ -163,6 +166,7 @@ Current state:
 - actions now dispatch through a dedicated frontend init service layer
 - the frontend renders the latest backend payload or error for each A card
 - repo-local backend endpoints exist for env verification and SQLite status/inspect/delete/recreate-empty
+- the repo-local backend must be started separately; if it is down or unreachable, A fails operationally before handler logic can be judged
 - destructive DB actions require explicit frontend confirmation
 - legacy cron endpoints now implement a Windows Task Scheduler bootstrap path and expose scheduler task plus host-heartbeat status
 - the installed scheduler host currently emits tick and heartbeat state only; it does not yet own real runtime business services
@@ -183,6 +187,7 @@ Current state:
 - implemented as simulation UI
 - mock download and staged pipeline behavior are frontend-driven
 - playback emulation and screen simulation are mock behaviors only
+- B5 toggles and the inactivity-timeout input apply immediately through frontend change handlers; there are no separate apply/simulate buttons
 - does not touch a real backend or durable runtime
 
 Primary files:
@@ -196,6 +201,7 @@ Primary files:
 Current state:
 
 - implemented as a frontend presentation of mock last-run states
+- manual demo buttons drive the `no run`, `error`, and `ready` layouts
 - can show explicit no-run / error / ready demo states in-memory
 - restore action is a placeholder
 - no real durable state loading exists
@@ -210,7 +216,9 @@ Primary files:
 Current state:
 
 - implemented as a frontend-only monitoring layout
+- the view exposes a local `Start simulated runtime preview` button but no stop control
 - simulated runtime-preview activation is local to the D view and handled inside the frontend state service
+- D2 and D3 render summary fields in-card, while D4 is the shared preview-log surface
 - worker rows and heartbeats are mock projections, not live process telemetry
 
 Primary files:
@@ -246,5 +254,7 @@ Derived from direct inspection of:
 - `dashboard/views/lastRunView.js`
 - `dashboard/views/runningProcessView.js`
 - `dashboard/shared/constants.js`
+- `server/scheduler_host.js`
+- `server/scripts/windows_task_scheduler.ps1`
 - `generated_test_data/`
 - `dist/`
