@@ -35,6 +35,15 @@ The latest triggered backend response is also rendered inside the card.
 - env verification and DB actions are implemented in the repo-local backend
 - the legacy cron routes now manage a Windows Task Scheduler bootstrap path and render scheduler task plus host status directly in the card
 
+## Operational Dependency
+- View A is only backend-wired if the repo-local init API is actually running and reachable from the frontend.
+- In local development, this means the frontend and `node server/index.js` must both be running, with `/api/*` reaching `127.0.0.1:4301` through the Vite proxy.
+- If the init API process is not running, View A can show endpoint failures even though the route implementations exist in the repository.
+- Runtime troubleshooting must therefore separate:
+  - init API not running or not reachable
+  - backend handler returned an error
+  - contract mismatch between frontend and backend
+
 ## Future Backend Wiring Notes
 - **1A** now has an implemented backend path plus a response schema derived from the checked-in `.env` contract.
 - **2A** now has implemented backend endpoints for status, inspect, delete, and recreate-empty, with confirmation gating for destructive actions.

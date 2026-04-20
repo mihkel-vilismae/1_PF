@@ -33,31 +33,32 @@ Read these first when the question is: **what is implemented now?**
 6. `VIEW_C_LAST_RUN_INFO.md` — current state of view C
 7. `VIEW_D_RUNNING_PROCESS.md` — current state of view D
 8. `issues_errors_discrepancies.md` — issue registry and implementation-level corrections
+9. `23_VIEW_A_INIT_RECONCILIATION_PROMPT.md` — focused analysis prompt for reconciling View A runtime truth, contract wiring, and docs
 
 ### B. Target architecture documents
 
 Read these second when the question is: **what should the later backend implementation follow?**
 When there is overlap, start with the canonical contract set before falling back to the broader summaries.
 
-9. `18_CANONICAL_BACKEND_CONTRACT_SET.md` — canonical backend contract strategy, reconciliation notes, and migration map
-10. `19_BACKEND_RUNTIME_CONTRACT.md` — seven-stage runtime contract and normalized stage handoffs
-11. `20_STATE_AND_TRUTH_CONTRACT.md` — truth surfaces, ownership, vocabulary, and invalid states
-12. `21_EXECUTION_AND_RECOVERY_CONTRACT.md` — retry, locking, reclaim, concurrency, and restart rules
-13. `22_ACCEPTANCE_AND_VALIDATION_CONTRACT.md` — proof standard, DB checklist expectations, and validation priorities
-14. `01_SYSTEM_OVERVIEW.md` — scope, goals, boundaries, terminology
-15. `02_SYSTEM_INVARIANTS.md` — non-negotiable target rules
-16. `03_ARCHITECTURE.md` — component and deployment shape
-17. `04_SINGLE_SOURCE_OF_TRUTH.md` — canonical runtime state ownership
-18. `05_STATE_MACHINE.md` — allowed states and transitions
-19. `06_DATABASE_SCHEMA.md` — durable storage design
-20. `07_PIPELINE_STAGES.md` — five-stage processing loop
-21. `08_WORKERS_AND_OWNERSHIP.md` — worker roles and write authority
-22. `09_CRON_AND_WATCHDOG.md` — scheduling and supervision
-23. `10_CONCURRENCY_AND_LOCKING.md` — duplicate prevention and lock recovery
-24. `11_LOGGING_AND_EVENT_MODEL.md` — append-only history and event schema
-25. `12_STATE_AND_RECOVERY.md` — crash, restart, and resume behavior
-26. `13_FRONTEND_BACKEND_CONTRACT.md` — dashboard/API/service contract for future wiring
-27. `14_VERSIONING_AND_CHANGELOG_RULES.md` — change-management rules
+10. `18_CANONICAL_BACKEND_CONTRACT_SET.md` — canonical backend contract strategy, reconciliation notes, and migration map
+11. `19_BACKEND_RUNTIME_CONTRACT.md` — seven-stage runtime contract and normalized stage handoffs
+12. `20_STATE_AND_TRUTH_CONTRACT.md` — truth surfaces, ownership, vocabulary, and invalid states
+13. `21_EXECUTION_AND_RECOVERY_CONTRACT.md` — retry, locking, reclaim, concurrency, and restart rules
+14. `22_ACCEPTANCE_AND_VALIDATION_CONTRACT.md` — proof standard, DB checklist expectations, and validation priorities
+15. `01_SYSTEM_OVERVIEW.md` — scope, goals, boundaries, terminology
+16. `02_SYSTEM_INVARIANTS.md` — non-negotiable target rules
+17. `03_ARCHITECTURE.md` — component and deployment shape
+18. `04_SINGLE_SOURCE_OF_TRUTH.md` — canonical runtime state ownership
+19. `05_STATE_MACHINE.md` — allowed states and transitions
+20. `06_DATABASE_SCHEMA.md` — durable storage design
+21. `07_PIPELINE_STAGES.md` — five-stage processing loop
+22. `08_WORKERS_AND_OWNERSHIP.md` — worker roles and write authority
+23. `09_CRON_AND_WATCHDOG.md` — scheduling and supervision
+24. `10_CONCURRENCY_AND_LOCKING.md` — duplicate prevention and lock recovery
+25. `11_LOGGING_AND_EVENT_MODEL.md` — append-only history and event schema
+26. `12_STATE_AND_RECOVERY.md` — crash, restart, and resume behavior
+27. `13_FRONTEND_BACKEND_CONTRACT.md` — dashboard/API/service contract for future wiring
+28. `14_VERSIONING_AND_CHANGELOG_RULES.md` — change-management rules
 
 ## Authority Rules
 
