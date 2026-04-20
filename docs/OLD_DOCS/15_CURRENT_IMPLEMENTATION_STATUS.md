@@ -92,7 +92,9 @@ Implemented:
 - real `.env` verification against a checked-in config schema
 - real SQLite status, inspect, delete, and recreate-empty endpoints
 - frontend confirmation gating for destructive DB actions
-- Windows Task Scheduler install/status/print endpoints behind the legacy cron routes
+- platform-aware scheduler capability responses behind the legacy cron routes
+- Windows Task Scheduler install/status/print support behind the same legacy route names
+- Raspberry Pi OS profile alignment through deferred Unix-cron capability metadata (install not implemented yet)
 - a repo-local scheduler host that preserves the documented 5-second and 15-second timing model
 
 Evidence:
@@ -168,7 +170,9 @@ Current state:
 - repo-local backend endpoints exist for env verification and SQLite status/inspect/delete/recreate-empty
 - the repo-local backend must be started separately; if it is down or unreachable, A fails operationally before handler logic can be judged
 - destructive DB actions require explicit frontend confirmation
-- legacy cron endpoints now implement a Windows Task Scheduler bootstrap path and expose scheduler task plus host-heartbeat status
+- legacy cron endpoints now return platform-aware scheduler capability data and preserve route compatibility
+- Windows keeps the real Task Scheduler bootstrap-host implementation for install/status/print
+- Raspberry Pi OS profile currently marks install as deferred while status/print remain informational
 - the installed scheduler host currently emits tick and heartbeat state only; it does not yet own real runtime business services
 
 Primary files:

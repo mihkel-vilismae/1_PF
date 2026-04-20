@@ -31,7 +31,7 @@ Current error envelope for implemented A endpoints:
 - `message`
 - `details` when available
 
-Known live error cases in the current repo include missing confirmation for destructive DB actions, missing DB path or database file conditions, and `cron_contract_blocked` on unsupported platforms.
+Known live error cases in the current repo include missing confirmation for destructive DB actions, missing DB path or database file conditions, and Windows Task Scheduler command failures when the helper script cannot install/read the task.
 
 ### 1A Verify `.env`
 - `POST /api/init/verify-env`
@@ -112,17 +112,26 @@ Current response schema:
   - `messages`
   - `routeCompatibility`
   - `platform`
+  - `platformProfile`
+  - `platformProfileLabel`
   - `schedulerTarget`
   - `schedulerMode`
+  - `supportLevel`
+  - `operation`
+  - `operationSupportLevel`
   - `taskName`
   - `cadence`
   - `command`
   - `task`
   - `host`
   - `notes`
+  - `capability`
 - current implementation note:
   - the route names stay `/api/init/cron/*` for frontend compatibility
-  - on Windows, the backend installs an `AtLogOn` Task Scheduler task that launches a repo-local scheduler host
+  - one shared scheduler capability profile is used by both backend response shaping and View A UI behavior
+  - on Windows 11, install/status/print are `supported` and use an `AtLogOn` Task Scheduler bootstrap task that launches a repo-local scheduler host
+  - on Raspberry Pi OS profile (`linux` runtime), install is currently `deferred` while status/print return informational capability payloads
+  - unsupported platforms keep honest capability reporting with `unsupported` support levels rather than pretending install exists
   - the host preserves the documented `5s/5s/5s/15s` timing model because Task Scheduler repetition intervals have a documented 1-minute minimum
   - the host currently reports heartbeat/tick state only; it does not yet run the real runtime services
 

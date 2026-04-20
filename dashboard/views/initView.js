@@ -1,6 +1,16 @@
 import { statusBadge, renderLogEntries, renderResultSurface } from '../services/renderers.js';
+import {
+  getOperationSupportLevel,
+  SCHEDULER_OPERATION_SUPPORT,
+  SCHEDULER_SUPPORT_LEVELS,
+} from '../../shared/schedulerPlatformCapabilities.js';
 
 export function renderInitView(state) {
+  const schedulerCapability = state.initCapabilities?.scheduler ?? null;
+  const installSupportLevel = getOperationSupportLevel(schedulerCapability, SCHEDULER_OPERATION_SUPPORT.install);
+  const statusSupportLevel = getOperationSupportLevel(schedulerCapability, SCHEDULER_OPERATION_SUPPORT.status);
+  const printSupportLevel = getOperationSupportLevel(schedulerCapability, SCHEDULER_OPERATION_SUPPORT.print);
+
   return `
     <section class="view-page">
       <div class="view-hero">
@@ -38,11 +48,11 @@ export function renderInitView(state) {
         state,
         '3A',
           `
-            <button class="button button--secondary" data-action="install-cron">Install scheduler</button>
-            <button class="button button--secondary" data-action="check-cron">Check scheduler</button>
-            <button class="button button--secondary" data-action="print-cron">Print scheduler</button>
+            <button class="button button--secondary" data-action="install-cron"${buildSchedulerButtonAttributes(installSupportLevel)}>Install scheduler</button>
+            <button class="button button--secondary" data-action="check-cron"${buildSchedulerButtonAttributes(statusSupportLevel)}>Check scheduler</button>
+            <button class="button button--secondary" data-action="print-cron"${buildSchedulerButtonAttributes(printSupportLevel)}>Print scheduler</button>
           `,
-          'The legacy cron routes now manage the real platform scheduler target and display the latest backend payload below the action row.',
+          renderSchedulerCopy(schedulerCapability, installSupportLevel),
       )}
     </section>
   `;
@@ -64,4 +74,28 @@ function renderCard(code, title, state, logKey, actions, copy) {
       <div class="log-surface">${renderLogEntries(state.logs[logKey], { sourceKey: logKey })}</div>
     </article>
   `;
+}
+
+function buildSchedulerButtonAttributes(supportLevel) {
+  if (supportLevel === SCHEDULER_SUPPORT_LEVELS.supported) {
+    return '';
+  }
+  return ' disabled aria-disabled="true"';
+}
+
+function renderSchedulerCopy(capability, installSupportLevel) {
+  if (!capability) {
+    return 'The legacy cron routes manage scheduler behavior through a platform-aware backend capability model.';
+  }
+
+  const profile = capability.platformProfileLabel ?? capability.profileLabel ?? 'current platform';
+  const target = capability.schedulerTarget ?? 'unknown';
+  const mode = capability.schedulerMode ?? 'unknown';
+  const support = capability.supportLevel ?? 'unknown';
+  const installLine =
+    installSupportLevel === SCHEDULER_SUPPORT_LEVELS.supported
+      ? 'Install scheduler is enabled for this platform profile.'
+      : `Install scheduler is ${installSupportLevel} for this platform profile and is intentionally disabled in the UI.`;
+
+  return `Legacy /api/init/cron/* routes stay compatible while the backend advertises the real platform target (${profile} -> ${target}, mode ${mode}, support ${support}). ${installLine}`;
 }

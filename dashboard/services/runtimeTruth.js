@@ -9,6 +9,12 @@ import {
   checkCronStatus,
   printCron,
 } from './initService.js';
+import {
+  createSchedulerCapability,
+  getOperationSupportLevel,
+  SCHEDULER_OPERATION_SUPPORT,
+  SCHEDULER_SUPPORT_LEVELS,
+} from '../../shared/schedulerPlatformCapabilities.js';
 
 const stamp = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 const formatTallinnTimestamp = () =>
@@ -27,10 +33,40 @@ const listeners = new Set();
 const STAGE_ACTION_KEYS = new Set(['B3.1', 'B3.2', 'B3.3', 'B3.4', 'B3.5']);
 const PROCESS_ACTION_KEYS = new Set(['B4', 'D2', 'D3']);
 const ACTION_LOCK_KEYS = new Set(['1A', '2A', '3A', 'B1', 'B2', 'B3', 'B3.1', 'B3.2', 'B3.3', 'B3.4', 'B3.5', 'B4', 'B5', 'C', 'D1', 'D2', 'D3']);
+const SCHEDULER_ACTION_TO_OPERATION = Object.freeze({
+  'install-cron': SCHEDULER_OPERATION_SUPPORT.install,
+  'check-cron': SCHEDULER_OPERATION_SUPPORT.status,
+  'print-cron': SCHEDULER_OPERATION_SUPPORT.print,
+});
+
+function buildInitialSchedulerCapability() {
+  const browserPlatform = typeof navigator !== 'undefined' ? navigator.platform : null;
+  const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : null;
+  return createSchedulerCapability({ browserPlatform, userAgent });
+}
+
+function getSchedulerSupportForAction(capability, action) {
+  const operation = SCHEDULER_ACTION_TO_OPERATION[action];
+  if (!operation) {
+    return SCHEDULER_SUPPORT_LEVELS.supported;
+  }
+  return getOperationSupportLevel(capability, operation);
+}
+
+function supportsSchedulerAction(capability, action) {
+  return getSchedulerSupportForAction(capability, action) === SCHEDULER_SUPPORT_LEVELS.supported;
+}
+
+function buildSchedulerReadyMessage(capability) {
+  const label = capability?.profileLabel ?? 'current platform';
+  const support = capability?.supportLevel ?? 'unknown';
+  return `Scheduler controls are ready to call legacy /api/init/cron/* endpoints for ${label} (${support}).`;
+}
 
 
 function createInitialState() {
   const now = stamp();
+  const schedulerCapability = buildInitialSchedulerCapability();
   return {
     activeView: 'A',
     inspectMode: false,
@@ -85,7 +121,7 @@ function createInitialState() {
     logs: {
       '1A': [{ at: now, type: 'info', message: 'Ready to call POST /api/init/verify-env.' }],
       '2A': [{ at: now, type: 'info', message: 'Database controls are ready to call /api/init/database/* endpoints.' }],
-      '3A': [{ at: now, type: 'info', message: 'Scheduler controls are ready to call the legacy /api/init/cron/* endpoints.' }],
+      '3A': [{ at: now, type: 'info', message: buildSchedulerReadyMessage(schedulerCapability) }],
       B1: [{ at: now, type: 'info', message: 'Login flow is idle.' }],
       B2: [{ at: now, type: 'info', message: 'No download batch has run yet.' }],
       'B3.1': [{ at: now, type: 'info', message: 'Mock download will read from /generated_test_data.' }],
@@ -102,6 +138,9 @@ function createInitialState() {
       '1A': null,
       '2A': null,
       '3A': null,
+    },
+    initCapabilities: {
+      scheduler: schedulerCapability,
     },
     simulation: {
       executionMode: 'auto',
@@ -412,6 +451,31 @@ export function setSimulationValue(key, value) {
 }
 
 export function runAction(action, payload = {}) {
+  const schedulerOperation = SCHEDULER_ACTION_TO_OPERATION[action];
+  if (schedulerOperation) {
+    const schedulerCapability = state.initCapabilities?.scheduler ?? buildInitialSchedulerCapability();
+    if (!supportsSchedulerAction(schedulerCapability, action)) {
+      const support = getSchedulerSupportForAction(schedulerCapability, action);
+      const profileLabel = schedulerCapability.profileLabel ?? 'current platform';
+      const message = `Scheduler action blocked: ${schedulerOperation.toUpperCase()} is ${support} on ${profileLabel}.`;
+      setStatus('3A', support === SCHEDULER_SUPPORT_LEVELS.unsupported ? 'error' : 'info');
+      pushLog('3A', support === SCHEDULER_SUPPORT_LEVELS.unsupported ? 'error' : 'warning', message, {
+        timeline: buildTimelineDetails(),
+        action,
+        schedulerOperation,
+        supportLevel: support,
+        profile: profileLabel,
+      });
+      pushHistory('SCHEDULER', support === SCHEDULER_SUPPORT_LEVELS.unsupported ? 'error' : 'warning', message, {
+        action,
+        schedulerOperation,
+        supportLevel: support,
+        profile: profileLabel,
+      });
+      return;
+    }
+  }
+
   const actionMap = {
     'verify-env': () => runInitAction('1A', 'INIT', 'Verify .env', INIT_ENDPOINTS.verifyEnv, verifyEnv),
     'check-db': () => runInitAction('2A', 'DB', 'Check DB', INIT_ENDPOINTS.checkDatabaseStatus, checkDatabaseStatus),
@@ -630,8 +694,11 @@ async function runInitAction(key, source, operation, endpoint, request, payload 
         request: successDetails.request,
         response: successDetails.response,
       };
+      if (key === '3A') {
+        draft.initCapabilities.scheduler = extractSchedulerCapability(responsePayload, draft.initCapabilities.scheduler);
+      }
     });
-    setStatus(key, 'success');
+    setStatus(key, mapPayloadStatusToUiStatus(responsePayload?.status));
     pushLog(key, 'success', message, successDetails);
     pushHistory(source, 'success', `${operation} completed through ${endpoint.path}.`, successDetails);
   } catch (error) {
@@ -657,6 +724,9 @@ async function runInitAction(key, source, operation, endpoint, request, payload 
         request: errorDetails.request,
         response: errorDetails.response,
       };
+      if (key === '3A') {
+        draft.initCapabilities.scheduler = extractSchedulerCapability(error.payload, draft.initCapabilities.scheduler);
+      }
     });
     setStatus(key, 'error');
     pushLog(key, 'error', message, errorDetails);
@@ -840,9 +910,35 @@ function startRealRun() {
   pushLog('D', 'success', 'Simulated runtime preview is now active.');
 }
 
+function mapPayloadStatusToUiStatus(payloadStatus) {
+  if (payloadStatus === 'error') {
+    return 'error';
+  }
+  if (payloadStatus === 'warning') {
+    return 'info';
+  }
+  return 'success';
+}
+
+function extractSchedulerCapability(payload, fallbackCapability) {
+  const candidate = payload?.scheduler?.capability;
+  if (!candidate || typeof candidate !== 'object') {
+    return fallbackCapability ?? buildInitialSchedulerCapability();
+  }
+  return {
+    ...(fallbackCapability ?? buildInitialSchedulerCapability()),
+    ...candidate,
+  };
+}
+
 function summarizeInitPayload(operation, payload) {
   if (!payload) {
     return `${operation} completed with an empty response body.`;
+  }
+  const schedulerSupport = payload?.scheduler?.operationSupportLevel;
+  const schedulerProfile = payload?.scheduler?.platformProfileLabel;
+  if (schedulerSupport && schedulerProfile) {
+    return `${operation} completed for ${schedulerProfile} with scheduler support level ${schedulerSupport}.`;
   }
   if (typeof payload === 'string') {
     return `${operation} completed: ${payload}`;

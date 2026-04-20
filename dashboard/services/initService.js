@@ -1,4 +1,11 @@
 import { requestJson } from './apiClient.js';
+import { SCHEDULER_OPERATION_SUPPORT } from '../../shared/schedulerPlatformCapabilities.js';
+
+export const SCHEDULER_INIT_ENDPOINTS = Object.freeze({
+  [SCHEDULER_OPERATION_SUPPORT.install]: { method: 'POST', path: '/api/init/cron/install' },
+  [SCHEDULER_OPERATION_SUPPORT.status]: { method: 'GET', path: '/api/init/cron/status' },
+  [SCHEDULER_OPERATION_SUPPORT.print]: { method: 'GET', path: '/api/init/cron/print' },
+});
 
 export const INIT_ENDPOINTS = {
   verifyEnv: { method: 'POST', path: '/api/init/verify-env' },
@@ -6,9 +13,9 @@ export const INIT_ENDPOINTS = {
   inspectDatabase: { method: 'POST', path: '/api/init/database/inspect' },
   deleteDatabase: { method: 'POST', path: '/api/init/database/delete' },
   recreateEmptyDatabase: { method: 'POST', path: '/api/init/database/recreate-empty' },
-  installCron: { method: 'POST', path: '/api/init/cron/install' },
-  checkCronStatus: { method: 'GET', path: '/api/init/cron/status' },
-  printCron: { method: 'GET', path: '/api/init/cron/print' },
+  installCron: SCHEDULER_INIT_ENDPOINTS[SCHEDULER_OPERATION_SUPPORT.install],
+  checkCronStatus: SCHEDULER_INIT_ENDPOINTS[SCHEDULER_OPERATION_SUPPORT.status],
+  printCron: SCHEDULER_INIT_ENDPOINTS[SCHEDULER_OPERATION_SUPPORT.print],
 };
 
 export function verifyEnv() {
@@ -44,15 +51,23 @@ export function recreateEmptyDatabase(confirmation) {
 }
 
 export function installCron() {
-  return callInitEndpoint(INIT_ENDPOINTS.installCron);
+  return callSchedulerOperation(SCHEDULER_OPERATION_SUPPORT.install);
 }
 
 export function checkCronStatus() {
-  return callInitEndpoint(INIT_ENDPOINTS.checkCronStatus);
+  return callSchedulerOperation(SCHEDULER_OPERATION_SUPPORT.status);
 }
 
 export function printCron() {
-  return callInitEndpoint(INIT_ENDPOINTS.printCron);
+  return callSchedulerOperation(SCHEDULER_OPERATION_SUPPORT.print);
+}
+
+export function callSchedulerOperation(operation) {
+  const endpoint = SCHEDULER_INIT_ENDPOINTS[operation];
+  if (!endpoint) {
+    throw new Error(`Unsupported scheduler operation: ${operation}`);
+  }
+  return callInitEndpoint(endpoint);
 }
 
 function callInitEndpoint(endpoint, options = {}) {
