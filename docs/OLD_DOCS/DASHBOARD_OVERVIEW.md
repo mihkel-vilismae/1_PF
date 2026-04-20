@@ -16,6 +16,8 @@ This dashboard is a mostly prototype operator surface for the photo-frame system
 - `dashboard/services/apiClient.js` — shared request and error handling for wired frontend calls.
 - `dashboard/services/initService.js` — frontend init contract wiring for `.env`, database, and legacy cron/scheduler actions.
 - `server/index.js` — backend implementation for the current A init endpoints.
+- `server/scheduler_host.js` — repo-local scheduler host used by the Windows scheduler bootstrap path.
+- `server/scripts/windows_task_scheduler.ps1` — Windows helper for scheduler install/status/print.
 - `docs/VIEW_A_INIT.md` — view-specific documentation for Init.
 - `docs/VIEW_B_TEST.md` — view-specific documentation for Test.
 - `docs/VIEW_C_LAST_RUN_INFO.md` — view-specific documentation for Last Run Info.
@@ -30,11 +32,13 @@ This dashboard is a mostly prototype operator surface for the photo-frame system
 - scrollable log and history panels
 - current-state summary panel
 - playback preview area
+- view-level demo controls in C and a shared D4 preview log in D
 - runtime-preview monitoring layout
 - disabled and empty states
 
 ### Not implemented yet
 - backend implementation for B/C/D and the rest of the documented API contracts
+- dedicated frontend service modules for `/api/test/*` and `/api/runtime/*`
 - real pipeline/playback/screen/recovery services behind the installed scheduler host
 - real file downloads
 - real media playback engine
@@ -56,4 +60,14 @@ This frontend already exposes two core concepts that must later map to real syst
 The current implementation mostly uses in-memory mock state, with View A now calling a repo-local backend implementation of `/api/init/*` while C and D expose explicit demo and preview wording to avoid overstating backend support.
 
 ## Evidence Basis
-Derived from the user dashboard specification in this chat. The source basis includes the defined views A, B, C, and D; the Init, Test, Last Run Info, and Running Process requirements; the B3 pipeline rules; the playback emulation and screen on-off simulation rules; the requirement for explicit event/history tracking and resumable current state; and the real-runtime monitoring distinction for D.
+Derived from direct repo inspection, especially:
+
+- `dashboard/app.js`
+- `dashboard/views/initView.js`
+- `dashboard/views/testView.js`
+- `dashboard/views/lastRunView.js`
+- `dashboard/views/runningProcessView.js`
+- `dashboard/services/runtimeTruth.js`
+- `dashboard/services/initService.js`
+- `server/index.js`
+- `server/scheduler_host.js`

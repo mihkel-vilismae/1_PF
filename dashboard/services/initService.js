@@ -56,5 +56,5 @@ export function printCron() {
 }
 
 function callInitEndpoint(endpoint, options = {}) {
-  return requestJson(endpoint.path, { method: endpoint.method, ...options });
+  return requestJson(endpoint.path, { method: endpoint.method, captureMeta: true, ...options });
 }

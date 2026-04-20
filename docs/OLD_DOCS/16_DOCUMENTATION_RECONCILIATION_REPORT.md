@@ -33,6 +33,7 @@ Found in `docs/`:
 
 - view-level docs describing the frontend UI
 - system docs `01` through `14` describing a future backend architecture
+- canonical target-state contract docs `18` through `22` that are more implementation-ready than the broader summaries when topics overlap
 - issue registry documenting already-fixed frontend runtime-truth problems
 
 ## Main risk found
@@ -52,16 +53,33 @@ That ambiguity is risky in a regression-intolerant workflow because it can cause
 
 ## Documentation updates applied
 
-### Updated files
+This reconciliation now also keeps the authority hierarchy, dashboard current-truth docs, and supporting contract notes aligned with the repo.
+
+Updated files:
 
 - `README.md`
 - `docs/00_TABLE_OF_CONTENTS.md`
-- `docs/01_SYSTEM_OVERVIEW.md`
-
-### New files
-
+- `docs/09_CRON_AND_WATCHDOG.md`
+- `docs/12_STATE_AND_RECOVERY.md`
+- `docs/13_FRONTEND_BACKEND_CONTRACT.md`
 - `docs/15_CURRENT_IMPLEMENTATION_STATUS.md`
 - `docs/16_DOCUMENTATION_RECONCILIATION_REPORT.md`
+- `docs/DASHBOARD_OVERVIEW.md`
+- `docs/VIEW_A_INIT.md`
+- `docs/VIEW_B_TEST.md`
+- `docs/VIEW_C_LAST_RUN_INFO.md`
+- `docs/VIEW_D_RUNNING_PROCESS.md`
+- `placeholder_implementations.md`
+
+## Current high-value conflicts
+
+The most important conflicts now resolved or explicitly documented are:
+
+- inspected code now outranks stale current-truth summaries when answering “what is implemented now?”
+- `docs/19` through `docs/22` now outrank broader target-state summaries when target docs overlap
+- View B no longer claims nonexistent B5 apply/simulate buttons in current-truth docs
+- View D now documents the current shared D4 log layout and the preview-only start control honestly
+- supporting contract docs now label scheduler/recovery/runtime behavior as target-state where the repo does not yet implement it
 
 ## What changed conceptually
 
@@ -83,6 +101,9 @@ Changed:
 - made the implementation-status document authoritative for repo reality
 - clarified that target backend docs define future constraints, not current execution truth
 - updated the reading order so implementation questions are answered from implementation docs first
+- tightened authority order so inspected code outranks stale summary docs for “implemented now”
+- elevated the canonical target-state contract set in `docs/18` through `docs/22` above broader target summaries when topics overlap
+- corrected current-truth view docs where the live UI had drifted from earlier descriptions
 
 ### Risks reduced
 
@@ -97,10 +118,11 @@ Reduced risks:
 
 Use:
 
-- `15_CURRENT_IMPLEMENTATION_STATUS.md` for repo reality
-- `16_DOCUMENTATION_RECONCILIATION_REPORT.md` for the doc split and reasoning
-- `DASHBOARD_OVERVIEW.md` + view docs for current UI behavior
-- `01` through `14` only when planning backend implementation or validating future design constraints
+- inspected code and repo contents first when the question is “what is implemented now?”
+- `15_CURRENT_IMPLEMENTATION_STATUS.md` for the consolidated current-truth summary
+- `16_DOCUMENTATION_RECONCILIATION_REPORT.md` for the authority split, conflict notes, and reconciliation rationale
+- `DASHBOARD_OVERVIEW.md` + `VIEW_A_INIT.md` through `VIEW_D_RUNNING_PROCESS.md` for current UI behavior
+- `19` through `22` first when planning backend implementation, then `18`, then the supporting target docs in `01` through `14`
 
 ## Residual limitations
 

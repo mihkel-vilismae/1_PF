@@ -4,6 +4,18 @@
 
 This document defines the exact concurrency control model.
 
+## Canonical Backend Contract Alignment
+
+This document is the older target-state concurrency design.
+
+For the implementation-ready backend execution model, also read:
+
+- [`18_CANONICAL_BACKEND_CONTRACT_SET.md`](18_CANONICAL_BACKEND_CONTRACT_SET.md)
+- [`21_EXECUTION_AND_RECOVERY_CONTRACT.md`](21_EXECUTION_AND_RECOVERY_CONTRACT.md)
+- [`19_BACKEND_RUNTIME_CONTRACT.md`](19_BACKEND_RUNTIME_CONTRACT.md)
+
+The newer canonical execution contract is more specific about stage-entry locks, Stage 3 and Stage 4 queue claims, Stage 6 playback ownership, reclaim, restart behavior, and conflict handling. Use it when implementing backend runtime behavior.
+
 ## Canonical Choice
 
 The system uses **database-backed leases with fencing tokens** as the primary lock mechanism.
