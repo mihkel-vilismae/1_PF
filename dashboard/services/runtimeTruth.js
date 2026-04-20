@@ -35,6 +35,7 @@ function createInitialState() {
     activeView: 'A',
     inspectMode: false,
     valueInspectMode: false,
+    realityInspectMode: false,
     currentViewTitle: 'A — Init',
     modeBanner: 'Hybrid UI: A uses backend contract calls, while B-D remain frontend demos and previews',
     statusByKey: {
@@ -174,6 +175,7 @@ export function toggleInspectMode() {
     ...state,
     inspectMode: nextInspectMode,
     valueInspectMode: nextInspectMode ? false : state.valueInspectMode,
+    realityInspectMode: nextInspectMode ? false : state.realityInspectMode,
   };
   emit();
 }
@@ -184,6 +186,18 @@ export function toggleValueInspectMode() {
     ...state,
     valueInspectMode: nextValueInspectMode,
     inspectMode: nextValueInspectMode ? false : state.inspectMode,
+    realityInspectMode: nextValueInspectMode ? false : state.realityInspectMode,
+  };
+  emit();
+}
+
+export function toggleRealityInspectMode() {
+  const nextRealityInspectMode = !state.realityInspectMode;
+  state = {
+    ...state,
+    realityInspectMode: nextRealityInspectMode,
+    inspectMode: nextRealityInspectMode ? false : state.inspectMode,
+    valueInspectMode: nextRealityInspectMode ? false : state.valueInspectMode,
   };
   emit();
 }
