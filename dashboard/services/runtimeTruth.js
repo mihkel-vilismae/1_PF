@@ -36,6 +36,7 @@ function createInitialState() {
     inspectMode: false,
     valueInspectMode: false,
     realityInspectMode: false,
+    backendStatusInspectMode: false,
     currentViewTitle: 'A — Init',
     modeBanner: 'Hybrid UI: A uses backend contract calls, while B-D remain frontend demos and previews',
     statusByKey: {
@@ -176,6 +177,7 @@ export function toggleInspectMode() {
     inspectMode: nextInspectMode,
     valueInspectMode: nextInspectMode ? false : state.valueInspectMode,
     realityInspectMode: nextInspectMode ? false : state.realityInspectMode,
+    backendStatusInspectMode: nextInspectMode ? false : state.backendStatusInspectMode,
   };
   emit();
 }
@@ -187,6 +189,7 @@ export function toggleValueInspectMode() {
     valueInspectMode: nextValueInspectMode,
     inspectMode: nextValueInspectMode ? false : state.inspectMode,
     realityInspectMode: nextValueInspectMode ? false : state.realityInspectMode,
+    backendStatusInspectMode: nextValueInspectMode ? false : state.backendStatusInspectMode,
   };
   emit();
 }
@@ -198,6 +201,19 @@ export function toggleRealityInspectMode() {
     realityInspectMode: nextRealityInspectMode,
     inspectMode: nextRealityInspectMode ? false : state.inspectMode,
     valueInspectMode: nextRealityInspectMode ? false : state.valueInspectMode,
+    backendStatusInspectMode: nextRealityInspectMode ? false : state.backendStatusInspectMode,
+  };
+  emit();
+}
+
+export function toggleBackendStatusInspectMode() {
+  const nextBackendStatusInspectMode = !state.backendStatusInspectMode;
+  state = {
+    ...state,
+    backendStatusInspectMode: nextBackendStatusInspectMode,
+    inspectMode: nextBackendStatusInspectMode ? false : state.inspectMode,
+    valueInspectMode: nextBackendStatusInspectMode ? false : state.valueInspectMode,
+    realityInspectMode: nextBackendStatusInspectMode ? false : state.realityInspectMode,
   };
   emit();
 }

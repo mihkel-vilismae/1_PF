@@ -15,7 +15,7 @@ The goal is to make backend wiring gaps visible directly in the rendered dashboa
 
 ## Status
 
-proposed
+implemented
 
 ## Current Repo Truth
 
@@ -23,10 +23,16 @@ proposed
   - `Explain controls`
   - `Explain values`
   - `Show real vs mock`
+- The dashboard now also implements `Show backend status` as a fourth guide button in the topbar.
 - The dashboard itself currently contains a hybrid mix of:
   - real View A backend calls
   - simulated/demo-only View B, C, and D behaviors
-- There is not yet a dedicated guide mode that classifies elements by backend status specifically.
+- The implemented backend-status mode classifies relevant elements as:
+  - `real`
+  - `mock`
+  - `missing`
+  - `unknown`
+- In this repo, the classification is driven by centralized frontend metadata and recent response evidence rather than automatic backend introspection.
 - In this repo, a useful backend-status model needs at least four states:
   - `real`
   - `mock`
@@ -132,7 +138,7 @@ Good examples:
 - Existing dashboard behavior still works.
 - The UI remains readable and accessible while the mode is active.
 
-## Files Likely To Change
+## Files Changed In This Repo
 
 - `dashboard/app.js`
 - `dashboard/styles.css`
