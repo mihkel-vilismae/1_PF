@@ -51,6 +51,7 @@ Required analysis workflow:
    - determine how the frontend is being served
    - determine whether the repo-local init API is actually running
    - check whether `127.0.0.1:4301` or the active `/api` target is reachable
+   - if the required local service is not running and the repo includes a clear startup command, start it before concluding that the implementation is broken
    - explicitly separate:
      - API process not running
      - proxy or transport failure
