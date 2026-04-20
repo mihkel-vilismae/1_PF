@@ -9,6 +9,7 @@ import {
   runAction,
   seedDemoState,
   setActiveView,
+  toggleBackendStatusInspectMode,
   toggleInspectMode,
   toggleRealityInspectMode,
   toggleValueInspectMode,
@@ -75,11 +76,41 @@ const REALITY_INSPECTABLE_SELECTOR = [
   '[data-log-entry-open]',
   '[data-history-entry-open]',
 ].join(', ');
+const BACKEND_STATUS_INSPECTABLE_SELECTOR = [
+  '.button',
+  '.hero-pill',
+  '.pill',
+  '.status-badge',
+  '.notice',
+  '.result-surface',
+  '.definition-row',
+  '.preview-frame',
+  '.screen-indicator',
+  '.worker-row',
+  '[data-log-entry-open]',
+  '[data-history-entry-open]',
+].join(', ');
 const REALITY_STATE_TITLES = {
   real: 'Real',
   mock: 'Mock',
   mixed: 'Mixed',
   unknown: 'Unknown',
+};
+const BACKEND_STATUS_TITLES = {
+  real: 'Real',
+  mock: 'Mock',
+  missing: 'Missing',
+  unknown: 'Unknown',
+};
+const INIT_ACTION_TO_CODE = {
+  'verify-env': '1A',
+  'check-db': '2A',
+  'inspect-db': '2A',
+  'delete-db': '2A',
+  'recreate-db': '2A',
+  'install-cron': '3A',
+  'check-cron': '3A',
+  'print-cron': '3A',
 };
 const ACTION_INSPECT_COPY = {
   'toggle-inspect-mode': {
@@ -93,6 +124,10 @@ const ACTION_INSPECT_COPY = {
   'toggle-reality-inspect-mode': {
     label: 'Show real vs mock mode',
     description: 'Highlights the current view by implementation truth so real wiring, mock behavior, and mixed areas are easy to spot.',
+  },
+  'toggle-backend-status-inspect-mode': {
+    label: 'Show backend status mode',
+    description: 'Highlights whether a section is backed by a real backend, frontend-only mock behavior, or missing backend support.',
   },
   'clear-history': {
     label: 'Clear event history',
@@ -315,6 +350,72 @@ const VIEW_REALITY_COPY = {
     reason: 'The Running Process view is a frontend-only runtime preview in the current repo.',
   },
 };
+const ACTION_BACKEND_STATUS_COPY = {
+  'toggle-inspect-mode': {
+    state: 'unknown',
+    reason: 'Local UI guide button; it does not represent backend wiring status.',
+  },
+  'toggle-value-inspect-mode': {
+    state: 'unknown',
+    reason: 'Local UI guide button; it does not represent backend wiring status.',
+  },
+  'toggle-reality-inspect-mode': {
+    state: 'unknown',
+    reason: 'Local UI guide button; it does not represent backend wiring status.',
+  },
+  'toggle-backend-status-inspect-mode': {
+    state: 'unknown',
+    reason: 'Local UI guide button; it does not represent backend wiring status.',
+  },
+  'clear-history': {
+    state: 'unknown',
+    reason: 'Implemented local UI action; it is not a backend-backed operation.',
+  },
+  'run-b1': {
+    state: 'missing',
+    reason: 'This flow is simulated in the frontend, while the planned backend test/login endpoint is not implemented here.',
+  },
+  'run-b2': {
+    state: 'missing',
+    reason: 'This button simulates download behavior, but no real backend test-download endpoint is implemented here.',
+  },
+  'run-b3-auto': {
+    state: 'missing',
+    reason: 'This auto pipeline is frontend-driven because the planned backend stage endpoints are not implemented here.',
+  },
+  'run-b3-1': {
+    state: 'mock',
+    reason: 'This is the explicit mock-download stage backed by generated test data rather than a real backend.',
+  },
+  'run-b3-2': {
+    state: 'missing',
+    reason: 'This stage is meant to be backend-backed later, but currently no real endpoint/response exists here.',
+  },
+  'run-b3-3': {
+    state: 'missing',
+    reason: 'This stage is meant to be backend-backed later, but currently no real endpoint/response exists here.',
+  },
+  'run-b3-4': {
+    state: 'missing',
+    reason: 'This stage is meant to be backend-backed later, but currently no real endpoint/response exists here.',
+  },
+  'run-b3-5': {
+    state: 'missing',
+    reason: 'This queue stage is simulated because no real backend queue/playback endpoint is implemented here.',
+  },
+  'run-b4': {
+    state: 'missing',
+    reason: 'This playback action is a frontend emulation because no real backend playback service/endpoint is implemented here.',
+  },
+  'resume-last-run': {
+    state: 'missing',
+    reason: 'The UI exposes a placeholder restore action, but the real runtime restore backend is not implemented here.',
+  },
+  'start-real-run': {
+    state: 'missing',
+    reason: 'This starts a simulated runtime preview because the real runtime backend/worker API is not implemented here.',
+  },
+};
 
 let inspectTooltipElement;
 let inspectTooltipEyebrowElement;
@@ -421,6 +522,13 @@ function render() {
             >
               ${state.realityInspectMode ? 'Hide real vs mock' : 'Show real vs mock'}
             </button>
+            <button
+              class="button ${state.backendStatusInspectMode ? 'button--primary' : 'button--secondary'} inspect-toggle"
+              type="button"
+              data-action="toggle-backend-status-inspect-mode"
+            >
+              ${state.backendStatusInspectMode ? 'Hide backend status' : 'Show backend status'}
+            </button>
           </div>
         </header>
         ${viewMarkup}
@@ -447,6 +555,7 @@ function render() {
   bindInspectMode(state.inspectMode);
   bindValueInspectMode(state.valueInspectMode);
   bindRealityInspectMode(state.realityInspectMode);
+  bindBackendStatusInspectMode(state.backendStatusInspectMode);
 }
 
 function bindEvents() {
@@ -507,6 +616,10 @@ function bindEvents() {
       }
       if (action === 'toggle-reality-inspect-mode') {
         toggleRealityInspectMode();
+        return;
+      }
+      if (action === 'toggle-backend-status-inspect-mode') {
+        toggleBackendStatusInspectMode();
         return;
       }
       if (action === 'clear-history') {
@@ -684,6 +797,41 @@ function bindRealityInspectMode(enabled) {
   });
 
   document.body.classList.toggle('reality-inspect-mode', Boolean(enabled));
+  if (!enabled) {
+    hideInspectTooltip();
+  }
+}
+
+function bindBackendStatusInspectMode(enabled) {
+  const backendStatusElements = Array.from(app.querySelectorAll(BACKEND_STATUS_INSPECTABLE_SELECTOR));
+
+  backendStatusElements.forEach((element) => {
+    const meta = describeBackendStatusElement(element);
+    if (!meta) {
+      return;
+    }
+
+    element.classList.add('backend-status-inspectable');
+    element.dataset.backendStatusState = meta.state;
+    element.dataset.backendStatusLabel = meta.label;
+    element.dataset.backendStatusDescription = meta.description;
+    element.addEventListener('mouseenter', handleBackendStatusInspectEnter);
+    element.addEventListener('mouseleave', handleInspectLeave);
+    element.addEventListener('focus', handleBackendStatusInspectEnter);
+    element.addEventListener('blur', handleInspectLeave);
+
+    if (enabled && !isNaturallyFocusable(element) && !element.hasAttribute('tabindex')) {
+      element.dataset.backendStatusGuideTabindexAdded = 'true';
+      element.tabIndex = 0;
+    }
+
+    if (!enabled && element.dataset.backendStatusGuideTabindexAdded === 'true') {
+      element.removeAttribute('tabindex');
+      delete element.dataset.backendStatusGuideTabindexAdded;
+    }
+  });
+
+  document.body.classList.toggle('backend-status-inspect-mode', Boolean(enabled));
   if (!enabled) {
     hideInspectTooltip();
   }
@@ -973,6 +1121,352 @@ function getSectionRealityByCode(code, label) {
 
 function buildRealityMeta(state, label, description) {
   const title = REALITY_STATE_TITLES[state] ?? REALITY_STATE_TITLES.unknown;
+  return {
+    state,
+    label: `${title}: ${label}`,
+    description,
+  };
+}
+
+function describeBackendStatusElement(element) {
+  if (element.matches('.button')) {
+    return describeButtonBackendStatus(element);
+  }
+
+  if (element.matches('.hero-pill')) {
+    return describeHeroPillBackendStatus(element);
+  }
+
+  if (element.matches('.pill')) {
+    return describePillBackendStatus(element);
+  }
+
+  if (element.matches('.status-badge')) {
+    return describeStatusBadgeBackendStatus(element);
+  }
+
+  if (element.matches('.result-surface')) {
+    return describeResultSurfaceBackendStatus(element);
+  }
+
+  if (element.matches('.definition-row')) {
+    return describeDefinitionBackendStatusRow(element);
+  }
+
+  if (element.matches('.preview-frame')) {
+    return buildBackendStatusMeta('missing', 'Playback preview surface', 'This preview stands in for backend/runtime support that is not implemented yet.');
+  }
+
+  if (element.matches('.screen-indicator')) {
+    return buildBackendStatusMeta(
+      'mock',
+      compactWhitespace(element.textContent) || 'Preview indicator',
+      'This indicator is driven by frontend simulation state rather than a real backend/hardware response.',
+    );
+  }
+
+  if (element.matches('.worker-row')) {
+    const stageName = compactWhitespace(element.querySelector('.worker-row__main strong')?.textContent) || 'Runtime worker';
+    return buildBackendStatusMeta('missing', `${stageName} worker row`, 'This worker row previews runtime data that would normally come from a backend/runtime source that is not implemented yet.');
+  }
+
+  if (element.matches('.notice')) {
+    return describeNoticeBackendStatus(element);
+  }
+
+  if (element.matches('[data-log-entry-open]')) {
+    return describeLogBackendStatus(element);
+  }
+
+  if (element.matches('[data-history-entry-open]')) {
+    return describeHistoryBackendStatus(element);
+  }
+
+  return null;
+}
+
+function describeButtonBackendStatus(element) {
+  const label = compactWhitespace(element.textContent) || 'Button';
+  const action = element.dataset.action;
+
+  if (action && INIT_ACTION_TO_CODE[action]) {
+    return getInitBackendStatusMeta(INIT_ACTION_TO_CODE[action], label);
+  }
+
+  if (action && ACTION_BACKEND_STATUS_COPY[action]) {
+    const meta = ACTION_BACKEND_STATUS_COPY[action];
+    return buildBackendStatusMeta(meta.state, label, meta.reason);
+  }
+
+  if (element.dataset.lastRunMode) {
+    return buildBackendStatusMeta('mock', label, 'This button switches local demo state and is not intended to call backend support.');
+  }
+
+  if (element.matches('.inspect-toggle')) {
+    return buildBackendStatusMeta('unknown', label, 'This is a local guide-mode toggle, not a backend-backed action.');
+  }
+
+  if (element.hasAttribute('data-modal-close')) {
+    return buildBackendStatusMeta('unknown', label, 'This is a local UI action and does not represent backend wiring status.');
+  }
+
+  return buildBackendStatusMeta('unknown', label, 'No explicit backend-status classification metadata is defined for this button yet.');
+}
+
+function describeHeroPillBackendStatus(element) {
+  const label = compactWhitespace(element.textContent) || 'Hero pill';
+  const text = label.toLowerCase();
+
+  if (text.includes('backend contract wired')) {
+    return buildBackendStatusMeta('real', label, 'This pill describes a section that already calls live backend endpoints.');
+  }
+  if (text.includes('backend still required')) {
+    return buildBackendStatusMeta('missing', label, 'The UI surface exists, but additional backend support is still missing.');
+  }
+  if (text.includes('simulation only') || text.includes('mock stage')) {
+    return buildBackendStatusMeta('mock', label, 'This view or stage is explicitly simulation-only rather than backend-backed.');
+  }
+  if (text.includes('preview active') || text.includes('preview inactive')) {
+    return buildBackendStatusMeta('missing', label, 'This preview exists because the real runtime backend support is not implemented here yet.');
+  }
+
+  return buildBackendStatusMeta('unknown', label, 'No explicit backend-status classification metadata is defined for this hero pill yet.');
+}
+
+function describePillBackendStatus(element) {
+  const label = compactWhitespace(element.textContent) || 'Pill';
+  const text = label.toLowerCase();
+
+  if (text.includes('a wired') && text.includes('simulated')) {
+    return buildBackendStatusMeta('unknown', label, 'This is a hybrid summary that mixes real and simulated backend states.');
+  }
+  if (text.includes('live gateway traffic')) {
+    return buildBackendStatusMeta('real', label, 'The dashboard is currently receiving real API traffic through the gateway.');
+  }
+  if (text.includes('placeholder')) {
+    return buildBackendStatusMeta('mock', label, 'This pill indicates placeholder output rather than a real backend-fed response.');
+  }
+
+  return buildBackendStatusMeta('unknown', label, 'No explicit backend-status classification metadata is defined for this pill yet.');
+}
+
+function describeStatusBadgeBackendStatus(element) {
+  const cardContext = getCardContext(element);
+  if (!cardContext?.code) {
+    return buildBackendStatusMeta('unknown', compactWhitespace(element.textContent) || 'Status badge', 'No explicit backend-status classification metadata is defined for this status badge yet.');
+  }
+
+  return getSectionBackendStatusByCode(cardContext.code, `${cardContext.code} status badge`);
+}
+
+function describeResultSurfaceBackendStatus(element) {
+  const cardContext = getCardContext(element);
+  if (!cardContext?.code) {
+    return buildBackendStatusMeta('unknown', 'Backend result panel', 'No explicit backend-status classification metadata is defined for this result panel yet.');
+  }
+
+  if (['1A', '2A', '3A'].includes(cardContext.code)) {
+    return getInitBackendStatusMeta(cardContext.code, `${cardContext.code} backend result panel`);
+  }
+
+  return getSectionBackendStatusByCode(cardContext.code, `${cardContext.code} result panel`);
+}
+
+function describeDefinitionBackendStatusRow(element) {
+  const label = compactWhitespace(element.querySelector('dt')?.textContent) || 'Value';
+  const sidePanelTitle = compactWhitespace(element.closest('.side-panel')?.querySelector('.side-panel__header h2')?.textContent);
+  const cardContext = getCardContext(element);
+
+  if (sidePanelTitle === 'Current truth') {
+    return buildBackendStatusMeta('mock', `${label} value`, 'This value is rendered from local dashboard truth state rather than a backend response.');
+  }
+
+  if (cardContext?.code && ['1A', '2A', '3A'].includes(cardContext.code) && element.closest('.result-surface')) {
+    return getInitBackendStatusMeta(cardContext.code, `${label} value`);
+  }
+
+  if (cardContext?.code === 'B3.1') {
+    return buildBackendStatusMeta('mock', `${label} value`, 'This value belongs to the explicit mock-download stage.');
+  }
+
+  if (cardContext?.code && ['B1', 'B2', 'B3', 'B3.2', 'B3.3', 'B3.4', 'B3.5', 'B4'].includes(cardContext.code)) {
+    return buildBackendStatusMeta('missing', `${label} value`, 'This displayed value stands in for backend-backed test/pipeline data that is not implemented here yet.');
+  }
+
+  if (cardContext?.code === 'B5') {
+    return buildBackendStatusMeta('mock', `${label} value`, 'This value is driven by frontend-only simulation controls.');
+  }
+
+  if (cardContext?.code && ['C1', 'C2', 'C3', 'C4', 'C5', 'D1', 'D2', 'D3', 'D4'].includes(cardContext.code)) {
+    return buildBackendStatusMeta('missing', `${label} value`, 'This value represents runtime data that would normally come from backend/runtime APIs that are not implemented here yet.');
+  }
+
+  if (element.closest('.modal-panel')) {
+    return describeModalBackendStatus(label);
+  }
+
+  return buildBackendStatusMeta('unknown', `${label} value`, 'No explicit backend-status classification metadata is defined for this displayed value yet.');
+}
+
+function describeNoticeBackendStatus(element) {
+  const label = compactWhitespace(element.textContent) || 'Notice';
+  const text = label.toLowerCase();
+
+  if (text.includes('demo state')) {
+    return buildBackendStatusMeta('mock', label, 'This notice is part of a local demo-state switch rather than backend behavior.');
+  }
+
+  if (text.includes('frontend-only runtime preview')) {
+    return buildBackendStatusMeta('missing', label, 'This notice explicitly indicates the real runtime backend support is missing.');
+  }
+
+  if (text.includes('simulated runtime preview')) {
+    return buildBackendStatusMeta('missing', label, 'This notice exists because the real runtime backend support is not implemented here yet.');
+  }
+
+  return buildBackendStatusMeta('mock', label, 'This notice is rendered from frontend-only state rather than a backend response.');
+}
+
+function describeLogBackendStatus(element) {
+  const sourceKey = element.dataset.logSourceKey;
+  const label = `${sourceKey ?? 'Unknown'} log entry`;
+  const state = getState();
+  const index = Number(element.dataset.logEntryIndex);
+  const entry = sourceKey ? state.logs[sourceKey]?.[index] : null;
+
+  if (!sourceKey) {
+    return buildBackendStatusMeta('unknown', label, 'No explicit source key is available for this log entry.');
+  }
+
+  if (['1A', '2A', '3A'].includes(sourceKey)) {
+    return getInitBackendStatusMeta(sourceKey, label, entry);
+  }
+
+  if (sourceKey === 'B3.1' || sourceKey === 'B5') {
+    return buildBackendStatusMeta('mock', label, 'This log entry comes from frontend-only simulation behavior.');
+  }
+
+  if (sourceKey.startsWith('B') || sourceKey === 'C' || sourceKey === 'D') {
+    return buildBackendStatusMeta('missing', label, 'This log entry comes from a UI surface that stands in for missing backend/runtime support.');
+  }
+
+  return buildBackendStatusMeta('unknown', label, 'No explicit backend-status classification metadata is defined for this log source.');
+}
+
+function describeHistoryBackendStatus(element) {
+  const index = Number(element.dataset.historyEntryIndex);
+  const entry = getState().history[index];
+  const source = entry?.source ?? 'Unknown';
+
+  if (['INIT', 'DB', 'SCHEDULER'].includes(source)) {
+    return describeHistoryEntryFromDetails(`${source} history event`, entry);
+  }
+
+  if (['TEST', 'PIPELINE', 'PLAYBACK', 'RECOVERY', 'RUNTIME'].includes(source)) {
+    return buildBackendStatusMeta('missing', `${source} history event`, 'This history event belongs to UI behavior that stands in for missing backend/runtime support.');
+  }
+
+  if (['SCREEN', 'DEMO'].includes(source)) {
+    return buildBackendStatusMeta('mock', `${source} history event`, 'This history event comes from frontend-only simulation or demo-state behavior.');
+  }
+
+  if (['BOOT', 'TRUTH', 'USER'].includes(source)) {
+    return buildBackendStatusMeta('unknown', `${source} history event`, 'This is a local dashboard shell event rather than a backend-status signal.');
+  }
+
+  return buildBackendStatusMeta('unknown', `${source} history event`, 'No explicit backend-status classification metadata is defined for this history source.');
+}
+
+function describeModalBackendStatus(label) {
+  const modal = getState().modal;
+
+  if (modal?.kind === 'log') {
+    const sourceKey = modal.entry?.sourceKey;
+    if (['1A', '2A', '3A'].includes(sourceKey)) {
+      return getInitBackendStatusMeta(sourceKey, `${label} modal value`, modal.entry);
+    }
+    if (sourceKey === 'B3.1' || sourceKey === 'B5') {
+      return buildBackendStatusMeta('mock', `${label} modal value`, 'This modal is showing details for frontend-only simulation data.');
+    }
+    if (typeof sourceKey === 'string' && (sourceKey.startsWith('B') || sourceKey === 'C' || sourceKey === 'D')) {
+      return buildBackendStatusMeta('missing', `${label} modal value`, 'This modal is showing details for a UI surface that stands in for missing backend/runtime support.');
+    }
+  }
+
+  if (modal?.kind === 'history') {
+    return describeHistoryEntryFromDetails(`${label} modal value`, modal.entry);
+  }
+
+  return buildBackendStatusMeta('unknown', `${label} modal value`, 'No explicit backend-status classification metadata is defined for this modal field yet.');
+}
+
+function describeHistoryEntryFromDetails(label, entry) {
+  const response = entry?.details?.response;
+  if (isMissingBackendStatus(response?.status)) {
+    return buildBackendStatusMeta('missing', label, 'The captured backend response indicates that the expected endpoint/implementation is missing.');
+  }
+  if (response) {
+    return buildBackendStatusMeta('real', label, 'This event includes a real backend request/response record.');
+  }
+  return buildBackendStatusMeta('unknown', label, 'This event does not include enough backend response metadata to classify safely.');
+}
+
+function getSectionBackendStatusByCode(code, label) {
+  if (['1A', '2A', '3A'].includes(code)) {
+    return getInitBackendStatusMeta(code, label);
+  }
+
+  if (code === 'B3.1' || code === 'B5') {
+    return buildBackendStatusMeta('mock', label, 'This section is intentionally frontend-only simulation rather than backend-backed.');
+  }
+
+  if (['B1', 'B2', 'B3', 'B3.2', 'B3.3', 'B3.4', 'B3.5', 'B4', 'C', 'C1', 'C2', 'C3', 'C4', 'C5', 'D1', 'D2', 'D3', 'D4'].includes(code)) {
+    return buildBackendStatusMeta('missing', label, 'This section stands in for backend/runtime support that is not implemented here yet.');
+  }
+
+  if (code === 'IO') {
+    return buildBackendStatusMeta(
+      transitHasLiveTraffic ? 'real' : 'unknown',
+      label,
+      transitHasLiveTraffic
+        ? 'This terminal is currently showing real gateway traffic from dashboard API calls.'
+        : 'This terminal is implemented, but no live backend traffic has been observed yet.',
+    );
+  }
+
+  return buildBackendStatusMeta('unknown', label, 'No explicit backend-status classification metadata is defined for this section yet.');
+}
+
+function getInitBackendStatusMeta(code, label, entry = null) {
+  const state = getState();
+  const result = state.initResults[code];
+  const responseStatus = entry?.details?.response?.status ?? result?.status ?? null;
+
+  if (isMissingBackendStatus(responseStatus)) {
+    return buildBackendStatusMeta('missing', label, `The latest response for ${code} indicates the expected backend endpoint/implementation is missing.`);
+  }
+
+  if (result?.outcome === 'error') {
+    return buildBackendStatusMeta('real', label, `This UI is wired to a live backend endpoint, but the latest request for ${code} failed for a non-missing reason.`);
+  }
+
+  if (result?.outcome === 'running') {
+    return buildBackendStatusMeta('real', label, `This UI is currently waiting on a real backend request for ${code}.`);
+  }
+
+  if (result?.outcome === 'success') {
+    return buildBackendStatusMeta('real', label, `This UI is backed by a live backend endpoint and has a captured response for ${code}.`);
+  }
+
+  return buildBackendStatusMeta('real', label, `This UI is wired to a live backend endpoint for ${code}, even if it has not been called yet.`);
+}
+
+function isMissingBackendStatus(status) {
+  return [404, 405, 501].includes(Number(status));
+}
+
+function buildBackendStatusMeta(state, label, description) {
+  const title = BACKEND_STATUS_TITLES[state] ?? BACKEND_STATUS_TITLES.unknown;
   return {
     state,
     label: `${title}: ${label}`,
@@ -1345,6 +1839,20 @@ function handleRealityInspectEnter(event) {
     label: element.dataset.realityLabel,
     description: element.dataset.realityDescription,
     eyebrow: 'Implementation truth',
+  });
+}
+
+function handleBackendStatusInspectEnter(event) {
+  if (!getState().backendStatusInspectMode) {
+    return;
+  }
+
+  const element = event.currentTarget;
+  showGuideTooltip({
+    element,
+    label: element.dataset.backendStatusLabel,
+    description: element.dataset.backendStatusDescription,
+    eyebrow: 'Backend status',
   });
 }
 
