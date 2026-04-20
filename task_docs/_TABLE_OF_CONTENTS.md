@@ -17,16 +17,18 @@ Rules:
 
 | Path | Title | Purpose | Status | Created | Last Updated | Latest Commit | Notes |
 |---|---|---|---|---|---|---|---|
-| `2026-04-20_dashboard-transit-terminal.md` | `Task Doc — Dashboard Transit Terminal + Single Gateway` | Add a shared, bottom-of-view "transit terminal" panel to the dashboard UI. Initially it shows placeholder terminal-like output, then switches to live gateway t… | `implemented` | `unknown` | `unknown` | `uncommitted` | Uncommitted file. |
+| `2026-04-20_dashboard-transit-terminal.md` | `Task Doc — Dashboard Transit Terminal + Single Gateway` | Add a shared, bottom-of-view "transit terminal" panel to the dashboard UI. Initially it shows placeholder terminal-like output, then switches to live gateway t… | `implemented` | `2026-04-20` | `2026-04-20` | `b180d4f` | — |
+| `2026-04-20_explain-controls-inspect-mode.md` | `Task Doc — Explain Controls Inspect Mode Button` | Add a reusable topbar button labeled Explain controls that toggles an inspect mode. When enabled, the UI highlights every interactive control in the active vie… | `implemented` | `unknown` | `unknown` | `uncommitted` | Uncommitted file. |
 | `2026-04-20_view-e-database-viewer.md` | `Task Doc — View E Database Viewer` | Add a new dashboard view named E - Database Viewer. | `proposed` | `2026-04-20` | `2026-04-20` | `8b2a5fa` | Includes both a Codex-ready implementation prompt and a GitHub issue / spec-style task description. |
 | `README.md` | `Task Docs` | This folder stores implementation-oriented notes for larger functionality changes so they stay easy to inspect later. | `reference` | `2026-04-20` | `2026-04-20` | `1b103b7` | Companion process doc for task_docs/ maintenance. |
 
 ## Maintenance Check
 
-Current indexed file count: `3`
+Current indexed file count: `4`
 
 Expected covered files under `task_docs/` excluding `_TABLE_OF_CONTENTS.md`:
 
 - `2026-04-20_dashboard-transit-terminal.md`
+- `2026-04-20_explain-controls-inspect-mode.md`
 - `2026-04-20_view-e-database-viewer.md`
 - `README.md`
