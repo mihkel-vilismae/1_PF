@@ -1,7 +1,9 @@
 import { VIEW_ORDER } from './shared/constants.js';
 import {
   getState,
+  closeModal,
   patchState,
+  openModal,
   pushHistory,
   resetHistory,
   runAction,
@@ -11,7 +13,7 @@ import {
   setSimulationValue,
   subscribe,
 } from './services/runtimeTruth.js';
-import { renderDefinitionList, renderHistory } from './services/renderers.js';
+import { renderDefinitionList, renderHistory, renderModal } from './services/renderers.js';
 import { renderInitView } from './views/initView.js';
 import { renderTestView } from './views/testView.js';
 import { renderLastRunView } from './views/lastRunView.js';
@@ -27,6 +29,8 @@ function render() {
     C: renderLastRunView(state),
     D: renderRunningProcessView(state),
   }[state.activeView];
+
+  document.body.classList.toggle('modal-open', Boolean(state.modal));
 
   app.innerHTML = `
     <div class="shell">
@@ -88,6 +92,7 @@ function render() {
         ${viewMarkup}
       </main>
     </div>
+    ${renderModal(state.modal)}
   `;
 
   bindEvents();
@@ -102,6 +107,42 @@ function bindEvents() {
     });
   });
 
+  app.querySelectorAll('[data-log-entry-open]').forEach((entry) => {
+    entry.addEventListener('click', () => {
+      openLogModal(entry.dataset.logSourceKey, entry.dataset.logEntryIndex);
+    });
+    entry.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        openLogModal(entry.dataset.logSourceKey, entry.dataset.logEntryIndex);
+      }
+    });
+  });
+
+  app.querySelectorAll('[data-history-entry-open]').forEach((entry) => {
+    entry.addEventListener('click', () => {
+      openHistoryModal(entry.dataset.historyEntryIndex);
+    });
+    entry.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        openHistoryModal(entry.dataset.historyEntryIndex);
+      }
+    });
+  });
+
+  app.querySelectorAll('[data-modal-close]').forEach((button) => {
+    button.addEventListener('click', () => closeModal());
+  });
+
+  app.querySelectorAll('[data-modal-backdrop]').forEach((backdrop) => {
+    backdrop.addEventListener('click', (event) => {
+      if (event.target === backdrop) {
+        closeModal();
+      }
+    });
+  });
+
   app.querySelectorAll('[data-action]').forEach((button) => {
     button.addEventListener('click', () => {
       const action = button.dataset.action;
@@ -112,7 +153,10 @@ function bindEvents() {
       if (action === 'delete-db') {
         const confirmed = window.confirm('Delete the configured SQLite database file and any WAL/SHM sidecar files?');
         if (!confirmed) {
-          pushHistory('DB', 'warning', 'Delete DB was cancelled before the request was sent.');
+          pushHistory('DB', 'warning', 'Delete DB was cancelled before the request was sent.', {
+            action: 'delete-db',
+            confirmed: false,
+          });
           return;
         }
         runAction(action, { confirmationSource: 'window.confirm' });
@@ -121,7 +165,10 @@ function bindEvents() {
       if (action === 'recreate-db') {
         const confirmed = window.confirm('Recreate the configured SQLite database as an empty file? This will remove the current file first if it exists.');
         if (!confirmed) {
-          pushHistory('DB', 'warning', 'Recreate DB was cancelled before the request was sent.');
+          pushHistory('DB', 'warning', 'Recreate DB was cancelled before the request was sent.', {
+            action: 'recreate-db',
+            confirmed: false,
+          });
           return;
         }
         runAction(action, { confirmationSource: 'window.confirm' });
@@ -144,7 +191,10 @@ function bindEvents() {
       input.addEventListener('change', (event) => {
         const checked = event.target.checked;
         setSimulationValue(name, checked);
-        pushHistory('SCREEN', 'info', `${name} changed to ${checked ? 'enabled' : 'disabled'}.`);
+        pushHistory('SCREEN', 'info', `${name} changed to ${checked ? 'enabled' : 'disabled'}.`, {
+          setting: name,
+          enabled: checked,
+        });
       });
     });
   });
@@ -153,7 +203,10 @@ function bindEvents() {
     input.addEventListener('change', (event) => {
       const value = Number(event.target.value || 5);
       setSimulationValue('inactivityTimeoutSeconds', value);
-      pushHistory('SCREEN', 'info', `Inactivity timeout changed to ${value} seconds.`);
+      pushHistory('SCREEN', 'info', `Inactivity timeout changed to ${value} seconds.`, {
+        setting: 'inactivityTimeoutSeconds',
+        seconds: value,
+      });
     });
   });
 
@@ -179,5 +232,46 @@ function bindEvents() {
   });
 }
 
+function openLogModal(sourceKey, index) {
+  const state = getState();
+  const sourceLogs = state.logs[sourceKey] ?? [];
+  const entry = sourceLogs[Number(index)];
+  if (!entry) {
+    return;
+  }
+
+  const type = entry.type ?? 'info';
+  openModal({
+    kind: 'log',
+    title: `${sourceKey} log • ${type.toUpperCase()}`,
+    subtitle: entry.message ?? 'Log entry details',
+    entry: {
+      ...entry,
+      sourceKey,
+    },
+  });
+}
+
+function openHistoryModal(index) {
+  const state = getState();
+  const entry = state.history[Number(index)];
+  if (!entry) {
+    return;
+  }
+
+  openModal({
+    kind: 'history',
+    title: `${entry.source} • ${(entry.type ?? 'info').toUpperCase()}`,
+    subtitle: entry.message ?? 'History entry details',
+    entry,
+  });
+}
+
 subscribe(render);
 render();
+
+window.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && getState().modal) {
+    closeModal();
+  }
+});

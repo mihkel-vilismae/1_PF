@@ -55,6 +55,7 @@ function createInitialState() {
       D3: 'disabled',
     },
     activeActions: {},
+    modal: null,
     truth: {
       queueLength: 0,
       currentMedia: null,
@@ -178,9 +179,30 @@ export function resetHistory() {
   });
 }
 
-export function pushHistory(source, type, message) {
+export function pushHistory(source, type, message, details = null) {
   patchState((draft) => {
-    draft.history.unshift({ id: crypto.randomUUID(), at: stamp(), source, type, message });
+    draft.history.unshift({
+      id: crypto.randomUUID(),
+      at: stamp(),
+      atIso: new Date().toISOString(),
+      atTallinn: formatTallinnTimestamp(),
+      source,
+      type,
+      message,
+      details,
+    });
+  });
+}
+
+export function openModal(modal) {
+  patchState((draft) => {
+    draft.modal = modal ? structuredClone(modal) : null;
+  });
+}
+
+export function closeModal() {
+  patchState((draft) => {
+    draft.modal = null;
   });
 }
 
@@ -474,7 +496,11 @@ function applyScreenSimulationState(reason) {
   });
 
   pushLog('B5', 'info', `Screen simulation updated: ${reason}. Screen is now ${nextScreenState}.`);
-  pushHistory('SCREEN', nextScreenState === 'OFF' ? 'warning' : 'success', `Screen simulation updated: ${reason}. Screen is now ${nextScreenState}.`);
+  pushHistory('SCREEN', nextScreenState === 'OFF' ? 'warning' : 'success', `Screen simulation updated: ${reason}. Screen is now ${nextScreenState}.`, {
+    reason,
+    screenState: nextScreenState,
+    activitySource: nextActivity,
+  });
 }
 
 function genericAction(key, source, message) {
@@ -486,7 +512,10 @@ function genericAction(key, source, message) {
   setTimeout(() => {
     setStatus(key, 'success');
     pushLog(key, 'success', message);
-    pushHistory(source, 'success', message);
+    pushHistory(source, 'success', message, {
+      actionKey: key,
+      actionMessage: message,
+    });
     if (key.startsWith('B3')) {
       patchState((draft) => {
         draft.truth.lastStageCompleted = key;
@@ -552,7 +581,7 @@ async function runInitAction(key, source, operation, endpoint, request, payload 
     });
     setStatus(key, 'success');
     pushLog(key, 'success', message, successDetails);
-    pushHistory(source, 'success', `${operation} completed through ${endpoint.path}.`);
+    pushHistory(source, 'success', `${operation} completed through ${endpoint.path}.`, successDetails);
   } catch (error) {
     const message = formatInitError(operation, error);
     const errorDetails = buildInitLogDetails({
@@ -579,7 +608,7 @@ async function runInitAction(key, source, operation, endpoint, request, payload 
     });
     setStatus(key, 'error');
     pushLog(key, 'error', message, errorDetails);
-    pushHistory(source, 'error', `${operation} failed through ${endpoint.path}.`);
+    pushHistory(source, 'error', `${operation} failed through ${endpoint.path}.`, errorDetails);
   } finally {
     endAction(key);
   }
@@ -594,7 +623,7 @@ function runLoginFlow() {
     draft.loginSteps = draft.loginSteps.map((step, index) => ({ ...step, status: index === 0 ? 'active' : 'waiting' }));
   });
   pushLog('B1', 'info', 'Login flow started.');
-  pushHistory('TEST', 'info', 'B1 login flow started.');
+  pushHistory('TEST', 'info', 'B1 login flow started.', { flow: 'login', step: 'start' });
 
   setTimeout(() => {
     patchState((draft) => {
@@ -618,7 +647,7 @@ function runLoginFlow() {
     });
     setStatus('B1', 'success');
     pushLog('B1', 'success', '2FA completed in placeholder mode.');
-    pushHistory('TEST', 'success', 'B1 login flow completed.');
+    pushHistory('TEST', 'success', 'B1 login flow completed.', { flow: 'login', step: 'complete' });
     endAction('B1');
   }, 920);
 }
@@ -633,12 +662,12 @@ function runPipelineStage(key, message, onComplete = () => {}) {
   setStatus(key, 'running');
   setStatus('B3', 'running');
   pushLog(key, 'info', `Started ${key}.`);
-  pushHistory('PIPELINE', 'info', `${key} started.`);
+  pushHistory('PIPELINE', 'info', `${key} started.`, { stage: key, phase: 'start' });
   setTimeout(() => {
     setStatus(key, 'success');
     setStatus('B3', 'success');
     pushLog(key, 'success', message);
-    pushHistory('PIPELINE', 'success', message);
+    pushHistory('PIPELINE', 'success', message, { stage: key, phase: 'complete', message });
     patchState((draft) => {
       draft.truth.lastStageCompleted = key;
     });
@@ -675,7 +704,7 @@ function runAutoPipeline() {
     const stage = stages[index];
     if (!stage) {
       setStatus('B3', 'success');
-      pushHistory('PIPELINE', 'success', 'Auto pipeline completed without overlapping stages.');
+      pushHistory('PIPELINE', 'success', 'Auto pipeline completed without overlapping stages.', { stages, phase: 'complete' });
       return;
     }
 
@@ -698,7 +727,7 @@ function runPlaybackEmulation() {
   }
   if (!withPlaybackGuard(() => {
     setStatus('B4', 'running');
-    pushHistory('PLAYBACK', 'info', 'Playback emulation started.');
+    pushHistory('PLAYBACK', 'info', 'Playback emulation started.', { media: state.truth.currentMedia?.name ?? 'None' });
     pushLog('B4', 'info', `Showing ${state.truth.currentMedia.name}.`);
     patchState((draft) => {
       draft.truth.playbackStatus = 'Displaying media';
@@ -716,7 +745,10 @@ function runPlaybackEmulation() {
 
 function startRealRun() {
   if (state.truth.realRunActive) {
-    pushHistory('RUNTIME', 'info', 'Duplicate simulated runtime preview start request ignored because the preview is already active.');
+    pushHistory('RUNTIME', 'info', 'Duplicate simulated runtime preview start request ignored because the preview is already active.', {
+      duplicate: true,
+      previewActive: true,
+    });
     pushLog('D', 'info', 'Simulated runtime preview start request ignored; the preview is already active.');
     return;
   }
@@ -749,7 +781,10 @@ function startRealRun() {
       summary: 'Screen activity watchdog preview would verify process health every few seconds.',
     };
   });
-  pushHistory('RUNTIME', 'success', 'Simulated runtime preview started with single-instance guard enabled.');
+  pushHistory('RUNTIME', 'success', 'Simulated runtime preview started with single-instance guard enabled.', {
+    singleInstanceGuard: true,
+    previewStartCount: d.truth.realRunStartCount,
+  });
   pushLog('D', 'success', 'Simulated runtime preview is now active.');
 }
 

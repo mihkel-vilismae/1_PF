@@ -4,29 +4,33 @@ export function statusBadge(status) {
   return `<span class="status-badge status-badge--${escapeHtml(status)}">${escapeHtml(STATUS_LABELS[status] ?? status)}</span>`;
 }
 
-export function renderLogEntries(entries = []) {
+export function renderLogEntries(entries = [], options = {}) {
+  const sourceKey = options.sourceKey ?? 'LOG';
   if (!entries.length) {
     return '<div class="log-entry log-entry--empty"><p class="log-entry__message">No log entries yet.</p></div>';
   }
 
   return entries
     .map(
-      (entry) => `
-        <details class="log-entry log-entry--${escapeHtml(entry.type ?? 'info')}">
-          <summary class="log-entry__summary">
-            <div class="log-entry__meta">
-              <span>${escapeHtml(entry.at ?? '')}</span>
-              <span class="log-entry__status-chip">
-                <span>${escapeHtml((entry.type ?? 'info').toUpperCase())}</span>
-                <span class="log-entry__toggle" aria-hidden="true"></span>
-              </span>
-            </div>
-            <div class="log-entry__message">${escapeHtml(entry.message ?? '')}</div>
-          </summary>
-          <div class="log-entry__details">
-            ${renderLogDetails(entry)}
+      (entry, index) => `
+        <article
+          class="log-entry log-entry--${escapeHtml(entry.type ?? 'info')}"
+          data-log-entry-open="1"
+          data-log-source-key="${escapeHtml(sourceKey)}"
+          data-log-entry-index="${index}"
+          role="button"
+          tabindex="0"
+          aria-label="Open log entry details"
+        >
+          <div class="log-entry__meta">
+            <span>${escapeHtml(entry.at ?? '')}</span>
+            <span class="log-entry__status-chip">
+              <span>${escapeHtml((entry.type ?? 'info').toUpperCase())}</span>
+              <button class="log-entry__toggle" type="button" tabindex="-1" aria-hidden="true">+</button>
+            </span>
           </div>
-        </details>
+          <div class="log-entry__message">${escapeHtml(entry.message ?? '')}</div>
+        </article>
       `,
     )
     .join('');
@@ -85,16 +89,61 @@ export function renderResultSurface(result) {
 }
 
 export function renderHistory(entries = []) {
+  if (!entries.length) {
+    return '<article class="history-item history-item--empty"><div class="history-item__message">No history yet.</div></article>';
+  }
+
   return entries
     .map(
-      (entry) => `
-        <article class="history-item history-item--${escapeHtml(entry.type ?? 'info')}">
-          <div class="history-item__meta"><span>${escapeHtml(entry.at ?? '')}</span><span>${escapeHtml(entry.source ?? '')}</span></div>
+      (entry, index) => `
+        <article
+          class="history-item history-item--${escapeHtml(entry.type ?? 'info')}"
+          data-history-entry-open="1"
+          data-history-entry-index="${index}"
+          role="button"
+          tabindex="0"
+          aria-label="Open history entry details"
+        >
+          <div class="history-item__meta">
+            <span>${escapeHtml(entry.at ?? '')}</span>
+            <span class="history-item__status-chip">
+              <span>${escapeHtml((entry.type ?? 'info').toUpperCase())}</span>
+              <button class="history-item__toggle" type="button" tabindex="-1" aria-hidden="true">+</button>
+            </span>
+          </div>
           <div class="history-item__message">${escapeHtml(entry.message ?? '')}</div>
         </article>
       `,
     )
     .join('');
+}
+
+export function renderModal(modal) {
+  if (!modal) {
+    return '';
+  }
+
+  const title = modal.title ?? 'Details';
+  const subtitle = modal.subtitle ?? '';
+  const kindLabel = modal.kind === 'log' ? 'Log entry' : 'Event history';
+  const content = modal.kind === 'log' ? renderLogModalContent(modal.entry) : renderHistoryModalContent(modal.entry);
+  const describedBy = subtitle ? ' aria-describedby="modal-subtitle"' : '';
+
+  return `
+    <div class="modal-backdrop" data-modal-backdrop="1">
+      <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title"${describedBy}>
+        <div class="modal-panel__header">
+          <div class="modal-panel__header-copy">
+            <p class="modal-panel__eyebrow">${escapeHtml(kindLabel)}</p>
+            <h3 id="modal-title">${escapeHtml(title)}</h3>
+            ${subtitle ? `<p id="modal-subtitle" class="modal-panel__subtitle">${escapeHtml(subtitle)}</p>` : ''}
+          </div>
+          <button type="button" class="button button--ghost modal-panel__close" data-modal-close="1">Close</button>
+        </div>
+        ${content}
+      </section>
+    </div>
+  `;
 }
 
 export function renderStepList(steps = []) {
@@ -114,7 +163,7 @@ export function renderStepList(steps = []) {
   `;
 }
 
-function renderLogDetails(entry) {
+function renderLogModalContent(entry) {
   const parts = [];
   const timeline = {
     'Local time': entry.at ?? 'Unavailable',
@@ -122,71 +171,124 @@ function renderLogDetails(entry) {
     'ISO time': entry.atIso ?? 'Unavailable',
   };
 
-  parts.push(`
-    <div class="log-entry__detail-group">
-      <p class="log-entry__detail-label">Timeline</p>
-      ${renderDefinitionList(timeline)}
-    </div>
-  `);
+  parts.push(renderModalSection('Timeline', renderDefinitionList(timeline)));
 
   if (entry.details?.operation || entry.details?.endpoint || entry.details?.outcome) {
-    parts.push(`
-      <div class="log-entry__detail-group">
-        <p class="log-entry__detail-label">Action</p>
-        ${renderDefinitionList({
+    parts.push(
+      renderModalSection(
+        'Action',
+        renderDefinitionList({
           Operation: entry.details.operation ?? 'Unavailable',
           Endpoint: entry.details.endpoint ?? 'Unavailable',
           Outcome: entry.details.outcome ?? 'Unavailable',
-        })}
-      </div>
-    `);
+        }),
+      ),
+    );
   }
 
   if (entry.details?.request) {
-    parts.push(renderRequestOrResponseDetails('Request', entry.details.request));
+    parts.push(renderTransportSection('Request', entry.details.request));
   }
 
   if (entry.details?.response) {
-    parts.push(renderRequestOrResponseDetails('Response', entry.details.response));
+    parts.push(renderTransportSection('Response', entry.details.response));
   }
 
   if (!entry.details?.request && !entry.details?.response && !entry.details?.operation && !entry.details?.endpoint) {
-    parts.push('<p class="log-entry__detail-empty">No additional request metadata recorded for this event.</p>');
+    parts.push(renderModalSection('Notes', '<p class="modal-panel__empty">No additional request metadata was captured for this log entry.</p>'));
   }
 
   return parts.join('');
 }
 
-function renderRequestOrResponseDetails(label, data) {
-  const headerRows = data.headers ? `<pre class="log-entry__json">${escapeHtml(formatPayload(data.headers))}</pre>` : '<p class="log-entry__detail-empty">No headers captured.</p>';
-  const bodyRows = data.body !== null && data.body !== undefined ? `<pre class="log-entry__json">${escapeHtml(formatPayload(data.body))}</pre>` : '<p class="log-entry__detail-empty">No body captured.</p>';
+function renderHistoryModalContent(entry) {
+  const parts = [];
+  const timeline = {
+    'Local time': entry.at ?? 'Unavailable',
+    'Tallinn time': entry.atTallinn ?? 'Unavailable',
+    'ISO time': entry.atIso ?? 'Unavailable',
+  };
 
-  return `
-    <div class="log-entry__detail-group">
-      <p class="log-entry__detail-label">${escapeHtml(label)}</p>
-      ${renderDefinitionList(
-        label === 'Request'
-          ? {
-              Method: data.method ?? 'Unavailable',
-              Endpoint: data.path ?? 'Unavailable',
-            }
-          : {
-              Status: data.status ?? 'Unavailable',
-              'Status text': data.statusText ?? 'Unavailable',
-              Success: data.ok === undefined ? 'Unavailable' : String(data.ok),
-              URL: data.url ?? 'Unavailable',
-            },
-      )}
-      <div class="log-entry__detail-column">
-        <p class="log-entry__detail-label">${escapeHtml(label)} headers</p>
+  parts.push(
+    renderModalSection(
+      'Event summary',
+      renderDefinitionList({
+        Source: entry.source ?? 'Unavailable',
+        Type: entry.type ?? 'Unavailable',
+        Message: entry.message ?? 'Unavailable',
+      }),
+    ),
+  );
+  parts.push(renderModalSection('Timeline', renderDefinitionList(timeline)));
+
+  if (entry.details?.request || entry.details?.response) {
+    if (entry.details.request) {
+      parts.push(renderTransportSection('Request', entry.details.request));
+    }
+    if (entry.details.response) {
+      parts.push(renderTransportSection('Response', entry.details.response));
+    }
+  } else if (entry.details) {
+    parts.push(renderModalSection('Context', renderDefinitionList(flattenContext(entry.details))));
+  } else {
+    parts.push(
+      renderModalSection(
+        'Context',
+        '<p class="modal-panel__empty">This history event is a dashboard-level event. It does not carry request/response headers, but it still records the source, status, and message that produced it.</p>',
+      ),
+    );
+  }
+
+  return parts.join('');
+}
+
+function renderTransportSection(label, data) {
+  const summaryRows =
+    label === 'Request'
+      ? {
+          Method: data.method ?? 'Unavailable',
+          Endpoint: data.path ?? 'Unavailable',
+        }
+      : {
+          Status: data.status ?? 'Unavailable',
+          'Status text': data.statusText ?? 'Unavailable',
+          Success: data.ok === undefined ? 'Unavailable' : String(data.ok),
+          URL: data.url ?? 'Unavailable',
+        };
+
+  const headerRows = data.headers ? `<pre class="modal-panel__json">${escapeHtml(formatPayload(data.headers))}</pre>` : '<p class="modal-panel__empty">No headers captured.</p>';
+  const bodyRows = data.body !== null && data.body !== undefined ? `<pre class="modal-panel__json">${escapeHtml(formatPayload(data.body))}</pre>` : '<p class="modal-panel__empty">No body captured.</p>';
+
+  return renderModalSection(
+    label,
+    `
+      ${renderDefinitionList(summaryRows)}
+      <div class="modal-panel__stack">
+        <p class="modal-panel__subheading">${escapeHtml(label)} headers</p>
         ${headerRows}
       </div>
-      <div class="log-entry__detail-column">
-        <p class="log-entry__detail-label">${escapeHtml(label)} body</p>
+      <div class="modal-panel__stack">
+        <p class="modal-panel__subheading">${escapeHtml(label)} body</p>
         ${bodyRows}
       </div>
-    </div>
+    `,
+  );
+}
+
+function renderModalSection(title, body) {
+  return `
+    <section class="modal-panel__section">
+      <p class="modal-panel__section-title">${escapeHtml(title)}</p>
+      ${body}
+    </section>
   `;
+}
+
+function flattenContext(details) {
+  return Object.entries(details).reduce((acc, [key, value]) => {
+    acc[key] = typeof value === 'object' && value !== null ? formatPayload(value) : value;
+    return acc;
+  }, {});
 }
 
 function formatPayload(payload) {
