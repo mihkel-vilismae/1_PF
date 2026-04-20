@@ -54,8 +54,10 @@ This section controls simulated activity sources and timeout behavior that visua
 - keyboard toggle
 - enable-all toggle
 - inactivity timeout input
-- apply/simulate buttons
+- immediate change handling through the current input controls
 - log area
+
+There are no separate apply or simulate buttons in the current repo snapshot.
 
 ## B4 and B5 Relationship
 B5 is a control/configuration area for playback visibility behavior. It is not an isolated mock; it is intentionally shown as affecting the B4 playback preview directly through screen ON/OFF state and checkpoint-style status updates.
@@ -77,4 +79,4 @@ No real persistence is implemented yet. The current implementation is strictly i
 - B5 should later connect to real screen activity logic and checkpoint/event recording.
 
 ## Evidence Basis
-Derived from the user dashboard specification in this chat. The source basis includes B1 login with 2FA, B2 download five files, B3 staged pipeline, B3.1 as the only mock stage using `/generated_test_data`, B3.2–B3.5 as real-code-intended stages, B4 playback emulation, B5 screen on-off simulation, and the requirement for explicit history and resumable state.
+Derived from direct inspection of the current implementation, especially `dashboard/views/testView.js`, `dashboard/app.js`, `dashboard/services/runtimeTruth.js`, `docs/13_FRONTEND_BACKEND_CONTRACT.md`, and `generated_test_data/`.

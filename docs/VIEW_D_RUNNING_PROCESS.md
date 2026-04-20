@@ -11,12 +11,14 @@ If no simulated runtime preview is active, the view still opens but shows a disa
 
 ## Blocks
 ### D1 — Pipeline worker
-This block contains the five real loop stages:
+This block currently renders five operator-facing pipeline rows:
 - Download
 - Index
 - Get GPS
 - Geocode
 - Queue Slideshow
+
+In the current repo, this is a simplified preview layout. The canonical backend target contract now uses seven runtime stages, so this view must not be treated as the authoritative stage taxonomy for backend implementation.
 
 The intended runtime behavior is:
 - one stage active at a time
@@ -34,7 +36,7 @@ This block represents a continuously maintained worker. The UI shows:
 - status
 - heartbeat
 - current media
-- summary/log area
+- summary field
 
 ### D3 — Screen on-off worker
 This block represents a continuously maintained worker. The UI shows:
@@ -43,7 +45,9 @@ This block represents a continuously maintained worker. The UI shows:
 - current screen state
 - last activity source
 - inactivity timeout
-- summary/log area
+- summary field
+
+The shared preview log lives in D4 in the current repo snapshot.
 
 ## Worker Heartbeat Expectations
 The user described playback and screen on-off as continuously checked workers, with a likely interval around five seconds. The frontend reflects this by presenting heartbeat-oriented monitoring fields in D2 and D3.
@@ -54,6 +58,7 @@ Today those fields are still frontend-generated preview data, not real worker te
 - D2 should later consume real playback process heartbeat and current media status.
 - D3 should later consume real screen worker heartbeat, activity-source updates, and timeout configuration.
 - runtime activation should later be driven by backend state rather than the current `Start simulated runtime preview` button.
+- the eventual runtime control surface may also need a stop action if `POST /api/runtime/stop` remains part of the contract.
 
 ## Evidence Basis
-Derived from the user dashboard specification in this chat. The source basis includes the D view called Running Process, the three blocks for the five-stage pipeline worker, playback worker, and screen on-off worker, the requirement that only one pipeline stage be active at a time, the loop back to download, and the ongoing heartbeat-style checking for playback and screen workers.
+Derived from direct inspection of the current implementation and supporting contract docs, especially `dashboard/views/runningProcessView.js`, `dashboard/app.js`, `dashboard/services/runtimeTruth.js`, `docs/09_CRON_AND_WATCHDOG.md`, and `docs/13_FRONTEND_BACKEND_CONTRACT.md`.

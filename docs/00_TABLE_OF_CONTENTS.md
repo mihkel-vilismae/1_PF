@@ -37,26 +37,27 @@ Read these first when the question is: **what is implemented now?**
 ### B. Target architecture documents
 
 Read these second when the question is: **what should the later backend implementation follow?**
+When there is overlap, start with the canonical contract set before falling back to the broader summaries.
 
-9. `01_SYSTEM_OVERVIEW.md` — scope, goals, boundaries, terminology
-10. `02_SYSTEM_INVARIANTS.md` — non-negotiable target rules
-11. `03_ARCHITECTURE.md` — component and deployment shape
-12. `04_SINGLE_SOURCE_OF_TRUTH.md` — canonical runtime state ownership
-13. `05_STATE_MACHINE.md` — allowed states and transitions
-14. `06_DATABASE_SCHEMA.md` — durable storage design
-15. `07_PIPELINE_STAGES.md` — five-stage processing loop
-16. `08_WORKERS_AND_OWNERSHIP.md` — worker roles and write authority
-17. `09_CRON_AND_WATCHDOG.md` — scheduling and supervision
-18. `10_CONCURRENCY_AND_LOCKING.md` — duplicate prevention and lock recovery
-19. `11_LOGGING_AND_EVENT_MODEL.md` — append-only history and event schema
-20. `12_STATE_AND_RECOVERY.md` — crash, restart, and resume behavior
-21. `13_FRONTEND_BACKEND_CONTRACT.md` — dashboard/API/service contract for future wiring
-22. `14_VERSIONING_AND_CHANGELOG_RULES.md` — change-management rules
-23. `18_CANONICAL_BACKEND_CONTRACT_SET.md` — canonical backend contract strategy, reconciliation notes, and migration map
-24. `19_BACKEND_RUNTIME_CONTRACT.md` — seven-stage runtime contract and normalized stage handoffs
-25. `20_STATE_AND_TRUTH_CONTRACT.md` — truth surfaces, ownership, vocabulary, and invalid states
-26. `21_EXECUTION_AND_RECOVERY_CONTRACT.md` — retry, locking, reclaim, concurrency, and restart rules
-27. `22_ACCEPTANCE_AND_VALIDATION_CONTRACT.md` — proof standard, DB checklist expectations, and validation priorities
+9. `18_CANONICAL_BACKEND_CONTRACT_SET.md` — canonical backend contract strategy, reconciliation notes, and migration map
+10. `19_BACKEND_RUNTIME_CONTRACT.md` — seven-stage runtime contract and normalized stage handoffs
+11. `20_STATE_AND_TRUTH_CONTRACT.md` — truth surfaces, ownership, vocabulary, and invalid states
+12. `21_EXECUTION_AND_RECOVERY_CONTRACT.md` — retry, locking, reclaim, concurrency, and restart rules
+13. `22_ACCEPTANCE_AND_VALIDATION_CONTRACT.md` — proof standard, DB checklist expectations, and validation priorities
+14. `01_SYSTEM_OVERVIEW.md` — scope, goals, boundaries, terminology
+15. `02_SYSTEM_INVARIANTS.md` — non-negotiable target rules
+16. `03_ARCHITECTURE.md` — component and deployment shape
+17. `04_SINGLE_SOURCE_OF_TRUTH.md` — canonical runtime state ownership
+18. `05_STATE_MACHINE.md` — allowed states and transitions
+19. `06_DATABASE_SCHEMA.md` — durable storage design
+20. `07_PIPELINE_STAGES.md` — five-stage processing loop
+21. `08_WORKERS_AND_OWNERSHIP.md` — worker roles and write authority
+22. `09_CRON_AND_WATCHDOG.md` — scheduling and supervision
+23. `10_CONCURRENCY_AND_LOCKING.md` — duplicate prevention and lock recovery
+24. `11_LOGGING_AND_EVENT_MODEL.md` — append-only history and event schema
+25. `12_STATE_AND_RECOVERY.md` — crash, restart, and resume behavior
+26. `13_FRONTEND_BACKEND_CONTRACT.md` — dashboard/API/service contract for future wiring
+27. `14_VERSIONING_AND_CHANGELOG_RULES.md` — change-management rules
 
 ## Authority Rules
 
@@ -64,25 +65,23 @@ Read these second when the question is: **what should the later backend implemen
 
 The following documents take precedence:
 
-1. `15_CURRENT_IMPLEMENTATION_STATUS.md`
-2. `16_DOCUMENTATION_RECONCILIATION_REPORT.md`
-3. the inspected repository files themselves
-4. the view docs and dashboard overview
-5. `issues_errors_discrepancies.md`
+1. the inspected repository files themselves
+2. `15_CURRENT_IMPLEMENTATION_STATUS.md`
+3. `16_DOCUMENTATION_RECONCILIATION_REPORT.md`
+4. the view docs, dashboard overview, and README
+5. `placeholder_implementations.md` and `issues_errors_discrepancies.md` as supporting gap trackers
 
 ### For questions about future backend implementation
 
 The following documents take precedence:
 
-1. `02_SYSTEM_INVARIANTS.md`
-2. `04_SINGLE_SOURCE_OF_TRUTH.md`
-3. `05_STATE_MACHINE.md`
-4. `10_CONCURRENCY_AND_LOCKING.md`
-5. `19_BACKEND_RUNTIME_CONTRACT.md`
-6. `20_STATE_AND_TRUTH_CONTRACT.md`
-7. `21_EXECUTION_AND_RECOVERY_CONTRACT.md`
-8. `22_ACCEPTANCE_AND_VALIDATION_CONTRACT.md`
-9. the more specific target-state operational document
+1. `19_BACKEND_RUNTIME_CONTRACT.md`
+2. `20_STATE_AND_TRUTH_CONTRACT.md`
+3. `21_EXECUTION_AND_RECOVERY_CONTRACT.md`
+4. `22_ACCEPTANCE_AND_VALIDATION_CONTRACT.md`
+5. `18_CANONICAL_BACKEND_CONTRACT_SET.md`
+6. `13_FRONTEND_BACKEND_CONTRACT.md` for dashboard/API interface intent
+7. the more specific target-state operational document from `01` through `14`
 
 ## Additional Interpretation Rules
 

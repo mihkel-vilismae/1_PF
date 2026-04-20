@@ -97,6 +97,8 @@ Implemented:
 Evidence:
 
 - `server/index.js`
+- `server/scheduler_host.js`
+- `server/scripts/windows_task_scheduler.ps1`
 - `server/scripts/sqlite_admin.py`
 - `dashboard/app.js`
 - `dashboard/services/initService.js`
@@ -183,6 +185,7 @@ Current state:
 - implemented as simulation UI
 - mock download and staged pipeline behavior are frontend-driven
 - playback emulation and screen simulation are mock behaviors only
+- B5 toggles and the inactivity-timeout input apply immediately through frontend change handlers; there are no separate apply/simulate buttons
 - does not touch a real backend or durable runtime
 
 Primary files:
@@ -196,6 +199,7 @@ Primary files:
 Current state:
 
 - implemented as a frontend presentation of mock last-run states
+- manual demo buttons drive the `no run`, `error`, and `ready` layouts
 - can show explicit no-run / error / ready demo states in-memory
 - restore action is a placeholder
 - no real durable state loading exists
@@ -210,7 +214,9 @@ Primary files:
 Current state:
 
 - implemented as a frontend-only monitoring layout
+- the view exposes a local `Start simulated runtime preview` button but no stop control
 - simulated runtime-preview activation is local to the D view and handled inside the frontend state service
+- D2 and D3 render summary fields in-card, while D4 is the shared preview-log surface
 - worker rows and heartbeats are mock projections, not live process telemetry
 
 Primary files:
@@ -246,5 +252,7 @@ Derived from direct inspection of:
 - `dashboard/views/lastRunView.js`
 - `dashboard/views/runningProcessView.js`
 - `dashboard/shared/constants.js`
+- `server/scheduler_host.js`
+- `server/scripts/windows_task_scheduler.ps1`
 - `generated_test_data/`
 - `dist/`
