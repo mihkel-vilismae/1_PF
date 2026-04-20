@@ -74,6 +74,7 @@ Implemented:
 - dedicated init service module targeting `/api/init/*`
 - async init action handling for `.env`, database, and scheduler actions
 - per-card backend result rendering for View A
+- View A wiring assumes a separate repo-local init API process is reachable at runtime; the frontend build does not embed that server
 
 Evidence:
 
@@ -165,6 +166,7 @@ Current state:
 - actions now dispatch through a dedicated frontend init service layer
 - the frontend renders the latest backend payload or error for each A card
 - repo-local backend endpoints exist for env verification and SQLite status/inspect/delete/recreate-empty
+- the repo-local backend must be started separately; if it is down or unreachable, A fails operationally before handler logic can be judged
 - destructive DB actions require explicit frontend confirmation
 - legacy cron endpoints now implement a Windows Task Scheduler bootstrap path and expose scheduler task plus host-heartbeat status
 - the installed scheduler host currently emits tick and heartbeat state only; it does not yet own real runtime business services
