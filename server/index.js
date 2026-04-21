@@ -35,6 +35,27 @@ const schedulerTickSeconds = Object.freeze({
   screenWatchdog: 5,
   recoveryReconciliation: 15,
 });
+const supportedMediaExtensions = new Set([
+  '.jpg',
+  '.jpeg',
+  '.png',
+  '.gif',
+  '.bmp',
+  '.webp',
+  '.tif',
+  '.tiff',
+  '.heic',
+  '.heif',
+  '.mp4',
+  '.mov',
+  '.m4v',
+  '.avi',
+  '.mkv',
+  '.webm',
+  '.wmv',
+  '.mpeg',
+  '.mpg',
+]);
 const databaseViewerRequiredTablesAuthority = Object.freeze({
   sourcePath: 'docs/OLD_DOCS/20_STATE_AND_TRUTH_CONTRACT.md',
   sourceLabel: 'Truth Surfaces',
@@ -98,6 +119,8 @@ const routes = {
   'POST /api/database-viewer/rows': databaseViewerRowsHandler,
   'POST /api/database-viewer/logging/start': databaseViewerLoggingStartHandler,
   'POST /api/database-viewer/logging/stop': databaseViewerLoggingStopHandler,
+  'POST /api/runtime/download/run': runtimeDownloadRunHandler,
+  'POST /api/runtime/index/run': runtimeIndexRunHandler,
   'POST /api/runtime/queue/prepare': runtimeQueuePrepareHandler,
   'POST /api/runtime/playback/select-current': runtimePlaybackSelectCurrentHandler,
   'GET /api/runtime-truth': getRuntimeTruthHandler,
@@ -600,6 +623,118 @@ async function getRuntimeTruthHandler() {
   };
 }
 
+async function runtimeDownloadRunHandler({ context }) {
+  const envValues = context.envValues;
+  const downloadDirectory = resolveRepoPath(envValues.DOWNLOAD_DIR || '');
+  const cookieDirectory = resolveRepoPath(envValues.ICLOUDPD_COOKIE_DIR || '');
+  const recentDownloadCount = Number(envValues.DOWNLOAD_RECENT);
+  if (!Number.isInteger(recentDownloadCount) || recentDownloadCount <= 0) {
+    throw new HttpError(400, 'invalid_download_recent', 'DOWNLOAD_RECENT must be a positive integer.', {
+      value: envValues.DOWNLOAD_RECENT,
+    });
+  }
+
+  await fs.mkdir(downloadDirectory, { recursive: true });
+  await fs.mkdir(cookieDirectory, { recursive: true });
+  const mediaFilesBefore = await collectSupportedMediaFiles(downloadDirectory);
+  const executedAt = new Date().toISOString();
+  const args = [
+    '--username',
+    envValues.user,
+    '--password',
+    envValues.pw,
+    '--directory',
+    downloadDirectory,
+    '--cookie-directory',
+    cookieDirectory,
+    '--recent',
+    String(recentDownloadCount),
+  ];
+
+  let result;
+  try {
+    result = await runProcess('icloudpd', args, { shell: process.platform === 'win32' });
+  } catch (error) {
+    if (error && error.code === 'ENOENT') {
+      throw new HttpError(503, 'download_dependency_missing', 'icloudpd is not installed or not available on PATH.', {
+        command: 'icloudpd',
+      });
+    }
+    throw new HttpError(500, 'download_worker_spawn_failed', 'Failed to start the download worker process.', {
+      command: 'icloudpd',
+      message: error.message,
+    });
+  }
+
+  if (result.code !== 0) {
+    throw new HttpError(502, 'download_worker_failed', 'Download worker exited with a non-zero status code.', {
+      command: 'icloudpd',
+      exitCode: result.code,
+      stdout: previewLog(result.stdout),
+      stderr: previewLog(result.stderr),
+    });
+  }
+
+  const mediaFilesAfter = await collectSupportedMediaFiles(downloadDirectory);
+  const previous = new Set(mediaFilesBefore);
+  const newMediaFiles = mediaFilesAfter.filter((candidate) => !previous.has(candidate));
+
+  return {
+    statusCode: 200,
+    payload: {
+      status: 'ok',
+      messages: [
+        `Download worker completed successfully and detected ${newMediaFiles.length} new media file(s).`,
+      ],
+      stage: 'stage1_auth_download',
+      download: {
+        command: 'icloudpd',
+        args: redactSensitiveArgs(args),
+        exitCode: result.code,
+        recentDownloadCount,
+        downloadDirectory,
+        cookieDirectory,
+        mediaFilesBefore: mediaFilesBefore.length,
+        mediaFilesAfter: mediaFilesAfter.length,
+        newMediaFiles: newMediaFiles.length,
+        stdout: previewLog(result.stdout),
+        stderr: previewLog(result.stderr),
+      },
+      schemaVersion: 1,
+      executedAt,
+    },
+  };
+}
+
+async function runtimeIndexRunHandler({ context }) {
+  const database = await buildDatabaseStatus(context);
+  if (!database.exists) {
+    throw new HttpError(404, 'database_missing', 'Cannot run indexing because the DB file does not exist.', {
+      database,
+    });
+  }
+
+  const downloadDirectory = resolveRepoPath(context.envValues.DOWNLOAD_DIR || '');
+  const indexedAt = new Date().toISOString();
+  const indexing = await runPythonJson(['stage2_index_register', database.absolutePath, downloadDirectory, indexedAt]);
+  return {
+    statusCode: 200,
+    payload: {
+      status: 'ok',
+      messages: indexing.scannedMediaCount
+        ? [
+          `Indexed ${indexing.scannedMediaCount} media file(s); inserted ${indexing.insertedCanonicalCount} canonical row(s).`,
+        ]
+        : ['No supported media files were found in the download directory.'],
+      stage: 'stage2_index_register',
+      indexing,
+      database,
+      schemaVersion: 1,
+      indexedAt,
+    },
+  };
+}
+
 async function runtimeQueuePrepareHandler({ context }) {
   const database = await buildDatabaseStatus(context);
   if (!database.exists) {
@@ -1059,11 +1194,12 @@ async function runPythonJson(args) {
   }
 }
 
-function runProcess(command, args) {
+function runProcess(command, args, options = {}) {
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, {
       cwd: repoRoot,
       stdio: ['ignore', 'pipe', 'pipe'],
+      shell: options.shell === true,
     });
 
     let stdout = '';
@@ -1078,6 +1214,57 @@ function runProcess(command, args) {
     child.on('error', (error) => reject(error));
     child.on('close', (code) => resolve({ code, stdout, stderr }));
   });
+}
+
+async function collectSupportedMediaFiles(rootDirectory) {
+  const files = [];
+  await collectSupportedMediaFilesRecursive(rootDirectory, files);
+  files.sort();
+  return files;
+}
+
+async function collectSupportedMediaFilesRecursive(directoryPath, sink) {
+  let entries;
+  try {
+    entries = await fs.readdir(directoryPath, { withFileTypes: true });
+  } catch (error) {
+    if (error && error.code === 'ENOENT') {
+      return;
+    }
+    throw error;
+  }
+
+  for (const entry of entries) {
+    const absolutePath = path.join(directoryPath, entry.name);
+    if (entry.isDirectory()) {
+      await collectSupportedMediaFilesRecursive(absolutePath, sink);
+      continue;
+    }
+    if (!entry.isFile()) {
+      continue;
+    }
+    if (supportedMediaExtensions.has(path.extname(entry.name).toLowerCase())) {
+      sink.push(absolutePath);
+    }
+  }
+}
+
+function previewLog(value) {
+  if (typeof value !== 'string' || value.trim() === '') {
+    return null;
+  }
+  const trimmed = value.trim();
+  return trimmed.length <= 2000 ? trimmed : `${trimmed.slice(0, 2000)}...`;
+}
+
+function redactSensitiveArgs(args) {
+  const redacted = [...args];
+  for (let index = 0; index < redacted.length; index += 1) {
+    if (redacted[index] === '--password' && index + 1 < redacted.length) {
+      redacted[index + 1] = '***redacted***';
+    }
+  }
+  return redacted;
 }
 
 function ensureConfirmed(body, expectedAction) {
