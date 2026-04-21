@@ -46,6 +46,14 @@ It defines:
 | Stage 6 | select next playable item and persist current item | playback history updates, invalid candidate failure, runtime current-item pointer | `runtime_state.current_media_asset_id` |
 | Stage 7 | derive render-ready overlay data | no persistent truth writes; reads persisted current item and canonical address | terminal stage |
 
+Current repo note:
+- `POST /api/init/verify-env` and `/api/init/database/*` are readiness/admin endpoints in `server/index.js`.
+- They are not implementations of Stage 1 runtime auth/download behavior described in this contract.
+- Wave A now has a minimal backend slice in `server/index.js`:
+  - `POST /api/runtime/queue/prepare` (Stage 5 idempotent eligibility enqueue into `slideshow_queue`)
+  - `POST /api/runtime/playback/select-current` (Stage 6 current-item selection and pointer/history commit)
+- This does not yet implement full playback worker execution, rendering, or Stage 7 behavior.
+
 ## Stage 1: `stage1_auth_download`
 
 ### Reads
