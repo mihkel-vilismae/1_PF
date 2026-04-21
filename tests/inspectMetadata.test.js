@@ -165,7 +165,7 @@ test('backend status inspect metadata keeps Verify .env mapped to real backend s
   assert.equal(meta.label, 'Real: Verify .env');
 });
 
-test('backend status inspect metadata keeps Download 5 files marked missing', () => {
+test('backend status inspect metadata keeps download action marked real', () => {
   const { describeBackendStatusElement } = createBackendStatusMetadataHelpers({
     getState: () => ({
       initResults: { '1A': null, '2A': null, '3A': null },
@@ -184,8 +184,8 @@ test('backend status inspect metadata keeps Download 5 files marked missing', ()
     }),
   );
 
-  assert.equal(meta.state, 'missing');
-  assert.equal(meta.label, 'Missing: Download 5 files');
+  assert.equal(meta.state, 'real');
+  assert.equal(meta.label, 'Real: Download 5 files');
 });
 
 test('backend status inspect metadata still reports Current truth values as frontend-backed mock state', () => {
@@ -210,6 +210,6 @@ test('backend status inspect metadata still reports Current truth values as fron
     }),
   );
 
-  assert.equal(meta.state, 'mock');
-  assert.equal(meta.label, 'Mock: Source of truth value');
+  assert.equal(meta.state, 'unknown');
+  assert.equal(meta.label, 'Unknown: Source of truth value');
 });

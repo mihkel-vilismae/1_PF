@@ -14,6 +14,7 @@ import {
   SCHEDULER_SUPPORT_LEVELS,
 } from '../../../shared/schedulerPlatformCapabilities.js';
 import { buildTimelineDetails } from './runtimeTruthActionUtils.js';
+import { RUNTIME_EXECUTION_ENDPOINTS, runRuntimeDownload, runRuntimeIndex } from '../runtimeExecutionService.js';
 import { createRuntimeTruthDatabaseActions } from './runtimeTruthDatabaseActions.js';
 import { createRuntimeTruthDemoActions } from './runtimeTruthDemoActions.js';
 import { createRuntimeTruthGuards } from './runtimeTruthGuards.js';
@@ -107,9 +108,9 @@ export function createRuntimeTruthBehavior({
       'start-db-logging': () => void databaseActions.runDatabaseViewerLoggingAction('start'),
       'stop-db-logging': () => void databaseActions.runDatabaseViewerLoggingAction('stop'),
       'run-b1': () => demoActions.runLoginFlow(),
-      'run-b2': () => demoActions.genericAction('B2', 'TEST', 'Mock batch download finished with 5 files.'),
-      'run-b3-1': () => demoActions.runPipelineStage('B3.1', 'Mock download copied 1 file from /generated_test_data.'),
-      'run-b3-2': () => demoActions.runPipelineStage('B3.2', 'Index stage produced 1 indexed asset.'),
+      'run-b2': () => void demoActions.runBackendAction({ key: 'B2', source: 'TEST', operation: 'Run download test action', endpoint: RUNTIME_EXECUTION_ENDPOINTS.downloadRun, execute: runRuntimeDownload }),
+      'run-b3-1': () => demoActions.runBackendPipelineStage({ key: 'B3.1', operation: 'Run download stage', endpoint: RUNTIME_EXECUTION_ENDPOINTS.downloadRun, execute: runRuntimeDownload }),
+      'run-b3-2': () => demoActions.runBackendPipelineStage({ key: 'B3.2', operation: 'Run index stage', endpoint: RUNTIME_EXECUTION_ENDPOINTS.indexRun, execute: runRuntimeIndex }),
       'run-b3-3': () => demoActions.runPipelineStage('B3.3', 'GPS parser extracted location metadata.'),
       'run-b3-4': () => demoActions.runPipelineStage('B3.4', 'Geocode stage resolved coordinates to address text.'),
       'run-b3-5': () => demoActions.runEnqueueStage(),

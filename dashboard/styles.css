@@ -1308,3 +1308,116 @@ body.modal-open {
   .worker-row { flex-direction: column; align-items: stretch; }
   .worker-row__meta { align-items: flex-start; }
 }
+
+
+.view-hero--hybrid,
+.card--hybrid,
+.selector-card--hybrid {
+  border-color: rgba(245, 158, 11, 0.42);
+  box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.14);
+}
+
+.view-hero--mock,
+.card--mock,
+.stage-card--mock,
+.notice--mock,
+.toggle-card--mock,
+.selector-card--mock,
+.worker-row--mock {
+  border-color: rgba(248, 113, 113, 0.5);
+  box-shadow: inset 0 0 0 1px rgba(248, 113, 113, 0.12);
+}
+
+.card--real,
+.stage-card--real {
+  border-color: rgba(34, 197, 94, 0.42);
+  box-shadow: inset 0 0 0 1px rgba(34, 197, 94, 0.12);
+}
+
+.card--mock,
+.card--real,
+.card--hybrid,
+.stage-card--mock,
+.stage-card--real,
+.notice--mock,
+.selector-card--mock,
+.selector-card--hybrid,
+.toggle-card--mock,
+.worker-row--mock,
+.view-hero--mock,
+.view-hero--hybrid {
+  position: relative;
+}
+
+.card--mock::before,
+.stage-card--mock::before,
+.notice--mock::before,
+.view-hero--mock::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto auto 0;
+  height: 4px;
+  width: 100%;
+  background: repeating-linear-gradient(90deg, rgba(248, 113, 113, 0.95) 0 16px, rgba(127, 29, 29, 0.95) 16px 32px);
+}
+
+.card--real::before,
+.stage-card--real::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto auto 0;
+  height: 4px;
+  width: 100%;
+  background: linear-gradient(90deg, rgba(34, 197, 94, 0.95), rgba(16, 185, 129, 0.95));
+}
+
+.card--hybrid::before,
+.view-hero--hybrid::before,
+.selector-card--hybrid::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto auto 0;
+  height: 4px;
+  width: 100%;
+  background: repeating-linear-gradient(90deg, rgba(245, 158, 11, 0.95) 0 16px, rgba(34, 197, 94, 0.95) 16px 32px);
+}
+
+.card__header-tags {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-left: auto;
+  margin-right: 0.65rem;
+}
+
+.source-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.8rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.source-badge--real {
+  color: #dcfce7;
+  background: rgba(34, 197, 94, 0.18);
+  border-color: rgba(34, 197, 94, 0.38);
+}
+
+.source-badge--hybrid {
+  color: #fde68a;
+  background: rgba(245, 158, 11, 0.18);
+  border-color: rgba(245, 158, 11, 0.38);
+}
+
+.source-badge--mock {
+  color: #fecaca;
+  background: rgba(248, 113, 113, 0.18);
+  border-color: rgba(248, 113, 113, 0.42);
+}

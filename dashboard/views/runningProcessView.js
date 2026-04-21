@@ -1,31 +1,32 @@
-import { renderDefinitionList, statusBadge, renderLogEntries } from '../services/renderers.js';
+import { renderDefinitionList, statusBadge, renderLogEntries, renderSourceBadge } from '../services/renderers.js';
 
 export function renderRunningProcessView(state) {
   const disabled = !state.truth.realRunActive;
   return `
     <section class="view-page">
-      <div class="view-hero">
+      <div class="view-hero view-hero--mock">
         <div>
           <p class="eyebrow">D — Running Process</p>
-          <h2>Preview the runtime monitor without implying live backend activity.</h2>
-          <p class="hero-copy">This view is still a frontend-only runtime preview. It shows the intended pipeline and watchdog layout, but all data here remains simulated until <code>/api/runtime/*</code> exists.</p>
+          <h2>Preview the runtime monitor without implying live backend worker activity.</h2>
+          <p class="hero-copy">This view is still a frontend-only runtime preview. It shows the intended pipeline and watchdog layout, but all worker data here remains simulated until real runtime monitor APIs exist.</p>
         </div>
         <div class="hero-pill-group">
+          ${renderSourceBadge('mock', 'MOCK VIEW')}
           <span class="hero-pill ${disabled ? '' : 'hero-pill--success'}">${disabled ? 'Preview inactive' : 'Preview active'}</span>
           <button class="button button--secondary" data-action="start-real-run">Start simulated runtime preview</button>
         </div>
       </div>
 
-      ${disabled ? '<div class="notice notice--neutral">No simulated runtime preview is currently active.</div>' : '<div class="notice notice--neutral">Frontend-only runtime preview is active. Worker rows and heartbeats below are still simulated.</div>'}
+      ${disabled ? '<div class="notice notice--neutral notice--mock">No simulated runtime preview is currently active.</div>' : '<div class="notice notice--neutral notice--mock">Frontend-only runtime preview is active. Worker rows and heartbeats below are still simulated.</div>'}
 
       <div class="section-grid ${disabled ? 'section-grid--muted' : ''}">
-        <article class="card card--feature">
-          <header class="card__header"><div><p class="card__code">D1</p><h3>Pipeline worker</h3></div>${statusBadge(state.statusByKey.D1)}</header>
+        <article class="card card--mock card--feature">
+          <header class="card__header"><div><p class="card__code">D1</p><h3>Pipeline worker</h3></div><div class="card__header-tags">${renderSourceBadge('mock', 'MOCK')}</div>${statusBadge(state.statusByKey.D1)}</header>
           <div class="worker-list">
             ${state.runningProcess.pipelineStages
               .map(
                 (stage) => `
-                  <article class="worker-row ${stage.status === 'Running' ? 'worker-row--active' : ''}">
+                  <article class="worker-row worker-row--mock ${stage.status === 'Running' ? 'worker-row--active' : ''}">
                     <div class="worker-row__main">
                       <strong>${stage.name}</strong>
                       <span>${stage.summary}</span>
@@ -42,8 +43,8 @@ export function renderRunningProcessView(state) {
         </article>
 
         <div class="section-grid section-grid--two">
-          <article class="card">
-            <header class="card__header"><div><p class="card__code">D2</p><h3>Playback worker</h3></div>${statusBadge(state.statusByKey.D2)}</header>
+          <article class="card card--mock">
+            <header class="card__header"><div><p class="card__code">D2</p><h3>Playback worker</h3></div><div class="card__header-tags">${renderSourceBadge('mock', 'MOCK')}</div>${statusBadge(state.statusByKey.D2)}</header>
             ${renderDefinitionList({
               Status: state.runningProcess.playbackWorker.status,
               Heartbeat: state.runningProcess.playbackWorker.heartbeat,
@@ -51,8 +52,8 @@ export function renderRunningProcessView(state) {
               Summary: state.runningProcess.playbackWorker.summary,
             })}
           </article>
-          <article class="card">
-            <header class="card__header"><div><p class="card__code">D3</p><h3>Screen on-off worker</h3></div>${statusBadge(state.statusByKey.D3)}</header>
+          <article class="card card--mock">
+            <header class="card__header"><div><p class="card__code">D3</p><h3>Screen on-off worker</h3></div><div class="card__header-tags">${renderSourceBadge('mock', 'MOCK')}</div>${statusBadge(state.statusByKey.D3)}</header>
             ${renderDefinitionList({
               Status: state.runningProcess.screenWorker.status,
               Heartbeat: state.runningProcess.screenWorker.heartbeat,
@@ -65,8 +66,8 @@ export function renderRunningProcessView(state) {
         </div>
       </div>
 
-      <article class="card">
-        <header class="card__header"><div><p class="card__code">D4</p><h3>Preview log</h3></div></header>
+      <article class="card card--mock">
+        <header class="card__header"><div><p class="card__code">D4</p><h3>Preview log</h3></div><div class="card__header-tags">${renderSourceBadge('mock', 'MOCK')}</div></header>
         <div class="log-surface">${renderLogEntries(state.logs.D, { sourceKey: 'D' })}</div>
       </article>
     </section>

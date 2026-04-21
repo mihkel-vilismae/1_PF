@@ -94,7 +94,13 @@ export function createBackendStatusMetadataHelpers({ getState, getTransitHasLive
     if (text.includes('backend still required')) {
       return buildBackendStatusMeta('missing', label, 'The UI surface exists, but additional backend support is still missing.');
     }
-    if (text.includes('simulation only') || text.includes('mock stage')) {
+    if (text.includes('mixed view')) {
+      return buildBackendStatusMeta('unknown', label, 'This pill explicitly marks a view that mixes real backend actions with mock-only surfaces.');
+    }
+    if (text.includes('real actions present')) {
+      return buildBackendStatusMeta('real', label, 'This pill marks a section that already has real backend-backed actions.');
+    }
+    if (text.includes('placeholders still visible') || text.includes('simulation only') || text.includes('mock stage') || text.includes('mock view')) {
       return buildBackendStatusMeta('mock', label, 'This view or stage is explicitly simulation-only rather than backend-backed.');
     }
     if (text.includes('preview active') || text.includes('preview inactive')) {
@@ -154,16 +160,16 @@ export function createBackendStatusMetadataHelpers({ getState, getTransitHasLive
     const cardContext = getCardContext(element);
 
     if (sidePanelTitle === 'Current truth') {
-      return buildBackendStatusMeta('mock', `${label} value`, 'This value is rendered from frontend dashboard truth state (with backend-assisted file sync) rather than a runtime backend response.');
+      return buildBackendStatusMeta('unknown', `${label} value`, 'This value comes from frontend dashboard truth state that is file-synced through the backend, not from a live runtime monitor endpoint.');
     }
     if (cardContext?.code && ['1A', '2A', '3A'].includes(cardContext.code) && element.closest('.result-surface')) {
       return getInitBackendStatusMeta(cardContext.code, `${label} value`);
     }
-    if (cardContext?.code === 'B3.1') {
-      return buildBackendStatusMeta('mock', `${label} value`, 'This value belongs to the explicit mock-download stage.');
+    if (cardContext?.code && ['B2', 'B3.1', 'B3.2', 'B3.5', 'B4'].includes(cardContext.code)) {
+      return buildBackendStatusMeta('real', `${label} value`, 'This displayed value is updated from a real backend action response.');
     }
-    if (cardContext?.code && ['B1', 'B2', 'B3', 'B3.2', 'B3.3', 'B3.4', 'B3.5', 'B4'].includes(cardContext.code)) {
-      return buildBackendStatusMeta('missing', `${label} value`, 'This displayed value stands in for backend-backed test/pipeline data that is not implemented here yet.');
+    if (cardContext?.code && ['B1', 'B3', 'B3.3', 'B3.4'].includes(cardContext.code)) {
+      return buildBackendStatusMeta('mock', `${label} value`, 'This displayed value still comes from frontend-only placeholder state.');
     }
     if (cardContext?.code === 'B5') {
       return buildBackendStatusMeta('mock', `${label} value`, 'This value is driven by frontend-only simulation controls.');
@@ -213,8 +219,11 @@ export function createBackendStatusMetadataHelpers({ getState, getTransitHasLive
     if (sourceKey.startsWith('E')) {
       return getDatabaseViewerBackendStatusMeta(sourceKey, label, entry);
     }
-    if (sourceKey === 'B3.1' || sourceKey === 'B5') {
-      return buildBackendStatusMeta('mock', label, 'This log entry comes from frontend-only simulation behavior.');
+    if (['B2', 'B3.1', 'B3.2', 'B3.5', 'B4'].includes(sourceKey)) {
+      return buildBackendStatusMeta('real', label, 'This log entry captures a real backend action response.');
+    }
+    if (sourceKey === 'B5' || sourceKey === 'B1' || sourceKey === 'B3.3' || sourceKey === 'B3.4') {
+      return buildBackendStatusMeta('mock', label, 'This log entry comes from frontend-only simulation or placeholder behavior.');
     }
     if (sourceKey.startsWith('B') || sourceKey === 'C' || sourceKey === 'D') {
       return buildBackendStatusMeta('missing', label, 'This log entry comes from a UI surface that stands in for missing backend/runtime support.');

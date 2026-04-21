@@ -1,3 +1,34 @@
+import {
+  RUNTIME_EXECUTION_ENDPOINTS,
+  runRuntimeDownload,
+  runRuntimeIndex,
+  runRuntimePlaybackSelectCurrent,
+  runRuntimeQueuePrepare,
+} from '../runtimeExecutionService.js';
+import {
+  buildInitLogDetails,
+  formatInitError,
+  mapPayloadStatusToUiStatus,
+  normalizeActionResult,
+  summarizeRuntimePayload,
+} from './runtimeTruthActionUtils.js';
+
+function inferMediaTypeFromPath(candidatePath) {
+  const normalized = String(candidatePath ?? '').toLowerCase();
+  if (!normalized) {
+    return 'Media';
+  }
+  if (/(\.mp4|\.mov|\.mkv|\.avi|\.webm)$/i.test(normalized)) {
+    return 'Video';
+  }
+  return 'Image';
+}
+
+function extractFileName(candidatePath) {
+  const normalized = String(candidatePath ?? '').replaceAll('\\', '/');
+  return normalized.split('/').filter(Boolean).pop() ?? candidatePath ?? 'Unknown media';
+}
+
 export function createRuntimeTruthDemoActions({
   getState,
   patchState,
@@ -43,7 +74,7 @@ export function createRuntimeTruthDemoActions({
         draft.truth.playbackStatus = 'Paused by inactivity';
         draft.truth.lastCheckpoint = `${stamp()} screen-off checkpoint saved`;
       } else if (draft.truth.currentMedia) {
-        draft.truth.playbackStatus = 'Ready for emulation';
+        draft.truth.playbackStatus = 'Ready for backend playback selection';
       } else {
         draft.truth.playbackStatus = 'Waiting for queued media';
       }
@@ -122,6 +153,81 @@ export function createRuntimeTruthDemoActions({
     }, 920);
   }
 
+  async function runBackendAction({
+    key,
+    source,
+    operation,
+    endpoint,
+    execute,
+    requestBody = {},
+    onSuccess = () => {},
+    afterRun = null,
+  }) {
+    if (!guardAction(key, source, `${key} action is already running; duplicate trigger was blocked.`)) {
+      return null;
+    }
+
+    setStatus(key, 'running');
+    pushLog(key, 'info', `${operation} started.`, {
+      operation,
+      endpoint: `${endpoint.method} ${endpoint.path}`,
+      outcome: 'running',
+      request: {
+        method: endpoint.method,
+        path: endpoint.path,
+        body: requestBody,
+      },
+    });
+
+    try {
+      const result = normalizeActionResult(await execute(requestBody));
+      const payload = result.payload ?? null;
+      const details = buildInitLogDetails({
+        operation,
+        endpoint,
+        requestBody,
+        apiMeta: result.meta,
+        responsePayload: payload,
+        outcome: 'success',
+      });
+      const uiStatus = mapPayloadStatusToUiStatus(payload?.status);
+      const summary = summarizeRuntimePayload(operation, payload);
+
+      setStatus(key, uiStatus);
+      pushLog(key, uiStatus, summary, details);
+      pushHistory(source, uiStatus, summary, {
+        actionKey: key,
+        operation,
+        request: details.request,
+        response: details.response,
+      });
+      onSuccess(payload, result.meta);
+      return payload;
+    } catch (error) {
+      const details = buildInitLogDetails({
+        operation,
+        endpoint,
+        requestBody,
+        apiMeta: error?.meta ?? null,
+        responsePayload: error?.payload ?? null,
+        outcome: 'error',
+      });
+      const message = formatInitError(operation, error);
+      setStatus(key, 'error');
+      pushLog(key, 'error', message, details);
+      pushHistory(source, 'error', message, {
+        actionKey: key,
+        operation,
+        request: details.request,
+        response: details.response,
+      });
+      return null;
+    } finally {
+      afterRun?.();
+      endAction(key);
+    }
+  }
+
   function runPipelineStage(key, message, onComplete = () => {}) {
     if (isPipelineBusy()) {
       const owner = getState().truth.pipelineActiveKey;
@@ -146,22 +252,52 @@ export function createRuntimeTruthDemoActions({
     }, 420);
   }
 
+  function runBackendPipelineStage({ key, operation, endpoint, execute, onComplete = () => {} }) {
+    if (isPipelineBusy()) {
+      const owner = getState().truth.pipelineActiveKey;
+      rejectWhileBusy(key, 'PIPELINE', `${key} was blocked because ${owner} already holds the pipeline lock.`);
+      return;
+    }
+
+    startPipelineLock(key);
+    setStatus('B3', 'running');
+    pushHistory('PIPELINE', 'info', `${key} started.`, { stage: key, phase: 'start', backend: true });
+
+    void runBackendAction({
+      key,
+      source: 'PIPELINE',
+      operation,
+      endpoint,
+      execute,
+      onSuccess: (payload) => {
+        patchState((draft) => {
+          draft.truth.lastStageCompleted = key;
+          if (key === 'B3.5' && payload?.queue) {
+            const insertedCount = Number(payload.queue.insertedCount ?? 0);
+            if (insertedCount > 0) {
+              draft.truth.queueLength = Math.max(1, draft.truth.queueLength + insertedCount);
+              draft.truth.playbackStatus = 'Queue prepared by backend';
+            }
+            draft.statusByKey.B4 = 'idle';
+          }
+        });
+        setStatus('B3', 'success');
+      },
+      afterRun: () => {
+        releasePipelineLock(key);
+        onComplete();
+      },
+    });
+  }
+
   function runEnqueueStage(onComplete = () => {}) {
-    runPipelineStage('B3.5', 'Queue stage added 1 media item for playback.', onComplete);
-    setTimeout(() => {
-      patchState((draft) => {
-        draft.truth.queueLength = Math.max(1, draft.truth.queueLength + 1);
-        draft.truth.currentMedia = {
-          name: 'same_gps_03.jpg',
-          type: 'Image',
-          position: `${draft.truth.queueLength} of ${draft.truth.queueLength}`,
-          overlay: 'Tallinn, Harjumaa, Estonia',
-        };
-        draft.truth.playbackStatus = 'Ready for emulation';
-        draft.statusByKey.B4 = 'idle';
-      });
-      pushLog('B4', 'success', 'Playback emulation is now enabled because the queue has media.');
-    }, 520);
+    runBackendPipelineStage({
+      key: 'B3.5',
+      operation: 'Prepare playback queue',
+      endpoint: RUNTIME_EXECUTION_ENDPOINTS.queuePrepare,
+      execute: runRuntimeQueuePrepare,
+      onComplete,
+    });
   }
 
   function runAutoPipeline() {
@@ -178,11 +314,27 @@ export function createRuntimeTruthDemoActions({
         return;
       }
 
-      const action = stage === 'B3.5'
-        ? () => runEnqueueStage(() => runNextStage(index + 1))
-        : () => runPipelineStage(stage, `${stage} completed in auto mode.`, () => runNextStage(index + 1));
+      const actionMap = {
+        'B3.1': () => runBackendPipelineStage({
+          key: 'B3.1',
+          operation: 'Run download stage',
+          endpoint: RUNTIME_EXECUTION_ENDPOINTS.downloadRun,
+          execute: runRuntimeDownload,
+          onComplete: () => runNextStage(index + 1),
+        }),
+        'B3.2': () => runBackendPipelineStage({
+          key: 'B3.2',
+          operation: 'Run index stage',
+          endpoint: RUNTIME_EXECUTION_ENDPOINTS.indexRun,
+          execute: runRuntimeIndex,
+          onComplete: () => runNextStage(index + 1),
+        }),
+        'B3.3': () => runPipelineStage('B3.3', 'GPS parsing remains a frontend placeholder until a real backend route exists.', () => runNextStage(index + 1)),
+        'B3.4': () => runPipelineStage('B3.4', 'Geocode remains a frontend placeholder until a real backend route exists.', () => runNextStage(index + 1)),
+        'B3.5': () => runEnqueueStage(() => runNextStage(index + 1)),
+      };
 
-      action();
+      actionMap[stage]?.();
     };
 
     setStatus('B3', 'running');
@@ -190,24 +342,35 @@ export function createRuntimeTruthDemoActions({
   }
 
   function runPlaybackEmulation() {
-    if (!getState().truth.currentMedia) {
-      setStatus('B4', 'disabled');
-      pushLog('B4', 'error', 'Cannot start playback emulation without queued media.');
-      return;
-    }
     if (!withPlaybackGuard(() => {
-      setStatus('B4', 'running');
-      pushHistory('PLAYBACK', 'info', 'Playback emulation started.', { media: getState().truth.currentMedia?.name ?? 'None' });
-      pushLog('B4', 'info', `Showing ${getState().truth.currentMedia.name}.`);
-      patchState((draft) => {
-        draft.truth.playbackStatus = 'Displaying media';
-        draft.truth.lastCheckpoint = `${stamp()} image display checkpoint saved`;
+      void runBackendAction({
+        key: 'B4',
+        source: 'PLAYBACK',
+        operation: 'Select current playback item',
+        endpoint: RUNTIME_EXECUTION_ENDPOINTS.playbackSelectCurrent,
+        execute: runRuntimePlaybackSelectCurrent,
+        onSuccess: (payload) => {
+          const selected = payload?.playback?.selected ?? null;
+          if (!selected) {
+            return;
+          }
+          patchState((draft) => {
+            draft.truth.currentMedia = {
+              name: extractFileName(selected.canonicalPath),
+              type: inferMediaTypeFromPath(selected.canonicalPath),
+              position: draft.truth.queueLength > 0 ? `1 of ${draft.truth.queueLength}` : 'Selected by backend',
+              overlay: selected.addressText ?? 'Address unavailable',
+            };
+            draft.truth.queueLength = Math.max(draft.truth.queueLength, 1);
+            draft.truth.playbackStatus = draft.truth.screenState === 'OFF' ? 'Paused by inactivity' : 'Selected by backend for playback';
+            draft.truth.lastCheckpoint = selected.selectedAt ?? draft.truth.lastCheckpoint;
+            draft.truth.lastStageCompleted = 'B4';
+          });
+        },
+        afterRun: () => {
+          releasePlaybackGuard();
+        },
       });
-      setTimeout(() => {
-        setStatus('B4', 'success');
-        pushLog('B4', 'success', 'Playback emulation rendered the current media card without duplicate starts.');
-        releasePlaybackGuard();
-      }, 400);
     })) {
       return;
     }
@@ -267,5 +430,7 @@ export function createRuntimeTruthDemoActions({
     runAutoPipeline,
     runPlaybackEmulation,
     startRealRun,
+    runBackendAction,
+    runBackendPipelineStage,
   };
 }

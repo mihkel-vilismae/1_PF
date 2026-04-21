@@ -107,20 +107,20 @@
       "description": "Simulates the B1 login sequence through credentials, required file preparation, and placeholder 2FA."
     },
     "run-b2": {
-      "label": "Download 5 files",
-      "description": "Runs the quick B2 test action that simulates downloading a small batch of files."
+      "label": "Run download test action",
+      "description": "Calls the backend download endpoint and reports the response in the B2 log."
     },
     "run-b3-auto": {
       "label": "Run all pipeline stages",
       "description": "Runs B3.1 through B3.5 in sequence using the current execution-mode controls."
     },
     "run-b3-1": {
-      "label": "Run mock download",
-      "description": "Executes the mock download stage that reads from the generated test data folder."
+      "label": "Run download stage",
+      "description": "Calls the backend download stage endpoint from the pipeline view."
     },
     "run-b3-2": {
       "label": "Run index stage",
-      "description": "Simulates the index stage that would register discovered files into the pipeline."
+      "description": "Calls the backend index stage endpoint from the pipeline view."
     },
     "run-b3-3": {
       "label": "Run GPS parsing",
@@ -131,12 +131,12 @@
       "description": "Simulates converting coordinates into readable location data for the queued asset."
     },
     "run-b3-5": {
-      "label": "Enqueue playback",
-      "description": "Simulates the queue stage that creates a playable media item for the playback preview."
+      "label": "Prepare playback queue",
+      "description": "Calls the backend queue-prepare endpoint so playback selection can use real queue rows."
     },
     "run-b4": {
-      "label": "Run playback emulation",
-      "description": "Starts the B4 preview so the currently queued media is shown in the operator-facing playback frame."
+      "label": "Select current playback item",
+      "description": "Calls the backend playback-selection endpoint and updates the operator preview with the selected item."
     },
     "resume-last-run": {
       "label": "Resume from saved state",
@@ -249,16 +249,16 @@
       "reason": "Runs a frontend-only simulated login flow; there is no live auth backend in this view."
     },
     "run-b2": {
-      "state": "mock",
-      "reason": "Runs a simulated batch download action in the demo test view."
+      "state": "real",
+      "reason": "Runs the real backend download test action."
     },
     "run-b3-1": {
-      "state": "mock",
-      "reason": "Runs the explicit mock-download stage backed by generated test data."
+      "state": "real",
+      "reason": "Runs the real backend download stage."
     },
     "run-b3-2": {
-      "state": "mock",
-      "reason": "Runs a simulated index stage; no live backend pipeline wiring exists here yet."
+      "state": "real",
+      "reason": "Runs the real backend index stage."
     },
     "run-b3-3": {
       "state": "mock",
@@ -269,16 +269,16 @@
       "reason": "Runs a simulated geocode stage; no live backend pipeline wiring exists here yet."
     },
     "run-b3-5": {
-      "state": "mock",
-      "reason": "Runs a simulated queue stage in the frontend-only test workflow."
+      "state": "real",
+      "reason": "Runs the real backend queue-prepare stage."
     },
     "run-b3-auto": {
       "state": "mock",
       "reason": "Runs the full B3 sequence as a frontend-only simulated pipeline."
     },
     "run-b4": {
-      "state": "mock",
-      "reason": "Starts the playback emulation preview rather than a real media playback engine."
+      "state": "real",
+      "reason": "Runs the real backend playback-selection action and shows the selected item in the preview."
     },
     "resume-last-run": {
       "state": "mock",
@@ -357,20 +357,20 @@
       "reason": "This flow is simulated in the frontend, while the planned backend test/login endpoint is not implemented here."
     },
     "run-b2": {
-      "state": "missing",
-      "reason": "This button simulates download behavior, but no real backend test-download endpoint is implemented here."
+      "state": "real",
+      "reason": "This button calls the real POST /api/runtime/download/run endpoint."
     },
     "run-b3-auto": {
       "state": "missing",
       "reason": "This auto pipeline is frontend-driven because the planned backend stage endpoints are not implemented here."
     },
     "run-b3-1": {
-      "state": "mock",
-      "reason": "This is the explicit mock-download stage backed by generated test data rather than a real backend."
+      "state": "real",
+      "reason": "This stage now calls the real POST /api/runtime/download/run endpoint."
     },
     "run-b3-2": {
-      "state": "missing",
-      "reason": "This stage is meant to be backend-backed later, but currently no real endpoint/response exists here."
+      "state": "real",
+      "reason": "This stage now calls the real POST /api/runtime/index/run endpoint."
     },
     "run-b3-3": {
       "state": "missing",
@@ -381,12 +381,12 @@
       "reason": "This stage is meant to be backend-backed later, but currently no real endpoint/response exists here."
     },
     "run-b3-5": {
-      "state": "missing",
-      "reason": "This queue stage is simulated because no real backend queue/playback endpoint is implemented here."
+      "state": "real",
+      "reason": "This stage now calls the real POST /api/runtime/queue/prepare endpoint."
     },
     "run-b4": {
-      "state": "missing",
-      "reason": "This playback action is a frontend emulation because no real backend playback service/endpoint is implemented here."
+      "state": "real",
+      "reason": "This action now calls the real POST /api/runtime/playback/select-current endpoint."
     },
     "resume-last-run": {
       "state": "missing",

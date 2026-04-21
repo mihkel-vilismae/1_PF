@@ -76,7 +76,7 @@ function render() {
         <div class="brand-card">
           <p class="eyebrow">Photo frame operator workspace</p>
           <h1>Control Dashboard</h1>
-          <p class="brand-copy">A higher-clarity dashboard where A and E now call documented repo-local endpoints, while B, C, and D still preserve their explicit prototype/runtime separation.</p>
+          <p class="brand-copy">A higher-clarity dashboard where A and E call documented repo-local endpoints, B mixes real runtime actions with clearly marked placeholders, and C-D stay explicit preview surfaces.</p>
         </div>
 
         <nav class="nav-card" aria-label="Views">
@@ -93,7 +93,7 @@ function render() {
         <article class="side-panel">
           <div class="side-panel__header">
             <h2>Current truth</h2>
-            <span class="pill">A and E wired, B-D simulated</span>
+            <span class="pill">A/E real • B mixed • C/D mock</span>
           </div>
           ${renderDefinitionList({
             'Source of truth': state.truth.sourceOfTruth,

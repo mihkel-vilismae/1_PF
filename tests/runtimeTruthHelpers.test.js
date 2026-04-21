@@ -8,6 +8,7 @@ import {
   mapPayloadStatusToUiStatus,
   normalizeActionResult,
   summarizeInitPayload,
+  summarizeRuntimePayload,
 } from '../dashboard/services/runtimeTruth/runtimeTruthActionUtils.js';
 import {
   getTruthSignature,
@@ -58,6 +59,7 @@ test('runtimeTruth action helpers preserve request metadata and status text', ()
   assert.equal(mapPayloadStatusToUiStatus('warning'), 'info');
   assert.equal(mapPayloadStatusToUiStatus('ok'), 'success');
   assert.equal(formatInitError('Run B2', { status: 500, message: 'Boom' }), 'Run B2 failed with HTTP 500: Boom');
+  assert.equal(summarizeRuntimePayload('Queue prepare', { queue: { insertedCount: 2 } }), 'Queue prepare completed with 2 newly queued item(s).');
 });
 
 test('runtimeTruth persistence normalizes snapshots to the shared seed path', () => {

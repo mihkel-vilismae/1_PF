@@ -36,7 +36,14 @@ export function renderLogEntries(entries = [], options = {}) {
     .join('');
 }
 
+export function renderSourceBadge(mode, label = null) {
+  const normalizedMode = ['real', 'hybrid', 'mock'].includes(mode) ? mode : 'hybrid';
+  const text = label ?? normalizedMode.toUpperCase();
+  return `<span class="source-badge source-badge--${escapeHtml(normalizedMode)}">${escapeHtml(text)}</span>`;
+}
+
 export function renderDefinitionList(data = {}) {
+
   const rows = Object.entries(data)
     .map(([label, value]) => `<div class="definition-row"><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(formatInlineValue(value))}</dd></div>`)
     .join('');
