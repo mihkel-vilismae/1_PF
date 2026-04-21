@@ -24,6 +24,8 @@ const port = Number(process.env.PORT || 4301);
 const schedulerTaskName = 'PhotoFrame-1PF-SchedulerHost';
 const schedulerRuntimeDirectory = path.join(repoRoot, 'runtime_data', 'scheduler');
 const schedulerStatusFilePath = path.join(schedulerRuntimeDirectory, 'host-status.json');
+const runtimeTruthRelativePath = 'conf/runtime-truth.json';
+const runtimeTruthFilePath = path.join(repoRoot, runtimeTruthRelativePath);
 const schedulerSchemaVersion = 3;
 const schedulerHeartbeatGraceSeconds = 20;
 const schedulerTickSeconds = Object.freeze({
@@ -71,6 +73,8 @@ const routes = {
   'POST /api/init/cron/install': installCronHandler,
   'GET /api/init/cron/status': cronStatusHandler,
   'GET /api/init/cron/print': printCronHandler,
+  'GET /api/runtime-truth': getRuntimeTruthHandler,
+  'POST /api/runtime-truth': updateRuntimeTruthHandler,
 };
 
 const server = createServer(async (request, response) => {
@@ -247,6 +251,35 @@ async function printCronHandler({ context }) {
   return buildSchedulerRouteResponse(context, SCHEDULER_OPERATION_SUPPORT.print);
 }
 
+async function getRuntimeTruthHandler() {
+  const truth = await readRuntimeTruthFile();
+  return {
+    statusCode: 200,
+    payload: {
+      status: 'ok',
+      sourcePath: runtimeTruthRelativePath,
+      truth,
+      schemaVersion: 1,
+      persistedAt: new Date().toISOString(),
+    },
+  };
+}
+
+async function updateRuntimeTruthHandler({ body }) {
+  const truth = normalizeRuntimeTruthPayload(body?.truth, { source: 'request' });
+  await writeRuntimeTruthFile(truth);
+  return {
+    statusCode: 200,
+    payload: {
+      status: 'ok',
+      sourcePath: runtimeTruthRelativePath,
+      truth,
+      schemaVersion: 1,
+      persistedAt: new Date().toISOString(),
+    },
+  };
+}
+
 async function buildSchedulerRouteResponse(context, operation) {
   const scheduler = await resolveSchedulerOperation(context, operation);
   return {
@@ -389,6 +422,67 @@ function resolveRepoPath(relativeOrAbsolutePath) {
     return relativeOrAbsolutePath;
   }
   return path.resolve(repoRoot, relativeOrAbsolutePath);
+}
+
+async function readRuntimeTruthFile() {
+  if (!(await fileExists(runtimeTruthFilePath))) {
+    throw new HttpError(404, 'runtime_truth_missing', 'Runtime truth file does not exist yet.', {
+      sourcePath: runtimeTruthRelativePath,
+    });
+  }
+
+  let raw;
+  try {
+    raw = await fs.readFile(runtimeTruthFilePath, 'utf8');
+  } catch (error) {
+    throw new HttpError(500, 'runtime_truth_read_failed', 'Failed to read runtime truth file.', {
+      sourcePath: runtimeTruthRelativePath,
+      message: error.message,
+    });
+  }
+
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (error) {
+    throw new HttpError(500, 'runtime_truth_invalid_json', 'Runtime truth file contains invalid JSON.', {
+      sourcePath: runtimeTruthRelativePath,
+      message: error.message,
+    });
+  }
+
+  return normalizeRuntimeTruthPayload(parsed, { source: 'file' });
+}
+
+async function writeRuntimeTruthFile(truth) {
+  try {
+    await fs.mkdir(path.dirname(runtimeTruthFilePath), { recursive: true });
+    const serialized = `${JSON.stringify(truth, null, 2)}\n`;
+    await fs.writeFile(runtimeTruthFilePath, serialized, 'utf8');
+  } catch (error) {
+    throw new HttpError(500, 'runtime_truth_write_failed', 'Failed to write runtime truth file.', {
+      sourcePath: runtimeTruthRelativePath,
+      message: error.message,
+    });
+  }
+}
+
+function normalizeRuntimeTruthPayload(value, options = {}) {
+  const source = options.source === 'file' ? 'file' : 'request';
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    if (source === 'file') {
+      throw new HttpError(500, 'runtime_truth_invalid_payload', 'Runtime truth file must contain a JSON object.', {
+        sourcePath: runtimeTruthRelativePath,
+      });
+    }
+    throw new HttpError(400, 'invalid_runtime_truth_payload', 'Runtime truth payload must be a JSON object.', {
+      expected: { truth: { sourceOfTruth: runtimeTruthRelativePath } },
+    });
+  }
+
+  const truth = structuredClone(value);
+  truth.sourceOfTruth = runtimeTruthRelativePath;
+  return truth;
 }
 
 async function readJsonBody(request) {
