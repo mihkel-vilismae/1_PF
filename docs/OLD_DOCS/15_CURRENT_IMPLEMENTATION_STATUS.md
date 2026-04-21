@@ -2,13 +2,16 @@
 
 ## Purpose
 
+> Note: A documentation-only proposed canonical schema has been added at `docs/CANONICAL_SCHEMA_PROPOSAL.md`. It is a forward-looking contract artifact and is **not** evidence that the durable runtime schema is implemented in this snapshot.
+
+
 This document describes what is actually implemented in the uploaded repository snapshot.
 It is the primary implementation-truth document for this repo.
 
 ## Repository Reality Summary
 
-The repository currently implements a **dashboard-first frontend prototype** built with Vite plus a **minimal backend slice for View A**.
-Most runtime behavior is still driven by an **in-memory mock state service**, but View A now includes both a frontend service layer and repo-local backend endpoints for env verification and SQLite file operations.
+The repository currently implements a **dashboard-first frontend prototype** built with Vite plus **repo-local backend slices for View A and View E**.
+Most runtime behavior is still driven by an **in-memory mock state service**, but View A now includes both a frontend service layer and repo-local backend endpoints for env verification and SQLite file operations, and View E now includes dedicated frontend state/service wiring plus repo-local endpoints for database verification, logical connect gating, table listing, paginated row inspection, and session-bounded DB activity logging.
 
 The repository also includes a substantial target-state documentation bundle for later backend implementation, but that backend is not present yet.
 
@@ -33,7 +36,7 @@ Evidence:
 
 Implemented:
 
-- four views: A, B, C, D
+- five views: A, B, C, D, E
 - sidebar navigation
 - current-truth side panel
 - event history panel
@@ -45,7 +48,24 @@ Evidence:
 - `dashboard/app.js`
 - `dashboard/shared/constants.js`
 - `dashboard/services/renderers.js`
+- `dashboard/views/databaseViewerView.js`
 - `dashboard/views/`
+
+### Database viewer contract wiring
+
+Implemented:
+
+- dedicated database viewer service module targeting `/api/database-viewer/*`
+- frontend action/state handling for verify, connect, show tables, row paging, and start/stop logging
+- a dedicated View E renderer with E1 through E4 cards
+- explicit button gating derived from verification, connect, catalog, and logging state
+
+Evidence:
+
+- `dashboard/services/databaseViewerService.js`
+- `dashboard/services/runtimeTruth.js`
+- `dashboard/views/databaseViewerView.js`
+- `dashboard/app.js`
 
 ### Mock runtime truth and simulation
 
@@ -106,6 +126,24 @@ Evidence:
 - `dashboard/app.js`
 - `dashboard/services/initService.js`
 
+### Database viewer backend slice
+
+Implemented:
+
+- a repo-local Node HTTP server route group for `/api/database-viewer/*`
+- required-table verification against an explicit list sourced from `docs/OLD_DOCS/20_STATE_AND_TRUTH_CONTRACT.md`
+- logical connect gating that only opens after verification passes
+- real table/view listing plus SQLite metadata reads when the DB file exists
+- backend-owned paginated row inspection via the Python SQLite helper
+- in-memory, session-bounded DB activity logging for database-viewer requests and repo-local backend DB actions observed through this server
+- honest coverage text that explicitly avoids global SQL-tracing claims
+
+Evidence:
+
+- `server/index.js`
+- `server/scripts/sqlite_admin.py`
+- `docs/OLD_DOCS/VIEW_E_DATABASE_VIEWER.md`
+
 ### Generated test data
 
 Implemented:
@@ -124,9 +162,10 @@ Evidence:
 
 Not present in this repository snapshot:
 
-- backend services for B/C/D runtime features
+- backend services for B/C/D runtime features and the rest of the planned system outside A/E
 - request validation and auth layers beyond the current A confirmation flow
 - backend services for playback, screen, pipeline, or recovery
+- guaranteed cross-process or global SQL tracing; View E logging remains backend-process-scoped
 
 ### Durable storage
 
@@ -230,6 +269,30 @@ Primary files:
 - `dashboard/views/runningProcessView.js`
 - `dashboard/services/runtimeTruth.js`
 
+### View E — Database Viewer
+
+Current state:
+
+- implemented as a dedicated frontend view with E1 through E4 cards, status badges, gating, and log surfaces
+- frontend actions dispatch through a dedicated `databaseViewerService` module plus View E state handling in `runtimeTruth.js`
+- repo-local backend endpoints exist for `POST /api/database-viewer/verify`, `POST /api/database-viewer/connect`, `GET /api/database-viewer/tables`, `POST /api/database-viewer/rows`, `POST /api/database-viewer/logging/start`, and `POST /api/database-viewer/logging/stop`
+- verification checks both DB-file existence and required-table presence against an explicit list sourced from `docs/OLD_DOCS/20_STATE_AND_TRUTH_CONTRACT.md`
+- the connect step is a logical backend authorization gate, not a durable DB session; later table and row requests still execute as fresh backend calls
+- table listing returns current table/view objects plus SQLite metadata when the DB file exists
+- row inspection is paginated and backend-bounded, with default page size `50`, maximum page size `100`, and backend-owned ordering heuristics
+- logging start/stop returns an in-memory, session-bounded event list for database-viewer requests and other repo-local backend DB actions observed through this server while the logging session is active
+- logging does **not** provide global SQL tracing and does **not** guarantee capture of external-process activity
+
+Primary files:
+
+- `dashboard/app.js`
+- `dashboard/services/databaseViewerService.js`
+- `dashboard/services/runtimeTruth.js`
+- `dashboard/views/databaseViewerView.js`
+- `server/index.js`
+- `server/scripts/sqlite_admin.py`
+- `docs/OLD_DOCS/VIEW_E_DATABASE_VIEWER.md`
+
 ## Interpretation Rules
 
 - If a document describes API endpoints, worker leases, DB tables, cron behavior, or checkpoint recovery, that is target-state design unless matching implementation files are present.
@@ -257,7 +320,11 @@ Derived from direct inspection of:
 - `dashboard/views/testView.js`
 - `dashboard/views/lastRunView.js`
 - `dashboard/views/runningProcessView.js`
+- `dashboard/views/databaseViewerView.js`
+- `dashboard/services/databaseViewerService.js`
 - `dashboard/shared/constants.js`
+- `server/index.js`
+- `server/scripts/sqlite_admin.py`
 - `server/scheduler_host.js`
 - `server/scripts/windows_task_scheduler.ps1`
 - `generated_test_data/`

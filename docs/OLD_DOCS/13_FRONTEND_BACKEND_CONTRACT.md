@@ -2,11 +2,12 @@
 
 ## Purpose
 
-This document defines the API contract for dashboard views A, B, C, and D.
+This document defines the API contract for dashboard views A, B, C, D, and E.
 
 ## Current Implementation Truth
 
-- `implemented`: View A init/database/scheduler routes and `/api/runtime-truth` persistence routes in `server/index.js`.
+- `implemented`: View A init/database/scheduler routes, View E database-viewer routes, and `/api/runtime-truth` persistence routes in `server/index.js`.
+- `implemented`: frontend View E wiring through `dashboard/services/databaseViewerService.js`, `dashboard/services/runtimeTruth.js`, `dashboard/views/databaseViewerView.js`, and `dashboard/app.js`.
 - `planned`: `/api/runtime/*` and `/api/test/*` routes in this document.
 - `implemented`: frontend runtime-truth hydration/persistence against `/api/runtime-truth`.
 - `planned`: frontend `runtimeService`, `testService`, and `screenService` migration away from demo-only transitions in `dashboard/services/runtimeTruth.js`.
@@ -24,14 +25,15 @@ This document defines the API contract for dashboard views A, B, C, and D.
 - `runtimeService`: runtime read/control and restore endpoints.
 - `cronService`: legacy `/api/init/cron/*` actions for View A.
 - `databaseService`: View A database endpoints.
+- `databaseViewerService`: `/api/database-viewer/*` verify/connect/browse/logging actions for View E.
 - `testService`: `/api/test/*` stage and flow actions for View B.
 - `screenService`: `/api/test/screen/*` read/configure calls for B5 and D screen-related surfaces.
 
 ## Shared Envelope Rules
 
-### Implemented View A Error Envelope
+### Implemented View A / View E Error Envelope
 
-The currently implemented View A and `/api/runtime-truth` backend uses:
+The currently implemented View A, View E, and `/api/runtime-truth` backend uses:
 
 - `status: "error"`
 - `error`
@@ -110,6 +112,93 @@ Implementation status: `implemented`
   - `schemaVersion`
 - Current host limitation:
   - scheduler host currently reports heartbeat/tick status and does not yet execute business runtime services.
+
+## View E Contract
+
+Implementation status: `implemented` for the repo-local backend endpoints
+
+### Verify Database
+
+- Endpoint: `POST /api/database-viewer/verify`
+- Response schema:
+  - `status`: `ok` | `error`
+  - `messages`: string[]
+  - `verificationPassed`: boolean
+  - `database`: object with DB file path/status metadata
+  - `requiredTables`: object with `sourcePath`, `sourceLabel`, `note`, `expected`, `present`, `missing`
+  - `availableObjects`: object[] with `name`, `kind`, and `columnCount`
+  - `loggingCoverage`: string
+  - `schemaVersion`: integer
+  - `verifiedAt`: ISO-8601 datetime string
+- Current required-table source:
+  - `docs/OLD_DOCS/20_STATE_AND_TRUTH_CONTRACT.md`
+  - This is a documented target truth-surface reference, not proof that the current repo runtime already contains the full table set.
+
+### Connect to Database
+
+- Endpoint: `POST /api/database-viewer/connect`
+- Response includes:
+  - `status`
+  - `messages`
+  - `connected`
+  - `gate`: currently `"logical_backend_authorization"`
+  - `database`
+  - `requiredTables`
+  - `loggingCoverage`
+  - `schemaVersion`
+  - `connectedAt`
+- Current behavior:
+  - this is a logical gate only
+  - table and row requests still execute as fresh backend calls rather than reusing a durable DB session
+
+### Show Tables
+
+- Endpoint: `GET /api/database-viewer/tables`
+- Response includes:
+  - `status`
+  - `messages`
+  - `database`
+  - `objects`
+  - `sqlite`
+  - `loggingCoverage`
+  - `schemaVersion`
+- Current failure mode:
+  - returns `database_missing` if the DB file does not exist
+
+### Inspect Rows
+
+- Endpoint: `POST /api/database-viewer/rows`
+- Request body schema:
+  - `tableName`: required non-empty string
+  - `page`: optional zero-based integer, default `0`
+  - `pageSize`: optional integer, default `50`, max `100`
+- Response includes:
+  - `status`
+  - `messages`
+  - `database`
+  - `table`
+  - `loggingCoverage`
+  - `schemaVersion`
+- Backend-owned ordering rules:
+  - descending preferred timestamp column when available
+  - otherwise descending integer primary key
+  - otherwise `rowid DESC` for tables
+  - otherwise first-column descending as a best-effort fallback for views or rowid-less objects
+
+### Logging Controls
+
+- Endpoints:
+  - `POST /api/database-viewer/logging/start`
+  - `POST /api/database-viewer/logging/stop`
+- `start` returns:
+  - current `database` status
+  - active `logging` state with `sessionId`, `startedAt`, `coverage`, `entryCount`, and `entries`
+- `stop` returns:
+  - stopped `logging` state with `sessionId`, `startedAt`, `endedAt`, `coverage`, `entryCount`, and `entries`
+- Current scope limitation:
+  - logging is in-memory and session-bounded for the current backend process
+  - entries capture database-viewer requests and other repo-local backend DB actions observed through this server while active
+  - it does not guarantee global SQL tracing or visibility into unrelated external processes
 
 ## Runtime API Contract (Views C and D)
 
@@ -920,9 +1009,12 @@ Error responses use the shared runtime/test error envelope.
 Derived from direct inspection of:
 
 - `server/index.js`
+- `server/scripts/sqlite_admin.py`
 - `server/scheduler_host.js`
 - `dashboard/services/apiClient.js`
+- `dashboard/services/databaseViewerService.js`
 - `dashboard/services/initService.js`
 - `dashboard/services/runtimeTruth.js`
 - `dashboard/services/runtimeTruthPersistenceService.js`
+- `dashboard/views/databaseViewerView.js`
 - `conf/runtime-truth.json`
