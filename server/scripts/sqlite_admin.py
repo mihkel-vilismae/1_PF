@@ -1,11 +1,156 @@
 import json
+import math
 import os
 import sqlite3
 import sys
 
 
+MAX_PAGE_SIZE = 100
+PREFERRED_TIMESTAMP_COLUMNS = (
+    "updated_at",
+    "occurred_at",
+    "started_at",
+    "ended_at",
+    "created_at",
+    "last_heartbeat_at",
+    "lease_acquired_at",
+    "lease_expires_at",
+    "last_run",
+)
+
+
+def connect_read_only(path: str) -> sqlite3.Connection:
+    connection = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+    connection.row_factory = sqlite3.Row
+    return connection
+
+
+def quote_identifier(value: str) -> str:
+    return '"' + value.replace('"', '""') + '"'
+
+
+def describe_columns(cursor: sqlite3.Cursor, object_name: str) -> list[dict]:
+    quoted_name = quote_identifier(object_name)
+    column_rows = cursor.execute(f"PRAGMA table_info({quoted_name})").fetchall()
+    return [
+        {
+            "cid": row[0],
+            "name": row[1],
+            "type": row[2] or "",
+            "notNull": bool(row[3]),
+            "defaultValue": row[4],
+            "primaryKeyOrder": row[5],
+        }
+        for row in column_rows
+    ]
+
+
+def looks_like_timestamp_column(column: dict) -> bool:
+    lower_name = column["name"].lower()
+    lower_type = column["type"].lower()
+    if lower_name in PREFERRED_TIMESTAMP_COLUMNS:
+        return True
+    if lower_name.endswith("_at"):
+        return True
+    if "timestamp" in lower_name:
+        return True
+    return "date" in lower_type or "time" in lower_type
+
+
+def looks_like_integer_primary_key(column: dict) -> bool:
+    if not column["primaryKeyOrder"]:
+        return False
+    lower_name = column["name"].lower()
+    lower_type = column["type"].lower()
+    return "int" in lower_type or lower_name == "id" or lower_name.endswith("_id")
+
+
+def choose_ordering(object_kind: str, columns: list[dict]) -> dict:
+    timestamp_columns = [
+        column for column in columns if looks_like_timestamp_column(column)
+    ]
+    if timestamp_columns:
+        timestamp_columns.sort(
+            key=lambda column: (
+                PREFERRED_TIMESTAMP_COLUMNS.index(column["name"].lower())
+                if column["name"].lower() in PREFERRED_TIMESTAMP_COLUMNS
+                else len(PREFERRED_TIMESTAMP_COLUMNS),
+                column["name"].lower(),
+            )
+        )
+        primary = timestamp_columns[0]
+        sql_clause = f"{quote_identifier(primary['name'])} DESC"
+        description = (
+            f"Ordered by {primary['name']} descending because it looks like the clearest "
+            "timestamp column."
+        )
+        if object_kind == "table":
+            sql_clause += ", rowid DESC"
+            description += " rowid DESC is used as a stable tie-breaker."
+        return {
+            "strategy": "timestamp",
+            "column": primary["name"],
+            "sqlClause": sql_clause,
+            "description": description,
+        }
+
+    integer_primary_keys = [
+        column for column in columns if looks_like_integer_primary_key(column)
+    ]
+    if integer_primary_keys:
+        integer_primary_keys.sort(
+            key=lambda column: (column["primaryKeyOrder"], column["name"].lower())
+        )
+        primary = integer_primary_keys[0]
+        return {
+            "strategy": "integer_primary_key",
+            "column": primary["name"],
+            "sqlClause": f"{quote_identifier(primary['name'])} DESC",
+            "description": (
+                f"Ordered by {primary['name']} descending because it is the clearest integer "
+                "primary-key-style column."
+            ),
+        }
+
+    if object_kind == "table":
+        return {
+            "strategy": "rowid",
+            "column": "rowid",
+            "sqlClause": "rowid DESC",
+            "description": (
+                "Ordered by rowid descending because no timestamp or integer primary key "
+                "column was found."
+            ),
+        }
+
+    if columns:
+        primary = columns[0]
+        return {
+            "strategy": "first_column",
+            "column": primary["name"],
+            "sqlClause": f"{quote_identifier(primary['name'])} DESC",
+            "description": (
+                f"Ordered by {primary['name']} descending as a best-effort heuristic because "
+                "this object does not expose a timestamp, integer primary key, or rowid path."
+            ),
+        }
+
+    return {
+        "strategy": "none",
+        "column": None,
+        "sqlClause": "",
+        "description": "No ordering clause was applied because the object exposes no columns.",
+    }
+
+
+def normalize_cell(value):
+    if isinstance(value, bytes):
+        return f"<{len(value)} bytes>"
+    return value
+
+
 def inspect_database(path: str) -> dict:
-    connection = sqlite3.connect(path)
+    connection = connect_read_only(path)
     try:
         cursor = connection.cursor()
         tables = []
@@ -19,14 +164,14 @@ def inspect_database(path: str) -> dict:
             """
         ).fetchall()
         for name, kind, sql in rows:
-            escaped_name = name.replace("'", "''")
-            column_rows = cursor.execute(f"PRAGMA table_info('{escaped_name}')").fetchall()
+            columns = describe_columns(cursor, name)
             tables.append(
                 {
                     "name": name,
                     "kind": kind,
-                    "columnCount": len(column_rows),
-                    "columns": [column[1] for column in column_rows],
+                    "columnCount": len(columns),
+                    "columns": [column["name"] for column in columns],
+                    "columnDetails": columns,
                     "sql": sql,
                 }
             )
@@ -48,8 +193,86 @@ def inspect_database(path: str) -> dict:
         connection.close()
 
 
+def fetch_table_rows(path: str, object_name: str, page: int, page_size: int) -> dict:
+    normalized_page = max(0, int(page))
+    normalized_page_size = max(1, min(MAX_PAGE_SIZE, int(page_size)))
+    offset = normalized_page * normalized_page_size
+
+    connection = connect_read_only(path)
+    try:
+        cursor = connection.cursor()
+        object_row = cursor.execute(
+            """
+            SELECT name, type
+            FROM sqlite_master
+            WHERE type IN ('table', 'view')
+              AND name NOT LIKE 'sqlite_%'
+              AND name = ?
+            """,
+            (object_name,),
+        ).fetchone()
+
+        if object_row is None:
+            raise ValueError(f"Table or view does not exist: {object_name}")
+
+        resolved_name = object_row["name"]
+        object_kind = object_row["type"]
+        quoted_name = quote_identifier(resolved_name)
+        columns = describe_columns(cursor, resolved_name)
+        ordering = choose_ordering(object_kind, columns)
+
+        count_query = f"SELECT COUNT(*) FROM {quoted_name}"
+        total_rows = cursor.execute(count_query).fetchone()[0]
+
+        query_summary = f"SELECT * FROM {quoted_name}"
+        if ordering["sqlClause"]:
+            query_summary = f"{query_summary} ORDER BY {ordering['sqlClause']}"
+        query_summary = f"{query_summary} LIMIT {normalized_page_size} OFFSET {offset}"
+
+        rows_query = f"SELECT * FROM {quoted_name}"
+        if ordering["sqlClause"]:
+            rows_query = f"{rows_query} ORDER BY {ordering['sqlClause']}"
+        rows_query = f"{rows_query} LIMIT ? OFFSET ?"
+
+        result_cursor = cursor.execute(rows_query, (normalized_page_size, offset))
+        row_objects = [
+            {key: normalize_cell(row[key]) for key in row.keys()}
+            for row in result_cursor.fetchall()
+        ]
+        column_names = [description[0] for description in (result_cursor.description or [])]
+        page_count = math.ceil(total_rows / normalized_page_size) if total_rows else 0
+
+        return {
+            "table": {
+                "name": resolved_name,
+                "kind": object_kind,
+                "columns": column_names,
+                "columnDetails": columns,
+                "rows": row_objects,
+                "rowCount": len(row_objects),
+                "totalRows": total_rows,
+                "page": normalized_page,
+                "pageSize": normalized_page_size,
+                "pageCount": page_count,
+                "hasPreviousPage": normalized_page > 0,
+                "hasNextPage": offset + len(row_objects) < total_rows,
+                "offset": offset,
+                "ordering": {
+                    "strategy": ordering["strategy"],
+                    "column": ordering["column"],
+                    "description": ordering["description"],
+                },
+                "querySummary": query_summary,
+            }
+        }
+    finally:
+        connection.close()
+
+
 def recreate_empty_database(path: str) -> dict:
-    os.makedirs(os.path.dirname(path), exist_ok=True)
+    directory = os.path.dirname(path)
+    if directory:
+        os.makedirs(directory, exist_ok=True)
     connection = sqlite3.connect(path)
     try:
         connection.execute("PRAGMA user_version = 0")
@@ -66,16 +289,26 @@ def recreate_empty_database(path: str) -> dict:
 
 
 def main() -> int:
-    if len(sys.argv) != 3:
-        raise ValueError("Expected usage: sqlite_admin.py <inspect|recreate> <path>")
+    if len(sys.argv) < 3:
+        raise ValueError(
+            "Expected usage: sqlite_admin.py <inspect|recreate|rows> <path> [table_name page page_size]"
+        )
 
     operation = sys.argv[1]
     path = os.path.abspath(sys.argv[2])
 
     if operation == "inspect":
+        if len(sys.argv) != 3:
+            raise ValueError("inspect expects: sqlite_admin.py inspect <path>")
         result = inspect_database(path)
     elif operation == "recreate":
+        if len(sys.argv) != 3:
+            raise ValueError("recreate expects: sqlite_admin.py recreate <path>")
         result = recreate_empty_database(path)
+    elif operation == "rows":
+        if len(sys.argv) != 6:
+            raise ValueError("rows expects: sqlite_admin.py rows <path> <table_name> <page> <page_size>")
+        result = fetch_table_rows(path, sys.argv[3], int(sys.argv[4]), int(sys.argv[5]))
     else:
         raise ValueError(f"Unsupported operation: {operation}")
 

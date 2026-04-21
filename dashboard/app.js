@@ -1,6 +1,7 @@
 import { VIEW_ORDER } from './shared/constants.js';
 import {
   getState,
+  changeDatabaseViewerPage,
   closeModal,
   patchState,
   openModal,
@@ -8,6 +9,7 @@ import {
   resetHistory,
   runAction,
   seedDemoState,
+  selectDatabaseViewerTable,
   setActiveView,
   toggleBackendStatusInspectMode,
   toggleInspectMode,
@@ -22,6 +24,7 @@ import { renderInitView } from './views/initView.js';
 import { renderTestView } from './views/testView.js';
 import { renderLastRunView } from './views/lastRunView.js';
 import { renderRunningProcessView } from './views/runningProcessView.js';
+import { renderDatabaseViewerView } from './views/databaseViewerView.js';
 
 const app = document.getElementById('app');
 const TRANSIT_EVENT_NAME = 'dashboard:transit';
@@ -31,6 +34,7 @@ let transitHasLiveTraffic = false;
 const INSPECTABLE_SELECTOR = [
   '.nav-link',
   '.button',
+  '.db-object-button',
   '.toggle-card',
   '.selector-option',
   '.field-label',
@@ -57,6 +61,8 @@ const VALUE_INSPECTABLE_SELECTOR = [
   '.worker-row__main span',
   '.worker-row__meta .mini-badge',
   '.worker-row__meta > span:last-child',
+  '.db-activity-entry__meta span',
+  '.db-activity-entry p',
   '.notice',
   '.modal-panel__subtitle',
   '.modal-panel__json',
@@ -64,11 +70,14 @@ const VALUE_INSPECTABLE_SELECTOR = [
 const REALITY_INSPECTABLE_SELECTOR = [
   '.nav-link',
   '.button',
+  '.db-object-button',
   '.hero-pill',
   '.pill',
   '.status-badge',
   '.notice',
   '.result-surface',
+  '.db-table-shell',
+  '.db-activity-entry',
   '.definition-row',
   '.preview-frame',
   '.screen-indicator',
@@ -78,11 +87,14 @@ const REALITY_INSPECTABLE_SELECTOR = [
 ].join(', ');
 const BACKEND_STATUS_INSPECTABLE_SELECTOR = [
   '.button',
+  '.db-object-button',
   '.hero-pill',
   '.pill',
   '.status-badge',
   '.notice',
   '.result-surface',
+  '.db-table-shell',
+  '.db-activity-entry',
   '.definition-row',
   '.preview-frame',
   '.screen-indicator',
@@ -164,6 +176,26 @@ const ACTION_INSPECT_COPY = {
   'print-cron': {
     label: 'Print scheduler',
     description: 'Prints the scheduler/task definition details returned by the backend for inspection.',
+  },
+  'verify-db-viewer': {
+    label: 'Verify database',
+    description: 'Checks whether the configured SQLite file exists and whether the documented required-table baseline is present.',
+  },
+  'connect-db-viewer': {
+    label: 'Connect to database',
+    description: 'Calls the logical backend connect gate used by View E before catalog and row reads are enabled.',
+  },
+  'show-db-tables': {
+    label: 'Show tables',
+    description: 'Loads the current list of non-system tables and views from the SQLite helper backend.',
+  },
+  'start-db-logging': {
+    label: 'Start DB logging',
+    description: 'Starts a bounded backend logging session that captures repo-local DB actions observed by this app.',
+  },
+  'stop-db-logging': {
+    label: 'Stop DB logging',
+    description: 'Stops the current bounded DB logging session and reveals the captured backend activity entries.',
   },
   'run-b1': {
     label: 'Run login flow',
@@ -287,6 +319,26 @@ const ACTION_REALITY_COPY = {
     state: 'real',
     reason: 'Calls the live scheduler-print backend endpoint.',
   },
+  'verify-db-viewer': {
+    state: 'real',
+    reason: 'Calls the live `/api/database-viewer/verify` backend endpoint.',
+  },
+  'connect-db-viewer': {
+    state: 'real',
+    reason: 'Calls the live `/api/database-viewer/connect` backend endpoint for the logical connect gate.',
+  },
+  'show-db-tables': {
+    state: 'real',
+    reason: 'Calls the live `/api/database-viewer/tables` backend endpoint.',
+  },
+  'start-db-logging': {
+    state: 'real',
+    reason: 'Calls the live `/api/database-viewer/logging/start` backend endpoint.',
+  },
+  'stop-db-logging': {
+    state: 'real',
+    reason: 'Calls the live `/api/database-viewer/logging/stop` backend endpoint.',
+  },
   'run-b1': {
     state: 'mock',
     reason: 'Runs a frontend-only simulated login flow; there is no live auth backend in this view.',
@@ -349,6 +401,10 @@ const VIEW_REALITY_COPY = {
     state: 'mock',
     reason: 'The Running Process view is a frontend-only runtime preview in the current repo.',
   },
+  E: {
+    state: 'mixed',
+    reason: 'The Database Viewer uses live backend routes for verification, table reads, rows, and session logging, while still living inside the shared hybrid dashboard shell.',
+  },
 };
 const ACTION_BACKEND_STATUS_COPY = {
   'toggle-inspect-mode': {
@@ -370,6 +426,26 @@ const ACTION_BACKEND_STATUS_COPY = {
   'clear-history': {
     state: 'unknown',
     reason: 'Implemented local UI action; it is not a backend-backed operation.',
+  },
+  'verify-db-viewer': {
+    state: 'real',
+    reason: 'This action is backed by a repo-local `/api/database-viewer/verify` endpoint.',
+  },
+  'connect-db-viewer': {
+    state: 'real',
+    reason: 'This action is backed by a repo-local `/api/database-viewer/connect` endpoint.',
+  },
+  'show-db-tables': {
+    state: 'real',
+    reason: 'This action is backed by a repo-local `/api/database-viewer/tables` endpoint.',
+  },
+  'start-db-logging': {
+    state: 'real',
+    reason: 'This action is backed by a repo-local `/api/database-viewer/logging/start` endpoint.',
+  },
+  'stop-db-logging': {
+    state: 'real',
+    reason: 'This action is backed by a repo-local `/api/database-viewer/logging/stop` endpoint.',
   },
   'run-b1': {
     state: 'missing',
@@ -440,6 +516,7 @@ function render() {
     B: renderTestView(state),
     C: renderLastRunView(state),
     D: renderRunningProcessView(state),
+    E: renderDatabaseViewerView(state),
   }[state.activeView];
 
   document.body.classList.toggle('modal-open', Boolean(state.modal));
@@ -450,7 +527,7 @@ function render() {
         <div class="brand-card">
           <p class="eyebrow">Photo frame operator workspace</p>
           <h1>Control Dashboard</h1>
-          <p class="brand-copy">A higher-clarity dashboard where A now calls documented init endpoints, while B, C, and D still preserve their explicit prototype/runtime separation.</p>
+          <p class="brand-copy">A higher-clarity dashboard where A and E now call documented repo-local endpoints, while B, C, and D still preserve their explicit prototype/runtime separation.</p>
         </div>
 
         <nav class="nav-card" aria-label="Views">
@@ -467,7 +544,7 @@ function render() {
         <article class="side-panel">
           <div class="side-panel__header">
             <h2>Current truth</h2>
-            <span class="pill">A wired, B-D simulated</span>
+            <span class="pill">A and E wired, B-D simulated</span>
           </div>
           ${renderDefinitionList({
             'Source of truth': state.truth.sourceOfTruth,
@@ -651,6 +728,18 @@ function bindEvents() {
         return;
       }
       runAction(action);
+    });
+  });
+
+  app.querySelectorAll('[data-db-table]').forEach((button) => {
+    button.addEventListener('click', () => {
+      selectDatabaseViewerTable(button.dataset.dbTable);
+    });
+  });
+
+  app.querySelectorAll('[data-db-page-delta]').forEach((button) => {
+    button.addEventListener('click', () => {
+      changeDatabaseViewerPage(Number(button.dataset.dbPageDelta || 0));
     });
   });
 
@@ -846,7 +935,7 @@ function describeRealityElement(element) {
     return describeViewReality(element.dataset.view);
   }
 
-  if (element.matches('.button')) {
+  if (element.matches('.button, .db-object-button')) {
     return describeButtonReality(element);
   }
 
@@ -868,6 +957,14 @@ function describeRealityElement(element) {
 
   if (element.matches('.definition-row')) {
     return describeDefinitionRealityRow(element);
+  }
+
+  if (element.matches('.db-table-shell')) {
+    return buildRealityMeta('real', 'Database row table', 'This table renders rows returned by the live View E backend row endpoint.');
+  }
+
+  if (element.matches('.db-activity-entry')) {
+    return buildRealityMeta('real', 'DB activity entry', 'This entry comes from the bounded repo-local DB logging session returned by the live View E backend.');
   }
 
   if (element.matches('.preview-frame')) {
@@ -928,6 +1025,12 @@ function describeButtonReality(element) {
   if (element.hasAttribute('data-modal-close')) {
     return buildRealityMeta('real', label, 'Implemented local UI action that closes the details modal.');
   }
+  if (element.dataset.dbTable) {
+    return buildRealityMeta('real', label, 'Loads paginated rows for the selected table through the live database viewer backend.');
+  }
+  if (element.dataset.dbPageDelta) {
+    return buildRealityMeta('real', label, 'Requests the previous or next backend-owned page of rows for the currently selected table.');
+  }
 
   return buildRealityMeta('unknown', label, 'No explicit real/mock classification metadata is defined for this button yet.');
 }
@@ -948,6 +1051,12 @@ function describeHeroPillReality(element) {
   if (text.includes('preview active') || text.includes('preview inactive')) {
     return buildRealityMeta('mock', label, 'This pill describes the frontend-only runtime preview, not a live runtime process.');
   }
+  if (text.includes('backend-backed browsing')) {
+    return buildRealityMeta('real', label, 'This statement reflects live backend wiring for the View E database viewer routes.');
+  }
+  if (text.includes('repo-local activity logging only')) {
+    return buildRealityMeta('real', label, 'This statement intentionally narrows the DB logging claim to the real repo-local backend scope that is implemented.');
+  }
 
   return buildRealityMeta('unknown', label, 'No explicit real/mock classification metadata is defined for this hero pill yet.');
 }
@@ -956,8 +1065,8 @@ function describePillReality(element) {
   const label = compactWhitespace(element.textContent) || 'Pill';
   const text = label.toLowerCase();
 
-  if (text.includes('a wired') && text.includes('simulated')) {
-    return buildRealityMeta('mixed', label, 'This summary intentionally describes a hybrid dashboard where View A is wired and Views B-D remain simulated.');
+  if (text.includes('wired') && text.includes('simulated')) {
+    return buildRealityMeta('mixed', label, 'This summary intentionally describes a hybrid dashboard where Views A and E are backend-wired while Views B-D remain simulated.');
   }
   if (text.includes('live gateway traffic')) {
     return buildRealityMeta('real', label, 'The transit terminal is currently showing real gateway events produced by dashboard API traffic.');
@@ -1115,6 +1224,9 @@ function getSectionRealityByCode(code, label) {
   if (typeof code === 'string' && code.startsWith('D')) {
     return buildRealityMeta('mock', label, 'This section belongs to the frontend-only runtime preview.');
   }
+  if (typeof code === 'string' && code.startsWith('E')) {
+    return buildRealityMeta('real', label, 'This section is backed by live database viewer backend endpoints or their direct UI projections.');
+  }
 
   return buildRealityMeta('unknown', label, 'No explicit real/mock classification metadata is defined for this section yet.');
 }
@@ -1129,7 +1241,7 @@ function buildRealityMeta(state, label, description) {
 }
 
 function describeBackendStatusElement(element) {
-  if (element.matches('.button')) {
+  if (element.matches('.button, .db-object-button')) {
     return describeButtonBackendStatus(element);
   }
 
@@ -1151,6 +1263,14 @@ function describeBackendStatusElement(element) {
 
   if (element.matches('.definition-row')) {
     return describeDefinitionBackendStatusRow(element);
+  }
+
+  if (element.matches('.db-table-shell')) {
+    return buildBackendStatusMeta('real', 'Database row table', 'This table is filled from the live `/api/database-viewer/rows` endpoint.');
+  }
+
+  if (element.matches('.db-activity-entry')) {
+    return buildBackendStatusMeta('real', 'DB activity entry', 'This entry is filled from the live View E logging session payload.');
   }
 
   if (element.matches('.preview-frame')) {
@@ -1209,6 +1329,12 @@ function describeButtonBackendStatus(element) {
   if (element.hasAttribute('data-modal-close')) {
     return buildBackendStatusMeta('unknown', label, 'This is a local UI action and does not represent backend wiring status.');
   }
+  if (element.dataset.dbTable) {
+    return buildBackendStatusMeta('real', label, 'This button triggers a live `/api/database-viewer/rows` request for the selected table.');
+  }
+  if (element.dataset.dbPageDelta) {
+    return buildBackendStatusMeta('real', label, 'This button triggers a live `/api/database-viewer/rows` pagination request.');
+  }
 
   return buildBackendStatusMeta('unknown', label, 'No explicit backend-status classification metadata is defined for this button yet.');
 }
@@ -1229,6 +1355,12 @@ function describeHeroPillBackendStatus(element) {
   if (text.includes('preview active') || text.includes('preview inactive')) {
     return buildBackendStatusMeta('missing', label, 'This preview exists because the real runtime backend support is not implemented here yet.');
   }
+  if (text.includes('backend-backed browsing')) {
+    return buildBackendStatusMeta('real', label, 'This pill describes View E functionality that already calls real backend routes.');
+  }
+  if (text.includes('repo-local activity logging only')) {
+    return buildBackendStatusMeta('real', label, 'This pill describes the real implemented scope of the View E logging backend.');
+  }
 
   return buildBackendStatusMeta('unknown', label, 'No explicit backend-status classification metadata is defined for this hero pill yet.');
 }
@@ -1237,7 +1369,7 @@ function describePillBackendStatus(element) {
   const label = compactWhitespace(element.textContent) || 'Pill';
   const text = label.toLowerCase();
 
-  if (text.includes('a wired') && text.includes('simulated')) {
+  if (text.includes('wired') && text.includes('simulated')) {
     return buildBackendStatusMeta('unknown', label, 'This is a hybrid summary that mixes real and simulated backend states.');
   }
   if (text.includes('live gateway traffic')) {
@@ -1297,6 +1429,10 @@ function describeDefinitionBackendStatusRow(element) {
     return buildBackendStatusMeta('mock', `${label} value`, 'This value is driven by frontend-only simulation controls.');
   }
 
+  if (cardContext?.code && ['E1', 'E2', 'E3', 'E4'].includes(cardContext.code)) {
+    return getDatabaseViewerBackendStatusMeta(cardContext.code, `${label} value`);
+  }
+
   if (cardContext?.code && ['C1', 'C2', 'C3', 'C4', 'C5', 'D1', 'D2', 'D3', 'D4'].includes(cardContext.code)) {
     return buildBackendStatusMeta('missing', `${label} value`, 'This value represents runtime data that would normally come from backend/runtime APIs that are not implemented here yet.');
   }
@@ -1340,6 +1476,9 @@ function describeLogBackendStatus(element) {
 
   if (['1A', '2A', '3A'].includes(sourceKey)) {
     return getInitBackendStatusMeta(sourceKey, label, entry);
+  }
+  if (sourceKey.startsWith('E')) {
+    return getDatabaseViewerBackendStatusMeta(sourceKey, label, entry);
   }
 
   if (sourceKey === 'B3.1' || sourceKey === 'B5') {
@@ -1385,6 +1524,9 @@ function describeModalBackendStatus(label) {
     if (['1A', '2A', '3A'].includes(sourceKey)) {
       return getInitBackendStatusMeta(sourceKey, `${label} modal value`, modal.entry);
     }
+    if (sourceKey?.startsWith('E')) {
+      return getDatabaseViewerBackendStatusMeta(sourceKey, `${label} modal value`, modal.entry);
+    }
     if (sourceKey === 'B3.1' || sourceKey === 'B5') {
       return buildBackendStatusMeta('mock', `${label} modal value`, 'This modal is showing details for frontend-only simulation data.');
     }
@@ -1414,6 +1556,9 @@ function describeHistoryEntryFromDetails(label, entry) {
 function getSectionBackendStatusByCode(code, label) {
   if (['1A', '2A', '3A'].includes(code)) {
     return getInitBackendStatusMeta(code, label);
+  }
+  if (typeof code === 'string' && code.startsWith('E')) {
+    return getDatabaseViewerBackendStatusMeta(code, label);
   }
 
   if (code === 'B3.1' || code === 'B5') {
@@ -1459,6 +1604,26 @@ function getInitBackendStatusMeta(code, label, entry = null) {
   }
 
   return buildBackendStatusMeta('real', label, `This UI is wired to a live backend endpoint for ${code}, even if it has not been called yet.`);
+}
+
+function getDatabaseViewerBackendStatusMeta(code, label, entry = null) {
+  const state = getState();
+  const result = state.databaseViewer?.results?.[code] ?? null;
+  const responseStatus = entry?.details?.response?.status ?? result?.status ?? null;
+
+  if (isMissingBackendStatus(responseStatus)) {
+    return buildBackendStatusMeta('missing', label, `The latest response for ${code} indicates the expected database viewer backend endpoint is missing.`);
+  }
+  if (result?.outcome === 'error') {
+    return buildBackendStatusMeta('real', label, `This UI is wired to a live database viewer endpoint, but the latest request for ${code} failed for a non-missing reason.`);
+  }
+  if (result?.outcome === 'running') {
+    return buildBackendStatusMeta('real', label, `This UI is currently waiting on a real database viewer backend request for ${code}.`);
+  }
+  if (result?.outcome === 'success') {
+    return buildBackendStatusMeta('real', label, `This UI is backed by a live database viewer backend endpoint and has a captured response for ${code}.`);
+  }
+  return buildBackendStatusMeta('real', label, `This UI is wired to a live database viewer backend endpoint for ${code}, even if it has not been called yet.`);
 }
 
 function isMissingBackendStatus(status) {
@@ -1522,6 +1687,21 @@ function describeInspectableElement(element) {
 
   if (element.matches('[data-last-run-mode]')) {
     return LAST_RUN_MODE_INSPECT_COPY[element.dataset.lastRunMode] ?? fallbackInspectCopy(element);
+  }
+
+  if (element.matches('[data-db-table]')) {
+    return {
+      label: `Open table ${element.dataset.dbTable ?? ''}`.trim(),
+      description: 'Loads the selected table from the live database viewer backend and shows its bounded rows in E3.',
+    };
+  }
+
+  if (element.matches('[data-db-page-delta]')) {
+    const direction = Number(element.dataset.dbPageDelta) < 0 ? 'previous' : 'next';
+    return {
+      label: `Load ${direction} row page`,
+      description: 'Requests another backend-owned page of rows for the currently selected database object.',
+    };
   }
 
   if (element.matches('[data-action]')) {
@@ -1753,6 +1933,18 @@ function describeDefinitionValue(element) {
   }
   if (cardContext?.code === 'D3') {
     return buildValueMeta(label, element, `state.runningProcess.screenWorker, updated when the simulated runtime preview or screen simulation changes.`);
+  }
+  if (cardContext?.code === 'E1') {
+    return buildValueMeta(label, element, 'state.databaseViewer.verification and state.databaseViewer.connection, updated by the live View E verification/connect responses.');
+  }
+  if (cardContext?.code === 'E2') {
+    return buildValueMeta(label, element, 'state.databaseViewer.tables and state.databaseViewer.sqlite, updated by the live View E table-catalog response.');
+  }
+  if (cardContext?.code === 'E3') {
+    return buildValueMeta(label, element, 'state.databaseViewer.rows, updated by the live View E paginated row response.');
+  }
+  if (cardContext?.code === 'E4') {
+    return buildValueMeta(label, element, 'state.databaseViewer.logging, updated by the live View E logging start/stop responses.');
   }
   if (cardContext?.code && ['1A', '2A', '3A'].includes(cardContext.code) && element.closest('.result-surface')) {
     return buildValueMeta(label, element, `state.initResults["${cardContext.code}"], filled from the latest backend response metadata for that action.`);

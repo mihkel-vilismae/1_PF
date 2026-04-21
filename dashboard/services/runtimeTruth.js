@@ -9,6 +9,15 @@ import {
   checkCronStatus,
   printCron,
 } from './initService.js';
+import {
+  DATABASE_VIEWER_ENDPOINTS,
+  connectDatabase,
+  fetchDatabaseRows,
+  listDatabaseTables,
+  startDatabaseLogging,
+  stopDatabaseLogging,
+  verifyDatabase,
+} from './databaseViewerService.js';
 import { loadPersistedRuntimeTruth, savePersistedRuntimeTruth } from './runtimeTruthPersistenceService.js';
 import runtimeTruthSeed from '../../conf/runtime-truth.json';
 import {
@@ -34,7 +43,7 @@ const formatTallinnTimestamp = () =>
 const listeners = new Set();
 const STAGE_ACTION_KEYS = new Set(['B3.1', 'B3.2', 'B3.3', 'B3.4', 'B3.5']);
 const PROCESS_ACTION_KEYS = new Set(['B4', 'D2', 'D3']);
-const ACTION_LOCK_KEYS = new Set(['1A', '2A', '3A', 'B1', 'B2', 'B3', 'B3.1', 'B3.2', 'B3.3', 'B3.4', 'B3.5', 'B4', 'B5', 'C', 'D1', 'D2', 'D3']);
+const ACTION_LOCK_KEYS = new Set(['1A', '2A', '3A', 'B1', 'B2', 'B3', 'B3.1', 'B3.2', 'B3.3', 'B3.4', 'B3.5', 'B4', 'B5', 'C', 'D1', 'D2', 'D3', 'E1', 'E2', 'E3', 'E4']);
 const SCHEDULER_ACTION_TO_OPERATION = Object.freeze({
   'install-cron': SCHEDULER_OPERATION_SUPPORT.install,
   'check-cron': SCHEDULER_OPERATION_SUPPORT.status,
@@ -76,6 +85,33 @@ function buildInitialTruthState() {
   return truth;
 }
 
+function buildInitialDatabaseViewerState() {
+  return {
+    verification: null,
+    connection: null,
+    connected: false,
+    tables: [],
+    sqlite: null,
+    selectedTableName: null,
+    rows: null,
+    logging: {
+      active: false,
+      sessionId: null,
+      startedAt: null,
+      endedAt: null,
+      coverage: 'Captures repo-local backend DB actions only while the logging session is active.',
+      entries: [],
+      entryCount: 0,
+    },
+    results: {
+      E1: null,
+      E2: null,
+      E3: null,
+      E4: null,
+    },
+  };
+}
+
 function createInitialState() {
   const now = stamp();
   const schedulerCapability = buildInitialSchedulerCapability();
@@ -86,7 +122,7 @@ function createInitialState() {
     realityInspectMode: false,
     backendStatusInspectMode: false,
     currentViewTitle: 'A — Init',
-    modeBanner: 'Hybrid UI: A uses backend contract calls, while B-D remain frontend demos and previews',
+    modeBanner: 'Hybrid UI: A and E use backend contract calls, while B-D remain frontend demos and previews',
     statusByKey: {
       '1A': 'idle',
       '2A': 'idle',
@@ -105,6 +141,10 @@ function createInitialState() {
       D1: 'disabled',
       D2: 'disabled',
       D3: 'disabled',
+      E1: 'idle',
+      E2: 'disabled',
+      E3: 'disabled',
+      E4: 'disabled',
     },
     activeActions: {},
     modal: null,
@@ -128,6 +168,10 @@ function createInitialState() {
       B5: [{ at: now, type: 'info', message: 'Screen simulation controls ready.' }],
       C: [{ at: now, type: 'info', message: 'Last run demo state is idle until one of the view-level demo buttons is pressed.' }],
       D: [{ at: now, type: 'info', message: 'Simulated runtime preview is inactive.' }],
+      E1: [{ at: now, type: 'info', message: 'Ready to verify the configured DB file and required target-state tables.' }],
+      E2: [{ at: now, type: 'info', message: 'Table catalog is locked until Verify Database and Connect to Database both succeed.' }],
+      E3: [{ at: now, type: 'info', message: 'Select a table after the catalog loads to view bounded rows.' }],
+      E4: [{ at: now, type: 'info', message: 'DB logging is inactive. It only captures repo-local backend DB actions while this server process is active.' }],
     },
     initResults: {
       '1A': null,
@@ -137,6 +181,7 @@ function createInitialState() {
     initCapabilities: {
       scheduler: schedulerCapability,
     },
+    databaseViewer: buildInitialDatabaseViewerState(),
     simulation: {
       executionMode: 'auto',
       inputMode: 'single',
@@ -462,6 +507,26 @@ export function setSimulationValue(key, value) {
   }
 }
 
+export function selectDatabaseViewerTable(tableName) {
+  if (!tableName) {
+    return;
+  }
+  void runDatabaseViewerRowsAction(tableName, 0);
+}
+
+export function changeDatabaseViewerPage(delta) {
+  const selectedTableName = state.databaseViewer.selectedTableName;
+  const currentPage = state.databaseViewer.rows?.page ?? 0;
+  if (!selectedTableName) {
+    return;
+  }
+  const nextPage = Math.max(0, currentPage + Number(delta || 0));
+  if (nextPage === currentPage && Number(delta || 0) !== 0) {
+    return;
+  }
+  void runDatabaseViewerRowsAction(selectedTableName, nextPage);
+}
+
 export function runAction(action, payload = {}) {
   const schedulerOperation = SCHEDULER_ACTION_TO_OPERATION[action];
   if (schedulerOperation) {
@@ -497,6 +562,11 @@ export function runAction(action, payload = {}) {
     'install-cron': () => runInitAction('3A', 'SCHEDULER', 'Install scheduler', INIT_ENDPOINTS.installCron, installCron),
     'check-cron': () => runInitAction('3A', 'SCHEDULER', 'Check scheduler', INIT_ENDPOINTS.checkCronStatus, checkCronStatus),
     'print-cron': () => runInitAction('3A', 'SCHEDULER', 'Print scheduler', INIT_ENDPOINTS.printCron, printCron),
+    'verify-db-viewer': () => void runDatabaseViewerVerifyAction(),
+    'connect-db-viewer': () => void runDatabaseViewerConnectAction(),
+    'show-db-tables': () => void runDatabaseViewerTablesAction(),
+    'start-db-logging': () => void runDatabaseViewerLoggingAction('start'),
+    'stop-db-logging': () => void runDatabaseViewerLoggingAction('stop'),
     'run-b1': () => runLoginFlow(),
     'run-b2': () => genericAction('B2', 'TEST', 'Mock batch download finished with 5 files.'),
     'run-b3-1': () => runPipelineStage('B3.1', 'Mock download copied 1 file from /generated_test_data.'),
@@ -710,7 +780,10 @@ async function runInitAction(key, source, operation, endpoint, request, payload 
         draft.initCapabilities.scheduler = extractSchedulerCapability(responsePayload, draft.initCapabilities.scheduler);
       }
     });
-    setStatus(key, mapPayloadStatusToUiStatus(responsePayload?.status));
+    const nextStatus = key === 'E4' && responsePayload?.logging?.active
+      ? 'running'
+      : mapPayloadStatusToUiStatus(responsePayload?.status);
+    setStatus(key, nextStatus);
     pushLog(key, 'success', message, successDetails);
     pushHistory(source, 'success', `${operation} completed through ${endpoint.path}.`, successDetails);
   } catch (error) {
@@ -745,6 +818,287 @@ async function runInitAction(key, source, operation, endpoint, request, payload 
     pushHistory(source, 'error', `${operation} failed through ${endpoint.path}.`, errorDetails);
   } finally {
     endAction(key);
+  }
+}
+
+async function runDatabaseViewerAction(key, operation, endpoint, request, payload = undefined, onSuccess = null) {
+  if (!guardAction(key, 'DB', `${operation} is already running; duplicate trigger was blocked.`)) {
+    return;
+  }
+
+  setStatus(key, 'running');
+  const startDetails = buildInitLogDetails({
+    operation,
+    endpoint,
+    requestBody: payload,
+    apiMeta: null,
+    responsePayload: null,
+    outcome: 'running',
+  });
+  patchState((draft) => {
+    draft.databaseViewer.results[key] = {
+      outcome: 'running',
+      operation,
+      method: endpoint.method,
+      endpoint: endpoint.path,
+      receivedAt: stamp(),
+      message: `${operation} request sent. Waiting for backend response...`,
+      request: startDetails.request,
+      response: null,
+    };
+  });
+  pushLog(key, 'info', `${operation} started via ${endpoint.method} ${endpoint.path}.`, startDetails);
+
+  try {
+    const responseEnvelope = normalizeActionResult(await request(payload));
+    const responsePayload = responseEnvelope.payload;
+    const responseMeta = responseEnvelope.meta;
+    const message = summarizeInitPayload(operation, responsePayload);
+    const successDetails = buildInitLogDetails({
+      operation,
+      endpoint,
+      requestBody: payload,
+      apiMeta: responseMeta,
+      responsePayload,
+      outcome: 'success',
+    });
+    patchState((draft) => {
+      draft.databaseViewer.results[key] = {
+        outcome: 'success',
+        operation,
+        method: endpoint.method,
+        endpoint: endpoint.path,
+        receivedAt: stamp(),
+        message,
+        payload: responsePayload,
+        request: successDetails.request,
+        response: successDetails.response,
+      };
+      if (typeof onSuccess === 'function') {
+        onSuccess(draft, responsePayload);
+      }
+      applyDatabaseViewerDerivedState(draft);
+    });
+    setStatus(key, mapPayloadStatusToUiStatus(responsePayload?.status));
+    pushLog(key, 'success', message, successDetails);
+    pushHistory('DB', 'success', `${operation} completed through ${endpoint.path}.`, successDetails);
+  } catch (error) {
+    const message = formatInitError(operation, error);
+    const errorDetails = buildInitLogDetails({
+      operation,
+      endpoint,
+      requestBody: payload,
+      apiMeta: error.meta ?? null,
+      responsePayload: error.payload ?? null,
+      outcome: 'error',
+    });
+    patchState((draft) => {
+      draft.databaseViewer.results[key] = {
+        outcome: 'error',
+        operation,
+        method: endpoint.method,
+        endpoint: endpoint.path,
+        receivedAt: stamp(),
+        status: error.status ?? null,
+        message,
+        errorPayload: error.payload ?? null,
+        request: errorDetails.request,
+        response: errorDetails.response,
+      };
+      applyDatabaseViewerDerivedState(draft);
+    });
+    setStatus(key, 'error');
+    pushLog(key, 'error', message, errorDetails);
+    pushHistory('DB', 'error', `${operation} failed through ${endpoint.path}.`, errorDetails);
+  } finally {
+    endAction(key);
+  }
+}
+
+async function runDatabaseViewerVerifyAction() {
+  await runDatabaseViewerAction(
+    'E1',
+    'Verify Database',
+    DATABASE_VIEWER_ENDPOINTS.verifyDatabase,
+    verifyDatabase,
+    undefined,
+    (draft, payload) => {
+      draft.databaseViewer.verification = structuredClone(payload);
+      draft.databaseViewer.connection = null;
+      draft.databaseViewer.connected = false;
+      draft.databaseViewer.tables = [];
+      draft.databaseViewer.sqlite = null;
+      draft.databaseViewer.selectedTableName = null;
+      draft.databaseViewer.rows = null;
+      draft.databaseViewer.logging = {
+        ...draft.databaseViewer.logging,
+        active: false,
+        sessionId: null,
+        startedAt: null,
+        endedAt: null,
+        coverage: payload?.loggingCoverage ?? draft.databaseViewer.logging.coverage,
+        entries: [],
+        entryCount: 0,
+      };
+      draft.statusByKey.E2 = 'disabled';
+      draft.statusByKey.E3 = 'disabled';
+      draft.statusByKey.E4 = 'disabled';
+    },
+  );
+}
+
+async function runDatabaseViewerConnectAction() {
+  if (!state.databaseViewer.verification?.verificationPassed) {
+    setStatus('E1', 'error');
+    pushLog('E1', 'error', 'Connect to Database is disabled until Verify Database succeeds.');
+    pushHistory('DB', 'error', 'Connect to Database was blocked because verification has not passed yet.', {
+      action: 'connect-db-viewer',
+    });
+    return;
+  }
+
+  await runDatabaseViewerAction(
+    'E1',
+    'Connect to Database',
+    DATABASE_VIEWER_ENDPOINTS.connectDatabase,
+    connectDatabase,
+    undefined,
+    (draft, payload) => {
+      draft.databaseViewer.connection = structuredClone(payload);
+      draft.databaseViewer.connected = Boolean(payload?.connected);
+      draft.databaseViewer.logging.coverage = payload?.loggingCoverage ?? draft.databaseViewer.logging.coverage;
+      if (!payload?.connected) {
+        draft.databaseViewer.tables = [];
+        draft.databaseViewer.sqlite = null;
+        draft.databaseViewer.selectedTableName = null;
+        draft.databaseViewer.rows = null;
+      }
+    },
+  );
+}
+
+async function runDatabaseViewerTablesAction() {
+  if (!state.databaseViewer.connected) {
+    setStatus('E2', 'error');
+    pushLog('E2', 'error', 'Show Tables is disabled until Connect to Database succeeds.');
+    pushHistory('DB', 'error', 'Show Tables was blocked because the logical connect gate is still closed.', {
+      action: 'show-db-tables',
+    });
+    return;
+  }
+
+  await runDatabaseViewerAction(
+    'E2',
+    'Show Tables',
+    DATABASE_VIEWER_ENDPOINTS.listTables,
+    listDatabaseTables,
+    undefined,
+    (draft, payload) => {
+      draft.databaseViewer.tables = Array.isArray(payload?.objects) ? structuredClone(payload.objects) : [];
+      draft.databaseViewer.sqlite = payload?.sqlite ? structuredClone(payload.sqlite) : null;
+      draft.databaseViewer.logging.coverage = payload?.loggingCoverage ?? draft.databaseViewer.logging.coverage;
+      if (!draft.databaseViewer.tables.some((entry) => entry.name === draft.databaseViewer.selectedTableName)) {
+        draft.databaseViewer.selectedTableName = null;
+        draft.databaseViewer.rows = null;
+      }
+    },
+  );
+}
+
+async function runDatabaseViewerRowsAction(tableName, page) {
+  if (!state.databaseViewer.connected) {
+    setStatus('E3', 'error');
+    pushLog('E3', 'error', 'Load rows is disabled until Connect to Database succeeds.');
+    pushHistory('DB', 'error', 'Load rows was blocked because the logical connect gate is still closed.', {
+      action: 'rows',
+      tableName,
+    });
+    return;
+  }
+
+  await runDatabaseViewerAction(
+    'E3',
+    `Load Rows (${tableName})`,
+    DATABASE_VIEWER_ENDPOINTS.fetchRows,
+    fetchDatabaseRows,
+    { tableName, page, pageSize: 50 },
+    (draft, payload) => {
+      draft.databaseViewer.selectedTableName = payload?.table?.name ?? tableName;
+      draft.databaseViewer.rows = payload?.table ? structuredClone(payload.table) : null;
+      draft.databaseViewer.logging.coverage = payload?.loggingCoverage ?? draft.databaseViewer.logging.coverage;
+    },
+  );
+}
+
+async function runDatabaseViewerLoggingAction(mode) {
+  if (!state.databaseViewer.connected) {
+    setStatus('E4', 'error');
+    pushLog('E4', 'error', 'DB logging is disabled until Connect to Database succeeds.');
+    pushHistory('DB', 'error', 'DB logging was blocked because the logical connect gate is still closed.', {
+      action: mode === 'start' ? 'start-db-logging' : 'stop-db-logging',
+    });
+    return;
+  }
+
+  const operation = mode === 'start' ? 'Start DB Logging' : 'Stop DB Logging';
+  const endpoint = mode === 'start' ? DATABASE_VIEWER_ENDPOINTS.startLogging : DATABASE_VIEWER_ENDPOINTS.stopLogging;
+  const request = mode === 'start' ? startDatabaseLogging : stopDatabaseLogging;
+
+  await runDatabaseViewerAction(
+    'E4',
+    operation,
+    endpoint,
+    request,
+    undefined,
+    (draft, payload) => {
+      const logging = payload?.logging ?? null;
+      draft.databaseViewer.logging = logging
+        ? structuredClone(logging)
+        : {
+            ...draft.databaseViewer.logging,
+            active: false,
+          };
+      if (mode === 'start' && draft.databaseViewer.logging.active) {
+        draft.statusByKey.E4 = 'running';
+      }
+    },
+  );
+}
+
+function applyDatabaseViewerDerivedState(draft) {
+  const verificationPassed = Boolean(draft.databaseViewer.verification?.verificationPassed);
+  const connected = Boolean(draft.databaseViewer.connected);
+  const hasTables = Array.isArray(draft.databaseViewer.tables) && draft.databaseViewer.tables.length > 0;
+  const loggingActive = Boolean(draft.databaseViewer.logging?.active);
+
+  if (!draft.activeActions.E2) {
+    if (!verificationPassed || !connected) {
+      draft.statusByKey.E2 = 'disabled';
+    } else if (draft.statusByKey.E2 === 'disabled') {
+      draft.statusByKey.E2 = 'idle';
+    }
+  }
+
+  if (!draft.activeActions.E3) {
+    if (!connected || !hasTables) {
+      draft.statusByKey.E3 = 'disabled';
+    } else if (draft.databaseViewer.rows) {
+      draft.statusByKey.E3 = 'success';
+    } else if (draft.statusByKey.E3 === 'disabled') {
+      draft.statusByKey.E3 = 'idle';
+    }
+  }
+
+  if (!draft.activeActions.E4) {
+    if (!connected) {
+      draft.statusByKey.E4 = 'disabled';
+    } else if (loggingActive) {
+      draft.statusByKey.E4 = 'running';
+    } else if (draft.databaseViewer.logging?.endedAt) {
+      draft.statusByKey.E4 = 'success';
+    } else if (draft.statusByKey.E4 === 'disabled') {
+      draft.statusByKey.E4 = 'idle';
+    }
   }
 }
 

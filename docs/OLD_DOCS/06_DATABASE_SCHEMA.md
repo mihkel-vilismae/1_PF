@@ -1,5 +1,7 @@
 # Database Schema
 
+> Note: See `docs/CANONICAL_SCHEMA_PROPOSAL.md` for the newer proposed canonical baseline that reconciles this older schema draft with the stronger truth-surface contracts. This document remains valuable as historical schema context and is not replaced here.
+
 ## Purpose
 
 This document proposes the durable schema needed to implement the documented behavior.
