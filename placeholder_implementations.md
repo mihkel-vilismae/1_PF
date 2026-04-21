@@ -1,6 +1,17 @@
 # Placeholder Implementation Audit
 
-## Latest Update (Step 1 verification hardening for View A init endpoints)
+## Latest Update (Step 2 Wave A queue-backed current-item selection)
+
+- Added minimal Wave A backend endpoints in `server/index.js`:
+  - `POST /api/runtime/queue/prepare` for Stage 5 idempotent `slideshow_queue` enqueue.
+  - `POST /api/runtime/playback/select-current` for Stage 6 current-item selection and pointer/history commit.
+- Extended `server/scripts/sqlite_admin.py` with Stage 5/6 operations used by these endpoints.
+- Added isolated Wave A API tests in `tests/waveA.step2.test.js` covering queue idempotency, invalid READY candidate
+  failure behavior, and durable `runtime_state.current_media_asset_id` updates.
+- Scope remains intentionally partial: there is still no full playback worker loop, no Stage 7 render pipeline, and no
+  Stage 1-4 worker implementation.
+
+## Previous Update (Step 1 verification hardening for View A init endpoints)
 
 - Added isolated backend API tests for `POST /api/init/verify-env` and `/api/init/database/*` in `tests/initApi.step1.test.js`.
 - Added optional `INIT_ENV_FILE` support in `server/index.js` so tests can target a temporary env file without mutating the repo `.env`.

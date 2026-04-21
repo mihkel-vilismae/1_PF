@@ -25,6 +25,12 @@ def connect_read_only(path: str) -> sqlite3.Connection:
     return connection
 
 
+def connect_read_write(path: str) -> sqlite3.Connection:
+    connection = sqlite3.connect(path)
+    connection.row_factory = sqlite3.Row
+    return connection
+
+
 def quote_identifier(value: str) -> str:
     return '"' + value.replace('"', '""') + '"'
 
@@ -288,10 +294,212 @@ def recreate_empty_database(path: str) -> dict:
     }
 
 
+def prepare_slideshow_queue(path: str, executed_at: str) -> dict:
+    connection = connect_read_write(path)
+    try:
+        cursor = connection.cursor()
+        eligible_count = cursor.execute(
+            """
+            SELECT COUNT(*)
+            FROM canonical_media_assets
+            WHERE geocode_status = 'GEOCODE_FOUND'
+              AND address_text IS NOT NULL
+              AND TRIM(address_text) <> ''
+            """
+        ).fetchone()[0]
+
+        changes_before = connection.total_changes
+        cursor.execute(
+            """
+            INSERT INTO slideshow_queue (
+                media_asset_id,
+                status,
+                failure_reason,
+                sort_bucket,
+                eligible_since,
+                created_at,
+                updated_at
+            )
+            SELECT
+                c.media_asset_id,
+                'READY',
+                NULL,
+                'default',
+                ?,
+                ?,
+                ?
+            FROM canonical_media_assets c
+            LEFT JOIN slideshow_queue q ON q.media_asset_id = c.media_asset_id
+            WHERE c.geocode_status = 'GEOCODE_FOUND'
+              AND c.address_text IS NOT NULL
+              AND TRIM(c.address_text) <> ''
+              AND q.media_asset_id IS NULL
+            """,
+            (executed_at, executed_at, executed_at),
+        )
+        inserted_count = connection.total_changes - changes_before
+        connection.commit()
+
+        ready_count = cursor.execute(
+            "SELECT COUNT(*) FROM slideshow_queue WHERE status = 'READY'"
+        ).fetchone()[0]
+        failed_count = cursor.execute(
+            "SELECT COUNT(*) FROM slideshow_queue WHERE status = 'FAILED'"
+        ).fetchone()[0]
+
+        return {
+            "outcome": "prepared",
+            "eligibleCount": eligible_count,
+            "insertedCount": inserted_count,
+            "readyCount": ready_count,
+            "failedCount": failed_count,
+            "executedAt": executed_at,
+        }
+    finally:
+        connection.close()
+
+
+def resolve_canonical_path(raw_path: str | None, repo_root: str) -> str | None:
+    if raw_path is None:
+        return None
+    normalized = raw_path.strip()
+    if not normalized:
+        return None
+    if os.path.isabs(normalized):
+        return normalized
+    return os.path.abspath(os.path.join(repo_root, normalized))
+
+
+def select_current_item(path: str, executed_at: str, repo_root: str) -> dict:
+    connection = connect_read_write(path)
+    try:
+        cursor = connection.cursor()
+        cursor.execute("BEGIN IMMEDIATE")
+        ready_candidates = cursor.execute(
+            """
+            SELECT
+                q.slideshow_queue_id,
+                q.media_asset_id,
+                q.view_count,
+                q.last_shown_datetime,
+                c.canonical_path,
+                c.address_text
+            FROM slideshow_queue q
+            LEFT JOIN canonical_media_assets c
+                ON c.media_asset_id = q.media_asset_id
+            WHERE q.status = 'READY'
+            ORDER BY
+                CASE WHEN q.last_shown_datetime IS NULL THEN 0 ELSE 1 END ASC,
+                q.last_shown_datetime ASC,
+                q.view_count ASC,
+                q.slideshow_queue_id ASC
+            """
+        ).fetchall()
+
+        if not ready_candidates:
+            connection.commit()
+            return {
+                "outcome": "no_ready_row",
+                "failedCandidateCount": 0,
+                "selected": None,
+                "executedAt": executed_at,
+            }
+
+        failed_reasons: list[dict] = []
+        selected = None
+
+        for candidate in ready_candidates:
+            reason = None
+            address_text = (candidate["address_text"] or "").strip()
+            resolved_path = resolve_canonical_path(candidate["canonical_path"], repo_root)
+            if resolved_path is None:
+                reason = "canonical_path_missing"
+            elif address_text == "":
+                reason = "empty_address_text"
+            elif not os.path.exists(resolved_path):
+                reason = "canonical_file_missing"
+
+            if reason:
+                cursor.execute(
+                    """
+                    UPDATE slideshow_queue
+                    SET status = 'FAILED',
+                        failure_reason = ?,
+                        updated_at = ?
+                    WHERE slideshow_queue_id = ?
+                    """,
+                    (reason, executed_at, candidate["slideshow_queue_id"]),
+                )
+                failed_reasons.append(
+                    {
+                        "slideshowQueueId": candidate["slideshow_queue_id"],
+                        "mediaAssetId": candidate["media_asset_id"],
+                        "reason": reason,
+                    }
+                )
+                continue
+
+            cursor.execute(
+                """
+                UPDATE slideshow_queue
+                SET view_count = view_count + 1,
+                    last_shown_datetime = ?,
+                    updated_at = ?,
+                    failure_reason = NULL
+                WHERE slideshow_queue_id = ?
+                """,
+                (executed_at, executed_at, candidate["slideshow_queue_id"]),
+            )
+            cursor.execute(
+                """
+                INSERT INTO runtime_state (state_key, state_value, value_type, updated_at, updated_by)
+                VALUES ('current_media_asset_id', ?, 'text', ?, 'stage6_run_playback')
+                ON CONFLICT(state_key) DO UPDATE SET
+                    state_value = excluded.state_value,
+                    value_type = excluded.value_type,
+                    updated_at = excluded.updated_at,
+                    updated_by = excluded.updated_by
+                """,
+                (str(candidate["media_asset_id"]), executed_at),
+            )
+            selected = {
+                "slideshowQueueId": candidate["slideshow_queue_id"],
+                "mediaAssetId": candidate["media_asset_id"],
+                "canonicalPath": candidate["canonical_path"],
+                "resolvedCanonicalPath": resolved_path,
+                "addressText": address_text,
+                "selectedAt": executed_at,
+            }
+            break
+
+        connection.commit()
+        if selected is None:
+            return {
+                "outcome": "no_playable_ready_row",
+                "failedCandidateCount": len(failed_reasons),
+                "failedCandidates": failed_reasons,
+                "selected": None,
+                "executedAt": executed_at,
+            }
+
+        return {
+            "outcome": "selected",
+            "failedCandidateCount": len(failed_reasons),
+            "failedCandidates": failed_reasons,
+            "selected": selected,
+            "executedAt": executed_at,
+        }
+    except Exception:
+        connection.rollback()
+        raise
+    finally:
+        connection.close()
+
+
 def main() -> int:
     if len(sys.argv) < 3:
         raise ValueError(
-            "Expected usage: sqlite_admin.py <inspect|recreate|rows> <path> [table_name page page_size]"
+            "Expected usage: sqlite_admin.py <inspect|recreate|rows|stage5_prepare_queue|stage6_select_current> <path> [args]"
         )
 
     operation = sys.argv[1]
@@ -309,6 +517,14 @@ def main() -> int:
         if len(sys.argv) != 6:
             raise ValueError("rows expects: sqlite_admin.py rows <path> <table_name> <page> <page_size>")
         result = fetch_table_rows(path, sys.argv[3], int(sys.argv[4]), int(sys.argv[5]))
+    elif operation == "stage5_prepare_queue":
+        if len(sys.argv) != 4:
+            raise ValueError("stage5_prepare_queue expects: sqlite_admin.py stage5_prepare_queue <path> <executed_at>")
+        result = prepare_slideshow_queue(path, sys.argv[3])
+    elif operation == "stage6_select_current":
+        if len(sys.argv) != 5:
+            raise ValueError("stage6_select_current expects: sqlite_admin.py stage6_select_current <path> <executed_at> <repo_root>")
+        result = select_current_item(path, sys.argv[3], os.path.abspath(sys.argv[4]))
     else:
         raise ValueError(f"Unsupported operation: {operation}")
 

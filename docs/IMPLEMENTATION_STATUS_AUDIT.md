@@ -22,6 +22,16 @@ Step 1 verification hardening added isolated API tests for `/api/init/verify-env
 without changing the public route set. The backend now also supports an optional `INIT_ENV_FILE` override for
 test isolation; when unset, it still defaults to the repository `.env` file.
 
+## Step 2 Wave A note (2026-04-21)
+
+Wave A now has a minimal backend slice:
+
+- `POST /api/runtime/queue/prepare` performs Stage 5 idempotent enqueueing into `slideshow_queue`.
+- `POST /api/runtime/playback/select-current` performs Stage 6 selection, updates queue playback history fields,
+  and commits `runtime_state.current_media_asset_id`.
+
+This is a partial Stage 5/6 implementation only. Full playback worker/runtime orchestration remains unimplemented.
+
 ## Audit method
 
 1. **Code and script inspection:**  The server code (`server/index.js`), helper scripts, and Python helpers
@@ -49,9 +59,9 @@ corresponding runtime logic were classified as *docs only* or *missing*.
 
 The current repository is primarily a Vite‑based dashboard prototype with minimal backend support.  It
 implements View A and View E backend slices for environment verification and database inspection, along with a
-mock runtime‑truth JSON file served over `/api/runtime-truth`.  The canonical database schema exists as a
-proposal in `schema.sql`, but none of the five core processing stages (download, indexing, GPS parsing,
-geocoding, enqueueing, playback) have been built.  Authentication and two‑factor flows are absent, and the
+mock runtime‑truth JSON file served over `/api/runtime-truth`.  Wave A now adds a minimal Stage 5/6 backend
+slice for queue preparation and current-item selection.  Download/index/parse/geocode workers are still missing,
+authentication and two‑factor flows are absent, and the
 pipeline, playback and screen workers remain stubs.  Cron scheduling support is partly wired for Windows,
 while Raspberry Pi–specific scheduling is not yet implemented.  The documentation set describes an ambitious
 future architecture, but the code base at this snapshot does not yet realise those plans.
@@ -67,10 +77,10 @@ future architecture, but the code base at this snapshot does not yet realise tho
 | **GPS parsing backend** | **Missing** | The schema defines `parse_files_for_gps_queue`, but no code reads from or writes to it.  No GPS extraction logic is present. |
 | **Geocoding backend** | **Missing** | The schema defines `geocode_queue` and `address_cache`, but there is no code performing geocoding or populating these tables. |
 | **Address cache support** | **Docs only** | The `address_cache` table exists in `schema.sql`, but no backend functions read from or insert into it. |
-| **Enqueue‑for‑playback backend** | **Docs only** | The `slideshow_queue` table exists in the schema, yet no code enqueues assets or reads from this queue. |
+| **Enqueue‑for‑playback backend** | **Partially implemented** | `POST /api/runtime/queue/prepare` now inserts idempotent `READY` rows into `slideshow_queue` for eligible assets. |
 | **Playback backend** | **Missing** | There is no playback service or worker consuming a queue.  Playback is simulated entirely on the frontend through mock state. |
-| **Runtime state truth / persistence** | **Stub only** | Persistent state is represented by `conf/runtime-truth.json`, which is served and updated by `/api/runtime-truth` handlers.  The `runtime_state` table defined in `schema.sql` is unused. |
-| **Required SQL schema / table support** | **Docs only** | `schema.sql` defines a comprehensive canonical schema (media assets, queues, logs, etc.), but none of these tables are used by the current runtime.  The only SQL operations performed are inspection queries via the `sqlite_admin.py` helper. |
+| **Runtime state truth / persistence** | **Partially implemented** | `POST /api/runtime/playback/select-current` now writes `runtime_state.current_media_asset_id`; other runtime truth still relies on `conf/runtime-truth.json`. |
+| **Required SQL schema / table support** | **Partially implemented** | Runtime code now reads/writes `slideshow_queue` and `runtime_state.current_media_asset_id`; most canonical/workflow tables remain unused by runtime workers. |
 | **Worker model (regular/pipeline, playback, screen, recovery)** | **Stub only** | The repository includes `server/scheduler_host.js` and a Windows task scheduler script.  These wire up a heartbeat for a generic scheduler process but do not implement any pipeline, playback or screen workers.  Recovery logic is discussed in docs but absent in code. |
 | **Cron / scheduler support (Raspberry Pi OS)** | **Partially implemented** | `server/index.js` exposes `/api/init/cron/install`, `/api/init/cron/status` and `/api/init/cron/print`.  The installation path primarily supports Windows via a PowerShell script, while Unix/Pi cron installation is left unimplemented. |
 | **Windows scheduler support** | **Partially implemented** | A PowerShell script (`server/scripts/windows_task_scheduler.ps1`) can install and query a Windows Task Scheduler job, but it only launches the `scheduler_host.js` script and does not schedule real workers. |
@@ -113,9 +123,9 @@ geocoding API, and no functions insert or read from `address_cache`.
 
 ### Enqueue for playback
 
-The `slideshow_queue` table exists only in the schema.  There are no API routes, workers or scripts that insert
-eligible media into this queue.  The frontend uses a mock queue length stored in `conf/runtime-truth.json` to
-simulate playback readiness.
+`POST /api/runtime/queue/prepare` now inserts idempotent `READY` rows into `slideshow_queue` for assets that are
+already geocoded with non-empty addresses.  This establishes the minimal Stage 5 backend slice.  Full worker
+orchestration and queue replenishment from earlier pipeline stages are still missing.
 
 ### Playback backend
 
@@ -124,17 +134,17 @@ stream media or update play position, nor does it consume the queue.
 
 ### Runtime state
 
-The repository uses a JSON file (`conf/runtime-truth.json`) as its source of truth.  The `/api/runtime-truth`
-endpoints read and write this file.  While the schema defines a `runtime_state` table and inserts default keys
-into it, there is no code that reads or writes those entries.  As such, the durable runtime state defined in the
-schema is unused, and the current implementation uses an in‑memory/JSON stub.
+The repository still uses `conf/runtime-truth.json` for most runtime UI state surfaces via `/api/runtime-truth`.
+Wave A now adds one durable runtime-state write path: `POST /api/runtime/playback/select-current` updates
+`runtime_state.current_media_asset_id` together with slideshow playback history updates.  Broader runtime-state
+migration to the database remains incomplete.
 
 ### Database schema
 
 The `schema.sql` file defines twelve tables (`canonical_media_assets`, `media_asset_variants`, `address_cache`,
 `parse_files_for_gps_queue`, `geocode_queue`, `slideshow_queue`, `runtime_state`, `action_runs`, `system_logs`,
-and several indices).  These definitions match the target architecture described in the documentation.  However,
-none of these tables are accessed by the runtime code except via the database viewer.
+and several indices).  These definitions match the target architecture described in the documentation.  Runtime
+code now accesses `slideshow_queue` and `runtime_state` for Wave A, while most remaining tables are still unused.
 
 ### Workers and scheduler
 
@@ -156,10 +166,10 @@ any actual worker jobs.
 ### Documentation vs code conflicts
 
 The architecture documents describe a complete multi‑stage pipeline with workers for downloading, indexing, GPS
-parsing, geocoding, enqueueing, playback, screen control and recovery.  The current code base implements none
-of these stages.  The schema defines all required tables, but they are unused.  `runtime_state` keys described in
-the documentation are not persisted in the DB.  While the docs mention two‑factor authentication, the server
-contains no authentication layer at all.  The mismatch between target design and implemented code is stark.
+parsing, geocoding, enqueueing, playback, screen control and recovery.  The current code base now implements a
+minimal Wave A Stage 5/6 slice only; the remaining stages are still missing.  `runtime_state.current_media_asset_id`
+is now persisted through Stage 6 selection, while broader runtime-state ownership remains unresolved.  The docs
+still mention two‑factor authentication, but the server contains no authentication layer at all.
 
 ## Most critical missing or incomplete items
 
@@ -173,27 +183,24 @@ contains no authentication layer at all.  The mismatch between target design and
    EXIF/metadata and update the asset records.
 5. **Geocoding worker:**  Use a geocoding API to convert GPS coordinates into human‑readable addresses, update
    `canonical_media_assets` and `address_cache` and mark rows in `geocode_queue` as complete.
-6. **Enqueue worker:**  Select eligible assets and insert them into `slideshow_queue` with appropriate
-   `eligible_since` timestamps and sort buckets.
-7. **Playback worker:**  Consume entries from `slideshow_queue`, update `runtime_state.current_media_asset_id`,
-   track viewing history and handle both images and videos.
-8. **Persistent runtime state:**  Migrate runtime truth from JSON to the `runtime_state` table and implement
-   row‑level updates via an API.
+6. **Enqueue worker hardening:**  Stage 5 queue insertion exists, but it still needs integration with Stage 2-4
+   outputs and runtime execution orchestration.
+7. **Playback worker:**  Stage 6 selection/pointer commit exists, but no actual playback worker loop, media
+   rendering lifecycle, or scheduler ownership model is implemented.
+8. **Persistent runtime state expansion:**  `runtime_state.current_media_asset_id` is now written, but most
+   runtime truth still needs migration from JSON into `runtime_state`.
 9. **Screen and recovery workers:**  Implement screen on/off state management and recovery/lease reclamation logic
    to enforce ownership and heartbeat semantics.
 
 ## Recommended next execution order
 
 1. **Verify environment and database creation** (already implemented via `/api/init/verify-env` and `/api/init/database/*`).
-2. **Implement the queue‑backed current‑item selection (Wave A)** as described in the sequential roadmap, to
-   establish a minimal backend slice that writes to and reads from `slideshow_queue` and updates
-   `runtime_state.current_media_asset_id`.
-3. **Build the download and indexing workers** (Wave B), enabling asset registration in `canonical_media_assets`.
-4. **Implement GPS parsing and geocoding workers** (Wave C), integrating with the `parse_files_for_gps_queue`,
+2. **Build the download and indexing workers** (Wave B), enabling asset registration in `canonical_media_assets`.
+3. **Implement GPS parsing and geocoding workers** (Wave C), integrating with the `parse_files_for_gps_queue`,
    `geocode_queue` and `address_cache` tables.
-5. **Construct the playback worker** (Wave D) and migrate the runtime truth from JSON to the database.
-6. **Expand cron/scheduler support for Raspberry Pi OS** and unify worker scheduling across platforms.
-7. **Implement authentication and 2FA** around the API endpoints before exposing any sensitive operations.
+4. **Construct the playback worker** (Wave D) and migrate the remaining runtime truth from JSON to the database.
+5. **Expand cron/scheduler support for Raspberry Pi OS** and unify worker scheduling across platforms.
+6. **Implement authentication and 2FA** around the API endpoints before exposing any sensitive operations.
 
 By following this order, each slice builds on the previous one, avoiding speculative complexity and ensuring
 that features are added only when supporting infrastructure exists.
@@ -203,10 +210,10 @@ that features are added only when supporting infrastructure exists.
 The classifications above derive from direct inspection of the following files and directories in the
 repository snapshot:
 
-- `server/index.js` — defines HTTP routes and confirms the lack of authentication, download, indexing, GPS parsing,
-  geocoding, enqueue or playback handlers.  The only runtime truth handlers operate on `conf/runtime-truth.json`.
-- `server/scripts/sqlite_admin.py` — provides read‑only inspection of SQLite files; no data‑mutation functions are
-  present.
+- `server/index.js` — defines HTTP routes and now includes a minimal Wave A Stage 5/6 backend slice:
+  `POST /api/runtime/queue/prepare` and `POST /api/runtime/playback/select-current`.
+- `server/scripts/sqlite_admin.py` — now includes Stage 5/6 SQLite mutation operations in addition to
+  inspect/recreate/rows helpers.
 - `schema.sql` — declares canonical tables and indices for media assets, queues, runtime state, logs and action
   runs.  None of these tables are accessed by the server code.
 - `conf/runtime-truth.json` — holds the current in‑memory runtime state used by `/api/runtime-truth`.
