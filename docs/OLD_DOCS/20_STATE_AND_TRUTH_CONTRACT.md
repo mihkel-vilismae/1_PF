@@ -53,6 +53,11 @@ Current repo note:
 - Init readiness endpoints (`POST /api/init/verify-env` and `/api/init/database/*`) do not write
   `action_runs`, `system_logs`, or `runtime_state`.
 - They should be treated as administrative checks/operations, not as Stage 1 truth-surface writers.
+- Wave A runtime endpoints in `server/index.js` now write workflow/runtime truth for Stage 5/6:
+  - `POST /api/runtime/queue/prepare` writes idempotent `slideshow_queue` `READY` rows.
+  - `POST /api/runtime/playback/select-current` updates playback history fields and
+    `runtime_state.current_media_asset_id`.
+- Playback worker lease keys and broader playback ownership semantics are still not implemented.
 
 ## Status Vocabulary
 

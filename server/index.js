@@ -98,6 +98,8 @@ const routes = {
   'POST /api/database-viewer/rows': databaseViewerRowsHandler,
   'POST /api/database-viewer/logging/start': databaseViewerLoggingStartHandler,
   'POST /api/database-viewer/logging/stop': databaseViewerLoggingStopHandler,
+  'POST /api/runtime/queue/prepare': runtimeQueuePrepareHandler,
+  'POST /api/runtime/playback/select-current': runtimePlaybackSelectCurrentHandler,
   'GET /api/runtime-truth': getRuntimeTruthHandler,
   'POST /api/runtime-truth': updateRuntimeTruthHandler,
 };
@@ -594,6 +596,77 @@ async function getRuntimeTruthHandler() {
       truth,
       schemaVersion: 1,
       persistedAt: new Date().toISOString(),
+    },
+  };
+}
+
+async function runtimeQueuePrepareHandler({ context }) {
+  const database = await buildDatabaseStatus(context);
+  if (!database.exists) {
+    throw new HttpError(404, 'database_missing', 'Cannot prepare slideshow queue because the DB file does not exist.', {
+      database,
+    });
+  }
+
+  const executedAt = new Date().toISOString();
+  const queue = await runPythonJson(['stage5_prepare_queue', database.absolutePath, executedAt]);
+  return {
+    statusCode: 200,
+    payload: {
+      status: 'ok',
+      messages: queue.insertedCount
+        ? [`Inserted ${queue.insertedCount} newly eligible slideshow row(s).`]
+        : ['No new eligible assets were found. Queue preparation was a successful no-op.'],
+      stage: 'stage5_prepare_queue',
+      queue,
+      database,
+      schemaVersion: 1,
+      executedAt,
+    },
+  };
+}
+
+async function runtimePlaybackSelectCurrentHandler({ context }) {
+  const database = await buildDatabaseStatus(context);
+  if (!database.exists) {
+    throw new HttpError(404, 'database_missing', 'Cannot select current media because the DB file does not exist.', {
+      database,
+    });
+  }
+
+  const executedAt = new Date().toISOString();
+  const playback = await runPythonJson(['stage6_select_current', database.absolutePath, executedAt, repoRoot]);
+  if (playback.outcome === 'no_ready_row') {
+    throw new HttpError(409, 'no_ready_row', 'No READY slideshow rows exist for playback selection.', {
+      database,
+      stage: 'stage6_run_playback',
+      playback,
+    });
+  }
+
+  if (playback.outcome === 'no_playable_ready_row') {
+    throw new HttpError(409, 'no_playable_ready_row', 'READY slideshow rows exist but none are currently playable.', {
+      database,
+      stage: 'stage6_run_playback',
+      playback,
+    });
+  }
+
+  const selectedAssetId = playback.selected?.mediaAssetId ?? null;
+  return {
+    statusCode: 200,
+    payload: {
+      status: playback.failedCandidateCount ? 'warning' : 'ok',
+      messages: playback.failedCandidateCount
+        ? [
+          `Selected media asset ${selectedAssetId} after failing ${playback.failedCandidateCount} invalid READY candidate(s).`,
+        ]
+        : [`Selected media asset ${selectedAssetId} as the current playback item.`],
+      stage: 'stage6_run_playback',
+      playback,
+      database,
+      schemaVersion: 1,
+      executedAt,
     },
   };
 }

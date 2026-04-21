@@ -34,6 +34,10 @@ Current repo note:
 - Init readiness endpoints in `server/index.js` (`/api/init/verify-env` and `/api/init/database/*`) are
   stateless operator utilities.
 - They are outside the stage lock and queue-ownership model in this runtime contract.
+- Wave A now implements a minimal Stage 5/6 backend path:
+  - Stage 5 insert-or-ignore queue preparation via `POST /api/runtime/queue/prepare`
+  - Stage 6 selection + pointer/history commit via `POST /api/runtime/playback/select-current`
+- External lock orchestration, playback lease ownership enforcement, and full recovery automation remain planned.
 
 ### Geocode Path
 
