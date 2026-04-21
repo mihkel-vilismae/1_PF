@@ -30,6 +30,11 @@ This document is the canonical contract for runtime entry, retry and backoff, lo
 - automatic retry applies only to Stage 3 and Stage 4 queue rows
 - Stage 1, Stage 2, Stage 5, Stage 6, and Stage 7 use rerun or admin/manual re-entry rather than queue retry
 
+Current repo note:
+- Init readiness endpoints in `server/index.js` (`/api/init/verify-env` and `/api/init/database/*`) are
+  stateless operator utilities.
+- They are outside the stage lock and queue-ownership model in this runtime contract.
+
 ### Geocode Path
 
 - geocoding is cache-first

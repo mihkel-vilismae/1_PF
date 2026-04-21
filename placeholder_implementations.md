@@ -1,6 +1,12 @@
 # Placeholder Implementation Audit
 
-## Latest Update (View E Database Viewer + Platform Capability Layer for View A 3A)
+## Latest Update (Step 1 verification hardening for View A init endpoints)
+
+- Added isolated backend API tests for `POST /api/init/verify-env` and `/api/init/database/*` in `tests/initApi.step1.test.js`.
+- Added optional `INIT_ENV_FILE` support in `server/index.js` so tests can target a temporary env file without mutating the repo `.env`.
+- Kept existing init endpoint route contracts and destructive confirmation payload requirements unchanged.
+
+## Previous Update (View E Database Viewer + Platform Capability Layer for View A 3A)
 
 - Added repo-local `/api/database-viewer/*` endpoints for database verification, logical connect gating, table listing, paginated row inspection, and start/stop logging sessions.
 - View E logging wording is intentionally narrow: it captures database-viewer requests and repo-local backend DB actions observed through this server while active, not global SQL tracing.

@@ -16,6 +16,12 @@ inspected source files under `server/`, `scripts/`, `conf/`, `schema.sql`, and t
 `docs/OLD_DOCS/`.  No external repositories or web resources were consulted.  All claims below are backed by
 concrete files in this snapshot.
 
+## Step 1 hardening note (2026-04-21)
+
+Step 1 verification hardening added isolated API tests for `/api/init/verify-env` and `/api/init/database/*`
+without changing the public route set. The backend now also supports an optional `INIT_ENV_FILE` override for
+test isolation; when unset, it still defaults to the repository `.env` file.
+
 ## Audit method
 
 1. **Code and script inspection:**  The server code (`server/index.js`), helper scripts, and Python helpers
