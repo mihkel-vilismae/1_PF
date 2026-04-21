@@ -1,5 +1,6 @@
 import { createServer } from 'node:http';
 import { spawn } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import { promises as fs } from 'node:fs';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
@@ -34,6 +35,24 @@ const schedulerTickSeconds = Object.freeze({
   screenWatchdog: 5,
   recoveryReconciliation: 15,
 });
+const databaseViewerRequiredTablesAuthority = Object.freeze({
+  sourcePath: 'docs/OLD_DOCS/20_STATE_AND_TRUTH_CONTRACT.md',
+  sourceLabel: 'Truth Surfaces',
+  note: 'This is the current canonical target-state contract for required truth surfaces. It is not proof that those tables already exist in the current repo runtime.',
+});
+const databaseViewerRequiredTables = Object.freeze([
+  'canonical_media_assets',
+  'media_asset_variants',
+  'address_cache',
+  'parse_files_for_gps_queue',
+  'geocode_queue',
+  'slideshow_queue',
+  'runtime_state',
+  'action_runs',
+  'system_logs',
+]);
+const databaseViewerLoggingCoverage = 'Captures database viewer queries and repo-local backend DB actions observed through this server while the logging session is active. It does not guarantee capture of every SQL statement or activity from external processes.';
+let databaseViewerLoggingSession = null;
 
 const envSchema = [
   { key: 'user', label: 'Account email', required: true, sensitive: true, kind: 'string' },
@@ -73,6 +92,12 @@ const routes = {
   'POST /api/init/cron/install': installCronHandler,
   'GET /api/init/cron/status': cronStatusHandler,
   'GET /api/init/cron/print': printCronHandler,
+  'POST /api/database-viewer/verify': databaseViewerVerifyHandler,
+  'POST /api/database-viewer/connect': databaseViewerConnectHandler,
+  'GET /api/database-viewer/tables': databaseViewerTablesHandler,
+  'POST /api/database-viewer/rows': databaseViewerRowsHandler,
+  'POST /api/database-viewer/logging/start': databaseViewerLoggingStartHandler,
+  'POST /api/database-viewer/logging/stop': databaseViewerLoggingStopHandler,
   'GET /api/runtime-truth': getRuntimeTruthHandler,
   'POST /api/runtime-truth': updateRuntimeTruthHandler,
 };
@@ -147,6 +172,17 @@ async function databaseStatusHandler({ context }) {
   const messages = database.exists
     ? ['Database file exists and can be inspected.']
     : ['Database file does not exist yet. Use recreate-empty to create it.'];
+  recordDatabaseViewerActivity({
+    endpoint: '/api/init/database/status',
+    operation: 'init_database_status',
+    status: database.exists ? 'ok' : 'warning',
+    message: messages[0],
+    details: {
+      databaseExists: database.exists,
+      absolutePath: database.absolutePath,
+      sizeBytes: database.sizeBytes,
+    },
+  });
 
   return {
     statusCode: 200,
@@ -162,12 +198,32 @@ async function databaseStatusHandler({ context }) {
 async function inspectDatabaseHandler({ context }) {
   const database = await buildDatabaseStatus(context);
   if (!database.exists) {
+    recordDatabaseViewerActivity({
+      endpoint: '/api/init/database/inspect',
+      operation: 'init_database_inspect',
+      status: 'error',
+      message: 'Inspect database failed because the SQLite file does not exist.',
+      details: {
+        databaseExists: false,
+        absolutePath: database.absolutePath,
+      },
+    });
     throw new HttpError(404, 'database_missing', 'Cannot inspect the database because the DB file does not exist.', {
       database,
     });
   }
 
   const inspection = await runPythonJson(['inspect', database.absolutePath]);
+  recordDatabaseViewerActivity({
+    endpoint: '/api/init/database/inspect',
+    operation: 'init_database_inspect',
+    status: 'ok',
+    message: `Inspected ${inspection.tableCount} table/view object(s).`,
+    details: {
+      tableCount: inspection.tableCount,
+      absolutePath: database.absolutePath,
+    },
+  });
   return {
     statusCode: 200,
     payload: {
@@ -192,6 +248,18 @@ async function deleteDatabaseHandler({ body, context }) {
       removedPaths.push(candidate);
     }
   }
+  recordDatabaseViewerActivity({
+    endpoint: '/api/init/database/delete',
+    operation: 'init_database_delete',
+    status: removedPaths.length ? 'ok' : 'warning',
+    message: removedPaths.length
+      ? `Removed ${removedPaths.length} database artifact(s).`
+      : 'Delete database was requested, but no DB artifacts were present.',
+    details: {
+      absolutePath: database.absolutePath,
+      removedPaths,
+    },
+  });
 
   return {
     statusCode: 200,
@@ -223,6 +291,17 @@ async function recreateEmptyDatabaseHandler({ body, context }) {
   }
 
   const created = await runPythonJson(['recreate', database.absolutePath]);
+  recordDatabaseViewerActivity({
+    endpoint: '/api/init/database/recreate-empty',
+    operation: 'init_database_recreate_empty',
+    status: 'ok',
+    message: 'Created an empty SQLite database file.',
+    details: {
+      absolutePath: database.absolutePath,
+      existsAfter: created.exists,
+      sizeBytesAfter: created.sizeBytes,
+    },
+  });
   return {
     statusCode: 200,
     payload: {
@@ -249,6 +328,260 @@ async function cronStatusHandler({ context }) {
 
 async function printCronHandler({ context }) {
   return buildSchedulerRouteResponse(context, SCHEDULER_OPERATION_SUPPORT.print);
+}
+
+async function databaseViewerVerifyHandler({ context }) {
+  const verification = await buildDatabaseViewerVerification(context);
+  const messages = buildDatabaseViewerVerificationMessages(verification);
+  recordDatabaseViewerActivity({
+    endpoint: '/api/database-viewer/verify',
+    operation: 'database_viewer_verify',
+    status: verification.verificationPassed ? 'ok' : 'error',
+    message: messages[0],
+    details: {
+      databaseExists: verification.database.exists,
+      missingTables: verification.requiredTables.missing,
+      requiredTableSource: verification.requiredTables.sourcePath,
+    },
+  });
+
+  return {
+    statusCode: 200,
+    payload: {
+      status: verification.verificationPassed ? 'ok' : 'error',
+      messages,
+      verificationPassed: verification.verificationPassed,
+      database: verification.database,
+      requiredTables: verification.requiredTables,
+      availableObjects: verification.availableObjects,
+      loggingCoverage: databaseViewerLoggingCoverage,
+      schemaVersion: 1,
+      verifiedAt: new Date().toISOString(),
+    },
+  };
+}
+
+async function databaseViewerConnectHandler({ context }) {
+  const verification = await buildDatabaseViewerVerification(context);
+  const connected = verification.verificationPassed;
+  const messages = connected
+    ? ['Database connect gate opened. Future table-browsing requests still run as fresh backend calls.']
+    : buildDatabaseViewerVerificationMessages(verification);
+  recordDatabaseViewerActivity({
+    endpoint: '/api/database-viewer/connect',
+    operation: 'database_viewer_connect',
+    status: connected ? 'ok' : 'error',
+    message: connected ? messages[0] : `Connect was blocked: ${messages[0]}`,
+    details: {
+      connected,
+      databaseExists: verification.database.exists,
+      missingTables: verification.requiredTables.missing,
+    },
+  });
+
+  return {
+    statusCode: 200,
+    payload: {
+      status: connected ? 'ok' : 'error',
+      messages,
+      connected,
+      gate: 'logical_backend_authorization',
+      database: verification.database,
+      requiredTables: verification.requiredTables,
+      loggingCoverage: databaseViewerLoggingCoverage,
+      schemaVersion: 1,
+      connectedAt: connected ? new Date().toISOString() : null,
+    },
+  };
+}
+
+async function databaseViewerTablesHandler({ context }) {
+  const database = await buildDatabaseStatus(context);
+  if (!database.exists) {
+    recordDatabaseViewerActivity({
+      endpoint: '/api/database-viewer/tables',
+      operation: 'database_viewer_list_tables',
+      status: 'error',
+      message: 'Show tables failed because the SQLite file does not exist.',
+      details: {
+        databaseExists: false,
+        absolutePath: database.absolutePath,
+      },
+    });
+    throw new HttpError(404, 'database_missing', 'Cannot list tables because the DB file does not exist.', {
+      database,
+    });
+  }
+
+  const inspection = await runPythonJson(['inspect', database.absolutePath]);
+  recordDatabaseViewerActivity({
+    endpoint: '/api/database-viewer/tables',
+    operation: 'database_viewer_list_tables',
+    status: 'ok',
+    message: `Loaded ${inspection.tableCount} table/view object(s).`,
+    details: {
+      tableCount: inspection.tableCount,
+      absolutePath: database.absolutePath,
+    },
+  });
+
+  return {
+    statusCode: 200,
+    payload: {
+      status: 'ok',
+      messages: [`Loaded ${inspection.tableCount} table/view object(s).`],
+      database,
+      objects: inspection.tables,
+      sqlite: inspection.sqlite,
+      loggingCoverage: databaseViewerLoggingCoverage,
+      schemaVersion: 1,
+    },
+  };
+}
+
+async function databaseViewerRowsHandler({ body, context }) {
+  const tableName = String(body?.tableName ?? '').trim();
+  if (!tableName) {
+    throw new HttpError(400, 'missing_table_name', 'tableName is required when loading database rows.');
+  }
+
+  const page = normalizeDatabaseViewerPage(body?.page);
+  const pageSize = normalizeDatabaseViewerPageSize(body?.pageSize);
+  const database = await buildDatabaseStatus(context);
+  if (!database.exists) {
+    recordDatabaseViewerActivity({
+      endpoint: '/api/database-viewer/rows',
+      operation: 'database_viewer_fetch_rows',
+      status: 'error',
+      message: `Load rows failed for ${tableName} because the SQLite file does not exist.`,
+      details: {
+        databaseExists: false,
+        tableName,
+        absolutePath: database.absolutePath,
+      },
+    });
+    throw new HttpError(404, 'database_missing', 'Cannot load rows because the DB file does not exist.', {
+      database,
+    });
+  }
+
+  const table = await runPythonJson(['rows', database.absolutePath, tableName, String(page), String(pageSize)]);
+  recordDatabaseViewerActivity({
+    endpoint: '/api/database-viewer/rows',
+    operation: 'database_viewer_fetch_rows',
+    status: 'ok',
+    message: `Loaded ${table.table.rowCount} row(s) from ${table.table.name} page ${table.table.page + 1}.`,
+    details: {
+      tableName: table.table.name,
+      page: table.table.page,
+      pageSize: table.table.pageSize,
+      rowCount: table.table.rowCount,
+      totalRows: table.table.totalRows,
+      ordering: table.table.ordering,
+      querySummary: table.table.querySummary,
+    },
+  });
+
+  return {
+    statusCode: 200,
+    payload: {
+      status: 'ok',
+      messages: [`Loaded ${table.table.rowCount} row(s) from ${table.table.name}.`],
+      database,
+      table: table.table,
+      loggingCoverage: databaseViewerLoggingCoverage,
+      schemaVersion: 1,
+    },
+  };
+}
+
+async function databaseViewerLoggingStartHandler({ context }) {
+  const database = await buildDatabaseStatus(context);
+  if (databaseViewerLoggingSession) {
+    return {
+      statusCode: 200,
+      payload: {
+        status: 'warning',
+        messages: ['Database logging is already active for this backend process.'],
+        logging: buildDatabaseViewerLoggingState({ active: true }),
+        database,
+        schemaVersion: 1,
+      },
+    };
+  }
+
+  databaseViewerLoggingSession = {
+    id: randomUUID(),
+    startedAt: new Date().toISOString(),
+    coverage: databaseViewerLoggingCoverage,
+    entries: [],
+  };
+  recordDatabaseViewerActivity({
+    endpoint: '/api/database-viewer/logging/start',
+    operation: 'database_viewer_start_logging',
+    status: 'ok',
+    message: 'Database activity logging started for this backend process.',
+    details: {
+      databaseExists: database.exists,
+      absolutePath: database.absolutePath,
+      coverage: databaseViewerLoggingCoverage,
+    },
+  });
+
+  return {
+    statusCode: 200,
+    payload: {
+      status: 'ok',
+      messages: ['Database activity logging started for this backend process.'],
+      logging: buildDatabaseViewerLoggingState({ active: true }),
+      database,
+      schemaVersion: 1,
+    },
+  };
+}
+
+async function databaseViewerLoggingStopHandler() {
+  if (!databaseViewerLoggingSession) {
+    return {
+      statusCode: 200,
+      payload: {
+        status: 'warning',
+        messages: ['No active database logging session was running.'],
+        logging: buildDatabaseViewerLoggingState({ active: false, entries: [] }),
+        schemaVersion: 1,
+      },
+    };
+  }
+
+  recordDatabaseViewerActivity({
+    endpoint: '/api/database-viewer/logging/stop',
+    operation: 'database_viewer_stop_logging',
+    status: 'ok',
+    message: 'Database activity logging stopped for this backend process.',
+    details: {
+      capturedEventsBeforeStop: databaseViewerLoggingSession.entries.length,
+    },
+  });
+
+  const stoppedSession = buildDatabaseViewerLoggingState({
+    active: false,
+    endedAt: new Date().toISOString(),
+    entries: databaseViewerLoggingSession.entries,
+    id: databaseViewerLoggingSession.id,
+    startedAt: databaseViewerLoggingSession.startedAt,
+    coverage: databaseViewerLoggingSession.coverage,
+  });
+  databaseViewerLoggingSession = null;
+
+  return {
+    statusCode: 200,
+    payload: {
+      status: 'ok',
+      messages: [`Database activity logging stopped with ${stoppedSession.entryCount} captured event(s).`],
+      logging: stoppedSession,
+      schemaVersion: 1,
+    },
+  };
 }
 
 async function getRuntimeTruthHandler() {
@@ -415,6 +748,120 @@ async function buildDatabaseStatus(context) {
     parentDirectoryExists: await fileExists(parentDirectory),
     inspectRuntime: 'python sqlite3 bridge',
   };
+}
+
+async function buildDatabaseViewerVerification(context) {
+  const database = await buildDatabaseStatus(context);
+  const requiredTables = {
+    ...databaseViewerRequiredTablesAuthority,
+    expected: [...databaseViewerRequiredTables],
+    present: [],
+    missing: [...databaseViewerRequiredTables],
+  };
+
+  if (!database.exists) {
+    return {
+      verificationPassed: false,
+      database,
+      requiredTables,
+      availableObjects: [],
+    };
+  }
+
+  const inspection = await runPythonJson(['inspect', database.absolutePath]);
+  const presentTableNames = inspection.tables
+    .filter((entry) => entry.kind === 'table')
+    .map((entry) => entry.name);
+
+  return {
+    verificationPassed: databaseViewerRequiredTables.every((tableName) => presentTableNames.includes(tableName)),
+    database,
+    requiredTables: {
+      ...requiredTables,
+      present: presentTableNames.filter((tableName) => databaseViewerRequiredTables.includes(tableName)).sort(),
+      missing: databaseViewerRequiredTables.filter((tableName) => !presentTableNames.includes(tableName)),
+    },
+    availableObjects: inspection.tables.map((entry) => ({
+      name: entry.name,
+      kind: entry.kind,
+      columnCount: entry.columnCount,
+    })),
+  };
+}
+
+function buildDatabaseViewerVerificationMessages(verification) {
+  if (!verification.database.exists) {
+    return ['Database file does not exist, so required-table verification could not run.'];
+  }
+
+  if (!verification.requiredTables.missing.length) {
+    return [`Database file exists and all ${verification.requiredTables.expected.length} required tables are present.`];
+  }
+
+  return [
+    `Database verification failed because ${verification.requiredTables.missing.length} required table(s) are missing.`,
+  ];
+}
+
+function buildDatabaseViewerLoggingState(options = {}) {
+  const active = options.active === true;
+  const entries = Array.isArray(options.entries)
+    ? options.entries.map((entry) => structuredClone(entry))
+    : active && databaseViewerLoggingSession
+      ? databaseViewerLoggingSession.entries.map((entry) => structuredClone(entry))
+      : [];
+  const id = options.id ?? databaseViewerLoggingSession?.id ?? null;
+  const startedAt = options.startedAt ?? databaseViewerLoggingSession?.startedAt ?? null;
+  const endedAt = options.endedAt ?? null;
+  const coverage = options.coverage ?? databaseViewerLoggingSession?.coverage ?? databaseViewerLoggingCoverage;
+
+  return {
+    active,
+    sessionId: id,
+    startedAt,
+    endedAt,
+    coverage,
+    entryCount: entries.length,
+    entries,
+  };
+}
+
+function recordDatabaseViewerActivity(entry = {}) {
+  if (!databaseViewerLoggingSession) {
+    return;
+  }
+
+  databaseViewerLoggingSession.entries.push({
+    id: randomUUID(),
+    at: new Date().toISOString(),
+    endpoint: entry.endpoint ?? 'unknown',
+    operation: entry.operation ?? 'unknown',
+    status: entry.status ?? 'info',
+    message: entry.message ?? 'Database activity observed.',
+    details: entry.details ?? null,
+  });
+}
+
+function normalizeDatabaseViewerPage(value) {
+  const page = Number(value ?? 0);
+  if (!Number.isInteger(page) || page < 0) {
+    throw new HttpError(400, 'invalid_page', 'page must be a zero-based integer.',
+      { page: value });
+  }
+  return page;
+}
+
+function normalizeDatabaseViewerPageSize(value) {
+  if (value === undefined) {
+    return 50;
+  }
+  const pageSize = Number(value);
+  if (!Number.isInteger(pageSize) || pageSize <= 0 || pageSize > 100) {
+    throw new HttpError(400, 'invalid_page_size', 'pageSize must be an integer between 1 and 100.', {
+      pageSize: value,
+    });
+  }
+  return pageSize;
 }
 
 function resolveRepoPath(relativeOrAbsolutePath) {

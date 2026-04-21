@@ -1109,6 +1109,171 @@ code {
   color: var(--muted);
 }
 
+.db-panel-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.db-inline-copy {
+  margin: 0.45rem 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.db-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.db-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  color: var(--text);
+  font-size: 0.8rem;
+}
+
+.db-chip--danger {
+  border-color: rgba(248, 113, 113, 0.35);
+  color: #fecaca;
+  background: rgba(44, 12, 12, 0.62);
+}
+
+.db-object-grid,
+.db-activity-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.db-object-grid {
+  max-height: 320px;
+  overflow: auto;
+}
+
+.db-object-button {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.95rem 1rem;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(15, 23, 42, 0.42);
+  color: var(--text);
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.db-object-button:hover:not(:disabled),
+.db-object-button--active {
+  transform: translateY(-1px);
+  border-color: rgba(94, 234, 212, 0.34);
+  background: linear-gradient(135deg, rgba(94, 234, 212, 0.14), rgba(15, 23, 42, 0.82));
+}
+
+.db-object-button__name {
+  color: var(--heading);
+  font-weight: 700;
+}
+
+.db-object-button__meta {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.db-table-shell {
+  overflow: auto;
+  border-radius: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(8, 15, 31, 0.78);
+}
+
+.db-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+}
+
+.db-table th,
+.db-table td {
+  padding: 0.8rem 0.9rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  text-align: left;
+  vertical-align: top;
+}
+
+.db-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: rgba(7, 17, 31, 0.96);
+  color: #bfdbfe;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.db-table td {
+  color: var(--text);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.db-activity-list {
+  max-height: 340px;
+  overflow: auto;
+}
+
+.db-activity-entry {
+  padding: 0.95rem 1rem;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(15, 23, 42, 0.42);
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.db-activity-entry__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: #93c5fd;
+  font-size: 0.76rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.db-activity-entry p,
+.db-activity-entry pre {
+  margin: 0;
+}
+
+.db-activity-entry p {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.db-activity-entry pre {
+  padding: 0.8rem 0.9rem;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(2, 6, 23, 0.5);
+  color: #dbeafe;
+  overflow: auto;
+  max-height: 180px;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
 @keyframes statusPulse {
   0%,
   100% {
