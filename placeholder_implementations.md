@@ -8,6 +8,10 @@
 - Extended `server/scripts/sqlite_admin.py` with Stage 5/6 operations used by these endpoints.
 - Added isolated Wave A API tests in `tests/waveA.step2.test.js` covering queue idempotency, invalid READY candidate
   failure behavior, and durable `runtime_state.current_media_asset_id` updates.
+- Refactored `dashboard/services/runtimeTruth.js` into `dashboard/services/runtimeTruth/*` modules to keep touched files
+  below the local 500-line cap while preserving existing behavior and inspect-mode copy.
+- Added inspect metadata stability tests that explicitly pin the topbar guide controls:
+  `Explain controls`, `Explain values`, `Show real vs mock`, and `Show backend status`.
 - Scope remains intentionally partial: there is still no full playback worker loop, no Stage 7 render pipeline, and no
   Stage 1-4 worker implementation.
 

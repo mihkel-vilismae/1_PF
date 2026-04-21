@@ -50,6 +50,48 @@ test('control inspect copy keeps Explain values button tooltip text stable', () 
   });
 });
 
+test('control inspect copy keeps Explain controls button tooltip text stable', () => {
+  const meta = describeInspectableElement(
+    fakeElement({
+      matches: ['[data-action]'],
+      dataset: { action: 'toggle-inspect-mode' },
+    }),
+  );
+
+  assert.deepEqual(meta, {
+    label: 'Explain controls mode',
+    description: 'Highlights every interactive control and shows a tooltip that explains what it does when you hover or focus it.',
+  });
+});
+
+test('control inspect copy keeps Show real vs mock button tooltip text stable', () => {
+  const meta = describeInspectableElement(
+    fakeElement({
+      matches: ['[data-action]'],
+      dataset: { action: 'toggle-reality-inspect-mode' },
+    }),
+  );
+
+  assert.deepEqual(meta, {
+    label: 'Show real vs mock mode',
+    description: 'Highlights the current view by implementation truth so real wiring, mock behavior, and mixed areas are easy to spot.',
+  });
+});
+
+test('control inspect copy keeps Show backend status button tooltip text stable', () => {
+  const meta = describeInspectableElement(
+    fakeElement({
+      matches: ['[data-action]'],
+      dataset: { action: 'toggle-backend-status-inspect-mode' },
+    }),
+  );
+
+  assert.deepEqual(meta, {
+    label: 'Show backend status mode',
+    description: 'Highlights whether a section is backed by a real backend, frontend-only mock behavior, or missing backend support.',
+  });
+});
+
 test('value inspect copy keeps Current truth source descriptions stable', () => {
   const row = fakeNode({ query: { dt: fakeNode({ textContent: 'Source of truth' }) } });
   const sidePanel = fakeNode({ query: { '.side-panel__header h2': fakeNode({ textContent: 'Current truth' }) } });
