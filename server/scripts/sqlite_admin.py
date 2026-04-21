@@ -359,7 +359,51 @@ def build_asset_key(file_path: str, file_size_bytes: int, modified_ns: int) -> s
     return hashlib.sha1(raw).hexdigest()
 
 
-def stage2_index_register(path: str, download_dir: str, indexed_at: str) -> dict:
+def ensure_canonical_schema(path: str, schema_path: str) -> dict:
+    resolved_schema_path = os.path.abspath(schema_path)
+    if not os.path.exists(resolved_schema_path):
+        raise FileNotFoundError(f"Schema bootstrap file does not exist: {resolved_schema_path}")
+
+    with open(resolved_schema_path, "r", encoding="utf-8") as handle:
+        schema_sql = handle.read()
+
+    connection = connect_read_write(path)
+    try:
+        cursor = connection.cursor()
+        cursor.executescript(schema_sql)
+        required_tables = (
+            "canonical_media_assets",
+            "media_asset_variants",
+            "parse_files_for_gps_queue",
+        )
+        missing_tables = [
+            table_name
+            for table_name in required_tables
+            if cursor.execute(
+                "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?",
+                (table_name,),
+            ).fetchone() is None
+        ]
+        if missing_tables:
+            raise RuntimeError(
+                "Schema bootstrap completed but required Stage 2 table(s) are still missing: "
+                + ", ".join(missing_tables)
+            )
+        connection.commit()
+        return {
+            "schemaPath": resolved_schema_path,
+            "applied": True,
+            "requiredTables": list(required_tables),
+        }
+    except Exception:
+        connection.rollback()
+        raise
+    finally:
+        connection.close()
+
+
+def stage2_index_register(path: str, download_dir: str, indexed_at: str, schema_path: str) -> dict:
+    schema_bootstrap = ensure_canonical_schema(path, schema_path)
     connection = connect_read_write(path)
     try:
         cursor = connection.cursor()
@@ -500,6 +544,7 @@ def stage2_index_register(path: str, download_dir: str, indexed_at: str) -> dict
             "insertedVariantCount": inserted_variants,
             "insertedGpsQueueCount": inserted_gps_queue,
             "indexedAt": indexed_at,
+            "schemaBootstrap": schema_bootstrap,
         }
     except Exception:
         connection.rollback()
@@ -732,9 +777,9 @@ def main() -> int:
             raise ValueError("rows expects: sqlite_admin.py rows <path> <table_name> <page> <page_size>")
         result = fetch_table_rows(path, sys.argv[3], int(sys.argv[4]), int(sys.argv[5]))
     elif operation == "stage2_index_register":
-        if len(sys.argv) != 5:
-            raise ValueError("stage2_index_register expects: sqlite_admin.py stage2_index_register <path> <download_dir> <indexed_at>")
-        result = stage2_index_register(path, os.path.abspath(sys.argv[3]), sys.argv[4])
+        if len(sys.argv) != 6:
+            raise ValueError("stage2_index_register expects: sqlite_admin.py stage2_index_register <path> <download_dir> <indexed_at> <schema_path>")
+        result = stage2_index_register(path, os.path.abspath(sys.argv[3]), sys.argv[4], os.path.abspath(sys.argv[5]))
     elif operation == "stage5_prepare_queue":
         if len(sys.argv) != 4:
             raise ValueError("stage5_prepare_queue expects: sqlite_admin.py stage5_prepare_queue <path> <executed_at>")

@@ -638,6 +638,7 @@ async function runtimeDownloadRunHandler({ context }) {
   await fs.mkdir(cookieDirectory, { recursive: true });
   const mediaFilesBefore = await collectSupportedMediaFiles(downloadDirectory);
   const executedAt = new Date().toISOString();
+  const downloadCommand = envValues.ICLOUDPD_COMMAND || 'icloudpd';
   const args = [
     '--username',
     envValues.user,
@@ -653,22 +654,22 @@ async function runtimeDownloadRunHandler({ context }) {
 
   let result;
   try {
-    result = await runProcess('icloudpd', args, { shell: process.platform === 'win32' });
+    result = await runProcess(downloadCommand, args, { shell: process.platform === 'win32' });
   } catch (error) {
     if (error && error.code === 'ENOENT') {
       throw new HttpError(503, 'download_dependency_missing', 'icloudpd is not installed or not available on PATH.', {
-        command: 'icloudpd',
+        command: downloadCommand,
       });
     }
     throw new HttpError(500, 'download_worker_spawn_failed', 'Failed to start the download worker process.', {
-      command: 'icloudpd',
+      command: downloadCommand,
       message: error.message,
     });
   }
 
   if (result.code !== 0) {
     throw new HttpError(502, 'download_worker_failed', 'Download worker exited with a non-zero status code.', {
-      command: 'icloudpd',
+      command: downloadCommand,
       exitCode: result.code,
       stdout: previewLog(result.stdout),
       stderr: previewLog(result.stderr),
@@ -688,7 +689,7 @@ async function runtimeDownloadRunHandler({ context }) {
       ],
       stage: 'stage1_auth_download',
       download: {
-        command: 'icloudpd',
+        command: downloadCommand,
         args: redactSensitiveArgs(args),
         exitCode: result.code,
         recentDownloadCount,
@@ -715,8 +716,30 @@ async function runtimeIndexRunHandler({ context }) {
   }
 
   const downloadDirectory = resolveRepoPath(context.envValues.DOWNLOAD_DIR || '');
+  const schemaPath = path.join(repoRoot, 'schema.sql');
   const indexedAt = new Date().toISOString();
-  const indexing = await runPythonJson(['stage2_index_register', database.absolutePath, downloadDirectory, indexedAt]);
+
+  let indexing;
+  try {
+    indexing = await runPythonJson([
+      'stage2_index_register',
+      database.absolutePath,
+      downloadDirectory,
+      indexedAt,
+      schemaPath,
+    ]);
+  } catch (error) {
+    if (error instanceof HttpError && error.code === 'python_bridge_failed') {
+      throw new HttpError(500, 'index_schema_bootstrap_failed', 'Indexing failed before Stage 2 could finish. Check schema bootstrap and database setup.', {
+        database,
+        downloadDirectory,
+        schemaPath,
+        pythonBridge: error.details,
+      });
+    }
+    throw error;
+  }
+
   return {
     statusCode: 200,
     payload: {

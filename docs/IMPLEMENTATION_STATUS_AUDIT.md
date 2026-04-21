@@ -57,14 +57,14 @@ corresponding runtime logic were classified as *docs only* or *missing*.
 
 ## Executive summary
 
-The current repository is primarily a Vite‑based dashboard prototype with minimal backend support.  It
-implements View A and View E backend slices for environment verification and database inspection, along with a
-mock runtime‑truth JSON file served over `/api/runtime-truth`.  Wave A now adds a minimal Stage 5/6 backend
-slice for queue preparation and current-item selection.  Download/index/parse/geocode workers are still missing,
-authentication and two‑factor flows are absent, and the
-pipeline, playback and screen workers remain stubs.  Cron scheduling support is partly wired for Windows,
-while Raspberry Pi–specific scheduling is not yet implemented.  The documentation set describes an ambitious
-future architecture, but the code base at this snapshot does not yet realise those plans.
+The current repository is primarily a Vite‑based dashboard prototype with selective backend slices.  It
+implements View A and View E backend paths for environment verification and database inspection, exposes a
+mock runtime‑truth JSON file at `/api/runtime-truth`, and now includes synchronous runtime slices for Stage 1
+download (`/api/runtime/download/run`), Stage 2 indexing (`/api/runtime/index/run`), Stage 5 queue preparation,
+and Stage 6 current-item selection.  Authentication and two‑factor flows are absent, GPS/geocoding workers are
+still missing, and the pipeline, playback, and screen workers remain stubs.  Cron scheduling support is partly
+wired for Windows, while Raspberry Pi–specific scheduling is not yet implemented.  The documentation set still
+describes a larger target architecture that the code base only partially realises.
 
 ## Status matrix by major system area
 
@@ -72,8 +72,8 @@ future architecture, but the code base at this snapshot does not yet realise tho
 |---|---|---|
 | **Authentication** | **Missing** | No server routes or scripts implement login or credential verification.  The only sensitive values referenced are `.env` keys checked for presence; there is no login handler or session management. |
 | **2FA handling** | **Missing** | Two‑factor authentication is mentioned in documentation, but no code exists to prompt for or validate a second factor. |
-| **Download backend** | **Missing** | The docs describe using `icloudpd` for downloads, but there is no Node or Python code that invokes it.  The `.env` file defines `ICLOUDPD_COOKIE_DIR` and other keys, but these values are never used at runtime. |
-| **Indexing backend** | **Missing** | There are no modules or scripts that scan downloaded files and insert records into `canonical_media_assets`.  No indexing routes or functions exist. |
+| **Download backend** | **Partially implemented** | `POST /api/runtime/download/run` invokes `icloudpd`, ensures the download/cookie directories exist, and reports before/after supported-media counts. It is still a synchronous HTTP slice rather than the long-term worker model. |
+| **Indexing backend** | **Partially implemented** | `POST /api/runtime/index/run` calls `server/scripts/sqlite_admin.py stage2_index_register`, scans the download directory, writes `canonical_media_assets`, `media_asset_variants`, and `parse_files_for_gps_queue`, and now bootstraps `schema.sql` automatically for a fresh repo-managed DB. |
 | **GPS parsing backend** | **Missing** | The schema defines `parse_files_for_gps_queue`, but no code reads from or writes to it.  No GPS extraction logic is present. |
 | **Geocoding backend** | **Missing** | The schema defines `geocode_queue` and `address_cache`, but there is no code performing geocoding or populating these tables. |
 | **Address cache support** | **Docs only** | The `address_cache` table exists in `schema.sql`, but no backend functions read from or insert into it. |

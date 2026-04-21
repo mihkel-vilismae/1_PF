@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
-import { access, mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { access, chmod, mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import net from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
@@ -51,6 +51,47 @@ test('POST /api/runtime/download/run reports blocked/error when icloudpd is miss
 
       assert.ok(['blocked', 'error'].includes(response.json?.status), `unexpected status: ${response.json?.status}`);
       assert.notEqual(response.status, 404, 'expected a handled endpoint response, not a missing route');
+    },
+  );
+});
+
+test('POST /api/runtime/index/run bootstraps schema on a fresh repo-managed DB', async () => {
+  await withRuntimeServer(
+    {
+      fakeIcloudPd: false,
+      schemaDb: false,
+    },
+    async ({ port, dbPath, downloadDir }) => {
+      await writeFile(path.join(downloadDir, 'alpha.jpg'), 'alpha image payload', 'utf8');
+      await writeFile(path.join(downloadDir, 'beta.jpg'), 'beta image payload', 'utf8');
+
+      const recreateResponse = await requestJson(port, '/api/init/database/recreate-empty', {
+        method: 'POST',
+        body: { confirm: true, action: 'recreate-db' },
+      });
+
+      assert.equal(recreateResponse.status, 200);
+      assert.equal(recreateResponse.json.status, 'ok');
+
+      const response = await requestJson(port, '/api/runtime/index/run', {
+        method: 'POST',
+        body: {},
+      });
+
+      assert.ok(
+        response.status < 400,
+        `expected fresh-db index run to succeed, got HTTP ${response.status} payload=${JSON.stringify(response.json)}`,
+      );
+      assert.ok(['ok', 'success'].includes(response.json?.status), `unexpected status: ${response.json?.status}`);
+      assert.equal(response.json.indexing?.schemaBootstrap?.applied, true);
+      assert.equal(path.normalize(response.json.indexing?.schemaBootstrap?.schemaPath), path.normalize(schemaPath));
+
+      const counts = await readIndexCounts(dbPath);
+      assert.deepEqual(counts, {
+        canonical_media_assets: 2,
+        media_asset_variants: 2,
+        parse_files_for_gps_queue: 2,
+      });
     },
   );
 });
@@ -133,6 +174,8 @@ async function withRuntimeServer(options, run) {
     mkdir(fakeBinDir, { recursive: true }),
   ]);
 
+  const fakeIcloudPdPath = options.fakeIcloudPd ? fakeIcloudPdCommandPath(fakeBinDir) : null;
+
   await writeFile(
     envFilePath,
     buildEnvFile({
@@ -140,6 +183,7 @@ async function withRuntimeServer(options, run) {
       dbPath,
       logDir,
       cookieDir,
+      icloudpdCommand: fakeIcloudPdPath,
     }),
     'utf8',
   );
@@ -151,7 +195,8 @@ async function withRuntimeServer(options, run) {
   }
 
   if (options.fakeIcloudPd) {
-    await writeFile(fakeIcloudPdCommandPath(fakeBinDir), buildFakeIcloudPdScript(), 'utf8');
+    await writeFile(fakeIcloudPdPath, buildFakeIcloudPdScript(), 'utf8');
+    await chmod(fakeIcloudPdPath, 0o755);
   }
 
   const child = spawn(process.execPath, [serverEntryPath], {
@@ -228,11 +273,12 @@ function fakeOnlyPath() {
 }
 
 function fakeIcloudPdCommandPath(fakeBinDir) {
-  return path.join(fakeBinDir, 'icloudpd.cmd');
+  return path.join(fakeBinDir, process.platform === 'win32' ? 'icloudpd.cmd' : 'icloudpd');
 }
 
 function buildFakeIcloudPdScript() {
-  return `@echo off
+  if (process.platform === 'win32') {
+    return `@echo off
 setlocal EnableDelayedExpansion
 set "TARGET="
 :next
@@ -250,12 +296,30 @@ if "%TARGET%"=="" (
 if not exist "%TARGET%" mkdir "%TARGET%"
 (
   echo fake icloudpd download
-) > "%TARGET%\\fake-icloudpd-download.jpg"
+) > "%TARGET%ake-icloudpd-download.jpg"
 exit /b 0
+`;
+  }
+
+  return `#!/usr/bin/env sh
+TARGET=""
+while [ "$#" -gt 0 ]; do
+  if [ "$1" = "--directory" ]; then
+    TARGET=$2
+    shift
+  fi
+  shift
+done
+if [ -z "$TARGET" ]; then
+  TARGET=$PWD
+fi
+mkdir -p "$TARGET"
+printf 'fake icloudpd download
+' > "$TARGET/fake-icloudpd-download.jpg"
 `;
 }
 
-function buildEnvFile({ downloadDir, dbPath, logDir, cookieDir }) {
+function buildEnvFile({ downloadDir, dbPath, logDir, cookieDir, icloudpdCommand }) {
   return [
     'user=test@example.com',
     'pw=super-secret-password',
@@ -263,6 +327,7 @@ function buildEnvFile({ downloadDir, dbPath, logDir, cookieDir }) {
     `DB_PATH=${dbPath}`,
     `LOG_DIR=${logDir}`,
     `ICLOUDPD_COOKIE_DIR=${cookieDir}`,
+    ...(icloudpdCommand ? [`ICLOUDPD_COMMAND=${icloudpdCommand}`] : []),
     'DOWNLOAD_RECENT=7',
     'GEOCODE_LANGUAGE=en',
     'GEOCODE_BATCH_SIZE=25',
