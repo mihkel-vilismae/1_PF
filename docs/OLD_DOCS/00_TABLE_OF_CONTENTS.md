@@ -34,8 +34,9 @@ Read these first when the question is: **what is implemented now?**
 5. `VIEW_B_TEST.md` — current state of view B
 6. `VIEW_C_LAST_RUN_INFO.md` — current state of view C
 7. `VIEW_D_RUNNING_PROCESS.md` — current state of view D
-8. `issues_errors_discrepancies.md` — issue registry and implementation-level corrections
-9. `23_VIEW_A_INIT_RECONCILIATION_PROMPT.md` — focused analysis prompt for reconciling View A runtime truth, contract wiring, and docs
+8. `VIEW_E_DATABASE_VIEWER.md` — current state of view E
+9. `issues_errors_discrepancies.md` — issue registry and implementation-level corrections
+10. `23_VIEW_A_INIT_RECONCILIATION_PROMPT.md` — focused analysis prompt for reconciling View A runtime truth, contract wiring, and docs
 
 ### B. Target architecture documents
 
@@ -99,7 +100,7 @@ The following documents take precedence:
 |---|---|---|
 | Repo reality | `15_CURRENT_IMPLEMENTATION_STATUS.md` | `01_SYSTEM_OVERVIEW.md` |
 | Dashboard scope | `DASHBOARD_OVERVIEW.md` | `13_FRONTEND_BACKEND_CONTRACT.md` |
-| Current view behavior | `VIEW_A_INIT.md` etc. | `13_FRONTEND_BACKEND_CONTRACT.md` |
+| Current view behavior | `VIEW_A_INIT.md` through `VIEW_E_DATABASE_VIEWER.md` | `13_FRONTEND_BACKEND_CONTRACT.md` |
 | Canonical state target | — | `04_SINGLE_SOURCE_OF_TRUTH.md` |
 | Locking target | issue registry + frontend guards | `10_CONCURRENCY_AND_LOCKING.md` |
 | Recovery target | view C current placeholder behavior | `12_STATE_AND_RECOVERY.md` |
