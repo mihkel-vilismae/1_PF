@@ -225,7 +225,7 @@ const LAST_RUN_MODE_INSPECT_COPY = {
   },
 };
 const CURRENT_TRUTH_VALUE_SOURCES = {
-  'Source of truth': 'state.truth.sourceOfTruth, seeded from conf/runtime-truth.json and updated whenever the shared truth snapshot is replaced or reseeded.',
+  'Source of truth': 'state.truth.sourceOfTruth, seeded from conf/runtime-truth.json and then kept in sync to that file during runtime truth updates.',
   'Queue length': 'state.truth.queueLength, updated by queue-stage actions and demo-state seeding.',
   'Current media': 'state.truth.currentMedia, populated when media is queued or demo state is loaded.',
   'Playback status': 'state.truth.playbackStatus, updated by playback runs, screen simulation, and demo seeding.',
@@ -997,7 +997,7 @@ function describeDefinitionRealityRow(element) {
   const cardContext = getCardContext(element);
 
   if (sidePanelTitle === 'Current truth') {
-    return buildRealityMeta('mock', `${label} value`, 'Rendered from frontend JSON-seeded dashboard truth state, not a live backend runtime truth source.');
+    return buildRealityMeta('mock', `${label} value`, 'Rendered from frontend dashboard truth state that is mirrored to conf/runtime-truth.json, not from a live runtime backend projection.');
   }
 
   if (cardContext?.code && ['1A', '2A', '3A'].includes(cardContext.code) && element.closest('.result-surface')) {
@@ -1278,7 +1278,7 @@ function describeDefinitionBackendStatusRow(element) {
   const cardContext = getCardContext(element);
 
   if (sidePanelTitle === 'Current truth') {
-    return buildBackendStatusMeta('mock', `${label} value`, 'This value is rendered from frontend JSON-seeded dashboard truth state rather than a backend response.');
+    return buildBackendStatusMeta('mock', `${label} value`, 'This value is rendered from frontend dashboard truth state (with backend-assisted file sync) rather than a runtime backend response.');
   }
 
   if (cardContext?.code && ['1A', '2A', '3A'].includes(cardContext.code) && element.closest('.result-surface')) {

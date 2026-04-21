@@ -9,6 +9,7 @@ import {
   checkCronStatus,
   printCron,
 } from './initService.js';
+import { loadPersistedRuntimeTruth, savePersistedRuntimeTruth } from './runtimeTruthPersistenceService.js';
 import runtimeTruthSeed from '../../conf/runtime-truth.json';
 import {
   createSchedulerCapability,
@@ -40,6 +41,8 @@ const SCHEDULER_ACTION_TO_OPERATION = Object.freeze({
   'print-cron': SCHEDULER_OPERATION_SUPPORT.print,
 });
 const RUNTIME_TRUTH_SEED_PATH = 'conf/runtime-truth.json';
+const RUNTIME_TRUTH_PERSIST_INTERVAL_MS = 250;
+const RUNTIME_TRUTH_PERSIST_WARNING_INTERVAL_MS = 10000;
 
 function buildInitialSchedulerCapability() {
   const browserPlatform = typeof navigator !== 'undefined' ? navigator.platform : null;
@@ -182,6 +185,14 @@ function createInitialState() {
 }
 
 let state = createInitialState();
+let persistTimer = null;
+let persistInFlight = false;
+let persistRequestedWhileInFlight = false;
+let hasLocalTruthMutationSinceBoot = false;
+let lastPersistedTruthSignature = null;
+let lastPersistenceWarningAt = 0;
+
+void initializeRuntimeTruthPersistence();
 
 export function getState() {
   return state;
@@ -250,10 +261,19 @@ export function toggleBackendStatusInspectMode() {
 }
 
 export function patchState(mutator) {
+  const previousTruthSignature = getTruthSignature(state.truth);
   const nextState = structuredClone(state);
   mutator(nextState);
+  const nextTruthSignature = getTruthSignature(nextState.truth);
+  const truthChanged = previousTruthSignature !== nextTruthSignature;
+  if (truthChanged) {
+    hasLocalTruthMutationSinceBoot = true;
+  }
   state = nextState;
   emit();
+  if (truthChanged) {
+    queueRuntimeTruthPersistence();
+  }
 }
 
 export function resetHistory() {
@@ -897,7 +917,7 @@ function startRealRun() {
   });
   pushHistory('RUNTIME', 'success', 'Simulated runtime preview started with single-instance guard enabled.', {
     singleInstanceGuard: true,
-    previewStartCount: d.truth.realRunStartCount,
+    previewStartCount: state.truth.realRunStartCount,
   });
   pushLog('D', 'success', 'Simulated runtime preview is now active.');
 }
@@ -953,4 +973,85 @@ function formatInitError(operation, error) {
     return `${operation} failed: ${error.message}`;
   }
   return `${operation} failed for an unknown reason.`;
+}
+
+function normalizeTruthSnapshot(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return buildInitialTruthState();
+  }
+  const normalized = structuredClone(value);
+  normalized.sourceOfTruth = RUNTIME_TRUTH_SEED_PATH;
+  return normalized;
+}
+
+function getTruthSignature(truthState) {
+  return JSON.stringify(normalizeTruthSnapshot(truthState));
+}
+
+function queueRuntimeTruthPersistence({ immediate = false } = {}) {
+  if (persistTimer !== null) {
+    return;
+  }
+  const delayMs = immediate ? 0 : RUNTIME_TRUTH_PERSIST_INTERVAL_MS;
+  persistTimer = setTimeout(() => {
+    persistTimer = null;
+    void flushRuntimeTruthPersistence();
+  }, delayMs);
+}
+
+async function flushRuntimeTruthPersistence() {
+  const truthSnapshot = normalizeTruthSnapshot(state.truth);
+  const signature = JSON.stringify(truthSnapshot);
+
+  if (signature === lastPersistedTruthSignature) {
+    return;
+  }
+
+  if (persistInFlight) {
+    persistRequestedWhileInFlight = true;
+    return;
+  }
+
+  persistInFlight = true;
+  try {
+    const persistedTruth = await savePersistedRuntimeTruth(truthSnapshot);
+    lastPersistedTruthSignature = JSON.stringify(normalizeTruthSnapshot(persistedTruth ?? truthSnapshot));
+  } catch (error) {
+    warnRuntimeTruthPersistence(error);
+  } finally {
+    persistInFlight = false;
+    if (persistRequestedWhileInFlight) {
+      persistRequestedWhileInFlight = false;
+      queueRuntimeTruthPersistence({ immediate: true });
+    }
+  }
+}
+
+async function initializeRuntimeTruthPersistence() {
+  try {
+    const persistedTruth = await loadPersistedRuntimeTruth();
+    if (persistedTruth && !hasLocalTruthMutationSinceBoot) {
+      patchState((draft) => {
+        draft.truth = normalizeTruthSnapshot(persistedTruth);
+      });
+      hasLocalTruthMutationSinceBoot = false;
+      pushHistory('TRUTH', 'info', 'Runtime truth hydrated from conf/runtime-truth.json.');
+    }
+    if (persistedTruth) {
+      lastPersistedTruthSignature = JSON.stringify(normalizeTruthSnapshot(persistedTruth));
+    }
+  } catch {
+    // Keep local seed as fallback when backend persistence is unavailable.
+  } finally {
+    queueRuntimeTruthPersistence({ immediate: true });
+  }
+}
+
+function warnRuntimeTruthPersistence(error) {
+  const now = Date.now();
+  if (now - lastPersistenceWarningAt < RUNTIME_TRUTH_PERSIST_WARNING_INTERVAL_MS) {
+    return;
+  }
+  lastPersistenceWarningAt = now;
+  console.warn('[runtimeTruth] Failed to persist conf/runtime-truth.json.', error?.message ?? error);
 }
