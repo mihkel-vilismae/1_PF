@@ -9,6 +9,7 @@ import {
   checkCronStatus,
   printCron,
 } from './initService.js';
+import runtimeTruthSeed from '../../conf/runtime-truth.json';
 import {
   createSchedulerCapability,
   getOperationSupportLevel,
@@ -38,6 +39,7 @@ const SCHEDULER_ACTION_TO_OPERATION = Object.freeze({
   'check-cron': SCHEDULER_OPERATION_SUPPORT.status,
   'print-cron': SCHEDULER_OPERATION_SUPPORT.print,
 });
+const RUNTIME_TRUTH_SEED_PATH = 'conf/runtime-truth.json';
 
 function buildInitialSchedulerCapability() {
   const browserPlatform = typeof navigator !== 'undefined' ? navigator.platform : null;
@@ -63,6 +65,13 @@ function buildSchedulerReadyMessage(capability) {
   return `Scheduler controls are ready to call legacy /api/init/cron/* endpoints for ${label} (${support}).`;
 }
 
+function buildInitialTruthState() {
+  const truth = structuredClone(runtimeTruthSeed);
+  if (!truth.sourceOfTruth) {
+    truth.sourceOfTruth = RUNTIME_TRUTH_SEED_PATH;
+  }
+  return truth;
+}
 
 function createInitialState() {
   const now = stamp();
@@ -96,27 +105,10 @@ function createInitialState() {
     },
     activeActions: {},
     modal: null,
-    truth: {
-      queueLength: 0,
-      currentMedia: null,
-      playbackStatus: 'Waiting for queued media',
-      screenState: 'ON',
-      lastActivitySource: 'Mouse movement',
-      inactivityTimeoutSeconds: 5,
-      lastCheckpoint: 'No checkpoint yet',
-      lastStageCompleted: 'None',
-      realRunActive: false,
-      sourceOfTruth: 'frontend://runtime-truth',
-      stageLock: 'No stage lock active',
-      playbackLock: 'Playback worker lock available',
-      screenLock: 'Screen worker lock available',
-      pipelineActiveKey: null,
-      playbackActive: false,
-      realRunStartCount: 0,
-    },
+    truth: buildInitialTruthState(),
     history: [
       { id: crypto.randomUUID(), at: now, source: 'BOOT', type: 'info', message: 'Dashboard shell initialized.' },
-      { id: crypto.randomUUID(), at: now, source: 'TRUTH', type: 'info', message: 'Single source of truth loaded in memory.' },
+      { id: crypto.randomUUID(), at: now, source: 'TRUTH', type: 'info', message: 'Mock truth seed loaded from conf/runtime-truth.json.' },
     ],
     logs: {
       '1A': [{ at: now, type: 'info', message: 'Ready to call POST /api/init/verify-env.' }],
