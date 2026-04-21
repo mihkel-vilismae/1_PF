@@ -6,6 +6,7 @@
 - View E logging wording is intentionally narrow: it captures database-viewer requests and repo-local backend DB actions observed through this server while active, not global SQL tracing.
 - Added an explicit required-table source reference from `docs/OLD_DOCS/20_STATE_AND_TRUTH_CONTRACT.md` for the current View E verification flow.
 - Added a shared scheduler platform/capability model used by both `server/index.js` and `dashboard` View A state/rendering.
+- Split dashboard inspect tooltip authorship and classifier logic into `dashboard/inspect/*` modules plus JSON-backed copy so `dashboard/app.js` stays below the local 500-line cap without changing Explain values, Show real vs mock, or Show backend status behavior.
 - Legacy `/api/init/cron/*` route compatibility remains unchanged.
 - Windows 11 profile stays `supported` and continues to use the Task Scheduler bootstrap-host implementation.
 - Raspberry Pi OS profile is now represented explicitly as `deferred` for install (not implemented yet), while status/print return informational capability payloads.
