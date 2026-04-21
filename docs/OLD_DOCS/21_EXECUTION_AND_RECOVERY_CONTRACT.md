@@ -30,6 +30,15 @@ This document is the canonical contract for runtime entry, retry and backoff, lo
 - automatic retry applies only to Stage 3 and Stage 4 queue rows
 - Stage 1, Stage 2, Stage 5, Stage 6, and Stage 7 use rerun or admin/manual re-entry rather than queue retry
 
+Current repo note:
+- Init readiness endpoints in `server/index.js` (`/api/init/verify-env` and `/api/init/database/*`) are
+  stateless operator utilities.
+- They are outside the stage lock and queue-ownership model in this runtime contract.
+- Wave A now implements a minimal Stage 5/6 backend path:
+  - Stage 5 insert-or-ignore queue preparation via `POST /api/runtime/queue/prepare`
+  - Stage 6 selection + pointer/history commit via `POST /api/runtime/playback/select-current`
+- External lock orchestration, playback lease ownership enforcement, and full recovery automation remain planned.
+
 ### Geocode Path
 
 - geocoding is cache-first
