@@ -17,7 +17,7 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
-const envFilePath = path.join(repoRoot, '.env');
+const defaultEnvFilePath = path.join(repoRoot, '.env');
 const sqliteScriptPath = path.join(__dirname, 'scripts', 'sqlite_admin.py');
 const windowsTaskSchedulerScriptPath = path.join(__dirname, 'scripts', 'windows_task_scheduler.ps1');
 const schedulerHostPath = path.join(__dirname, 'scheduler_host.js');
@@ -637,7 +637,16 @@ async function buildRequestContext() {
 }
 
 async function loadEnvValues() {
-  const raw = await fs.readFile(envFilePath, 'utf8');
+  const envFilePath = resolveEnvFilePath();
+  let raw;
+  try {
+    raw = await fs.readFile(envFilePath, 'utf8');
+  } catch (error) {
+    throw new HttpError(500, 'env_file_read_failed', 'Failed to read the configured env file.', {
+      envFilePath,
+      message: error.message,
+    });
+  }
   const values = {};
   for (const line of raw.split(/\r?\n/)) {
     const trimmed = line.trim();
@@ -653,6 +662,17 @@ async function loadEnvValues() {
     values[key] = value;
   }
   return values;
+}
+
+function resolveEnvFilePath() {
+  const overridePath = process.env.INIT_ENV_FILE;
+  if (!overridePath || overridePath.trim() === '') {
+    return defaultEnvFilePath;
+  }
+  if (path.isAbsolute(overridePath)) {
+    return overridePath;
+  }
+  return path.resolve(repoRoot, overridePath);
 }
 
 function buildEnvCheck(entry, envValues) {

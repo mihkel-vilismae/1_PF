@@ -49,6 +49,11 @@ Special case:
 
 Cross-stage mutation of another stage's truth is allowed only through documented reclaim or admin reset flows.
 
+Current repo note:
+- Init readiness endpoints (`POST /api/init/verify-env` and `/api/init/database/*`) do not write
+  `action_runs`, `system_logs`, or `runtime_state`.
+- They should be treated as administrative checks/operations, not as Stage 1 truth-surface writers.
+
 ## Status Vocabulary
 
 ### Queue Surfaces
