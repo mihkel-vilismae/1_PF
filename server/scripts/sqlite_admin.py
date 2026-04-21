@@ -3,6 +3,8 @@ import math
 import os
 import sqlite3
 import sys
+import hashlib
+from datetime import datetime
 
 
 MAX_PAGE_SIZE = 100
@@ -17,6 +19,29 @@ PREFERRED_TIMESTAMP_COLUMNS = (
     "lease_expires_at",
     "last_run",
 )
+IMAGE_EXTENSIONS = {
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".gif",
+    ".bmp",
+    ".webp",
+    ".tif",
+    ".tiff",
+    ".heic",
+    ".heif",
+}
+VIDEO_EXTENSIONS = {
+    ".mp4",
+    ".mov",
+    ".m4v",
+    ".avi",
+    ".mkv",
+    ".webm",
+    ".wmv",
+    ".mpeg",
+    ".mpg",
+}
 
 
 def connect_read_only(path: str) -> sqlite3.Connection:
@@ -294,6 +319,195 @@ def recreate_empty_database(path: str) -> dict:
     }
 
 
+def classify_media_type(file_path: str) -> str | None:
+    extension = os.path.splitext(file_path)[1].lower()
+    if extension in IMAGE_EXTENSIONS:
+        return "image"
+    if extension in VIDEO_EXTENSIONS:
+        return "video"
+    return None
+
+
+def collect_media_files(download_dir: str) -> list[str]:
+    if not os.path.isdir(download_dir):
+        return []
+
+    media_files: list[str] = []
+    for root, _, files in os.walk(download_dir):
+        for file_name in files:
+            candidate = os.path.join(root, file_name)
+            if classify_media_type(candidate) is not None:
+                media_files.append(os.path.abspath(candidate))
+    media_files.sort()
+    return media_files
+
+
+def compute_file_sha1(file_path: str) -> str:
+    digest = hashlib.sha1()
+    with open(file_path, "rb") as handle:
+        while True:
+            chunk = handle.read(65536)
+            if not chunk:
+                break
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def build_asset_key(file_path: str, file_size_bytes: int, modified_ns: int) -> str:
+    normalized = os.path.abspath(file_path)
+    raw = f"{normalized}|{file_size_bytes}|{modified_ns}".encode("utf-8")
+    return hashlib.sha1(raw).hexdigest()
+
+
+def stage2_index_register(path: str, download_dir: str, indexed_at: str) -> dict:
+    connection = connect_read_write(path)
+    try:
+        cursor = connection.cursor()
+        media_files = collect_media_files(download_dir)
+        scanned_count = len(media_files)
+        inserted_canonical = 0
+        updated_canonical = 0
+        inserted_variants = 0
+        inserted_gps_queue = 0
+
+        for file_path in media_files:
+            media_type = classify_media_type(file_path)
+            if media_type is None:
+                continue
+
+            file_stats = os.stat(file_path)
+            file_size_bytes = int(file_stats.st_size)
+            extension = os.path.splitext(file_path)[1].lower().lstrip(".") or None
+            captured_at = datetime.utcfromtimestamp(file_stats.st_mtime).replace(microsecond=0).isoformat() + "Z"
+            content_hash = compute_file_sha1(file_path)
+            asset_key = build_asset_key(file_path, file_size_bytes, int(file_stats.st_mtime_ns))
+            original_filename = os.path.basename(file_path)
+            canonical_path = os.path.abspath(file_path)
+
+            existing_asset = cursor.execute(
+                "SELECT media_asset_id FROM canonical_media_assets WHERE asset_key = ?",
+                (asset_key,),
+            ).fetchone()
+
+            if existing_asset is None:
+                cursor.execute(
+                    """
+                    INSERT INTO canonical_media_assets (
+                        asset_key,
+                        original_filename,
+                        canonical_path,
+                        media_type,
+                        file_extension,
+                        file_size_bytes,
+                        content_hash,
+                        captured_at,
+                        gps_status,
+                        geocode_status,
+                        created_at,
+                        updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'GPS_PENDING', 'GEOCODE_PENDING', ?, ?)
+                    """,
+                    (
+                        asset_key,
+                        original_filename,
+                        canonical_path,
+                        media_type,
+                        extension,
+                        file_size_bytes,
+                        content_hash,
+                        captured_at,
+                        indexed_at,
+                        indexed_at,
+                    ),
+                )
+                media_asset_id = cursor.lastrowid
+                inserted_canonical += 1
+            else:
+                media_asset_id = int(existing_asset["media_asset_id"])
+                cursor.execute(
+                    """
+                    UPDATE canonical_media_assets
+                    SET original_filename = ?,
+                        canonical_path = ?,
+                        media_type = ?,
+                        file_extension = ?,
+                        file_size_bytes = ?,
+                        content_hash = ?,
+                        captured_at = ?,
+                        updated_at = ?
+                    WHERE media_asset_id = ?
+                    """,
+                    (
+                        original_filename,
+                        canonical_path,
+                        media_type,
+                        extension,
+                        file_size_bytes,
+                        content_hash,
+                        captured_at,
+                        indexed_at,
+                        media_asset_id,
+                    ),
+                )
+                updated_canonical += 1
+
+            cursor.execute(
+                """
+                INSERT OR IGNORE INTO media_asset_variants (
+                    media_asset_id,
+                    variant_kind,
+                    file_path,
+                    file_extension,
+                    file_size_bytes,
+                    created_at,
+                    updated_at
+                ) VALUES (?, 'original', ?, ?, ?, ?, ?)
+                """,
+                (
+                    media_asset_id,
+                    canonical_path,
+                    extension,
+                    file_size_bytes,
+                    indexed_at,
+                    indexed_at,
+                ),
+            )
+            if cursor.rowcount == 1:
+                inserted_variants += 1
+
+            cursor.execute(
+                """
+                INSERT OR IGNORE INTO parse_files_for_gps_queue (
+                    media_asset_id,
+                    status,
+                    attempt_count,
+                    created_at,
+                    updated_at
+                ) VALUES (?, 'PENDING', 0, ?, ?)
+                """,
+                (media_asset_id, indexed_at, indexed_at),
+            )
+            if cursor.rowcount == 1:
+                inserted_gps_queue += 1
+
+        connection.commit()
+        return {
+            "outcome": "indexed",
+            "downloadDir": os.path.abspath(download_dir),
+            "scannedMediaCount": scanned_count,
+            "insertedCanonicalCount": inserted_canonical,
+            "updatedCanonicalCount": updated_canonical,
+            "insertedVariantCount": inserted_variants,
+            "insertedGpsQueueCount": inserted_gps_queue,
+            "indexedAt": indexed_at,
+        }
+    except Exception:
+        connection.rollback()
+        raise
+    finally:
+        connection.close()
+
+
 def prepare_slideshow_queue(path: str, executed_at: str) -> dict:
     connection = connect_read_write(path)
     try:
@@ -499,7 +713,7 @@ def select_current_item(path: str, executed_at: str, repo_root: str) -> dict:
 def main() -> int:
     if len(sys.argv) < 3:
         raise ValueError(
-            "Expected usage: sqlite_admin.py <inspect|recreate|rows|stage5_prepare_queue|stage6_select_current> <path> [args]"
+            "Expected usage: sqlite_admin.py <inspect|recreate|rows|stage2_index_register|stage5_prepare_queue|stage6_select_current> <path> [args]"
         )
 
     operation = sys.argv[1]
@@ -517,6 +731,10 @@ def main() -> int:
         if len(sys.argv) != 6:
             raise ValueError("rows expects: sqlite_admin.py rows <path> <table_name> <page> <page_size>")
         result = fetch_table_rows(path, sys.argv[3], int(sys.argv[4]), int(sys.argv[5]))
+    elif operation == "stage2_index_register":
+        if len(sys.argv) != 5:
+            raise ValueError("stage2_index_register expects: sqlite_admin.py stage2_index_register <path> <download_dir> <indexed_at>")
+        result = stage2_index_register(path, os.path.abspath(sys.argv[3]), sys.argv[4])
     elif operation == "stage5_prepare_queue":
         if len(sys.argv) != 4:
             raise ValueError("stage5_prepare_queue expects: sqlite_admin.py stage5_prepare_queue <path> <executed_at>")
