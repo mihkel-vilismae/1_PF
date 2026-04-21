@@ -31,3 +31,5 @@ runtime_data/
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
+*.zip
+generated_test_data/
