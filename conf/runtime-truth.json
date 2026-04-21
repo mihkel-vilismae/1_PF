@@ -1,0 +1,18 @@
+{
+  "queueLength": 0,
+  "currentMedia": null,
+  "playbackStatus": "Waiting for queued media",
+  "screenState": "ON",
+  "lastActivitySource": "Mouse movement",
+  "inactivityTimeoutSeconds": 5,
+  "lastCheckpoint": "No checkpoint yet",
+  "lastStageCompleted": "None",
+  "realRunActive": false,
+  "sourceOfTruth": "conf/runtime-truth.json",
+  "stageLock": "No stage lock active",
+  "playbackLock": "Playback worker lock available",
+  "screenLock": "Screen worker lock available",
+  "pipelineActiveKey": null,
+  "playbackActive": false,
+  "realRunStartCount": 0
+}
