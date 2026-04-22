@@ -25,7 +25,7 @@
       color: var(--text);
     }
     .wrap {
-      max-width: 1200px;
+      max-width: 1280px;
       margin: 0 auto;
       padding: 20px;
     }
@@ -118,7 +118,7 @@
     }
     .table-wrap, .visual-wrap {
       overflow: auto;
-      max-height: 65vh;
+      max-height: 70vh;
       border: 1px solid var(--border);
       border-radius: 10px;
       padding: 12px;
@@ -150,6 +150,26 @@
       flex-wrap:wrap;
       margin-bottom:12px;
     }
+    .detected-table-section {
+      margin-bottom: 18px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--panel);
+    }
+    .detected-table-header {
+      padding: 10px 12px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      font-weight: 700;
+    }
+    .chip {
+      display: inline-block;
+      margin-left: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 400;
+    }
   </style>
 </head>
 <body>
@@ -178,7 +198,7 @@
       <div id="meta" class="meta"></div>
       <div class="toolbar">
         <button id="rawViewBtn" type="button">Raw JSX</button>
-        <button id="tableViewBtn" type="button">Detected rows table</button>
+        <button id="tableViewBtn" type="button">Detected tables</button>
         <button id="visualViewBtn" type="button">Visual render</button>
       </div>
 
@@ -227,6 +247,7 @@
 
     let currentSource = '';
     let reactRoot = null;
+    let lastDetectedTables = [];
 
     function escapeHtml(text) {
       return text
@@ -263,26 +284,52 @@
       reactMount.innerHTML = '';
     }
 
-    function extractRowsArray(source) {
-      const startMatch = source.match(/\b(?:const|let|var)\s+rows\s*=\s*\[/);
-      if (!startMatch) return null;
-      const startIndex = startMatch.index + startMatch[0].length - 1;
+    function extractBracketed(source, startIndex, openChar, closeChar) {
       let depth = 0;
       let inString = false;
       let stringChar = '';
       let escaped = false;
+      let inLineComment = false;
+      let inBlockComment = false;
 
       for (let i = startIndex; i < source.length; i++) {
         const ch = source[i];
+        const next = source[i + 1];
+
+        if (inLineComment) {
+          if (ch === '\n') inLineComment = false;
+          continue;
+        }
+
+        if (inBlockComment) {
+          if (ch === '*' && next === '/') {
+            inBlockComment = false;
+            i++;
+          }
+          continue;
+        }
 
         if (inString) {
           if (escaped) {
             escaped = false;
           } else if (ch === '\\') {
             escaped = true;
-          } else if (ch === stringChar) {
+          } else if (stringChar !== '`' && ch === stringChar) {
+            inString = false;
+          } else if (stringChar === '`' && ch === '`') {
             inString = false;
           }
+          continue;
+        }
+
+        if (ch === '/' && next === '/') {
+          inLineComment = true;
+          i++;
+          continue;
+        }
+        if (ch === '/' && next === '*') {
+          inBlockComment = true;
+          i++;
           continue;
         }
 
@@ -292,45 +339,77 @@
           continue;
         }
 
-        if (ch === '[') depth++;
-        if (ch === ']') {
+        if (ch === openChar) depth++;
+        if (ch === closeChar) {
           depth--;
-          if (depth === 0) {
-            return source.slice(startIndex, i + 1);
-          }
+          if (depth === 0) return source.slice(startIndex, i + 1);
         }
       }
 
       return null;
     }
 
-    function tryBuildTable(source) {
-      tableWrap.innerHTML = '';
-      tableInfo.textContent = 'No rows array detected.';
-      tableViewBtn.disabled = false;
-
-      const arrayText = extractRowsArray(source);
-      if (!arrayText) {
-        tableViewBtn.disabled = true;
-        return;
+    function extractNamedArrayLiterals(source) {
+      const arrays = [];
+      const re = /\b(?:const|let|var)\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*=\s*\[/g;
+      let match;
+      while ((match = re.exec(source))) {
+        const name = match[1];
+        const startIndex = source.indexOf('[', match.index);
+        const literal = extractBracketed(source, startIndex, '[', ']');
+        if (literal) arrays.push({ name, literal });
       }
+      return arrays;
+    }
 
-      try {
-        const rows = Function('return (' + arrayText + ');')();
-        if (!Array.isArray(rows) || rows.length === 0 || typeof rows[0] !== 'object') {
-          tableViewBtn.disabled = true;
-          tableInfo.textContent = 'Rows array found, but it could not be shown as a table.';
-          return;
-        }
+    function safeEvalArrayLiteral(text) {
+      return Function('"use strict"; return (' + text + ');')();
+    }
 
-        const columnSet = new Set();
-        rows.forEach(row => Object.keys(row || {}).forEach(key => columnSet.add(key)));
-        const columns = Array.from(columnSet);
+    function isArrayOfObjects(value) {
+      return Array.isArray(value) && value.length > 0 && value.every(item => item && typeof item === 'object' && !Array.isArray(item));
+    }
+
+    function extractTables(source) {
+      const arrays = extractNamedArrayLiterals(source);
+      const tables = [];
+      for (const item of arrays) {
+        try {
+          const value = safeEvalArrayLiteral(item.literal);
+          if (isArrayOfObjects(value)) {
+            const columnSet = new Set();
+            value.forEach(row => Object.keys(row || {}).forEach(key => columnSet.add(key)));
+            tables.push({
+              name: item.name,
+              rows: value,
+              columns: Array.from(columnSet)
+            });
+          }
+        } catch (error) {}
+      }
+      return tables;
+    }
+
+    function renderTableSections(container, tables) {
+      container.innerHTML = '';
+      if (!tables.length) return;
+
+      for (const tableData of tables) {
+        const section = document.createElement('div');
+        section.className = 'detected-table-section';
+
+        const header = document.createElement('div');
+        header.className = 'detected-table-header';
+        header.innerHTML = escapeHtml(tableData.name) + '<span class="chip">' + tableData.rows.length + ' rows • ' + tableData.columns.length + ' columns</span>';
+        section.appendChild(header);
+
+        const innerWrap = document.createElement('div');
+        innerWrap.style.overflow = 'auto';
 
         const table = document.createElement('table');
         const thead = document.createElement('thead');
         const headRow = document.createElement('tr');
-        columns.forEach(col => {
+        tableData.columns.forEach(col => {
           const th = document.createElement('th');
           th.textContent = col;
           headRow.appendChild(th);
@@ -339,9 +418,9 @@
         table.appendChild(thead);
 
         const tbody = document.createElement('tbody');
-        rows.forEach(row => {
+        tableData.rows.forEach(row => {
           const tr = document.createElement('tr');
-          columns.forEach(col => {
+          tableData.columns.forEach(col => {
             const td = document.createElement('td');
             const value = row[col];
             td.textContent = value == null ? '—' : String(value);
@@ -350,20 +429,98 @@
           tbody.appendChild(tr);
         });
         table.appendChild(tbody);
-        tableWrap.appendChild(table);
-        tableInfo.textContent = `Detected rows table: ${rows.length} rows, ${columns.length} columns.`;
-      } catch (error) {
-        tableViewBtn.disabled = true;
-        tableInfo.textContent = 'Rows array was detected, but parsing failed.';
+        innerWrap.appendChild(table);
+        section.appendChild(innerWrap);
+        container.appendChild(section);
       }
     }
 
+    function tryBuildTable(source) {
+      lastDetectedTables = extractTables(source);
+      tableWrap.innerHTML = '';
+
+      if (!lastDetectedTables.length) {
+        tableInfo.textContent = 'No object-array tables were detected.';
+        tableViewBtn.disabled = true;
+        return;
+      }
+
+      tableViewBtn.disabled = false;
+      renderTableSections(tableWrap, lastDetectedTables);
+      const totalRows = lastDetectedTables.reduce((sum, t) => sum + t.rows.length, 0);
+      tableInfo.textContent = 'Detected ' + lastDetectedTables.length + ' table(s), total ' + totalRows + ' row(s).';
+    }
+
     function normalizeSourceForRuntime(source) {
-      return source
-        .replace(/^\s*import\s+[^;]+;\s*$/gm, '')
-        .replace(/^\s*export\s+default\s+function\s+([A-Za-z0-9_]+)\s*\(/m, 'function $1(')
-        .replace(/^\s*export\s+default\s+([A-Za-z0-9_]+)\s*;?\s*$/m, 'window.__JSXViewerComponent = $1;')
-        .replace(/^\s*export\s+default\s+/m, 'window.__JSXViewerComponent = ');
+      let cleaned = source;
+      cleaned = cleaned.replace(/^\s*import\s+React[^;]*;\s*$/gm, '');
+      cleaned = cleaned.replace(/^\s*import\s+[\s\S]*?\s+from\s+["'][^"']+["'];?\s*$/gm, '');
+      cleaned = cleaned.replace(/^\s*export\s+default\s+function\s+([A-Za-z0-9_]+)\s*\(/m, 'function $1(');
+      cleaned = cleaned.replace(/^\s*export\s+default\s+class\s+([A-Za-z0-9_]+)\s*/m, 'class $1 ');
+      cleaned = cleaned.replace(/^\s*export\s+default\s+([A-Za-z0-9_]+)\s*;?\s*$/m, 'window.__JSXViewerComponent = $1;');
+      cleaned = cleaned.replace(/^\s*export\s+default\s+/m, 'window.__JSXViewerComponent = ');
+      return cleaned;
+    }
+
+    function getRuntimePreamble() {
+      return `
+        const React = window.React;
+        const useState = React.useState;
+        const useMemo = React.useMemo;
+        const useEffect = React.useEffect;
+        const useRef = React.useRef;
+
+        function __jsxStub(tagName, extraStyle) {
+          return function(props) {
+            const children = props && props.children;
+            const nextProps = Object.assign({}, props || {});
+            delete nextProps.children;
+            nextProps.style = Object.assign({}, extraStyle || {}, nextProps.style || {});
+            return React.createElement(tagName, nextProps, children);
+          }
+        }
+
+        const Card = __jsxStub('div', { border: '1px solid #d0d7de', borderRadius: '12px', padding: '12px', marginBottom: '12px', background: '#fff' });
+        const CardHeader = __jsxStub('div', { marginBottom: '8px' });
+        const CardContent = __jsxStub('div', {});
+        const CardTitle = __jsxStub('h3', { margin: '0 0 8px 0' });
+        const Input = function(props) { return React.createElement('input', Object.assign({ style: { padding: '8px', border: '1px solid #ccc', borderRadius: '8px' } }, props || {})); };
+        const Button = function(props) {
+          const nextProps = Object.assign({}, props || {});
+          nextProps.style = Object.assign({ padding: '8px 12px', border: '1px solid #ccc', borderRadius: '8px', background: '#f3f4f6', cursor: 'pointer' }, nextProps.style || {});
+          return React.createElement('button', nextProps, nextProps.children);
+        };
+        const Badge = __jsxStub('span', { display: 'inline-block', padding: '2px 8px', borderRadius: '999px', background: '#eef2ff', border: '1px solid #c7d2fe', fontSize: '12px', marginRight: '6px' });
+        const ChevronUp = __jsxStub('span', { display: 'inline-block' });
+        const ChevronDown = __jsxStub('span', { display: 'inline-block' });
+        const ChevronsUpDown = __jsxStub('span', { display: 'inline-block' });
+        const X = __jsxStub('span', { display: 'inline-block' });
+      `;
+    }
+
+    function buildRuntimeCode(source) {
+      const cleaned = normalizeSourceForRuntime(source);
+      return [
+        '(function(){',
+        getRuntimePreamble(),
+        cleaned,
+        'if (!window.__JSXViewerComponent) {',
+        "  if (typeof SimpleJsxFileViewer !== 'undefined') window.__JSXViewerComponent = SimpleJsxFileViewer;",
+        "  else if (typeof App !== 'undefined') window.__JSXViewerComponent = App;",
+        '}',
+        '})();'
+      ].join('\n');
+    }
+
+    function renderFallbackTablesIntoVisual() {
+      cleanupReactRender();
+      reactMount.innerHTML = '';
+      if (!lastDetectedTables.length) {
+        reactMount.innerHTML = '<div style="padding:12px;">No visual tables could be built from this file.</div>';
+        return false;
+      }
+      renderTableSections(reactMount, lastDetectedTables);
+      return true;
     }
 
     async function renderVisual(source) {
@@ -376,7 +533,8 @@
       }
 
       if (!window.React || !window.ReactDOM || !window.Babel) {
-        setVisualStatus('bad', 'React/Babel libraries are not available. Internet access is needed for visual JSX rendering.');
+        const ok = renderFallbackTablesIntoVisual();
+        setVisualStatus(ok ? 'warn' : 'bad', ok ? 'Visual JSX render is unavailable offline, so detected tables are shown instead.' : 'React/Babel libraries are not available.');
         return;
       }
 
@@ -384,23 +542,8 @@
         setVisualStatus('warn', 'Trying to render the JSX component visually...');
         window.__JSXViewerComponent = null;
 
-        const cleaned = normalizeSourceForRuntime(source);
-        const wrapped = `
-          (function(){
-            const React = window.React;
-            ${cleaned}
-            if (!window.__JSXViewerComponent) {
-              if (typeof SimpleJsxFileViewer !== 'undefined') window.__JSXViewerComponent = SimpleJsxFileViewer;
-              else if (typeof App !== 'undefined') window.__JSXViewerComponent = App;
-              else if (typeof defaultExport !== 'undefined') window.__JSXViewerComponent = defaultExport;
-            }
-          })();
-        `;
-
-        const transpiled = window.Babel.transform(wrapped, {
-          presets: ['react']
-        }).code;
-
+        const runtimeCode = buildRuntimeCode(source);
+        const transpiled = window.Babel.transform(runtimeCode, { presets: ['react'] }).code;
         const script = document.createElement('script');
         script.text = transpiled;
         document.body.appendChild(script);
@@ -408,16 +551,19 @@
 
         const Component = window.__JSXViewerComponent;
         if (typeof Component !== 'function') {
-          setVisualStatus('bad', 'Visual render failed: no renderable React component was found.');
+          const ok = renderFallbackTablesIntoVisual();
+          setVisualStatus(ok ? 'warn' : 'bad', ok ? 'No standalone React component was found, so detected tables are shown visually instead.' : 'Visual render failed: no renderable React component was found.');
           return;
         }
 
         reactRoot = window.ReactDOM.createRoot(reactMount);
         reactRoot.render(window.React.createElement(Component));
-        setVisualStatus('good', 'Visual render succeeded. If the JSX contains a table component, it should now be visible below.');
+        setVisualStatus('good', 'Visual render succeeded.');
       } catch (error) {
         console.error(error);
-        setVisualStatus('bad', 'Visual render failed: ' + (error && error.message ? error.message : 'Unknown error'));
+        const ok = renderFallbackTablesIntoVisual();
+        const message = error && error.message ? error.message : 'Unknown error';
+        setVisualStatus(ok ? 'warn' : 'bad', ok ? 'Exact JSX render failed, so detected tables are shown instead. Error: ' + message : 'Visual render failed: ' + message);
       }
     }
 
@@ -429,8 +575,41 @@
       tryBuildTable(text);
       visualViewBtn.disabled = false;
       cleanupReactRender();
-      setVisualStatus('warn', 'Click “Visual render” to try rendering the JSX component itself.');
+      setVisualStatus('warn', 'Click “Visual render” to try rendering the JSX component itself. If that fails, detected tables will be shown visually.');
       setView('raw');
+    }
+
+
+    async function autoLoadFromQuery() {
+      try {
+        const url = new URL(window.location.href);
+        const fileName = url.searchParams.get('file');
+        if (!fileName) return;
+
+        const response = await fetch(fileName, { cache: 'no-store' });
+        if (!response.ok) {
+          throw new Error(`Could not load ${fileName} (${response.status})`);
+        }
+
+        const text = await response.text();
+        showContent(text, `${fileName} • auto-loaded`);
+
+        const preferredView = (url.searchParams.get('view') || 'visual').toLowerCase();
+        if (preferredView === 'table') {
+          setView('table');
+        } else if (preferredView === 'raw') {
+          setView('raw');
+        } else {
+          setView('visual');
+          await renderVisual(text);
+        }
+      } catch (error) {
+        console.error(error);
+        previewCard.classList.remove('hidden');
+        meta.textContent = 'Automatic file load failed';
+        output.textContent = error && error.message ? error.message : 'Unknown auto-load error';
+        setView('raw');
+      }
     }
 
     function readFile(file) {
@@ -479,6 +658,11 @@
       }
     });
 
+
+    window.addEventListener('DOMContentLoaded', () => {
+      autoLoadFromQuery();
+    });
+
     clearBtn.addEventListener('click', () => {
       fileInput.value = '';
       pasteArea.value = '';
@@ -487,6 +671,7 @@
       meta.textContent = '';
       tableWrap.innerHTML = '';
       tableInfo.textContent = '';
+      lastDetectedTables = [];
       cleanupReactRender();
       setVisualStatus('warn', 'Visual render has not been attempted yet.');
       previewCard.classList.add('hidden');
