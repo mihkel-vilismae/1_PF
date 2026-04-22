@@ -1,4 +1,4 @@
 #!/bin/sh
 set -eu
-
 node scripts/generate-task-docs-toc.mjs --check
+node scripts/version_guard.mjs repo --staged

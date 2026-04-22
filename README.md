@@ -57,7 +57,8 @@ If the API server is not running, backend-backed A and E actions can fail even t
 ### Current implementation truth first
 1. `docs/IMPLEMENTATION_STATUS_AUDIT.md` — implementation-status audit produced by the analysis pass
 2. `docs/buttons_and_implementation_overview.md` — living evidence-first reference for button behavior, inspect-mode attachments, and wording-vs-implementation conflicts across Views A-D
-3. `docs/OLD_DOCS/00_TABLE_OF_CONTENTS.md`
+3. `docs/VERSIONING_AND_CHANGELOG_POLICY.md` — forward-only SemVer, changelog, and Git hook compliance policy for future changes
+4. `docs/OLD_DOCS/00_TABLE_OF_CONTENTS.md`
 4. `docs/OLD_DOCS/15_CURRENT_IMPLEMENTATION_STATUS.md`
 5. `docs/OLD_DOCS/16_DOCUMENTATION_RECONCILIATION_REPORT.md`
 6. `docs/OLD_DOCS/DASHBOARD_OVERVIEW.md`
