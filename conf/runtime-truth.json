@@ -3,7 +3,7 @@
   "currentMedia": null,
   "playbackStatus": "Waiting for queued media",
   "screenState": "ON",
-  "lastActivitySource": "Mouse movement",
+  "lastActivitySource": "Mouse movement enabled",
   "inactivityTimeoutSeconds": 5,
   "lastCheckpoint": "No checkpoint yet",
   "lastStageCompleted": "None",
