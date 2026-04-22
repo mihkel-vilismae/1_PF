@@ -56,17 +56,18 @@ If the API server is not running, backend-backed A and E actions can fail even t
 
 ### Current implementation truth first
 1. `docs/IMPLEMENTATION_STATUS_AUDIT.md` — implementation-status audit produced by the analysis pass
-2. `docs/OLD_DOCS/00_TABLE_OF_CONTENTS.md`
-3. `docs/OLD_DOCS/15_CURRENT_IMPLEMENTATION_STATUS.md`
-4. `docs/OLD_DOCS/16_DOCUMENTATION_RECONCILIATION_REPORT.md`
-5. `docs/OLD_DOCS/DASHBOARD_OVERVIEW.md`
-6. `docs/OLD_DOCS/VIEW_A_INIT.md`
-7. `docs/OLD_DOCS/VIEW_B_TEST.md`
-8. `docs/OLD_DOCS/VIEW_C_LAST_RUN_INFO.md`
-9. `docs/OLD_DOCS/VIEW_D_RUNNING_PROCESS.md`
-10. `docs/OLD_DOCS/VIEW_E_DATABASE_VIEWER.md`
-11. `docs/OLD_DOCS/issues_errors_discrepancies.md`
-12. `docs/OLD_DOCS/23_VIEW_A_INIT_RECONCILIATION_PROMPT.md`
+2. `docs/buttons_and_implementation_overview.md` — living evidence-first reference for button behavior, inspect-mode attachments, and wording-vs-implementation conflicts across Views A-D
+3. `docs/OLD_DOCS/00_TABLE_OF_CONTENTS.md`
+4. `docs/OLD_DOCS/15_CURRENT_IMPLEMENTATION_STATUS.md`
+5. `docs/OLD_DOCS/16_DOCUMENTATION_RECONCILIATION_REPORT.md`
+6. `docs/OLD_DOCS/DASHBOARD_OVERVIEW.md`
+7. `docs/OLD_DOCS/VIEW_A_INIT.md`
+8. `docs/OLD_DOCS/VIEW_B_TEST.md`
+9. `docs/OLD_DOCS/VIEW_C_LAST_RUN_INFO.md`
+10. `docs/OLD_DOCS/VIEW_D_RUNNING_PROCESS.md`
+11. `docs/OLD_DOCS/VIEW_E_DATABASE_VIEWER.md`
+12. `docs/OLD_DOCS/issues_errors_discrepancies.md`
+13. `docs/OLD_DOCS/23_VIEW_A_INIT_RECONCILIATION_PROMPT.md`
 
 ### Target architecture and future implementation contract second
 

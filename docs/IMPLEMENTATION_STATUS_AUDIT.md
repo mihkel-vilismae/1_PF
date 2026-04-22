@@ -16,6 +16,14 @@ inspected source files under `server/`, `scripts/`, `conf/`, `schema.sql`, and t
 `docs/OLD_DOCS/`.  No external repositories or web resources were consulted.  All claims below are backed by
 concrete files in this snapshot.
 
+## Related implementation-reference docs
+
+For button-level behavior, inspect-mode text attachment mapping, and wording-vs-implementation conflicts across Views A-D, also use:
+
+- `docs/buttons_and_implementation_overview.md`
+
+Treat it as a fairly authoritative, evidence-first working document for those UI/inspect questions, and update it incrementally by striking through superseded text rather than deleting it.
+
 ## Step 1 hardening note (2026-04-21)
 
 Step 1 verification hardening added isolated API tests for `/api/init/verify-env` and `/api/init/database/*`
