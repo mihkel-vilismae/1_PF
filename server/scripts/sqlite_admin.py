@@ -1110,10 +1110,92 @@ def select_current_item(path: str, executed_at: str, repo_root: str) -> dict:
         connection.close()
 
 
+def runtime_state_get(path: str, state_key: str) -> dict:
+    """
+    Fetch a runtime_state value by key. Returns a dict with the key and value (or None).
+    The state_value column is returned verbatim without JSON decoding. When no row exists or
+    the runtime_state table does not yet exist, stateValue will be null. This helper is
+    tolerant of missing tables to support early orchestration persistence before the
+    canonical schema has been applied.
+    """
+    # Use read/write connection because we may need to create the table later; however,
+    # runtime_state_get itself will not create the table. It simply handles missing table
+    # errors gracefully by returning None.
+    connection = connect_read_only(path)
+    try:
+        try:
+            cursor = connection.execute(
+                "SELECT state_value FROM runtime_state WHERE state_key = ?",
+                (state_key,),
+            )
+        except sqlite3.OperationalError as e:
+            # If the table does not exist yet, treat as missing state
+            if "no such table" in str(e).lower():
+                return {"stateKey": state_key, "stateValue": None}
+            raise
+        row = cursor.fetchone()
+        return {
+            "stateKey": state_key,
+            "stateValue": row["state_value"] if row is not None else None,
+        }
+    finally:
+        connection.close()
+
+
+def runtime_state_set(
+    path: str, state_key: str, state_value: str, value_type: str, updated_by: str
+) -> dict:
+    """
+    Insert or update a runtime_state entry. The provided state_value is persisted verbatim.
+    If the runtime_state table does not exist yet, it will be created with the canonical
+    schema. Returns the written key, value, and the timestamp used. Raises no error on
+    conflict.
+    """
+    executed_at = datetime.utcnow().isoformat() + "Z"
+    connection = connect_read_write(path)
+    try:
+        # Create the runtime_state table if it does not already exist. This mirrors the
+        # definition in schema.sql but omits the initial INSERT OR IGNORE seeds. The
+        # initial seeds will be applied later when the canonical schema is loaded via
+        # ensure_canonical_schema (stage2_index_register). Creating the table here
+        # enables orchestration state to be persisted before Stage 2 runs.
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS runtime_state (
+                state_key TEXT PRIMARY KEY,
+                state_value TEXT,
+                value_type TEXT NOT NULL DEFAULT 'text',
+                updated_at TEXT NOT NULL,
+                updated_by TEXT
+            )
+            """
+        )
+        connection.execute(
+            """
+            INSERT INTO runtime_state (state_key, state_value, value_type, updated_at, updated_by)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT(state_key) DO UPDATE SET
+                state_value = excluded.state_value,
+                value_type = excluded.value_type,
+                updated_at = excluded.updated_at,
+                updated_by = excluded.updated_by
+            """,
+            (state_key, state_value, value_type, executed_at, updated_by),
+        )
+        connection.commit()
+        return {
+            "stateKey": state_key,
+            "stateValue": state_value,
+            "updatedAt": executed_at,
+        }
+    finally:
+        connection.close()
+
+
 def main() -> int:
     if len(sys.argv) < 3:
         raise ValueError(
-            "Expected usage: sqlite_admin.py <inspect|recreate|rows|stage2_index_register|stage3_process_gps_queue|stage4_process_geocode_queue|stage5_prepare_queue|stage6_select_current> <path> [args]"
+            "Expected usage: sqlite_admin.py <inspect|recreate|rows|stage2_index_register|stage3_process_gps_queue|stage4_process_geocode_queue|stage5_prepare_queue|stage6_select_current|runtime_state_get|runtime_state_set> <path> [args]"
         )
 
     operation = sys.argv[1]
@@ -1149,8 +1231,24 @@ def main() -> int:
         result = prepare_slideshow_queue(path, sys.argv[3], os.path.abspath(sys.argv[4]))
     elif operation == "stage6_select_current":
         if len(sys.argv) != 5:
-            raise ValueError("stage6_select_current expects: sqlite_admin.py stage6_select_current <path> <executed_at> <repo_root>")
+            raise ValueError(
+                "stage6_select_current expects: sqlite_admin.py stage6_select_current <path> <executed_at> <repo_root>"
+            )
         result = select_current_item(path, sys.argv[3], os.path.abspath(sys.argv[4]))
+    elif operation == "runtime_state_get":
+        # Usage: sqlite_admin.py runtime_state_get <path> <state_key>
+        if len(sys.argv) != 4:
+            raise ValueError(
+                "runtime_state_get expects: sqlite_admin.py runtime_state_get <path> <state_key>"
+            )
+        result = runtime_state_get(path, sys.argv[3])
+    elif operation == "runtime_state_set":
+        # Usage: sqlite_admin.py runtime_state_set <path> <state_key> <state_value> <value_type> <updated_by>
+        if len(sys.argv) != 7:
+            raise ValueError(
+                "runtime_state_set expects: sqlite_admin.py runtime_state_set <path> <state_key> <state_value> <value_type> <updated_by>"
+            )
+        result = runtime_state_set(path, sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6])
     else:
         raise ValueError(f"Unsupported operation: {operation}")
 

@@ -1,4 +1,16 @@
-import runtimeTruthSeed from '../../../conf/runtime-truth.json' assert { type: 'json' };
+// runtimeTruthSeed is loaded dynamically from the JSON file because Node v22+
+// no longer supports the legacy import assertion syntax (assert { type: 'json' }).
+// We resolve the JSON path relative to this module and synchronously read it at
+// module load time. This approach avoids requiring the experimental JSON
+// modules flag or relying on import assertions.
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const runtimeTruthJsonPath = path.resolve(__dirname, '../../../conf/runtime-truth.json');
+const runtimeTruthSeed = JSON.parse(fs.readFileSync(runtimeTruthJsonPath, 'utf8'));
 import {
   createSchedulerCapability,
   getOperationSupportLevel,

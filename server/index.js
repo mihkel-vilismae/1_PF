@@ -125,6 +125,10 @@ const routes = {
   'POST /api/runtime/geocode/run': runtimeGeocodeRunHandler,
   'POST /api/runtime/queue/prepare': runtimeQueuePrepareHandler,
   'POST /api/runtime/playback/select-current': runtimePlaybackSelectCurrentHandler,
+  // Wave E orchestration endpoints
+  'POST /api/runtime/orchestration/run': runtimeOrchestrationRunHandler,
+  'GET /api/runtime/orchestration/current': runtimeOrchestrationCurrentHandler,
+  'GET /api/runtime/orchestration/last': runtimeOrchestrationLastHandler,
   'GET /api/runtime-truth': getRuntimeTruthHandler,
   'POST /api/runtime-truth': updateRuntimeTruthHandler,
 };
@@ -896,6 +900,175 @@ async function runtimePlaybackSelectCurrentHandler({ context }) {
       executedAt,
     },
   };
+}
+
+/*
+ * Wave E orchestration service.
+ *
+ * Coordinates the existing Stage 2-6 pipeline in a deterministic order, persists run state
+ * across stages using the runtime_state table, provides inspection endpoints for
+ * current and last run summaries, and stops immediately on the first failure. A
+ * successful run ends with status SUCCEEDED and records the selected playback
+ * asset summary. A failure run ends with status FAILED and records the failed
+ * stage and reason.
+ */
+
+const ORCHESTRATION_STAGE_PIPELINE = [
+  { key: 'download', handler: runtimeDownloadRunHandler },
+  { key: 'index', handler: runtimeIndexRunHandler },
+  { key: 'gps', handler: runtimeGpsRunHandler },
+  { key: 'geocode', handler: runtimeGeocodeRunHandler },
+  { key: 'queue_prepare', handler: runtimeQueuePrepareHandler },
+  { key: 'playback_select', handler: runtimePlaybackSelectCurrentHandler },
+];
+
+async function getOrchestrationState(context, key) {
+  const dbPath = context.envValues && context.envValues.DB_PATH;
+  if (!dbPath) {
+    return null;
+  }
+  try {
+    const result = await runPythonJson(['runtime_state_get', dbPath, key]);
+    const raw = result?.stateValue;
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    // If the database is missing or the bridge fails, treat as no state
+    return null;
+  }
+}
+
+async function setOrchestrationState(context, key, value) {
+  const dbPath = context.envValues && context.envValues.DB_PATH;
+  if (!dbPath) {
+    return;
+  }
+  const serialized = typeof value === 'string' ? value : JSON.stringify(value);
+  await runPythonJson(['runtime_state_set', dbPath, key, serialized, 'json', 'orchestration']);
+}
+
+async function runtimeOrchestrationRunHandler({ context }) {
+  // Ensure the target database exists
+  const database = await buildDatabaseStatus(context);
+  if (!database.exists) {
+    throw new HttpError(404, 'database_missing', 'Cannot run orchestration because the DB file does not exist.', {
+      database,
+    });
+  }
+
+  // Read existing orchestration states
+  let currentState = await getOrchestrationState(context, 'orchestration_current');
+  let lastState = await getOrchestrationState(context, 'orchestration_last');
+
+  // Prevent concurrent runs
+  if (currentState && currentState.status === 'RUNNING') {
+    throw new HttpError(409, 'orchestration_already_running', 'An orchestration run is already in progress.', {});
+  }
+
+  // Determine next run ID
+  let nextRunId = 1;
+  const existingRunId = currentState?.run_id ?? lastState?.run_id;
+  if (typeof existingRunId === 'number' && Number.isFinite(existingRunId)) {
+    nextRunId = existingRunId + 1;
+  }
+
+  // Promote a previous completed state to last if current is not running
+  if (currentState && currentState.status !== 'RUNNING') {
+    lastState = currentState;
+    await setOrchestrationState(context, 'orchestration_last', lastState);
+  }
+
+  // Initialize new current state
+  const startIso = new Date().toISOString();
+  currentState = {
+    run_id: nextRunId,
+    status: 'RUNNING',
+    current_stage: null,
+    last_successful_stage: null,
+    started_at: startIso,
+    finished_at: null,
+    failed_stage: null,
+    failure_reason: null,
+    stage_order_executed: [],
+    stage_results: {},
+    selected_asset_summary: null,
+  };
+  await setOrchestrationState(context, 'orchestration_current', currentState);
+
+  // Execute the pipeline sequentially
+  for (const stage of ORCHESTRATION_STAGE_PIPELINE) {
+    currentState.current_stage = stage.key;
+    currentState.stage_order_executed.push(stage.key);
+    await setOrchestrationState(context, 'orchestration_current', currentState);
+
+    try {
+      const result = await stage.handler({ context });
+      // Stage succeeded
+      currentState.last_successful_stage = stage.key;
+      const payload = result?.payload || {};
+      currentState.stage_results[stage.key] = payload;
+      if (stage.key === 'playback_select') {
+        // Final stage success
+        currentState.status = 'SUCCEEDED';
+        currentState.finished_at = new Date().toISOString();
+        currentState.selected_asset_summary = payload?.playback?.selected ?? null;
+        await setOrchestrationState(context, 'orchestration_current', currentState);
+        await setOrchestrationState(context, 'orchestration_last', currentState);
+        return { statusCode: 200, payload: currentState };
+      }
+    } catch (error) {
+      // Stage failed; capture failure and stop
+      const failureReason = error instanceof HttpError && error.code ? error.code : error?.message;
+      currentState.status = 'FAILED';
+      currentState.failed_stage = stage.key;
+      currentState.failure_reason = failureReason;
+      currentState.finished_at = new Date().toISOString();
+      await setOrchestrationState(context, 'orchestration_current', currentState);
+      await setOrchestrationState(context, 'orchestration_last', currentState);
+      return { statusCode: 200, payload: currentState };
+    }
+  }
+  // Should not reach here; but ensure state is marked succeeded
+  currentState.status = 'SUCCEEDED';
+  currentState.finished_at = new Date().toISOString();
+  await setOrchestrationState(context, 'orchestration_current', currentState);
+  await setOrchestrationState(context, 'orchestration_last', currentState);
+  return { statusCode: 200, payload: currentState };
+}
+
+async function runtimeOrchestrationCurrentHandler({ context }) {
+  const state = await getOrchestrationState(context, 'orchestration_current');
+  if (state) {
+    return { statusCode: 200, payload: state };
+  }
+  // No state yet; return a default non-running shape
+  return {
+    statusCode: 200,
+    payload: {
+      run_id: null,
+      status: 'NOT_RUNNING',
+      current_stage: null,
+      last_successful_stage: null,
+      started_at: null,
+      finished_at: null,
+      failed_stage: null,
+      failure_reason: null,
+      stage_order_executed: [],
+      stage_results: {},
+      selected_asset_summary: null,
+    },
+  };
+}
+
+async function runtimeOrchestrationLastHandler({ context }) {
+  const last = await getOrchestrationState(context, 'orchestration_last');
+  if (last) {
+    return { statusCode: 200, payload: last };
+  }
+  const current = await getOrchestrationState(context, 'orchestration_current');
+  if (current && current.status !== 'RUNNING') {
+    return { statusCode: 200, payload: current };
+  }
+  return { statusCode: 200, payload: null };
 }
 
 async function updateRuntimeTruthHandler({ body }) {
