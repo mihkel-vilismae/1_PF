@@ -54,6 +54,40 @@ Applies to any button:
 
 
 
+\## Step 0 — Authoritative Spec Cross-Check (Mandatory)
+
+
+
+\* Before Step 1, search `docs/VOICE_AI_AUTHORITATIVE_SPEC_MERGED_2026-04-22.md` for the button label, aliases, section code, action id, and nearby behavior wording.
+
+\* If that file mentions the button behavior, that behavior is authoritative for the audit.
+
+\* When authoritative behavior conflicts with older docs, inspect copy, or current UI wording, the merged spec wins.
+
+\* If the merged spec shows a refactor/relocation/re-scope (for example, a control moved to another view, replaced by toggles, or downgraded from primary flow), add an immediate callout in the report before normal step findings.
+
+\* Immediate callout format must include:
+
+&#x20; \* prior location/meaning
+
+&#x20; \* authoritative location/meaning from the merged spec
+
+&#x20; \* impact on verification expectations for this run
+
+\* High-priority merged-spec examples that must trigger immediate callout when encountered:
+
+&#x20; \* B1 authentication behavior is moved to View A (Init), not View B stage flow
+
+&#x20; \* controls described as deprecated or re-scoped (for example View C manual resume semantics) cannot be treated as primary intended behavior
+
+\* If no merged-spec mention is found, explicitly state that in the report and continue the normal workflow.
+
+
+
+\---
+
+
+
 \## Workflow Steps
 
 
@@ -483,6 +517,10 @@ Each button must be labeled:
 \* Every workflow run must append a row to `docs/button_verification_results/RUN_LOG.md`
 
 \* Every UI action must be traceable end-to-end
+
+\* `docs/VOICE_AI_AUTHORITATIVE_SPEC_MERGED_2026-04-22.md` is authoritative when it mentions the audited button behavior
+
+\* Any merged-spec evidence of control relocation/refactor/re-scope must be called out immediately in the report, not buried later
 
 
 
