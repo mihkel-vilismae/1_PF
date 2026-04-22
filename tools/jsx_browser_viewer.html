@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JSX Browser Viewer</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #0f1115;
+      --panel: #171a21;
+      --panel-2: #1f2430;
+      --text: #e6e6e6;
+      --muted: #a7afbf;
+      --border: #31384a;
+      --accent: #5da9ff;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .top {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+    button, .paste-btn {
+      background: var(--accent);
+      color: #08111f;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    input[type="file"] { display: none; }
+    .dropzone {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      text-align: center;
+      color: var(--muted);
+      transition: 0.15s ease;
+      user-select: none;
+    }
+    .dropzone.dragover {
+      border-color: var(--accent);
+      background: rgba(93,169,255,0.08);
+      color: var(--text);
+    }
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      resize: vertical;
+      box-sizing: border-box;
+    }
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      overflow: auto;
+      max-height: 60vh;
+    }
+    .meta {
+      color: var(--muted);
+      font-size: 14px;
+      margin: 8px 0 12px;
+    }
+    .hidden { display: none; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: var(--panel-2);
+      position: sticky;
+      top: 0;
+    }
+    .table-wrap {
+      overflow: auto;
+      max-height: 50vh;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1 style="margin-top:0;">JSX Browser Viewer</h1>
+      <div class="top">
+        <label for="fileInput" class="paste-btn">Select .jsx file</label>
+        <input id="fileInput" type="file" accept=".jsx,.js,.txt" />
+        <button id="pasteClipboardBtn" type="button">Paste from clipboard</button>
+      </div>
+      <div id="dropzone" class="dropzone" style="margin-top:12px;">
+        Drag and drop a .jsx file here
+      </div>
+      <div style="margin-top:12px;">
+        <textarea id="pasteArea" placeholder="Or copy-paste JSX content here"></textarea>
+        <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+          <button id="showPastedBtn" type="button">Show pasted content</button>
+          <button id="clearBtn" type="button">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="previewCard" class="card hidden">
+      <h2 style="margin-top:0;">Preview</h2>
+      <div id="meta" class="meta"></div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
+        <button id="rawViewBtn" type="button">Raw JSX</button>
+        <button id="tableViewBtn" type="button">Detected rows table</button>
+      </div>
+      <div id="rawView"><pre id="output"></pre></div>
+      <div id="tableView" class="hidden">
+        <div id="tableInfo" class="meta"></div>
+        <div id="tableWrap" class="table-wrap"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const dropzone = document.getElementById('dropzone');
+    const pasteArea = document.getElementById('pasteArea');
+    const showPastedBtn = document.getElementById('showPastedBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const pasteClipboardBtn = document.getElementById('pasteClipboardBtn');
+    const previewCard = document.getElementById('previewCard');
+    const output = document.getElementById('output');
+    const meta = document.getElementById('meta');
+    const rawView = document.getElementById('rawView');
+    const tableView = document.getElementById('tableView');
+    const rawViewBtn = document.getElementById('rawViewBtn');
+    const tableViewBtn = document.getElementById('tableViewBtn');
+    const tableWrap = document.getElementById('tableWrap');
+    const tableInfo = document.getElementById('tableInfo');
+
+    function escapeHtml(text) {
+      return text
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;');
+    }
+
+    function setView(mode) {
+      rawView.classList.toggle('hidden', mode !== 'raw');
+      tableView.classList.toggle('hidden', mode !== 'table');
+    }
+
+    rawViewBtn.addEventListener('click', () => setView('raw'));
+    tableViewBtn.addEventListener('click', () => setView('table'));
+
+    function extractRowsArray(source) {
+      const startMatch = source.match(/\b(?:const|let|var)\s+rows\s*=\s*\[/);
+      if (!startMatch) return null;
+      const startIndex = startMatch.index + startMatch[0].length - 1;
+      let depth = 0;
+      let inString = false;
+      let stringChar = '';
+      let escaped = false;
+
+      for (let i = startIndex; i < source.length; i++) {
+        const ch = source[i];
+
+        if (inString) {
+          if (escaped) {
+            escaped = false;
+          } else if (ch === '\\') {
+            escaped = true;
+          } else if (ch === stringChar) {
+            inString = false;
+          }
+          continue;
+        }
+
+        if (ch === '"' || ch === "'" || ch === '`') {
+          inString = true;
+          stringChar = ch;
+          continue;
+        }
+
+        if (ch === '[') depth++;
+        if (ch === ']') {
+          depth--;
+          if (depth === 0) {
+            return source.slice(startIndex, i + 1);
+          }
+        }
+      }
+
+      return null;
+    }
+
+    function tryBuildTable(source) {
+      tableWrap.innerHTML = '';
+      tableInfo.textContent = 'No rows array detected.';
+      tableViewBtn.disabled = false;
+
+      const arrayText = extractRowsArray(source);
+      if (!arrayText) {
+        tableViewBtn.disabled = true;
+        return;
+      }
+
+      try {
+        const rows = Function('return (' + arrayText + ');')();
+        if (!Array.isArray(rows) || rows.length === 0 || typeof rows[0] !== 'object') {
+          tableViewBtn.disabled = true;
+          tableInfo.textContent = 'Rows array found, but it could not be shown as a table.';
+          return;
+        }
+
+        const columnSet = new Set();
+        rows.forEach(row => Object.keys(row || {}).forEach(key => columnSet.add(key)));
+        const columns = Array.from(columnSet);
+
+        const table = document.createElement('table');
+        const thead = document.createElement('thead');
+        const headRow = document.createElement('tr');
+        columns.forEach(col => {
+          const th = document.createElement('th');
+          th.textContent = col;
+          headRow.appendChild(th);
+        });
+        thead.appendChild(headRow);
+        table.appendChild(thead);
+
+        const tbody = document.createElement('tbody');
+        rows.forEach(row => {
+          const tr = document.createElement('tr');
+          columns.forEach(col => {
+            const td = document.createElement('td');
+            const value = row[col];
+            td.textContent = value == null ? '—' : String(value);
+            tr.appendChild(td);
+          });
+          tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+        tableWrap.appendChild(table);
+        tableInfo.textContent = `Detected rows table: ${rows.length} rows, ${columns.length} columns.`;
+      } catch (error) {
+        tableViewBtn.disabled = true;
+        tableInfo.textContent = 'Rows array was detected, but parsing failed.';
+      }
+    }
+
+    function showContent(text, label) {
+      previewCard.classList.remove('hidden');
+      output.innerHTML = escapeHtml(text);
+      meta.textContent = label;
+      tryBuildTable(text);
+      setView('raw');
+    }
+
+    function readFile(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        showContent(String(reader.result), `${file.name} • ${file.size} bytes`);
+      };
+      reader.readAsText(file);
+    }
+
+    fileInput.addEventListener('change', (event) => {
+      readFile(event.target.files[0]);
+    });
+
+    dropzone.addEventListener('dragover', (event) => {
+      event.preventDefault();
+      dropzone.classList.add('dragover');
+    });
+
+    dropzone.addEventListener('dragleave', () => {
+      dropzone.classList.remove('dragover');
+    });
+
+    dropzone.addEventListener('drop', (event) => {
+      event.preventDefault();
+      dropzone.classList.remove('dragover');
+      const file = event.dataTransfer.files[0];
+      readFile(file);
+    });
+
+    showPastedBtn.addEventListener('click', () => {
+      const text = pasteArea.value.trim();
+      if (!text) return;
+      showContent(text, 'Pasted JSX content');
+    });
+
+    pasteClipboardBtn.addEventListener('click', async () => {
+      try {
+        const text = await navigator.clipboard.readText();
+        if (!text.trim()) return;
+        pasteArea.value = text;
+        showContent(text, 'Clipboard JSX content');
+      } catch (error) {
+        alert('Clipboard access was blocked by the browser. Paste into the text box instead.');
+      }
+    });
+
+    clearBtn.addEventListener('click', () => {
+      fileInput.value = '';
+      pasteArea.value = '';
+      output.textContent = '';
+      meta.textContent = '';
+      tableWrap.innerHTML = '';
+      tableInfo.textContent = '';
+      previewCard.classList.add('hidden');
+    });
+  </script>
+</body>
+</html>

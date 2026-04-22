@@ -51,6 +51,10 @@ Commits must follow Conventional Commits with one of these prefixes:
 
 Optional scopes are allowed.
 
+Plain-English commit headers without an explicit type are automatically rewritten to `chore: <your message>` by the `commit-msg` hook.
+
+Headers that already use an explicit but unsupported type still fail validation so the intent stays unambiguous.
+
 ## Changelog Policy
 
 Every new version entry from `v0.3.3` forward must:
@@ -141,18 +145,24 @@ sh ./scripts/install-githooks.sh
 
 Installed hooks enforce:
 
-- `commit-msg` → Conventional Commits + required version bump magnitude
-- `pre-commit` → task docs TOC check + staged version/changelog metadata presence check
+- `commit-msg` → auto-normalize plain commit headers to `chore:` + auto-prepare/auto-stage version metadata when needed + required version bump magnitude
+- `pre-commit` → task docs TOC check
 
 ## Expected Developer Workflow
 
 1. Make the intended repository change.
-2. Run `node scripts/version_guard.mjs prepare --message "<your commit message>"`.
-3. Edit the new changelog bullets so they accurately describe the change.
-4. Stage the modified files.
-5. Install hooks once if not already installed.
-6. Commit with the same Conventional Commit message used for preparation.
+2. Stage the intended files.
+3. Install hooks once if not already installed.
+4. Commit with either a Conventional Commit message or a plain-English subject line.
+5. Let the `commit-msg` hook auto-stage an already-prepared version set or generate the next version/changelog entry when it is missing.
+6. Optionally edit the generated changelog bullets before retrying the commit if you want richer release notes than `- None`.
 7. Optionally run `npm test`.
+
+If you prefer to prepare the version entry yourself before committing, this still works:
+
+```bash
+node scripts/version_guard.mjs prepare --message "fix: example"
+```
 
 ## Notes
 
