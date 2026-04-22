@@ -5,6 +5,7 @@ Use this file to find the smallest set of repo files needed for a button audit.
 ## Canonical Workflow
 
 - `docs/button_verification_workflow/BUTTON_VERIFICATION_WORKFLOW.md`
+- `docs/button_verification_workflow/BUTTON_VERIFICATION_ACCELERATION_LAYER.md`
 
 ## View A Init
 

@@ -4,6 +4,22 @@ This file describes what to keep updating so repeated button audits get faster o
 
 ## Keep These Artifacts Current
 
+## Conditional Delegation Policy
+
+Use subagents as a reusable acceleration pattern, not a mandatory ritual.
+
+Promote delegation into the normal workflow when:
+
+- audits are being run in batches
+- the same discovery shape repeats
+- one explorer can gather evidence while the main agent handles live execution
+
+Keep the audit single-agent when:
+
+- the button is small and direct
+- the main blocker is a live endpoint result
+- the coordination cost would exceed the search cost
+
 ### Audit index
 
 File:

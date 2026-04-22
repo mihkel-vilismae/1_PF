@@ -17,6 +17,16 @@ Before starting a new button audit:
 
 Keep the main agent on the critical path and delegate only bounded sidecar work.
 
+### Standard trigger rule
+
+Make subagents a standard optional part of the workflow when at least one of these is true:
+
+- the current task is a batch of repeated button audits
+- there are `2+` independent read-only discovery tasks
+- there is one isolated patch task that can be owned by a separate worker without touching the main agent's files
+
+Do not default to subagents for every single audit. For one small button with no discovery bottleneck, the main agent should usually stay single-threaded.
+
 ### Good low-cost delegated subtasks
 
 - locate the rendered control, `data-action`, and inspect metadata files
@@ -40,6 +50,11 @@ Use this only when the active environment supports delegated agents and the user
 
 Best for a smaller, cheaper explorer agent.
 
+Recommended skill use:
+
+- use `$button-workflow-verification`
+- for View A specific actions, also use `$view-a-init-reconciliation` when current-truth docs or View A contradictions matter
+
 Ownership:
 
 - read-only file discovery
@@ -60,6 +75,11 @@ Expected output:
 
 Best for a smaller explorer agent.
 
+Recommended skill use:
+
+- use `$button-workflow-verification`
+- for View A actions, include `$view-a-init-reconciliation` when route truth and doc alignment are part of the question
+
 Ownership:
 
 - backend route existence
@@ -77,6 +97,10 @@ Expected output:
 ### Test patch pass
 
 Best for a smaller worker agent when the write scope is isolated.
+
+Recommended skill use:
+
+- use `$button-workflow-verification`
 
 Ownership:
 
@@ -98,6 +122,11 @@ Ownership:
 - report integration
 - follow-up prioritization
 
+Recommended skill use:
+
+- use `$button-workflow-verification`
+- add a view-specific skill only when the audited button clearly belongs to that narrower domain
+
 ## Recommended Model Tiering
 
 When smaller model options are available in the active Codex environment, they are usually enough for:
@@ -117,6 +146,8 @@ Reserve the stronger main agent for:
 - final writeup
 
 In the current Codex environment, good candidates for those smaller delegated passes are mini explorer or mini worker configurations such as `gpt-5.4-mini` or `gpt-5.1-codex-mini` when available.
+
+Use those smaller tiers for discovery and isolated drafting, not for the final truth call.
 
 ## Compounding Reuse Assets
 

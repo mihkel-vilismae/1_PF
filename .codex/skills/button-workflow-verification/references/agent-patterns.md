@@ -13,12 +13,22 @@ Keep the main agent responsible for the critical path:
 
 Delegate only bounded sidecar work.
 
+Make delegation standard only when it clearly reduces latency:
+
+- repeated audit batch
+- `2+` independent discovery subtasks
+- one isolated worker-owned patch
+
+Do not default to subagents for every button.
+
 ## Pattern A - File Locator Explorer
 
 Recommended use:
 
 - explorer role
 - smaller model tier when available
+- use `$button-workflow-verification`
+- for View A actions, add `$view-a-init-reconciliation` when doc alignment or View A truth is part of the task
 
 Ask it to find:
 
@@ -42,6 +52,8 @@ Recommended use:
 
 - explorer role
 - smaller model tier when available
+- use `$button-workflow-verification`
+- for View A actions, add `$view-a-init-reconciliation` when current-truth routing matters
 
 Ask it to find:
 
@@ -64,6 +76,7 @@ Recommended use:
 
 - worker role
 - smaller model tier when available
+- use `$button-workflow-verification`
 
 Safe ownership:
 
@@ -82,6 +95,7 @@ Recommended use:
 
 - worker role
 - smaller model tier when available
+- use `$button-workflow-verification`
 
 Ask it to produce:
 

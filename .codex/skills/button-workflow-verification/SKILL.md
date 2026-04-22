@@ -78,6 +78,12 @@ When the user explicitly wants delegation or subagents are otherwise appropriate
 - use smaller worker agents only for isolated patches such as one new test file or one draft report skeleton
 - avoid overlapping write ownership
 
+Make this the standard conditional rule:
+
+- use subagents for repeated audit batches or when there are `2+` independent sidecar tasks
+- stay single-agent for small one-button audits without a discovery bottleneck
+- never hand off the final truth classification to a smaller delegated agent
+
 Use `references/agent-patterns.md` for concrete delegation splits.
 
 ## Fix Order

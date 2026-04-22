@@ -564,6 +564,22 @@ Any deviation must be explicitly justified.
 
 For repeated button audits, also use `docs/button_verification_workflow/BUTTON_VERIFICATION_ACCELERATION_LAYER.md`.
 
+Subagents should be treated as a standard conditional optimization, not a mandatory step for every audit.
+
+Use them when:
+
+\* the audit is part of a repeated batch
+
+\* there are two or more independent sidecar tasks such as file discovery, route lookup, existing-test discovery, or isolated test drafting
+
+\* discovery work would otherwise slow down the main audit path
+
+Do not make them mandatory when:
+
+\* the audit is a small single-button pass with no discovery bottleneck
+
+\* the main agent is immediately blocked on a live run or contradiction judgment
+
 That companion layer defines:
 
 \* when to reuse existing button reports before starting a new audit
