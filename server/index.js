@@ -17,6 +17,7 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
+const generatedTestDataDirectory = path.join(repoRoot, 'generated_test_data');
 const defaultEnvFilePath = path.join(repoRoot, '.env');
 const sqliteScriptPath = path.join(__dirname, 'scripts', 'sqlite_admin.py');
 const windowsTaskSchedulerScriptPath = path.join(__dirname, 'scripts', 'windows_task_scheduler.ps1');
@@ -635,80 +636,85 @@ async function getRuntimeTruthHandler() {
 async function runtimeDownloadRunHandler({ context }) {
   const envValues = context.envValues;
   const downloadDirectory = resolveRepoPath(envValues.DOWNLOAD_DIR || '');
-  const cookieDirectory = resolveRepoPath(envValues.ICLOUDPD_COOKIE_DIR || '');
-  const recentDownloadCount = Number(envValues.DOWNLOAD_RECENT);
-  if (!Number.isInteger(recentDownloadCount) || recentDownloadCount <= 0) {
-    throw new HttpError(400, 'invalid_download_recent', 'DOWNLOAD_RECENT must be a positive integer.', {
-      value: envValues.DOWNLOAD_RECENT,
-    });
-  }
+  const sourceDirectory = resolveRepoPath(envValues.MOCK_DOWNLOAD_SOURCE_DIR || generatedTestDataDirectory);
+  const sourceLabel = envValues.MOCK_DOWNLOAD_SOURCE_DIR ? 'configured mock download source' : 'generated_test_data';
 
   await fs.mkdir(downloadDirectory, { recursive: true });
-  await fs.mkdir(cookieDirectory, { recursive: true });
   const mediaFilesBefore = await collectSupportedMediaFiles(downloadDirectory);
   const executedAt = new Date().toISOString();
-  const downloadCommand = envValues.ICLOUDPD_COMMAND || 'icloudpd';
-  const args = [
-    '--username',
-    envValues.user,
-    '--password',
-    envValues.pw,
-    '--directory',
-    downloadDirectory,
-    '--cookie-directory',
-    cookieDirectory,
-    '--recent',
-    String(recentDownloadCount),
-  ];
 
-  let result;
+  let sourceStats;
   try {
-    result = await runProcess(downloadCommand, args, { shell: process.platform === 'win32' });
+    sourceStats = await fs.stat(sourceDirectory);
   } catch (error) {
-    if (error && error.code === 'ENOENT') {
-      throw new HttpError(503, 'download_dependency_missing', 'icloudpd is not installed or not available on PATH.', {
-        command: downloadCommand,
+    if (error?.code === 'ENOENT') {
+      throw new HttpError(500, 'download_source_missing', 'Mock download source directory does not exist.', {
+        sourceDirectory,
+        sourceLabel,
       });
     }
-    throw new HttpError(500, 'download_worker_spawn_failed', 'Failed to start the download worker process.', {
-      command: downloadCommand,
+    throw new HttpError(500, 'download_source_stat_failed', 'Failed to inspect the mock download source directory.', {
+      sourceDirectory,
       message: error.message,
     });
   }
 
-  if (result.code !== 0) {
-    throw new HttpError(502, 'download_worker_failed', 'Download worker exited with a non-zero status code.', {
-      command: downloadCommand,
-      exitCode: result.code,
-      stdout: previewLog(result.stdout),
-      stderr: previewLog(result.stderr),
+  if (!sourceStats.isDirectory()) {
+    throw new HttpError(500, 'download_source_not_directory', 'Mock download source path must be a directory.', {
+      sourceDirectory,
+      sourceLabel,
+    });
+  }
+
+  const sourceFiles = await collectRegularFiles(sourceDirectory);
+  if (!sourceFiles.length) {
+    throw new HttpError(500, 'download_source_empty', 'Mock download source directory does not contain any files to copy.', {
+      sourceDirectory,
+      sourceLabel,
+    });
+  }
+
+  const copyResult = await copyMockDownloadFiles({
+    sourceFiles,
+    sourceRoot: sourceDirectory,
+    destinationRoot: downloadDirectory,
+  });
+  if (copyResult.copiedCount === 0) {
+    throw new HttpError(500, 'mock_download_copy_failed', 'Mock download could not copy any files into the destination directory.', {
+      sourceDirectory,
+      downloadDirectory,
+      sourceFileCount: sourceFiles.length,
+      failures: copyResult.failedCopies,
     });
   }
 
   const mediaFilesAfter = await collectSupportedMediaFiles(downloadDirectory);
   const previous = new Set(mediaFilesBefore);
   const newMediaFiles = mediaFilesAfter.filter((candidate) => !previous.has(candidate));
+  const hasFailedCopies = copyResult.failedCopies.length > 0;
+  const summaryMessage = hasFailedCopies
+    ? `Mock download copied ${copyResult.copiedCount} file(s) from ${sourceLabel}; ${copyResult.failedCopies.length} file(s) failed to copy.`
+    : `Mock download copied ${copyResult.copiedCount} file(s) from ${sourceLabel} into the test download directory.`;
 
   return {
     statusCode: 200,
     payload: {
-      status: 'ok',
-      messages: [
-        `Download worker completed successfully and detected ${newMediaFiles.length} new media file(s).`,
-      ],
+      status: hasFailedCopies ? 'warning' : 'ok',
+      messages: [summaryMessage],
       stage: 'stage1_auth_download',
       download: {
-        command: downloadCommand,
-        args: redactSensitiveArgs(args),
-        exitCode: result.code,
-        recentDownloadCount,
+        mode: 'generated_test_data_copy',
+        sourceLabel,
+        sourceDirectory,
+        sourceFileCount: sourceFiles.length,
         downloadDirectory,
-        cookieDirectory,
+        copiedFiles: copyResult.copiedCount,
+        failedFiles: copyResult.failedCopies.length,
+        copiedRelativePathSample: copyResult.copiedRelativePaths.slice(0, 20),
+        failedCopies: copyResult.failedCopies.slice(0, 20),
         mediaFilesBefore: mediaFilesBefore.length,
         mediaFilesAfter: mediaFilesAfter.length,
         newMediaFiles: newMediaFiles.length,
-        stdout: previewLog(result.stdout),
-        stderr: previewLog(result.stderr),
       },
       schemaVersion: 1,
       executedAt,
@@ -1491,6 +1497,13 @@ async function collectSupportedMediaFiles(rootDirectory) {
   return files;
 }
 
+async function collectRegularFiles(rootDirectory) {
+  const files = [];
+  await collectRegularFilesRecursive(rootDirectory, files);
+  files.sort();
+  return files;
+}
+
 async function collectSupportedMediaFilesRecursive(directoryPath, sink) {
   let entries;
   try {
@@ -1517,22 +1530,44 @@ async function collectSupportedMediaFilesRecursive(directoryPath, sink) {
   }
 }
 
-function previewLog(value) {
-  if (typeof value !== 'string' || value.trim() === '') {
-    return null;
-  }
-  const trimmed = value.trim();
-  return trimmed.length <= 2000 ? trimmed : `${trimmed.slice(0, 2000)}...`;
-}
-
-function redactSensitiveArgs(args) {
-  const redacted = [...args];
-  for (let index = 0; index < redacted.length; index += 1) {
-    if (redacted[index] === '--password' && index + 1 < redacted.length) {
-      redacted[index + 1] = '***redacted***';
+async function collectRegularFilesRecursive(directoryPath, sink) {
+  const entries = await fs.readdir(directoryPath, { withFileTypes: true });
+  for (const entry of entries) {
+    const absolutePath = path.join(directoryPath, entry.name);
+    if (entry.isDirectory()) {
+      await collectRegularFilesRecursive(absolutePath, sink);
+      continue;
+    }
+    if (entry.isFile()) {
+      sink.push(absolutePath);
     }
   }
-  return redacted;
+}
+
+async function copyMockDownloadFiles({ sourceFiles, sourceRoot, destinationRoot }) {
+  const copiedRelativePaths = [];
+  const failedCopies = [];
+
+  for (const sourceFile of sourceFiles) {
+    const relativePath = path.relative(sourceRoot, sourceFile);
+    const destinationFile = path.join(destinationRoot, relativePath);
+    try {
+      await fs.mkdir(path.dirname(destinationFile), { recursive: true });
+      await fs.copyFile(sourceFile, destinationFile);
+      copiedRelativePaths.push(relativePath);
+    } catch (error) {
+      failedCopies.push({
+        relativePath,
+        message: error.message,
+      });
+    }
+  }
+
+  return {
+    copiedCount: copiedRelativePaths.length,
+    copiedRelativePaths,
+    failedCopies,
+  };
 }
 
 function ensureConfirmed(body, expectedAction) {

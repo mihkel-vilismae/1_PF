@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
-import { access, chmod, mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { access, mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import net from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
@@ -13,11 +13,14 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'
 const serverEntryPath = path.join(repoRoot, 'server', 'index.js');
 const schemaPath = path.join(repoRoot, 'schema.sql');
 
-test('POST /api/runtime/download/run succeeds with icloudpd on PATH and writes one image', async () => {
+test('POST /api/runtime/download/run copies mock download files from configured source directory', async () => {
   await withRuntimeServer(
     {
-      fakeIcloudPd: true,
       schemaDb: false,
+      mockSourceFiles: [
+        { relativePath: 'gps/sample-a.jpg', contents: 'mock gps image payload' },
+        { relativePath: 'plain/sample-b.txt', contents: 'mock plain payload' },
+      ],
     },
     async ({ port, downloadDir }) => {
       const response = await requestJson(port, '/api/runtime/download/run', {
@@ -25,23 +28,27 @@ test('POST /api/runtime/download/run succeeds with icloudpd on PATH and writes o
         body: {},
       });
 
-      assert.ok(['ok', 'success'].includes(response.json?.status), `unexpected status: ${response.json?.status}`);
+      assert.ok(['ok', 'warning'].includes(response.json?.status), `unexpected status: ${response.json?.status}`);
       assert.ok(response.status < 400, `expected a successful HTTP response, got ${response.status}`);
+      assert.equal(response.json.download?.mode, 'generated_test_data_copy');
+      assert.equal(response.json.download?.sourceFileCount, 2);
+      assert.equal(response.json.download?.copiedFiles, 2);
 
-      const downloadedFile = path.join(downloadDir, 'fake-icloudpd-download.jpg');
-      await access(downloadedFile);
-      const fileContents = await readFile(downloadedFile, 'utf8');
-      assert.match(fileContents, /fake icloudpd download/i);
+      const copiedImage = path.join(downloadDir, 'gps', 'sample-a.jpg');
+      const copiedText = path.join(downloadDir, 'plain', 'sample-b.txt');
+      await access(copiedImage);
+      await access(copiedText);
+      assert.match(await readFile(copiedImage, 'utf8'), /mock gps image payload/i);
+      assert.match(await readFile(copiedText, 'utf8'), /mock plain payload/i);
     },
   );
 });
 
-test('POST /api/runtime/download/run reports blocked/error when icloudpd is missing', async () => {
+test('POST /api/runtime/download/run reports a handled error when mock source directory is missing', async () => {
   await withRuntimeServer(
     {
-      fakeIcloudPd: false,
-      missingIcloudPd: true,
       schemaDb: false,
+      mockSourceMissing: true,
     },
     async ({ port }) => {
       const response = await requestJson(port, '/api/runtime/download/run', {
@@ -49,8 +56,9 @@ test('POST /api/runtime/download/run reports blocked/error when icloudpd is miss
         body: {},
       });
 
-      assert.ok(['blocked', 'error'].includes(response.json?.status), `unexpected status: ${response.json?.status}`);
-      assert.notEqual(response.status, 404, 'expected a handled endpoint response, not a missing route');
+      assert.equal(response.status, 500);
+      assert.equal(response.json?.status, 'error');
+      assert.equal(response.json?.error, 'download_source_missing');
     },
   );
 });
@@ -58,7 +66,6 @@ test('POST /api/runtime/download/run reports blocked/error when icloudpd is miss
 test('POST /api/runtime/index/run bootstraps schema on a fresh repo-managed DB', async () => {
   await withRuntimeServer(
     {
-      fakeIcloudPd: false,
       schemaDb: false,
     },
     async ({ port, dbPath, downloadDir }) => {
@@ -99,9 +106,7 @@ test('POST /api/runtime/index/run bootstraps schema on a fresh repo-managed DB',
 test('POST /api/runtime/index/run indexes downloaded media into canonical tables idempotently', async () => {
   await withRuntimeServer(
     {
-      fakeIcloudPd: false,
       schemaDb: true,
-      keepOriginalPath: true,
     },
     async ({ port, dbPath, downloadDir }) => {
       const response1 = await requestJson(port, '/api/runtime/index/run', {
@@ -162,7 +167,7 @@ async function withRuntimeServer(options, run) {
   const downloadDir = path.join(workspaceRoot, 'downloads');
   const logDir = path.join(workspaceRoot, 'logs');
   const cookieDir = path.join(workspaceRoot, 'cookies');
-  const fakeBinDir = path.join(workspaceRoot, 'bin');
+  const mockSourceDir = path.join(workspaceRoot, 'mock-download-source');
   const envFilePath = path.join(workspaceRoot, 'waveb.test.env');
   const dbPath = path.join(dbDir, 'waveb-test.sqlite');
 
@@ -171,10 +176,16 @@ async function withRuntimeServer(options, run) {
     mkdir(downloadDir, { recursive: true }),
     mkdir(logDir, { recursive: true }),
     mkdir(cookieDir, { recursive: true }),
-    mkdir(fakeBinDir, { recursive: true }),
   ]);
 
-  const fakeIcloudPdPath = options.fakeIcloudPd ? fakeIcloudPdCommandPath(fakeBinDir) : null;
+  if (!options.mockSourceMissing) {
+    await mkdir(mockSourceDir, { recursive: true });
+    for (const file of options.mockSourceFiles ?? []) {
+      const target = path.join(mockSourceDir, file.relativePath);
+      await mkdir(path.dirname(target), { recursive: true });
+      await writeFile(target, file.contents, 'utf8');
+    }
+  }
 
   await writeFile(
     envFilePath,
@@ -183,7 +194,7 @@ async function withRuntimeServer(options, run) {
       dbPath,
       logDir,
       cookieDir,
-      icloudpdCommand: fakeIcloudPdPath,
+      mockDownloadSourceDir: mockSourceDir,
     }),
     'utf8',
   );
@@ -194,22 +205,13 @@ async function withRuntimeServer(options, run) {
     await writeFile(path.join(downloadDir, 'beta.jpg'), 'beta image payload', 'utf8');
   }
 
-  if (options.fakeIcloudPd) {
-    await writeFile(fakeIcloudPdPath, buildFakeIcloudPdScript(), 'utf8');
-    await chmod(fakeIcloudPdPath, 0o755);
-  }
-
   const child = spawn(process.execPath, [serverEntryPath], {
     cwd: repoRoot,
     env: {
       ...process.env,
       PORT: String(port),
       INIT_ENV_FILE: envFilePath,
-      PATH: options.fakeIcloudPd
-        ? `${fakeBinDir}${path.delimiter}${process.env.PATH || process.env.Path || ''}`
-        : options.missingIcloudPd
-          ? fakeOnlyPath()
-          : (process.env.PATH || process.env.Path || ''),
+      PATH: process.env.PATH || process.env.Path || '',
     },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
@@ -268,58 +270,7 @@ async function readIndexCounts(dbPath) {
   };
 }
 
-function fakeOnlyPath() {
-  return path.join(os.tmpdir(), 'pf-empty-path');
-}
-
-function fakeIcloudPdCommandPath(fakeBinDir) {
-  return path.join(fakeBinDir, process.platform === 'win32' ? 'icloudpd.cmd' : 'icloudpd');
-}
-
-function buildFakeIcloudPdScript() {
-  if (process.platform === 'win32') {
-    return `@echo off
-setlocal EnableDelayedExpansion
-set "TARGET="
-:next
-if "%~1"=="" goto done
-if /I "%~1"=="--directory" (
-  set "TARGET=%~2"
-  shift
-)
-shift
-goto next
-:done
-if "%TARGET%"=="" (
-  set "TARGET=%CD%"
-)
-if not exist "%TARGET%" mkdir "%TARGET%"
-(
-  echo fake icloudpd download
-) > "%TARGET%\\fake-icloudpd-download.jpg"
-exit /b 0
-`;
-  }
-
-  return `#!/usr/bin/env sh
-TARGET=""
-while [ "$#" -gt 0 ]; do
-  if [ "$1" = "--directory" ]; then
-    TARGET=$2
-    shift
-  fi
-  shift
-done
-if [ -z "$TARGET" ]; then
-  TARGET=$PWD
-fi
-mkdir -p "$TARGET"
-printf 'fake icloudpd download
-' > "$TARGET/fake-icloudpd-download.jpg"
-`;
-}
-
-function buildEnvFile({ downloadDir, dbPath, logDir, cookieDir, icloudpdCommand }) {
+function buildEnvFile({ downloadDir, dbPath, logDir, cookieDir, mockDownloadSourceDir }) {
   return [
     'user=test@example.com',
     'pw=super-secret-password',
@@ -327,7 +278,7 @@ function buildEnvFile({ downloadDir, dbPath, logDir, cookieDir, icloudpdCommand 
     `DB_PATH=${dbPath}`,
     `LOG_DIR=${logDir}`,
     `ICLOUDPD_COOKIE_DIR=${cookieDir}`,
-    ...(icloudpdCommand ? [`ICLOUDPD_COMMAND=${icloudpdCommand}`] : []),
+    `MOCK_DOWNLOAD_SOURCE_DIR=${mockDownloadSourceDir}`,
     'DOWNLOAD_RECENT=7',
     'GEOCODE_LANGUAGE=en',
     'GEOCODE_BATCH_SIZE=25',

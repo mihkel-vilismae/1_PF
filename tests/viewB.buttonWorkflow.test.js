@@ -41,7 +41,7 @@ test('B2, B3 auto, and B4 actions call backend endpoints and update runtime trut
       return new Response(
         JSON.stringify({
           status: 'ok',
-          messages: ['Download worker completed successfully and detected 1 new media file(s).'],
+          messages: ['Mock download copied 1 file(s) from generated_test_data into the test download directory.'],
           download: { newMediaFiles: 1 },
           schemaVersion: 1,
         }),
@@ -146,7 +146,7 @@ test('B2, B3 auto, and B4 actions call backend endpoints and update runtime trut
 
     behavior.runAction('run-b2');
     await waitFor(() => harness.state.statusByKey.B2 === 'success');
-    assert.equal(harness.state.logs.B2[0]?.message.includes('Download worker completed successfully'), true);
+    assert.equal(harness.state.logs.B2[0]?.message.includes('Mock download copied 1 file(s)'), true);
 
     behavior.runAction('run-b3-auto');
     await waitFor(() => harness.state.statusByKey.B3 === 'success');

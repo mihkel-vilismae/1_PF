@@ -9,9 +9,9 @@
 
 ## Final Classification
 
-`⚠️ Partial`
+`✅ Works`
 
-Root cause: backend route is real and functional, but stage behavior uses `icloudpd` worker semantics instead of authoritative generated-test-data mock-download semantics for test flow.
+Result: backend route is real and now uses the authoritative generated-test-data mock-download semantics for the test flow.
 
 ## Workflow Result
 
@@ -21,7 +21,7 @@ Root cause: backend route is real and functional, but stage behavior uses `iclou
 | 2. Frontend Wiring | Pass | `runtimeTruthBehavior.js:118` maps `run-b3-1` to backend stage call. | Correct action map. |
 | 3. Frontend -> Backend Call | Pass | `runtimeExecutionService.js:4,12-13` -> `POST /api/runtime/download/run`. | Request contract is explicit. |
 | 4. Backend Endpoint Existence | Pass | `server/index.js:122,635` route + handler present. | Route exists. |
-| 5. Backend Logic Execution | Partial | Endpoint runs and passes tests (`waveB.step3`, `waveD.e2e`) but not with authoritative mock-download source model. | Spec mismatch remains. |
+| 5. Backend Logic Execution | Pass | Endpoint runs and passes tests (`waveB.step3`, `waveD.e2e`) with generated-test-data copy semantics. | Spec-aligned behavior is implemented. |
 | 6. Response Handling (Frontend) | Pass | `runBackendPipelineStage()` and `runBackendAction()` update status/log/history (`runtimeTruthDemoActions.js:257-293`, `:158-231`). | Stage feedback is visible. |
 | 7. Mock / Reality Validation | Pass | `guideCopy.json:255-258` marks B3.1 real. | Matches implementation. |
 | 8. Inspect System Alignment | Pass | Inspect metadata is aligned for B3.1. | No metadata drift for this control. |

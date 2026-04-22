@@ -13,9 +13,9 @@ Merged spec requires B mock-download behavior to use generated test data as sour
 
 ## Final Classification
 
-`⚠️ Partial`
+`✅ Works`
 
-Root cause: endpoint is real and wired, but current backend executes `icloudpd` download workflow (`server/index.js:650-667`) instead of the authoritative generated-test-data copy model.
+Result: endpoint is real and now implements the authoritative generated-test-data mock-download copy model.
 
 ## Workflow Result
 
@@ -25,10 +25,10 @@ Root cause: endpoint is real and wired, but current backend executes `icloudpd` 
 | 2. Frontend Wiring | Pass | `dashboard/app.js:260-308`; `runtimeTruthBehavior.js:117` maps `run-b2` to backend action. | Wiring is correct. |
 | 3. Frontend -> Backend Call | Pass | `dashboard/services/runtimeExecutionService.js:4,12-13` uses `POST /api/runtime/download/run`. | Method/path match implementation. |
 | 4. Backend Endpoint Existence | Pass | `server/index.js:122,635` defines route + handler. | Route exists. |
-| 5. Backend Logic Execution | Partial | Endpoint runs successfully in tests (`tests/waveB.step3.test.js:16-37`, `tests/waveD.e2e.test.js:60-71`). | Execution is real, but behavior diverges from authoritative mock-download source requirement. |
+| 5. Backend Logic Execution | Pass | Endpoint runs successfully with generated-test-data copy semantics in tests (`tests/waveB.step3.test.js`, `tests/waveD.e2e.test.js`). | Execution and source model now match authoritative intent. |
 | 6. Response Handling (Frontend) | Pass | `runtimeTruthDemoActions.js:158-231` `runBackendAction()` updates status/log/history. | Operator gets backend result summary. |
 | 7. Mock / Reality Validation | Pass | `guideCopy.json:251-254` marks `run-b2` real. | Matches current implementation. |
-| 8. Inspect System Alignment | Pass | Metadata aligns with current endpoint wiring. | Authoritative-spec mismatch remains. |
+| 8. Inspect System Alignment | Pass | Metadata aligns with current endpoint wiring. | No inspect drift for this control. |
 | 9. Test Coverage | Pass | Backend covered by `waveB.step3`, `waveD.e2e`; frontend action path covered by `tests/viewB.buttonWorkflow.test.js`. | Evidence is strong. |
 
 ## Registry Update

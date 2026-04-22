@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
-import { access, chmod, mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { access, mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import net from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
@@ -264,17 +264,16 @@ async function withWaveDServer(run) {
   const downloadDir = path.join(workspaceRoot, 'downloads');
   const logDir = path.join(workspaceRoot, 'logs');
   const cookieDir = path.join(workspaceRoot, 'cookies');
-  const fakeBinDir = path.join(workspaceRoot, 'bin');
+  const mockDownloadSourceDir = path.join(workspaceRoot, 'mock-download-source');
   const envFilePath = path.join(workspaceRoot, 'waved.test.env');
   const dbPath = path.join(dbDir, 'waved-test.sqlite');
-  const fakeIcloudPdPath = buildFakeIcloudPdCommandPath(fakeBinDir);
 
   await Promise.all([
     mkdir(dbDir, { recursive: true }),
     mkdir(downloadDir, { recursive: true }),
     mkdir(logDir, { recursive: true }),
     mkdir(cookieDir, { recursive: true }),
-    mkdir(fakeBinDir, { recursive: true }),
+    mkdir(mockDownloadSourceDir, { recursive: true }),
   ]);
 
   await writeFile(
@@ -284,12 +283,12 @@ async function withWaveDServer(run) {
       dbPath,
       logDir,
       cookieDir,
-      icloudpdCommand: fakeIcloudPdPath,
+      mockDownloadSourceDir,
     }),
     'utf8',
   );
 
-  await installFakeIcloudPd(fakeBinDir);
+  await installMockDownloadSource(mockDownloadSourceDir);
 
   const child = spawn(process.execPath, [serverEntryPath], {
     cwd: repoRoot,
@@ -297,7 +296,7 @@ async function withWaveDServer(run) {
       ...process.env,
       PORT: String(port),
       INIT_ENV_FILE: envFilePath,
-      PATH: `${fakeBinDir}${path.delimiter}${process.env.PATH || process.env.Path || ''}`,
+      PATH: process.env.PATH || process.env.Path || '',
     },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
@@ -337,34 +336,17 @@ async function withWaveDServer(run) {
   }
 }
 
-async function installFakeIcloudPd(fakeBinDir) {
-  const pythonScriptPath = path.join(fakeBinDir, 'fake_icloudpd.py');
-  await writeFile(pythonScriptPath, buildFakeIcloudPdPythonScript(), 'utf8');
-
-  if (process.platform === 'win32') {
-    const commandPath = path.join(fakeBinDir, 'icloudpd.cmd');
-    await writeFile(
-      commandPath,
-      `@echo off\r\n${pythonCommand} "%~dp0fake_icloudpd.py" %*\r\n`,
-      'utf8',
-    );
-    return;
+async function installMockDownloadSource(mockDownloadSourceDir) {
+  const pythonScriptPath = path.join(mockDownloadSourceDir, 'seed_mock_download_source.py');
+  await writeFile(pythonScriptPath, buildMockDownloadSourcePythonScript(), 'utf8');
+  const result = spawnSync(pythonCommand, [pythonScriptPath, mockDownloadSourceDir], { encoding: 'utf8' });
+  await rm(pythonScriptPath, { force: true });
+  if (result.status !== 0) {
+    throw new Error(`Failed to seed mock download source.\nstdout:\n${result.stdout ?? ''}\nstderr:\n${result.stderr ?? ''}`);
   }
-
-  const commandPath = path.join(fakeBinDir, 'icloudpd');
-  await writeFile(
-    commandPath,
-    `#!/usr/bin/env sh\n${pythonCommand} "$(dirname "$0")/fake_icloudpd.py" "$@"\n`,
-    'utf8',
-  );
-  await chmod(commandPath, 0o755);
 }
 
-function buildFakeIcloudPdCommandPath(fakeBinDir) {
-  return path.join(fakeBinDir, process.platform === 'win32' ? 'icloudpd.cmd' : 'icloudpd');
-}
-
-function buildFakeIcloudPdPythonScript() {
+function buildMockDownloadSourcePythonScript() {
   return `
 import json
 import os
@@ -402,15 +384,7 @@ def create_plain_image(target_path):
     Image.new('RGB', (16, 16), (0, 255, 0)).save(target_path)
 
 def main():
-    target_directory = None
-    args = sys.argv[1:]
-    index = 0
-    while index < len(args):
-      if args[index] == '--directory' and index + 1 < len(args):
-        target_directory = args[index + 1]
-        index += 2
-        continue
-      index += 1
+    target_directory = sys.argv[1] if len(sys.argv) > 1 else os.getcwd()
     if not target_directory:
       target_directory = os.getcwd()
 
@@ -433,7 +407,7 @@ if __name__ == '__main__':
 `;
 }
 
-function buildEnvFile({ downloadDir, dbPath, logDir, cookieDir, icloudpdCommand }) {
+function buildEnvFile({ downloadDir, dbPath, logDir, cookieDir, mockDownloadSourceDir }) {
   return [
     'user=test@example.com',
     'pw=super-secret-password',
@@ -441,7 +415,7 @@ function buildEnvFile({ downloadDir, dbPath, logDir, cookieDir, icloudpdCommand 
     `DB_PATH=${dbPath}`,
     `LOG_DIR=${logDir}`,
     `ICLOUDPD_COOKIE_DIR=${cookieDir}`,
-    `ICLOUDPD_COMMAND=${icloudpdCommand}`,
+    `MOCK_DOWNLOAD_SOURCE_DIR=${mockDownloadSourceDir}`,
     'DOWNLOAD_RECENT=7',
     'GEOCODE_LANGUAGE=en',
     'GEOCODE_BATCH_SIZE=25',

@@ -261,20 +261,20 @@
       "reason": "Runs the real backend index stage."
     },
     "run-b3-3": {
-      "state": "mock",
-      "reason": "Runs a simulated GPS parsing stage; no live backend pipeline wiring exists here yet."
+      "state": "real",
+      "reason": "Runs the real backend GPS parsing stage."
     },
     "run-b3-4": {
-      "state": "mock",
-      "reason": "Runs a simulated geocode stage; no live backend pipeline wiring exists here yet."
+      "state": "real",
+      "reason": "Runs the real backend geocode stage, which currently uses the deterministic placeholder geocoder."
     },
     "run-b3-5": {
       "state": "real",
       "reason": "Runs the real backend queue-prepare stage."
     },
     "run-b3-auto": {
-      "state": "mock",
-      "reason": "Runs the full B3 sequence as a frontend-only simulated pipeline."
+      "state": "real",
+      "reason": "Runs the full B3 backend stage sequence (B3.1 through B3.5) with pipeline locking."
     },
     "run-b4": {
       "state": "real",
@@ -361,8 +361,8 @@
       "reason": "This button calls the real POST /api/runtime/download/run endpoint."
     },
     "run-b3-auto": {
-      "state": "missing",
-      "reason": "This auto pipeline is frontend-driven because the planned backend stage endpoints are not implemented here."
+      "state": "real",
+      "reason": "This auto pipeline now orchestrates real backend stage endpoints in sequence."
     },
     "run-b3-1": {
       "state": "real",
@@ -373,12 +373,12 @@
       "reason": "This stage now calls the real POST /api/runtime/index/run endpoint."
     },
     "run-b3-3": {
-      "state": "missing",
-      "reason": "This stage is meant to be backend-backed later, but currently no real endpoint/response exists here."
+      "state": "real",
+      "reason": "This stage now calls the real POST /api/runtime/gps/run endpoint."
     },
     "run-b3-4": {
-      "state": "missing",
-      "reason": "This stage is meant to be backend-backed later, but currently no real endpoint/response exists here."
+      "state": "real",
+      "reason": "This stage now calls the real POST /api/runtime/geocode/run endpoint."
     },
     "run-b3-5": {
       "state": "real",

@@ -188,6 +188,36 @@ test('backend status inspect metadata keeps download action marked real', () => 
   assert.equal(meta.label, 'Real: Download 5 files');
 });
 
+test('backend status inspect metadata keeps B3 auto/GPS/geocode actions marked real', () => {
+  const { describeBackendStatusElement } = createBackendStatusMetadataHelpers({
+    getState: () => ({
+      initResults: { '1A': null, '2A': null, '3A': null },
+      databaseViewer: { results: {} },
+      logs: {},
+      history: [],
+      modal: null,
+    }),
+    getTransitHasLiveTraffic: () => false,
+  });
+
+  const actions = [
+    { action: 'run-b3-auto', label: 'Run all stages' },
+    { action: 'run-b3-3', label: 'Run GPS parsing' },
+    { action: 'run-b3-4', label: 'Run geocode stage' },
+  ];
+
+  for (const item of actions) {
+    const meta = describeBackendStatusElement(
+      fakeElement({
+        matches: ['.button, .db-object-button'],
+        dataset: { action: item.action },
+        textContent: item.label,
+      }),
+    );
+    assert.equal(meta.state, 'real');
+  }
+});
+
 test('backend status inspect metadata still reports Current truth values as frontend-backed mock state', () => {
   const { describeBackendStatusElement } = createBackendStatusMetadataHelpers({
     getState: () => ({

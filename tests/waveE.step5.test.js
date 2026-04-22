@@ -12,7 +12,6 @@ import test from 'node:test';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const serverEntryPath = path.join(repoRoot, 'server', 'index.js');
-const pythonCommand = process.platform === 'win32' ? 'python' : 'python3';
 
 async function reservePort() {
   const server = net.createServer();
@@ -40,7 +39,7 @@ async function requestJson(port, pathname, options = {}) {
   return { status: response.status, json };
 }
 
-function buildEnvFile({ downloadDir, dbPath, logDir, cookieDir, icloudpdCommand }) {
+function buildEnvFile({ downloadDir, dbPath, logDir, cookieDir, mockDownloadSourceDir }) {
   return [
     'user=test@example.com',
     'pw=super-secret-password',
@@ -48,7 +47,7 @@ function buildEnvFile({ downloadDir, dbPath, logDir, cookieDir, icloudpdCommand 
     `DB_PATH=${dbPath}`,
     `LOG_DIR=${logDir}`,
     `ICLOUDPD_COOKIE_DIR=${cookieDir}`,
-    `ICLOUDPD_COMMAND=${icloudpdCommand}`,
+    `MOCK_DOWNLOAD_SOURCE_DIR=${mockDownloadSourceDir}`,
     'DOWNLOAD_RECENT=7',
     'GEOCODE_LANGUAGE=en',
     'GEOCODE_BATCH_SIZE=25',
@@ -71,34 +70,34 @@ function buildEnvFile({ downloadDir, dbPath, logDir, cookieDir, icloudpdCommand 
   ].join('\n');
 }
 
-async function withOrchestrationServer({ fixtureFiles }, run) {
+async function withOrchestrationServer({ fixtureFiles, mockSourceMissing = false }, run) {
   // Create a temporary workspace
   const workspace = await mkdtemp(path.join(os.tmpdir(), 'waveE-step5-'));
   const port = await reservePort();
   const downloadDir = path.join(workspace, 'downloads');
+  const mockDownloadSourceDir = path.join(workspace, 'mock-download-source');
   const dbDir = path.join(workspace, 'db');
   const logDir = path.join(workspace, 'logs');
   const cookieDir = path.join(workspace, 'cookies');
   await Promise.all([
     mkdir(downloadDir, { recursive: true }),
+    ...(mockSourceMissing ? [] : [mkdir(mockDownloadSourceDir, { recursive: true })]),
     mkdir(dbDir, { recursive: true }),
     mkdir(logDir, { recursive: true }),
     mkdir(cookieDir, { recursive: true }),
   ]);
   const dbPath = path.join(dbDir, 'test.sqlite');
-  // Copy fixture files into the download directory
+  // Copy fixture files into the mock download source directory.
   for (const srcPath of fixtureFiles) {
     const fileName = path.basename(srcPath);
-    await cp(srcPath, path.join(downloadDir, fileName));
+    if (!mockSourceMissing) {
+      await cp(srcPath, path.join(mockDownloadSourceDir, fileName));
+    }
   }
-  // Create a fake icloudpd script that does nothing and exits 0
-  const fakeIcloudpdPath = path.join(workspace, 'fake_icloudpd.py');
-  const fakeScript = '#!/usr/bin/env python3\nimport sys\n# fake icloudpd script used in tests\n# ignore all args and exit successfully\n';
-  await writeFile(fakeIcloudpdPath, fakeScript, { encoding: 'utf8', mode: 0o755 });
   const envFilePath = path.join(workspace, '.env');
   await writeFile(
     envFilePath,
-    buildEnvFile({ downloadDir, dbPath, logDir, cookieDir, icloudpdCommand: fakeIcloudpdPath }),
+    buildEnvFile({ downloadDir, dbPath, logDir, cookieDir, mockDownloadSourceDir }),
     'utf8',
   );
   // Spawn the server
@@ -191,9 +190,7 @@ test('Wave E orchestrator success run', { timeout: 30000 }, async () => {
 });
 
 test('Wave E orchestrator controlled failure path', { timeout: 30000 }, async () => {
-  // Use a fixture with no GPS to trigger failure at playback_select
-  const plainFixture = path.join(repoRoot, 'generated_test_data', 'no_gps', 'no_gps_01.jpg');
-  await withOrchestrationServer({ fixtureFiles: [plainFixture] }, async ({ port }) => {
+  await withOrchestrationServer({ fixtureFiles: [], mockSourceMissing: true }, async ({ port }) => {
     // Reset the database
     const recreateResponse = await requestJson(port, '/api/init/database/recreate-empty', {
       method: 'POST',
@@ -212,14 +209,13 @@ test('Wave E orchestrator controlled failure path', { timeout: 30000 }, async ()
     const state = runResponse.json;
     // Validate failure state
     assert.equal(state.status, 'FAILED');
-    assert.equal(state.failed_stage, 'playback_select');
+    assert.equal(state.failed_stage, 'download');
     assert.ok(state.failure_reason);
     assert.equal(state.run_id >= 1, true);
     assert.ok(state.finished_at !== null);
-    // last_successful_stage should be queue_prepare or geocode depending on skipping
-    assert.ok(['geocode', 'queue_prepare'].includes(state.last_successful_stage));
-    // ensure later stages did not execute
-    assert.ok(!state.stage_results.playback_select);
+    assert.equal(state.last_successful_stage, null);
+    assert.deepEqual(state.stage_order_executed, ['download']);
+    assert.deepEqual(state.stage_results, {});
     // Verify current and last endpoints
     const currentResponse = await requestJson(port, '/api/runtime/orchestration/current');
     assert.equal(currentResponse.status, 200);
