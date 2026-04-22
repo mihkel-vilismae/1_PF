@@ -13,8 +13,14 @@ This document is a **fairly authoritative, evidence-first working reference** fo
 
 It is intentionally narrower than the broader architecture docs and more implementation-specific than the general audit docs.
 
+High-level authority note:
+
+- `docs/VOICE_AI_AUTHORITATIVE_SPEC_MERGED_2026-04-22.md` is the top-level authoritative behavior/intention document.
+- This file is a lower-level implementation/evidence map and must not override that authoritative spec.
+
 Use it together with:
 
+- `docs/VOICE_AI_AUTHORITATIVE_SPEC_MERGED_2026-04-22.md`
 - `docs/IMPLEMENTATION_STATUS_AUDIT.md`
 - `README.md` documentation reading order
 - the inspect metadata files under `dashboard/inspect/`

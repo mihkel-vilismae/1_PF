@@ -12,6 +12,14 @@ The system includes:
 
 This is a **partially implemented system** with a mix of real backend wiring and simulated behavior.
 
+## Authoritative Behavioral Spec (Top Priority)
+
+For high-level behavioral intent and requirement authority, use:
+
+- `docs/VOICE_AI_AUTHORITATIVE_SPEC_MERGED_2026-04-22.md`
+
+This is the highest-level authoritative behavior document in this repository. If wording conflicts with lower-level working docs, treat this spec as the source of truth unless explicitly superseded by a newer user-approved authority document.
+
 ## 2. Current System State
 
 The system is **not fully backend-complete**.
@@ -139,6 +147,7 @@ CHANGELOG.md      forward-only changelog
 ## 8. Documentation Map
 
 Key documentation entrypoints:
+- `docs/VOICE_AI_AUTHORITATIVE_SPEC_MERGED_2026-04-22.md` (highest-level behavior authority)
 - `docs/VERSIONING_AND_CHANGELOG_POLICY.md`
 - `docs/buttons_and_implementation_overview.md`
 - `docs/IMPLEMENTATION_STATUS_AUDIT.md`

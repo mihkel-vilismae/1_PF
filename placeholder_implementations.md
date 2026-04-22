@@ -1,5 +1,13 @@
 # Placeholder Implementation Audit
 
+## Authority Note
+
+For top-level behavioral intent and requirement authority, use:
+
+- `docs/VOICE_AI_AUTHORITATIVE_SPEC_MERGED_2026-04-22.md`
+
+This file is an implementation audit/tracking document and does not override that high-level authoritative behavior spec.
+
 ## Latest Update (Step 2 Wave A queue-backed current-item selection)
 
 - Added minimal Wave A backend endpoints in `server/index.js`:
