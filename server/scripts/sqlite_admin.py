@@ -865,70 +865,106 @@ def stage4_process_geocode_queue(path: str, executed_at: str, schema_path: str) 
         connection.close()
 
 
-def prepare_slideshow_queue(path: str, executed_at: str) -> dict:
+def prepare_slideshow_queue(path: str, executed_at: str, schema_path: str) -> dict:
+    schema_bootstrap = ensure_canonical_schema(
+        path,
+        schema_path,
+        (
+            "canonical_media_assets",
+            "media_asset_variants",
+            "slideshow_queue",
+        ),
+    )
     connection = connect_read_write(path)
     try:
         cursor = connection.cursor()
-        eligible_count = cursor.execute(
+        candidate_rows = cursor.execute(
             """
-            SELECT COUNT(*)
-            FROM canonical_media_assets
-            WHERE geocode_status = 'GEOCODE_FOUND'
-              AND address_text IS NOT NULL
-              AND TRIM(address_text) <> ''
-            """
-        ).fetchone()[0]
-
-        changes_before = connection.total_changes
-        cursor.execute(
-            """
-            INSERT INTO slideshow_queue (
-                media_asset_id,
-                status,
-                failure_reason,
-                sort_bucket,
-                eligible_since,
-                created_at,
-                updated_at
-            )
             SELECT
                 c.media_asset_id,
-                'READY',
-                NULL,
-                'default',
-                ?,
-                ?,
-                ?
+                c.geocode_status,
+                COALESCE(v.file_path, '') AS variant_file_path,
+                q.media_asset_id AS queued_media_asset_id
             FROM canonical_media_assets c
+            LEFT JOIN media_asset_variants v
+                ON v.media_asset_id = c.media_asset_id
+               AND v.variant_id = (
+                    SELECT MIN(v2.variant_id)
+                    FROM media_asset_variants v2
+                    WHERE v2.media_asset_id = c.media_asset_id
+               )
             LEFT JOIN slideshow_queue q ON q.media_asset_id = c.media_asset_id
-            WHERE c.geocode_status = 'GEOCODE_FOUND'
-              AND c.address_text IS NOT NULL
-              AND TRIM(c.address_text) <> ''
-              AND q.media_asset_id IS NULL
-            """,
-            (executed_at, executed_at, executed_at),
-        )
-        inserted_count = connection.total_changes - changes_before
+            ORDER BY c.media_asset_id ASC
+            """
+        ).fetchall()
+
+        inserted_ids: list[int] = []
+        skipped: list[dict] = []
+
+        # Stage 5 eligibility contract is intentionally strict and derived from
+        # repo evidence plus Stage 6 expectations. Insert a slideshow row only
+        # when the asset exists canonically, has at least one media variant, the
+        # chosen variant has a non-empty usable file path, the asset is not
+        # already queued, and geocode_status is GEOCODE_FOUND.
+        for row in candidate_rows:
+            asset_id = int(row["media_asset_id"])
+            variant_file_path = (row["variant_file_path"] or "").strip()
+            already_queued = row["queued_media_asset_id"] is not None
+            geocode_status = row["geocode_status"]
+
+            reason = None
+            if not asset_id:
+                reason = "invalid_asset_state"
+            elif variant_file_path == "":
+                variant_exists = cursor.execute(
+                    "SELECT 1 FROM media_asset_variants WHERE media_asset_id = ? LIMIT 1",
+                    (asset_id,),
+                ).fetchone() is not None
+                reason = "missing_file_path" if variant_exists else "missing_variant"
+            elif already_queued:
+                reason = "already_queued"
+            elif geocode_status != "GEOCODE_FOUND":
+                reason = "geocode_not_ready"
+
+            if reason is not None:
+                skipped.append({"asset_id": str(asset_id), "reason": reason})
+                continue
+
+            cursor.execute(
+                """
+                INSERT INTO slideshow_queue (
+                    media_asset_id,
+                    status,
+                    failure_reason,
+                    sort_bucket,
+                    eligible_since,
+                    created_at,
+                    updated_at
+                ) VALUES (?, 'READY', NULL, 'default', ?, ?, ?)
+                """,
+                (asset_id, executed_at, executed_at, executed_at),
+            )
+            inserted_ids.append(asset_id)
+
         connection.commit()
-
-        ready_count = cursor.execute(
-            "SELECT COUNT(*) FROM slideshow_queue WHERE status = 'READY'"
-        ).fetchone()[0]
-        failed_count = cursor.execute(
-            "SELECT COUNT(*) FROM slideshow_queue WHERE status = 'FAILED'"
-        ).fetchone()[0]
-
         return {
             "outcome": "prepared",
-            "eligibleCount": eligible_count,
-            "insertedCount": inserted_count,
-            "readyCount": ready_count,
-            "failedCount": failed_count,
+            "insertedCount": len(inserted_ids),
+            "skippedCount": len(skipped),
+            "insertedIds": inserted_ids,
+            "skipped": skipped,
+            "message": (
+                f"Inserted {len(inserted_ids)} eligible slideshow queue row(s); "
+                f"skipped {len(skipped)} asset(s)."
+            ),
+            "schemaBootstrap": schema_bootstrap,
             "executedAt": executed_at,
         }
+    except Exception:
+        connection.rollback()
+        raise
     finally:
         connection.close()
-
 
 def resolve_canonical_path(raw_path: str | None, repo_root: str) -> str | None:
     if raw_path is None:
@@ -1101,9 +1137,9 @@ def main() -> int:
             raise ValueError("stage4_process_geocode_queue expects: sqlite_admin.py stage4_process_geocode_queue <path> <executed_at> <schema_path>")
         result = stage4_process_geocode_queue(path, sys.argv[3], os.path.abspath(sys.argv[4]))
     elif operation == "stage5_prepare_queue":
-        if len(sys.argv) != 4:
-            raise ValueError("stage5_prepare_queue expects: sqlite_admin.py stage5_prepare_queue <path> <executed_at>")
-        result = prepare_slideshow_queue(path, sys.argv[3])
+        if len(sys.argv) != 5:
+            raise ValueError("stage5_prepare_queue expects: sqlite_admin.py stage5_prepare_queue <path> <executed_at> <schema_path>")
+        result = prepare_slideshow_queue(path, sys.argv[3], os.path.abspath(sys.argv[4]))
     elif operation == "stage6_select_current":
         if len(sys.argv) != 5:
             raise ValueError("stage6_select_current expects: sqlite_admin.py stage6_select_current <path> <executed_at> <repo_root>")

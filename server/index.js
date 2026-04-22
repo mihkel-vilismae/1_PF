@@ -809,15 +809,15 @@ async function runtimeGeocodeRunHandler({ context }) {
     payload: {
       status: geocode.failureCount ? 'warning' : 'ok',
       messages: geocode.processedCount
-        ? [`Geocoding processed ${geocode.processedCount} queued asset(s): ${geocode.successCount} success, ${geocode.failureCount} failed.`]
-        : ['No queued geocode work was available. Stage 4 completed as a successful no-op.'],
+        ? [`Geocoding processed ${geocode.processedCount} queued asset(s): ${geocode.successCount} success, ${geocode.failureCount} failed using the deterministic placeholder geocoder (not production).`]
+        : ['No queued geocode work was available. Stage 4 completed as a successful no-op. The configured geocoder in this repo is still the deterministic placeholder implementation, not a production provider.'],
       stage: 'stage4_process_geocode_queue',
       processed_count: geocode.processedCount,
       success_count: geocode.successCount,
       failure_count: geocode.failureCount,
       message: geocode.processedCount
-        ? `Processed ${geocode.processedCount} geocode queue row(s).`
-        : 'No queued geocode work was available.',
+        ? `Processed ${geocode.processedCount} geocode queue row(s) with the deterministic placeholder geocoder (not production).`
+        : 'No queued geocode work was available. Deterministic placeholder geocoder only; not production.',
       geocode,
       database,
       schemaVersion: 1,
@@ -835,15 +835,16 @@ async function runtimeQueuePrepareHandler({ context }) {
   }
 
   const executedAt = new Date().toISOString();
-  const queue = await runPythonJson(['stage5_prepare_queue', database.absolutePath, executedAt]);
+  const schemaPath = path.join(repoRoot, 'schema.sql');
+  const queue = await runPythonJson(['stage5_prepare_queue', database.absolutePath, executedAt, schemaPath]);
   return {
     statusCode: 200,
     payload: {
-      status: 'ok',
-      messages: queue.insertedCount
-        ? [`Inserted ${queue.insertedCount} newly eligible slideshow row(s).`]
-        : ['No new eligible assets were found. Queue preparation was a successful no-op.'],
-      stage: 'stage5_prepare_queue',
+      inserted_count: queue.insertedCount,
+      skipped_count: queue.skippedCount,
+      inserted_ids: queue.insertedIds,
+      skipped: queue.skipped,
+      message: queue.message,
       queue,
       database,
       schemaVersion: 1,

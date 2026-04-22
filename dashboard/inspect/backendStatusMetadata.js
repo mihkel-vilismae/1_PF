@@ -168,7 +168,7 @@ export function createBackendStatusMetadataHelpers({ getState, getTransitHasLive
     if (cardContext?.code && ['B2', 'B3.1', 'B3.2', 'B3.5', 'B4'].includes(cardContext.code)) {
       return buildBackendStatusMeta('real', `${label} value`, 'This displayed value is updated from a real backend action response.');
     }
-    if (cardContext?.code && ['B1', 'B3', 'B3.3', 'B3.4'].includes(cardContext.code)) {
+    if (cardContext?.code && ['B1', 'B3'].includes(cardContext.code)) {
       return buildBackendStatusMeta('mock', `${label} value`, 'This displayed value still comes from frontend-only placeholder state.');
     }
     if (cardContext?.code === 'B5') {
@@ -222,7 +222,7 @@ export function createBackendStatusMetadataHelpers({ getState, getTransitHasLive
     if (['B2', 'B3.1', 'B3.2', 'B3.5', 'B4'].includes(sourceKey)) {
       return buildBackendStatusMeta('real', label, 'This log entry captures a real backend action response.');
     }
-    if (sourceKey === 'B5' || sourceKey === 'B1' || sourceKey === 'B3.3' || sourceKey === 'B3.4') {
+    if (sourceKey === 'B5' || sourceKey === 'B1') {
       return buildBackendStatusMeta('mock', label, 'This log entry comes from frontend-only simulation or placeholder behavior.');
     }
     if (sourceKey.startsWith('B') || sourceKey === 'C' || sourceKey === 'D') {
@@ -300,7 +300,7 @@ export function createBackendStatusMetadataHelpers({ getState, getTransitHasLive
     if (code === 'B3.1' || code === 'B5') {
       return buildBackendStatusMeta('mock', label, 'This section is intentionally frontend-only simulation rather than backend-backed.');
     }
-    if (['B1', 'B2', 'B3', 'B3.2', 'B3.3', 'B3.4', 'B3.5', 'B4', 'C', 'C1', 'C2', 'C3', 'C4', 'C5', 'D1', 'D2', 'D3', 'D4'].includes(code)) {
+    if (['B1', 'B2', 'B3', 'B3.2', 'B3.5', 'B4', 'C', 'C1', 'C2', 'C3', 'C4', 'C5', 'D1', 'D2', 'D3', 'D4'].includes(code)) {
       return buildBackendStatusMeta('missing', label, 'This section stands in for backend/runtime support that is not implemented here yet.');
     }
     if (code === 'IO') {

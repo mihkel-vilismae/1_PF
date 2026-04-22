@@ -8,7 +8,7 @@ export function renderTestView(state) {
         <div>
           <p class="eyebrow">B — Test</p>
           <h2>Use real runtime actions where they already exist, and keep the remaining placeholders unmistakable.</h2>
-          <p class="hero-copy">B2, B3.1, B3.2, B3.5, and B4 now call documented backend runtime routes. B1, B3.3, B3.4, and B5 remain frontend-only placeholders or simulations.</p>
+          <p class="hero-copy">B2, B3.1, B3.2, B3.3, B3.4, B3.5, and B4 now call documented backend runtime routes. B1 and B5 remain frontend-only placeholders or simulations.</p>
         </div>
         <div class="hero-pill-group">
           ${renderSourceBadge('hybrid', 'MIXED VIEW')}
@@ -48,7 +48,7 @@ export function renderTestView(state) {
           <div class="card__header-tags">${renderSourceBadge('hybrid', 'HYBRID')}</div>
           ${statusBadge(state.statusByKey.B3)}
         </header>
-        <p class="card__copy">Real-backed now: B3.1 download, B3.2 index, B3.5 queue prepare. Still mock-only: B3.3 parse GPS and B3.4 geocode.</p>
+        <p class="card__copy">Real-backed now: B3.1 download, B3.2 index, B3.3 parse GPS, B3.4 geocode, and B3.5 queue prepare. The geocode endpoint still uses a deterministic placeholder geocoder and is not production.</p>
         <div class="toolbar-grid">
           <fieldset class="selector-card selector-card--mock">
             <legend>Execution mode</legend>
@@ -68,8 +68,8 @@ export function renderTestView(state) {
         <div class="stage-stack">
           ${renderStageCard('B3.1', 'Download', 'Calls POST /api/runtime/download/run.', state, 'real')}
           ${renderStageCard('B3.2', 'Index', 'Calls POST /api/runtime/index/run.', state, 'real')}
-          ${renderStageCard('B3.3', 'Parse GPS', 'Still frontend placeholder until a backend route exists.', state, 'mock')}
-          ${renderStageCard('B3.4', 'Geocode', 'Still frontend placeholder until a backend route exists.', state, 'mock')}
+          ${renderStageCard('B3.3', 'Parse GPS', 'Calls POST /api/runtime/gps/run.', state, 'real')}
+          ${renderStageCard('B3.4', 'Geocode', 'Calls POST /api/runtime/geocode/run. Uses the deterministic placeholder geocoder only.', state, 'real')}
           ${renderStageCard('B3.5', 'Enqueue playback', 'Calls POST /api/runtime/queue/prepare.', state, 'real')}
         </div>
       </article>

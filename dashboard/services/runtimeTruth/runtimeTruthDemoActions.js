@@ -1,6 +1,8 @@
 import {
   RUNTIME_EXECUTION_ENDPOINTS,
   runRuntimeDownload,
+  runRuntimeGeocode,
+  runRuntimeGps,
   runRuntimeIndex,
   runRuntimePlaybackSelectCurrent,
   runRuntimeQueuePrepare,
@@ -329,8 +331,20 @@ export function createRuntimeTruthDemoActions({
           execute: runRuntimeIndex,
           onComplete: () => runNextStage(index + 1),
         }),
-        'B3.3': () => runPipelineStage('B3.3', 'GPS parsing remains a frontend placeholder until a real backend route exists.', () => runNextStage(index + 1)),
-        'B3.4': () => runPipelineStage('B3.4', 'Geocode remains a frontend placeholder until a real backend route exists.', () => runNextStage(index + 1)),
+        'B3.3': () => runBackendPipelineStage({
+          key: 'B3.3',
+          operation: 'Run GPS stage',
+          endpoint: RUNTIME_EXECUTION_ENDPOINTS.gpsRun,
+          execute: runRuntimeGps,
+          onComplete: () => runNextStage(index + 1),
+        }),
+        'B3.4': () => runBackendPipelineStage({
+          key: 'B3.4',
+          operation: 'Run geocode stage',
+          endpoint: RUNTIME_EXECUTION_ENDPOINTS.geocodeRun,
+          execute: runRuntimeGeocode,
+          onComplete: () => runNextStage(index + 1),
+        }),
         'B3.5': () => runEnqueueStage(() => runNextStage(index + 1)),
       };
 
