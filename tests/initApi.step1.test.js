@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { mkdtemp, rm, writeFile, access } from 'node:fs/promises';
+import fs from 'node:fs';
 import net from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
@@ -272,3 +273,88 @@ function buildEnvFile({ downloadDir, dbPath, logDir, cookieDir }) {
     'PLAYBACK_LEASE_SECONDS=45',
   ].join('\n');
 }
+
+// Custom helper similar to withInitServer but allows supplying a bespoke .env file.
+// It writes the provided envContent to a temporary file, starts the init server with that file,
+// waits for the server to be ready, executes the provided callback, then tears everything down.
+async function withCustomEnvServer(envContent, run) {
+  const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'pf-init-api-custom-'));
+  const port = await reservePort();
+  const envFilePath = path.join(workspaceRoot, 'custom.env');
+  await writeFile(envFilePath, envContent, 'utf8');
+
+  const child = spawn(process.execPath, [serverEntryPath], {
+    cwd: repoRoot,
+    env: {
+      ...process.env,
+      PORT: String(port),
+      INIT_ENV_FILE: envFilePath,
+    },
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+
+  child.stdout.setEncoding('utf8');
+  child.stderr.setEncoding('utf8');
+  let stdout = '';
+  let stderr = '';
+  const ready = new Promise((resolve, reject) => {
+    const fail = (error) => {
+      reject(new Error(`${error.message}\nstdout:\n${stdout}\nstderr:\n${stderr}`));
+    };
+    child.stdout.on('data', (chunk) => {
+      stdout += chunk;
+      if (/Init API server listening on http:\/\/127\.0\.0\.1:\d+/.test(stdout)) {
+        resolve();
+      }
+    });
+    child.stderr.on('data', (chunk) => {
+      stderr += chunk;
+    });
+    child.once('error', fail);
+    child.once('exit', (code, signal) => {
+      fail(new Error(`server exited before becoming ready (code=${code}, signal=${signal ?? 'null'})`));
+    });
+  });
+
+  try {
+    await ready;
+    await run({ port, envFilePath, workspaceRoot });
+  } finally {
+    child.kill();
+    await onceExit(child);
+    await rm(workspaceRoot, { recursive: true, force: true });
+  }
+}
+
+test('POST /api/init/verify-env rejects overlapping real and test paths', async () => {
+  // Create a custom .env file that intentionally overlaps test and real paths.
+  await withCustomEnvServer(
+    (() => {
+      // Construct base values using a temporary workspace directory.
+      const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'pf-env-overlap-'));
+      const downloadDir = path.join(tempRoot, 'downloads');
+      const dbPath = path.join(tempRoot, 'state', 'init-test.sqlite');
+      const logDir = path.join(tempRoot, 'logs');
+      const cookieDir = path.join(tempRoot, 'cookies');
+      // Build base env content from the existing helper.
+      const base = buildEnvFile({ downloadDir, dbPath, logDir, cookieDir });
+      // Append overlapping test paths. Use the same real paths to simulate overlap.
+      const lines = [
+        base,
+        `TEST_DOWNLOAD_DIR=${downloadDir}`,
+        `TEST_DB_PATH=${dbPath}`,
+        `TEST_LOG_DIR=${logDir}`,
+        `TEST_ICLOUDPD_COOKIE_DIR=${cookieDir}`,
+      ];
+      return lines.join('\n');
+    })(),
+    async ({ port }) => {
+      const response = await requestJson(port, '/api/init/verify-env', { method: 'POST' });
+      // The HTTP status should still be 200, but payload status should be 'error'.
+      assert.equal(response.status, 200);
+      assert.equal(response.json.status, 'error');
+      // It should emit at least one message about overlap.
+      assert.ok(response.json.messages.some((m) => /overlap/i.test(m)));
+    },
+  );
+});

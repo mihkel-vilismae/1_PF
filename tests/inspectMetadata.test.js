@@ -201,9 +201,9 @@ test('backend status inspect metadata keeps B3 auto/GPS/geocode actions marked r
   });
 
   const actions = [
-    { action: 'run-b3-auto', label: 'Run all stages' },
-    { action: 'run-b3-3', label: 'Run GPS parsing' },
-    { action: 'run-b3-4', label: 'Run geocode stage' },
+    { action: 'run-b3-auto', label: 'Run all stages', expectedState: 'real' },
+    { action: 'run-b3-3', label: 'Run GPS parsing', expectedState: 'real' },
+    { action: 'run-b3-4', label: 'Run geocode stage', expectedState: 'mock' },
   ];
 
   for (const item of actions) {
@@ -214,7 +214,7 @@ test('backend status inspect metadata keeps B3 auto/GPS/geocode actions marked r
         textContent: item.label,
       }),
     );
-    assert.equal(meta.state, 'real');
+    assert.equal(meta.state, item.expectedState);
   }
 });
 

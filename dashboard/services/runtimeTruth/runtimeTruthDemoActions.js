@@ -51,6 +51,12 @@ export function createRuntimeTruthDemoActions({
     withPlaybackGuard,
   } = guards;
 
+  // Track playback loop state. When runPlaybackEmulation is invoked, it will
+  // schedule subsequent invocations until no new item is selected. This helps
+  // implement the authoritative auto‑advance slideshow semantics for B4.
+  let playbackLoopTimer = null;
+  let lastPlaybackCanonicalPath = null;
+
   function applyScreenSimulationState(reason) {
     const simulation = getState().simulation;
     const anyEnabled = simulation.simulateAllEnabled || simulation.pirEnabled || simulation.mouseEnabled || simulation.keyboardEnabled;
@@ -356,6 +362,12 @@ export function createRuntimeTruthDemoActions({
   }
 
   function runPlaybackEmulation() {
+    // If a playback loop timer is pending, clear it before starting a new run. This
+    // avoids overlapping timers when the user manually triggers the action again.
+    if (playbackLoopTimer !== null) {
+      clearTimeout(playbackLoopTimer);
+      playbackLoopTimer = null;
+    }
     if (!withPlaybackGuard(() => {
       void runBackendAction({
         key: 'B4',
@@ -368,6 +380,13 @@ export function createRuntimeTruthDemoActions({
           if (!selected) {
             return;
           }
+          const selectedPath = selected.canonicalPath ?? null;
+          // Determine whether to schedule a subsequent playback selection. If the
+          // selected path differs from the previously selected one, there is
+          // likely another item in the queue to display.
+          const shouldScheduleNext = selectedPath && selectedPath !== lastPlaybackCanonicalPath;
+          // Update last selected path for subsequent comparisons.
+          lastPlaybackCanonicalPath = selectedPath;
           patchState((draft) => {
             draft.truth.currentMedia = {
               name: extractFileName(selected.canonicalPath),
@@ -380,6 +399,13 @@ export function createRuntimeTruthDemoActions({
             draft.truth.lastCheckpoint = selected.selectedAt ?? draft.truth.lastCheckpoint;
             draft.truth.lastStageCompleted = 'B4';
           });
+          // Schedule the next playback selection after a short delay if needed.
+          if (shouldScheduleNext) {
+            playbackLoopTimer = setTimeout(() => {
+              // Only recurse if another playback loop is not already pending.
+              runPlaybackEmulation();
+            }, 1000);
+          }
         },
         afterRun: () => {
           releasePlaybackGuard();

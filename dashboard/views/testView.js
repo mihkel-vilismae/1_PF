@@ -7,8 +7,8 @@ export function renderTestView(state) {
       <div class="view-hero view-hero--hybrid">
         <div>
           <p class="eyebrow">B — Test</p>
-          <h2>Use real runtime actions where they already exist, and keep the remaining placeholders unmistakable.</h2>
-          <p class="hero-copy">B2, B3.1, B3.2, B3.3, B3.4, B3.5, and B4 now call documented backend runtime routes. B1 and B5 remain frontend-only placeholders or simulations.</p>
+        <h2>Use real runtime actions where they already exist, and keep the remaining placeholders unmistakable.</h2>
+          <p class="hero-copy">B2, B3.1, B3.2, B3.3, B3.4, B3.5, and B4 now call documented backend runtime routes. B5 remains a frontend-only placeholder simulation. The login preflight has moved to View A.</p>
         </div>
         <div class="hero-pill-group">
           ${renderSourceBadge('hybrid', 'MIXED VIEW')}
@@ -18,18 +18,7 @@ export function renderTestView(state) {
       </div>
 
       <div class="section-grid section-grid--two">
-        <article class="card card--mock">
-          <header class="card__header">
-            <div><p class="card__code">B1</p><h3>Login flow</h3></div>
-            <div class="card__header-tags">${renderSourceBadge('mock', 'MOCK')}</div>
-            ${statusBadge(state.statusByKey.B1)}
-          </header>
-          <p class="card__copy">This still previews the intended login / file / 2FA operator flow. It does not call a repo runtime endpoint.</p>
-          ${renderStepList(state.loginSteps)}
-          <div class="button-row"><button class="button button--primary" data-action="run-b1">Run</button></div>
-          <div class="log-surface">${renderLogEntries(state.logs.B1, { sourceKey: 'B1' })}</div>
-        </article>
-
+        <!-- Removed B1 login card as authentication preflight now lives in View A (Init) -->
         <article class="card card--real">
           <header class="card__header">
             <div><p class="card__code">B2</p><h3>Download test action</h3></div>

@@ -186,7 +186,52 @@ async function verifyEnvHandler({ context }) {
     messages.push(`Validated ${checks.filter((check) => check.required).length} required key(s).`);
   }
 
-  const status = missingRequired.length || invalidRequired.length ? 'error' : optionalWarnings.length ? 'warning' : 'ok';
+  // Additional validation: ensure test environment paths do not overlap with real paths.
+  // According to the authoritative spec, the .env must define separate test paths and
+  // `.env` verification must fail if any test path overlaps its corresponding real path.
+  // A test path key is considered to start with the prefix `TEST_` followed by the real key
+  // (e.g. `TEST_DOWNLOAD_DIR` pairs with `DOWNLOAD_DIR`). We compare absolute paths and
+  // reject if one is equal to or contains the other.
+  const envValues = context.envValues;
+  const overlapPairs = [];
+  for (const testKey of Object.keys(envValues)) {
+    if (!testKey.startsWith('TEST_')) continue;
+    const baseKey = testKey.slice(5);
+    const testRaw = envValues[testKey];
+    const realRaw = envValues[baseKey];
+    if (!testRaw || !realRaw) {
+      continue;
+    }
+    // Compute absolute paths relative to repo root when needed.
+    const testAbs = resolveRepoPath(testRaw.trim());
+    const realAbs = resolveRepoPath(realRaw.trim());
+    // Normalize case for comparison on case‑insensitive platforms.
+    const normTest = path.normalize(testAbs);
+    const normReal = path.normalize(realAbs);
+    const lowerTest = normTest.toLowerCase();
+    const lowerReal = normReal.toLowerCase();
+    const sep = path.sep;
+    // Determine if the two paths overlap. Either they are identical or one is a prefix of the other.
+    const overlaps =
+      lowerTest === lowerReal ||
+      lowerTest.startsWith(lowerReal + sep) ||
+      lowerReal.startsWith(lowerTest + sep);
+    if (overlaps) {
+      overlapPairs.push({ testKey, realKey: baseKey, testPath: normTest, realPath: normReal });
+    }
+  }
+  if (overlapPairs.length) {
+    messages.push('Detected overlap between test and real environment paths.');
+  }
+  // Determine overall status. Any overlaps or missing/invalid values result in an error.
+  let status;
+  if (missingRequired.length || invalidRequired.length || overlapPairs.length) {
+    status = 'error';
+  } else if (optionalWarnings.length) {
+    status = 'warning';
+  } else {
+    status = 'ok';
+  }
   return {
     statusCode: 200,
     payload: {
@@ -1582,7 +1627,21 @@ async function resolveSchedulerOperation(context, operation) {
   const capability = createSchedulerCapability({ nodePlatform: context.platform });
   const operationSupportLevel = getOperationSupportLevel(capability, operation);
   const definition = buildSchedulerDefinition(context, capability);
+  // On non‑Windows platforms, return a deferred (informational) scheduler payload instead of invoking
+  // the Windows Task Scheduler. This prevents misrepresenting Windows behavior as Unix cron and
+  // ensures the frontend receives a safe capability description. See authoritative spec section 3.1.
+  if (capability.platformFamily !== 'windows') {
+    return buildDeferredSchedulerPayload({
+      context,
+      capability,
+      definition,
+      operation,
+      operationSupportLevel,
+    });
+  }
 
+  // For Windows platforms, continue with existing logic. If the operation is not executable,
+  // return a deferred payload. Otherwise run the Windows scheduler command.
   if (!isOperationExecutable(capability, operation)) {
     return buildDeferredSchedulerPayload({
       context,

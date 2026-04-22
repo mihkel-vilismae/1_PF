@@ -104,7 +104,7 @@
     },
     "run-b1": {
       "label": "Run login flow",
-      "description": "Simulates the B1 login sequence through credentials, required file preparation, and placeholder 2FA."
+      "description": "Simulates the login/authentication sequence through credentials, required file preparation, and placeholder 2FA."
     },
     "run-b2": {
       "label": "Run download test action",
@@ -128,7 +128,7 @@
     },
     "run-b3-4": {
       "label": "Run geocode stage",
-      "description": "Simulates converting coordinates into readable location data for the queued asset."
+      "description": "Calls the backend geocode stage. The geocoder here is a deterministic placeholder implementation that converts coordinates into a pseudo‑location string; this is not a real geocoding provider."
     },
     "run-b3-5": {
       "label": "Prepare playback queue",
@@ -246,7 +246,7 @@
     },
     "run-b1": {
       "state": "mock",
-      "reason": "Runs a frontend-only simulated login flow; there is no live auth backend in this view."
+      "reason": "Runs a frontend-only simulated login flow; no live auth backend is implemented."
     },
     "run-b2": {
       "state": "real",
@@ -265,8 +265,8 @@
       "reason": "Runs the real backend GPS parsing stage."
     },
     "run-b3-4": {
-      "state": "real",
-      "reason": "Runs the real backend geocode stage, which currently uses the deterministic placeholder geocoder."
+      "state": "mock",
+      "reason": "Calls the backend geocode stage, but the underlying geocoder is a deterministic placeholder rather than a real geocoding provider, so this action remains simulation‑only."
     },
     "run-b3-5": {
       "state": "real",
@@ -354,7 +354,7 @@
     },
     "run-b1": {
       "state": "missing",
-      "reason": "This flow is simulated in the frontend, while the planned backend test/login endpoint is not implemented here."
+      "reason": "This flow is simulated in the frontend; no backend login endpoint has been implemented yet."
     },
     "run-b2": {
       "state": "real",
@@ -377,8 +377,8 @@
       "reason": "This stage now calls the real POST /api/runtime/gps/run endpoint."
     },
     "run-b3-4": {
-      "state": "real",
-      "reason": "This stage now calls the real POST /api/runtime/geocode/run endpoint."
+      "state": "mock",
+      "reason": "This stage still calls the POST /api/runtime/geocode/run endpoint, but because the geocoder is a deterministic placeholder rather than a real provider, the backend support is considered simulation‑only."
     },
     "run-b3-5": {
       "state": "real",

@@ -1,4 +1,4 @@
-import { statusBadge, renderLogEntries, renderResultSurface } from '../services/renderers.js';
+import { statusBadge, renderLogEntries, renderResultSurface, renderStepList, renderSourceBadge } from '../services/renderers.js';
 import {
   getOperationSupportLevel,
   SCHEDULER_OPERATION_SUPPORT,
@@ -54,7 +54,26 @@ export function renderInitView(state) {
           `,
           renderSchedulerCopy(schedulerCapability, installSupportLevel),
       )}
+
+      ${renderLoginCard(state)}
     </section>
+  `;
+}
+
+// Render the login/authentication preflight card moved from View B to View A.
+function renderLoginCard(state) {
+  return `
+    <article class="card card--mock">
+      <header class="card__header">
+        <div><p class="card__code">B1</p><h3>Login flow</h3></div>
+        <div class="card__header-tags">${renderSourceBadge('mock', 'MOCK')}</div>
+        ${statusBadge(state.statusByKey.B1)}
+      </header>
+      <p class="card__copy">This previews the intended login / file / 2FA operator flow. It does not call a repo runtime endpoint.</p>
+      ${renderStepList(state.loginSteps)}
+      <div class="button-row"><button class="button button--primary" data-action="run-b1">Run</button></div>
+      <div class="log-surface">${renderLogEntries(state.logs.B1, { sourceKey: 'B1' })}</div>
+    </article>
   `;
 }
 
