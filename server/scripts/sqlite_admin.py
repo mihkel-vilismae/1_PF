@@ -911,6 +911,13 @@ def prepare_slideshow_queue(path: str, executed_at: str, schema_path: str) -> di
             variant_file_path = (row["variant_file_path"] or "").strip()
             already_queued = row["queued_media_asset_id"] is not None
             geocode_status = row["geocode_status"]
+            address_text = (
+                cursor.execute(
+                    "SELECT COALESCE(address_text, '') AS address_text FROM canonical_media_assets WHERE media_asset_id = ? LIMIT 1",
+                    (asset_id,),
+                ).fetchone()["address_text"]
+                or ""
+            ).strip()
 
             reason = None
             if not asset_id:
@@ -923,7 +930,7 @@ def prepare_slideshow_queue(path: str, executed_at: str, schema_path: str) -> di
                 reason = "missing_file_path" if variant_exists else "missing_variant"
             elif already_queued:
                 reason = "already_queued"
-            elif geocode_status != "GEOCODE_FOUND":
+            elif geocode_status != "GEOCODE_FOUND" or address_text == "":
                 reason = "geocode_not_ready"
 
             if reason is not None:

@@ -261,8 +261,11 @@ function seedWaveADatabase(dbPath, schemaSourcePath, assets) {
   const seedSql = [
     schemaSql,
     insertCanonicalAssetSql(assets.eligible),
+    insertVariantSql(assets.eligible),
     insertCanonicalAssetSql(assets.ineligible),
+    insertVariantSql(assets.ineligible),
     insertCanonicalAssetSql(assets.invalid),
+    insertVariantSql(assets.invalid),
   ].join('\n');
 
   const result = spawnSync(
@@ -306,6 +309,15 @@ function insertCanonicalAssetSql(asset) {
     gps_altitude, gps_status, geocode_status, address_text, address_cache_key,
     successful_gps_parser_method, created_at, updated_at
   ) VALUES (${values.join(', ')});`;
+}
+
+function insertVariantSql(asset) {
+  return `INSERT INTO media_asset_variants (
+    media_asset_id, variant_kind, file_path, file_extension, file_size_bytes, created_at, updated_at
+  )
+  SELECT media_asset_id, 'original', ${sqlString(asset.canonicalPath)}, 'jpg', 1234, ${sqlString(fixedTimestamp)}, ${sqlString(fixedTimestamp)}
+  FROM canonical_media_assets
+  WHERE asset_key = ${sqlString(asset.assetKey)};`;
 }
 
 function sqlString(value) {

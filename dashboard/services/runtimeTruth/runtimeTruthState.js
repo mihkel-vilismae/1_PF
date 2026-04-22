@@ -73,6 +73,14 @@ export function buildInitialDatabaseViewerState() {
   };
 }
 
+function createHistoryId() {
+  if (globalThis.crypto?.randomUUID) {
+    return globalThis.crypto.randomUUID();
+  }
+
+  return `fallback-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 export function createInitialState() {
   const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   const schedulerCapability = buildInitialSchedulerCapability();
@@ -111,8 +119,8 @@ export function createInitialState() {
     modal: null,
     truth: buildInitialTruthState(),
     history: [
-      { id: crypto.randomUUID(), at: now, source: 'BOOT', type: 'info', message: 'Dashboard shell initialized.' },
-      { id: crypto.randomUUID(), at: now, source: 'TRUTH', type: 'info', message: 'Hybrid truth seed loaded from conf/runtime-truth.json and then kept in sync through dashboard actions.' },
+      { id: createHistoryId(), at: now, source: 'BOOT', type: 'info', message: 'Dashboard shell initialized.' },
+      { id: createHistoryId(), at: now, source: 'TRUTH', type: 'info', message: 'Hybrid truth seed loaded from conf/runtime-truth.json and then kept in sync through dashboard actions.' },
     ],
     logs: {
       '1A': [{ at: now, type: 'info', message: 'Ready to call POST /api/init/verify-env.' }],
