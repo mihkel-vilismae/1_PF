@@ -56,14 +56,24 @@ test('2A database actions map to the documented endpoints and store result state
       return new Response(
         JSON.stringify({
           status: 'ok',
-          messages: ['Inspected 0 table/view object(s).'],
+          messages: ['Inspected 9 table/view object(s).'],
           database: {
             absolutePath: databasePath,
             exists: true,
           },
           inspection: {
-            tableCount: 0,
-            tables: [],
+            tableCount: 9,
+            tables: [
+              { name: 'canonical_media_assets' },
+              { name: 'media_asset_variants' },
+              { name: 'address_cache' },
+              { name: 'parse_files_for_gps_queue' },
+              { name: 'geocode_queue' },
+              { name: 'slideshow_queue' },
+              { name: 'runtime_state' },
+              { name: 'action_runs' },
+              { name: 'system_logs' },
+            ],
           },
           schemaVersion: 1,
         }),
@@ -83,11 +93,25 @@ test('2A database actions map to the documented endpoints and store result state
       return new Response(
         JSON.stringify({
           status: 'ok',
-          messages: ['Created an empty SQLite database file.'],
+          messages: ['Recreated SQLite database and applied canonical schema tables.'],
           confirmed: true,
           database: {
             absolutePath: databasePath,
             existsAfter: true,
+          },
+          schemaBootstrap: {
+            applied: true,
+            requiredTables: [
+              'canonical_media_assets',
+              'media_asset_variants',
+              'address_cache',
+              'parse_files_for_gps_queue',
+              'geocode_queue',
+              'slideshow_queue',
+              'runtime_state',
+              'action_runs',
+              'system_logs',
+            ],
           },
           schemaVersion: 1,
         }),
@@ -146,11 +170,12 @@ test('2A database actions map to the documented endpoints and store result state
     assert.equal(harness.state.initResults['2A']?.endpoint, '/api/init/database/recreate-empty');
     assert.equal(harness.state.initResults['2A']?.payload?.confirmed, true);
     assert.equal(harness.state.initResults['2A']?.payload?.database?.existsAfter, true);
+    assert.equal(harness.state.initResults['2A']?.payload?.schemaBootstrap?.applied, true);
 
     behavior.runAction('inspect-db');
     await waitFor(() => harness.state.initResults['2A']?.operation === 'Inspect DB' && harness.state.initResults['2A']?.outcome === 'success');
     assert.equal(harness.state.statusByKey['2A'], 'success');
-    assert.equal(harness.state.initResults['2A']?.payload?.inspection?.tableCount, 0);
+    assert.equal(harness.state.initResults['2A']?.payload?.inspection?.tableCount, 9);
 
     behavior.runAction('delete-db', { confirmationSource: 'window.confirm' });
     await waitFor(() => harness.state.initResults['2A']?.operation === 'Delete DB' && harness.state.initResults['2A']?.outcome === 'success');

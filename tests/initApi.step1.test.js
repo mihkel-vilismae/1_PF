@@ -62,6 +62,9 @@ test('POST /api/init/database/* follows the recreate/status/inspect/delete flow 
     assert.equal(recreateAccepted.json.status, 'ok');
     assert.equal(recreateAccepted.json.confirmed, true);
     assert.equal(recreateAccepted.json.database.existsAfter, true);
+    assert.equal(recreateAccepted.json.schemaBootstrap?.applied, true);
+    assert.ok(Array.isArray(recreateAccepted.json.schemaBootstrap?.requiredTables));
+    assert.ok(recreateAccepted.json.schemaBootstrap.requiredTables.includes('runtime_state'));
     await access(dbPath);
 
     const statusAfterRecreate = await requestJson(port, '/api/init/database/status', { method: 'GET' });
@@ -72,7 +75,11 @@ test('POST /api/init/database/* follows the recreate/status/inspect/delete flow 
     const inspectAfterRecreate = await requestJson(port, '/api/init/database/inspect', { method: 'POST' });
     assert.equal(inspectAfterRecreate.status, 200);
     assert.equal(inspectAfterRecreate.json.status, 'ok');
-    assert.equal(inspectAfterRecreate.json.inspection.tableCount, 0);
+    assert.ok(inspectAfterRecreate.json.inspection.tableCount >= 9);
+    const tableNames = inspectAfterRecreate.json.inspection.tables.map((table) => table.name);
+    assert.ok(tableNames.includes('canonical_media_assets'));
+    assert.ok(tableNames.includes('runtime_state'));
+    assert.ok(tableNames.includes('system_logs'));
 
     const deleteRejected = await requestJson(port, '/api/init/database/delete', {
       method: 'POST',

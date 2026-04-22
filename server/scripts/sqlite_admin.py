@@ -45,6 +45,17 @@ VIDEO_EXTENSIONS = {
     ".mpeg",
     ".mpg",
 }
+CANONICAL_REQUIRED_TABLES = (
+    "canonical_media_assets",
+    "media_asset_variants",
+    "address_cache",
+    "parse_files_for_gps_queue",
+    "geocode_queue",
+    "slideshow_queue",
+    "runtime_state",
+    "action_runs",
+    "system_logs",
+)
 
 
 def connect_read_only(path: str) -> sqlite3.Connection:
@@ -303,7 +314,7 @@ def fetch_table_rows(path: str, object_name: str, page: int, page_size: int) -> 
         connection.close()
 
 
-def recreate_empty_database(path: str) -> dict:
+def recreate_empty_database(path: str, schema_path: str | None = None) -> dict:
     directory = os.path.dirname(path)
     if directory:
         os.makedirs(directory, exist_ok=True)
@@ -314,12 +325,16 @@ def recreate_empty_database(path: str) -> dict:
     finally:
         connection.close()
 
-    size_bytes = os.path.getsize(path) if os.path.exists(path) else 0
-    return {
+    result = {
         "path": path,
         "exists": os.path.exists(path),
-        "sizeBytes": size_bytes,
+        "sizeBytes": os.path.getsize(path) if os.path.exists(path) else 0,
     }
+    if schema_path is not None:
+        schema_bootstrap = ensure_canonical_schema(path, schema_path, CANONICAL_REQUIRED_TABLES)
+        result["schemaBootstrap"] = schema_bootstrap
+        result["sizeBytes"] = os.path.getsize(path) if os.path.exists(path) else 0
+    return result
 
 
 def classify_media_type(file_path: str) -> str | None:
@@ -1206,9 +1221,10 @@ def main() -> int:
             raise ValueError("inspect expects: sqlite_admin.py inspect <path>")
         result = inspect_database(path)
     elif operation == "recreate":
-        if len(sys.argv) != 3:
-            raise ValueError("recreate expects: sqlite_admin.py recreate <path>")
-        result = recreate_empty_database(path)
+        if len(sys.argv) not in (3, 4):
+            raise ValueError("recreate expects: sqlite_admin.py recreate <path> [schema_path]")
+        schema_path = os.path.abspath(sys.argv[3]) if len(sys.argv) == 4 else None
+        result = recreate_empty_database(path, schema_path)
     elif operation == "rows":
         if len(sys.argv) != 6:
             raise ValueError("rows expects: sqlite_admin.py rows <path> <table_name> <page> <page_size>")

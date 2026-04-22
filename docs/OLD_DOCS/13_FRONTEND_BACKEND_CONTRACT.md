@@ -98,6 +98,9 @@ Implementation status: `implemented`
 - Destructive action request requirements:
   - `confirm: true`
   - `action: "delete-db"` or `action: "recreate-db"`
+- Current behavior notes:
+  - `POST /api/init/database/recreate-empty` recreates the SQLite file and then applies canonical table bootstrap from `schema.sql`.
+  - `POST /api/init/database/inspect` should report those bootstrapped canonical tables immediately after a successful recreate.
 
 ### 3A Scheduler Controls
 

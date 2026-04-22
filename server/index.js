@@ -313,6 +313,7 @@ async function deleteDatabaseHandler({ body, context }) {
 async function recreateEmptyDatabaseHandler({ body, context }) {
   ensureConfirmed(body, 'recreate-db');
   const database = await buildDatabaseStatus(context);
+  const schemaPath = path.join(repoRoot, 'schema.sql');
   const candidatePaths = [database.absolutePath, `${database.absolutePath}-wal`, `${database.absolutePath}-shm`];
 
   for (const candidate of candidatePaths) {
@@ -321,29 +322,31 @@ async function recreateEmptyDatabaseHandler({ body, context }) {
     }
   }
 
-  const created = await runPythonJson(['recreate', database.absolutePath]);
+  const created = await runPythonJson(['recreate', database.absolutePath, schemaPath]);
   recordDatabaseViewerActivity({
     endpoint: '/api/init/database/recreate-empty',
     operation: 'init_database_recreate_empty',
     status: 'ok',
-    message: 'Created an empty SQLite database file.',
+    message: 'Recreated SQLite database and applied canonical schema tables.',
     details: {
       absolutePath: database.absolutePath,
       existsAfter: created.exists,
       sizeBytesAfter: created.sizeBytes,
+      schemaBootstrap: created.schemaBootstrap ?? null,
     },
   });
   return {
     statusCode: 200,
     payload: {
       status: 'ok',
-      messages: ['Created an empty SQLite database file.'],
+      messages: ['Recreated SQLite database and applied canonical schema tables.'],
       confirmed: true,
       database: {
         ...database,
         existsAfter: created.exists,
         sizeBytesAfter: created.sizeBytes,
       },
+      schemaBootstrap: created.schemaBootstrap ?? null,
       schemaVersion: 1,
     },
   };

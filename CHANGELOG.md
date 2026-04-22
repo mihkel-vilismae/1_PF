@@ -2,6 +2,20 @@
 
 > Note: changelog entries before v0.3.3 are preserved as legacy history and are not backfilled. Structured forward-only enforcement begins at v0.3.3.
 
+## 2026-04-22 21:09 EEST — v0.3.9
+
+### Added
+- None
+
+### Changed
+- None
+
+### Fixed
+- None
+
+### Removed
+- None
+
 ## 2026-04-22 20:45 EEST — v0.3.8
 
 ### Added

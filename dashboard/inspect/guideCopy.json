@@ -68,7 +68,7 @@
     },
     "recreate-db": {
       "label": "Recreate database",
-      "description": "Deletes the current SQLite file if needed and recreates it as a clean empty database after confirmation."
+      "description": "Deletes the current SQLite file if needed, recreates it, and bootstraps canonical schema tables from schema.sql after confirmation."
     },
     "install-cron": {
       "label": "Install scheduler",
@@ -210,7 +210,7 @@
     },
     "recreate-db": {
       "state": "real",
-      "reason": "Calls the live backend path that recreates the SQLite database file."
+      "reason": "Calls the live backend path that recreates the SQLite database file and applies canonical schema tables."
     },
     "install-cron": {
       "state": "real",

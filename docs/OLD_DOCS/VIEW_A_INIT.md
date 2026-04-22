@@ -33,6 +33,7 @@ The card now reads a shared scheduler capability profile and can disable install
 - every subsection stores and displays the latest backend payload or error response
 - the frontend now calls a repo-local backend implementation of `/api/init/*`
 - delete and recreate DB actions require explicit confirmation before the request is sent
+- recreate DB now bootstraps canonical schema tables from `schema.sql` after recreating the DB file
 - env verification and DB actions are implemented in the repo-local backend
 - the legacy cron routes now return a platform-aware scheduler payload with explicit support levels (`supported`, `deferred`, `unsupported`)
 - Windows 11 keeps the real Task Scheduler bootstrap-host path for install/status/print
@@ -49,7 +50,7 @@ The card now reads a shared scheduler capability profile and can disable install
 
 ## Future Backend Wiring Notes
 - **1A** now has an implemented backend path plus a response schema derived from the checked-in `.env` contract.
-- **2A** now has implemented backend endpoints for status, inspect, delete, and recreate-empty, with confirmation gating for destructive actions.
+- **2A** now has implemented backend endpoints for status, inspect, delete, and recreate-empty, with confirmation gating for destructive actions and schema bootstrap on recreate.
 - **3A** now uses one shared capability model across backend and frontend so platform behavior is explicit and reusable.
 - **3A** resolves the Windows platform contradiction by installing an AtLogOn Task Scheduler bootstrap task that starts a repo-local scheduler host.
 - the remaining 3A gap is not installation semantics anymore; it is wiring real pipeline/playback/screen/recovery services behind that host.
