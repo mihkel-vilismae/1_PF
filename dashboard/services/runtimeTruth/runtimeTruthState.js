@@ -1,5 +1,4 @@
 import runtimeTruthSeed from '../../../conf/runtime-truth.json' assert { type: 'json' };
-import { randomUUID } from 'node:crypto';
 import {
   createSchedulerCapability,
   getOperationSupportLevel,
@@ -8,13 +7,6 @@ import {
 } from '../../../shared/schedulerPlatformCapabilities.js';
 
 export const RUNTIME_TRUTH_SEED_PATH = 'conf/runtime-truth.json';
-
-function createUuid() {
-  if (typeof globalThis.crypto?.randomUUID === 'function') {
-    return globalThis.crypto.randomUUID();
-  }
-  return randomUUID();
-}
 
 export function buildInitialSchedulerCapability() {
   const browserPlatform = typeof navigator !== 'undefined' ? navigator.platform : null;
@@ -119,8 +111,8 @@ export function createInitialState() {
     modal: null,
     truth: buildInitialTruthState(),
     history: [
-      { id: createUuid(), at: now, source: 'BOOT', type: 'info', message: 'Dashboard shell initialized.' },
-      { id: createUuid(), at: now, source: 'TRUTH', type: 'info', message: 'Hybrid truth seed loaded from conf/runtime-truth.json and then kept in sync through dashboard actions.' },
+      { id: crypto.randomUUID(), at: now, source: 'BOOT', type: 'info', message: 'Dashboard shell initialized.' },
+      { id: crypto.randomUUID(), at: now, source: 'TRUTH', type: 'info', message: 'Hybrid truth seed loaded from conf/runtime-truth.json and then kept in sync through dashboard actions.' },
     ],
     logs: {
       '1A': [{ at: now, type: 'info', message: 'Ready to call POST /api/init/verify-env.' }],

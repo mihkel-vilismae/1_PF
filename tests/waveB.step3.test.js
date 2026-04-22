@@ -296,7 +296,7 @@ if "%TARGET%"=="" (
 if not exist "%TARGET%" mkdir "%TARGET%"
 (
   echo fake icloudpd download
-) > "%TARGET%\\fake-icloudpd-download.jpg"
+) > "%TARGET%ake-icloudpd-download.jpg"
 exit /b 0
 `;
   }
