@@ -110,6 +110,30 @@ test('POST /api/init/database/* follows the recreate/status/inspect/delete flow 
   });
 });
 
+test('GET /api/init/cron/status and /api/init/cron/print expose scheduler capability payloads', async () => {
+  await withInitServer(async ({ port }) => {
+    const statusResponse = await requestJson(port, '/api/init/cron/status', { method: 'GET' });
+    assert.equal(statusResponse.status, 200);
+    assert.equal(statusResponse.json.schemaVersion, 3);
+    assert.equal(statusResponse.json.scheduler.operation, 'status');
+    assert.equal(statusResponse.json.scheduler.routeCompatibility, '/api/init/cron/*');
+    assert.ok(Array.isArray(statusResponse.json.messages));
+    assert.ok(['supported', 'deferred', 'unsupported'].includes(statusResponse.json.scheduler.operationSupportLevel));
+
+    const printResponse = await requestJson(port, '/api/init/cron/print', { method: 'GET' });
+    assert.equal(printResponse.status, 200);
+    assert.equal(printResponse.json.schemaVersion, 3);
+    assert.equal(printResponse.json.scheduler.operation, 'print');
+    assert.equal(printResponse.json.scheduler.routeCompatibility, '/api/init/cron/*');
+    assert.ok(Array.isArray(printResponse.json.messages));
+    assert.ok(['supported', 'deferred', 'unsupported'].includes(printResponse.json.scheduler.operationSupportLevel));
+
+    if (printResponse.json.scheduler.operationSupportLevel === 'supported') {
+      assert.equal(typeof printResponse.json.scheduler.task?.installed, 'boolean');
+    }
+  });
+});
+
 async function withInitServer(run) {
   const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'pf-init-api-step1-'));
   const port = await reservePort();
