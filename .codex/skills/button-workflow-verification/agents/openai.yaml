@@ -1,0 +1,4 @@
+interface:
+  display_name: "Button Workflow Audit"
+  short_description: "Audit one dashboard button end-to-end."
+  default_prompt: "Use $button-workflow-verification to audit the 1A Verify .env button and produce a workflow result."

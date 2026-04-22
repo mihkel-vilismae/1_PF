@@ -414,6 +414,38 @@ Optional:
 
 
 
+\### Step 10 — Audit Registry Recording
+
+
+
+\* Verify:
+
+
+
+&#x20; \* every workflow run appends one new entry to `docs/button_verification_results/RUN_LOG.md`
+
+&#x20; \* the run points to the per-button report artifact
+
+\* Preferred mechanism:
+
+
+
+&#x20; \* `python scripts/append_button_verification_run.py ...`
+
+\* Fail if:
+
+
+
+&#x20; \* the button was audited but no run-log entry was added
+
+&#x20; \* the log entry does not point to the report for that run
+
+
+
+\---
+
+
+
 \## Final Classification
 
 
@@ -447,6 +479,8 @@ Each button must be labeled:
 \* No mismatch between UI wording and implementation
 
 \* Every backend endpoint must be testable
+
+\* Every workflow run must append a row to `docs/button_verification_results/RUN_LOG.md`
 
 \* Every UI action must be traceable end-to-end
 
@@ -523,6 +557,26 @@ It is designed for:
 
 
 Any deviation must be explicitly justified.
+
+\---
+
+\## Reuse And Delegation Layer
+
+For repeated button audits, also use `docs/button_verification_workflow/BUTTON_VERIFICATION_ACCELERATION_LAYER.md`.
+
+That companion layer defines:
+
+\* when to reuse existing button reports before starting a new audit
+
+\* how `RUN_LOG.md` and `INDEX.md` serve different reuse purposes
+
+\* how to split sidecar work across smaller explorer or worker agents when delegation is available
+
+\* which work must remain with the main agent
+
+\* which reusable assets should be maintained so the workflow gets faster over time
+
+\* promotion rules for turning repeated work into inventories, templates, and shared test patterns
 
 
 
