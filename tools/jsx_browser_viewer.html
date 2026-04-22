@@ -14,6 +14,9 @@
       --muted: #a7afbf;
       --border: #31384a;
       --accent: #5da9ff;
+      --good: #7bd88f;
+      --warn: #ffd166;
+      --bad: #ff7b7b;
     }
     body {
       margin: 0;
@@ -22,7 +25,7 @@
       color: var(--text);
     }
     .wrap {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
       padding: 20px;
     }
@@ -32,6 +35,7 @@
       border-radius: 12px;
       padding: 16px;
       margin-bottom: 16px;
+      box-sizing: border-box;
     }
     .top {
       display: flex;
@@ -47,6 +51,10 @@
       padding: 10px 14px;
       font-weight: 700;
       cursor: pointer;
+    }
+    button[disabled] {
+      opacity: 0.55;
+      cursor: not-allowed;
     }
     input[type="file"] { display: none; }
     .dropzone {
@@ -95,6 +103,7 @@
       width: 100%;
       border-collapse: collapse;
       font-size: 14px;
+      background: var(--panel);
     }
     th, td {
       border: 1px solid var(--border);
@@ -107,11 +116,39 @@
       position: sticky;
       top: 0;
     }
-    .table-wrap {
+    .table-wrap, .visual-wrap {
       overflow: auto;
-      max-height: 50vh;
+      max-height: 65vh;
       border: 1px solid var(--border);
       border-radius: 10px;
+      padding: 12px;
+      box-sizing: border-box;
+      background: var(--panel-2);
+    }
+    .status {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      margin-bottom: 12px;
+      color: var(--muted);
+    }
+    .status.good { border-color: rgba(123,216,143,0.4); color: var(--good); }
+    .status.warn { border-color: rgba(255,209,102,0.4); color: var(--warn); }
+    .status.bad { border-color: rgba(255,123,123,0.4); color: var(--bad); }
+    .render-shell {
+      background: #fff;
+      color: #111;
+      border-radius: 10px;
+      min-height: 120px;
+      padding: 12px;
+      box-sizing: border-box;
+    }
+    .toolbar {
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
     }
   </style>
 </head>
@@ -139,17 +176,33 @@
     <div id="previewCard" class="card hidden">
       <h2 style="margin-top:0;">Preview</h2>
       <div id="meta" class="meta"></div>
-      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
+      <div class="toolbar">
         <button id="rawViewBtn" type="button">Raw JSX</button>
         <button id="tableViewBtn" type="button">Detected rows table</button>
+        <button id="visualViewBtn" type="button">Visual render</button>
       </div>
-      <div id="rawView"><pre id="output"></pre></div>
+
+      <div id="rawView">
+        <pre id="output"></pre>
+      </div>
+
       <div id="tableView" class="hidden">
         <div id="tableInfo" class="meta"></div>
         <div id="tableWrap" class="table-wrap"></div>
       </div>
+
+      <div id="visualView" class="hidden">
+        <div id="visualStatus" class="status warn">Visual render has not been attempted yet.</div>
+        <div id="visualWrap" class="visual-wrap">
+          <div id="reactMount" class="render-shell"></div>
+        </div>
+      </div>
     </div>
   </div>
+
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <script>
     const fileInput = document.getElementById('fileInput');
@@ -163,10 +216,17 @@
     const meta = document.getElementById('meta');
     const rawView = document.getElementById('rawView');
     const tableView = document.getElementById('tableView');
+    const visualView = document.getElementById('visualView');
     const rawViewBtn = document.getElementById('rawViewBtn');
     const tableViewBtn = document.getElementById('tableViewBtn');
+    const visualViewBtn = document.getElementById('visualViewBtn');
     const tableWrap = document.getElementById('tableWrap');
     const tableInfo = document.getElementById('tableInfo');
+    const visualStatus = document.getElementById('visualStatus');
+    const reactMount = document.getElementById('reactMount');
+
+    let currentSource = '';
+    let reactRoot = null;
 
     function escapeHtml(text) {
       return text
@@ -178,10 +238,30 @@
     function setView(mode) {
       rawView.classList.toggle('hidden', mode !== 'raw');
       tableView.classList.toggle('hidden', mode !== 'table');
+      visualView.classList.toggle('hidden', mode !== 'visual');
     }
 
     rawViewBtn.addEventListener('click', () => setView('raw'));
     tableViewBtn.addEventListener('click', () => setView('table'));
+    visualViewBtn.addEventListener('click', async () => {
+      setView('visual');
+      await renderVisual(currentSource);
+    });
+
+    function setVisualStatus(type, text) {
+      visualStatus.className = 'status ' + type;
+      visualStatus.textContent = text;
+    }
+
+    function cleanupReactRender() {
+      try {
+        if (reactRoot) {
+          reactRoot.unmount();
+          reactRoot = null;
+        }
+      } catch (error) {}
+      reactMount.innerHTML = '';
+    }
 
     function extractRowsArray(source) {
       const startMatch = source.match(/\b(?:const|let|var)\s+rows\s*=\s*\[/);
@@ -278,11 +358,78 @@
       }
     }
 
+    function normalizeSourceForRuntime(source) {
+      return source
+        .replace(/^\s*import\s+[^;]+;\s*$/gm, '')
+        .replace(/^\s*export\s+default\s+function\s+([A-Za-z0-9_]+)\s*\(/m, 'function $1(')
+        .replace(/^\s*export\s+default\s+([A-Za-z0-9_]+)\s*;?\s*$/m, 'window.__JSXViewerComponent = $1;')
+        .replace(/^\s*export\s+default\s+/m, 'window.__JSXViewerComponent = ');
+    }
+
+    async function renderVisual(source) {
+      cleanupReactRender();
+
+      if (!source || !source.trim()) {
+        visualViewBtn.disabled = true;
+        setVisualStatus('bad', 'No JSX content loaded.');
+        return;
+      }
+
+      if (!window.React || !window.ReactDOM || !window.Babel) {
+        setVisualStatus('bad', 'React/Babel libraries are not available. Internet access is needed for visual JSX rendering.');
+        return;
+      }
+
+      try {
+        setVisualStatus('warn', 'Trying to render the JSX component visually...');
+        window.__JSXViewerComponent = null;
+
+        const cleaned = normalizeSourceForRuntime(source);
+        const wrapped = `
+          (function(){
+            const React = window.React;
+            ${cleaned}
+            if (!window.__JSXViewerComponent) {
+              if (typeof SimpleJsxFileViewer !== 'undefined') window.__JSXViewerComponent = SimpleJsxFileViewer;
+              else if (typeof App !== 'undefined') window.__JSXViewerComponent = App;
+              else if (typeof defaultExport !== 'undefined') window.__JSXViewerComponent = defaultExport;
+            }
+          })();
+        `;
+
+        const transpiled = window.Babel.transform(wrapped, {
+          presets: ['react']
+        }).code;
+
+        const script = document.createElement('script');
+        script.text = transpiled;
+        document.body.appendChild(script);
+        script.remove();
+
+        const Component = window.__JSXViewerComponent;
+        if (typeof Component !== 'function') {
+          setVisualStatus('bad', 'Visual render failed: no renderable React component was found.');
+          return;
+        }
+
+        reactRoot = window.ReactDOM.createRoot(reactMount);
+        reactRoot.render(window.React.createElement(Component));
+        setVisualStatus('good', 'Visual render succeeded. If the JSX contains a table component, it should now be visible below.');
+      } catch (error) {
+        console.error(error);
+        setVisualStatus('bad', 'Visual render failed: ' + (error && error.message ? error.message : 'Unknown error'));
+      }
+    }
+
     function showContent(text, label) {
+      currentSource = text;
       previewCard.classList.remove('hidden');
       output.innerHTML = escapeHtml(text);
       meta.textContent = label;
       tryBuildTable(text);
+      visualViewBtn.disabled = false;
+      cleanupReactRender();
+      setVisualStatus('warn', 'Click “Visual render” to try rendering the JSX component itself.');
       setView('raw');
     }
 
@@ -335,11 +482,16 @@
     clearBtn.addEventListener('click', () => {
       fileInput.value = '';
       pasteArea.value = '';
+      currentSource = '';
       output.textContent = '';
       meta.textContent = '';
       tableWrap.innerHTML = '';
       tableInfo.textContent = '';
+      cleanupReactRender();
+      setVisualStatus('warn', 'Visual render has not been attempted yet.');
       previewCard.classList.add('hidden');
+      tableViewBtn.disabled = false;
+      visualViewBtn.disabled = false;
     });
   </script>
 </body>
