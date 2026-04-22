@@ -6,6 +6,9 @@ import sys
 import hashlib
 from datetime import datetime
 
+from PIL import Image
+from PIL.ExifTags import Base
+
 
 MAX_PAGE_SIZE = 100
 PREFERRED_TIMESTAMP_COLUMNS = (
@@ -359,7 +362,7 @@ def build_asset_key(file_path: str, file_size_bytes: int, modified_ns: int) -> s
     return hashlib.sha1(raw).hexdigest()
 
 
-def ensure_canonical_schema(path: str, schema_path: str) -> dict:
+def ensure_canonical_schema(path: str, schema_path: str, required_tables: tuple[str, ...] | None = None) -> dict:
     resolved_schema_path = os.path.abspath(schema_path)
     if not os.path.exists(resolved_schema_path):
         raise FileNotFoundError(f"Schema bootstrap file does not exist: {resolved_schema_path}")
@@ -367,18 +370,19 @@ def ensure_canonical_schema(path: str, schema_path: str) -> dict:
     with open(resolved_schema_path, "r", encoding="utf-8") as handle:
         schema_sql = handle.read()
 
+    normalized_required_tables = required_tables or (
+        "canonical_media_assets",
+        "media_asset_variants",
+        "parse_files_for_gps_queue",
+    )
+
     connection = connect_read_write(path)
     try:
         cursor = connection.cursor()
         cursor.executescript(schema_sql)
-        required_tables = (
-            "canonical_media_assets",
-            "media_asset_variants",
-            "parse_files_for_gps_queue",
-        )
         missing_tables = [
             table_name
-            for table_name in required_tables
+            for table_name in normalized_required_tables
             if cursor.execute(
                 "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?",
                 (table_name,),
@@ -386,14 +390,14 @@ def ensure_canonical_schema(path: str, schema_path: str) -> dict:
         ]
         if missing_tables:
             raise RuntimeError(
-                "Schema bootstrap completed but required Stage 2 table(s) are still missing: "
+                "Schema bootstrap completed but required table(s) are still missing: "
                 + ", ".join(missing_tables)
             )
         connection.commit()
         return {
             "schemaPath": resolved_schema_path,
             "applied": True,
-            "requiredTables": list(required_tables),
+            "requiredTables": list(normalized_required_tables),
         }
     except Exception:
         connection.rollback()
@@ -544,6 +548,314 @@ def stage2_index_register(path: str, download_dir: str, indexed_at: str, schema_
             "insertedVariantCount": inserted_variants,
             "insertedGpsQueueCount": inserted_gps_queue,
             "indexedAt": indexed_at,
+            "schemaBootstrap": schema_bootstrap,
+        }
+    except Exception:
+        connection.rollback()
+        raise
+    finally:
+        connection.close()
+
+
+def convert_gps_coordinate(parts: tuple[float, float, float], ref: str) -> float:
+    degrees = float(parts[0])
+    minutes = float(parts[1])
+    seconds = float(parts[2])
+    value = degrees + (minutes / 60.0) + (seconds / 3600.0)
+    if ref in ("S", "W"):
+        value *= -1.0
+    return value
+
+
+def extract_exif_gps(file_path: str) -> dict | None:
+    with Image.open(file_path) as image:
+        exif = image.getexif()
+        if not exif:
+            return None
+        try:
+            gps_ifd = exif.get_ifd(Base.GPSInfo)
+        except KeyError:
+            return None
+        if not gps_ifd:
+            return None
+
+        latitude_parts = gps_ifd.get(2)
+        latitude_ref = gps_ifd.get(1)
+        longitude_parts = gps_ifd.get(4)
+        longitude_ref = gps_ifd.get(3)
+        altitude = gps_ifd.get(6)
+        if not latitude_parts or not latitude_ref or not longitude_parts or not longitude_ref:
+            return None
+
+        latitude = convert_gps_coordinate(latitude_parts, latitude_ref)
+        longitude = convert_gps_coordinate(longitude_parts, longitude_ref)
+        altitude_value = float(altitude) if altitude is not None else None
+        return {
+            "latitude": latitude,
+            "longitude": longitude,
+            "altitude": altitude_value,
+            "parserMethod": "EXIF",
+        }
+
+
+def build_address_cache_key(latitude: float, longitude: float) -> tuple[str, float, float]:
+    rounded_latitude = round(float(latitude), 5)
+    rounded_longitude = round(float(longitude), 5)
+    return (
+        f"{rounded_latitude:.5f},{rounded_longitude:.5f}",
+        rounded_latitude,
+        rounded_longitude,
+    )
+
+
+def build_placeholder_address(latitude: float, longitude: float) -> str:
+    rounded_latitude = round(float(latitude), 5)
+    rounded_longitude = round(float(longitude), 5)
+    return f"Lat: {rounded_latitude:.5f}, Lon: {rounded_longitude:.5f}"
+
+
+def stage3_process_gps_queue(path: str, executed_at: str, schema_path: str) -> dict:
+    schema_bootstrap = ensure_canonical_schema(
+        path,
+        schema_path,
+        (
+            "canonical_media_assets",
+            "parse_files_for_gps_queue",
+            "geocode_queue",
+            "address_cache",
+        ),
+    )
+    connection = connect_read_write(path)
+    try:
+        cursor = connection.cursor()
+        queue_rows = cursor.execute(
+            """
+            SELECT q.gps_queue_id, q.media_asset_id, q.attempt_count, c.canonical_path
+            FROM parse_files_for_gps_queue q
+            INNER JOIN canonical_media_assets c ON c.media_asset_id = q.media_asset_id
+            WHERE q.status IN ('PENDING', 'RETRY')
+            ORDER BY q.gps_queue_id ASC
+            """
+        ).fetchall()
+
+        processed_count = 0
+        success_count = 0
+        failure_count = 0
+        inserted_geocode_queue_count = 0
+
+        for row in queue_rows:
+            processed_count += 1
+            next_attempt_count = int(row["attempt_count"] or 0) + 1
+            canonical_path = row["canonical_path"]
+            media_asset_id = int(row["media_asset_id"])
+            gps_queue_id = int(row["gps_queue_id"])
+
+            cursor.execute(
+                """
+                UPDATE parse_files_for_gps_queue
+                SET status = 'PROCESSING', attempt_count = ?, processing_started_at = ?, updated_at = ?
+                WHERE gps_queue_id = ?
+                """,
+                (next_attempt_count, executed_at, executed_at, gps_queue_id),
+            )
+
+            gps_data = None
+            failure_code = None
+            failure_message = None
+            try:
+                if canonical_path is None or not os.path.exists(canonical_path):
+                    failure_code = "canonical_file_missing"
+                    failure_message = f"Canonical media file does not exist: {canonical_path}"
+                else:
+                    gps_data = extract_exif_gps(canonical_path)
+                    if gps_data is None:
+                        failure_code = "gps_not_found"
+                        failure_message = "No EXIF GPS coordinates were found in the media asset."
+            except Exception as error:
+                failure_code = "gps_extract_failed"
+                failure_message = str(error)
+
+            if gps_data is None:
+                failure_count += 1
+                cursor.execute(
+                    """
+                    UPDATE canonical_media_assets
+                    SET gps_status = 'GPS_NOT_FOUND', successful_gps_parser_method = NULL, updated_at = ?
+                    WHERE media_asset_id = ?
+                    """,
+                    (executed_at, media_asset_id),
+                )
+                cursor.execute(
+                    """
+                    UPDATE parse_files_for_gps_queue
+                    SET status = 'NO_GPS_FOUND', processing_finished_at = ?, successful_parser_method = NULL,
+                        failure_code = ?, failure_message = ?, updated_at = ?
+                    WHERE gps_queue_id = ?
+                    """,
+                    (executed_at, failure_code, failure_message, executed_at, gps_queue_id),
+                )
+                continue
+
+            success_count += 1
+            cursor.execute(
+                """
+                UPDATE canonical_media_assets
+                SET gps_latitude = ?, gps_longitude = ?, gps_altitude = ?, gps_status = 'GPS_FOUND',
+                    successful_gps_parser_method = ?, updated_at = ?
+                WHERE media_asset_id = ?
+                """,
+                (gps_data["latitude"], gps_data["longitude"], gps_data["altitude"], gps_data["parserMethod"], executed_at, media_asset_id),
+            )
+            cursor.execute(
+                """
+                UPDATE parse_files_for_gps_queue
+                SET status = 'COMPLETED', processing_finished_at = ?, successful_parser_method = ?,
+                    failure_code = NULL, failure_message = NULL, updated_at = ?
+                WHERE gps_queue_id = ?
+                """,
+                (executed_at, gps_data["parserMethod"], executed_at, gps_queue_id),
+            )
+            cursor.execute(
+                """
+                INSERT OR IGNORE INTO geocode_queue (media_asset_id, status, attempt_count, created_at, updated_at)
+                VALUES (?, 'PENDING', 0, ?, ?)
+                """,
+                (media_asset_id, executed_at, executed_at),
+            )
+            if cursor.rowcount == 1:
+                inserted_geocode_queue_count += 1
+
+        connection.commit()
+        return {
+            "outcome": "processed",
+            "processedCount": processed_count,
+            "successCount": success_count,
+            "failureCount": failure_count,
+            "insertedGeocodeQueueCount": inserted_geocode_queue_count,
+            "executedAt": executed_at,
+            "schemaBootstrap": schema_bootstrap,
+        }
+    except Exception:
+        connection.rollback()
+        raise
+    finally:
+        connection.close()
+
+
+def stage4_process_geocode_queue(path: str, executed_at: str, schema_path: str) -> dict:
+    schema_bootstrap = ensure_canonical_schema(
+        path,
+        schema_path,
+        (
+            "canonical_media_assets",
+            "parse_files_for_gps_queue",
+            "geocode_queue",
+            "address_cache",
+        ),
+    )
+    connection = connect_read_write(path)
+    try:
+        cursor = connection.cursor()
+        queue_rows = cursor.execute(
+            """
+            SELECT q.geocode_queue_id, q.media_asset_id, q.attempt_count, c.gps_latitude, c.gps_longitude
+            FROM geocode_queue q
+            INNER JOIN canonical_media_assets c ON c.media_asset_id = q.media_asset_id
+            WHERE q.status IN ('PENDING', 'RETRY')
+            ORDER BY q.geocode_queue_id ASC
+            """
+        ).fetchall()
+
+        processed_count = 0
+        success_count = 0
+        failure_count = 0
+        inserted_cache_count = 0
+
+        for row in queue_rows:
+            processed_count += 1
+            next_attempt_count = int(row["attempt_count"] or 0) + 1
+            geocode_queue_id = int(row["geocode_queue_id"])
+            media_asset_id = int(row["media_asset_id"])
+            latitude = row["gps_latitude"]
+            longitude = row["gps_longitude"]
+            provider_name = "deterministic_placeholder"
+
+            cursor.execute(
+                """
+                UPDATE geocode_queue
+                SET status = 'PROCESSING', attempt_count = ?, processing_started_at = ?, updated_at = ?
+                WHERE geocode_queue_id = ?
+                """,
+                (next_attempt_count, executed_at, executed_at, geocode_queue_id),
+            )
+
+            if latitude is None or longitude is None:
+                failure_count += 1
+                cursor.execute(
+                    """
+                    UPDATE canonical_media_assets
+                    SET geocode_status = 'GEOCODE_FAILED', updated_at = ?
+                    WHERE media_asset_id = ?
+                    """,
+                    (executedAt := executed_at, media_asset_id),
+                )
+                cursor.execute(
+                    """
+                    UPDATE geocode_queue
+                    SET status = 'RETRY_EXHAUSTED', processing_finished_at = ?, geocode_provider = ?,
+                        failure_code = 'gps_missing', failure_message = 'Cannot geocode because GPS coordinates are missing.',
+                        updated_at = ?
+                    WHERE geocode_queue_id = ?
+                    """,
+                    (executed_at, provider_name, executed_at, geocode_queue_id),
+                )
+                continue
+
+            cache_key, rounded_latitude, rounded_longitude = build_address_cache_key(latitude, longitude)
+            address_text = build_placeholder_address(latitude, longitude)
+            changes_before = connection.total_changes
+            cursor.execute(
+                """
+                INSERT OR IGNORE INTO address_cache (
+                    address_cache_key, rounded_latitude, rounded_longitude, address_text, provider_name,
+                    provider_response_json, language_code, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    cache_key, rounded_latitude, rounded_longitude, address_text, provider_name,
+                    json.dumps({"address_text": address_text, "cache_key": cache_key}), 'en', executed_at, executed_at,
+                ),
+            )
+            if connection.total_changes > changes_before:
+                inserted_cache_count += 1
+
+            cursor.execute(
+                """
+                UPDATE canonical_media_assets
+                SET address_text = ?, address_cache_key = ?, geocode_status = 'GEOCODE_FOUND', updated_at = ?
+                WHERE media_asset_id = ?
+                """,
+                (address_text, cache_key, executed_at, media_asset_id),
+            )
+            cursor.execute(
+                """
+                UPDATE geocode_queue
+                SET status = 'COMPLETED', processing_finished_at = ?, geocode_provider = ?,
+                    failure_code = NULL, failure_message = NULL, updated_at = ?
+                WHERE geocode_queue_id = ?
+                """,
+                (executed_at, provider_name, executed_at, geocode_queue_id),
+            )
+            success_count += 1
+
+        connection.commit()
+        return {
+            "outcome": "processed",
+            "processedCount": processed_count,
+            "successCount": success_count,
+            "failureCount": failure_count,
+            "insertedAddressCacheCount": inserted_cache_count,
+            "executedAt": executed_at,
             "schemaBootstrap": schema_bootstrap,
         }
     except Exception:
@@ -758,7 +1070,7 @@ def select_current_item(path: str, executed_at: str, repo_root: str) -> dict:
 def main() -> int:
     if len(sys.argv) < 3:
         raise ValueError(
-            "Expected usage: sqlite_admin.py <inspect|recreate|rows|stage2_index_register|stage5_prepare_queue|stage6_select_current> <path> [args]"
+            "Expected usage: sqlite_admin.py <inspect|recreate|rows|stage2_index_register|stage3_process_gps_queue|stage4_process_geocode_queue|stage5_prepare_queue|stage6_select_current> <path> [args]"
         )
 
     operation = sys.argv[1]
@@ -780,6 +1092,14 @@ def main() -> int:
         if len(sys.argv) != 6:
             raise ValueError("stage2_index_register expects: sqlite_admin.py stage2_index_register <path> <download_dir> <indexed_at> <schema_path>")
         result = stage2_index_register(path, os.path.abspath(sys.argv[3]), sys.argv[4], os.path.abspath(sys.argv[5]))
+    elif operation == "stage3_process_gps_queue":
+        if len(sys.argv) != 5:
+            raise ValueError("stage3_process_gps_queue expects: sqlite_admin.py stage3_process_gps_queue <path> <executed_at> <schema_path>")
+        result = stage3_process_gps_queue(path, sys.argv[3], os.path.abspath(sys.argv[4]))
+    elif operation == "stage4_process_geocode_queue":
+        if len(sys.argv) != 5:
+            raise ValueError("stage4_process_geocode_queue expects: sqlite_admin.py stage4_process_geocode_queue <path> <executed_at> <schema_path>")
+        result = stage4_process_geocode_queue(path, sys.argv[3], os.path.abspath(sys.argv[4]))
     elif operation == "stage5_prepare_queue":
         if len(sys.argv) != 4:
             raise ValueError("stage5_prepare_queue expects: sqlite_admin.py stage5_prepare_queue <path> <executed_at>")

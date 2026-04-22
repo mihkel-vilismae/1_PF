@@ -121,6 +121,8 @@ const routes = {
   'POST /api/database-viewer/logging/stop': databaseViewerLoggingStopHandler,
   'POST /api/runtime/download/run': runtimeDownloadRunHandler,
   'POST /api/runtime/index/run': runtimeIndexRunHandler,
+  'POST /api/runtime/gps/run': runtimeGpsRunHandler,
+  'POST /api/runtime/geocode/run': runtimeGeocodeRunHandler,
   'POST /api/runtime/queue/prepare': runtimeQueuePrepareHandler,
   'POST /api/runtime/playback/select-current': runtimePlaybackSelectCurrentHandler,
   'GET /api/runtime-truth': getRuntimeTruthHandler,
@@ -754,6 +756,72 @@ async function runtimeIndexRunHandler({ context }) {
       database,
       schemaVersion: 1,
       indexedAt,
+    },
+  };
+}
+
+async function runtimeGpsRunHandler({ context }) {
+  const database = await buildDatabaseStatus(context);
+  if (!database.exists) {
+    throw new HttpError(404, 'database_missing', 'Cannot run GPS parsing because the DB file does not exist.', {
+      database,
+    });
+  }
+
+  const executedAt = new Date().toISOString();
+  const schemaPath = path.join(repoRoot, 'schema.sql');
+  const gps = await runPythonJson(['stage3_process_gps_queue', database.absolutePath, executedAt, schemaPath]);
+  return {
+    statusCode: 200,
+    payload: {
+      status: gps.failureCount ? 'warning' : 'ok',
+      messages: gps.processedCount
+        ? [`GPS parsing processed ${gps.processedCount} queued asset(s): ${gps.successCount} success, ${gps.failureCount} without GPS.`]
+        : ['No queued GPS work was available. Stage 3 completed as a successful no-op.'],
+      stage: 'stage3_process_gps_queue',
+      processed_count: gps.processedCount,
+      success_count: gps.successCount,
+      failure_count: gps.failureCount,
+      message: gps.processedCount
+        ? `Processed ${gps.processedCount} GPS queue row(s).`
+        : 'No queued GPS work was available.',
+      gps,
+      database,
+      schemaVersion: 1,
+      executedAt,
+    },
+  };
+}
+
+async function runtimeGeocodeRunHandler({ context }) {
+  const database = await buildDatabaseStatus(context);
+  if (!database.exists) {
+    throw new HttpError(404, 'database_missing', 'Cannot run geocoding because the DB file does not exist.', {
+      database,
+    });
+  }
+
+  const executedAt = new Date().toISOString();
+  const schemaPath = path.join(repoRoot, 'schema.sql');
+  const geocode = await runPythonJson(['stage4_process_geocode_queue', database.absolutePath, executedAt, schemaPath]);
+  return {
+    statusCode: 200,
+    payload: {
+      status: geocode.failureCount ? 'warning' : 'ok',
+      messages: geocode.processedCount
+        ? [`Geocoding processed ${geocode.processedCount} queued asset(s): ${geocode.successCount} success, ${geocode.failureCount} failed.`]
+        : ['No queued geocode work was available. Stage 4 completed as a successful no-op.'],
+      stage: 'stage4_process_geocode_queue',
+      processed_count: geocode.processedCount,
+      success_count: geocode.successCount,
+      failure_count: geocode.failureCount,
+      message: geocode.processedCount
+        ? `Processed ${geocode.processedCount} geocode queue row(s).`
+        : 'No queued geocode work was available.',
+      geocode,
+      database,
+      schemaVersion: 1,
+      executedAt,
     },
   };
 }

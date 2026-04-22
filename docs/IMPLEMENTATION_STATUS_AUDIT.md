@@ -61,8 +61,7 @@ The current repository is primarily a Vite‑based dashboard prototype with sele
 implements View A and View E backend paths for environment verification and database inspection, exposes a
 mock runtime‑truth JSON file at `/api/runtime-truth`, and now includes synchronous runtime slices for Stage 1
 download (`/api/runtime/download/run`), Stage 2 indexing (`/api/runtime/index/run`), Stage 5 queue preparation,
-and Stage 6 current-item selection.  Authentication and two‑factor flows are absent, GPS/geocoding workers are
-still missing, and the pipeline, playback, and screen workers remain stubs.  Cron scheduling support is partly
+and Stage 6 current-item selection. Authentication and two-factor flows are absent, Stage 3/4 now exist as synchronous queue-processing routes, and the pipeline, playback, and screen workers remain stubs.  Cron scheduling support is partly
 wired for Windows, while Raspberry Pi–specific scheduling is not yet implemented.  The documentation set still
 describes a larger target architecture that the code base only partially realises.
 
@@ -74,9 +73,9 @@ describes a larger target architecture that the code base only partially realise
 | **2FA handling** | **Missing** | Two‑factor authentication is mentioned in documentation, but no code exists to prompt for or validate a second factor. |
 | **Download backend** | **Partially implemented** | `POST /api/runtime/download/run` invokes `icloudpd`, ensures the download/cookie directories exist, and reports before/after supported-media counts. It is still a synchronous HTTP slice rather than the long-term worker model. |
 | **Indexing backend** | **Partially implemented** | `POST /api/runtime/index/run` calls `server/scripts/sqlite_admin.py stage2_index_register`, scans the download directory, writes `canonical_media_assets`, `media_asset_variants`, and `parse_files_for_gps_queue`, and now bootstraps `schema.sql` automatically for a fresh repo-managed DB. |
-| **GPS parsing backend** | **Missing** | The schema defines `parse_files_for_gps_queue`, but no code reads from or writes to it.  No GPS extraction logic is present. |
-| **Geocoding backend** | **Missing** | The schema defines `geocode_queue` and `address_cache`, but there is no code performing geocoding or populating these tables. |
-| **Address cache support** | **Docs only** | The `address_cache` table exists in `schema.sql`, but no backend functions read from or insert into it. |
+| **GPS parsing backend** | **Partially implemented** | `POST /api/runtime/gps/run` now calls `server/scripts/sqlite_admin.py stage3_process_gps_queue`, reads `parse_files_for_gps_queue`, extracts EXIF GPS when available, updates `canonical_media_assets`, and seeds `geocode_queue` idempotently. |
+| **Geocoding backend** | **Partially implemented** | `POST /api/runtime/geocode/run` now calls `server/scripts/sqlite_admin.py stage4_process_geocode_queue`, reads `geocode_queue`, writes deterministic placeholder addresses, updates `canonical_media_assets`, and populates `address_cache` idempotently. |
+| **Address cache support** | **Partially implemented** | Stage 4 now inserts and reuses `address_cache` rows via a deterministic coordinate-based cache key. |
 | **Enqueue‑for‑playback backend** | **Partially implemented** | `POST /api/runtime/queue/prepare` now inserts idempotent `READY` rows into `slideshow_queue` for eligible assets. |
 | **Playback backend** | **Missing** | There is no playback service or worker consuming a queue.  Playback is simulated entirely on the frontend through mock state. |
 | **Runtime state truth / persistence** | **Partially implemented** | `POST /api/runtime/playback/select-current` now writes `runtime_state.current_media_asset_id`; other runtime truth still relies on `conf/runtime-truth.json`. |
@@ -111,15 +110,11 @@ never writes data.
 
 ### GPS parsing stage
 
-The schema includes a `parse_files_for_gps_queue` table meant to track GPS extraction attempts, but no code
-manipulates this queue.  There is no GPS parsing logic in either Node or Python, and no worker that claims or
-updates queue rows.
+The schema includes a `parse_files_for_gps_queue` table and the runtime now exercises it through `POST /api/runtime/gps/run`. The Stage 3 slice is synchronous and queue-driven: it claims `PENDING` rows, attempts EXIF GPS extraction via Pillow, updates `canonical_media_assets`, marks queue rows as `COMPLETED` or `NO_GPS_FOUND`, and seeds `geocode_queue` idempotently for assets with real GPS coordinates. It is still not a long-running worker model.
 
 ### Geocoding stage and address cache
 
-The `geocode_queue` and `address_cache` tables are defined in the schema, and `.env` exposes `GEOCODE_BATCH_SIZE` and
-`GEOCODE_LANGUAGE`.  However, there is no geocoding client implemented.  The repository does not reference any
-geocoding API, and no functions insert or read from `address_cache`.
+The `geocode_queue` and `address_cache` tables are now exercised by `POST /api/runtime/geocode/run`. The Stage 4 slice is synchronous and queue-driven: it processes queued assets that already have GPS coordinates, writes a deterministic placeholder address string, stores/reuses `address_cache` rows by rounded coordinate key, and updates `canonical_media_assets.geocode_status`. A real provider integration remains deferred.
 
 ### Enqueue for playback
 

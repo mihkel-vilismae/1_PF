@@ -103,7 +103,7 @@ Implemented now:
 - mock state transitions and log/history rendering
 - guarded simulation behavior for pipeline/playback/screen-related UI actions
 - minimal A backend endpoints for env verification and SQLite file operations
-- synchronous runtime endpoints for download (`POST /api/runtime/download/run`) and Stage 2 indexing (`POST /api/runtime/index/run`)
+- synchronous runtime endpoints for download (`POST /api/runtime/download/run`), Stage 2 indexing (`POST /api/runtime/index/run`), Stage 3 GPS parsing (`POST /api/runtime/gps/run`), and Stage 4 geocoding (`POST /api/runtime/geocode/run`)
 - repo-local E database viewer endpoints for verification, logical connect gating, table listing, paginated row inspection, and session-bounded backend DB activity logging
 - destructive-action confirmation for DB delete/recreate in A
 - production frontend build via Vite
@@ -113,7 +113,7 @@ Not implemented now:
 
 - backend API for B/C/D and the rest of the planned system
 - guaranteed cross-process or global SQL tracing; View E logging is limited to backend-observed activity while the session is active
-- full durable runtime persistence beyond the current SQLite-backed slices for Stage 2 indexing, queue preparation, and current-item selection
+- full durable runtime persistence beyond the current SQLite-backed slices for Stage 2 indexing, Stage 3 GPS parsing, Stage 4 geocoding, queue preparation, and current-item selection
 - real pipeline/playback/screen/recovery services behind the installed 3A scheduler host
 - real playback worker
 - real screen worker
