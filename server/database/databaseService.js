@@ -1,0 +1,420 @@
+import { spawn } from 'node:child_process';
+import { promises as fs } from 'node:fs';
+import path from 'node:path';
+
+const databaseViewerRequiredTablesAuthority = Object.freeze({
+  sourcePath: 'docs/OLD_DOCS/20_STATE_AND_TRUTH_CONTRACT.md',
+  sourceLabel: 'Truth Surfaces',
+  note: 'This is the current canonical target-state contract for required truth surfaces. It is not proof that those tables already exist in the current repo runtime.',
+});
+
+const databaseViewerRequiredTables = Object.freeze([
+  'canonical_media_assets',
+  'media_asset_variants',
+  'address_cache',
+  'parse_files_for_gps_queue',
+  'geocode_queue',
+  'slideshow_queue',
+  'runtime_state',
+  'action_runs',
+  'system_logs',
+]);
+
+const databaseViewerLoggingCoverage = 'Captures database viewer queries and repo-local backend DB actions observed through this server while the logging session is active. It does not guarantee capture of every SQL statement or activity from external processes.';
+
+export function createDatabaseService({ repoRoot, createHttpError }) {
+  if (!repoRoot) {
+    throw new Error('repoRoot is required to create the database service.');
+  }
+  if (typeof createHttpError !== 'function') {
+    throw new Error('createHttpError is required to create the database service.');
+  }
+
+  const serverRoot = path.join(repoRoot, 'server');
+  const sqliteScriptPath = path.join(serverRoot, 'scripts', 'sqlite_admin.py');
+  const schemaPath = path.join(repoRoot, 'schema.sql');
+
+  function resolveRepoPath(relativeOrAbsolutePath) {
+    if (path.isAbsolute(relativeOrAbsolutePath)) {
+      return relativeOrAbsolutePath;
+    }
+    return path.resolve(repoRoot, relativeOrAbsolutePath);
+  }
+
+  function getSqliteScriptPath() {
+    return sqliteScriptPath;
+  }
+
+  function getSchemaPath() {
+    return schemaPath;
+  }
+
+  function getDatabaseViewerLoggingCoverage() {
+    return databaseViewerLoggingCoverage;
+  }
+
+  function getDatabaseArtifactPaths(databaseOrAbsolutePath) {
+    const absolutePath = typeof databaseOrAbsolutePath === 'string'
+      ? databaseOrAbsolutePath
+      : databaseOrAbsolutePath?.absolutePath;
+
+    if (!absolutePath) {
+      throw createHttpError(500, 'missing_database_artifact_path', 'Database artifact path is required.');
+    }
+
+    return [absolutePath, `${absolutePath}-wal`, `${absolutePath}-shm`];
+  }
+
+  async function fileExists(targetPath) {
+    try {
+      await fs.access(targetPath);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async function buildDatabaseStatus(context) {
+    const dbPath = context.envValues.DB_PATH;
+    if (!dbPath) {
+      throw createHttpError(500, 'missing_db_path', 'DB_PATH is required before database actions can run.');
+    }
+
+    const absolutePath = resolveRepoPath(dbPath);
+    const exists = await fileExists(absolutePath);
+    const stats = exists ? await fs.stat(absolutePath) : null;
+    const parentDirectory = path.dirname(absolutePath);
+
+    return {
+      kind: 'sqlite',
+      configuredPath: dbPath,
+      absolutePath,
+      exists,
+      sizeBytes: stats?.size ?? 0,
+      parentDirectory,
+      parentDirectoryExists: await fileExists(parentDirectory),
+      inspectRuntime: 'python sqlite3 bridge',
+    };
+  }
+
+  async function inspectDatabase(context) {
+    const database = await buildDatabaseStatus(context);
+    if (!database.exists) {
+      throw createHttpError(404, 'database_missing', 'Cannot inspect the database because the DB file does not exist.', {
+        database,
+      });
+    }
+
+    const inspection = await runPythonJson(['inspect', database.absolutePath]);
+    return { database, inspection };
+  }
+
+  async function deleteDatabaseArtifacts(context) {
+    const database = await buildDatabaseStatus(context);
+    const removedPaths = [];
+    const candidatePaths = getDatabaseArtifactPaths(database);
+
+    for (const candidate of candidatePaths) {
+      if (await fileExists(candidate)) {
+        await fs.rm(candidate, { force: true });
+        removedPaths.push(candidate);
+      }
+    }
+
+    return { database, removedPaths };
+  }
+
+  async function recreateEmptyDatabase(context) {
+    const database = await buildDatabaseStatus(context);
+    const candidatePaths = getDatabaseArtifactPaths(database);
+
+    for (const candidate of candidatePaths) {
+      if (await fileExists(candidate)) {
+        await fs.rm(candidate, { force: true });
+      }
+    }
+
+    const created = await runPythonJson(['recreate', database.absolutePath, schemaPath]);
+    return { database, created, schemaPath };
+  }
+
+  async function buildDatabaseViewerVerification(context) {
+    const database = await buildDatabaseStatus(context);
+    const requiredTables = {
+      ...databaseViewerRequiredTablesAuthority,
+      expected: [...databaseViewerRequiredTables],
+      present: [],
+      missing: [...databaseViewerRequiredTables],
+    };
+
+    if (!database.exists) {
+      return {
+        verificationPassed: false,
+        database,
+        requiredTables,
+        availableObjects: [],
+      };
+    }
+
+    const inspection = await runPythonJson(['inspect', database.absolutePath]);
+    const presentTableNames = inspection.tables
+      .filter((entry) => entry.kind === 'table')
+      .map((entry) => entry.name);
+
+    return {
+      verificationPassed: databaseViewerRequiredTables.every((tableName) => presentTableNames.includes(tableName)),
+      database,
+      requiredTables: {
+        ...requiredTables,
+        present: presentTableNames.filter((tableName) => databaseViewerRequiredTables.includes(tableName)).sort(),
+        missing: databaseViewerRequiredTables.filter((tableName) => !presentTableNames.includes(tableName)),
+      },
+      availableObjects: inspection.tables.map((entry) => ({
+        name: entry.name,
+        kind: entry.kind,
+        columnCount: entry.columnCount,
+      })),
+    };
+  }
+
+  function buildDatabaseViewerVerificationMessages(verification) {
+    if (!verification.database.exists) {
+      return ['Database file does not exist, so required-table verification could not run.'];
+    }
+
+    if (!verification.requiredTables.missing.length) {
+      return [`Database file exists and all ${verification.requiredTables.expected.length} required tables are present.`];
+    }
+
+    return [
+      `Database verification failed because ${verification.requiredTables.missing.length} required table(s) are missing.`,
+    ];
+  }
+
+  async function listDatabaseViewerTables(context) {
+    const database = await buildDatabaseStatus(context);
+    if (!database.exists) {
+      throw createHttpError(404, 'database_missing', 'Cannot list tables because the DB file does not exist.', {
+        database,
+      });
+    }
+
+    const inspection = await runPythonJson(['inspect', database.absolutePath]);
+    return { database, inspection };
+  }
+
+  async function loadDatabaseViewerRows(context, body) {
+    const tableName = String(body?.tableName ?? '').trim();
+    if (!tableName) {
+      throw createHttpError(400, 'missing_table_name', 'tableName is required when loading database rows.');
+    }
+
+    const page = normalizeDatabaseViewerPage(body?.page);
+    const pageSize = normalizeDatabaseViewerPageSize(body?.pageSize);
+    const database = await buildDatabaseStatus(context);
+    if (!database.exists) {
+      throw createHttpError(404, 'database_missing', 'Cannot load rows because the DB file does not exist.', {
+        database,
+      });
+    }
+
+    const table = await runPythonJson(['rows', database.absolutePath, tableName, String(page), String(pageSize)]);
+    return { database, table };
+  }
+
+  function normalizeDatabaseViewerPage(value) {
+    const page = Number(value ?? 0);
+    if (!Number.isInteger(page) || page < 0) {
+      throw createHttpError(400, 'invalid_page', 'page must be a zero-based integer.',
+        { page: value });
+    }
+    return page;
+  }
+
+  function normalizeDatabaseViewerPageSize(value) {
+    if (value === undefined) {
+      return 50;
+    }
+    const pageSize = Number(value);
+    if (!Number.isInteger(pageSize) || pageSize <= 0 || pageSize > 100) {
+      throw createHttpError(400, 'invalid_page_size', 'pageSize must be an integer between 1 and 100.', {
+        pageSize: value,
+      });
+    }
+    return pageSize;
+  }
+
+
+  async function runStage2IndexRegister(context) {
+    const database = await buildDatabaseStatus(context);
+    if (!database.exists) {
+      throw createHttpError(404, 'database_missing', 'Cannot run indexing because the DB file does not exist.', {
+        database,
+      });
+    }
+
+    const downloadDirectory = resolveRepoPath(context.envValues.DOWNLOAD_DIR || '');
+    const indexedAt = new Date().toISOString();
+
+    try {
+      const indexing = await runPythonJson([
+        'stage2_index_register',
+        database.absolutePath,
+        downloadDirectory,
+        indexedAt,
+        schemaPath,
+      ]);
+      return { database, downloadDirectory, schemaPath, indexedAt, indexing };
+    } catch (error) {
+      if (error?.code === 'python_bridge_failed') {
+        throw createHttpError(500, 'index_schema_bootstrap_failed', 'Indexing failed before Stage 2 could finish. Check schema bootstrap and database setup.', {
+          database,
+          downloadDirectory,
+          schemaPath,
+          pythonBridge: error.details,
+        });
+      }
+      throw error;
+    }
+  }
+
+  async function runStage3ProcessGpsQueue(context) {
+    const database = await buildDatabaseStatus(context);
+    if (!database.exists) {
+      throw createHttpError(404, 'database_missing', 'Cannot run GPS parsing because the DB file does not exist.', {
+        database,
+      });
+    }
+
+    const executedAt = new Date().toISOString();
+    const gps = await runPythonJson(['stage3_process_gps_queue', database.absolutePath, executedAt, schemaPath]);
+    return { database, executedAt, gps };
+  }
+
+  async function runStage4ProcessGeocodeQueue(context) {
+    const database = await buildDatabaseStatus(context);
+    if (!database.exists) {
+      throw createHttpError(404, 'database_missing', 'Cannot run geocoding because the DB file does not exist.', {
+        database,
+      });
+    }
+
+    const executedAt = new Date().toISOString();
+    const geocode = await runPythonJson(['stage4_process_geocode_queue', database.absolutePath, executedAt, schemaPath]);
+    return { database, executedAt, geocode };
+  }
+
+  async function runStage5PrepareQueue(context) {
+    const database = await buildDatabaseStatus(context);
+    if (!database.exists) {
+      throw createHttpError(404, 'database_missing', 'Cannot prepare slideshow queue because the DB file does not exist.', {
+        database,
+      });
+    }
+
+    const executedAt = new Date().toISOString();
+    const queue = await runPythonJson(['stage5_prepare_queue', database.absolutePath, executedAt, schemaPath]);
+    return { database, executedAt, queue };
+  }
+
+  async function runStage6SelectCurrent(context) {
+    const database = await buildDatabaseStatus(context);
+    if (!database.exists) {
+      throw createHttpError(404, 'database_missing', 'Cannot select current media because the DB file does not exist.', {
+        database,
+      });
+    }
+
+    const executedAt = new Date().toISOString();
+    const playback = await runPythonJson(['stage6_select_current', database.absolutePath, executedAt, repoRoot]);
+    return { database, executedAt, playback };
+  }
+
+  async function getRuntimeState(context, key) {
+    const dbPath = context.envValues && context.envValues.DB_PATH;
+    if (!dbPath) {
+      return null;
+    }
+
+    const absolutePath = resolveRepoPath(dbPath);
+    const result = await runPythonJson(['runtime_state_get', absolutePath, key]);
+    const raw = result?.stateValue;
+    return raw ? JSON.parse(raw) : null;
+  }
+
+  async function setRuntimeState(context, key, value) {
+    const dbPath = context.envValues && context.envValues.DB_PATH;
+    if (!dbPath) {
+      return;
+    }
+
+    const absolutePath = resolveRepoPath(dbPath);
+    const serialized = typeof value === 'string' ? value : JSON.stringify(value);
+    await runPythonJson(['runtime_state_set', absolutePath, key, serialized, 'json', 'orchestration']);
+  }
+
+  async function runPythonJson(args) {
+    const { stdout, stderr, code } = await runProcess('python', [sqliteScriptPath, ...args]);
+    if (code !== 0) {
+      throw createHttpError(500, 'python_bridge_failed', 'Python bridge command failed.', {
+        stderr: stderr.trim(),
+        stdout: stdout.trim(),
+      });
+    }
+
+    try {
+      return JSON.parse(stdout.trim());
+    } catch {
+      throw createHttpError(500, 'python_bridge_invalid_json', 'Python bridge returned invalid JSON.', {
+        stdout: stdout.trim(),
+      });
+    }
+  }
+
+  function runProcess(command, args, options = {}) {
+    return new Promise((resolve, reject) => {
+      const child = spawn(command, args, {
+        cwd: repoRoot,
+        stdio: ['ignore', 'pipe', 'pipe'],
+        shell: options.shell === true,
+      });
+
+      let stdout = '';
+      let stderr = '';
+
+      child.stdout.on('data', (chunk) => {
+        stdout += chunk.toString();
+      });
+      child.stderr.on('data', (chunk) => {
+        stderr += chunk.toString();
+      });
+      child.on('error', (error) => reject(error));
+      child.on('close', (code) => resolve({ code, stdout, stderr }));
+    });
+  }
+
+  return {
+    buildDatabaseStatus,
+    buildDatabaseViewerVerification,
+    buildDatabaseViewerVerificationMessages,
+    deleteDatabaseArtifacts,
+    fileExists,
+    getDatabaseArtifactPaths,
+    getDatabaseViewerLoggingCoverage,
+    getSchemaPath,
+    getSqliteScriptPath,
+    inspectDatabase,
+    listDatabaseViewerTables,
+    loadDatabaseViewerRows,
+    recreateEmptyDatabase,
+    resolveRepoPath,
+    runPythonJson,
+    runStage2IndexRegister,
+    runStage3ProcessGpsQueue,
+    runStage4ProcessGeocodeQueue,
+    runStage5PrepareQueue,
+    runStage6SelectCurrent,
+    getRuntimeState,
+    setRuntimeState,
+  };
+}

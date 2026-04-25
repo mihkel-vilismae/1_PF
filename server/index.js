@@ -7,6 +7,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { createAuthRoutes } from './auth/authRoutes.js';
+import { createDatabaseService } from './database/databaseService.js';
 import { attachSafeAuthRuntimeTruth } from './auth/authRuntimeTruth.js';
 import {
   createSchedulerCapability,
@@ -21,7 +22,6 @@ const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
 const generatedTestDataDirectory = path.join(repoRoot, 'generated_test_data');
 const defaultEnvFilePath = path.join(repoRoot, '.env');
-const sqliteScriptPath = path.join(__dirname, 'scripts', 'sqlite_admin.py');
 const windowsTaskSchedulerScriptPath = path.join(__dirname, 'scripts', 'windows_task_scheduler.ps1');
 const schedulerHostPath = path.join(__dirname, 'scheduler_host.js');
 const port = Number(process.env.PORT || 4301);
@@ -59,23 +59,6 @@ const supportedMediaExtensions = new Set([
   '.mpeg',
   '.mpg',
 ]);
-const databaseViewerRequiredTablesAuthority = Object.freeze({
-  sourcePath: 'docs/OLD_DOCS/20_STATE_AND_TRUTH_CONTRACT.md',
-  sourceLabel: 'Truth Surfaces',
-  note: 'This is the current canonical target-state contract for required truth surfaces. It is not proof that those tables already exist in the current repo runtime.',
-});
-const databaseViewerRequiredTables = Object.freeze([
-  'canonical_media_assets',
-  'media_asset_variants',
-  'address_cache',
-  'parse_files_for_gps_queue',
-  'geocode_queue',
-  'slideshow_queue',
-  'runtime_state',
-  'action_runs',
-  'system_logs',
-]);
-const databaseViewerLoggingCoverage = 'Captures database viewer queries and repo-local backend DB actions observed through this server while the logging session is active. It does not guarantee capture of every SQL statement or activity from external processes.';
 let databaseViewerLoggingSession = null;
 
 const authRouteHandlers = createAuthRoutes({ getAuthReadinessChecks });
@@ -283,24 +266,25 @@ async function databaseStatusHandler({ context }) {
 }
 
 async function inspectDatabaseHandler({ context }) {
-  const database = await buildDatabaseStatus(context);
-  if (!database.exists) {
-    recordDatabaseViewerActivity({
-      endpoint: '/api/init/database/inspect',
-      operation: 'init_database_inspect',
-      status: 'error',
-      message: 'Inspect database failed because the SQLite file does not exist.',
-      details: {
-        databaseExists: false,
-        absolutePath: database.absolutePath,
-      },
-    });
-    throw new HttpError(404, 'database_missing', 'Cannot inspect the database because the DB file does not exist.', {
-      database,
-    });
+  let inspected;
+  try {
+    inspected = await inspectDatabase(context);
+  } catch (error) {
+    if (error instanceof HttpError && error.code === 'database_missing') {
+      recordDatabaseViewerActivity({
+        endpoint: '/api/init/database/inspect',
+        operation: 'init_database_inspect',
+        status: 'error',
+        message: 'Inspect database failed because the SQLite file does not exist.',
+        details: {
+          databaseExists: false,
+          absolutePath: error.details?.database?.absolutePath,
+        },
+      });
+    }
+    throw error;
   }
-
-  const inspection = await runPythonJson(['inspect', database.absolutePath]);
+  const { database, inspection } = inspected;
   recordDatabaseViewerActivity({
     endpoint: '/api/init/database/inspect',
     operation: 'init_database_inspect',
@@ -325,16 +309,7 @@ async function inspectDatabaseHandler({ context }) {
 
 async function deleteDatabaseHandler({ body, context }) {
   ensureConfirmed(body, 'delete-db');
-  const database = await buildDatabaseStatus(context);
-  const removedPaths = [];
-  const candidatePaths = [database.absolutePath, `${database.absolutePath}-wal`, `${database.absolutePath}-shm`];
-
-  for (const candidate of candidatePaths) {
-    if (await fileExists(candidate)) {
-      await fs.rm(candidate, { force: true });
-      removedPaths.push(candidate);
-    }
-  }
+  const { database, removedPaths } = await deleteDatabaseArtifacts(context);
   recordDatabaseViewerActivity({
     endpoint: '/api/init/database/delete',
     operation: 'init_database_delete',
@@ -368,17 +343,7 @@ async function deleteDatabaseHandler({ body, context }) {
 
 async function recreateEmptyDatabaseHandler({ body, context }) {
   ensureConfirmed(body, 'recreate-db');
-  const database = await buildDatabaseStatus(context);
-  const schemaPath = path.join(repoRoot, 'schema.sql');
-  const candidatePaths = [database.absolutePath, `${database.absolutePath}-wal`, `${database.absolutePath}-shm`];
-
-  for (const candidate of candidatePaths) {
-    if (await fileExists(candidate)) {
-      await fs.rm(candidate, { force: true });
-    }
-  }
-
-  const created = await runPythonJson(['recreate', database.absolutePath, schemaPath]);
+  const { database, created } = await recreateEmptyDatabase(context);
   recordDatabaseViewerActivity({
     endpoint: '/api/init/database/recreate-empty',
     operation: 'init_database_recreate_empty',
@@ -444,7 +409,7 @@ async function databaseViewerVerifyHandler({ context }) {
       database: verification.database,
       requiredTables: verification.requiredTables,
       availableObjects: verification.availableObjects,
-      loggingCoverage: databaseViewerLoggingCoverage,
+      loggingCoverage: getDatabaseViewerLoggingCoverage(),
       schemaVersion: 1,
       verifiedAt: new Date().toISOString(),
     },
@@ -478,7 +443,7 @@ async function databaseViewerConnectHandler({ context }) {
       gate: 'logical_backend_authorization',
       database: verification.database,
       requiredTables: verification.requiredTables,
-      loggingCoverage: databaseViewerLoggingCoverage,
+      loggingCoverage: getDatabaseViewerLoggingCoverage(),
       schemaVersion: 1,
       connectedAt: connected ? new Date().toISOString() : null,
     },
@@ -486,24 +451,25 @@ async function databaseViewerConnectHandler({ context }) {
 }
 
 async function databaseViewerTablesHandler({ context }) {
-  const database = await buildDatabaseStatus(context);
-  if (!database.exists) {
-    recordDatabaseViewerActivity({
-      endpoint: '/api/database-viewer/tables',
-      operation: 'database_viewer_list_tables',
-      status: 'error',
-      message: 'Show tables failed because the SQLite file does not exist.',
-      details: {
-        databaseExists: false,
-        absolutePath: database.absolutePath,
-      },
-    });
-    throw new HttpError(404, 'database_missing', 'Cannot list tables because the DB file does not exist.', {
-      database,
-    });
+  let listed;
+  try {
+    listed = await listDatabaseViewerTables(context);
+  } catch (error) {
+    if (error instanceof HttpError && error.code === 'database_missing') {
+      recordDatabaseViewerActivity({
+        endpoint: '/api/database-viewer/tables',
+        operation: 'database_viewer_list_tables',
+        status: 'error',
+        message: 'Show tables failed because the SQLite file does not exist.',
+        details: {
+          databaseExists: false,
+          absolutePath: error.details?.database?.absolutePath,
+        },
+      });
+    }
+    throw error;
   }
-
-  const inspection = await runPythonJson(['inspect', database.absolutePath]);
+  const { database, inspection } = listed;
   recordDatabaseViewerActivity({
     endpoint: '/api/database-viewer/tables',
     operation: 'database_viewer_list_tables',
@@ -523,39 +489,34 @@ async function databaseViewerTablesHandler({ context }) {
       database,
       objects: inspection.tables,
       sqlite: inspection.sqlite,
-      loggingCoverage: databaseViewerLoggingCoverage,
+      loggingCoverage: getDatabaseViewerLoggingCoverage(),
       schemaVersion: 1,
     },
   };
 }
 
 async function databaseViewerRowsHandler({ body, context }) {
-  const tableName = String(body?.tableName ?? '').trim();
-  if (!tableName) {
-    throw new HttpError(400, 'missing_table_name', 'tableName is required when loading database rows.');
+  let loaded;
+  try {
+    loaded = await loadDatabaseViewerRows(context, body);
+  } catch (error) {
+    if (error instanceof HttpError && error.code === 'database_missing') {
+      const tableName = String(body?.tableName ?? '').trim();
+      recordDatabaseViewerActivity({
+        endpoint: '/api/database-viewer/rows',
+        operation: 'database_viewer_fetch_rows',
+        status: 'error',
+        message: `Load rows failed for ${tableName} because the SQLite file does not exist.`,
+        details: {
+          databaseExists: false,
+          tableName,
+          absolutePath: error.details?.database?.absolutePath,
+        },
+      });
+    }
+    throw error;
   }
-
-  const page = normalizeDatabaseViewerPage(body?.page);
-  const pageSize = normalizeDatabaseViewerPageSize(body?.pageSize);
-  const database = await buildDatabaseStatus(context);
-  if (!database.exists) {
-    recordDatabaseViewerActivity({
-      endpoint: '/api/database-viewer/rows',
-      operation: 'database_viewer_fetch_rows',
-      status: 'error',
-      message: `Load rows failed for ${tableName} because the SQLite file does not exist.`,
-      details: {
-        databaseExists: false,
-        tableName,
-        absolutePath: database.absolutePath,
-      },
-    });
-    throw new HttpError(404, 'database_missing', 'Cannot load rows because the DB file does not exist.', {
-      database,
-    });
-  }
-
-  const table = await runPythonJson(['rows', database.absolutePath, tableName, String(page), String(pageSize)]);
+  const { database, table } = loaded;
   recordDatabaseViewerActivity({
     endpoint: '/api/database-viewer/rows',
     operation: 'database_viewer_fetch_rows',
@@ -579,7 +540,7 @@ async function databaseViewerRowsHandler({ body, context }) {
       messages: [`Loaded ${table.table.rowCount} row(s) from ${table.table.name}.`],
       database,
       table: table.table,
-      loggingCoverage: databaseViewerLoggingCoverage,
+      loggingCoverage: getDatabaseViewerLoggingCoverage(),
       schemaVersion: 1,
     },
   };
@@ -603,7 +564,7 @@ async function databaseViewerLoggingStartHandler({ context }) {
   databaseViewerLoggingSession = {
     id: randomUUID(),
     startedAt: new Date().toISOString(),
-    coverage: databaseViewerLoggingCoverage,
+    coverage: getDatabaseViewerLoggingCoverage(),
     entries: [],
   };
   recordDatabaseViewerActivity({
@@ -614,7 +575,7 @@ async function databaseViewerLoggingStartHandler({ context }) {
     details: {
       databaseExists: database.exists,
       absolutePath: database.absolutePath,
-      coverage: databaseViewerLoggingCoverage,
+      coverage: getDatabaseViewerLoggingCoverage(),
     },
   });
 
@@ -778,37 +739,7 @@ async function runtimeDownloadRunHandler({ context }) {
 }
 
 async function runtimeIndexRunHandler({ context }) {
-  const database = await buildDatabaseStatus(context);
-  if (!database.exists) {
-    throw new HttpError(404, 'database_missing', 'Cannot run indexing because the DB file does not exist.', {
-      database,
-    });
-  }
-
-  const downloadDirectory = resolveRepoPath(context.envValues.DOWNLOAD_DIR || '');
-  const schemaPath = path.join(repoRoot, 'schema.sql');
-  const indexedAt = new Date().toISOString();
-
-  let indexing;
-  try {
-    indexing = await runPythonJson([
-      'stage2_index_register',
-      database.absolutePath,
-      downloadDirectory,
-      indexedAt,
-      schemaPath,
-    ]);
-  } catch (error) {
-    if (error instanceof HttpError && error.code === 'python_bridge_failed') {
-      throw new HttpError(500, 'index_schema_bootstrap_failed', 'Indexing failed before Stage 2 could finish. Check schema bootstrap and database setup.', {
-        database,
-        downloadDirectory,
-        schemaPath,
-        pythonBridge: error.details,
-      });
-    }
-    throw error;
-  }
+  const { database, indexedAt, indexing } = await getDatabaseService().runStage2IndexRegister(context);
 
   return {
     statusCode: 200,
@@ -829,16 +760,8 @@ async function runtimeIndexRunHandler({ context }) {
 }
 
 async function runtimeGpsRunHandler({ context }) {
-  const database = await buildDatabaseStatus(context);
-  if (!database.exists) {
-    throw new HttpError(404, 'database_missing', 'Cannot run GPS parsing because the DB file does not exist.', {
-      database,
-    });
-  }
+  const { database, executedAt, gps } = await getDatabaseService().runStage3ProcessGpsQueue(context);
 
-  const executedAt = new Date().toISOString();
-  const schemaPath = path.join(repoRoot, 'schema.sql');
-  const gps = await runPythonJson(['stage3_process_gps_queue', database.absolutePath, executedAt, schemaPath]);
   return {
     statusCode: 200,
     payload: {
@@ -862,16 +785,8 @@ async function runtimeGpsRunHandler({ context }) {
 }
 
 async function runtimeGeocodeRunHandler({ context }) {
-  const database = await buildDatabaseStatus(context);
-  if (!database.exists) {
-    throw new HttpError(404, 'database_missing', 'Cannot run geocoding because the DB file does not exist.', {
-      database,
-    });
-  }
+  const { database, executedAt, geocode } = await getDatabaseService().runStage4ProcessGeocodeQueue(context);
 
-  const executedAt = new Date().toISOString();
-  const schemaPath = path.join(repoRoot, 'schema.sql');
-  const geocode = await runPythonJson(['stage4_process_geocode_queue', database.absolutePath, executedAt, schemaPath]);
   return {
     statusCode: 200,
     payload: {
@@ -895,16 +810,8 @@ async function runtimeGeocodeRunHandler({ context }) {
 }
 
 async function runtimeQueuePrepareHandler({ context }) {
-  const database = await buildDatabaseStatus(context);
-  if (!database.exists) {
-    throw new HttpError(404, 'database_missing', 'Cannot prepare slideshow queue because the DB file does not exist.', {
-      database,
-    });
-  }
+  const { database, executedAt, queue } = await getDatabaseService().runStage5PrepareQueue(context);
 
-  const executedAt = new Date().toISOString();
-  const schemaPath = path.join(repoRoot, 'schema.sql');
-  const queue = await runPythonJson(['stage5_prepare_queue', database.absolutePath, executedAt, schemaPath]);
   return {
     statusCode: 200,
     payload: {
@@ -922,15 +829,8 @@ async function runtimeQueuePrepareHandler({ context }) {
 }
 
 async function runtimePlaybackSelectCurrentHandler({ context }) {
-  const database = await buildDatabaseStatus(context);
-  if (!database.exists) {
-    throw new HttpError(404, 'database_missing', 'Cannot select current media because the DB file does not exist.', {
-      database,
-    });
-  }
+  const { database, executedAt, playback } = await getDatabaseService().runStage6SelectCurrent(context);
 
-  const executedAt = new Date().toISOString();
-  const playback = await runPythonJson(['stage6_select_current', database.absolutePath, executedAt, repoRoot]);
   if (playback.outcome === 'no_ready_row') {
     throw new HttpError(409, 'no_ready_row', 'No READY slideshow rows exist for playback selection.', {
       database,
@@ -987,27 +887,16 @@ const ORCHESTRATION_STAGE_PIPELINE = [
 ];
 
 async function getOrchestrationState(context, key) {
-  const dbPath = context.envValues && context.envValues.DB_PATH;
-  if (!dbPath) {
-    return null;
-  }
   try {
-    const result = await runPythonJson(['runtime_state_get', dbPath, key]);
-    const raw = result?.stateValue;
-    return raw ? JSON.parse(raw) : null;
+    return await getDatabaseService().getRuntimeState(context, key);
   } catch {
-    // If the database is missing or the bridge fails, treat as no state
+    // If the database is missing or the bridge fails, treat as no state.
     return null;
   }
 }
 
 async function setOrchestrationState(context, key, value) {
-  const dbPath = context.envValues && context.envValues.DB_PATH;
-  if (!dbPath) {
-    return;
-  }
-  const serialized = typeof value === 'string' ? value : JSON.stringify(value);
-  await runPythonJson(['runtime_state_set', dbPath, key, serialized, 'json', 'orchestration']);
+  await getDatabaseService().setRuntimeState(context, key, value);
 }
 
 async function runtimeOrchestrationRunHandler({ context }) {
@@ -1278,6 +1167,18 @@ function validateEnvValue(entry, rawValue) {
   return { valid: true, message: 'Value is present and structurally valid.' };
 }
 
+let databaseService = null;
+
+function getDatabaseService() {
+  if (!databaseService) {
+    databaseService = createDatabaseService({
+      repoRoot,
+      createHttpError: (statusCode, code, message, details) => new HttpError(statusCode, code, message, details),
+    });
+  }
+  return databaseService;
+}
+
 function previewValue(entry, rawValue) {
   if (entry.sensitive) {
     return '***redacted***';
@@ -1292,79 +1193,15 @@ function previewValue(entry, rawValue) {
 }
 
 async function buildDatabaseStatus(context) {
-  const dbPath = context.envValues.DB_PATH;
-  if (!dbPath) {
-    throw new HttpError(500, 'missing_db_path', 'DB_PATH is required before database actions can run.');
-  }
-
-  const absolutePath = resolveRepoPath(dbPath);
-  const exists = await fileExists(absolutePath);
-  const stats = exists ? await fs.stat(absolutePath) : null;
-  const parentDirectory = path.dirname(absolutePath);
-
-  return {
-    kind: 'sqlite',
-    configuredPath: dbPath,
-    absolutePath,
-    exists,
-    sizeBytes: stats?.size ?? 0,
-    parentDirectory,
-    parentDirectoryExists: await fileExists(parentDirectory),
-    inspectRuntime: 'python sqlite3 bridge',
-  };
+  return getDatabaseService().buildDatabaseStatus(context);
 }
 
 async function buildDatabaseViewerVerification(context) {
-  const database = await buildDatabaseStatus(context);
-  const requiredTables = {
-    ...databaseViewerRequiredTablesAuthority,
-    expected: [...databaseViewerRequiredTables],
-    present: [],
-    missing: [...databaseViewerRequiredTables],
-  };
-
-  if (!database.exists) {
-    return {
-      verificationPassed: false,
-      database,
-      requiredTables,
-      availableObjects: [],
-    };
-  }
-
-  const inspection = await runPythonJson(['inspect', database.absolutePath]);
-  const presentTableNames = inspection.tables
-    .filter((entry) => entry.kind === 'table')
-    .map((entry) => entry.name);
-
-  return {
-    verificationPassed: databaseViewerRequiredTables.every((tableName) => presentTableNames.includes(tableName)),
-    database,
-    requiredTables: {
-      ...requiredTables,
-      present: presentTableNames.filter((tableName) => databaseViewerRequiredTables.includes(tableName)).sort(),
-      missing: databaseViewerRequiredTables.filter((tableName) => !presentTableNames.includes(tableName)),
-    },
-    availableObjects: inspection.tables.map((entry) => ({
-      name: entry.name,
-      kind: entry.kind,
-      columnCount: entry.columnCount,
-    })),
-  };
+  return getDatabaseService().buildDatabaseViewerVerification(context);
 }
 
 function buildDatabaseViewerVerificationMessages(verification) {
-  if (!verification.database.exists) {
-    return ['Database file does not exist, so required-table verification could not run.'];
-  }
-
-  if (!verification.requiredTables.missing.length) {
-    return [`Database file exists and all ${verification.requiredTables.expected.length} required tables are present.`];
-  }
-
-  return [
-    `Database verification failed because ${verification.requiredTables.missing.length} required table(s) are missing.`,
-  ];
+  return getDatabaseService().buildDatabaseViewerVerificationMessages(verification);
 }
 
 function buildDatabaseViewerLoggingState(options = {}) {
@@ -1377,7 +1214,7 @@ function buildDatabaseViewerLoggingState(options = {}) {
   const id = options.id ?? databaseViewerLoggingSession?.id ?? null;
   const startedAt = options.startedAt ?? databaseViewerLoggingSession?.startedAt ?? null;
   const endedAt = options.endedAt ?? null;
-  const coverage = options.coverage ?? databaseViewerLoggingSession?.coverage ?? databaseViewerLoggingCoverage;
+  const coverage = options.coverage ?? databaseViewerLoggingSession?.coverage ?? getDatabaseViewerLoggingCoverage();
 
   return {
     active,
@@ -1406,33 +1243,40 @@ function recordDatabaseViewerActivity(entry = {}) {
   });
 }
 
-function normalizeDatabaseViewerPage(value) {
-  const page = Number(value ?? 0);
-  if (!Number.isInteger(page) || page < 0) {
-    throw new HttpError(400, 'invalid_page', 'page must be a zero-based integer.',
-      { page: value });
-  }
-  return page;
-}
-
-function normalizeDatabaseViewerPageSize(value) {
-  if (value === undefined) {
-    return 50;
-  }
-  const pageSize = Number(value);
-  if (!Number.isInteger(pageSize) || pageSize <= 0 || pageSize > 100) {
-    throw new HttpError(400, 'invalid_page_size', 'pageSize must be an integer between 1 and 100.', {
-      pageSize: value,
-    });
-  }
-  return pageSize;
-}
-
 function resolveRepoPath(relativeOrAbsolutePath) {
-  if (path.isAbsolute(relativeOrAbsolutePath)) {
-    return relativeOrAbsolutePath;
-  }
-  return path.resolve(repoRoot, relativeOrAbsolutePath);
+  return getDatabaseService().resolveRepoPath(relativeOrAbsolutePath);
+}
+
+function getSchemaPath() {
+  return getDatabaseService().getSchemaPath();
+}
+
+function getDatabaseArtifactPaths(databaseOrAbsolutePath) {
+  return getDatabaseService().getDatabaseArtifactPaths(databaseOrAbsolutePath);
+}
+
+function getDatabaseViewerLoggingCoverage() {
+  return getDatabaseService().getDatabaseViewerLoggingCoverage();
+}
+
+async function inspectDatabase(context) {
+  return getDatabaseService().inspectDatabase(context);
+}
+
+async function deleteDatabaseArtifacts(context) {
+  return getDatabaseService().deleteDatabaseArtifacts(context);
+}
+
+async function recreateEmptyDatabase(context) {
+  return getDatabaseService().recreateEmptyDatabase(context);
+}
+
+async function listDatabaseViewerTables(context) {
+  return getDatabaseService().listDatabaseViewerTables(context);
+}
+
+async function loadDatabaseViewerRows(context, body) {
+  return getDatabaseService().loadDatabaseViewerRows(context, body);
 }
 
 async function readRuntimeTruthFile() {
@@ -1513,21 +1357,7 @@ async function readJsonBody(request) {
 }
 
 async function runPythonJson(args) {
-  const { stdout, stderr, code } = await runProcess('python', [sqliteScriptPath, ...args]);
-  if (code !== 0) {
-    throw new HttpError(500, 'python_bridge_failed', 'Python bridge command failed.', {
-      stderr: stderr.trim(),
-      stdout: stdout.trim(),
-    });
-  }
-
-  try {
-    return JSON.parse(stdout.trim());
-  } catch (error) {
-    throw new HttpError(500, 'python_bridge_invalid_json', 'Python bridge returned invalid JSON.', {
-      stdout: stdout.trim(),
-    });
-  }
+  return getDatabaseService().runPythonJson(args);
 }
 
 function runProcess(command, args, options = {}) {
