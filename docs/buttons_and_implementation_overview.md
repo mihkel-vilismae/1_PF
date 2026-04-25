@@ -264,12 +264,12 @@ When View B is inconsistent, trust order should be:
 
 ### B1
 
-B1 is consistently treated as mock / missing.
+B1 is now treated as a backend-auth-backed init/preflight control. It calls the `/api/auth/*` endpoint family through the dashboard auth action boundary, while the backend remains the only source of authenticated truth.
 
 Representative values:
 
-- **Show real vs mock:** `Mock: Run`
-- **Show backend status:** `Missing: Run`
+- **Show real vs mock:** `Real: Run`
+- **Show backend status:** `Real: Run`
 
 ### B2
 

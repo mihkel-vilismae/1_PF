@@ -3,29 +3,181 @@ import test from 'node:test';
 
 import { createRuntimeTruthBehavior } from '../dashboard/services/runtimeTruth/runtimeTruthBehavior.js';
 import { createInitialState } from '../dashboard/services/runtimeTruth/runtimeTruthState.js';
+import { renderInitView } from '../dashboard/views/initView.js';
 
-test('B1 login flow remains frontend-only and completes without backend calls', async () => {
+test('B1 auth preflight now calls backend auth endpoints instead of frontend fake success timers', async () => {
   const originalFetch = global.fetch;
   const requests = [];
 
   global.fetch = async (path, init = {}) => {
-    requests.push({ path, method: init.method ?? 'GET' });
-    throw new Error('B1 should not call backend endpoints');
+    const method = init.method ?? 'GET';
+    requests.push({ path, method });
+
+    if (path === '/api/auth/status' && method === 'GET') {
+      return new Response(
+        JSON.stringify({
+          status: 'ok',
+          auth: {
+            status: 'idle',
+            has_required_files: false,
+            requires_2fa: 'unknown',
+            two_factor_status: 'not_started',
+            two_factor_method: null,
+            next_action: 'run_auth_preflight',
+            attemptId: null,
+            updatedAt: null,
+            error: null,
+            authenticatedUser: null,
+            provider: 'icloud',
+          },
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      );
+    }
+
+    if (path === '/api/auth/run' && method === 'POST') {
+      return new Response(
+        JSON.stringify({
+          status: 'blocked',
+          auth: {
+            status: 'blocked',
+            has_required_files: true,
+            requires_2fa: 'unknown',
+            two_factor_status: 'unknown',
+            two_factor_method: null,
+            next_action: 'provider_login_not_implemented',
+            attemptId: 'attempt-123',
+            updatedAt: '2026-04-24T13:00:00.000Z',
+            error: {
+              code: 'provider_login_not_implemented',
+              message: 'Auth preflight passed, but real provider login is not implemented in this backend slice.',
+            },
+            authenticatedUser: null,
+            provider: 'icloud',
+          },
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      );
+    }
+
+    throw new Error(`Unexpected request: ${method} ${path}`);
   };
 
   try {
     const harness = createRuntimeTruthHarness();
     const behavior = createRuntimeTruthBehavior(harness.actions);
 
+    behavior.runAction('refresh-b1-auth-status');
+    await waitFor(() => harness.state.authPreflight.loaded === true);
+
     behavior.runAction('run-b1');
     assert.equal(harness.state.statusByKey.B1, 'running');
-    await waitFor(() => harness.state.statusByKey.B1 === 'success', 1500);
+    await waitFor(() => harness.state.statusByKey.B1 === 'info', 1500);
 
-    assert.equal(requests.length, 0);
-    assert.equal(harness.state.loginSteps.every((step) => step.status === 'done'), true);
+    assert.deepEqual(requests, [
+      { path: '/api/auth/status', method: 'GET' },
+      { path: '/api/auth/run', method: 'POST' },
+    ]);
+    assert.equal(harness.state.authPreflight.publicState.status, 'blocked');
+    assert.equal(harness.state.authPreflight.publicState.next_action, 'provider_login_not_implemented');
+    assert.equal(harness.state.loginSteps.find((step) => step.key === 'provider')?.status, 'active');
+    assert.equal(harness.state.loginSteps.find((step) => step.key === '2fa')?.status, 'waiting');
+    assert.equal(harness.state.logs.B1.some((entry) => entry.message.includes('2FA completed in placeholder mode')), false);
+    assert.equal(harness.state.logs.B1.some((entry) => entry.message.includes('Primary credentials accepted')), false);
   } finally {
     global.fetch = originalFetch;
   }
+});
+
+test('B1 reset clears local attempt state through backend reset without claiming logout', async () => {
+  const originalFetch = global.fetch;
+  const requests = [];
+
+  global.fetch = async (path, init = {}) => {
+    const method = init.method ?? 'GET';
+    requests.push({ path, method });
+
+    if (path === '/api/auth/reset' && method === 'POST') {
+      return new Response(
+        JSON.stringify({
+          status: 'ok',
+          resetType: 'local_auth_attempt_state_only',
+          logoutPerformed: false,
+          message: 'Cleared local auth preflight attempt state. Provider sessions are not invalidated by this slice.',
+          auth: {
+            status: 'idle',
+            has_required_files: false,
+            requires_2fa: 'unknown',
+            two_factor_status: 'not_started',
+            two_factor_method: null,
+            next_action: 'run_auth_preflight',
+            attemptId: null,
+            updatedAt: '2026-04-24T13:00:00.000Z',
+            error: null,
+            authenticatedUser: null,
+            provider: 'icloud',
+          },
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      );
+    }
+
+    throw new Error(`Unexpected request: ${method} ${path}`);
+  };
+
+  try {
+    const harness = createRuntimeTruthHarness();
+    const behavior = createRuntimeTruthBehavior(harness.actions);
+
+    behavior.runAction('reset-b1-auth');
+    await waitFor(() => harness.state.authPreflight.loaded === true);
+
+    assert.deepEqual(requests, [{ path: '/api/auth/reset', method: 'POST' }]);
+    assert.equal(harness.state.authPreflight.publicState.status, 'idle');
+    assert.equal(harness.state.authPreflight.latestResult.payload.logoutPerformed, false);
+    assert.equal(harness.state.authPreflight.latestResult.payload.resetType, 'local_auth_attempt_state_only');
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+test('B1 render uses safe backend auth projection and does not render secret-like fields', () => {
+  const state = createInitialState();
+  state.authPreflight.loaded = true;
+  state.authPreflight.publicState = {
+    status: 'blocked',
+    has_required_files: true,
+    requires_2fa: 'unknown',
+    two_factor_status: 'unknown',
+    two_factor_method: null,
+    next_action: 'provider_login_not_implemented',
+    attemptId: 'attempt-123',
+    updatedAt: '2026-04-24T13:00:00.000Z',
+    error: { code: 'provider_login_not_implemented', message: 'Real provider login is not implemented.' },
+    authenticatedUser: null,
+    provider: 'icloud',
+  };
+  state.authPreflight.latestResult = {
+    operation: 'Run auth preflight',
+    method: 'POST',
+    endpoint: '/api/auth/run',
+    outcome: 'success',
+    message: 'Real provider login is not implemented.',
+    receivedAt: '24.04.2026, 16:00:00',
+    payload: {
+      status: 'blocked',
+      auth: state.authPreflight.publicState,
+    },
+  };
+
+  const markup = renderInitView(state);
+
+  assert.equal(markup.includes('/api/auth/run'), true);
+  assert.equal(markup.includes('provider_login_not_implemented'), true);
+  assert.equal(markup.includes('password'), false);
+  assert.equal(markup.includes('token'), false);
+  assert.equal(markup.includes('cookie'), false);
+  assert.equal(markup.includes('raw 2FA'), false);
 });
 
 test('B2, B3 auto, and B4 actions call backend endpoints and update runtime truth state', async () => {
@@ -157,7 +309,6 @@ test('B2, B3 auto, and B4 actions call backend endpoints and update runtime trut
     assert.equal(harness.state.truth.currentMedia?.name, 'sample.jpg');
     assert.equal(harness.state.truth.currentMedia?.type, 'Image');
     assert.equal(harness.state.truth.currentMedia?.overlay, 'Tallinn, Harjumaa, Estonia');
-
     assert.deepEqual(
       requests.map(({ path, method }) => ({ path, method })),
       [

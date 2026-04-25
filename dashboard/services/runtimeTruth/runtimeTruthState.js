@@ -128,7 +128,7 @@ export function createInitialState() {
       '1A': [{ at: now, type: 'info', message: 'Ready to call POST /api/init/verify-env.' }],
       '2A': [{ at: now, type: 'info', message: 'Database controls are ready to call /api/init/database/* endpoints.' }],
       '3A': [{ at: now, type: 'info', message: buildSchedulerReadyMessage(schedulerCapability) }],
-      B1: [{ at: now, type: 'info', message: 'Login flow is idle.' }],
+      B1: [{ at: now, type: 'info', message: 'Auth preflight status has not been loaded yet.' }],
       B2: [{ at: now, type: 'info', message: 'Ready to call POST /api/runtime/download/run.' }],
       'B3.1': [{ at: now, type: 'info', message: 'Ready to call POST /api/runtime/download/run.' }],
       'B3.2': [{ at: now, type: 'info', message: 'Ready to call POST /api/runtime/index/run.' }],
@@ -192,9 +192,15 @@ export function createInitialState() {
         summary: 'Screen worker preview has not been started.',
       },
     },
+    authPreflight: {
+      loaded: false,
+      publicState: null,
+      latestResult: null,
+    },
     loginSteps: [
-      { key: 'login', label: 'Login', status: 'waiting' },
-      { key: 'file', label: 'Required file', status: 'waiting' },
+      { key: 'preflight', label: 'Auth preflight', status: 'waiting' },
+      { key: 'provider', label: 'Provider login', status: 'waiting' },
+      { key: 'file', label: 'Required auth files', status: 'waiting' },
       { key: '2fa', label: '2FA', status: 'waiting' },
     ],
   };

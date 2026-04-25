@@ -62,19 +62,46 @@ export function renderInitView(state) {
 
 // Render the login/authentication preflight card moved from View B to View A.
 function renderLoginCard(state) {
+  const authState = state.authPreflight?.publicState ?? null;
+  const latestResult = state.authPreflight?.latestResult ?? null;
   return `
-    <article class="card card--mock">
+    <article class="card card--hybrid">
       <header class="card__header">
-        <div><p class="card__code">B1</p><h3>Login flow</h3></div>
-        <div class="card__header-tags">${renderSourceBadge('mock', 'MOCK')}</div>
+        <div><p class="card__code">B1</p><h3>Auth preflight</h3></div>
+        <div class="card__header-tags">${renderSourceBadge('real', 'BACKEND')}</div>
         ${statusBadge(state.statusByKey.B1)}
       </header>
-      <p class="card__copy">This previews the intended login / file / 2FA operator flow. It does not call a repo runtime endpoint.</p>
+      <p class="card__copy">View A auth preflight now calls the backend-owned /api/auth/* contract. It does not claim real provider login or completed 2FA.</p>
       ${renderStepList(state.loginSteps)}
-      <div class="button-row"><button class="button button--primary" data-action="run-b1">Run</button></div>
+      ${renderAuthStateSummary(authState, state.authPreflight?.loaded)}
+      ${renderAuthOperatorControls(authState)}
+      ${renderResultSurface(latestResult)}
       <div class="log-surface">${renderLogEntries(state.logs.B1, { sourceKey: 'B1' })}</div>
     </article>
   `;
+}
+
+function renderAuthOperatorControls(authState) {
+  const showTwoFactor = authState?.requires_2fa === true && authState?.two_factor_status === 'required';
+  const twoFactorControl = showTwoFactor ? '<label class="field-label" for="b1-2fa-code">2FA code</label><input id="b1-2fa-code" class="input" type="text" inputmode="numeric" autocomplete="one-time-code" data-auth-2fa-code aria-label="2FA code" />' : '';
+  const twoFactorButton = showTwoFactor ? '<button class="button button--primary" data-action="submit-b1-2fa">Submit 2FA</button>' : '';
+  return twoFactorControl + '<div class="button-row"><button class="button button--primary" data-action="run-b1">Run auth preflight</button><button class="button button--secondary" data-action="refresh-b1-auth-status">Refresh status</button>' + twoFactorButton + '<button class="button button--secondary" data-action="reset-b1-auth">Reset local attempt</button><button class="button button--danger" data-action="logout-b1-auth">Logout / cleanup</button></div>';
+}
+
+function renderAuthStateSummary(authState, loaded) {
+  if (!loaded || !authState) {
+    return '<p class="card__copy">Backend auth status has not been loaded yet.</p>';
+  }
+
+  return renderResultSurface({
+    operation: 'Current safe auth state',
+    method: 'GET',
+    endpoint: '/api/auth/status',
+    receivedAt: authState.updatedAt ?? 'Not attempted yet',
+    outcome: authState.status === 'preflight_failed' ? 'error' : 'success',
+    message: `Status: ${authState.status ?? 'unknown'}; next action: ${authState.next_action ?? 'unknown'}.`,
+    payload: authState,
+  });
 }
 
 function renderCard(code, title, state, logKey, actions, copy) {

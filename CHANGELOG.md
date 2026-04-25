@@ -1,6 +1,21 @@
 # CHANGELOG
 
 > Note: changelog entries before v0.3.3 are preserved as legacy history and are not backfilled. Structured forward-only enforcement begins at v0.3.3.
+## 2026-04-26 00:51 EEST — v0.3.21
+
+### Added
+- Added Slice 3 documentation/status closure for the restored View A / B1 backend auth integration.
+
+### Changed
+- Updated B1 button verification, inspect metadata, and implementation overview docs so B1 is described as backend-auth-backed through `/api/auth/*` instead of frontend-only/mock.
+- Updated version metadata from v0.3.20 to v0.3.21.
+
+### Fixed
+- Corrected stale B1 auth wording that still described the restored auth control as mock, placeholder, frontend-only, or missing backend wiring.
+
+### Removed
+- None
+
 
 ## 2026-04-25 22:45 EEST — v0.3.20
 

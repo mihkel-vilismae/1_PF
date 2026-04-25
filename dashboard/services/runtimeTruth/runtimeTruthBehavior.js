@@ -22,6 +22,7 @@ import {
   runRuntimeIndex,
 } from '../runtimeExecutionService.js';
 import { createRuntimeTruthDatabaseActions } from './runtimeTruthDatabaseActions.js';
+import { createRuntimeTruthAuthActions } from './runtimeTruthAuthActions.js';
 import { createRuntimeTruthDemoActions } from './runtimeTruthDemoActions.js';
 import { createRuntimeTruthGuards } from './runtimeTruthGuards.js';
 import {
@@ -54,6 +55,15 @@ export function createRuntimeTruthBehavior({
 
   const databaseActions = createRuntimeTruthDatabaseActions({
     getState,
+    patchState,
+    pushHistory,
+    pushLog,
+    setStatus,
+    stamp,
+    guards,
+  });
+
+  const authActions = createRuntimeTruthAuthActions({
     patchState,
     pushHistory,
     pushLog,
@@ -113,7 +123,11 @@ export function createRuntimeTruthBehavior({
       'show-db-tables': () => void databaseActions.runDatabaseViewerTablesAction(),
       'start-db-logging': () => void databaseActions.runDatabaseViewerLoggingAction('start'),
       'stop-db-logging': () => void databaseActions.runDatabaseViewerLoggingAction('stop'),
-      'run-b1': () => demoActions.runLoginFlow(),
+      'refresh-b1-auth-status': () => void authActions.refreshAuthStatus(),
+      'run-b1': () => void authActions.runAuthPreflightAction(),
+      'reset-b1-auth': () => void authActions.resetAuthPreflightAction(),
+      'submit-b1-2fa': (detail) => void authActions.submitAuthTwoFactorAction(detail?.code ?? ''),
+      'logout-b1-auth': () => void authActions.logoutAuthPreflightAction(),
       'run-b2': () => void demoActions.runBackendAction({ key: 'B2', source: 'TEST', operation: 'Run download test action', endpoint: RUNTIME_EXECUTION_ENDPOINTS.downloadRun, execute: runRuntimeDownload }),
       'run-b3-1': () => demoActions.runBackendPipelineStage({ key: 'B3.1', operation: 'Run download stage', endpoint: RUNTIME_EXECUTION_ENDPOINTS.downloadRun, execute: runRuntimeDownload }),
       'run-b3-2': () => demoActions.runBackendPipelineStage({ key: 'B3.2', operation: 'Run index stage', endpoint: RUNTIME_EXECUTION_ENDPOINTS.indexRun, execute: runRuntimeIndex }),

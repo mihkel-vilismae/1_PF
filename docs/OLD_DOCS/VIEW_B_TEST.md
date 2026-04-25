@@ -4,8 +4,8 @@
 View B is the simulation and test workspace. It is intentionally separate from the real runtime. This distinction is important because the user explicitly separated test/mock behavior from the actual production-style running process.
 
 ## Sections
-### B1 — Login flow
-This section represents a staged placeholder login sequence. The UI shows:
+### B1 — Auth preflight
+Historical note: this old View B document predates the backend-auth restoration. Current B1 behavior lives in View A as a backend-auth-backed init/preflight surface. The UI shows:
 - Run button
 - status badge
 - log area
@@ -72,7 +72,7 @@ The user required explicit history and resumable current state across stage runs
 No real persistence is implemented yet. The current implementation is strictly in-memory.
 
 ## Future Backend Wiring Notes
-- B1 should later connect to real authentication and 2FA flows.
+- Current B1 behavior now connects to backend auth preflight endpoints for status, run, reset, 2FA submit, and logout; backend auth truth remains authoritative.
 - B2 should later connect to controlled test-download endpoints.
 - B3 should later wire to real stage triggers and stage-status responses.
 - B4 should later connect to real playback state and preview-compatible backend information.

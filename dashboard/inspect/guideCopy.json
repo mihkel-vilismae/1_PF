@@ -104,7 +104,7 @@
     },
     "run-b1": {
       "label": "Run login flow",
-      "description": "Simulates the login/authentication sequence through credentials, required file preparation, and placeholder 2FA."
+      "description": "Calls the backend auth preflight endpoints for status, run, reset, 2FA submit, and logout while rendering only the safe public auth projection."
     },
     "run-b2": {
       "label": "Run download test action",
@@ -245,8 +245,8 @@
       "reason": "Calls the live `/api/database-viewer/logging/stop` backend endpoint."
     },
     "run-b1": {
-      "state": "mock",
-      "reason": "Runs a frontend-only simulated login flow; no live auth backend is implemented."
+      "state": "real",
+      "reason": "Calls the backend /api/auth/* auth preflight endpoints through the dashboard auth action boundary."
     },
     "run-b2": {
       "state": "real",
@@ -353,8 +353,8 @@
       "reason": "This action is backed by a repo-local `/api/database-viewer/logging/stop` endpoint."
     },
     "run-b1": {
-      "state": "missing",
-      "reason": "This flow is simulated in the frontend; no backend login endpoint has been implemented yet."
+      "state": "real",
+      "reason": "This button calls backend auth endpoints (/api/auth/status, /api/auth/run, /api/auth/reset, /api/auth/2fa/submit, /api/auth/logout) and never infers authenticated state locally."
     },
     "run-b2": {
       "state": "real",
