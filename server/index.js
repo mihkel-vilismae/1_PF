@@ -6,6 +6,8 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
+import { createAuthRoutes } from './auth/authRoutes.js';
+import { attachSafeAuthRuntimeTruth } from './auth/authRuntimeTruth.js';
 import {
   createSchedulerCapability,
   getOperationSupportLevel,
@@ -76,6 +78,8 @@ const databaseViewerRequiredTables = Object.freeze([
 const databaseViewerLoggingCoverage = 'Captures database viewer queries and repo-local backend DB actions observed through this server while the logging session is active. It does not guarantee capture of every SQL statement or activity from external processes.';
 let databaseViewerLoggingSession = null;
 
+const authRouteHandlers = createAuthRoutes({ getAuthReadinessChecks });
+
 const envSchema = [
   { key: 'user', label: 'Account email', required: true, sensitive: true, kind: 'string' },
   { key: 'pw', label: 'Account password', required: true, sensitive: true, kind: 'string' },
@@ -106,6 +110,12 @@ const envSchema = [
 ];
 
 const routes = {
+  'GET /api/auth/status': authRouteHandlers.statusHandler,
+  'POST /api/auth/run': authRouteHandlers.runHandler,
+  'POST /api/auth/2fa/submit': authRouteHandlers.twoFactorSubmitHandler,
+  'POST /api/auth/reset': authRouteHandlers.resetHandler,
+  'POST /api/auth/logout': authRouteHandlers.logoutHandler,
+  'POST /api/auth/resume': authRouteHandlers.resumeHandler,
   'POST /api/init/verify-env': verifyEnvHandler,
   'GET /api/init/database/status': databaseStatusHandler,
   'POST /api/init/database/inspect': inspectDatabaseHandler,
@@ -665,7 +675,7 @@ async function databaseViewerLoggingStopHandler() {
 }
 
 async function getRuntimeTruthHandler() {
-  const truth = await readRuntimeTruthFile();
+  const truth = attachSafeAuthRuntimeTruth(await readRuntimeTruthFile());
   return {
     statusCode: 200,
     payload: {
@@ -1126,7 +1136,7 @@ async function runtimeOrchestrationLastHandler({ context }) {
 }
 
 async function updateRuntimeTruthHandler({ body }) {
-  const truth = normalizeRuntimeTruthPayload(body?.truth, { source: 'request' });
+  const truth = attachSafeAuthRuntimeTruth(normalizeRuntimeTruthPayload(body?.truth, { source: 'request' }));
   await writeRuntimeTruthFile(truth);
   return {
     statusCode: 200,
@@ -1200,6 +1210,13 @@ function resolveEnvFilePath() {
     return overridePath;
   }
   return path.resolve(repoRoot, overridePath);
+}
+
+function getAuthReadinessChecks(context) {
+  const authEnvKeys = new Set(['user', 'pw', 'ICLOUDPD_COOKIE_DIR']);
+  return envSchema
+    .filter((entry) => authEnvKeys.has(entry.key))
+    .map((entry) => buildEnvCheck(entry, context.envValues));
 }
 
 function buildEnvCheck(entry, envValues) {
