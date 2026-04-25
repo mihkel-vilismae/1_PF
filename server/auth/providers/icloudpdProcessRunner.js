@@ -88,7 +88,7 @@ async function runIcloudpdCommand({ execFileImpl, executable, args, config, time
   }
   const commandForDebug = redactIcloudpdArgs(args, config);
   try {
-    const { stdout = '', stderr = '' } = await safeExecFileImpl(executable, args, {
+    const { stdout = '', stderr = '' } = await execFileImpl(executable, args, {
       timeout: Number(timeoutMs) > 0 ? Number(timeoutMs) : DEFAULT_TIMEOUT_MS,
       windowsHide: true,
       maxBuffer: 1024 * 1024,

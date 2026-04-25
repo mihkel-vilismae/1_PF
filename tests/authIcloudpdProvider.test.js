@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import test from 'node:test';
 import { createIcloudpdProvider, mapIcloudpdResultToOutcome } from '../server/auth/providers/icloudpdProvider.js';
-import { buildAuthOnlyArgs, buildVerifySessionArgs, redactIcloudpdArgs } from '../server/auth/providers/icloudpdProcessRunner.js';
+import { buildAuthOnlyArgs, buildVerifySessionArgs, createIcloudpdProcessRunner, redactIcloudpdArgs } from '../server/auth/providers/icloudpdProcessRunner.js';
 import { sanitizeIcloudpdText } from '../server/auth/providers/icloudpdSanitizer.js';
 
 const envValues = {
@@ -90,6 +93,40 @@ test('icloudpd session verification args do not pass the password on the command
   });
   assert.equal(args.includes('--password'), false);
   assert.equal(args.includes('super-secret-password'), false);
+});
+
+test('icloudpd process runner uses injected execFile implementation for auth command', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'icloudpd-runner-'));
+  try {
+    const calls = [];
+    const processRunner = createIcloudpdProcessRunner({
+      executable: 'icloudpd-test',
+      async execFileImpl(file, args, options) {
+        calls.push({ file, args, options });
+        return { stdout: 'Authentication successful. Valid session cookie.', stderr: '' };
+      },
+    });
+
+    const result = await processRunner.startAuth({
+      config: {
+        username: 'operator@example.com',
+        password: 'super-secret-password',
+        cookieDir: path.join(root, 'cookies'),
+        downloadDir: path.join(root, 'downloads'),
+        timeoutMs: 1_000,
+      },
+    });
+
+    assert.equal(result.exitCode, 0);
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].file, 'icloudpd-test');
+    assert.equal(calls[0].args.includes('--auth-only'), true);
+    assert.equal(calls[0].options.windowsHide, true);
+    assert.equal(result.sanitizedCombinedOutput.includes('Authentication successful'), true);
+    assert.equal(JSON.stringify(result).includes('super-secret-password'), false);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
 
 test('icloudpd provider logout performs local cleanup without claiming remote Apple logout', async () => {

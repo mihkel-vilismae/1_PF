@@ -52,11 +52,26 @@ test('runAuthPreflight fails honestly when required auth inputs are missing', as
 
 test('runAuthPreflight calls provider boundary and reports unavailable without faking success', async () => {
   resetAuthState({ now: new Date('2026-04-24T13:32:00.000Z') });
+  const providerRegistry = createProviderRegistry({
+    providers: {
+      icloud: {
+        async startLogin() {
+          return {
+            outcome: PROVIDER_OUTCOMES.PROVIDER_UNAVAILABLE,
+            code: 'icloudpd_executable_unavailable',
+            message: 'icloudpd executable is not available on PATH or could not be started.',
+            next_action: 'install_or_configure_icloudpd',
+          };
+        },
+      },
+    },
+  });
   const result = await runAuthPreflight({
     attemptId: 'attempt-present',
     now: new Date('2026-04-24T13:33:00.000Z'),
     checks: [check('user'), check('pw'), check('ICLOUDPD_COOKIE_DIR')],
     envValues: { user: 'operator@example.com', pw: 'super-secret-password', ICLOUDPD_COOKIE_DIR: 'runtime_data/icloudpd_cookies' },
+    providerRegistry,
   });
 
   assert.equal(result.status, 'blocked');
