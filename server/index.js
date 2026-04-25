@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { createAuthRoutes } from './auth/authRoutes.js';
 import { createDatabaseService } from './database/databaseService.js';
 import { attachSafeAuthRuntimeTruth } from './auth/authRuntimeTruth.js';
+import { createProjectLogger, DEFAULT_LOG_DIR } from './logging/projectLogger.js';
 import {
   createSchedulerCapability,
   getOperationSupportLevel,
@@ -25,6 +26,13 @@ const defaultEnvFilePath = path.join(repoRoot, '.env');
 const windowsTaskSchedulerScriptPath = path.join(__dirname, 'scripts', 'windows_task_scheduler.ps1');
 const schedulerHostPath = path.join(__dirname, 'scheduler_host.js');
 const port = Number(process.env.PORT || 4301);
+const logger = createProjectLogger({
+  repoRoot,
+  logDir: await resolveInitialLogDirectory(),
+  source: 'init-api',
+  onWriteError: reportLoggerWriteError,
+});
+await logger.initialize().catch(reportLoggerWriteError);
 const schedulerTaskName = 'PhotoFrame-1PF-SchedulerHost';
 const schedulerRuntimeDirectory = path.join(repoRoot, 'runtime_data', 'scheduler');
 const schedulerStatusFilePath = path.join(schedulerRuntimeDirectory, 'host-status.json');
@@ -128,18 +136,23 @@ const routes = {
 };
 
 const server = createServer(async (request, response) => {
+  const startedAt = Date.now();
+  let routeKey = `${request.method || 'GET'} ${request.url || ''}`;
+  let url = null;
   try {
     if (!request.url) {
       sendJson(response, 400, errorPayload('missing_request_url', 'Request URL was not provided.'));
+      void logRequest({ request, routeKey, statusCode: 400, startedAt });
       return;
     }
 
-    const url = new URL(request.url, `http://${request.headers.host || '127.0.0.1'}`);
-    const routeKey = `${request.method || 'GET'} ${url.pathname}`;
+    url = new URL(request.url, `http://${request.headers.host || '127.0.0.1'}`);
+    routeKey = `${request.method || 'GET'} ${url.pathname}`;
     const handler = routes[routeKey];
 
     if (!handler) {
       sendJson(response, 404, errorPayload('not_found', `No handler exists for ${routeKey}.`));
+      void logRequest({ request, url, routeKey, statusCode: 404, startedAt });
       return;
     }
 
@@ -147,16 +160,28 @@ const server = createServer(async (request, response) => {
     const context = await buildRequestContext();
     const result = await handler({ request, response, url, body, context });
     sendJson(response, result.statusCode, result.payload);
+    void logRequest({ request, url, routeKey, statusCode: result.statusCode, startedAt });
   } catch (error) {
     const statusCode = error instanceof HttpError ? error.statusCode : 500;
     const code = error instanceof HttpError ? error.code : 'internal_error';
     const details = error instanceof HttpError ? error.details : undefined;
+    void logger.error('HTTP request failed.', {
+      method: request.method || 'GET',
+      path: url?.pathname || request.url || null,
+      routeKey,
+      statusCode,
+      code,
+      durationMs: Date.now() - startedAt,
+      error,
+    });
     sendJson(response, statusCode, errorPayload(code, error.message, details));
   }
 });
 
 server.listen(port, '127.0.0.1', () => {
-  console.log(`Init API server listening on http://127.0.0.1:${port}`);
+  const message = `Init API server listening on http://127.0.0.1:${port}`;
+  console.log(message);
+  void logger.info(message, { port, url: `http://127.0.0.1:${port}` });
 });
 
 async function verifyEnvHandler({ context }) {
@@ -1090,6 +1115,37 @@ async function loadEnvValues() {
   return values;
 }
 
+async function resolveInitialLogDirectory() {
+  if (process.env.LOG_DIR && process.env.LOG_DIR.trim()) {
+    return process.env.LOG_DIR;
+  }
+
+  let raw;
+  try {
+    raw = await fs.readFile(resolveEnvFilePath(), 'utf8');
+  } catch {
+    return DEFAULT_LOG_DIR;
+  }
+
+  for (const line of raw.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) {
+      continue;
+    }
+    const separatorIndex = trimmed.indexOf('=');
+    if (separatorIndex === -1) {
+      continue;
+    }
+    const key = trimmed.slice(0, separatorIndex).trim();
+    if (key === 'LOG_DIR') {
+      const value = trimmed.slice(separatorIndex + 1).trim();
+      return value || DEFAULT_LOG_DIR;
+    }
+  }
+
+  return DEFAULT_LOG_DIR;
+}
+
 function resolveEnvFilePath() {
   const overridePath = process.env.INIT_ENV_FILE;
   if (!overridePath || overridePath.trim() === '') {
@@ -1361,6 +1417,11 @@ async function runPythonJson(args) {
 }
 
 function runProcess(command, args, options = {}) {
+  void logger.debug('Spawning child process.', {
+    command,
+    args,
+    shell: options.shell === true,
+  });
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, {
       cwd: repoRoot,
@@ -1377,8 +1438,14 @@ function runProcess(command, args, options = {}) {
     child.stderr.on('data', (chunk) => {
       stderr += chunk.toString();
     });
-    child.on('error', (error) => reject(error));
-    child.on('close', (code) => resolve({ code, stdout, stderr }));
+    child.on('error', (error) => {
+      void logger.error('Child process failed to start.', { command, args, error });
+      reject(error);
+    });
+    child.on('close', (code) => {
+      void logger.debug('Child process exited.', { command, code });
+      resolve({ code, stdout, stderr });
+    });
   });
 }
 
@@ -1519,7 +1586,7 @@ async function resolveSchedulerOperation(context, operation) {
 }
 
 function buildSchedulerDefinition(context, capability) {
-  const logDirectory = resolveRepoPath(context.envValues.LOG_DIR || 'runtime_data/logs');
+  const logDirectory = resolveRepoPath(context.envValues.LOG_DIR || DEFAULT_LOG_DIR);
   return {
     routeLabel: capability.routeCompatibility,
     taskName: schedulerTaskName,
@@ -1554,6 +1621,8 @@ async function runWindowsSchedulerCommand(operation, definition) {
     definition.scriptPath,
     '-RepoRoot',
     definition.repoRoot,
+    '-LogDir',
+    definition.logDirectory,
   ];
   const { stdout, stderr, code } = await runProcess('powershell.exe', args);
   const parsed = parseJsonOutput(stdout);
@@ -1743,6 +1812,25 @@ function sendJson(response, statusCode, payload) {
     'Content-Length': Buffer.byteLength(body),
   });
   response.end(body);
+}
+
+function logRequest({ request, url = null, routeKey, statusCode, startedAt }) {
+  const entry = {
+    method: request.method || 'GET',
+    path: url?.pathname || request.url || null,
+    routeKey,
+    statusCode,
+    durationMs: Date.now() - startedAt,
+  };
+
+  if (statusCode >= 500) {
+    return logger.error('HTTP request completed with server error.', entry);
+  }
+  return logger.info('HTTP request completed.', entry);
+}
+
+function reportLoggerWriteError(error) {
+  console.warn('[logger] Failed to write project log.', error?.message || error);
 }
 
 function errorPayload(code, message, details) {

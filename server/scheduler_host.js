@@ -2,6 +2,7 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
+import { createProjectLogger, DEFAULT_LOG_DIR, resolveLogDirectory } from './logging/projectLogger.js';
 
 const DEFAULT_TICKS = Object.freeze({
   pipeline: 5,
@@ -15,10 +16,15 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(args['repo-root'] || path.join(__dirname, '..'));
 const runtimeDirectory = path.join(repoRoot, 'runtime_data', 'scheduler');
-const logsDirectory = path.join(repoRoot, 'runtime_data', 'logs');
+const logsDirectory = resolveLogDirectory(args['log-dir'] || process.env.LOG_DIR || DEFAULT_LOG_DIR, { repoRoot });
 const statusFilePath = path.join(runtimeDirectory, 'host-status.json');
 const lockFilePath = path.join(runtimeDirectory, 'host-lock.json');
 const logFilePath = path.join(logsDirectory, 'scheduler-host.ndjson');
+const logger = createProjectLogger({
+  repoRoot,
+  logDir: logsDirectory,
+  source: 'scheduler-host',
+});
 
 const state = {
   pid: process.pid,
@@ -47,6 +53,7 @@ const intervalHandles = [];
 try {
   await fs.mkdir(runtimeDirectory, { recursive: true });
   await fs.mkdir(logsDirectory, { recursive: true });
+  await logger.initialize();
 
   await acquireLock();
   await appendLog('host-started', 'Scheduler host started.');
@@ -115,6 +122,11 @@ async function appendLog(event, message) {
     message,
   };
   await fs.appendFile(logFilePath, `${JSON.stringify(entry)}\n`, 'utf8');
+  if (event.includes('failed') || event.includes('exception') || event.includes('rejection') || event.includes('crashed')) {
+    await logger.error(message, { event, pid: process.pid });
+    return;
+  }
+  await logger.info(message, { event, pid: process.pid });
 }
 
 async function acquireLock() {

@@ -13,7 +13,10 @@ param(
   [string]$ScriptPath,
 
   [Parameter(Mandatory = $true)]
-  [string]$RepoRoot
+  [string]$RepoRoot,
+
+  [Parameter(Mandatory = $false)]
+  [string]$LogDir = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -40,6 +43,10 @@ function Build-ExpectedTask() {
   $quotedScript = '"' + $ScriptPath + '"'
   $quotedRepoRoot = '"' + $RepoRoot + '"'
   $arguments = "$quotedScript --repo-root $quotedRepoRoot"
+  if ($LogDir) {
+    $quotedLogDir = '"' + $LogDir + '"'
+    $arguments = "$arguments --log-dir $quotedLogDir"
+  }
 
   return [pscustomobject]@{
     taskName = $TaskName
