@@ -32,3 +32,6 @@ runtime_data/
 *.sqlite-shm
 *.sqlite-wal
 *.zip
+
+# Local/generated archives
+*.zip
