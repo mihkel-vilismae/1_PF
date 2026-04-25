@@ -151,6 +151,8 @@ Key documentation entrypoints:
 - `docs/VERSIONING_AND_CHANGELOG_POLICY.md`
 - `docs/buttons_and_implementation_overview.md`
 - `docs/IMPLEMENTATION_STATUS_AUDIT.md`
+- `docs/AUTH_ICLOUDPD_SESSION_VERIFICATION.md`
+- `docs/AUTH_ICLOUDPD_MANUAL_VERIFICATION.md`
 - the system-doc bundle under `docs/`
 
 This README is the repo entrypoint. Deeper implementation details belong in the dedicated docs.

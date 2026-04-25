@@ -69,7 +69,7 @@ The current repository is primarily a Vite‑based dashboard prototype with sele
 implements View A and View E backend paths for environment verification and database inspection, exposes a
 mock runtime‑truth JSON file at `/api/runtime-truth`, and now includes synchronous runtime slices for Stage 1
 download (`/api/runtime/download/run`), Stage 2 indexing (`/api/runtime/index/run`), Stage 5 queue preparation,
-and Stage 6 current-item selection. Authentication and two-factor flows are absent, Stage 3/4 now exist as synchronous queue-processing routes, and the pipeline, playback, and screen workers remain stubs.  Cron scheduling support is partly
+and Stage 6 current-item selection. Authentication is now partially implemented through backend-owned /api/auth/* routes, an icloudpd provider boundary, conservative 2FA-required detection, local cleanup/logout boundaries, and provider-backed session verification for /api/auth/resume; real-world Apple/iCloud validation remains manual and user-owned. Stage 3/4 now exist as synchronous queue-processing routes, and the pipeline, playback, and screen workers remain stubs.  Cron scheduling support is partly
 wired for Windows, while Raspberry Pi–specific scheduling is not yet implemented.  The documentation set still
 describes a larger target architecture that the code base only partially realises.
 
@@ -77,8 +77,8 @@ describes a larger target architecture that the code base only partially realise
 
 | Area | Status | Evidence / notes |
 |---|---|---|
-| **Authentication** | **Missing** | No server routes or scripts implement login or credential verification.  The only sensitive values referenced are `.env` keys checked for presence; there is no login handler or session management. |
-| **2FA handling** | **Missing** | Two‑factor authentication is mentioned in documentation, but no code exists to prompt for or validate a second factor. |
+| **Authentication** | **Partially implemented** | Backend `/api/auth/*` routes exist for status, run/preflight, 2FA submit, reset, logout/local cleanup, and resume. The iCloud path delegates to an `icloudpd` provider boundary and `/api/auth/resume` verifies persisted sessions through the provider before `authenticated=true` can be returned. Real Apple/iCloud validation remains manual/user-owned. |
+| **2FA handling** | **Partially implemented** | Backend routes can represent a provider-reported 2FA-required state and accept a code through the auth boundary. The default `icloudpd` runner remains conservative and reports unsupported backend-driven 2FA completion unless the selected CLI flow can consume and verify the code non-interactively. |
 | **Download backend** | **Partially implemented** | `POST /api/runtime/download/run` invokes `icloudpd`, ensures the download/cookie directories exist, and reports before/after supported-media counts. It is still a synchronous HTTP slice rather than the long-term worker model. |
 | **Indexing backend** | **Partially implemented** | `POST /api/runtime/index/run` calls `server/scripts/sqlite_admin.py stage2_index_register`, scans the download directory, writes `canonical_media_assets`, `media_asset_variants`, and `parse_files_for_gps_queue`, and now bootstraps `schema.sql` automatically for a fresh repo-managed DB. |
 | **GPS parsing backend** | **Partially implemented** | `POST /api/runtime/gps/run` now calls `server/scripts/sqlite_admin.py stage3_process_gps_queue`, reads `parse_files_for_gps_queue`, extracts EXIF GPS when available, updates `canonical_media_assets`, and seeds `geocode_queue` idempotently. |
@@ -97,10 +97,9 @@ describes a larger target architecture that the code base only partially realise
 
 ### Authentication and 2FA
 
-No routes under `server/index.js` handle user credentials or sessions.  The only sensitive `.env` fields (`user` and
-`pw`) are validated for presence by the `/api/init/verify-env` endpoint, but they are never used to authenticate
-requests.  Two‑factor authentication is referenced in several documentation files, yet there is no logic to prompt
-for a second factor or to handle a `WAITING_FOR_2FA` state.
+`server/index.js` now registers the backend auth route surface through the auth route module. The implemented route set includes status, run/preflight, 2FA submit, reset, logout/local cleanup, and resume. The iCloud provider delegates to `server/auth/providers/icloudpdProvider.js` and the process runner under `server/auth/providers/icloudpdProcessRunner.js`.
+
+The current auth implementation is still partial rather than complete product authentication. It can detect and represent 2FA-required states, but backend-driven 2FA completion depends on whether the selected `icloudpd` CLI flow can consume a code non-interactively and verify the resulting session. `/api/auth/resume` is backend-owned through `server/auth/authSessionService.js`: persisted auth state alone is not proof of current authentication, and `authenticated=true` may only be returned after provider confirmation. Real Apple/iCloud account validation remains manual and user-owned.
 
 ### Download stage
 
@@ -176,8 +175,7 @@ still mention two‑factor authentication, but the server contains no authentica
 
 ## Most critical missing or incomplete items
 
-1. **Authentication and 2FA:**  Implement proper credential handling, session management, and two‑factor
-   challenges before exposing a real download pipeline.
+1. **Authentication and 2FA hardening:**  The backend auth route surface and `icloudpd` provider boundary now exist, including backend-owned session verification for resume. Remaining hardening is manual real-world validation of installed `icloudpd` behavior, non-interactive 2FA support where available, and production credential handling policy.
 2. **Download worker:**  Integrate `icloudpd` or another download client to fetch media files into a staging
    directory and persist their metadata in `canonical_media_assets`.
 3. **Indexing worker:**  Scan downloaded files, extract metadata (file size, capture time, GPS data) and insert
@@ -203,7 +201,7 @@ still mention two‑factor authentication, but the server contains no authentica
    `geocode_queue` and `address_cache` tables.
 4. **Construct the playback worker** (Wave D) and migrate the remaining runtime truth from JSON to the database.
 5. **Expand cron/scheduler support for Raspberry Pi OS** and unify worker scheduling across platforms.
-6. **Implement authentication and 2FA** around the API endpoints before exposing any sensitive operations.
+6. **Harden authentication and 2FA** by manually validating the real local `icloudpd` flow, documenting supported installed versions/flows, and keeping automated tests mocked and secret-safe.
 
 By following this order, each slice builds on the previous one, avoiding speculative complexity and ensuring
 that features are added only when supporting infrastructure exists.

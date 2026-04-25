@@ -2,6 +2,22 @@
 
 > Note: changelog entries before v0.3.3 are preserved as legacy history and are not backfilled. Structured forward-only enforcement begins at v0.3.3.
 
+## 2026-04-25 22:45 EEST — v0.3.20
+
+### Added
+- Added merge-closure metadata for the sliced auth/provider and database-service import.
+
+### Changed
+- Updated version metadata from v0.3.11 to v0.3.20 to align the target repository with the completed sliced merge state.
+- Documented the already-merged backend auth/provider foundation, mocked auth verification boundary, and centralized Node-side database service.
+
+### Fixed
+- Corrected stale documentation status that still described backend authentication as entirely missing after Slice 1.
+
+### Removed
+- None
+
+
 ## 2026-04-23 00:21 EEST — v0.3.11
 
 ### Added
