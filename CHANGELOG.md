@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 2026-04-26 04:14 EEST — v0.3.23
+
+- Updated auth API step tests to match the backend-owned honest provider failure contract.
+- Preserved the runtime behavior where missing/unavailable icloudpd returns a safe provider failure instead of a fake successful/blocking login state.
+- Updated version metadata from v0.3.22 to v0.3.23.
+
 > Note: changelog entries before v0.3.3 are preserved as legacy history and are not backfilled. Structured forward-only enforcement begins at v0.3.3.
 ## 2026-04-26 03:18 EEST — v0.3.22
 
