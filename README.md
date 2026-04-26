@@ -1,5 +1,9 @@
 # Photo Frame Dashboard System
 
+## Current Vision/Spec Index
+
+Start at `docs/VISION_SPEC/VISION_SPEC_readme.md` for the ranked vision/spec bundle, including the highest current working authority document and follow-up Q&A addenda.
+
 ## 1. Project Overview
 
 This repository contains a dashboard-driven system for managing a staged photo-processing pipeline and playback simulation.
