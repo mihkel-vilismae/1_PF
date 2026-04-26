@@ -33,6 +33,10 @@ export function createIcloudpdProcessRunner({ execFileImpl, executable = process
       const args = buildVerifySessionArgs(config);
       return runIcloudpdCommand({ execFileImpl: safeExecFileImpl, executable, args, config, timeoutMs: config.timeoutMs });
     },
+    async downloadSingleFile({ config }) {
+      const args = buildSingleFileDownloadArgs(config);
+      return runIcloudpdCommand({ execFileImpl: safeExecFileImpl, executable, args, config, timeoutMs: config.timeoutMs });
+    },
     async submitTwoFactor() {
       return {
         exitCode: null,
@@ -74,6 +78,22 @@ export function buildVerifySessionArgs(config) {
     '--directory', directory,
     '--recent', String(config.recentCount || DEFAULT_RECENT_COUNT),
     '--dry-run',
+  ];
+  if (config.domain) {
+    args.push('--domain', config.domain);
+  }
+  return args;
+}
+
+export function buildSingleFileDownloadArgs(config) {
+  const directory = config.downloadDir || process.cwd();
+  const args = [
+    '--username', config.username,
+    '--password', config.password,
+    '--cookie-directory', config.cookieDir,
+    '--directory', directory,
+    '--recent', '1',
+    '--folder-structure', 'none',
   ];
   if (config.domain) {
     args.push('--domain', config.domain);

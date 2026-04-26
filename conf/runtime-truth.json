@@ -6,10 +6,10 @@
   "lastActivitySource": "Mouse movement enabled",
   "inactivityTimeoutSeconds": 5,
   "lastCheckpoint": "No checkpoint yet",
-  "lastStageCompleted": "B3.1",
+  "lastStageCompleted": "B3.2",
   "realRunActive": false,
   "sourceOfTruth": "conf/runtime-truth.json",
-  "stageLock": "B3.1 finished and released the pipeline lock",
+  "stageLock": "B3.2 finished and released the pipeline lock",
   "playbackLock": "Playback worker lock available",
   "screenLock": "Screen worker lock available",
   "pipelineActiveKey": null,
@@ -18,19 +18,15 @@
   "auth": {
     "source": "server/auth/projectPublicAuthState",
     "publicState": {
-      "status": "provider_failed",
-      "has_required_files": true,
+      "status": "idle",
+      "has_required_files": false,
       "requires_2fa": "unknown",
-      "two_factor_status": "unknown",
+      "two_factor_status": "not_started",
       "two_factor_method": null,
-      "next_action": "inspect_provider_auth_failure",
-      "attemptId": "8e04e9cf-6bd3-4433-97a2-0ccdf008708f",
-      "updatedAt": "2026-04-25T23:31:14.686Z",
-      "error": {
-        "code": "icloudpd_failed",
-        "message": "icloudpd authentication failed before a verifiable auth state was produced.",
-        "detailMessage": "\n\nsafeExecFileImpl is not defined"
-      },
+      "next_action": "run_auth_preflight",
+      "attemptId": null,
+      "updatedAt": "2026-04-26T00:17:14.234Z",
+      "error": null,
       "authenticatedUser": null,
       "provider": "icloud"
     }

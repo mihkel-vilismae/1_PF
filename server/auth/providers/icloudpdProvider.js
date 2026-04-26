@@ -86,6 +86,27 @@ export function createIcloudpdProvider({ runner = createIcloudpdProcessRunner(),
         defaultSuccessMessage: 'icloudpd verified the existing local session.',
       });
     },
+    async testLoginByDownloadingSingleFile(context = {}) {
+      const config = buildIcloudpdConfig({
+        ...context,
+        downloadDir: context.downloadDirectory || context.downloadDir,
+      }, { cwd });
+      const missing = validateIcloudpdConfig(config);
+      if (missing.length > 0) {
+        return missingConfigOutcome(missing);
+      }
+
+      const executableCheck = await runner.checkExecutable();
+      if (!executableCheck.available) {
+        return providerUnavailableOutcome(executableCheck.message, executableCheck.code, executableCheck.detailMessage);
+      }
+
+      const result = await runner.downloadSingleFile({ config });
+      return mapIcloudpdResultToOutcome(result, {
+        config,
+        defaultSuccessMessage: 'icloudpd authenticated and downloaded one recent file into the auth test directory.',
+      });
+    },
     async logout(context = {}) {
       const config = buildIcloudpdConfig(context, { cwd });
       if (!config.cookieDir) {
@@ -113,7 +134,7 @@ export function buildIcloudpdConfig(context = {}, { cwd = process.cwd() } = {}) 
     username: envValues.user || process.env.user || process.env.APPLE_ID || null,
     password: envValues.pw || process.env.pw || process.env.APPLE_PASSWORD || null,
     cookieDir: normalizeProviderPath(envValues.ICLOUDPD_COOKIE_DIR || process.env.ICLOUDPD_COOKIE_DIR, { cwd }),
-    downloadDir: normalizeProviderPath(envValues.DOWNLOAD_DIR || process.env.DOWNLOAD_DIR || envValues.TEST_DOWNLOAD_DIR, { cwd }),
+    downloadDir: normalizeProviderPath(context.downloadDir || context.downloadDirectory || envValues.DOWNLOAD_DIR || process.env.DOWNLOAD_DIR || envValues.TEST_DOWNLOAD_DIR, { cwd }),
     domain: envValues.ICLOUDPD_DOMAIN || process.env.ICLOUDPD_DOMAIN || null,
     recentCount: envValues.DOWNLOAD_RECENT || process.env.DOWNLOAD_RECENT || '1',
     timeoutMs: Number(envValues.ICLOUDPD_AUTH_TIMEOUT_MS || process.env.ICLOUDPD_AUTH_TIMEOUT_MS || 120_000),
@@ -137,15 +158,6 @@ export function mapIcloudpdResultToOutcome(result, { config, defaultSuccessMessa
   const output = sanitizeIcloudpdText(result?.sanitizedCombinedOutput || `${result?.stdout || ''}\n${result?.stderr || ''}`, config);
   const lower = output.toLowerCase();
 
-  if (result?.timedOut) {
-    return {
-      outcome: PROVIDER_OUTCOMES.FAILED,
-      code: 'icloudpd_timeout',
-      message: 'icloudpd authentication timed out before a verifiable auth result was produced.',
-      detailMessage: output,
-    };
-  }
-
   if (indicatesTwoFactorRequired(lower)) {
     return {
       outcome: PROVIDER_OUTCOMES.REQUIRES_2FA,
@@ -154,6 +166,15 @@ export function mapIcloudpdResultToOutcome(result, { config, defaultSuccessMessa
       two_factor_method: inferTwoFactorMethod(lower),
       next_action: 'submit_two_factor_code',
       providerRawStatus: { sanitizedOutput: output },
+    };
+  }
+
+  if (result?.timedOut) {
+    return {
+      outcome: PROVIDER_OUTCOMES.FAILED,
+      code: 'icloudpd_timeout',
+      message: 'icloudpd authentication timed out before a verifiable auth result was produced.',
+      detailMessage: output,
     };
   }
 

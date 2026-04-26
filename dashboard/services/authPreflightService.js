@@ -3,6 +3,7 @@ import { requestJson } from './apiClient.js';
 export const AUTH_PREFLIGHT_ENDPOINTS = Object.freeze({
   status: { method: 'GET', path: '/api/auth/status' },
   run: { method: 'POST', path: '/api/auth/run' },
+  testLoginDownloadOne: { method: 'POST', path: '/api/auth/test-login-download-one' },
   reset: { method: 'POST', path: '/api/auth/reset' },
   submitTwoFactor: { method: 'POST', path: '/api/auth/2fa/submit' },
   logout: { method: 'POST', path: '/api/auth/logout' },
@@ -14,6 +15,10 @@ export function fetchAuthStatus() {
 
 export function runAuthPreflight() {
   return callAuthEndpoint(AUTH_PREFLIGHT_ENDPOINTS.run);
+}
+
+export function testLoginByDownloadingSingleFile() {
+  return callAuthEndpoint(AUTH_PREFLIGHT_ENDPOINTS.testLoginDownloadOne);
 }
 
 export function resetAuthPreflight() {

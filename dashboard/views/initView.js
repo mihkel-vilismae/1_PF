@@ -85,7 +85,7 @@ function renderAuthOperatorControls(authState) {
   const showTwoFactor = authState?.requires_2fa === true && authState?.two_factor_status === 'required';
   const twoFactorControl = showTwoFactor ? '<label class="field-label" for="b1-2fa-code">2FA code</label><input id="b1-2fa-code" class="input" type="text" inputmode="numeric" autocomplete="one-time-code" data-auth-2fa-code aria-label="2FA code" />' : '';
   const twoFactorButton = showTwoFactor ? '<button class="button button--primary" data-action="submit-b1-2fa">Submit 2FA</button>' : '';
-  return twoFactorControl + '<div class="button-row"><button class="button button--primary" data-action="run-b1">Run auth preflight</button><button class="button button--secondary" data-action="refresh-b1-auth-status">Refresh status</button>' + twoFactorButton + '<button class="button button--secondary" data-action="reset-b1-auth">Reset local attempt</button><button class="button button--danger" data-action="logout-b1-auth">Logout / cleanup</button></div>';
+  return twoFactorControl + '<div class="button-row"><button class="button button--primary" data-action="run-b1">Run auth preflight</button><button class="button button--secondary" data-action="test-b1-login-download-one">TEST LOGIN BY DOWNLOADING A SINGLE FILE</button><button class="button button--secondary" data-action="refresh-b1-auth-status">Refresh status</button>' + twoFactorButton + '<button class="button button--secondary" data-action="reset-b1-auth">Reset local attempt</button><button class="button button--danger" data-action="logout-b1-auth">Logout / cleanup</button></div>';
 }
 
 function renderAuthStateSummary(authState, loaded) {

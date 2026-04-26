@@ -227,3 +227,49 @@ test('auth resume route uses injected session verification path', async () => {
   assert.equal(response.payload.status, 'ok');
   assert.equal(response.payload.auth.status, 'authenticated');
 });
+
+test('auth single-file login test route uses injected download path', async () => {
+  let calls = 0;
+  const routes = createAuthRoutes({
+    getAuthReadinessChecks: () => [],
+    singleFileDownloadDirectory: 'runtime_data/tmp',
+    async testAuthLoginByDownloadingSingleFileFn({ envValues, downloadDirectory }) {
+      calls += 1;
+      assert.equal(envValues.user, 'operator@example.com');
+      assert.equal(downloadDirectory, 'runtime_data/tmp');
+      return {
+        auth: {
+          status: 'authenticated',
+          has_required_files: true,
+          requires_2fa: false,
+          two_factor_status: 'complete',
+          two_factor_method: null,
+          next_action: 'auth_ready',
+          attemptId: 'attempt-route-download',
+          updatedAt: '2026-04-24T19:44:00.000Z',
+          error: null,
+          authenticatedUser: 'op***@example.com',
+          provider: 'icloud',
+        },
+        testDownload: {
+          downloadDirectory: 'runtime_data/tmp',
+          requestedRecentCount: 1,
+          status: 'authenticated',
+          code: 'icloudpd_authenticated',
+          message: 'Downloaded one recent item.',
+          next_action: null,
+        },
+      };
+    },
+  });
+
+  const response = await routes.testLoginDownloadOneHandler({
+    context: { envValues: { user: 'operator@example.com' } },
+  });
+
+  assert.equal(calls, 1);
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.payload.status, 'ok');
+  assert.equal(response.payload.auth.status, 'authenticated');
+  assert.equal(response.payload.testDownload.requestedRecentCount, 1);
+});

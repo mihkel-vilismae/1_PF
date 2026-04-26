@@ -5,11 +5,17 @@ import {
   resumeAuthSession,
   runAuthPreflight,
   submitAuthTwoFactor,
+  testAuthLoginByDownloadingSingleFile,
 } from './authService.js';
 
 const ERROR_AUTH_STATUSES = new Set(['preflight_failed', 'provider_failed']);
 
-export function createAuthRoutes({ getAuthReadinessChecks, resumeAuthSessionFn = resumeAuthSession }) {
+export function createAuthRoutes({
+  getAuthReadinessChecks,
+  resumeAuthSessionFn = resumeAuthSession,
+  singleFileDownloadDirectory = null,
+  testAuthLoginByDownloadingSingleFileFn = testAuthLoginByDownloadingSingleFile,
+}) {
   return {
     statusHandler: async () => ({
       statusCode: 200,
@@ -38,6 +44,24 @@ export function createAuthRoutes({ getAuthReadinessChecks, resumeAuthSessionFn =
         payload: {
           status: responseStatusForAuthState(auth),
           auth,
+        },
+      };
+    },
+
+    testLoginDownloadOneHandler: async ({ context }) => {
+      const checks = getAuthReadinessChecks(context);
+      const result = await testAuthLoginByDownloadingSingleFileFn({
+        checks,
+        envValues: context.envValues,
+        downloadDirectory: singleFileDownloadDirectory,
+      });
+      return {
+        statusCode: statusCodeForAuthState(result.auth),
+        payload: {
+          status: responseStatusForAuthState(result.auth),
+          message: summarizeSingleFileTest(result.auth, result.testDownload),
+          auth: result.auth,
+          testDownload: result.testDownload,
         },
       };
     },
@@ -80,6 +104,16 @@ export function createAuthRoutes({ getAuthReadinessChecks, resumeAuthSessionFn =
       };
     },
   };
+}
+
+function summarizeSingleFileTest(auth, testDownload) {
+  if (auth?.status === 'authenticated') {
+    return `Downloaded one recent iCloud item into ${testDownload?.downloadDirectory ?? 'the configured test directory'}.`;
+  }
+  if (auth?.requires_2fa === true) {
+    return 'icloudpd requires 2FA before the single-file download can complete.';
+  }
+  return auth?.error?.message || testDownload?.message || 'Single-file auth download test completed without an authenticated result.';
 }
 
 function statusCodeForAuthState(auth) {

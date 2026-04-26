@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { getRawAuthState, resetAuthState, runAuthPreflight, selectAuthReadinessChecks } from '../server/auth/authService.js';
+import { getRawAuthState, resetAuthState, runAuthPreflight, selectAuthReadinessChecks, testAuthLoginByDownloadingSingleFile } from '../server/auth/authService.js';
 import { PROVIDER_OUTCOMES, createProviderRegistry } from '../server/auth/providers/providerRegistry.js';
 
 function check(key, overrides = {}) {
@@ -164,4 +164,70 @@ test('runAuthPreflight maps provider 2FA requirement without faking completion',
   assert.equal(result.authenticatedUser, null);
   assert.equal(JSON.stringify(result).includes('secret-session-ref'), false);
   assert.equal(JSON.stringify(result).includes('secret-token'), false);
+});
+
+test('testAuthLoginByDownloadingSingleFile maps verified download to authenticated state and summary', async () => {
+  resetAuthState({ now: new Date('2026-04-24T13:40:00.000Z') });
+  let receivedDirectory = null;
+  const providerRegistry = createProviderRegistry({
+    providers: {
+      icloud: {
+        async testLoginByDownloadingSingleFile(context) {
+          receivedDirectory = context.downloadDirectory;
+          return {
+            outcome: PROVIDER_OUTCOMES.AUTHENTICATED,
+            code: 'icloudpd_authenticated',
+            message: 'Downloaded one recent item.',
+            authenticatedUser: 'op***@example.com',
+          };
+        },
+      },
+    },
+  });
+
+  const result = await testAuthLoginByDownloadingSingleFile({
+    attemptId: 'attempt-single-file',
+    now: new Date('2026-04-24T13:41:00.000Z'),
+    checks: [check('user'), check('pw'), check('ICLOUDPD_COOKIE_DIR')],
+    envValues: { user: 'operator@example.com', pw: 'super-secret-password', ICLOUDPD_COOKIE_DIR: 'runtime_data/icloudpd_cookies' },
+    downloadDirectory: 'runtime_data/tmp',
+    providerRegistry,
+  });
+
+  assert.equal(receivedDirectory, 'runtime_data/tmp');
+  assert.equal(result.auth.status, 'authenticated');
+  assert.equal(result.auth.authenticatedUser, 'op***@example.com');
+  assert.equal(result.testDownload.downloadDirectory, 'runtime_data/tmp');
+  assert.equal(result.testDownload.requestedRecentCount, 1);
+  assert.equal(result.testDownload.status, 'authenticated');
+  assert.equal(JSON.stringify(result).includes('super-secret-password'), false);
+});
+
+test('testAuthLoginByDownloadingSingleFile preserves 2FA-required state without faking download success', async () => {
+  resetAuthState({ now: new Date('2026-04-24T13:42:00.000Z') });
+  const providerRegistry = createProviderRegistry({
+    providers: {
+      icloud: {
+        async testLoginByDownloadingSingleFile() {
+          return {
+            outcome: PROVIDER_OUTCOMES.REQUIRES_2FA,
+            two_factor_method: 'sms',
+            next_action: 'submit_two_factor_code',
+          };
+        },
+      },
+    },
+  });
+
+  const result = await testAuthLoginByDownloadingSingleFile({
+    attemptId: 'attempt-single-file-2fa',
+    now: new Date('2026-04-24T13:43:00.000Z'),
+    checks: [check('user'), check('pw'), check('ICLOUDPD_COOKIE_DIR')],
+    providerRegistry,
+  });
+
+  assert.equal(result.auth.status, 'blocked');
+  assert.equal(result.auth.requires_2fa, true);
+  assert.equal(result.auth.two_factor_status, 'required');
+  assert.equal(result.testDownload.status, 'requires_2fa');
 });

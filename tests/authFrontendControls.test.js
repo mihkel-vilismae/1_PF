@@ -28,6 +28,16 @@ test('View A B1 renders 2FA and logout controls only from backend-required 2FA s
   assert.equal(markup.includes('data-action="logout-b1-auth"'), true);
 });
 
+test('View A B1 renders single-file login download test control', () => {
+  const state = createInitialState();
+  state.authPreflight.loaded = true;
+
+  const markup = renderInitView(state);
+
+  assert.equal(markup.includes('data-action="test-b1-login-download-one"'), true);
+  assert.equal(markup.includes('TEST LOGIN BY DOWNLOADING A SINGLE FILE'), true);
+});
+
 test('auth payload sanitizer removes submitted 2FA code from request metadata', () => {
   const sanitized = sanitizeAuthPayload({ request: { body: { code: '123456' } } });
   assert.equal(JSON.stringify(sanitized).includes('123456'), false);

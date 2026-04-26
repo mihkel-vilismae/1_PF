@@ -106,6 +106,10 @@
       "label": "Run login flow",
       "description": "Calls the backend auth preflight endpoints for status, run, reset, 2FA submit, and logout while rendering only the safe public auth projection."
     },
+    "test-b1-login-download-one": {
+      "label": "Test login download",
+      "description": "Calls the backend auth test endpoint that uses icloudpd and .env credentials to download one recent item into runtime_data/tmp when authentication is already usable."
+    },
     "run-b2": {
       "label": "Run download test action",
       "description": "Calls the backend download endpoint and reports the response in the B2 log."
@@ -248,6 +252,10 @@
       "state": "real",
       "reason": "Calls the backend /api/auth/* auth preflight endpoints through the dashboard auth action boundary."
     },
+    "test-b1-login-download-one": {
+      "state": "real",
+      "reason": "Calls the live POST /api/auth/test-login-download-one endpoint and uses the backend auth provider boundary."
+    },
     "run-b2": {
       "state": "real",
       "reason": "Runs the real backend download test action."
@@ -355,6 +363,10 @@
     "run-b1": {
       "state": "real",
       "reason": "This button calls backend auth endpoints (/api/auth/status, /api/auth/run, /api/auth/reset, /api/auth/2fa/submit, /api/auth/logout) and never infers authenticated state locally."
+    },
+    "test-b1-login-download-one": {
+      "state": "real",
+      "reason": "This button calls POST /api/auth/test-login-download-one, which invokes icloudpd through the backend provider and reports 2FA-required state instead of faking a download."
     },
     "run-b2": {
       "state": "real",

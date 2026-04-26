@@ -5,6 +5,7 @@ import {
   resetAuthPreflight,
   runAuthPreflight,
   submitAuthTwoFactor,
+  testLoginByDownloadingSingleFile,
 } from '../authPreflightService.js';
 import { buildTimelineDetails } from './runtimeTruthActionUtils.js';
 
@@ -19,6 +20,10 @@ export function createRuntimeTruthAuthActions({ patchState, pushHistory, pushLog
 
   async function runAuthPreflightAction() {
     return runAuthBackendAction({ operation: 'Run auth preflight', endpoint: AUTH_PREFLIGHT_ENDPOINTS.run, execute: runAuthPreflight, pendingStatus: 'running', duplicateMessage: 'B1 auth preflight is already running; duplicate start was blocked.' });
+  }
+
+  async function testLoginByDownloadingSingleFileAction() {
+    return runAuthBackendAction({ operation: 'Test login by downloading a single file', endpoint: AUTH_PREFLIGHT_ENDPOINTS.testLoginDownloadOne, execute: testLoginByDownloadingSingleFile, pendingStatus: 'running', duplicateMessage: 'B1 single-file login test is already running; duplicate start was blocked.' });
   }
 
   async function resetAuthPreflightAction() {
@@ -83,7 +88,7 @@ export function createRuntimeTruthAuthActions({ patchState, pushHistory, pushLog
     }
   }
 
-  return { refreshAuthStatus, runAuthPreflightAction, resetAuthPreflightAction, submitAuthTwoFactorAction, logoutAuthPreflightAction };
+  return { refreshAuthStatus, runAuthPreflightAction, testLoginByDownloadingSingleFileAction, resetAuthPreflightAction, submitAuthTwoFactorAction, logoutAuthPreflightAction };
 }
 
 export function sanitizeAuthPayload(value) {

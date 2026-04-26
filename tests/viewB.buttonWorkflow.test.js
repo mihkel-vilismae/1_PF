@@ -141,6 +141,64 @@ test('B1 reset clears local attempt state through backend reset without claiming
   }
 });
 
+test('B1 single-file login test calls backend auth download endpoint', async () => {
+  const originalFetch = global.fetch;
+  const requests = [];
+
+  global.fetch = async (path, init = {}) => {
+    const method = init.method ?? 'GET';
+    requests.push({ path, method });
+
+    if (path === '/api/auth/test-login-download-one' && method === 'POST') {
+      return new Response(
+        JSON.stringify({
+          status: 'ok',
+          message: 'Downloaded one recent iCloud item into runtime_data/tmp.',
+          auth: {
+            status: 'authenticated',
+            has_required_files: true,
+            requires_2fa: false,
+            two_factor_status: 'complete',
+            two_factor_method: null,
+            next_action: 'auth_ready',
+            attemptId: 'attempt-download-one',
+            updatedAt: '2026-04-24T13:10:00.000Z',
+            error: null,
+            authenticatedUser: 'op***@example.com',
+            provider: 'icloud',
+          },
+          testDownload: {
+            downloadDirectory: 'runtime_data/tmp',
+            requestedRecentCount: 1,
+            status: 'authenticated',
+            code: 'icloudpd_authenticated',
+            message: 'Downloaded one recent item.',
+            next_action: null,
+          },
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      );
+    }
+
+    throw new Error(`Unexpected request: ${method} ${path}`);
+  };
+
+  try {
+    const harness = createRuntimeTruthHarness();
+    const behavior = createRuntimeTruthBehavior(harness.actions);
+
+    behavior.runAction('test-b1-login-download-one');
+    await waitFor(() => harness.state.statusByKey.B1 === 'success');
+
+    assert.deepEqual(requests, [{ path: '/api/auth/test-login-download-one', method: 'POST' }]);
+    assert.equal(harness.state.authPreflight.publicState.status, 'authenticated');
+    assert.equal(harness.state.authPreflight.latestResult.payload.testDownload.requestedRecentCount, 1);
+    assert.equal(harness.state.logs.B1[0]?.message.includes('Downloaded one recent iCloud item'), true);
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
 test('B1 render uses safe backend auth projection and does not render secret-like fields', () => {
   const state = createInitialState();
   state.authPreflight.loaded = true;

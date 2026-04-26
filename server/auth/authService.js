@@ -214,6 +214,94 @@ export async function submitAuthTwoFactor({
   });
 }
 
+export async function testAuthLoginByDownloadingSingleFile({
+  checks = [],
+  now = new Date(),
+  attemptId = randomUUID(),
+  providerName = AUTH_PROVIDER,
+  providerRegistry = defaultProviderRegistry,
+  timeoutMs = DEFAULT_OPERATION_TIMEOUT_MS,
+  envValues = {},
+  downloadDirectory,
+} = {}) {
+  if (authOperationInProgress) {
+    return {
+      auth: createConcurrentAuthState({ now, providerName }),
+      testDownload: buildSingleFileTestSummary({ downloadDirectory, providerOutcome: null }),
+    };
+  }
+
+  return withAuthOperationLock(async () => {
+    const updatedAt = now.toISOString();
+    const authChecks = selectAuthReadinessChecks(checks);
+    const missingOrInvalidRequiredChecks = authChecks.filter((check) => check.required && (!check.present || !check.valid));
+
+    if (missingOrInvalidRequiredChecks.length > 0) {
+      currentAuthState = createMissingAuthConfigState({
+        attemptId,
+        updatedAt,
+        providerName,
+        missingOrInvalidRequiredChecks,
+      });
+      await persistCurrentAuthState();
+      return {
+        auth: getPublicAuthState(),
+        testDownload: buildSingleFileTestSummary({ downloadDirectory, providerOutcome: null }),
+      };
+    }
+
+    const provider = providerRegistry.getProvider(providerName);
+    if (!provider || typeof provider.testLoginByDownloadingSingleFile !== 'function') {
+      currentAuthState = createProviderUnavailableState({
+        attemptId,
+        updatedAt,
+        providerName,
+        message: `No single-file auth test provider is registered for ${providerName}.`,
+        nextAction: 'provider_single_file_test_unavailable',
+        internalEvent: 'provider_single_file_test_registry_miss',
+      });
+      await persistCurrentAuthState();
+      return {
+        auth: getPublicAuthState(),
+        testDownload: buildSingleFileTestSummary({ downloadDirectory, providerOutcome: null }),
+      };
+    }
+
+    try {
+      const providerOutcome = normalizeProviderOutcome(await withTimeout(provider.testLoginByDownloadingSingleFile({
+        attemptId,
+        provider: providerName,
+        envValues,
+        downloadDirectory,
+      }), timeoutMs, 'provider_single_file_download_timeout'));
+      currentAuthState = mapProviderOutcomeToAuthState({
+        attemptId,
+        updatedAt,
+        providerName,
+        providerOutcome,
+      });
+      await persistCurrentAuthState();
+      return {
+        auth: getPublicAuthState(),
+        testDownload: buildSingleFileTestSummary({ downloadDirectory, providerOutcome }),
+      };
+    } catch (error) {
+      currentAuthState = createProviderFailedState({
+        attemptId,
+        updatedAt,
+        providerName,
+        code: error?.code || 'provider_single_file_download_failed',
+        message: 'Provider single-file login/download test failed before a usable auth state was produced.',
+        detailMessage: null,
+      });
+      await persistCurrentAuthState();
+      return {
+        auth: getPublicAuthState(),
+        testDownload: buildSingleFileTestSummary({ downloadDirectory, providerOutcome: null }),
+      };
+    }
+  });
+}
 
 export async function resumeAuthSession({
   now = new Date(),
@@ -512,6 +600,17 @@ function createProviderFailedState({ attemptId, updatedAt, providerName, code, m
     provider: providerName,
     lastProviderEvent: internalEvent || PROVIDER_OUTCOMES.FAILED,
   });
+}
+
+function buildSingleFileTestSummary({ downloadDirectory, providerOutcome }) {
+  return {
+    downloadDirectory: downloadDirectory || null,
+    requestedRecentCount: 1,
+    status: providerOutcome?.outcome ?? 'not_run',
+    code: providerOutcome?.code ?? null,
+    message: providerOutcome?.message ?? null,
+    next_action: providerOutcome?.next_action ?? null,
+  };
 }
 
 export function selectAuthReadinessChecks(checks) {

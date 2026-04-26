@@ -38,6 +38,7 @@ const schedulerRuntimeDirectory = path.join(repoRoot, 'runtime_data', 'scheduler
 const schedulerStatusFilePath = path.join(schedulerRuntimeDirectory, 'host-status.json');
 const runtimeTruthRelativePath = 'conf/runtime-truth.json';
 const runtimeTruthFilePath = path.join(repoRoot, runtimeTruthRelativePath);
+const authSingleFileDownloadDirectory = path.join(repoRoot, 'runtime_data', 'tmp');
 const schedulerSchemaVersion = 3;
 const schedulerHeartbeatGraceSeconds = 20;
 const schedulerTickSeconds = Object.freeze({
@@ -69,7 +70,10 @@ const supportedMediaExtensions = new Set([
 ]);
 let databaseViewerLoggingSession = null;
 
-const authRouteHandlers = createAuthRoutes({ getAuthReadinessChecks });
+const authRouteHandlers = createAuthRoutes({
+  getAuthReadinessChecks,
+  singleFileDownloadDirectory: authSingleFileDownloadDirectory,
+});
 
 const envSchema = [
   { key: 'user', label: 'Account email', required: true, sensitive: true, kind: 'string' },
@@ -104,6 +108,7 @@ const routes = {
   'GET /api/auth/status': authRouteHandlers.statusHandler,
   'POST /api/auth/run': authRouteHandlers.runHandler,
   'POST /api/auth/2fa/submit': authRouteHandlers.twoFactorSubmitHandler,
+  'POST /api/auth/test-login-download-one': authRouteHandlers.testLoginDownloadOneHandler,
   'POST /api/auth/reset': authRouteHandlers.resetHandler,
   'POST /api/auth/logout': authRouteHandlers.logoutHandler,
   'POST /api/auth/resume': authRouteHandlers.resumeHandler,

@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { createIcloudpdProvider, mapIcloudpdResultToOutcome } from '../server/auth/providers/icloudpdProvider.js';
-import { buildAuthOnlyArgs, buildVerifySessionArgs, createIcloudpdProcessRunner, redactIcloudpdArgs } from '../server/auth/providers/icloudpdProcessRunner.js';
+import { buildAuthOnlyArgs, buildSingleFileDownloadArgs, buildVerifySessionArgs, createIcloudpdProcessRunner, redactIcloudpdArgs } from '../server/auth/providers/icloudpdProcessRunner.js';
 import { sanitizeIcloudpdText } from '../server/auth/providers/icloudpdSanitizer.js';
 
 const envValues = {
@@ -47,6 +47,22 @@ test('icloudpd provider maps 2FA-required output honestly', async () => {
   assert.equal(result.two_factor_method, 'trusted_device');
 });
 
+test('icloudpd provider maps timed-out 2FA prompt as 2FA-required', async () => {
+  const provider = createIcloudpdProvider({
+    runner: runner({
+      startResult: {
+        exitCode: 1,
+        timedOut: true,
+        sanitizedCombinedOutput: 'Two-factor authentication is required. Please enter two-factor authentication code or device index.',
+      },
+    }),
+  });
+  const result = await provider.startLogin({ envValues });
+
+  assert.equal(result.outcome, 'requires_2fa');
+  assert.equal(result.code, 'icloudpd_requires_2fa');
+});
+
 test('icloudpd provider maps invalid credentials to failed', async () => {
   const provider = createIcloudpdProvider({ runner: runner({ startResult: { exitCode: 1, sanitizedCombinedOutput: 'Authentication error: invalid email/password combination.' } }) });
   const result = await provider.startLogin({ envValues });
@@ -83,6 +99,24 @@ test('icloudpd provider resume can verify session without password config', asyn
   assert.equal(verified, true);
 });
 
+test('icloudpd provider can test login by downloading one recent file', async () => {
+  let downloadedConfig = null;
+  const provider = createIcloudpdProvider({
+    runner: runner({
+      onDownloadSingleFile: (config) => { downloadedConfig = config; },
+      downloadResult: { exitCode: 0, sanitizedCombinedOutput: 'Authentication successful. Download complete.' },
+    }),
+  });
+  const result = await provider.testLoginByDownloadingSingleFile({
+    envValues,
+    downloadDirectory: 'runtime_data/tmp',
+  });
+
+  assert.equal(result.outcome, 'authenticated');
+  assert.equal(downloadedConfig.downloadDir.endsWith(path.join('runtime_data', 'tmp')), true);
+  assert.equal(JSON.stringify(result).includes('super-secret-password'), false);
+});
+
 test('icloudpd session verification args do not pass the password on the command line', () => {
   const args = buildVerifySessionArgs({
     username: 'operator@example.com',
@@ -93,6 +127,30 @@ test('icloudpd session verification args do not pass the password on the command
   });
   assert.equal(args.includes('--password'), false);
   assert.equal(args.includes('super-secret-password'), false);
+});
+
+test('icloudpd single-file download args request one recent item into the target directory', () => {
+  const args = buildSingleFileDownloadArgs({
+    username: 'operator@example.com',
+    password: 'super-secret-password',
+    cookieDir: '/private/cookies',
+    downloadDir: '/private/tmp',
+  });
+
+  assert.deepEqual(args.slice(0, 8), [
+    '--username',
+    'operator@example.com',
+    '--password',
+    'super-secret-password',
+    '--cookie-directory',
+    '/private/cookies',
+    '--directory',
+    '/private/tmp',
+  ]);
+  assert.equal(args.includes('--recent'), true);
+  assert.equal(args[args.indexOf('--recent') + 1], '1');
+  assert.equal(args.includes('--folder-structure'), true);
+  assert.equal(args[args.indexOf('--folder-structure') + 1], 'none');
 });
 
 test('icloudpd process runner uses injected execFile implementation for auth command', async () => {
@@ -148,7 +206,7 @@ test('icloudpd sanitizers redact credentials, code, cookie directory, and passwo
   assert.deepEqual(redactIcloudpdArgs(buildAuthOnlyArgs({ ...config, cookieDir: '/private/cookies' }), config).includes('super-secret-password'), false);
 });
 
-function runner({ executableAvailable = true, startResult, submitResult, verifyResult, onStartAuth, onVerifySession, onCleanup } = {}) {
+function runner({ executableAvailable = true, startResult, submitResult, verifyResult, downloadResult, onStartAuth, onVerifySession, onDownloadSingleFile, onCleanup } = {}) {
   return {
     async checkExecutable() {
       return executableAvailable ? { available: true } : { available: false, code: 'icloudpd_executable_unavailable', message: 'icloudpd executable is not available on PATH or could not be started.' };
@@ -163,6 +221,10 @@ function runner({ executableAvailable = true, startResult, submitResult, verifyR
     async verifySession({ config } = {}) {
       onVerifySession?.(config);
       return verifyResult || { exitCode: 1, sanitizedCombinedOutput: 'session expired' };
+    },
+    async downloadSingleFile({ config } = {}) {
+      onDownloadSingleFile?.(config);
+      return downloadResult || { exitCode: 0, sanitizedCombinedOutput: 'Authentication successful. Download complete.' };
     },
     async cleanup({ config }) {
       onCleanup?.(config);

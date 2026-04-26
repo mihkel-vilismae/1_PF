@@ -125,6 +125,7 @@ export function createRuntimeTruthBehavior({
       'stop-db-logging': () => void databaseActions.runDatabaseViewerLoggingAction('stop'),
       'refresh-b1-auth-status': () => void authActions.refreshAuthStatus(),
       'run-b1': () => void authActions.runAuthPreflightAction(),
+      'test-b1-login-download-one': () => void authActions.testLoginByDownloadingSingleFileAction(),
       'reset-b1-auth': () => void authActions.resetAuthPreflightAction(),
       'submit-b1-2fa': (detail) => void authActions.submitAuthTwoFactorAction(detail?.code ?? ''),
       'logout-b1-auth': () => void authActions.logoutAuthPreflightAction(),
