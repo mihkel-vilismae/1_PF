@@ -38,3 +38,6 @@ Archived or superseded workflow outputs may later be moved to a separate archive
 | `part3_documentation_truth_matrix.md` | Slice 2 | Draft table-first truth matrix with one row per documentation file. |
 | `part3_slice2_classification_notes.md` | Slice 2 | Slice 2 method notes, classification rules, and next-slice guidance. |
 
+| `part3_slice3_reconciliation_findings.md` | Slice 3 | Reconciliation findings derived from Slice 2 matrix and repo reality anchors. |
+| `part3_recommended_doc_authority_model.md` | Slice 3 | Recommended future documentation authority model, archive policy, and merge targets. |
+
