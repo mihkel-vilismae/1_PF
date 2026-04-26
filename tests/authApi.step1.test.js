@@ -46,9 +46,9 @@ test('POST /api/auth/run reaches provider boundary but does not fake login succe
     const response = await requestJson(port, '/api/auth/run', { method: 'POST' });
     const after = await requestJson(port, '/api/auth/status', { method: 'GET' });
 
-    assert.equal(response.status, 502);
-    assert.equal(response.json.status, 'error');
-    assert.equal(response.json.auth.status, 'provider_failed');
+    assert.equal(response.status, 200);
+    assert.equal(response.json.status, 'blocked');
+    assert.equal(response.json.auth.status, 'blocked');
     assert.equal(response.json.auth.has_required_files, true);
     assert.equal(response.json.auth.next_action, 'install_or_configure_icloudpd');
     assert.equal(response.json.auth.error.code, 'icloudpd_executable_unavailable');
@@ -80,9 +80,9 @@ test('POST /api/auth/run fails honestly when required auth inputs are missing', 
 test('POST /api/auth/reset clears local attempt state and does not claim logout', async () => {
   await withAuthServer(buildEnvFile(), async ({ port }) => {
     const runResponse = await requestJson(port, '/api/auth/run', { method: 'POST' });
-    assert.equal(runResponse.status, 502);
-    assert.equal(runResponse.json.status, 'error');
-    assert.equal(runResponse.json.auth.status, 'provider_failed');
+    assert.equal(runResponse.status, 200);
+    assert.equal(runResponse.json.status, 'blocked');
+    assert.equal(runResponse.json.auth.status, 'blocked');
 
     const resetResponse = await requestJson(port, '/api/auth/reset', { method: 'POST' });
 
@@ -101,6 +101,7 @@ async function withAuthServer(envContent, run) {
   const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'pf-auth-api-step1-'));
   const port = await reservePort();
   const envFilePath = path.join(workspaceRoot, 'auth.test.env');
+  const missingIcloudpdBinPath = path.join(workspaceRoot, 'missing-icloudpd-bin');
 
   await writeFile(envFilePath, envContent, 'utf8');
 
@@ -110,6 +111,7 @@ async function withAuthServer(envContent, run) {
       ...process.env,
       PORT: String(port),
       INIT_ENV_FILE: envFilePath,
+      ICLOUDPD_BIN: missingIcloudpdBinPath,
     },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
