@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## 2026-04-26 23:41 EEST — v0.3.29
+
+### Added
+- Added reusable `Dashboard Inspect Controls Pattern` documentation under `docs/default_project_setup/`.
+- Added Slice 2 verification notes for A/B/C/D/E inspect-control coverage.
+- Added automated inspect summary tests for A-E page-aware feedback and honest backend-status fallback wording.
+
+### Changed
+- Restored immediate page-aware feedback for `Explain controls`, `Explain values`, `Show real vs mock`, and `Show/Hide backend status` by rendering an inspect summary panel whenever an inspect mode is active.
+- Updated version metadata from v0.3.28 to v0.3.29.
+
+### Fixed
+- Fixed the inspect controls feeling inactive by giving each toggle visible page-aware output in addition to the existing hover/focus metadata tooltips.
+
+### Removed
+- None.
+
 ## 2026-04-26 20:08 EEST — v0.3.28
 
 ### Added

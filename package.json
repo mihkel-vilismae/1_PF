@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.3.28",
+  "version": "0.3.29",
   "type": "module",
   "scripts": {
     "api": "node server/index.js",
