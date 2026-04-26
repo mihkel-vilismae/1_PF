@@ -1,5 +1,24 @@
 # CHANGELOG
 
+## 2026-04-26 19:59 EEST — v0.3.27
+
+### Added
+- Added Slice 2 current vision/specification documents under `docs/vision_and_implementation/`: project vision, current implementation spec, and dashboard views spec.
+- Added `docs/active_workflow_docs/vision_slice2_prompt_analysis_critique_refinement.md` with the analyzed, critiqued, and refined Slice 2 prompt.
+- Added `docs/vision_and_implementation/reconciliation/SLICE2_CURRENT_VISION_SPEC_REPORT.md` to record Slice 2 outputs and verification notes.
+
+### Changed
+- Updated the vision/spec documentation README and unresolved questions list for Slice 2.
+- Updated `docs/vision_and_implementation/DEPRECATED_SUPERSEDED_DOCS_LOG.md` to record Slice 2 harvesting status without moving or deleting old docs.
+- Recorded that `npm run task-docs:check` timed out twice and should not be rerun in Slice 3 without user approval or prior inspection.
+- Updated version metadata from v0.3.26 to v0.3.27.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
 ## 2026-04-26 19:47 EEST — v0.3.26
 
 ### Added

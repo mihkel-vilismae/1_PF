@@ -58,3 +58,24 @@ This log does **not** permanently delete or move any file. It records documents 
 - No documentation files were permanently deleted.
 - `docs/OLD_DOCS/` remains historical evidence, not current authority by default.
 - `task_docs/` remains task-history evidence, not current authority by default.
+
+## Slice 2 harvesting note — 2026-04-26 19:59 EEST
+
+Slice 2 harvested current-useful concepts from authoritative, supporting, historical, and superseded candidate documents into:
+
+- `PROJECT_VISION.md`
+- `CURRENT_IMPLEMENTATION_SPEC.md`
+- `DASHBOARD_VIEWS_SPEC.md`
+
+No documentation files were moved or deleted in Slice 2.
+
+The following candidate groups remain marked for later reconciliation rather than immediate relocation:
+
+| Candidate group | Slice 2 status | Next handling |
+|---|---|---|
+| `docs/OLD_DOCS/` | Superseded or historical candidate group | Harvest remaining architecture, worker, state, recovery, and acceptance content in Slice 3 before deciding `docs/docs_parsed/` vs `docs/to_be_deleted/`. |
+| `task_docs/` | Historical task evidence | Keep as implementation history unless later fully harvested and explicitly reclassified. |
+| Auth-specific docs under `docs/` | Supporting authority candidates | Consolidate into `AUTH_AND_2FA_SPEC.md` in Slice 3. |
+| Button/view evidence docs | Supporting implementation evidence | Keep available for dashboard verification; decide after Slice 3 whether they remain active working references. |
+
+A document listed here is not approved for deletion merely because it is old. It must be harvested, reconciled, and explicitly classified before relocation.
