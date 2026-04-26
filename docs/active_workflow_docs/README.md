@@ -27,3 +27,14 @@ docs/active_workflow_docs/
 All generated reports, report indexes, skill definitions, prompt records, and handoff notes for the current active workflow should be stored there.
 
 Archived or superseded workflow outputs may later be moved to a separate archive folder only when an explicit documentation-retirement decision is made.
+## Part 3 — Browser Repo Verifier & Doc Curator
+
+| Artifact | Workflow slice | Purpose |
+|---|---|---|
+| `part3_slice1_repo_evidence_index.md` | Slice 1 | Repo reality evidence index used before documentation classification. |
+| `part3_slice1_documentation_scope_inventory.md` | Slice 1 | Documentation scope inventory used before truth reconciliation. |
+| `part3_prompt_analysis_critique_refinement.md` | Slice 1 | Prompt analysis, critique, refined prompt, assumptions, and limitations. |
+| `part3_browser_repo_verifier_doc_curator_skill_improved.md` | Slice 1 | Repo-specific improved skill mode for Browser Repo Verifier & Doc Curator. |
+| `part3_documentation_truth_matrix.md` | Slice 2 | Draft table-first truth matrix with one row per documentation file. |
+| `part3_slice2_classification_notes.md` | Slice 2 | Slice 2 method notes, classification rules, and next-slice guidance. |
+
