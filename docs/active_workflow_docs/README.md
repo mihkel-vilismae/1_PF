@@ -41,3 +41,13 @@ Archived or superseded workflow outputs may later be moved to a separate archive
 | `part3_slice3_reconciliation_findings.md` | Slice 3 | Reconciliation findings derived from Slice 2 matrix and repo reality anchors. |
 | `part3_recommended_doc_authority_model.md` | Slice 3 | Recommended future documentation authority model, archive policy, and merge targets. |
 
+
+
+## Part 3 Slice 4 — Finalization
+
+| Artifact | Workflow slice | Purpose |
+|---|---|---|
+| `part3_browser_repo_verifier_doc_curator_report.md` | Slice 4 | Final human-readable Part 3 report. |
+| `part3_documentation_truth_matrix.md` | Slice 2/4 | Final table-first truth matrix with one row per documentation file. |
+| `part3_recommended_doc_authority_model.md` | Slice 3/4 | Final recommended documentation authority model. |
+| `part3_prompt_analysis_critique_refinement.md` | Slice 1/4 | Final prompt analysis, critique, refined prompt, assumptions, and limitations. |

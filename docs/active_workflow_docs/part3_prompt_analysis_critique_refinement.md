@@ -1,83 +1,52 @@
-# Part 3 Slice 1 — Prompt Analysis, Critique, and Refinement
-
-Workflow: `DOCUMENTATION_ANALYSIS_OVERHAUL_AND_RECONCILIATION_LIKE_1PF`  
-Slice: 1 of 4  
-Skill: Browser Repo Verifier & Doc Curator — 1PF Documentation Reconciliation Mode  
-Snapshot: `12_PF v0.3.24 active_workflow_docs ZIP`  
-Generated: 2026-04-26 17:26 EEST
+# Part 3 Slice 4 — Prompt Analysis, Critique, and Refined Prompt
 
 ## Original task summary
 
-Run Browser Repo Verifier & Doc Curator on the attached `12_PF` repository, using `docs/active_workflow_docs/` as the only output folder. The full Part 3 goal is to create a documentation truth and reconciliation report that compares documentation claims against repository reality.
+Run Slice 4 on the post-Slice-3 repo ZIP. Verify Slice 3 generated files are attached to the repo ZIP, produce the final Browser Repo Verifier & Doc Curator report, finalize documentation truth/reconciliation artifacts, update version/changelog, commit, and package the updated repo with Git history.
 
 ## Analysis
 
-The requested full audit is too large and evidence-sensitive for one safe pass. The repo contains many documentation files across root docs, current `docs/`, `docs/OLD_DOCS/`, button verification docs, active workflow docs, task docs, generated test-data docs, and local skill docs. A four-slice workflow is appropriate because Slice 1 can establish the evidence index and classification rules before any final document classification is made.
+Slice 4 is a finalization slice. It should consolidate Slice 1 evidence, Slice 2 matrix, and Slice 3 reconciliation findings into the final report. It should not start moving or deleting documentation, because the workflow explicitly limits changes to generated reports and version metadata.
 
 ## Critique
 
-The task is strong because it defines output files, evidence rules, classification labels, and safety constraints. The main risk is premature classification: if every doc is judged before repo evidence is indexed, the audit can become a doc summary instead of a truth reconciliation. Another risk is that generated active workflow reports inside `docs/active_workflow_docs/` may be mixed with project documentation; this slice therefore marks that folder as workflow-output material, not normal product documentation.
+The risk is overreach: a final report can sound like it completed full semantic verification of every doc claim. This run should be honest that it performed surface-to-medium truth reconciliation and produced the authority model for future deeper consolidation.
 
-## Refined Slice 1 prompt
+## Refined prompt
 
 ```text
-Run Slice 1 of Part 3 for DOCUMENTATION_ANALYSIS_OVERHAUL_AND_RECONCILIATION_LIKE_1PF.
+Run Slice 4 of Part 3 for DOCUMENTATION_ANALYSIS_OVERHAUL_AND_RECONCILIATION_LIKE_1PF.
 
-Use the attached 12_PF v0.3.24 repo ZIP as the immutable snapshot.
+Use the post-Slice-3 12_PF v0.3.24 repo ZIP as the immutable input snapshot.
 
-Use and improve the Browser Repo Verifier & Doc Curator skill for this repo.
+First verify that Slice 3 generated files are present under docs/active_workflow_docs/:
+- part3_slice3_reconciliation_findings.md
+- part3_recommended_doc_authority_model.md
 
-Output only to:
+Generate/finalize:
+- docs/active_workflow_docs/part3_browser_repo_verifier_doc_curator_report.md
+- docs/active_workflow_docs/part3_documentation_truth_matrix.md
+- docs/active_workflow_docs/part3_recommended_doc_authority_model.md
+- docs/active_workflow_docs/part3_prompt_analysis_critique_refinement.md
 
-docs/active_workflow_docs/
+Update docs/active_workflow_docs/README.md.
 
-Slice 1 goal:
-Create the audit foundation before classification.
+Update version metadata from 0.3.24 to 0.3.25 and add an Estonian timestamped CHANGELOG.md entry.
 
-Generate:
-1. part3_slice1_repo_evidence_index.md
-2. part3_slice1_documentation_scope_inventory.md
-3. part3_prompt_analysis_critique_refinement.md
-4. part3_browser_repo_verifier_doc_curator_skill_improved.md
-
-Inspect:
-- README.md
-- HOW_TO_RUN.md
-- CHANGELOG.md
-- VERSION
-- package.json
-- package-lock.json
-- schema.sql
-- server/index.js
-- server/scripts/sqlite_admin.py
-- dashboard entry files
-- tests/
-- scripts/
-- tools/
-- docs/
-- docs/OLD_DOCS/
-- task_docs/ only as supporting context
-- .codex/skills/ only as supporting context
-
-Do not classify every doc yet beyond basic inventory.
-Do not delete, move, or rewrite existing docs.
 Do not modify production code.
-Do not update version yet.
-Do not package final ZIP yet.
-
-Preserve behavior.
+Do not delete, move, or rewrite existing docs except final generated reports under docs/active_workflow_docs/.
+Commit one logical documentation-only change.
+Package the final repo ZIP with full .git history.
 ```
 
 ## Assumptions
 
-- `docs/active_workflow_docs/` is the canonical output folder for this workflow.
-- Slice 1 does not bump version metadata because it is an intermediate analysis slice.
-- Generated reports are allowed under the active workflow folder.
-- `docs/active_workflow_docs/` files should be visible in the inventory but treated as generated workflow artifacts, not as candidate product docs for final authority.
+- Slice 1–3 generated files are trusted workflow inputs but remain challengeable.
+- `docs/OLD_DOCS/` is historical and should not be deleted in this run.
+- Version bump is acceptable because the repository is modified by adding final workflow reports.
 
 ## Limitations
 
-- This slice does not complete the truth matrix.
-- This slice does not decide final authoritative documentation.
-- This slice does not move, merge, archive, delete, or rewrite any existing documentation.
-- Evidence is indexed for later slices; deeper claim-by-claim verification happens in Slices 2 and 3.
+- This pass does not rewrite `HOW_TO_RUN.md`; it recommends a separate HOW_TO_RUN regeneration pass.
+- This pass does not perform full semantic verification of every historical document.
+- This pass does not move or archive files; it only recommends future action.
