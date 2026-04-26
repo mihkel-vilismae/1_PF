@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [0.3.24] - 2026-04-26 17:20 EEST
+
+### Added
+- Added `docs/active_workflow_docs/` as the active output folder for `DOCUMENTATION_ANALYSIS_OVERHAUL_AND_RECONCILIATION_LIKE_1PF`.
+- Added current part-one documentation inventory outputs and part-two repo structure analysis outputs to the active workflow docs folder.
+- Added a prompt-analysis record documenting the active workflow docs folder rule.
+
+
 ## 2026-04-26 04:14 EEST — v0.3.23
 
 - Updated auth API step tests to match the backend-owned honest provider failure contract.
