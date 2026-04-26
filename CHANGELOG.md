@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## 2026-04-26 19:47 EEST — v0.3.26
+
+### Added
+- Added Slice 1 vision/specification documentation authority baseline under `docs/vision_and_implementation/`.
+- Added `docs/vision_and_implementation/DEPRECATED_SUPERSEDED_DOCS_LOG.md` to track deprecated, superseded, and historical documentation candidates without moving or deleting files.
+- Added `docs/active_workflow_docs/vision_slice1_prompt_analysis_critique_refinement.md` as the prompt analysis, critique, and refined Slice 1 prompt record.
+
+### Changed
+- Updated version metadata from v0.3.25 to v0.3.26.
+
+### Fixed
+- None.
+
+### Removed
+- None.
 
 ## [0.3.25] - 2026-04-26 18:08 EEST
 
