@@ -106,6 +106,7 @@ const envSchema = [
 
 const routes = {
   'GET /api/auth/status': authRouteHandlers.statusHandler,
+  'POST /api/auth/verify-icloudpd': authRouteHandlers.verifyIcloudpdHandler,
   'POST /api/auth/run': authRouteHandlers.runHandler,
   'POST /api/auth/2fa/submit': authRouteHandlers.twoFactorSubmitHandler,
   'POST /api/auth/test-login-download-one': authRouteHandlers.testLoginDownloadOneHandler,

@@ -4,7 +4,7 @@ import { renderInitView } from '../dashboard/views/initView.js';
 import { createInitialState } from '../dashboard/services/runtimeTruth/runtimeTruthState.js';
 import { sanitizeAuthPayload } from '../dashboard/services/runtimeTruth/runtimeTruthAuthActions.js';
 
-test('View A B1 renders 2FA and logout controls only from backend-required 2FA state', () => {
+test('View A 1A-AUTH renders 2FA and logout controls only from backend-required 2FA state', () => {
   const state = createInitialState();
   state.authPreflight.loaded = true;
   state.authPreflight.publicState = {
@@ -28,12 +28,20 @@ test('View A B1 renders 2FA and logout controls only from backend-required 2FA s
   assert.equal(markup.includes('data-action="logout-b1-auth"'), true);
 });
 
-test('View A B1 renders single-file login download test control', () => {
+test('View A 1A-AUTH renders icloudpd/login controls and keeps single-file test control', () => {
   const state = createInitialState();
   state.authPreflight.loaded = true;
 
   const markup = renderInitView(state);
 
+  assert.equal(markup.includes('1A-AUTH'), true);
+  assert.equal(markup.includes('Verify icloudpd'), true);
+  assert.equal(markup.indexOf('Verify .env') < markup.indexOf('1A-AUTH'), true);
+  assert.equal(markup.indexOf('1A-AUTH') < markup.indexOf('Database controls'), true);
+  assert.equal(markup.includes('data-action="verify-icloudpd"'), true);
+  assert.equal(markup.includes('data-action="check-login"'), true);
+  assert.equal(markup.includes('data-action="login-using-env"'), true);
+  assert.equal(markup.includes('data-action="logout-b1-auth"'), true);
   assert.equal(markup.includes('data-action="test-b1-login-download-one"'), true);
   assert.equal(markup.includes('TEST LOGIN BY DOWNLOADING A SINGLE FILE'), true);
 });

@@ -24,6 +24,22 @@ test('GET /api/auth/status returns only the safe public projection', async () =>
   });
 });
 
+test('POST /api/auth/verify-icloudpd checks executable/config without claiming login', async () => {
+  await withAuthServer(buildEnvFile(), async ({ port }) => {
+    const response = await requestJson(port, '/api/auth/verify-icloudpd', { method: 'POST' });
+
+    assert.equal(response.status, 400);
+    assert.equal(response.json.status, 'error');
+    assert.equal(response.json.readiness.hasRequiredConfig, true);
+    assert.equal(response.json.readiness.icloudpdAvailable, false);
+    assert.equal(response.json.readiness.code, 'icloudpd_executable_unavailable');
+    assert.equal(response.json.readiness.next_action, 'install_or_configure_icloudpd');
+    assert.equal(response.json.auth.status, 'idle');
+    assert.equal(response.json.auth.authenticatedUser, null);
+    assert.equal(JSON.stringify(response.json).includes('super-secret-password'), false);
+  });
+});
+
 test('POST /api/auth/run reaches provider boundary but does not fake login success', async () => {
   await withAuthServer(buildEnvFile(), async ({ port }) => {
     const before = await requestJson(port, '/api/auth/status', { method: 'GET' });

@@ -1,11 +1,13 @@
 import {
   AUTH_PREFLIGHT_ENDPOINTS,
+  checkAuthLogin,
   fetchAuthStatus,
   logoutAuthPreflight,
   resetAuthPreflight,
   runAuthPreflight,
   submitAuthTwoFactor,
   testLoginByDownloadingSingleFile,
+  verifyIcloudpdPreflight,
 } from '../authPreflightService.js';
 import { buildTimelineDetails } from './runtimeTruthActionUtils.js';
 
@@ -15,27 +17,35 @@ export function createRuntimeTruthAuthActions({ patchState, pushHistory, pushLog
   const { guardAction, endAction } = guards;
 
   async function refreshAuthStatus() {
-    return runAuthBackendAction({ operation: 'Refresh auth preflight status', endpoint: AUTH_PREFLIGHT_ENDPOINTS.status, execute: fetchAuthStatus, pendingStatus: 'idle', duplicateMessage: 'B1 auth status refresh is already running; duplicate trigger was blocked.' });
+    return runAuthBackendAction({ operation: 'Refresh auth preflight status', endpoint: AUTH_PREFLIGHT_ENDPOINTS.status, execute: fetchAuthStatus, pendingStatus: 'idle', duplicateMessage: '1A-AUTH auth status refresh is already running; duplicate trigger was blocked.' });
+  }
+
+  async function verifyIcloudpdPreflightAction() {
+    return runAuthBackendAction({ operation: 'Verify icloudpd', endpoint: AUTH_PREFLIGHT_ENDPOINTS.verifyIcloudpd, execute: verifyIcloudpdPreflight, pendingStatus: 'running', duplicateMessage: '1A-AUTH icloudpd verification is already running; duplicate start was blocked.' });
+  }
+
+  async function checkAuthLoginAction() {
+    return runAuthBackendAction({ operation: 'Check login', endpoint: AUTH_PREFLIGHT_ENDPOINTS.resume, execute: checkAuthLogin, pendingStatus: 'running', duplicateMessage: '1A-AUTH login check is already running; duplicate start was blocked.' });
   }
 
   async function runAuthPreflightAction() {
-    return runAuthBackendAction({ operation: 'Run auth preflight', endpoint: AUTH_PREFLIGHT_ENDPOINTS.run, execute: runAuthPreflight, pendingStatus: 'running', duplicateMessage: 'B1 auth preflight is already running; duplicate start was blocked.' });
+    return runAuthBackendAction({ operation: 'Login using .env values', endpoint: AUTH_PREFLIGHT_ENDPOINTS.run, execute: runAuthPreflight, pendingStatus: 'running', duplicateMessage: '1A-AUTH auth login is already running; duplicate start was blocked.' });
   }
 
   async function testLoginByDownloadingSingleFileAction() {
-    return runAuthBackendAction({ operation: 'Test login by downloading a single file', endpoint: AUTH_PREFLIGHT_ENDPOINTS.testLoginDownloadOne, execute: testLoginByDownloadingSingleFile, pendingStatus: 'running', duplicateMessage: 'B1 single-file login test is already running; duplicate start was blocked.' });
+    return runAuthBackendAction({ operation: 'Test login by downloading a single file', endpoint: AUTH_PREFLIGHT_ENDPOINTS.testLoginDownloadOne, execute: testLoginByDownloadingSingleFile, pendingStatus: 'running', duplicateMessage: '1A-AUTH single-file login test is already running; duplicate start was blocked.' });
   }
 
   async function resetAuthPreflightAction() {
-    return runAuthBackendAction({ operation: 'Reset auth preflight attempt state', endpoint: AUTH_PREFLIGHT_ENDPOINTS.reset, execute: resetAuthPreflight, pendingStatus: 'running', duplicateMessage: 'B1 auth reset is already running; duplicate trigger was blocked.' });
+    return runAuthBackendAction({ operation: 'Reset auth preflight attempt state', endpoint: AUTH_PREFLIGHT_ENDPOINTS.reset, execute: resetAuthPreflight, pendingStatus: 'running', duplicateMessage: '1A-AUTH auth reset is already running; duplicate trigger was blocked.' });
   }
 
   async function submitAuthTwoFactorAction(code) {
-    return runAuthBackendAction({ operation: 'Submit auth 2FA code', endpoint: AUTH_PREFLIGHT_ENDPOINTS.submitTwoFactor, execute: () => submitAuthTwoFactor(code), pendingStatus: 'running', duplicateMessage: 'B1 auth 2FA submit is already running; duplicate trigger was blocked.' });
+    return runAuthBackendAction({ operation: 'Submit auth 2FA code', endpoint: AUTH_PREFLIGHT_ENDPOINTS.submitTwoFactor, execute: () => submitAuthTwoFactor(code), pendingStatus: 'running', duplicateMessage: '1A-AUTH auth 2FA submit is already running; duplicate trigger was blocked.' });
   }
 
   async function logoutAuthPreflightAction() {
-    return runAuthBackendAction({ operation: 'Logout auth session', endpoint: AUTH_PREFLIGHT_ENDPOINTS.logout, execute: logoutAuthPreflight, pendingStatus: 'running', duplicateMessage: 'B1 auth logout is already running; duplicate trigger was blocked.' });
+    return runAuthBackendAction({ operation: 'Logout auth session', endpoint: AUTH_PREFLIGHT_ENDPOINTS.logout, execute: logoutAuthPreflight, pendingStatus: 'running', duplicateMessage: '1A-AUTH auth logout is already running; duplicate trigger was blocked.' });
   }
 
   async function runAuthBackendAction({ operation, endpoint, execute, pendingStatus, duplicateMessage }) {
@@ -88,7 +98,7 @@ export function createRuntimeTruthAuthActions({ patchState, pushHistory, pushLog
     }
   }
 
-  return { refreshAuthStatus, runAuthPreflightAction, testLoginByDownloadingSingleFileAction, resetAuthPreflightAction, submitAuthTwoFactorAction, logoutAuthPreflightAction };
+  return { refreshAuthStatus, verifyIcloudpdPreflightAction, checkAuthLoginAction, runAuthPreflightAction, testLoginByDownloadingSingleFileAction, resetAuthPreflightAction, submitAuthTwoFactorAction, logoutAuthPreflightAction };
 }
 
 export function sanitizeAuthPayload(value) {
@@ -106,6 +116,7 @@ function mapAuthStatusToUiStatus(authStatus, envelopeStatus) {
 
 function summarizeAuthResult(operation, authState, payload) {
   if (authState?.error?.message) return authState.error.message;
+  if (payload?.readiness?.message) return payload.readiness.message;
   if (payload?.message) return payload.message;
   if (authState?.next_action) return `${operation} returned ${authState.status ?? 'unknown'}; next action: ${authState.next_action}.`;
   return `${operation} completed.`;

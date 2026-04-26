@@ -5,6 +5,109 @@ import { createRuntimeTruthBehavior } from '../dashboard/services/runtimeTruth/r
 import { createInitialState } from '../dashboard/services/runtimeTruth/runtimeTruthState.js';
 import { renderInitView } from '../dashboard/views/initView.js';
 
+test('1A-AUTH verify and check login controls call backend-owned auth endpoints', async () => {
+  const originalFetch = global.fetch;
+  const requests = [];
+
+  global.fetch = async (path, init = {}) => {
+    const method = init.method ?? 'GET';
+    requests.push({ path, method });
+
+    if (path === '/api/auth/verify-icloudpd' && method === 'POST') {
+      return new Response(
+        JSON.stringify({
+          status: 'error',
+          readiness: {
+            status: 'error',
+            provider: 'icloud',
+            icloudpdAvailable: false,
+            hasRequiredConfig: true,
+            missingRequiredKeys: [],
+            executable: 'icloudpd',
+            code: 'icloudpd_executable_unavailable',
+            message: 'icloudpd executable is not available on PATH or could not be started.',
+            next_action: 'install_or_configure_icloudpd',
+            auth: {
+              status: 'idle',
+              has_required_files: false,
+              requires_2fa: 'unknown',
+              two_factor_status: 'not_started',
+              two_factor_method: null,
+              next_action: 'run_auth_preflight',
+              attemptId: null,
+              updatedAt: null,
+              error: null,
+              authenticatedUser: null,
+              provider: 'icloud',
+            },
+          },
+          auth: {
+            status: 'idle',
+            has_required_files: false,
+            requires_2fa: 'unknown',
+            two_factor_status: 'not_started',
+            two_factor_method: null,
+            next_action: 'run_auth_preflight',
+            attemptId: null,
+            updatedAt: null,
+            error: null,
+            authenticatedUser: null,
+            provider: 'icloud',
+          },
+        }),
+        { status: 400, headers: { 'content-type': 'application/json' } },
+      );
+    }
+
+    if (path === '/api/auth/resume' && method === 'POST') {
+      return new Response(
+        JSON.stringify({
+          status: 'ok',
+          auth: {
+            status: 'unknown',
+            has_required_files: false,
+            requires_2fa: 'unknown',
+            two_factor_status: 'unknown',
+            two_factor_method: null,
+            next_action: 'run_auth_preflight',
+            attemptId: 'resume-attempt',
+            updatedAt: '2026-04-26T00:30:00.000Z',
+            error: { code: 'auth_resume_no_persisted_state', message: 'No persisted auth state was available to resume.' },
+            authenticatedUser: null,
+            provider: 'icloud',
+          },
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      );
+    }
+
+    throw new Error(`Unexpected request: ${method} ${path}`);
+  };
+
+  try {
+    const harness = createRuntimeTruthHarness();
+    const behavior = createRuntimeTruthBehavior(harness.actions);
+
+    behavior.runAction('verify-icloudpd');
+    await waitFor(() => harness.state.authPreflight.latestResult?.endpoint === '/api/auth/verify-icloudpd' && harness.state.statusByKey.B1 === 'error');
+    assert.equal(harness.state.statusByKey.B1, 'error');
+    assert.equal(harness.state.authPreflight.latestResult.payload.readiness.icloudpdAvailable, false);
+    assert.equal(harness.state.authPreflight.publicState.status, 'idle');
+
+    behavior.runAction('check-login');
+    await waitFor(() => harness.state.authPreflight.latestResult?.endpoint === '/api/auth/resume' && harness.state.authPreflight.publicState?.status === 'unknown');
+    assert.equal(harness.state.authPreflight.publicState.status, 'unknown');
+    assert.equal(harness.state.authPreflight.publicState.authenticatedUser, null);
+
+    assert.deepEqual(requests, [
+      { path: '/api/auth/verify-icloudpd', method: 'POST' },
+      { path: '/api/auth/resume', method: 'POST' },
+    ]);
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
 test('B1 auth preflight now calls backend auth endpoints instead of frontend fake success timers', async () => {
   const originalFetch = global.fetch;
   const requests = [];

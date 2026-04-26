@@ -2,6 +2,8 @@ import { requestJson } from './apiClient.js';
 
 export const AUTH_PREFLIGHT_ENDPOINTS = Object.freeze({
   status: { method: 'GET', path: '/api/auth/status' },
+  verifyIcloudpd: { method: 'POST', path: '/api/auth/verify-icloudpd' },
+  resume: { method: 'POST', path: '/api/auth/resume' },
   run: { method: 'POST', path: '/api/auth/run' },
   testLoginDownloadOne: { method: 'POST', path: '/api/auth/test-login-download-one' },
   reset: { method: 'POST', path: '/api/auth/reset' },
@@ -11,6 +13,14 @@ export const AUTH_PREFLIGHT_ENDPOINTS = Object.freeze({
 
 export function fetchAuthStatus() {
   return callAuthEndpoint(AUTH_PREFLIGHT_ENDPOINTS.status);
+}
+
+export function verifyIcloudpdPreflight() {
+  return callAuthEndpoint(AUTH_PREFLIGHT_ENDPOINTS.verifyIcloudpd);
+}
+
+export function checkAuthLogin() {
+  return callAuthEndpoint(AUTH_PREFLIGHT_ENDPOINTS.resume);
 }
 
 export function runAuthPreflight() {

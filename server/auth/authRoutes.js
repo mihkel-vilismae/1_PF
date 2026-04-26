@@ -5,6 +5,7 @@ import {
   resumeAuthSession,
   runAuthPreflight,
   submitAuthTwoFactor,
+  verifyAuthPreflightReadiness,
   testAuthLoginByDownloadingSingleFile,
 } from './authService.js';
 
@@ -24,6 +25,19 @@ export function createAuthRoutes({
         auth: getPublicAuthState(),
       },
     }),
+
+    verifyIcloudpdHandler: async ({ context }) => {
+      const checks = getAuthReadinessChecks(context);
+      const readiness = await verifyAuthPreflightReadiness({ checks, envValues: context.envValues });
+      return {
+        statusCode: readiness.status === 'ok' ? 200 : 400,
+        payload: {
+          status: readiness.status,
+          readiness,
+          auth: readiness.auth,
+        },
+      };
+    },
 
     runHandler: async ({ context }) => {
       const checks = getAuthReadinessChecks(context);

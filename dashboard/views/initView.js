@@ -27,6 +27,7 @@ export function renderInitView(state) {
 
       <div class="section-grid section-grid--two">
         ${renderCard('1A', 'Verify .env', state, '1A', '<button class="button button--primary" data-action="verify-env">Run</button>', 'Validate required configuration keys and render the backend response payload directly in this card.')}
+        ${renderAuthCard(state)}
         ${renderCard(
           '2A',
           'Database controls',
@@ -55,23 +56,22 @@ export function renderInitView(state) {
           renderSchedulerCopy(schedulerCapability, installSupportLevel),
       )}
 
-      ${renderLoginCard(state)}
     </section>
   `;
 }
 
-// Render the login/authentication preflight card moved from View B to View A.
-function renderLoginCard(state) {
+// Render the backend-owned icloudpd/authentication preflight card in View A.
+function renderAuthCard(state) {
   const authState = state.authPreflight?.publicState ?? null;
   const latestResult = state.authPreflight?.latestResult ?? null;
   return `
     <article class="card card--hybrid">
       <header class="card__header">
-        <div><p class="card__code">B1</p><h3>Auth preflight</h3></div>
+        <div><p class="card__code">1A-AUTH</p><h3>Verify icloudpd</h3></div>
         <div class="card__header-tags">${renderSourceBadge('real', 'BACKEND')}</div>
         ${statusBadge(state.statusByKey.B1)}
       </header>
-      <p class="card__copy">View A auth preflight now calls the backend-owned /api/auth/* contract. It does not claim real provider login or completed 2FA.</p>
+      <p class="card__copy">Backend-owned icloudpd verification and login controls. This card checks executable/config readiness separately from authenticated provider state.</p>
       ${renderStepList(state.loginSteps)}
       ${renderAuthStateSummary(authState, state.authPreflight?.loaded)}
       ${renderAuthOperatorControls(authState)}
@@ -85,7 +85,7 @@ function renderAuthOperatorControls(authState) {
   const showTwoFactor = authState?.requires_2fa === true && authState?.two_factor_status === 'required';
   const twoFactorControl = showTwoFactor ? '<label class="field-label" for="b1-2fa-code">2FA code</label><input id="b1-2fa-code" class="input" type="text" inputmode="numeric" autocomplete="one-time-code" data-auth-2fa-code aria-label="2FA code" />' : '';
   const twoFactorButton = showTwoFactor ? '<button class="button button--primary" data-action="submit-b1-2fa">Submit 2FA</button>' : '';
-  return twoFactorControl + '<div class="button-row"><button class="button button--primary" data-action="run-b1">Run auth preflight</button><button class="button button--secondary" data-action="test-b1-login-download-one">TEST LOGIN BY DOWNLOADING A SINGLE FILE</button><button class="button button--secondary" data-action="refresh-b1-auth-status">Refresh status</button>' + twoFactorButton + '<button class="button button--secondary" data-action="reset-b1-auth">Reset local attempt</button><button class="button button--danger" data-action="logout-b1-auth">Logout / cleanup</button></div>';
+  return twoFactorControl + '<div class="button-row"><button class="button button--secondary" data-action="verify-icloudpd">Verify icloudpd</button><button class="button button--secondary" data-action="check-login">Check login</button><button class="button button--primary" data-action="login-using-env">Login using .env values</button><button class="button button--danger" data-action="logout-b1-auth">Logout</button>' + twoFactorButton + '<button class="button button--secondary" data-action="refresh-b1-auth-status">Refresh status</button><button class="button button--secondary" data-action="reset-b1-auth">Reset local attempt</button><button class="button button--secondary" data-action="test-b1-login-download-one">TEST LOGIN BY DOWNLOADING A SINGLE FILE</button></div>';
 }
 
 function renderAuthStateSummary(authState, loaded) {
@@ -99,7 +99,7 @@ function renderAuthStateSummary(authState, loaded) {
     endpoint: '/api/auth/status',
     receivedAt: authState.updatedAt ?? 'Not attempted yet',
     outcome: authState.status === 'preflight_failed' ? 'error' : 'success',
-    message: `Status: ${authState.status ?? 'unknown'}; next action: ${authState.next_action ?? 'unknown'}.`,
+    message: `Check login: ${authState.status === 'authenticated' ? 'TRUE' : authState.status === 'unknown' ? 'UNKNOWN' : 'FALSE'}; status: ${authState.status ?? 'unknown'}; next action: ${authState.next_action ?? 'unknown'}.`,
     payload: authState,
   });
 }

@@ -15,6 +15,28 @@ const ICLOUDPD_SESSION_REQUIRED_KEYS = ['user', 'ICLOUDPD_COOKIE_DIR'];
 export function createIcloudpdProvider({ runner = createIcloudpdProcessRunner(), cwd = process.cwd() } = {}) {
   return {
     name: 'icloud',
+    async verifyPreflight(context = {}) {
+      const config = buildIcloudpdConfig(context, { cwd });
+      const missing = validateIcloudpdConfig(config);
+      const executableCheck = await runner.checkExecutable();
+      return {
+        provider: 'icloud',
+        executable: runner.executable || 'icloudpd',
+        icloudpdAvailable: Boolean(executableCheck.available),
+        hasRequiredConfig: missing.length === 0,
+        missingRequiredKeys: missing,
+        code: executableCheck.available ? 'icloudpd_executable_available' : executableCheck.code,
+        message: executableCheck.available
+          ? 'icloudpd executable is available and required auth configuration was checked.'
+          : executableCheck.message,
+        detailMessage: executableCheck.detailMessage || null,
+        next_action: missing.length > 0
+          ? 'fix_auth_configuration'
+          : executableCheck.available
+            ? 'check_login_or_login_using_env_values'
+            : 'install_or_configure_icloudpd',
+      };
+    },
     async startLogin(context = {}) {
       const config = buildIcloudpdConfig(context, { cwd });
       const missing = validateIcloudpdConfig(config);

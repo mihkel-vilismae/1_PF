@@ -35,6 +35,58 @@ export function getPublicAuthState() {
   return projectPublicAuthState(currentAuthState);
 }
 
+
+export async function verifyAuthPreflightReadiness({
+  checks = [],
+  now = new Date(),
+  providerName = AUTH_PROVIDER,
+  providerRegistry = defaultProviderRegistry,
+  envValues = {},
+} = {}) {
+  const authChecks = selectAuthReadinessChecks(checks);
+  const missingOrInvalidRequiredChecks = authChecks.filter((check) => check.required && (!check.present || !check.valid));
+  const provider = providerRegistry.getProvider(providerName);
+  let providerReadiness = {
+    provider: providerName,
+    icloudpdAvailable: false,
+    hasRequiredConfig: missingOrInvalidRequiredChecks.length === 0,
+    missingRequiredKeys: missingOrInvalidRequiredChecks.map((check) => check.key),
+    code: 'provider_preflight_unavailable',
+    message: `No auth preflight verifier is registered for ${providerName}.`,
+    detailMessage: null,
+    next_action: 'provider_preflight_unavailable',
+  };
+
+  if (provider && typeof provider.verifyPreflight === 'function') {
+    providerReadiness = await provider.verifyPreflight({ checks: authChecks, envValues, provider: providerName });
+  }
+
+  const missingRequiredKeys = Array.from(new Set([
+    ...missingOrInvalidRequiredChecks.map((check) => check.key),
+    ...(Array.isArray(providerReadiness.missingRequiredKeys) ? providerReadiness.missingRequiredKeys : []),
+  ]));
+  const hasRequiredConfig = missingRequiredKeys.length === 0;
+  const icloudpdAvailable = Boolean(providerReadiness.icloudpdAvailable);
+  const status = hasRequiredConfig && icloudpdAvailable ? 'ok' : 'error';
+
+  return {
+    status,
+    provider: providerName,
+    checkedAt: now.toISOString(),
+    icloudpdAvailable,
+    hasRequiredConfig,
+    missingRequiredKeys,
+    executable: providerReadiness.executable || 'icloudpd',
+    code: hasRequiredConfig ? providerReadiness.code : 'auth_preflight_missing_required_inputs',
+    message: hasRequiredConfig
+      ? providerReadiness.message
+      : `Missing or invalid auth configuration: ${missingRequiredKeys.join(', ')}.`,
+    detailMessage: providerReadiness.detailMessage || null,
+    next_action: hasRequiredConfig ? providerReadiness.next_action : 'fix_auth_configuration',
+    auth: getPublicAuthState(),
+  };
+}
+
 export async function loadPersistedAuthState({ persistence = currentPersistence } = {}) {
   const loadedState = await persistence.load();
   if (loadedState) {

@@ -1,6 +1,23 @@
 # CHANGELOG
 
 > Note: changelog entries before v0.3.3 are preserved as legacy history and are not backfilled. Structured forward-only enforcement begins at v0.3.3.
+## 2026-04-26 03:18 EEST — v0.3.22
+
+### Added
+- Added View A `1A-AUTH — VERIFY ICLOUDPD` between `1A VERIFY .ENV` and `2A DB`.
+- Added backend-owned `POST /api/auth/verify-icloudpd` readiness endpoint for icloudpd executable/config checks without claiming authenticated login.
+
+### Changed
+- Rewired View A auth controls to explicit `Verify icloudpd`, `Check login`, `Login using .env values`, and `Logout` actions.
+- Updated version metadata to v0.3.22.
+
+### Fixed
+- Kept login checking backend-owned through session verification instead of frontend inference from required files or local UI state.
+
+### Removed
+- None
+
+
 ## 2026-04-26 00:51 EEST — v0.3.21
 
 ### Added
