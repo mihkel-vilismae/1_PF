@@ -1,28 +1,17 @@
 # Vision and Implementation Documentation
 
-Status: Slice 2 current vision/specification draft.
+Status: Slice 3 completed vision/specification set.
 Created: 2026-04-26 19:47 EEST.
-Updated: 2026-04-26 19:59 EEST.
-Scope: documentation-only reconciliation output for the photo-frame dashboard project.
+Updated: 2026-04-26 20:08 EEST.
+Scope: up-to-date documentation authority folder for the photo-frame dashboard/runtime system.
 
 ## Purpose
 
-This folder is the new home for up-to-date project vision and implementation specification documentation.
+This folder is the current reconciled documentation entrypoint for the project vision, current implementation reality, target architecture, pipeline/workers, authentication, scheduler/recovery, documentation authority, and unresolved decisions.
 
-Slice 1 established the evidence base. Slice 2 adds the current product vision, implementation reality, and dashboard view specification. Slice 3 still needs to complete the target architecture, pipeline/worker, auth/2FA, scheduler/runtime recovery, and final reconciliation documents.
+Use this folder before relying on older planning docs. Older docs may still contain useful historical detail, but claims from old docs should be treated as historical until reconciled here or verified against the repository.
 
-## Current reading order after Slice 2
-
-1. `README.md`
-2. `PROJECT_VISION.md`
-3. `CURRENT_IMPLEMENTATION_SPEC.md`
-4. `DASHBOARD_VIEWS_SPEC.md`
-5. `DOCUMENTATION_AUTHORITY_MAP.md`
-6. `DEPRECATED_SUPERSEDED_DOCS_LOG.md`
-7. `UNRESOLVED_QUESTIONS.md`
-8. `reconciliation/SLICE1_SOURCE_INVENTORY_REPORT.md`
-
-## Planned reading order after Slice 3
+## Reading order
 
 1. `README.md`
 2. `PROJECT_VISION.md`
@@ -33,24 +22,44 @@ Slice 1 established the evidence base. Slice 2 adds the current product vision, 
 7. `AUTH_AND_2FA_SPEC.md`
 8. `SCHEDULER_AND_RUNTIME_RECOVERY_SPEC.md`
 9. `DOCUMENTATION_AUTHORITY_MAP.md`
-10. `UNRESOLVED_QUESTIONS.md`
-11. `reconciliation/FINAL_VISION_SPEC_RECONCILIATION_REPORT.md`
+10. `DEPRECATED_SUPERSEDED_DOCS_LOG.md`
+11. `UNRESOLVED_QUESTIONS.md`
+12. `reconciliation/FINAL_VISION_SPEC_RECONCILIATION_REPORT.md`
 
 ## Authority rule
 
-Do not treat old planning docs as current implementation truth unless the claim is verified against the current repository or repeated in a current authority document.
+The current authority order is:
 
-Use classifications from `DOCUMENTATION_AUTHORITY_MAP.md` and status labels in the Slice 2 specs until Slice 3 final reconciliation updates this folder.
+1. Current source code and tests for implementation reality.
+2. This `docs/vision_and_implementation/` documentation set for reconciled vision/specification claims.
+3. Root project files such as `README.md`, `HOW_TO_RUN.md`, `VERSION`, `CHANGELOG.md`, and `package.json` for project metadata and run information.
+4. Active workflow docs under `docs/active_workflow_docs/` for recent workflow evidence.
+5. Older docs under `docs/OLD_DOCS/` and historical task docs only after their content is harvested or verified.
 
 ## Current status summary
 
-| Area | Slice 2 status |
+| Area | Status after Slice 3 |
 |---|---|
-| Product vision | Added in `PROJECT_VISION.md`. |
-| Current implementation reality | Added in `CURRENT_IMPLEMENTATION_SPEC.md`. |
-| Dashboard view roles | Added in `DASHBOARD_VIEWS_SPEC.md`. |
-| Deprecated/superseded docs | Still tracked in `DEPRECATED_SUPERSEDED_DOCS_LOG.md`; no files moved. |
-| Target architecture | Planned for Slice 3. |
-| Pipeline and workers target spec | Planned for Slice 3. |
-| Auth and 2FA target spec | Planned for Slice 3. |
-| Scheduler and recovery target spec | Planned for Slice 3. |
+| Product vision | Documented in `PROJECT_VISION.md`. |
+| Current implementation reality | Documented in `CURRENT_IMPLEMENTATION_SPEC.md`. |
+| Dashboard view roles | Documented in `DASHBOARD_VIEWS_SPEC.md`. |
+| Target architecture | Documented in `TARGET_ARCHITECTURE_SPEC.md`. |
+| Pipeline and workers | Documented in `PIPELINE_AND_WORKERS_SPEC.md`. |
+| Auth and 2FA | Documented in `AUTH_AND_2FA_SPEC.md`. |
+| Scheduler and recovery | Documented in `SCHEDULER_AND_RUNTIME_RECOVERY_SPEC.md`. |
+| Deprecated/superseded docs | Logged in `DEPRECATED_SUPERSEDED_DOCS_LOG.md`; no files moved or deleted in this workflow. |
+| Remaining ambiguity | Tracked in `UNRESOLVED_QUESTIONS.md`. |
+
+## Important current decisions
+
+- Lock files are the intended active-instance truth for workers.
+- Logs are evidence, history, and debugging trail.
+- The database should hold durable media pipeline and recovery state.
+- `conf/runtime-truth.json` is currently a runtime/dashboard bridge, not yet the final worker truth model.
+- The dashboard should display backend/runtime truth and avoid inventing local truth.
+- Auth must be backend-owned and provider-evidenced; no fake authenticated status.
+- Mock/test behavior must remain visibly separated from real runtime behavior.
+
+## Important remaining decisions
+
+The highest-impact remaining decisions are listed in `UNRESOLVED_QUESTIONS.md` and summarized in the final reconciliation report. They should be answered before implementation slices that change worker behavior, scheduler installation, auth/2FA provider behavior, or documentation relocation.

@@ -1,55 +1,55 @@
 # Unresolved Questions
 
-Status: Slice 2 updated list.
+Status: Slice 3 final unresolved specification list.
 Created: 2026-04-26 19:47 EEST.
-Updated: 2026-04-26 19:59 EEST.
+Updated: 2026-04-26 20:08 EEST.
 
-These questions are intentionally not blocking Slice 2. They should be answered or narrowed after Slice 3 once the full vision/spec set exists.
+These questions are not blockers for the documentation set, but they should be answered before implementation slices that change runtime behavior, auth, scheduler installation, or documentation relocation.
 
 ## Product vision
 
 1. Should the project be described primarily as a Raspberry Pi photo-frame runtime with a development dashboard, or as a broader cross-platform dashboard-first system?
-2. Should the final user-facing product prioritize autonomous slideshow reliability, dashboard observability, or pipeline configurability first?
-3. Should View E database inspection be treated as a core product view or as developer/admin tooling?
-
-## Documentation authority
-
-1. Should `docs/VOICE_AI_AUTHORITATIVE_SPEC_MERGED_2026-04-22.md` remain a high-level authority after the new vision/spec docs are complete, or should it become a parsed historical reference?
-2. Should `docs/OLD_DOCS/` be moved later into `docs/docs_parsed/`, `docs/to_be_deleted/`, or kept as a permanent historical archive?
-3. Should `task_docs/` remain in place or be treated as parsed historical implementation notes after useful content is harvested?
-4. Should `docs/buttons_and_implementation_overview.md` remain an active working implementation map after Slice 3, or should its useful content be consolidated into dashboard/view specs?
-
-## Runtime truth / locks / logs
-
-1. Final wording is still needed for the relationship between lock files and log files: lock files appear intended as active-instance truth, while logs are evidence/history/debug trail.
-2. Which runtime state must be persisted in the database versus files/logs/runtime-truth JSON?
-3. Should `conf/runtime-truth.json` remain part of the long-term runtime model, or become only a development/dashboard bridge?
-4. How should backend orchestration state in the SQLite `runtime_state` table relate to future worker locks?
-
-## Pipeline and workers
-
-1. Are the regular stage worker, playback worker, and screen on/off worker required to be independent long-running processes, cron-triggered scripts, or both depending on platform?
-2. Should the dashboard start workers directly, only inspect them, or both?
-3. Should the existing `/api/runtime/orchestration/*` endpoints become the canonical regular-stage-worker backend, or remain a dashboard/test orchestration helper?
-4. Should Stage 1 keep mock/generated-data copying for test mode while real iCloud download lives in a separate provider-backed path?
-
-## Authentication and 2FA
-
-1. What is the exact intended user flow for iCloud 2FA when `icloudpd` requires interactive confirmation?
-2. Should authentication status be considered valid only after a real provider verification, or can a recently verified persisted session be trusted for a fixed duration?
-3. Should auth tests remain mocked and secret-safe only, with real iCloud validation always manual?
-4. Should the `TEST LOGIN BY DOWNLOADING A SINGLE FILE` action remain in View A long-term or move into a separate diagnostics/admin area?
-
-## Scheduler / cron / cron emulator
-
-1. Should Windows scheduler support remain a placeholder/legacy feature while Fedora/Raspberry Pi cron becomes canonical?
-2. Should the Windows cron emulator be part of this repo or a separate utility repo?
-3. Should scheduler controls install real jobs, print recommended job definitions only, or support both modes with a destructive-install confirmation?
-4. Should the three default jobs remain regular stage worker every 10 minutes, playback worker every 1 minute, and screen on/off worker every 3 minutes?
+2. Should the next implementation priority be autonomous slideshow reliability, dashboard observability, or pipeline configurability?
+3. Should View E/database inspection be a core product view or developer/admin tooling?
 
 ## Dashboard views
 
-1. Should View C consume `/api/runtime/orchestration/last`, a future recovery endpoint, or a worker-owned durable state source?
-2. Should View D become a live monitor for worker lock files, DB state, logs, or a combined backend projection?
-3. Should View B's run-all button call frontend sequential stage actions or backend orchestration directly?
-4. Should simulated preview controls remain visible after real equivalents exist, or move into a separate explicit simulator mode?
+1. Should View C read `/api/runtime/orchestration/last`, a new recovery endpoint, or a worker-owned durable state projection?
+2. Should View D monitor lock files, DB state, logs, or a combined backend projection?
+3. Should View B run-all continue using sequential frontend actions, or switch to backend orchestration as the canonical path?
+4. Should simulated preview controls remain visible after real equivalents exist, or move behind an explicit simulator mode?
+
+## Runtime truth / locks / logs
+
+1. What are the exact lock file names and locations for regular stage, playback, and screen on/off workers?
+2. Which state belongs in SQLite, which belongs in lock files, which belongs in logs, and which belongs in `conf/runtime-truth.json`?
+3. Should `conf/runtime-truth.json` remain long-term or become development-only?
+4. How should `runtime_state` relate to worker locks and current playback state?
+
+## Pipeline stages
+
+1. Should Stage 1 keep generated/mock copy behavior as a test mode while real iCloud download is a separate provider-backed path?
+2. Which geocoding provider should replace the deterministic placeholder, and what rate-limit/cache policy should be used?
+3. Should one pipeline worker run all stages sequentially, or should each stage have its own independent worker later?
+4. What is the exact status lifecycle for failed GPS, failed geocode, missing file, and skipped queue entries?
+
+## Authentication and 2FA
+
+1. Should `authenticated` require a live provider verification every time, or may a recently verified persisted session be trusted for a configured duration?
+2. What exact user flow should handle interactive `icloudpd` 2FA?
+3. Should real-provider auth checks stay manual-only, with automated tests limited to mocks and secret-safe boundaries?
+4. Should `TEST LOGIN BY DOWNLOADING A SINGLE FILE` remain in View A, or move to diagnostics/admin tooling?
+
+## Scheduler / cron / cron emulator
+
+1. Should Windows scheduler support remain print/status-only while Fedora/Raspberry Pi cron becomes canonical?
+2. Should the Windows cron emulator live in this repo or in a separate utility repo?
+3. Should scheduler controls install real jobs, only print recommended job definitions, or support both with confirmation?
+4. Are the current example cadences final: regular worker every 10 minutes, playback every 1 minute, screen worker every 3 minutes?
+
+## Documentation authority and cleanup
+
+1. Should `docs/VOICE_AI_AUTHORITATIVE_SPEC_MERGED_2026-04-22.md` become parsed historical reference after the new specs, or remain a high-level authority?
+2. Should `docs/OLD_DOCS/` later move to `docs/docs_parsed/`, `docs/to_be_deleted/`, or a permanent archive?
+3. Should `task_docs/` remain as historical implementation notes or be harvested into active docs and then archived?
+4. Which deprecated/superseded docs can be marked fully used-up after content harvesting?

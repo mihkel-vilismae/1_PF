@@ -1,159 +1,62 @@
 # Documentation Authority Map
 
-Status: Slice 1 baseline authority map.  
-Created: 2026-04-26 19:47 EEST.  
-Source basis: `12_PF-docsonly.zip` primary documentation corpus plus selected verification from the full repo ZIP.
+Status: Slice 3 updated authority map.
+Created: 2026-04-26 19:47 EEST.
+Updated: 2026-04-26 20:08 EEST.
+Scope: current authority classification after the 3-slice vision/specification workflow.
 
-## Skill usage
+## Authority tiers
 
-| Skill | Slice 1 use | Notes |
+| Tier | Source | Use |
 |---|---|---|
-| `.codex/skills/button-workflow-verification/SKILL.md` | Inspected and used as supporting workflow evidence | Apply the canonical button verification workflow in the 1_PF dashboard repository. Use when Codex needs to audit a specific dashboard button or action, trace it from UI trigger through frontend wiring and backend execution, classify it as Works, Partial, Broken, or Mock-only, produce a per-button result report, and optionally add the smallest missing test or inspect-metadata fix. |
-| `.codex/skills/view-a-init-reconciliation/SKILL.md` | Inspected and used as supporting workflow evidence | Use when analyzing or repairing View A in the 1_PF repository so the Init UI, backend contract, runtime behavior, and current-truth docs stay aligned without inventing implementation status. |
+| 1 | Current repository code and tests | Implementation truth. |
+| 2 | `docs/vision_and_implementation/` | Reconciled vision/specification authority. |
+| 3 | Root docs and metadata | Run, version, changelog, and project entrypoint information. |
+| 4 | `docs/active_workflow_docs/` | Recent workflow evidence and prompt records. |
+| 5 | `docs/button_verification_*` | Button-specific verification evidence. |
+| 6 | `docs/OLD_DOCS/` and historical task docs | Historical/reference evidence only until harvested or revalidated. |
 
-## Classification counts
+## Current authority files
 
-| Classification | Count |
-|---|---:|
-| ACTIVE_AUTHORITY | 4 |
-| ACTIVE_AUTHORITY_WITH_RECONCILIATION_NEEDED | 1 |
-| ACTIVE_WORKFLOW_EVIDENCE | 15 |
-| HISTORICAL_REFERENCE | 2 |
-| HISTORICAL_TASK_REFERENCE | 9 |
-| NEEDS_REVIEW | 2 |
-| REPO_LOCAL_SKILL | 6 |
-| SUPERSEDED_REFERENCE | 29 |
-| SUPPORTING_AUTHORITY_CANDIDATE | 6 |
-| SUPPORTING_EVIDENCE | 21 |
-| SUPPORTING_WORKFLOW | 2 |
-| **Total markdown files inventoried** | **97** |
-
-## Implementation anchors checked
-
-| Anchor | Evidence found | Slice 1 interpretation |
-|---|---:|---|
-| API route table in `server/index.js` | 33 `/api/*` route entries | Enough to verify that backend route wiring exists for current-spec slices; not a full behavior proof. |
-| Tests in `tests/` | 29 JS test files | Supports later current-reality verification. |
-| Repo-local skills | 2 `SKILL.md` files | Suitable supporting skills exist, mostly View/button focused. |
-| Active workflow docs | 15 markdown files | Prior reconciliation artifacts exist and should be used as evidence. |
-| Schema file | present | Use `schema.sql` as the database baseline until schema docs are reconciled. |
-
-## Documentation inventory and authority classification
-
-| # | Path | LOC | Modified | SHA-256 short | Heading sample | Classification | Recommended action / note |
-|---:|---|---:|---|---|---|---|---|
-| 1 | `.codex/skills/button-workflow-verification/SKILL.md` | 119 | 2026-04-26 04:09 | `af7acc981d09` | # Button Workflow Verification<br>## Overview<br>## Read First<br>## Reuse Before Re-Audit | REPO_LOCAL_SKILL | Reusable repo-local workflow skill/reference; keep and use when relevant. |
-| 2 | `.codex/skills/button-workflow-verification/references/agent-patterns.md` | 127 | 2026-04-26 04:09 | `b43560cfbf2e` | # Agent Patterns For Repeated Button Audits<br>## Core Rule<br>## Pattern A - File Locator Explorer<br>## Pattern B - Contract Explorer | REPO_LOCAL_SKILL | Reusable repo-local workflow skill/reference; keep and use when relevant. |
-| 3 | `.codex/skills/button-workflow-verification/references/compounding-reuse.md` | 110 | 2026-04-26 04:09 | `9cf0ef616426` | # Compounding Reuse Strategy<br>## Keep These Artifacts Current<br>## Conditional Delegation Policy<br>### Audit index | REPO_LOCAL_SKILL | Reusable repo-local workflow skill/reference; keep and use when relevant. |
-| 4 | `.codex/skills/button-workflow-verification/references/repo-evidence-map.md` | 45 | 2026-04-26 04:09 | `6ed9abed0ce6` | # 1_PF Button Verification Evidence Map<br>## Canonical Workflow<br>## View A Init<br>## Inspect System | REPO_LOCAL_SKILL | Reusable repo-local workflow skill/reference; keep and use when relevant. |
-| 5 | `.codex/skills/button-workflow-verification/references/report-template.md` | 56 | 2026-04-26 04:09 | `05b3f9cb1a30` | # Button Verification Report Template<br>## Scope<br>## Final Classification<br>## Evidence Basis | REPO_LOCAL_SKILL | Reusable repo-local workflow skill/reference; keep and use when relevant. |
-| 6 | `.codex/skills/view-a-init-reconciliation/SKILL.md` | 65 | 2026-04-26 04:09 | `6da793e7baa3` | # View A Init Reconciliation<br>## Read First<br>## Core Workflow<br>## Required Outputs | REPO_LOCAL_SKILL | Reusable repo-local workflow skill/reference; keep and use when relevant. |
-| 7 | `CHANGELOG.md` | 226 | 2026-04-26 15:10 | `be32b70c53cc` | # CHANGELOG<br>## [0.3.25] - 2026-04-26 18:08 EEST<br>### Added<br>### Notes | ACTIVE_AUTHORITY | Root project entrypoint/version/runbook authority; keep in place. |
-| 8 | `HOW_TO_RUN.md` | 10 | 2026-04-26 04:09 | `56639764fcda` | # How to Run | ACTIVE_AUTHORITY | Root project entrypoint/version/runbook authority; keep in place. |
-| 9 | `README.md` | 184 | 2026-04-26 04:09 | `a4c1c7b9c8e0` | # Photo Frame Dashboard System<br>## 1. Project Overview<br>## Authoritative Behavioral Spec (Top Priority)<br>## 2. Current System State | ACTIVE_AUTHORITY | Root project entrypoint/version/runbook authority; keep in place. |
-| 10 | `docs/AI_AUTHENTICATION_2FA_HANDOFF.md` | 447 | 2026-04-26 04:09 | `a1702a947896` | # AI Authentication and 2FA Handoff<br>## Purpose<br>## Executive Summary<br>## Key Files | SUPPORTING_AUTHORITY_CANDIDATE | Current auth-specific documentation candidate; verify against auth code before consolidation. |
-| 11 | `docs/AUTH_ICLOUDPD_MANUAL_VERIFICATION.md` | 128 | 2026-04-26 15:45 | `4f5a3ada5e1d` | # iCloudPD Auth Provider Manual Verification<br>## Status<br>## Required configuration<br>## Provider command strategy | SUPPORTING_AUTHORITY_CANDIDATE | Current auth-specific documentation candidate; verify against auth code before consolidation. |
-| 12 | `docs/AUTH_ICLOUDPD_SESSION_VERIFICATION.md` | 171 | 2026-04-26 04:09 | `038f605126f6` | # iCloudPD Auth Session Verification<br>## Status<br>## Implemented backend boundary<br>## What `/api/auth/resume` does | SUPPORTING_AUTHORITY_CANDIDATE | Current auth-specific documentation candidate; verify against auth code before consolidation. |
-| 13 | `docs/CANONICAL_SCHEMA_PROPOSAL.md` | 288 | 2026-04-26 04:09 | `b09be058cdf9` | # Canonical Schema Proposal<br>## Purpose<br>## Source Basis<br>### Primary sources | SUPPORTING_AUTHORITY_CANDIDATE | Schema/database documentation candidate; verify against schema.sql and DB helper code. |
-| 14 | `docs/IMPLEMENTATION_STATUS_AUDIT.md` | 228 | 2026-04-26 04:09 | `831cb9e66411` | # Implementation Status Audit<br>## Purpose<br>## Source of truth used<br>## Related implementation-reference docs | SUPPORTING_AUTHORITY_CANDIDATE | Implementation/status documentation candidate; verify against code and tests before authority claims. |
-| 15 | `docs/OLD_DOCS/00_TABLE_OF_CONTENTS.md` | 127 | 2026-04-26 04:09 | `213bfba9daaa` | # Table of Contents (Master Control Document)<br>## Purpose<br>## Most Important Interpretation Rule<br>## Reading Order | HISTORICAL_REFERENCE | Old documentation area; useful historical index/evidence but superseded for current authority. |
-| 16 | `docs/OLD_DOCS/01_SYSTEM_OVERVIEW.md` | 86 | 2026-04-26 04:09 | `631a888c585a` | # System Overview<br>## Purpose<br>## Target System Shape<br>## Core System Goals | SUPERSEDED_REFERENCE | Old documentation content likely harvested/superseded by active workflow and future vision/spec docs; keep archived for now. |
-| 17 | `docs/OLD_DOCS/02_SYSTEM_INVARIANTS.md` | 46 | 2026-04-26 04:09 | `9bcc819b7e4a` | # System Invariants<br>## Purpose<br>## Global Invariants<br>## Pipeline Invariants | SUPERSEDED_REFERENCE | Old documentation content likely harvested/superseded by active workflow and future vision/spec docs; keep archived for now. |
-| 18 | `docs/OLD_DOCS/03_ARCHITECTURE.md` | 79 | 2026-04-26 04:09 | `b963b70f98ed` | # Architecture<br>## Purpose<br>## Primary Components<br>### 1. Dashboard Frontend | SUPERSEDED_REFERENCE | Old documentation content likely harvested/superseded by active workflow and future vision/spec docs; keep archived for now. |
-| 19 | `docs/OLD_DOCS/04_SINGLE_SOURCE_OF_TRUTH.md` | 100 | 2026-04-26 04:09 | `385629c0b5d5` | # Single Source of Truth<br>## Purpose<br>## Canonical Backend Contract Alignment<br>## Canonical Decision | SUPERSEDED_REFERENCE | Old documentation content likely harvested/superseded by active workflow and future vision/spec docs; keep archived for now. |
-| 20 | `docs/OLD_DOCS/05_STATE_MACHINE.md` | 92 | 2026-04-26 04:09 | `c3bccc6831ad` | # State Machine<br>## Purpose<br>## Canonical Backend Contract Alignment<br>## Top-Level System States | SUPERSEDED_REFERENCE | Old documentation content likely harvested/superseded by active workflow and future vision/spec docs; keep archived for now. |
-| 21 | `docs/OLD_DOCS/06_DATABASE_SCHEMA.md` | 141 | 2026-04-26 04:09 | `fda86392e7d8` | # Database Schema<br>## Purpose<br>## Storage Principles<br>## Core Tables | SUPERSEDED_REFERENCE | Old documentation content likely harvested/superseded by active workflow and future vision/spec docs; keep archived for now. |
-| 22 | `docs/OLD_DOCS/07_PIPELINE_STAGES.md` | 65 | 2026-04-26 04:09 | `9be31512684f` | # Pipeline Stages<br>## Purpose<br>## Ordered Stages<br>## Execution Contract | SUPERSEDED_REFERENCE | Old documentation content likely harvested/superseded by active workflow and future vision/spec docs; keep archived for now. |
-| 23 | `docs/OLD_DOCS/08_WORKERS_AND_OWNERSHIP.md` | 74 | 2026-04-26 04:09 | `6d1d963c8cc0` | # Workers and Ownership<br>## Purpose<br>## Worker Set<br>### 1. Pipeline Worker | SUPERSEDED_REFERENCE | Old documentation content likely harvested/superseded by active workflow and future vision/spec docs; keep archived for now. |
-| 24 | `docs/OLD_DOCS/09_CRON_AND_WATCHDOG.md` | 62 | 2026-04-26 04:09 | `45b14bc9d126` | # Cron and Watchdog<br>## Purpose<br>## Model<br>## Current Windows Implementation Note | SUPERSEDED_REFERENCE | Old documentation content likely harvested/superseded by active workflow and future vision/spec docs; keep archived for now. |
-| 25 | `docs/OLD_DOCS/10_CONCURRENCY_AND_LOCKING.md` | 85 | 2026-04-26 04:09 | `b9d62e8c32fe` | # Concurrency and Locking<br>## Purpose<br>## Canonical Backend Contract Alignment<br>## Canonical Choice | SUPERSEDED_REFERENCE | Old documentation content likely harvested/superseded by active workflow and future vision/spec docs; keep archived for now. |
-| 26 | `docs/OLD_DOCS/11_LOGGING_AND_EVENT_MODEL.md` | 76 | 2026-04-26 04:09 | `4c732754308b` | # Logging and Event Model<br>## Purpose<br>## Principles<br>## Required Event Categories | SUPERSEDED_REFERENCE | Old documentation content likely harvested/superseded by active workflow and future vision/spec docs; keep archived for now. |
-| 27 | `docs/OLD_DOCS/12_STATE_AND_RECOVERY.md` | 77 | 2026-04-26 04:09 | `09d493fa5834` | # State and Recovery<br>## Purpose<br>## Canonical Backend Contract Alignment<br>## Current Implementation Note | SUPERSEDED_REFERENCE | Old documentation content likely harvested/superseded by active workflow and future vision/spec docs; keep archived for now. |
-| 28 | `docs/OLD_DOCS/13_FRONTEND_BACKEND_CONTRACT.md` | 1024 | 2026-04-26 04:09 | `04ce4349a281` | # Frontend / Backend Contract<br>## Purpose<br>## Current Implementation Truth<br>## Global Rules | SUPERSEDED_REFERENCE | Old documentation content likely harvested/superseded by active workflow and future vision/spec docs; keep archived for now. |
-| 29 | `docs/OLD_DOCS/14_VERSIONING_AND_CHANGELOG_RULES.md` | 51 | 2026-04-26 04:09 | `5db53e656df2` | # Versioning and Changelog Rules<br>## Purpose<br>## Versioning Model<br>### Guidance | SUPERSEDED_REFERENCE | Old documentation content likely harvested/superseded by active workflow and future vision/spec docs; keep archived for now. |
-| 30 | `docs/OLD_DOCS/15_CURRENT_IMPLEMENTATION_STATUS.md` | 332 | 2026-04-26 04:09 | `a8b031e20e20` | # Current Implementation Status<br>## Purpose<br>## Repository Reality Summary<br>## Implemented Now | SUPERSEDED_REFERENCE | Old documentation content likely harvested/superseded by active workflow and future vision/spec docs; keep archived for now. |
-| 31 | `docs/OLD_DOCS/16_DOCUMENTATION_RECONCILIATION_REPORT.md` | 148 | 2026-04-26 04:09 | `9f9253e10724` | # Documentation Reconciliation Report<br>## Purpose<br>## Why reconciliation was needed<br>## Repository findings | SUPERSEDED_REFERENCE | Old documentation content likely harvested/superseded by active workflow and future vision/spec docs; keep archived for now. |
-| 32 | `docs/OLD_DOCS/17_REPO_ANALYSIS_AND_DOC_UPDATE_PROMPT.md` | 60 | 2026-04-26 04:09 | `de17e698adc5` | # Repo Analysis and Implementation-Docs Update Prompt<br>## Primary objective<br>## Non-negotiable rules<br>## Required analysis steps | SUPERSEDED_REFERENCE | Old documentation content likely harvested/superseded by active workflow and future vision/spec docs; keep archived for now. |
-| 33 | `docs/OLD_DOCS/18_CANONICAL_BACKEND_CONTRACT_SET.md` | 91 | 2026-04-26 04:09 | `0f34996276f5` | # Canonical Backend Contract Set<br>## Consolidation Strategy<br>## Proposed New Doc Set<br>## Reconciliation Notes | SUPERSEDED_REFERENCE | Old documentation content likely harvested/superseded by active workflow and future vision/spec docs; keep archived for now. |
-| 34 | `docs/OLD_DOCS/19_BACKEND_RUNTIME_CONTRACT.md` | 256 | 2026-04-26 04:09 | `e0d22d00aaa9` | # Backend Runtime Contract<br>## Purpose<br>## Sources Absorbed<br>## Shared Pipeline Rules | SUPERSEDED_REFERENCE | Old documentation content likely harvested/superseded by active workflow and future vision/spec docs; keep archived for now. |
-| 35 | `docs/OLD_DOCS/20_STATE_AND_TRUTH_CONTRACT.md` | 198 | 2026-04-26 04:09 | `7ed813945fad` | # State And Truth Contract<br>## Purpose<br>## Sources Absorbed<br>## Truth Surfaces | SUPERSEDED_REFERENCE | Old documentation content likely harvested/superseded by active workflow and future vision/spec docs; keep archived for now. |
-| 36 | `docs/OLD_DOCS/21_EXECUTION_AND_RECOVERY_CONTRACT.md` | 270 | 2026-04-26 04:09 | `8d988797bad4` | # Execution And Recovery Contract<br>## Purpose<br>## Sources Absorbed<br>## Retry Model | SUPERSEDED_REFERENCE | Old documentation content likely harvested/superseded by active workflow and future vision/spec docs; keep archived for now. |
-| 37 | `docs/OLD_DOCS/22_ACCEPTANCE_AND_VALIDATION_CONTRACT.md` | 125 | 2026-04-26 04:09 | `5ecae4b4f775` | # Acceptance And Validation Contract<br>## Purpose<br>## Sources Absorbed<br>## Main Success Definition | SUPERSEDED_REFERENCE | Old documentation content likely harvested/superseded by active workflow and future vision/spec docs; keep archived for now. |
-| 38 | `docs/OLD_DOCS/23_VIEW_A_INIT_RECONCILIATION_PROMPT.md` | 122 | 2026-04-26 04:09 | `4521acedc38c` | # View A Init Reconciliation Prompt<br>## Purpose<br>## Critique Of The Current Prompt<br>## Refined Prompt | SUPERSEDED_REFERENCE | Old documentation content likely harvested/superseded by active workflow and future vision/spec docs; keep archived for now. |
-| 39 | `docs/OLD_DOCS/DASHBOARD_OVERVIEW.md` | 85 | 2026-04-26 04:09 | `13691e79303f` | # Dashboard Overview<br>## Purpose<br>## Views<br>## File Structure | SUPERSEDED_REFERENCE | Old documentation content likely harvested/superseded by active workflow and future vision/spec docs; keep archived for now. |
-| 40 | `docs/OLD_DOCS/VIEW_A_INIT.md` | 68 | 2026-04-26 04:09 | `657b66d9c21b` | # View A — Init<br>## Purpose<br>## Sections<br>### 1A — Verify .env | SUPERSEDED_REFERENCE | Old documentation content likely harvested/superseded by active workflow and future vision/spec docs; keep archived for now. |
-| 41 | `docs/OLD_DOCS/VIEW_B_TEST.md` | 83 | 2026-04-26 04:09 | `8b2869a735c5` | # View B — Test<br>## Purpose<br>## Sections<br>### B1 — Auth preflight | SUPERSEDED_REFERENCE | Old documentation content likely harvested/superseded by active workflow and future vision/spec docs; keep archived for now. |
-| 42 | `docs/OLD_DOCS/VIEW_C_LAST_RUN_INFO.md` | 42 | 2026-04-26 04:09 | `e30fe1f418db` | # View C — Last Run Info<br>## Purpose<br>## Required Display States<br>### 1. No run yet | SUPERSEDED_REFERENCE | Old documentation content likely harvested/superseded by active workflow and future vision/spec docs; keep archived for now. |
-| 43 | `docs/OLD_DOCS/VIEW_D_RUNNING_PROCESS.md` | 65 | 2026-04-26 04:09 | `4bb2ca60ae78` | # View D — Running Process<br>## Purpose<br>## Runtime Preview vs Test Mode<br>## Blocks | SUPERSEDED_REFERENCE | Old documentation content likely harvested/superseded by active workflow and future vision/spec docs; keep archived for now. |
-| 44 | `docs/OLD_DOCS/VIEW_E_DATABASE_VIEWER.md` | 84 | 2026-04-26 04:09 | `032499d9cd3b` | # View E — Database Viewer<br>## Purpose<br>## Workflow<br>### E1 — Verify Database | SUPERSEDED_REFERENCE | Old documentation content likely harvested/superseded by active workflow and future vision/spec docs; keep archived for now. |
-| 45 | `docs/OLD_DOCS/issues_errors_discrepancies.md` | 197 | 2026-04-26 04:09 | `a7a303afc84f` | # Issues / Errors / Discrepancies Registry<br>## Audit Coverage Summary<br>## Issue Index<br>## High Priority Issues | HISTORICAL_REFERENCE | Old documentation area; useful historical index/evidence but superseded for current authority. |
-| 46 | `docs/VERSIONING_AND_CHANGELOG_POLICY.md` | 171 | 2026-04-26 04:09 | `a556d02bb475` | # Forward-Only Versioning and Changelog Policy<br>## Purpose<br>## Scope<br>## Canonical Version Source | ACTIVE_AUTHORITY | Current policy authority for SemVer, changelog, and commit rules. |
-| 47 | `docs/VOICE_AI_AUTHORITATIVE_SPEC_MERGED_2026-04-22.md` | 1429 | 2026-04-26 04:09 | `6940593788d1` | # VOICE AI AUTHORITATIVE SPEC - MERGED (2026-04-22)<br>## Source 1<br># Authoritative Voice AI Implementation Overview<br># 1. Core Intent of This Document | ACTIVE_AUTHORITY_WITH_RECONCILIATION_NEEDED | High-value merged specification; needs current-code status markers before being treated as sole authority. |
-| 48 | `docs/active_workflow_docs/README.md` | 54 | 2026-04-26 15:10 | `0679a7a65d39` | # Active Workflow Docs<br>## Current workflow parts<br>## Rule<br>## Part 3 — Browser Repo Verifier & Doc Curator | ACTIVE_WORKFLOW_EVIDENCE | Workflow-generated evidence from prior documentation reconciliation; keep as evidence, not product spec. |
-| 49 | `docs/active_workflow_docs/part1_documentation_inventory_skill.md` | 24 | 2026-04-26 14:33 | `ffd62f5cbb0b` | # Documentation Inventory Skill<br>## Purpose<br>## Inputs<br>## Scope | ACTIVE_WORKFLOW_EVIDENCE | Workflow-generated evidence from prior documentation reconciliation; keep as evidence, not product spec. |
-| 50 | `docs/active_workflow_docs/part1_quick_documentation_inventory_with_loc.md` | 124 | 2026-04-26 14:33 | `85a8a8654622` | # Documentation Inventory — 12_PF 0.3.23<br>## Inventory Skill Used<br>## Summary<br>## Counts by Location | ACTIVE_WORKFLOW_EVIDENCE | Workflow-generated evidence from prior documentation reconciliation; keep as evidence, not product spec. |
-| 51 | `docs/active_workflow_docs/part2_analyzing_repo_file_folder_structure_skill.md` | 43 | 2026-04-26 14:33 | `d032c0e9c926` | # Skill: Analyzing Repo File/Folder Structure<br>## Purpose<br>## Inputs<br>## Exclusions | ACTIVE_WORKFLOW_EVIDENCE | Workflow-generated evidence from prior documentation reconciliation; keep as evidence, not product spec. |
-| 52 | `docs/active_workflow_docs/part2_repo_file_folder_structure_analysis.md` | 535 | 2026-04-26 14:33 | `61ec31d204fc` | # Repo File/Folder Structure Analysis Report<br>## Prompt analysis<br>## Critical refinement<br>## Refined prompt used | ACTIVE_WORKFLOW_EVIDENCE | Workflow-generated evidence from prior documentation reconciliation; keep as evidence, not product spec. |
-| 53 | `docs/active_workflow_docs/part3_browser_repo_verifier_doc_curator_report.md` | 143 | 2026-04-26 15:10 | `635ca04468e9` | # Part 3 — Browser Repo Verifier & Doc Curator Final Report<br>## 1. Title and workflow name<br>## 2. Snapshot/source information<br>## 3. Executive summary | ACTIVE_WORKFLOW_EVIDENCE | Workflow-generated evidence from prior documentation reconciliation; keep as evidence, not product spec. |
-| 54 | `docs/active_workflow_docs/part3_browser_repo_verifier_doc_curator_skill_improved.md` | 84 | 2026-04-26 14:57 | `732bf7355782` | # Browser Repo Verifier & Doc Curator — 1PF Documentation Reconciliation Mode<br>## Operating mode<br>## Slice model<br>## Repo-specific rules for 12_PF | ACTIVE_WORKFLOW_EVIDENCE | Workflow-generated evidence from prior documentation reconciliation; keep as evidence, not product spec. |
-| 55 | `docs/active_workflow_docs/part3_documentation_truth_matrix.md` | 129 | 2026-04-26 15:10 | `a16c59dfbe01` | # Part 3 — Final Documentation Truth Matrix<br>## Classification counts<br>## Area counts<br>## Matrix | ACTIVE_WORKFLOW_EVIDENCE | Workflow-generated evidence from prior documentation reconciliation; keep as evidence, not product spec. |
-| 56 | `docs/active_workflow_docs/part3_prompt_analysis_critique_refinement.md` | 53 | 2026-04-26 15:10 | `52c8d84c880f` | # Part 3 Slice 4 — Prompt Analysis, Critique, and Refined Prompt<br>## Original task summary<br>## Analysis<br>## Critique | ACTIVE_WORKFLOW_EVIDENCE | Workflow-generated evidence from prior documentation reconciliation; keep as evidence, not product spec. |
-| 57 | `docs/active_workflow_docs/part3_recommended_doc_authority_model.md` | 73 | 2026-04-26 15:10 | `da53382ce2db` | # Part 3 — Recommended Documentation Authority Model<br>## Proposed top-level documentation hierarchy<br>## Recommended source-of-truth docs<br>## Recommended archive policy | ACTIVE_WORKFLOW_EVIDENCE | Workflow-generated evidence from prior documentation reconciliation; keep as evidence, not product spec. |
-| 58 | `docs/active_workflow_docs/part3_slice1_documentation_scope_inventory.md` | 122 | 2026-04-26 14:57 | `a3a3526b25aa` | # Part 3 Slice 1 — Documentation Scope Inventory<br>## Purpose<br>## Scope note<br>## Documentation counts by area | ACTIVE_WORKFLOW_EVIDENCE | Workflow-generated evidence from prior documentation reconciliation; keep as evidence, not product spec. |
-| 59 | `docs/active_workflow_docs/part3_slice1_repo_evidence_index.md` | 234 | 2026-04-26 14:57 | `d6d1ef2cfd20` | # Part 3 Slice 1 — Repo Evidence Index<br>## Purpose<br>## Snapshot metadata<br>## Working tree status observed after ZIP extraction | ACTIVE_WORKFLOW_EVIDENCE | Workflow-generated evidence from prior documentation reconciliation; keep as evidence, not product spec. |
-| 60 | `docs/active_workflow_docs/part3_slice2_classification_notes.md` | 54 | 2026-04-26 14:59 | `4bfc26c2fadc` | # Part 3 Slice 2 — Classification Notes<br>## Purpose<br>## Prompt analysis<br>## Critique | ACTIVE_WORKFLOW_EVIDENCE | Workflow-generated evidence from prior documentation reconciliation; keep as evidence, not product spec. |
-| 61 | `docs/active_workflow_docs/part3_slice3_reconciliation_findings.md` | 288 | 2026-04-26 15:05 | `f65946d3e0b4` | # Part 3 Slice 3 — Reconciliation Findings<br>## Scope and safety<br>## Slice 2 files verified as present<br>## Repo reality anchors used in this reconciliation | ACTIVE_WORKFLOW_EVIDENCE | Workflow-generated evidence from prior documentation reconciliation; keep as evidence, not product spec. |
-| 62 | `docs/active_workflow_docs/workflow_rule_active_docs_folder_prompt.md` | 86 | 2026-04-26 14:33 | `6aae8c158550` | # Workflow Rule Prompt — Active Workflow Docs Folder<br>## User request<br>## Analysis<br>## Critique | ACTIVE_WORKFLOW_EVIDENCE | Workflow-generated evidence from prior documentation reconciliation; keep as evidence, not product spec. |
-| 63 | `docs/button_verification_results/AUTHORITATIVE_MISSING_FUNCTIONALITY.md` | 24 | 2026-04-26 04:09 | `08246ded485c` | # Authoritative Missing Functionality Ledger<br>## Update Rules<br>## Current Findings | SUPPORTING_EVIDENCE | Button-level verification evidence; keep as supporting evidence for UI/backend claims. |
-| 64 | `docs/button_verification_results/INDEX.md` | 27 | 2026-04-26 04:09 | `85f47637b94f` | # Button Verification Index | SUPPORTING_EVIDENCE | Button-level verification evidence; keep as supporting evidence for UI/backend claims. |
-| 65 | `docs/button_verification_results/RUN_LOG.md` | 43 | 2026-04-26 04:09 | `bbe2aafbbd8b` | # Button Verification Run Log | SUPPORTING_EVIDENCE | Button-level verification evidence; keep as supporting evidence for UI/backend claims. |
-| 66 | `docs/button_verification_results/VIEW_A_1A_VERIFY_ENV.md` | 52 | 2026-04-26 04:09 | `ceeb1a2d5d19` | # View A 1A Verify .env<br>## Scope<br>## Authoritative Spec Callout<br>## Final Classification | SUPPORTING_EVIDENCE | Button-level verification evidence; keep as supporting evidence for UI/backend claims. |
-| 67 | `docs/button_verification_results/VIEW_A_2A_CHECK_DB.md` | 46 | 2026-04-26 04:09 | `44e020d4185d` | # View A 2A Check DB<br>## Scope<br>## Final Classification<br>## Evidence Basis | SUPPORTING_EVIDENCE | Button-level verification evidence; keep as supporting evidence for UI/backend claims. |
-| 68 | `docs/button_verification_results/VIEW_A_2A_DELETE_DB.md` | 46 | 2026-04-26 04:09 | `ac5924ca68a8` | # View A 2A Delete DB<br>## Scope<br>## Final Classification<br>## Evidence Basis | SUPPORTING_EVIDENCE | Button-level verification evidence; keep as supporting evidence for UI/backend claims. |
-| 69 | `docs/button_verification_results/VIEW_A_2A_INSPECT_DB.md` | 46 | 2026-04-26 04:09 | `5c266232769b` | # View A 2A Inspect DB<br>## Scope<br>## Final Classification<br>## Evidence Basis | SUPPORTING_EVIDENCE | Button-level verification evidence; keep as supporting evidence for UI/backend claims. |
-| 70 | `docs/button_verification_results/VIEW_A_2A_RECREATE_DB.md` | 46 | 2026-04-26 04:09 | `52b821fd569d` | # View A 2A Recreate DB<br>## Scope<br>## Final Classification<br>## Evidence Basis | SUPPORTING_EVIDENCE | Button-level verification evidence; keep as supporting evidence for UI/backend claims. |
-| 71 | `docs/button_verification_results/VIEW_A_3A_CHECK_SCHEDULER.md` | 52 | 2026-04-26 04:09 | `6cf955324e54` | # View A 3A Check Scheduler<br>## Scope<br>## Authoritative Spec Callout<br>## Final Classification | SUPPORTING_EVIDENCE | Button-level verification evidence; keep as supporting evidence for UI/backend claims. |
-| 72 | `docs/button_verification_results/VIEW_A_3A_INSTALL_SCHEDULER.md` | 52 | 2026-04-26 04:09 | `1d7a174dae0c` | # View A 3A Install Scheduler<br>## Scope<br>## Authoritative Spec Callout<br>## Final Classification | SUPPORTING_EVIDENCE | Button-level verification evidence; keep as supporting evidence for UI/backend claims. |
-| 73 | `docs/button_verification_results/VIEW_A_3A_PRINT_SCHEDULER.md` | 52 | 2026-04-26 04:09 | `73ba4ed1b67a` | # View A 3A Print Scheduler<br>## Scope<br>## Authoritative Spec Callout<br>## Final Classification | SUPPORTING_EVIDENCE | Button-level verification evidence; keep as supporting evidence for UI/backend claims. |
-| 74 | `docs/button_verification_results/VIEW_B_B1_LOGIN_FLOW.md` | 49 | 2026-04-26 04:09 | `e36f5be273b5` | # View A B1 Auth Preflight<br>## Scope<br>## Authoritative Spec Callout<br>## Final Classification | SUPPORTING_EVIDENCE | Button-level verification evidence; keep as supporting evidence for UI/backend claims. |
-| 75 | `docs/button_verification_results/VIEW_B_B2_DOWNLOAD_TEST_ACTION.md` | 38 | 2026-04-26 04:09 | `57892df08239` | # View B B2 Download Test Action<br>## Scope<br>## Authoritative Spec Callout<br>## Final Classification | SUPPORTING_EVIDENCE | Button-level verification evidence; keep as supporting evidence for UI/backend claims. |
-| 76 | `docs/button_verification_results/VIEW_B_B3_1_DOWNLOAD_STAGE.md` | 34 | 2026-04-26 04:09 | `314e010869ad` | # View B B3.1 Download Stage<br>## Scope<br>## Final Classification<br>## Workflow Result | SUPPORTING_EVIDENCE | Button-level verification evidence; keep as supporting evidence for UI/backend claims. |
-| 77 | `docs/button_verification_results/VIEW_B_B3_2_INDEX_STAGE.md` | 32 | 2026-04-26 04:09 | `d74b247347be` | # View B B3.2 Index Stage<br>## Scope<br>## Final Classification<br>## Workflow Result | SUPPORTING_EVIDENCE | Button-level verification evidence; keep as supporting evidence for UI/backend claims. |
-| 78 | `docs/button_verification_results/VIEW_B_B3_3_PARSE_GPS_STAGE.md` | 34 | 2026-04-26 04:09 | `e95d87c2f29b` | # View B B3.3 Parse GPS Stage<br>## Scope<br>## Final Classification<br>## Workflow Result | SUPPORTING_EVIDENCE | Button-level verification evidence; keep as supporting evidence for UI/backend claims. |
-| 79 | `docs/button_verification_results/VIEW_B_B3_4_GEOCODE_STAGE.md` | 35 | 2026-04-26 04:09 | `5a9582f1cbbc` | # View B B3.4 Geocode Stage<br>## Scope<br>## Final Classification<br>## Workflow Result | SUPPORTING_EVIDENCE | Button-level verification evidence; keep as supporting evidence for UI/backend claims. |
-| 80 | `docs/button_verification_results/VIEW_B_B3_5_ENQUEUE_PLAYBACK_STAGE.md` | 32 | 2026-04-26 04:09 | `8abcc53f006f` | # View B B3.5 Enqueue Playback Stage<br>## Scope<br>## Final Classification<br>## Workflow Result | SUPPORTING_EVIDENCE | Button-level verification evidence; keep as supporting evidence for UI/backend claims. |
-| 81 | `docs/button_verification_results/VIEW_B_B3_AUTO_RUN_ALL_STAGES.md` | 34 | 2026-04-26 04:09 | `f91db476c010` | # View B B3 Auto Run All Stages<br>## Scope<br>## Final Classification<br>## Workflow Result | SUPPORTING_EVIDENCE | Button-level verification evidence; keep as supporting evidence for UI/backend claims. |
-| 82 | `docs/button_verification_results/VIEW_B_B4_PLAYBACK_SELECTION.md` | 38 | 2026-04-26 04:09 | `5e84e4514c3b` | # View B B4 Playback Selection<br>## Scope<br>## Authoritative Spec Callout<br>## Final Classification | SUPPORTING_EVIDENCE | Button-level verification evidence; keep as supporting evidence for UI/backend claims. |
-| 83 | `docs/button_verification_results/VIEW_B_B5_SCREEN_SIMULATION_CONTROLS.md` | 32 | 2026-04-26 04:09 | `d9b3ab5f86f1` | # View B B5 Screen Simulation Controls<br>## Scope<br>## Final Classification<br>## Workflow Result | SUPPORTING_EVIDENCE | Button-level verification evidence; keep as supporting evidence for UI/backend claims. |
-| 84 | `docs/button_verification_workflow/BUTTON_VERIFICATION_ACCELERATION_LAYER.md` | 238 | 2026-04-26 04:09 | `651e07764a48` | # Button Verification Acceleration Layer<br>## Step 0 - Reuse Existing Evidence First<br>## Delegation Pattern<br>### Standard trigger rule | SUPPORTING_WORKFLOW | Button verification workflow documentation; keep as process evidence. |
-| 85 | `docs/button_verification_workflow/BUTTON_VERIFICATION_WORKFLOW.md` | 637 | 2026-04-26 04:09 | `d6ffd549a702` | None | SUPPORTING_WORKFLOW | Button verification workflow documentation; keep as process evidence. |
-| 86 | `docs/buttons_and_implementation_overview.md` | 571 | 2026-04-26 04:09 | `612bfcaef4be` | # Buttons and Implementation Overview<br>## Status and intended authority<br>## Update rule for future changes<br>## Scope of this document | SUPPORTING_AUTHORITY_CANDIDATE | Implementation/status documentation candidate; verify against code and tests before authority claims. |
-| 87 | `generated_test_data/README.md` | 42 | 2026-04-26 04:09 | `c3058ef222b7` | # Photo Frame Test Dataset<br>## What this dataset covers<br>## Recommended uses<br>## Command used | NEEDS_REVIEW | Documentation file requires slice 2/3 review before authority decision. |
-| 88 | `placeholder_implementations.md` | 374 | 2026-04-26 04:09 | `98a86973a784` | # Placeholder Implementation Audit<br>## Authority Note<br>## Latest Update (Step 2 Wave A queue-backed current-item selection)<br>## Previous Update (Step 1 verification hardening for View A init endpoints) | NEEDS_REVIEW | Placeholder/implementation-status registry; high drift risk, keep until reconciled. |
-| 89 | `task_docs/2026-04-20_dashboard-transit-terminal.md` | 65 | 2026-04-26 04:09 | `0fefd2a82f86` | # Task Doc — Dashboard Transit Terminal + Single Gateway<br>## Summary<br>## Status<br>## Current Repo Truth | HISTORICAL_TASK_REFERENCE | Task implementation notes; preserve as historical task evidence, not current spec authority. |
-| 90 | `task_docs/2026-04-20_explain-controls-inspect-mode.md` | 233 | 2026-04-26 04:09 | `dba64cfa4166` | # Task Doc — Explain Controls Inspect Mode Button<br>## Summary<br>## Status<br>## Current Repo Truth | HISTORICAL_TASK_REFERENCE | Task implementation notes; preserve as historical task evidence, not current spec authority. |
-| 91 | `task_docs/2026-04-20_explain-values-source-mode.md` | 225 | 2026-04-26 04:09 | `904fdbbf9b2f` | # Task Doc — Explain Values Source Mode Button<br>## Summary<br>## Status<br>## Current Repo Truth | HISTORICAL_TASK_REFERENCE | Task implementation notes; preserve as historical task evidence, not current spec authority. |
-| 92 | `task_docs/2026-04-20_runtime-backend-foundation.md` | 375 | 2026-04-26 04:09 | `0708bdc68ae3` | # Task Doc — Runtime Backend Foundation<br>## Status<br>## Summary<br>## Current Repo Truth | HISTORICAL_TASK_REFERENCE | Task implementation notes; preserve as historical task evidence, not current spec authority. |
-| 93 | `task_docs/2026-04-20_show-backend-status-mode.md` | 277 | 2026-04-26 04:09 | `a8213fe84884` | # Task Doc — Show Backend Status Inspection Mode Button<br>## Summary<br>## Status<br>## Current Repo Truth | HISTORICAL_TASK_REFERENCE | Task implementation notes; preserve as historical task evidence, not current spec authority. |
-| 94 | `task_docs/2026-04-20_show-real-vs-mock-mode.md` | 259 | 2026-04-26 04:09 | `c7fc018e9b11` | # Task Doc — Show Real vs Mock Inspection Mode Button<br>## Summary<br>## Status<br>## Current Repo Truth | HISTORICAL_TASK_REFERENCE | Task implementation notes; preserve as historical task evidence, not current spec authority. |
-| 95 | `task_docs/2026-04-20_view-e-database-viewer.md` | 446 | 2026-04-26 04:09 | `4bffa12006bc` | # Task Doc — View E Database Viewer<br>## Status<br>## Summary<br>## Current Repo Truth | HISTORICAL_TASK_REFERENCE | Task implementation notes; preserve as historical task evidence, not current spec authority. |
-| 96 | `task_docs/README.md` | 45 | 2026-04-26 04:09 | `893ac7700365` | # Task Docs<br>## When to add a doc<br>## Naming convention<br>## Recommended structure | HISTORICAL_TASK_REFERENCE | Task implementation notes; preserve as historical task evidence, not current spec authority. |
-| 97 | `task_docs/_TABLE_OF_CONTENTS.md` | 43 | 2026-04-26 04:09 | `5f0a984412c7` | # Task Docs Table of Contents<br>## Authority<br>## Registry<br>## Maintenance Check | HISTORICAL_TASK_REFERENCE | Task implementation notes; preserve as historical task evidence, not current spec authority. |
-
-## Initial authority hierarchy
-
-1. Root operational/version files: `README.md`, `HOW_TO_RUN.md`, `CHANGELOG.md`, `VERSION`, `package.json`, `package-lock.json`.
-2. Current policy docs: especially `docs/VERSIONING_AND_CHANGELOG_POLICY.md`.
-3. New `docs/vision_and_implementation/` docs created by this workflow, once each slice is completed.
-4. Active workflow docs under `docs/active_workflow_docs/` as evidence and audit trail, not final product spec by themselves.
-5. Feature-specific supporting docs such as auth, button verification, schema/status audits.
-6. `docs/OLD_DOCS/` and `task_docs/` as historical/reference evidence unless reverified.
-
-## Discrepancy patterns detected in Slice 1
-
-| Pattern | Risk | Slice 1 handling |
+| File | Authority role | Notes |
 |---|---|---|
-| Old target architecture docs overlap with current implementation docs | Future/planned behavior may be mistaken for implemented behavior | Classify old docs as historical or superseded references until reverified. |
-| Auth docs exist in multiple places | Conflicting statements about provider-backed login, 2FA, and session verification can drift | Mark as supporting authority candidates for Slice 2/3 consolidation. |
-| Runtime truth, lock files, and logs are discussed across multiple docs | Source-of-truth wording may conflict | Defer final wording to Slice 3 runtime recovery spec. |
-| Button-level verification docs are detailed but narrow | They can be overused as project-wide authority | Keep as supporting evidence only. |
+| `docs/vision_and_implementation/README.md` | ACTIVE_AUTHORITY | Entry point and reading order. |
+| `docs/vision_and_implementation/PROJECT_VISION.md` | ACTIVE_AUTHORITY | Product vision and purpose. |
+| `docs/vision_and_implementation/CURRENT_IMPLEMENTATION_SPEC.md` | ACTIVE_AUTHORITY | Current implementation reality summary. |
+| `docs/vision_and_implementation/DASHBOARD_VIEWS_SPEC.md` | ACTIVE_AUTHORITY | View A/B/C/D roles and boundaries. |
+| `docs/vision_and_implementation/TARGET_ARCHITECTURE_SPEC.md` | ACTIVE_AUTHORITY | Target architecture boundaries. |
+| `docs/vision_and_implementation/PIPELINE_AND_WORKERS_SPEC.md` | ACTIVE_AUTHORITY | Pipeline and worker target model. |
+| `docs/vision_and_implementation/AUTH_AND_2FA_SPEC.md` | ACTIVE_AUTHORITY | Auth and 2FA target model. |
+| `docs/vision_and_implementation/SCHEDULER_AND_RUNTIME_RECOVERY_SPEC.md` | ACTIVE_AUTHORITY | Scheduler, recovery, locks, logs, and platform targets. |
+| `docs/vision_and_implementation/DEPRECATED_SUPERSEDED_DOCS_LOG.md` | ACTIVE_AUTHORITY | Tracks old docs that may be parsed, superseded, or later moved. |
+| `docs/vision_and_implementation/UNRESOLVED_QUESTIONS.md` | ACTIVE_AUTHORITY | Decision backlog for ambiguous specs. |
+| `docs/vision_and_implementation/reconciliation/FINAL_VISION_SPEC_RECONCILIATION_REPORT.md` | ACTIVE_AUTHORITY | Final summary of this 3-slice workflow. |
+
+## Historical / candidate-superseded groups
+
+| Path/group | Current classification | Handling rule |
+|---|---|---|
+| `docs/OLD_DOCS/` | HISTORICAL_REFERENCE / PARSE_CANDIDATE | Do not treat as current truth until harvested or verified. |
+| `task_docs/` | HISTORICAL_WORKFLOW_REFERENCE / PARSE_CANDIDATE | Keep for implementation history; harvest useful durable claims into authority docs. |
+| `docs/active_workflow_docs/` | ACTIVE_WORKFLOW_EVIDENCE | Recent workflow evidence, but not always final product spec. |
+| `docs/button_verification_results/` | SPECIALIZED_EVIDENCE | Use for button-level truth and audit provenance. |
+
+## Contradiction handling rule
+
+When documents disagree:
+
+1. Check current code/tests for implementation reality.
+2. Check `docs/vision_and_implementation/` for reconciled target/current distinction.
+3. Preserve old claims as historical evidence unless they are revalidated.
+4. If a contradiction needs user choice, move it to `UNRESOLVED_QUESTIONS.md`.
+5. Do not silently delete or rewrite old docs as if their history never existed.
+
+## Next documentation-governance step
+
+The next documentation workflow should decide whether parsed historical docs move into:
+
+- `docs/docs_parsed/` for harvested reference material;
+- `docs/to_be_deleted/` for fully superseded/stale material marked with a deletion notice;
+- a permanent archive folder for historical implementation context.
+
+No relocation was performed in the 3-slice vision/specification workflow.

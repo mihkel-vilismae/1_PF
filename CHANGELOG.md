@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## 2026-04-26 20:08 EEST — v0.3.28
+
+### Added
+- Added Slice 3 target architecture, pipeline/workers, auth/2FA, scheduler/runtime recovery, and final reconciliation documentation under `docs/vision_and_implementation/`.
+- Added `docs/active_workflow_docs/vision_slice3_prompt_analysis_critique_refinement.md` with the analyzed, critiqued, and refined Slice 3 prompt.
+- Added `docs/vision_and_implementation/reconciliation/FINAL_VISION_SPEC_RECONCILIATION_REPORT.md` as the final 3-slice reconciliation report.
+
+### Changed
+- Updated the vision/spec documentation README, authority map, unresolved questions, and deprecated/superseded docs log for Slice 3 closure.
+- Recorded that auth tests, full `npm test`, and `npm run task-docs:check` were intentionally skipped under Slice 3 constraints.
+- Updated version metadata from v0.3.27 to v0.3.28.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
 ## 2026-04-26 19:59 EEST — v0.3.27
 
 ### Added
