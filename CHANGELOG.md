@@ -1,5 +1,18 @@
 # CHANGELOG
 
+
+## [0.3.25] - 2026-04-26 18:08 EEST
+
+### Added
+- Added Part 3 Slice 4 final Browser Repo Verifier & Doc Curator report under `docs/active_workflow_docs/`.
+- Finalized the documentation truth matrix and recommended documentation authority model.
+- Updated the active workflow docs index for Slice 4 finalization artifacts.
+
+### Notes
+- Documentation-only workflow finalization.
+- No production code was changed.
+- No existing documentation was moved or deleted.
+
 ## [0.3.24] - 2026-04-26 17:20 EEST
 
 ### Added
