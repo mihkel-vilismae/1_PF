@@ -1,6 +1,6 @@
 import { VIEW_ORDER } from '../shared/constants.js';
 import { ACTION_REALITY_COPY, VIEW_REALITY_COPY } from './guideCopy.js';
-import { getAuthButtonRealityCopy } from '../data/authButtonStatusCopy.js';
+import { getAuthButtonRealityCopy } from '../data/authButtonStatusCopy.ts';
 import { buildRealityMeta, compactWhitespace, getCardContext } from './guideUtils.js';
 
 export function createRealityMetadataHelpers({ getState, getTransitHasLiveTraffic }) {

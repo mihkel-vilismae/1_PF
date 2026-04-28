@@ -6,7 +6,7 @@ import {
   INSPECT_COPY,
   LAST_RUN_MODE_INSPECT_COPY,
 } from './guideCopy.js';
-import { getAuthButtonInspectCopy } from '../data/authButtonStatusCopy.js';
+import { getAuthButtonInspectCopy } from '../data/authButtonStatusCopy.ts';
 import { buildValueMeta, compactWhitespace, getCardContext } from './guideUtils.js';
 
 export function describeInspectableElement(element) {
