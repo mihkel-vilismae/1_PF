@@ -123,6 +123,8 @@ export function createRuntimeTruthBehavior({
       'show-db-tables': () => void databaseActions.runDatabaseViewerTablesAction(),
       'start-db-logging': () => void databaseActions.runDatabaseViewerLoggingAction('start'),
       'stop-db-logging': () => void databaseActions.runDatabaseViewerLoggingAction('stop'),
+      // Legacy B1 action IDs are compatibility adapters for the View A 1A-AUTH card.
+      // Keep them stable until downstream tests/docs are migrated, but do not add new B1 aliases.
       'refresh-b1-auth-status': () => void authActions.refreshAuthStatus(),
       'verify-icloudpd': () => void authActions.verifyIcloudpdPreflightAction(),
       'check-login': () => void authActions.checkAuthLoginAction(),

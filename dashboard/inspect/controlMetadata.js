@@ -6,6 +6,7 @@ import {
   INSPECT_COPY,
   LAST_RUN_MODE_INSPECT_COPY,
 } from './guideCopy.js';
+import { getAuthButtonInspectCopy } from '../data/authButtonStatusCopy.js';
 import { buildValueMeta, compactWhitespace, getCardContext } from './guideUtils.js';
 
 export function describeInspectableElement(element) {
@@ -56,7 +57,7 @@ export function describeInspectableElement(element) {
   }
 
   if (element.matches('[data-action]')) {
-    return ACTION_INSPECT_COPY[element.dataset.action] ?? fallbackInspectCopy(element);
+    return getAuthButtonInspectCopy(element.dataset.action) ?? ACTION_INSPECT_COPY[element.dataset.action] ?? fallbackInspectCopy(element);
   }
 
   if (element.matches('.button')) {
@@ -75,8 +76,25 @@ export function describeValueElement(element) {
     );
   }
 
+  if (element.matches('.auth-button-status-dot')) {
+    const authButtonShell = element.closest('.auth-button-shell');
+    const buttonKey = authButtonShell?.dataset.authButtonKey ?? 'unknown';
+    return buildValueMeta(
+      `Auth button ${buttonKey} status`,
+      element,
+      `state.authPreflight.buttonStates["${buttonKey}"].status/message, updated by the auth action runtime truth handlers.`,
+    );
+  }
+
   if (element.matches('.status-badge')) {
     const cardContext = getCardContext(element);
+    if (cardContext?.code === '1A-AUTH') {
+      return buildValueMeta(
+        '1A-AUTH status',
+        element,
+        'state.statusByKey.B1 plus state.authPreflight.buttonStates, preserved through the legacy B1 compatibility key while the visible card is View A auth preflight.',
+      );
+    }
     if (cardContext?.code) {
       return buildValueMeta(
         `${cardContext.code} status`,
@@ -92,6 +110,13 @@ export function describeValueElement(element) {
 
   if (element.matches('.result-surface .mini-badge')) {
     const cardContext = getCardContext(element);
+    if (cardContext?.code === '1A-AUTH') {
+      return buildValueMeta(
+        '1A-AUTH auth outcome',
+        element,
+        'state.authPreflight.latestResult.outcome, derived from the latest safe auth backend request.',
+      );
+    }
     if (cardContext?.code) {
       return buildValueMeta(
         `${cardContext.code} backend outcome`,
@@ -103,6 +128,13 @@ export function describeValueElement(element) {
 
   if (element.matches('.result-message, .result-json')) {
     const cardContext = getCardContext(element);
+    if (cardContext?.code === '1A-AUTH') {
+      return buildValueMeta(
+        '1A-AUTH auth result',
+        element,
+        'state.authPreflight.latestResult and state.authPreflight.publicState, sanitized by the auth runtime truth handlers.',
+      );
+    }
     if (cardContext?.code) {
       return buildValueMeta(
         `${cardContext.code} backend result`,
@@ -253,6 +285,9 @@ function describeDefinitionValue(element) {
   }
   if (cardContext?.code === 'E4') {
     return buildValueMeta(label, element, 'state.databaseViewer.logging, updated by the live View E logging start/stop responses.');
+  }
+  if (cardContext?.code === '1A-AUTH' && element.closest('.result-surface')) {
+    return buildValueMeta(label, element, 'state.authPreflight.latestResult/publicState, filled from the latest sanitized auth backend response.');
   }
   if (cardContext?.code && ['1A', '2A', '3A'].includes(cardContext.code) && element.closest('.result-surface')) {
     return buildValueMeta(label, element, `state.initResults["${cardContext.code}"], filled from the latest backend response metadata for that action.`);

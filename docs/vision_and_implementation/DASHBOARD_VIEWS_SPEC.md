@@ -22,13 +22,14 @@ Surface wording, badges, and visual styling must not be treated as sufficient pr
 | Environment verification | IMPLEMENTED | `1A Verify .env` calls `POST /api/init/verify-env`. |
 | Database controls | IMPLEMENTED / PARTIAL | DB check, inspect, delete, and recreate controls call backend init database endpoints. Destructive behavior requires careful user/operator awareness. |
 | Scheduler controls | PARTIAL | Scheduler controls call legacy-compatible `/api/init/cron/*` routes through a platform-aware capability model. Full target scheduler behavior is not complete. |
-| Auth preflight | PARTIAL | `1A-AUTH` contains backend-owned icloudpd verification/login/status/logout/2FA-related controls. It should not claim authenticated success without provider evidence. |
+| Auth preflight | IMPLEMENTED / PARTIAL | `1A-AUTH` contains backend-owned icloudpd verification/login/status/logout/2FA-related controls with per-button status indicators, metadata-backed help text, and semantic success rules. Real provider/2FA behavior remains provider-dependent. |
 | Skill evidence | USED | `view-a-init-reconciliation` skill was used as supporting evidence to avoid stale View A claims. |
 
 ### View A notes
 
 - View A is the strongest backend-backed view.
 - Auth belongs here, not in View B.
+- Old B1 action/status keys that remain in code are compatibility adapters for the visible `1A-AUTH` card.
 - Scheduler wording must remain careful because Windows/Fedora/Raspberry Pi expectations are not fully unified yet.
 
 ## View B — Test

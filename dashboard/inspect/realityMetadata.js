@@ -1,5 +1,6 @@
 import { VIEW_ORDER } from '../shared/constants.js';
 import { ACTION_REALITY_COPY, VIEW_REALITY_COPY } from './guideCopy.js';
+import { getAuthButtonRealityCopy } from '../data/authButtonStatusCopy.js';
 import { buildRealityMeta, compactWhitespace, getCardContext } from './guideUtils.js';
 
 export function createRealityMetadataHelpers({ getState, getTransitHasLiveTraffic }) {
@@ -86,6 +87,10 @@ export function createRealityMetadataHelpers({ getState, getTransitHasLiveTraffi
     const label = compactWhitespace(element.textContent) || 'Button';
     const action = element.dataset.action;
 
+    if (action && getAuthButtonRealityCopy(action)) {
+      const meta = getAuthButtonRealityCopy(action);
+      return buildRealityMeta(meta.state, label, meta.reason);
+    }
     if (action && ACTION_REALITY_COPY[action]) {
       const meta = ACTION_REALITY_COPY[action];
       return buildRealityMeta(meta.state, label, meta.reason);
@@ -165,6 +170,9 @@ export function createRealityMetadataHelpers({ getState, getTransitHasLiveTraffi
       return buildRealityMeta('unknown', 'Backend result panel', 'No explicit real/mock classification metadata is defined for this result panel yet.');
     }
 
+    if (cardContext.code === '1A-AUTH') {
+      return buildRealityMeta('real', '1A-AUTH backend result panel', 'Rendered from the latest real auth backend request through the safe auth preflight service.');
+    }
     if (['1A', '2A', '3A'].includes(cardContext.code)) {
       return buildRealityMeta('real', `${cardContext.code} backend result panel`, 'Rendered from the latest real backend request made by this View A card.');
     }
@@ -179,6 +187,9 @@ export function createRealityMetadataHelpers({ getState, getTransitHasLiveTraffi
 
     if (sidePanelTitle === 'Current truth') {
       return buildRealityMeta('mock', `${label} value`, 'Rendered from frontend dashboard truth state that is mirrored to conf/runtime-truth.json, not from a live runtime backend projection.');
+    }
+    if (cardContext?.code === '1A-AUTH' && element.closest('.result-surface')) {
+      return buildRealityMeta('real', `${label} value`, 'Rendered from the latest safe auth backend response captured for 1A-AUTH.');
     }
     if (cardContext?.code && ['1A', '2A', '3A'].includes(cardContext.code) && element.closest('.result-surface')) {
       return buildRealityMeta('real', `${label} value`, `Rendered from the latest real backend response captured for ${cardContext.code}.`);
@@ -235,8 +246,8 @@ export function createRealityMetadataHelpers({ getState, getTransitHasLiveTraffi
 
     if (modal?.kind === 'log') {
       const sourceKey = modal.entry?.sourceKey;
-      if (['1A', '2A', '3A'].includes(sourceKey)) {
-        return buildRealityMeta('real', `${label} modal value`, 'This modal is showing details for a real backend-backed View A log entry.');
+      if (['1A', '2A', '3A', 'B1'].includes(sourceKey)) {
+        return buildRealityMeta('real', `${label} modal value`, 'This modal is showing details for a real backend-backed View A/auth log entry.');
       }
       if (typeof sourceKey === 'string' && (sourceKey.startsWith('B') || sourceKey === 'C' || sourceKey === 'D')) {
         return buildRealityMeta('mock', `${label} modal value`, 'This modal is showing details for a simulated, demo, or preview-only log entry.');
@@ -257,8 +268,8 @@ export function createRealityMetadataHelpers({ getState, getTransitHasLiveTraffi
   }
 
   function getSectionRealityByCode(code, label) {
-    if (['1A', '2A', '3A'].includes(code)) {
-      return buildRealityMeta('real', label, 'This section is backed by live init or scheduler backend endpoints.');
+    if (['1A', '2A', '3A', '1A-AUTH'].includes(code)) {
+      return buildRealityMeta('real', label, 'This section is backed by live View A backend endpoints; 1A-AUTH remains provider-dependent for icloudpd outcomes.');
     }
     if (code === 'IO') {
       return buildRealityMeta(

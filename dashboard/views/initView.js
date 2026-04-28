@@ -1,9 +1,25 @@
 import { statusBadge, renderLogEntries, renderResultSurface, renderStepList, renderSourceBadge } from '../services/renderers.js';
+import { getAuthButtonCopy, getAuthButtonStatusHelp, getAuthButtonStatusLabel } from '../data/authButtonStatusCopy.js';
 import {
   getOperationSupportLevel,
   SCHEDULER_OPERATION_SUPPORT,
   SCHEDULER_SUPPORT_LEVELS,
 } from '../../shared/schedulerPlatformCapabilities.js';
+
+// View A owns this card as 1A-AUTH. Some data-action values still contain "b1" because
+// they are compatibility action IDs used by existing tests/runtime wiring from the old B1 auth card.
+// Do not add new B1-named actions; route new auth-preflight behavior through this adapter list first.
+const AUTH_BUTTONS = Object.freeze([
+  { action: 'verify-icloudpd', label: 'Verify icloudpd', variant: 'secondary' },
+  { action: 'check-login', label: 'Check login', variant: 'secondary' },
+  { action: 'login-using-env', label: 'Login using .env values', variant: 'primary' },
+  { action: 'logout-b1-auth', label: 'Logout', variant: 'danger' },
+  { action: 'refresh-b1-auth-status', label: 'Refresh status', variant: 'secondary' },
+  { action: 'reset-b1-auth', label: 'Reset local attempt', variant: 'secondary' },
+  { action: 'test-b1-login-download-one', label: 'TEST LOGIN BY DOWNLOADING A SINGLE FILE', variant: 'secondary' },
+]);
+
+const AUTH_2FA_BUTTON = Object.freeze({ action: 'submit-b1-2fa', label: 'Submit 2FA', variant: 'primary' });
 
 export function renderInitView(state) {
   const schedulerCapability = state.initCapabilities?.scheduler ?? null;
@@ -74,18 +90,57 @@ function renderAuthCard(state) {
       <p class="card__copy">Backend-owned icloudpd verification and login controls. This card checks executable/config readiness separately from authenticated provider state.</p>
       ${renderStepList(state.loginSteps)}
       ${renderAuthStateSummary(authState, state.authPreflight?.loaded)}
-      ${renderAuthOperatorControls(authState)}
+      ${renderAuthOperatorControls(authState, state.authPreflight?.buttonStates)}
       ${renderResultSurface(latestResult)}
       <div class="log-surface">${renderLogEntries(state.logs.B1, { sourceKey: 'B1' })}</div>
     </article>
   `;
 }
 
-function renderAuthOperatorControls(authState) {
+function renderAuthOperatorControls(authState, buttonStates = {}) {
   const showTwoFactor = authState?.requires_2fa === true && authState?.two_factor_status === 'required';
-  const twoFactorControl = showTwoFactor ? '<label class="field-label" for="b1-2fa-code">2FA code</label><input id="b1-2fa-code" class="input" type="text" inputmode="numeric" autocomplete="one-time-code" data-auth-2fa-code aria-label="2FA code" />' : '';
-  const twoFactorButton = showTwoFactor ? '<button class="button button--primary" data-action="submit-b1-2fa">Submit 2FA</button>' : '';
-  return twoFactorControl + '<div class="button-row"><button class="button button--secondary" data-action="verify-icloudpd">Verify icloudpd</button><button class="button button--secondary" data-action="check-login">Check login</button><button class="button button--primary" data-action="login-using-env">Login using .env values</button><button class="button button--danger" data-action="logout-b1-auth">Logout</button>' + twoFactorButton + '<button class="button button--secondary" data-action="refresh-b1-auth-status">Refresh status</button><button class="button button--secondary" data-action="reset-b1-auth">Reset local attempt</button><button class="button button--secondary" data-action="test-b1-login-download-one">TEST LOGIN BY DOWNLOADING A SINGLE FILE</button></div>';
+  const twoFactorControl = showTwoFactor ? '<label class="field-label" for="auth-preflight-2fa-code">2FA code</label><input id="auth-preflight-2fa-code" class="input" type="text" inputmode="numeric" autocomplete="one-time-code" data-auth-2fa-code aria-label="2FA code" />' : '';
+  const renderedButtons = AUTH_BUTTONS.map((button) => renderAuthActionButton(button, buttonStates)).join('');
+  const twoFactorButton = showTwoFactor ? renderAuthActionButton(AUTH_2FA_BUTTON, buttonStates) : '';
+  return `${twoFactorControl}<div class="button-row button-row--auth">${renderedButtons}${twoFactorButton}</div>`;
+}
+
+function renderAuthActionButton(button, buttonStates) {
+  const statusState = buttonStates?.[button.action] ?? { status: 'neutral', message: '', endpoint: null };
+  const status = normalizeAuthButtonStatus(statusState.status);
+  const copy = getAuthButtonCopy(button.action);
+  const rawLabel = copy?.label ?? button.label;
+  const label = escapeHtml(rawLabel);
+  const helpText = getAuthButtonStatusHelp(button.action, status, statusState.message);
+  const title = escapeAttribute(helpText);
+  const statusLabelText = getAuthButtonStatusLabel(status);
+  const statusLabel = `${rawLabel} status: ${statusLabelText}`;
+  const buttonAriaLabel = `${rawLabel}. ${helpText}`;
+
+  return `
+    <span class="auth-button-shell auth-button-shell--${status}" data-auth-button-key="${escapeAttribute(button.action)}" data-auth-button-status="${escapeAttribute(status)}" data-auth-help-text="${title}" title="${title}">
+      <span class="auth-button-status-dot" aria-label="${escapeAttribute(statusLabel)}" title="${title}"></span>
+      <button class="button button--${escapeAttribute(button.variant)}" data-action="${escapeAttribute(button.action)}" title="${title}" aria-label="${escapeAttribute(buttonAriaLabel)}">${label}</button>
+    </span>
+  `;
+}
+
+
+function normalizeAuthButtonStatus(status) {
+  return ['neutral', 'running', 'success', 'failed', 'blocked', 'pending'].includes(status) ? status : 'neutral';
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function escapeAttribute(value) {
+  return escapeHtml(value).replace(/`/g, '&#96;');
 }
 
 function renderAuthStateSummary(authState, loaded) {

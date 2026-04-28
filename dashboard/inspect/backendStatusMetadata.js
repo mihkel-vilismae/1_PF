@@ -1,4 +1,5 @@
 import { ACTION_BACKEND_STATUS_COPY, INIT_ACTION_TO_CODE } from './guideCopy.js';
+import { getAuthButtonBackendStatusCopy } from '../data/authButtonStatusCopy.js';
 import { buildBackendStatusMeta, compactWhitespace, getCardContext, isMissingBackendStatus } from './guideUtils.js';
 
 export function createBackendStatusMetadataHelpers({ getState, getTransitHasLiveTraffic }) {
@@ -60,6 +61,10 @@ export function createBackendStatusMetadataHelpers({ getState, getTransitHasLive
 
     if (action && INIT_ACTION_TO_CODE[action]) {
       return getInitBackendStatusMeta(INIT_ACTION_TO_CODE[action], label);
+    }
+    if (action && getAuthButtonBackendStatusCopy(action)) {
+      const meta = getAuthButtonBackendStatusCopy(action);
+      return buildBackendStatusMeta(meta.state, label, meta.reason);
     }
     if (action && ACTION_BACKEND_STATUS_COPY[action]) {
       const meta = ACTION_BACKEND_STATUS_COPY[action];
@@ -147,6 +152,9 @@ export function createBackendStatusMetadataHelpers({ getState, getTransitHasLive
     if (!cardContext?.code) {
       return buildBackendStatusMeta('unknown', 'Backend result panel', 'No explicit backend-status classification metadata is defined for this result panel yet.');
     }
+    if (cardContext.code === '1A-AUTH') {
+      return getAuthBackendStatusMeta('1A-AUTH backend result panel');
+    }
     if (['1A', '2A', '3A'].includes(cardContext.code)) {
       return getInitBackendStatusMeta(cardContext.code, `${cardContext.code} backend result panel`);
     }
@@ -161,6 +169,9 @@ export function createBackendStatusMetadataHelpers({ getState, getTransitHasLive
 
     if (sidePanelTitle === 'Current truth') {
       return buildBackendStatusMeta('unknown', `${label} value`, 'This value comes from frontend dashboard truth state that is file-synced through the backend, not from a live runtime monitor endpoint.');
+    }
+    if (cardContext?.code === '1A-AUTH' && element.closest('.result-surface')) {
+      return getAuthBackendStatusMeta(`${label} value`);
     }
     if (cardContext?.code && ['1A', '2A', '3A'].includes(cardContext.code) && element.closest('.result-surface')) {
       return getInitBackendStatusMeta(cardContext.code, `${label} value`);
@@ -213,6 +224,9 @@ export function createBackendStatusMetadataHelpers({ getState, getTransitHasLive
     if (!sourceKey) {
       return buildBackendStatusMeta('unknown', label, 'No explicit source key is available for this log entry.');
     }
+    if (sourceKey === 'B1') {
+      return getAuthBackendStatusMeta(label, entry);
+    }
     if (['1A', '2A', '3A'].includes(sourceKey)) {
       return getInitBackendStatusMeta(sourceKey, label, entry);
     }
@@ -222,8 +236,8 @@ export function createBackendStatusMetadataHelpers({ getState, getTransitHasLive
     if (['B2', 'B3.1', 'B3.2', 'B3.5', 'B4'].includes(sourceKey)) {
       return buildBackendStatusMeta('real', label, 'This log entry captures a real backend action response.');
     }
-    if (sourceKey === 'B5' || sourceKey === 'B1') {
-      return buildBackendStatusMeta('mock', label, 'This log entry comes from frontend-only simulation or placeholder behavior.');
+    if (sourceKey === 'B5') {
+      return buildBackendStatusMeta('mock', label, 'This log entry comes from frontend-only simulation behavior.');
     }
     if (sourceKey.startsWith('B') || sourceKey === 'C' || sourceKey === 'D') {
       return buildBackendStatusMeta('missing', label, 'This log entry comes from a UI surface that stands in for missing backend/runtime support.');
@@ -257,6 +271,9 @@ export function createBackendStatusMetadataHelpers({ getState, getTransitHasLive
 
     if (modal?.kind === 'log') {
       const sourceKey = modal.entry?.sourceKey;
+      if (sourceKey === 'B1') {
+        return getAuthBackendStatusMeta(`${label} modal value`, modal.entry);
+      }
       if (['1A', '2A', '3A'].includes(sourceKey)) {
         return getInitBackendStatusMeta(sourceKey, `${label} modal value`, modal.entry);
       }
@@ -291,6 +308,9 @@ export function createBackendStatusMetadataHelpers({ getState, getTransitHasLive
   }
 
   function getSectionBackendStatusByCode(code, label) {
+    if (code === '1A-AUTH') {
+      return getAuthBackendStatusMeta(label);
+    }
     if (['1A', '2A', '3A'].includes(code)) {
       return getInitBackendStatusMeta(code, label);
     }
@@ -334,6 +354,26 @@ export function createBackendStatusMetadataHelpers({ getState, getTransitHasLive
     }
 
     return buildBackendStatusMeta('real', label, `This UI is wired to a live backend endpoint for ${code}, even if it has not been called yet.`);
+  }
+
+  function getAuthBackendStatusMeta(label, entry = null) {
+    const result = getState().authPreflight?.latestResult ?? null;
+    const responseStatus = entry?.details?.response?.status ?? result?.status ?? null;
+
+    if (isMissingBackendStatus(responseStatus)) {
+      return buildBackendStatusMeta('missing', label, 'The latest auth response indicates the expected auth backend endpoint/implementation is missing.');
+    }
+    if (result?.outcome === 'error') {
+      return buildBackendStatusMeta('real', label, 'This UI is wired to live auth backend endpoints, but the latest provider/auth request failed for a non-missing reason.');
+    }
+    if (result?.outcome === 'running') {
+      return buildBackendStatusMeta('real', label, 'This UI is currently waiting on a live auth backend request.');
+    }
+    if (result?.outcome === 'success') {
+      return buildBackendStatusMeta('real', label, 'This UI is backed by live auth endpoints and has a captured safe auth response.');
+    }
+
+    return buildBackendStatusMeta('real', label, 'This UI is wired to live /api/auth/* endpoints; icloudpd outcomes remain provider-dependent and 2FA may still be unsupported.');
   }
 
   function getDatabaseViewerBackendStatusMeta(code, label, entry = null) {

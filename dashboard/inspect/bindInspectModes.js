@@ -13,6 +13,7 @@ const VALUE_INSPECTABLE_SELECTOR = [
   '.topbar h1',
   '.definition-row dd',
   '.status-badge',
+  '.auth-button-status-dot',
   '.result-surface .mini-badge',
   '.result-message',
   '.result-json',

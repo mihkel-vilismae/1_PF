@@ -1,18 +1,56 @@
 # CHANGELOG
 
-## 2026-04-26 23:41 EEST — v0.3.29
+## 2026-04-28 17:55 EEST — v0.3.31
 
 ### Added
-- Added reusable `Dashboard Inspect Controls Pattern` documentation under `docs/default_project_setup/`.
-- Added Slice 2 verification notes for A/B/C/D/E inspect-control coverage.
-- Added automated inspect summary tests for A-E page-aware feedback and honest backend-status fallback wording.
+- Added `docs/vision_and_implementation/VIEW_A_AUTH_PREFLIGHT_BUTTONS.md` documenting every View A `1A-AUTH` button, endpoint, semantic success rule, status-circle meaning, inspect metadata expectation, and legacy B1 compatibility boundary.
+- Added focused 2FA tests covering the auth button semantic status classifier and the current unsupported non-interactive `icloudpd` 2FA provider boundary.
 
 ### Changed
-- Restored immediate page-aware feedback for `Explain controls`, `Explain values`, `Show real vs mock`, and `Show/Hide backend status` by rendering an inspect summary panel whenever an inspect mode is active.
+- Hardened the `Submit 2FA` button status rule so it turns green only when both authenticated status and completed 2FA are proven by backend/provider state.
+- Documented remaining old B1 action/status keys as intentional compatibility adapters for the visible View A `1A-AUTH` card.
+- Updated auth and dashboard vision docs to reference the new button-level auth preflight spec.
+- Updated version metadata from v0.3.30 to v0.3.31.
+
+### Fixed
+- Fixed a 2FA overclaiming risk where completed 2FA status alone could mark the `Submit 2FA` button successful without also proving authenticated state.
+
+### Removed
+- None.
+
+## 2026-04-28 16:47 EEST — v0.3.30
+
+### Added
+- Added Slice 2 structured auth button status/help copy in `dashboard/data/authButtonStatusCopy.js` for every View A `1A-AUTH` button and every status state.
+- Added tooltip/help text generation for auth buttons so titles, ARIA labels, and status shell metadata update from the shared copy source.
+- Added inspect metadata coverage for all auth buttons across Explain controls, Explain values, Show real vs mock, and Show backend status modes.
+- Added tests proving auth button copy coverage and inspect metadata coverage for all target auth controls.
+
+### Changed
+- Updated View A auth button rendering to use semantic help copy instead of raw per-request messages only.
+- Updated 1A-AUTH value/backend metadata so the auth card uses `state.authPreflight.*` and the legacy `B1` compatibility key intentionally, rather than falling back to generic View A init result metadata.
+- Updated version metadata from v0.3.29 to v0.3.30.
+
+### Fixed
+- Fixed missing per-button inspect metadata for auth controls including refresh status, reset local attempt, logout, check login, verify icloudpd, login using `.env`, 2FA submit, and single-file diagnostic download.
+
+### Removed
+- None.
+
+## 2026-04-28 16:15 EEST — v0.3.29
+
+### Added
+- Added Slice 1 per-button auth status indicators for View A `1A-AUTH`, including neutral, running, pending, success, failed, and blocked visual states.
+- Added runtime-truth button state storage under `authPreflight.buttonStates` so each auth control can resolve independently instead of relying only on the legacy `B1` card status.
+- Added frontend/runtime tests covering auth button indicator rendering and semantic state transitions.
+
+### Changed
+- Updated View A auth rendering to wrap every auth control in a status shell without changing the existing auth endpoints or data-action names.
+- Updated auth runtime action handling so button indicators use semantic backend/provider results rather than treating every HTTP response as green success.
 - Updated version metadata from v0.3.28 to v0.3.29.
 
 ### Fixed
-- Fixed the inspect controls feeling inactive by giving each toggle visible page-aware output in addition to the existing hover/focus metadata tooltips.
+- Fixed the View A auth UI gap where individual buttons did not show their own execution/result state.
 
 ### Removed
 - None.

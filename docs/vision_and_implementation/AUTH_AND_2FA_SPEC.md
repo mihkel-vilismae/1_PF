@@ -31,7 +31,7 @@ Exact names can follow existing backend constants, but the public meaning should
 | `GET /api/auth/status` | Return safe public auth projection. | IMPLEMENTED / PARTIAL |
 | `POST /api/auth/verify-icloudpd` | Check provider/config readiness without claiming login success. | IMPLEMENTED / PARTIAL |
 | `POST /api/auth/run` | Start provider login/session verification boundary. | PARTIAL |
-| `POST /api/auth/2fa/submit` | Submit or record 2FA input/transition. | PARTIAL / NEEDS_VERIFICATION |
+| `POST /api/auth/2fa/submit` | Submit or record 2FA input/transition. | PARTIAL / UNSUPPORTED_FOR_CURRENT_NON_INTERACTIVE_ICLOUDPD_FLOW |
 | `POST /api/auth/test-login-download-one` | Diagnostic provider-backed single-file download check. | PARTIAL / NEEDS_USER_DECISION |
 | `POST /api/auth/reset` | Reset local auth state. | IMPLEMENTED / PARTIAL |
 | `POST /api/auth/logout` | Clear/logout through safe backend path. | IMPLEMENTED / PARTIAL |
@@ -57,7 +57,7 @@ The target user experience should be explicit:
 6. Backend re-checks provider state.
 7. UI becomes authenticated only after provider-backed proof.
 
-The exact `icloudpd` interaction model remains NEEDS_USER_DECISION / NEEDS_VERIFICATION because provider behavior may depend on CLI version, existing session files, and whether 2FA is interactive.
+The exact `icloudpd` interaction model remains NEEDS_USER_DECISION / NEEDS_VERIFICATION because provider behavior may depend on CLI version, existing session files, and whether 2FA is interactive. In the current implementation, backend-driven non-interactive `icloudpd` 2FA is treated as unsupported unless provider evidence proves completion. The UI must keep that state blocked or pending, not green.
 
 ## Session validity rule
 
@@ -67,9 +67,13 @@ The strictest target rule is:
 
 A weaker “trust recently verified session for fixed duration” rule is possible, but it requires a user decision and a documented timeout policy.
 
+## View A auth button status rule
+
+See `VIEW_A_AUTH_PREFLIGHT_BUTTONS.md` for the current button-by-button endpoint and success-rule table. The most important Slice 3 hardening is that `Submit 2FA` can only turn green when backend/provider evidence proves both authenticated status and completed 2FA.
+
 ## Tests and verification rule
 
-Auth tests were intentionally not run during Slice 3 because the user instructed not to run auth tests. Future auth verification should be separated into:
+Auth tests should be separated into:
 
 - mocked secret-safe automated tests;
 - manual provider verification steps;

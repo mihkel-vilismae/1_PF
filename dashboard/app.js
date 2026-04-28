@@ -31,7 +31,6 @@ import { describeInspectableElement, describeValueElement } from './inspect/cont
 import { createRealityMetadataHelpers } from './inspect/realityMetadata.js';
 import { createBackendStatusMetadataHelpers } from './inspect/backendStatusMetadata.js';
 import { createGuideTooltipController } from './inspect/tooltipController.js';
-import { renderInspectModeSummary } from './inspect/inspectModeSummary.js';
 import { renderInitView } from './views/initView.js';
 import { renderTestView } from './views/testView.js';
 import { renderLastRunView } from './views/lastRunView.js';
@@ -158,7 +157,6 @@ function render() {
             </button>
           </div>
         </header>
-        ${renderInspectModeSummary(state)}
         ${viewMarkup}
         <article class="card card--feature" aria-label="Transit log">
           <header class="card__header">

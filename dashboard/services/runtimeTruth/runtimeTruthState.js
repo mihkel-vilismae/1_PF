@@ -48,6 +48,34 @@ export function buildInitialTruthState() {
   return truth;
 }
 
+// Compatibility note: View A owns auth as 1A-AUTH, but several action IDs still
+// contain b1 because they are persisted/tested compatibility keys from the old B1 card.
+// Keep this list as the single adapter point until a dedicated migration is approved.
+export const AUTH_PREFLIGHT_BUTTON_KEYS = Object.freeze([
+  'verify-icloudpd',
+  'check-login',
+  'login-using-env',
+  'logout-b1-auth',
+  'submit-b1-2fa',
+  'refresh-b1-auth-status',
+  'reset-b1-auth',
+  'test-b1-login-download-one',
+]);
+
+export function buildInitialAuthButtonStates() {
+  return Object.fromEntries(
+    AUTH_PREFLIGHT_BUTTON_KEYS.map((key) => [
+      key,
+      {
+        status: 'neutral',
+        message: '',
+        updatedAt: null,
+        endpoint: null,
+      },
+    ]),
+  );
+}
+
 export function buildInitialDatabaseViewerState() {
   return {
     verification: null,
@@ -98,6 +126,7 @@ export function createInitialState() {
       '1A': 'idle',
       '2A': 'idle',
       '3A': 'idle',
+      // B1 is retained as the compatibility status/log key for the visible 1A-AUTH card.
       B1: 'idle',
       B2: 'idle',
       B3: 'idle',
@@ -196,6 +225,7 @@ export function createInitialState() {
       loaded: false,
       publicState: null,
       latestResult: null,
+      buttonStates: buildInitialAuthButtonStates(),
     },
     loginSteps: [
       { key: 'preflight', label: 'Auth preflight', status: 'waiting' },
