@@ -14,11 +14,3 @@ export const STATUS_LABELS = {
   disabled: 'Disabled',
   info: 'Info',
 };
-
-export const PIPELINE_STAGE_LABELS = [
-  'Download',
-  'Index',
-  'Get GPS',
-  'Geocode',
-  'Queue Slideshow',
-];

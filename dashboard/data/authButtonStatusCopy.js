@@ -193,8 +193,6 @@ export const AUTH_BUTTON_STATUS_COPY = Object.freeze({
   },
 });
 
-export const AUTH_BUTTON_KEYS = Object.freeze(Object.keys(AUTH_BUTTON_STATUS_COPY));
-
 export function normalizeAuthButtonStatusForCopy(status) {
   return AUTH_BUTTON_STATUS_ORDER.includes(status) ? status : 'neutral';
 }

@@ -19,6 +19,8 @@ node_modules/
 dist/
 .vite/
 coverage/
+__pycache__/
+*.pyc
 
 # Package manager logs
 npm-debug.log*

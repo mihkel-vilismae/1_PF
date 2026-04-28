@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { access, mkdir, rm } from 'node:fs/promises';
+import { mkdir, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import { sanitizeIcloudpdText } from './icloudpdSanitizer.js';
@@ -129,15 +129,6 @@ async function runIcloudpdCommand({ execFileImpl, executable, args, config, time
       commandForDebug,
       timedOut: Boolean(error?.killed || error?.signal === 'SIGTERM'),
     };
-  }
-}
-
-export async function pathExists(filePath) {
-  try {
-    await access(filePath);
-    return true;
-  } catch {
-    return false;
   }
 }
 
