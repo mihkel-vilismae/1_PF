@@ -1,0 +1,83 @@
+# Operator Setup and Auth Notes
+
+## Purpose
+
+Provide practical operator-facing setup/run/auth guidance consolidated from current run and auth documentation, without promoting historical or speculative behavior.
+
+## Absorbed source docs
+
+- `HOW_TO_RUN.md`
+- `README.md` (run and workflow sections)
+- `docs_to_parse/VERSIONING_AND_CHANGELOG_POLICY.md`
+- `docs_to_parse/AI_AUTHENTICATION_2FA_HANDOFF.md`
+- `docs_to_parse/AUTH_ICLOUDPD_MANUAL_VERIFICATION.md`
+- `docs_to_parse/AUTH_ICLOUDPD_SESSION_VERIFICATION.md`
+- `docs_to_parse/active_workflow_docs/part3_slice3_reconciliation_findings.md`
+
+## Canonical notes
+
+### Run/setup baseline
+
+Minimum local run sequence:
+
+```bash
+npm install
+npm run api
+npm run dev
+```
+
+Then open the Vite local URL.
+
+### Auth setup baseline (iCloudPD path)
+
+Required local values:
+
+- `user`
+- `pw`
+- `ICLOUDPD_COOKIE_DIR`
+- `DOWNLOAD_DIR` (used by verification flow when present)
+
+Optional:
+
+- `ICLOUDPD_BIN`
+- `ICLOUDPD_DOMAIN`
+- `ICLOUDPD_AUTH_TIMEOUT_MS`
+
+### Auth behavior boundaries
+
+- Auth/session truth is backend-owned and exposed via `/api/auth/*`.
+- Persisted auth state is not proof of active authentication.
+- `POST /api/auth/resume` is the verification path after restart/reload.
+- 2FA detection is implemented; default backend-driven 2FA submission can return unsupported when non-interactive verification is not safely available.
+- Manual, user-owned verification is still required for real account login/session proof.
+
+### Practical operator usage notes
+
+1. Run auth preflight (`/api/auth/run` or dashboard B1 action).
+2. If challenged, complete supported 2FA steps manually.
+3. Use `/api/auth/resume` to confirm session validity.
+4. Treat unsupported/provider-unavailable outcomes as honest boundary states, not silent failures.
+5. Keep secrets out of docs, logs, and issue text.
+
+### Version/changelog governance notes for operators
+
+- `VERSION` is canonical version source.
+- Commit classes map to SemVer bump policy.
+- Doc-only changes still require patch bump and changelog entry.
+- Guard script: `node scripts/version_guard.mjs repo`.
+
+## Conflict / reduction notes
+
+- Reduced overlapping auth docs into one operator-facing note set; detailed internal code-path narratives were not copied.
+- Retained the conservative non-fake-auth rule from source docs: no authenticated claim without provider-backed verification.
+- Did not promote workflow audit observations to runtime behavior truth.
+
+## Migration status
+
+| Source doc | Migration status | Notes |
+|---|---|---|
+| `HOW_TO_RUN.md` | merged | kept as active command baseline |
+| `AI_AUTHENTICATION_2FA_HANDOFF.md` | merged/reduced | kept behavior boundaries and manual verification limits |
+| `AUTH_ICLOUDPD_MANUAL_VERIFICATION.md` | merged/reduced | kept setup inputs and manual verification flow |
+| `AUTH_ICLOUDPD_SESSION_VERIFICATION.md` | merged/reduced | kept resume-session truth rule |
+| `VERSIONING_AND_CHANGELOG_POLICY.md` | merged (operator subset) | retained operator-relevant governance checkpoints |

@@ -1,67 +1,45 @@
 # Photo Frame Dashboard System
 
-## 1. Project Overview
-
 This repository contains a dashboard-driven system for managing a staged photo-processing pipeline and playback simulation.
 
-The system includes:
-- a browser-based dashboard (Vite frontend)
-- staged pipeline controls (download → index → GPS → geocode → queue → playback)
-- an inspect/metadata system for explaining UI state
-- a repo-local versioning and changelog enforcement system
+The system documentation has been consolidated into categorized canonical docs under `docs/categorized/`. Implementation status in those docs is documentation-derived only unless a document explicitly states that a code path was verified.
 
-This is a **partially implemented system** with a mix of real backend wiring and simulated behavior.
+## Documentation entry points
 
-## Authoritative Behavioral Spec (Top Priority)
+Start here:
 
-For high-level behavioral intent and requirement authority, use:
+- `docs/main_readme.md` - global documentation index, authority rules, conflict summary, and full old-to-new migration map.
+- `docs/categorized/vision_spec_docs/main_readme.md` - product vision, architecture intent, runtime recovery, dashboard, auth, and pipeline specs.
+- `docs/categorized/current_implementation_status_docs/main_readme.md` - documented current system status, button/view verification evidence, and known gaps.
+- `docs/categorized/task_documentation_still_to_implement/main_readme.md` - still-actionable implementation, verification, and reconciliation tasks.
+- `docs/categorized/other_documentation/main_readme.md` - operator notes, setup/auth notes, documentation workflow, and archive/reference orientation.
 
-- `docs/VOICE_AI_AUTHORITATIVE_SPEC_MERGED_2026-04-22.md`
+## Current documented state
 
-This is the highest-level authoritative behavior document in this repository. If wording conflicts with lower-level working docs, treat this spec as the source of truth unless explicitly superseded by a newer user-approved authority document.
+The consolidated status docs describe the system as partially implemented, with mixed real backend behavior and simulated or placeholder-backed dashboard behavior.
 
-## 2. Current System State
+Documentation-derived summary:
 
-The system is **not fully backend-complete**.
+| Area | Documented state |
+|---|---|
+| View A - Init | Backend-backed initialization surfaces with documented scheduler/platform limitations. |
+| View B - Test | Hybrid area with a mix of real endpoints and simulated or placeholder-backed stages. |
+| View C - Last Run Info | Demo/status-oriented surface unless otherwise verified separately. |
+| View D - Running Process | Runtime preview/simulation unless otherwise verified separately. |
+| Inspect/metadata | Important for explaining UI state, backend status, and provenance. |
 
-| Area | State |
-|------|------|
-| View A (Init) | Real backend endpoints |
-| View B (Test) | Mixed (real + mock) |
-| View C (Last Run Info) | Mock/demo only |
-| View D (Running Process) | Simulated runtime preview |
+This README does not assert source-code truth. Check code/tests directly before making implementation claims.
 
-Key facts:
-- Some pipeline stages already call real endpoints.
-- Other stages are still simulated or placeholder-backed.
-- Runtime behavior in View D is a preview, not real worker execution.
-- Inspect modes are important because they expose the difference between implementation truth, backend status, and value provenance.
+## Architecture overview
 
-## 3. Architecture Overview
+High-level documented components:
 
-High-level components:
-- `dashboard/` — frontend UI, views A–D, inspect system
-- `docs/` — system documentation and control files
-- `scripts/` — local tooling, including repo governance helpers
-- shared runtime-truth state — frontend state layer used by hybrid and simulated surfaces
+- `dashboard/` - frontend UI, views, and inspect surfaces.
+- `docs/` - consolidated documentation entrypoints and categorized docs.
+- `scripts/` - local tooling and governance helpers.
+- staged pipeline model - download, index, GPS parsing, geocode, enqueue, and playback concepts as documented.
 
-The repository follows a stage-based pipeline model, but only part of that model is currently wired to real backend behavior.
-
-## 4. Dashboard Views
-
-### View A — Init
-Real backend-backed initialization surfaces for environment checks, database setup, and scheduler-related actions.
-
-### View B — Test
-Hybrid test area. Some actions are wired to real endpoints, while other stages and preview surfaces remain mock/simulated.
-
-### View C — Last Run Info
-Demo-oriented view. It does not currently restore real saved run state from a backend implementation.
-
-### View D — Running Process
-Simulated runtime preview. It displays worker-like state and screen/playback surfaces, but it is not a real runtime worker dashboard yet.
-
-## 5. How to Run
+## How to run
 
 Install dependencies:
 
@@ -75,26 +53,17 @@ Start the dashboard:
 npm run dev
 ```
 
-Open in a browser:
+Open the local app:
 
 ```text
 http://localhost:5173/
 ```
 
-What you should expect:
-- a dashboard with Views A–D
-- inspect modes that explain UI surfaces
-- a mix of real and simulated behavior depending on the view and card
+Expected behavior depends on the current implementation state. The docs intentionally distinguish documented status from verified runtime behavior.
 
-## 6. Versioning and Changelog System
+## Versioning and changelog workflow
 
-This repository uses forward-only SemVer enforcement.
-
-Version format:
-
-```text
-MAJOR.MINOR.PATCH
-```
+The documentation set preserves the existing forward-only SemVer governance model.
 
 Supported commit prefixes:
 
@@ -115,28 +84,13 @@ fix!:
 BREAKING CHANGE:
 ```
 
-Local enforcement is provided by:
-- `.githooks/commit-msg`
-- `.githooks/pre-commit`
-- `scripts/version_guard.mjs`
+Local validation is documented in `docs/categorized/other_documentation/operator_setup_and_auth_notes.md` and the versioning/changelog governance notes.
 
-Hook install commands:
-
-```bash
-powershell -ExecutionPolicy Bypass -File scripts/install-githooks.ps1
-# or
-sh scripts/install-githooks.sh
-```
-
-Important rule:
-- no backfilling missing historical changelog history
-- strict structured changelog enforcement applies going forward from the governance rollout point
-
-## 7. Repository Structure
+## Repository structure
 
 ```text
 dashboard/        frontend views and inspect system
-docs/             documentation bundle and control docs
+docs/             consolidated documentation
 scripts/          helper scripts and repo tooling
 .githooks/        repo-local Git hooks
 tests/            test suite
@@ -144,40 +98,10 @@ VERSION           canonical repo version
 CHANGELOG.md      forward-only changelog
 ```
 
-## 8. Documentation Map
+## Notes for future work
 
-Key documentation entrypoints:
-- `docs/VOICE_AI_AUTHORITATIVE_SPEC_MERGED_2026-04-22.md` (highest-level behavior authority)
-- `docs/VERSIONING_AND_CHANGELOG_POLICY.md`
-- `docs/buttons_and_implementation_overview.md`
-- `docs/IMPLEMENTATION_STATUS_AUDIT.md`
-- `docs/AUTH_ICLOUDPD_SESSION_VERIFICATION.md`
-- `docs/AUTH_ICLOUDPD_MANUAL_VERIFICATION.md`
-- the system-doc bundle under `docs/`
+- Do not treat archive/reference docs as active authority.
+- Do not turn current-status docs into product requirements.
+- Do not preserve task docs as actionable when they conflict with active vision/spec docs.
+- Verify code paths directly before claiming implementation behavior.
 
-This README is the repo entrypoint. Deeper implementation details belong in the dedicated docs.
-
-## 9. Development Workflow
-
-Before committing:
-1. use a valid conventional-style commit message
-2. update version/changelog when required
-3. run the repo validator
-
-Manual validation:
-
-```bash
-node scripts/version_guard.mjs repo
-```
-
-Optional helper flow:
-
-```bash
-node scripts/version_guard.mjs prepare --message "feat: example change"
-```
-
-## Notes
-
-- Do not assume full pipeline completeness.
-- Do not assume View D is real runtime execution.
-- Where UI wording and implementation differ, trust code and inspect metadata rather than surface phrasing alone.
