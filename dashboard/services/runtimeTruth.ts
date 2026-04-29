@@ -1,9 +1,45 @@
 import { createRuntimeTruthBehavior } from './runtimeTruth/runtimeTruthBehavior.ts';
 import { createInitialState } from './runtimeTruth/runtimeTruthState.ts';
-import { createRuntimeTruthPersistence } from './runtimeTruth/runtimeTruthPersistence.ts';
+import {
+  createRuntimeTruthPersistence,
+  type RuntimeTruthPersistenceApi,
+  type RuntimeTruthSnapshot,
+} from './runtimeTruth/runtimeTruthPersistence.ts';
 
-const stamp = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-const formatTallinnTimestamp = () =>
+type RuntimeTruthState = {
+  activeView: string;
+  currentViewTitle: string;
+  inspectMode: boolean;
+  valueInspectMode: boolean;
+  realityInspectMode: boolean;
+  backendStatusInspectMode: boolean;
+  truth: RuntimeTruthSnapshot & Record<string, unknown>;
+  history: Array<Record<string, unknown>>;
+  logs: Record<string, Array<Record<string, unknown>>>;
+  statusByKey: Record<string, string>;
+  modal: unknown;
+  simulation: Record<string, boolean | number | string>;
+  databaseViewer: {
+    selectedTableName?: string | null;
+    rows?: { page?: number } | null;
+    [key: string]: unknown;
+  };
+  runningProcess: {
+    pipelineStages: Array<Record<string, unknown>>;
+    screenWorker: Record<string, unknown>;
+    [key: string]: unknown;
+  };
+  lastRunMode: string;
+  lastRunData: Record<string, unknown>;
+  [key: string]: unknown;
+};
+type RuntimeTruthListener = (state: RuntimeTruthState) => void;
+type RuntimeTruthMutator = (draft: RuntimeTruthState) => void;
+type RuntimeTruthUnsubscribe = () => void;
+type RuntimeActionPayload = Record<string, unknown>;
+
+const stamp = (): string => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+const formatTallinnTimestamp = (): string =>
   new Intl.DateTimeFormat('et-EE', {
     timeZone: 'Europe/Tallinn',
     year: 'numeric',
@@ -15,13 +51,13 @@ const formatTallinnTimestamp = () =>
     hour12: false,
   }).format(new Date());
 
-const listeners = new Set<(state: any) => void>();
+const listeners = new Set<RuntimeTruthListener>();
 
-let state = createInitialState();
-let getTruthSignature = (truthState) => JSON.stringify(truthState);
-let queueRuntimeTruthPersistence = () => {};
-let initializeRuntimeTruthPersistence = async () => {};
-let noteLocalTruthMutation = () => {};
+let state: RuntimeTruthState = createInitialState();
+let getTruthSignature: RuntimeTruthPersistenceApi['getTruthSignature'] = (truthState: RuntimeTruthSnapshot): string => JSON.stringify(truthState);
+let queueRuntimeTruthPersistence: RuntimeTruthPersistenceApi['queueRuntimeTruthPersistence'] = (): void => {};
+let initializeRuntimeTruthPersistence: RuntimeTruthPersistenceApi['initializeRuntimeTruthPersistence'] = async (): Promise<void> => {};
+let noteLocalTruthMutation: RuntimeTruthPersistenceApi['noteLocalTruthMutation'] = (): void => {};
 
 const runtimeTruthPersistence = createRuntimeTruthPersistence({
   getState: () => state,
@@ -45,20 +81,20 @@ const runtimeTruthBehavior = createRuntimeTruthBehavior({
 
 void initializeRuntimeTruthPersistence();
 
-export function getState() {
+export function getState(): RuntimeTruthState {
   return state;
 }
 
-export function subscribe(listener) {
+export function subscribe(listener: RuntimeTruthListener): RuntimeTruthUnsubscribe {
   listeners.add(listener);
   return () => listeners.delete(listener);
 }
 
-function emit() {
+function emit(): void {
   listeners.forEach((listener) => listener(state));
 }
 
-export function patchState(mutator) {
+export function patchState(mutator: RuntimeTruthMutator): void {
   const previousTruthSignature = getTruthSignature(state.truth);
   const nextState = structuredClone(state);
   mutator(nextState);
@@ -74,12 +110,12 @@ export function patchState(mutator) {
   }
 }
 
-export function setActiveView(viewId, title) {
+export function setActiveView(viewId: string, title: string): void {
   state = { ...state, activeView: viewId, currentViewTitle: title };
   emit();
 }
 
-export function toggleInspectMode() {
+export function toggleInspectMode(): void {
   const nextInspectMode = !state.inspectMode;
   state = {
     ...state,
@@ -91,7 +127,7 @@ export function toggleInspectMode() {
   emit();
 }
 
-export function toggleValueInspectMode() {
+export function toggleValueInspectMode(): void {
   const nextValueInspectMode = !state.valueInspectMode;
   state = {
     ...state,
@@ -103,7 +139,7 @@ export function toggleValueInspectMode() {
   emit();
 }
 
-export function toggleRealityInspectMode() {
+export function toggleRealityInspectMode(): void {
   const nextRealityInspectMode = !state.realityInspectMode;
   state = {
     ...state,
@@ -115,7 +151,7 @@ export function toggleRealityInspectMode() {
   emit();
 }
 
-export function toggleBackendStatusInspectMode() {
+export function toggleBackendStatusInspectMode(): void {
   const nextBackendStatusInspectMode = !state.backendStatusInspectMode;
   state = {
     ...state,
@@ -127,13 +163,13 @@ export function toggleBackendStatusInspectMode() {
   emit();
 }
 
-export function resetHistory() {
+export function resetHistory(): void {
   patchState((draft) => {
     draft.history = [{ id: crypto.randomUUID(), at: stamp(), source: 'USER', type: 'info', message: 'History cleared.' }];
   });
 }
 
-export function pushHistory(source, type, message, details = null) {
+export function pushHistory(source: string, type: string, message: string, details: unknown = null): void {
   patchState((draft) => {
     draft.history.unshift({
       id: crypto.randomUUID(),
@@ -148,19 +184,19 @@ export function pushHistory(source, type, message, details = null) {
   });
 }
 
-export function openModal(modal) {
+export function openModal(modal: unknown): void {
   patchState((draft) => {
     draft.modal = modal ? structuredClone(modal) : null;
   });
 }
 
-export function closeModal() {
+export function closeModal(): void {
   patchState((draft) => {
     draft.modal = null;
   });
 }
 
-export function pushLog(key, type, message, details = null) {
+export function pushLog(key: string, type: string, message: string, details: unknown = null): void {
   patchState((draft) => {
     draft.logs[key] ??= [];
     const now = new Date();
@@ -175,13 +211,13 @@ export function pushLog(key, type, message, details = null) {
   });
 }
 
-export function setStatus(key, status) {
+export function setStatus(key: string, status: string): void {
   patchState((draft) => {
     draft.statusByKey[key] = status;
   });
 }
 
-export function seedDemoState() {
+export function seedDemoState(): void {
   patchState((draft) => {
     const now = stamp();
     draft.truth.queueLength = 3;
@@ -229,13 +265,13 @@ export function seedDemoState() {
   pushHistory('DEMO', 'success', 'Demo state seeded for playback and recovery views.');
 }
 
-export function setLastRunMode(mode) {
+export function setLastRunMode(mode: string): void {
   patchState((draft) => {
     draft.lastRunMode = mode;
   });
 }
 
-export function setSimulationValue(key, value) {
+export function setSimulationValue(key: string, value: boolean | number | string): void {
   patchState((draft) => {
     draft.simulation[key] = value;
     if (key === 'simulateAllEnabled') {
@@ -256,14 +292,14 @@ export function setSimulationValue(key, value) {
   }
 }
 
-export function selectDatabaseViewerTable(tableName) {
+export function selectDatabaseViewerTable(tableName: string | null | undefined): void {
   if (!tableName) {
     return;
   }
   void runtimeTruthBehavior.runDatabaseViewerRowsAction(tableName, 0);
 }
 
-export function changeDatabaseViewerPage(delta) {
+export function changeDatabaseViewerPage(delta: number | string): void {
   const selectedTableName = state.databaseViewer.selectedTableName;
   const currentPage = state.databaseViewer.rows?.page ?? 0;
   if (!selectedTableName) {
@@ -276,6 +312,6 @@ export function changeDatabaseViewerPage(delta) {
   void runtimeTruthBehavior.runDatabaseViewerRowsAction(selectedTableName, nextPage);
 }
 
-export function runAction(action, payload = {}) {
+export function runAction(action: string, payload: RuntimeActionPayload = {}): void {
   runtimeTruthBehavior.runAction(action, payload);
 }

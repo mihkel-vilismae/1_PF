@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## 2026-04-29 12:08 EEST — v0.3.34
+
+### Added
+- Added Slice 3 TypeScript function boundary types for runtime-truth persistence and top-level runtime-truth state service entrypoints.
+
+### Changed
+- Added explicit listener, mutator, persistence dependency, persistence API, queue option, and runtime action payload types without changing runtime behavior.
+- Updated version metadata from v0.3.33 to v0.3.34.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
+
 ## 2026-04-29 11:55 EEST — v0.3.33
 
 ### Added

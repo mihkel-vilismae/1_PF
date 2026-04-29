@@ -5,19 +5,54 @@ const RUNTIME_TRUTH_PERSIST_INTERVAL_MS = 250;
 const RUNTIME_TRUTH_PERSIST_WARNING_INTERVAL_MS = 10000;
 let lastPersistenceWarningAt = 0;
 
-export function createRuntimeTruthPersistence({
+export type RuntimeTruthSnapshot = ReturnType<typeof buildInitialTruthState>;
+
+export interface RuntimeTruthHostState {
+  truth: RuntimeTruthSnapshot;
+}
+
+export interface RuntimeTruthPersistenceQueueOptions {
+  immediate?: boolean;
+}
+
+export type RuntimeTruthPatchState<TState extends RuntimeTruthHostState = RuntimeTruthHostState> = (
+  mutator: (draft: TState) => void,
+) => void;
+
+export type RuntimeTruthHistoryPusher = (
+  source: string,
+  type: string,
+  message: string,
+  details?: unknown,
+) => void;
+
+export interface RuntimeTruthPersistenceDependencies<TState extends RuntimeTruthHostState = RuntimeTruthHostState> {
+  getState: () => TState;
+  patchState: RuntimeTruthPatchState<TState>;
+  pushHistory: RuntimeTruthHistoryPusher;
+  warnPersistence?: (error: unknown) => void;
+}
+
+export interface RuntimeTruthPersistenceApi {
+  getTruthSignature: (truthState: RuntimeTruthSnapshot) => string;
+  queueRuntimeTruthPersistence: (options?: RuntimeTruthPersistenceQueueOptions) => void;
+  initializeRuntimeTruthPersistence: () => Promise<void>;
+  noteLocalTruthMutation: () => void;
+}
+
+export function createRuntimeTruthPersistence<TState extends RuntimeTruthHostState>({
   getState,
   patchState,
   pushHistory,
   warnPersistence = warnRuntimeTruthPersistence,
-}) {
-  let persistTimer = null;
+}: RuntimeTruthPersistenceDependencies<TState>): RuntimeTruthPersistenceApi {
+  let persistTimer: ReturnType<typeof setTimeout> | null = null;
   let persistInFlight = false;
   let persistRequestedWhileInFlight = false;
   let hasLocalTruthMutationSinceBoot = false;
-  let lastPersistedTruthSignature = null;
+  let lastPersistedTruthSignature: string | null = null;
 
-  function queueRuntimeTruthPersistence({ immediate = false } = {}) {
+  function queueRuntimeTruthPersistence({ immediate = false }: RuntimeTruthPersistenceQueueOptions = {}): void {
     if (persistTimer !== null) {
       return;
     }
@@ -28,7 +63,7 @@ export function createRuntimeTruthPersistence({
     }, delayMs);
   }
 
-  async function flushRuntimeTruthPersistence() {
+  async function flushRuntimeTruthPersistence(): Promise<void> {
     const truthSnapshot = normalizeTruthSnapshot(getState().truth);
     const signature = JSON.stringify(truthSnapshot);
 
@@ -56,7 +91,7 @@ export function createRuntimeTruthPersistence({
     }
   }
 
-  async function initializeRuntimeTruthPersistence() {
+  async function initializeRuntimeTruthPersistence(): Promise<void> {
     try {
       const persistedTruth = await loadPersistedRuntimeTruth();
       if (persistedTruth && !hasLocalTruthMutationSinceBoot) {
@@ -77,7 +112,7 @@ export function createRuntimeTruthPersistence({
     }
   }
 
-  function noteLocalTruthMutation() {
+  function noteLocalTruthMutation(): void {
     hasLocalTruthMutationSinceBoot = true;
   }
 
@@ -89,24 +124,31 @@ export function createRuntimeTruthPersistence({
   };
 }
 
-export function normalizeTruthSnapshot(value) {
+export function normalizeTruthSnapshot(value: unknown): RuntimeTruthSnapshot {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return buildInitialTruthState();
   }
-  const normalized = structuredClone(value);
+  const normalized = structuredClone(value) as RuntimeTruthSnapshot;
   normalized.sourceOfTruth = RUNTIME_TRUTH_SEED_PATH;
   return normalized;
 }
 
-export function getTruthSignature(truthState) {
+export function getTruthSignature(truthState: RuntimeTruthSnapshot): string {
   return JSON.stringify(normalizeTruthSnapshot(truthState));
 }
 
-function warnRuntimeTruthPersistence(error) {
+function warnRuntimeTruthPersistence(error: unknown): void {
   const now = Date.now();
   if (now - lastPersistenceWarningAt < RUNTIME_TRUTH_PERSIST_WARNING_INTERVAL_MS) {
     return;
   }
   lastPersistenceWarningAt = now;
-  console.warn('[runtimeTruth] Failed to persist conf/runtime-truth.json.', error?.message ?? error);
+  console.warn('[runtimeTruth] Failed to persist conf/runtime-truth.json.', getRuntimeTruthErrorMessage(error));
+}
+
+function getRuntimeTruthErrorMessage(error: unknown): unknown {
+  if (error && typeof error === 'object' && 'message' in error) {
+    return String(error.message);
+  }
+  return error;
 }
