@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## 2026-04-29 14:10 EEST — v0.3.44
+
+### Added
+- Added final Slice 17 closure boundary contracts for dashboard shared constants and inspect-guide JSON exports.
+- Added a closure audit record for the function-boundary typing migration.
+
+### Changed
+- Updated version metadata from v0.3.43 to v0.3.44.
+- Preserved existing runtime values, UI copy, route behavior, auth behavior, scheduler semantics, database behavior, and runtime stage ordering.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
 ## 2026-04-29 14:10 EEST — v0.3.43
 
 ### Added
