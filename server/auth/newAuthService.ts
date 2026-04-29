@@ -51,6 +51,22 @@ interface CommandResult {
   errorMessage?: string;
 }
 
+interface NewAuthSessionEvidence {
+  hasSessionFiles: boolean;
+  sessionFileCount: number;
+  latestModifiedMs: number | null;
+  latestModifiedAt: string | null;
+}
+
+type NewAuthTwoFactorPromptKind = 'device_index' | 'verification_code' | 'device_index_or_code' | 'apple_hsa2_challenge' | 'unknown';
+
+interface NewAuthTwoFactorPromptInfo {
+  kind: NewAuthTwoFactorPromptKind;
+  requestedInput: string;
+  nextAction: string;
+  message: string;
+}
+
 const ICLOUDPD_TIMEOUT_MS = 8000;
 const ICLOUDPD_LOGIN_TIMEOUT_MS = 120_000;
 const MAX_STDIO_CHARS = 6000;
@@ -161,11 +177,12 @@ export async function startNewAuthLogin(context: NewAuthContext = {}): Promise<R
   }
 
   await mkdir(config.cookieDir as string, { recursive: true });
+  const beforeSessionEvidence = collectNewAuthSessionEvidence(config);
   const result = await runCommand(executable.path ?? 'icloudpd', buildNewAuthLoginArgs(config), { timeoutMs: config.timeoutMs });
   return mapNewAuthCommandResult(result, config, {
     successMessage: 'iCloudPD login completed and the local session was verified.',
     startedMessage: 'iCloudPD login command completed, but authenticated session proof was not strong enough to report success.',
-  });
+  }, beforeSessionEvidence);
 }
 
 export async function submitNewAuthTwoFactor(context: NewAuthContext = {}, input: NewAuthTwoFactorInput = {}): Promise<Record<string, unknown>> {
@@ -181,10 +198,10 @@ export async function submitNewAuthTwoFactor(context: NewAuthContext = {}, input
       ok: false,
       state: 'failed',
       errorCode: 'NEW_AUTH_2FA_CODE_MISSING',
-      message: 'Two-factor authentication submission requires a non-empty code.',
+      message: 'Two-factor authentication submission requires a non-empty code or device index.',
       details: {
         provider: 'icloudpd',
-        codeReceived: false,
+        responseReceived: false,
         secretsShown: false,
       },
     };
@@ -196,19 +213,22 @@ export async function submitNewAuthTwoFactor(context: NewAuthContext = {}, input
   }
 
   await mkdir(config.cookieDir as string, { recursive: true });
+  const beforeSessionEvidence = collectNewAuthSessionEvidence(config);
   const result = await runCommand(executable.path ?? 'icloudpd', buildNewAuthLoginArgs(config), { timeoutMs: config.timeoutMs, stdinText: `${code}\n` });
   const mapped = mapNewAuthCommandResult(result, config, {
     successMessage: 'iCloudPD 2FA follow-up command completed and the local session was verified.',
     startedMessage: 'iCloudPD 2FA follow-up command completed, but authenticated session proof was not strong enough to report success.',
-  });
+  }, beforeSessionEvidence);
 
   if (mapped.state === 'pending_2fa') {
     return {
       ...mapped,
-      message: 'iCloudPD still reports that two-factor authentication is required. The submitted code was not logged or returned.',
+      message: typeof mapped.message === 'string'
+        ? mapped.message
+        : 'iCloudPD still reports that two-factor authentication is required.',
       details: {
         ...(typeof mapped.details === 'object' && mapped.details ? mapped.details : {}),
-        twoFactorCodeShown: false,
+        twoFactorResponseShown: false,
       },
     };
   }
@@ -351,19 +371,27 @@ function buildNewAuthProviderUnavailablePayload(errorCode: string, message: stri
   };
 }
 
-function mapNewAuthCommandResult(result: CommandResult, config: NewAuthIcloudpdConfig, messages: { successMessage: string; startedMessage: string }): Record<string, unknown> {
+export function mapNewAuthCommandResult(
+  result: CommandResult,
+  config: NewAuthIcloudpdConfig,
+  messages: { successMessage: string; startedMessage: string },
+  beforeSessionEvidence: NewAuthSessionEvidence = EMPTY_SESSION_EVIDENCE,
+): Record<string, unknown> {
   const combined = sanitizeCommandOutput(`${result.stdout}\n${result.stderr}`, config);
   const lower = combined.toLowerCase();
 
   if (indicatesNewAuthTwoFactorRequired(lower)) {
+    const promptInfo = buildNewAuthTwoFactorPromptInfo(lower);
     return {
       ok: true,
       state: 'pending_2fa',
-      message: 'iCloudPD reported that a two-factor authentication challenge is required.',
+      message: promptInfo.message,
       details: {
         provider: 'icloudpd',
-        nextAction: 'submit_two_factor_code',
-        twoFactorCodeShown: false,
+        nextAction: promptInfo.nextAction,
+        twoFactorPromptKind: promptInfo.kind,
+        requestedInput: promptInfo.requestedInput,
+        twoFactorResponseShown: false,
         providerOutputPreview: sanitizePreview(combined),
       },
     };
@@ -409,6 +437,23 @@ function mapNewAuthCommandResult(result: CommandResult, config: NewAuthIcloudpdC
     };
   }
 
+  const afterSessionEvidence = result.ok ? collectNewAuthSessionEvidence(config) : EMPTY_SESSION_EVIDENCE;
+  if (result.ok && hasFreshNewAuthSessionEvidence(beforeSessionEvidence, afterSessionEvidence)) {
+    return {
+      ok: true,
+      state: 'authenticated',
+      message: messages.successMessage,
+      details: {
+        provider: 'icloudpd',
+        authenticatedUser: redactEmail(config.username),
+        providerSessionRef: 'icloudpd_cookie_directory_internal',
+        sessionFileCount: afterSessionEvidence.sessionFileCount,
+        latestSessionFileModifiedAt: afterSessionEvidence.latestModifiedAt,
+        providerOutputPreview: sanitizePreview(combined),
+      },
+    };
+  }
+
   if (result.ok) {
     return {
       ok: false,
@@ -437,6 +482,54 @@ function mapNewAuthCommandResult(result: CommandResult, config: NewAuthIcloudpdC
   };
 }
 
+const EMPTY_SESSION_EVIDENCE: NewAuthSessionEvidence = Object.freeze({
+  hasSessionFiles: false,
+  sessionFileCount: 0,
+  latestModifiedMs: null,
+  latestModifiedAt: null,
+});
+
+function collectNewAuthSessionEvidence(config: NewAuthIcloudpdConfig): NewAuthSessionEvidence {
+  if (!config.cookieDir) {
+    return EMPTY_SESSION_EVIDENCE;
+  }
+
+  const configuredDirectory = buildPathMetadata('Configured session directory', config.cookieDir, config.cookieDir, true);
+  const sessionFiles = flattenPathMetadata([configuredDirectory]).filter((entry) => (
+    entry.exists && entry.type === 'file' && SESSION_FILE_HINT_PATTERN.test(path.basename(entry.path))
+  ));
+  const latestModifiedMs = sessionFiles.reduce<number | null>((latest, entry) => {
+    const modifiedMs = entry.lastModified ? Date.parse(entry.lastModified) : Number.NaN;
+    if (!Number.isFinite(modifiedMs)) {
+      return latest;
+    }
+    return latest === null || modifiedMs > latest ? modifiedMs : latest;
+  }, null);
+
+  return {
+    hasSessionFiles: sessionFiles.length > 0,
+    sessionFileCount: sessionFiles.length,
+    latestModifiedMs,
+    latestModifiedAt: latestModifiedMs === null ? null : new Date(latestModifiedMs).toISOString(),
+  };
+}
+
+function hasFreshNewAuthSessionEvidence(before: NewAuthSessionEvidence, after: NewAuthSessionEvidence): boolean {
+  if (!after.hasSessionFiles) {
+    return false;
+  }
+  if (!before.hasSessionFiles) {
+    return true;
+  }
+  if (after.sessionFileCount > before.sessionFileCount) {
+    return true;
+  }
+  if (before.latestModifiedMs === null || after.latestModifiedMs === null) {
+    return false;
+  }
+  return after.latestModifiedMs > before.latestModifiedMs;
+}
+
 function sanitizeCommandOutput(value: string, config: NewAuthIcloudpdConfig): string {
   let sanitized = sanitizePreview(value, 4000);
   for (const secret of [config.password, config.username]) {
@@ -448,7 +541,56 @@ function sanitizeCommandOutput(value: string, config: NewAuthIcloudpdConfig): st
 }
 
 function indicatesNewAuthTwoFactorRequired(lower: string): boolean {
-  return /two[-\s]?factor|2fa|two[-\s]?step|verification code|mfa|trusted device|trusted phone|enter code|security code/.test(lower);
+  return /two[-\s]?factor|2fa|two[-\s]?step|verification code|mfa|trusted device|trusted phone|enter code|security code|device index|auth"?\s*type"?\s*:\s*"?hsa2|"?authtype"?\s*:\s*"?hsa2|hsa2/.test(lower);
+}
+
+function buildNewAuthTwoFactorPromptInfo(lower: string): NewAuthTwoFactorPromptInfo {
+  const mentionsDeviceIndex = /device index|send sms|sms with a code|\([a-z]\.\.[a-z]\)|trusted phone/.test(lower);
+  const mentionsVerificationCode = /verification code|security code|enter code|two[-\s]?factor authentication code|2fa code|six[-\s]?digit|6[-\s]?digit/.test(lower);
+  const mentionsHsa2 = /auth"?\s*type"?\s*:\s*"?hsa2|"?authtype"?\s*:\s*"?hsa2|hsa2/.test(lower);
+
+  if (mentionsDeviceIndex && mentionsVerificationCode) {
+    return {
+      kind: 'device_index_or_code',
+      requestedInput: 'Device index or six-digit verification code',
+      nextAction: 'submit_device_index_or_verification_code',
+      message: 'iCloudPD is asking for a trusted-device index or a verification code. Enter a device index such as "a" if you need Apple to send a code, or enter the six-digit code if you already have it.',
+    };
+  }
+
+  if (mentionsDeviceIndex) {
+    return {
+      kind: 'device_index',
+      requestedInput: 'Trusted-device index, such as "a"',
+      nextAction: 'submit_trusted_device_index',
+      message: 'iCloudPD is asking for a trusted-device index. Enter the listed device index, such as "a", to request a verification code.',
+    };
+  }
+
+  if (mentionsVerificationCode) {
+    return {
+      kind: 'verification_code',
+      requestedInput: 'Six-digit verification code',
+      nextAction: 'submit_verification_code',
+      message: 'iCloudPD is asking for the six-digit verification code from Apple.',
+    };
+  }
+
+  if (mentionsHsa2) {
+    return {
+      kind: 'apple_hsa2_challenge',
+      requestedInput: 'Apple HSA2 challenge; exact prompt not visible',
+      nextAction: 'inspect_hsa2_prompt_then_submit_response',
+      message: 'Apple returned an HSA2 two-factor challenge, but iCloudPD output did not expose whether it wants a device index or the six-digit code. If no code is visible yet, submit the trusted-device index such as "a"; otherwise submit the six-digit code.',
+    };
+  }
+
+  return {
+    kind: 'unknown',
+    requestedInput: 'Two-factor response',
+    nextAction: 'submit_two_factor_response',
+    message: 'iCloudPD reported that a two-factor authentication challenge is required, but the exact requested input was not visible in the provider output.',
+  };
 }
 
 function indicatesNewAuthInvalidCredentials(lower: string): boolean {

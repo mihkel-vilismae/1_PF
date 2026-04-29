@@ -164,7 +164,7 @@ export function createRuntimeTruthBehavior({
 
     const handler = actionMap[action];
     if (handler) {
-      handler();
+      handler(payload);
     }
   }
 

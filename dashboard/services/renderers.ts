@@ -45,6 +45,8 @@ type ModalData = {
   entry?: LogEntry | HistoryEntry;
   stage?: string;
   message?: string;
+  requestedInput?: string | null;
+  twoFactorPromptKind?: string | null;
 };
 
 type StepListItem = {
@@ -250,6 +252,7 @@ export function renderStepList(steps: StepListItem[] = []): string {
 function renderNewAuthLoginModalContent(modal: ModalData): string {
   const stage = modal.stage ?? 'opening';
   const message = modal.message ?? modal.subtitle ?? 'New auth login modal is ready.';
+  const requestedInput = modal.requestedInput ?? requestedInputLabelForPromptKind(modal.twoFactorPromptKind);
   return `
     ${renderModalSection(
       'Login progress',
@@ -258,16 +261,34 @@ function renderNewAuthLoginModalContent(modal: ModalData): string {
         Stage: stage,
         Endpoint: 'POST /api/auth/new/login',
         '2FA endpoint': 'POST /api/auth/new/submit-2fa',
+        ...(requestedInput ? { 'Requested input': requestedInput } : {}),
       }) + `<p class="modal-panel__empty">${escapeHtml(message)}</p>`,
     )}
     ${renderModalSection(
       'Two-factor authentication',
-      `<label class="field-label" for="new-auth-2fa-code">2FA code</label>
-       <input id="new-auth-2fa-code" class="input" type="text" inputmode="numeric" autocomplete="one-time-code" data-new-auth-2fa-code aria-label="New auth 2FA code" />
+      `<label class="field-label" for="new-auth-2fa-code">2FA code or device index</label>
+       <input id="new-auth-2fa-code" class="input" type="text" autocomplete="one-time-code" data-new-auth-2fa-code aria-label="New auth 2FA code or device index" />
        <div class="button-row"><button class="button button--primary" data-action="new-auth-submit-2fa">Submit 2FA</button></div>
-       <p class="modal-panel__empty">The code is sent only to the new auth endpoint and is cleared from the input after submission.</p>`,
+       <p class="modal-panel__empty">Submit the trusted-device index first if iCloudPD asks for one, then submit the verification code when prompted. The response is sent only to the new auth endpoint and is cleared from the input after submission.</p>`,
     )}
   `;
+}
+
+function requestedInputLabelForPromptKind(kind: string | null | undefined): string | null {
+  switch (kind) {
+    case 'device_index':
+      return 'Trusted-device index, such as "a"';
+    case 'verification_code':
+      return 'Six-digit verification code';
+    case 'device_index_or_code':
+      return 'Device index or six-digit verification code';
+    case 'apple_hsa2_challenge':
+      return 'Apple HSA2 challenge; exact prompt not visible';
+    case 'unknown':
+      return 'Two-factor response';
+    default:
+      return null;
+  }
 }
 
 function renderLogModalContent(entry: LogEntry): string {

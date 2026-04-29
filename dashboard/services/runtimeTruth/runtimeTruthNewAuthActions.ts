@@ -49,7 +49,7 @@ export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, push
   }
 
   async function submitTwoFactorAction(code) {
-    openNewAuthLoginModal('submitting_2fa', 'Submitting the 2FA code through the new auth endpoint. The code is not displayed after submission.');
+    openNewAuthLoginModal('submitting_2fa', 'Submitting the 2FA code or trusted-device index through the new auth endpoint. The response is not displayed after submission.');
     return runNewAuthBackendAction({
       buttonKey: 'new-auth-login-using-env',
       operation: 'Submit new auth 2FA code',
@@ -81,13 +81,14 @@ export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, push
     });
   }
 
-  function openNewAuthLoginModal(stage, message) {
+  function openNewAuthLoginModal(stage, message, twoFactorPrompt = null) {
     openModal({
       kind: 'new-auth-login',
       title: '1A-STASH-OFF login using .env values',
       subtitle: message,
       stage,
       message,
+      ...(twoFactorPrompt ?? {}),
     });
   }
 
@@ -120,7 +121,7 @@ export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, push
       pushLog(NEW_AUTH_CARD_KEY, status === 'success' ? 'success' : 'info', message, buildNewAuthLogDetails({ operation, endpoint, outcome: 'success', meta: result.meta, payload: safePayload }));
       pushHistory(NEW_AUTH_HISTORY_SOURCE, status === 'success' ? 'success' : 'info', message, { operation, endpoint: `${endpoint.method} ${endpoint.path}` });
       if (modalStage) {
-        openNewAuthLoginModal(status === 'success' ? 'authenticated' : 'waiting_for_2fa', message);
+        openNewAuthLoginModal(status === 'success' ? 'authenticated' : 'waiting_for_2fa', message, getNewAuthTwoFactorPrompt(safePayload));
       }
       return safePayload;
     } catch (error) {
@@ -167,6 +168,24 @@ function summarizeNewAuthResult(operation, payload) {
   if (payload?.state) return `${operation} returned state: ${payload.state}.`;
   if (payload?.status) return `${operation} returned status: ${payload.status}.`;
   return `${operation} completed.`;
+}
+
+function getNewAuthTwoFactorPrompt(payload) {
+  const details = payload?.details && typeof payload.details === 'object' ? payload.details : null;
+  if (!details) {
+    return null;
+  }
+
+  const twoFactorPromptKind = typeof details.twoFactorPromptKind === 'string' ? details.twoFactorPromptKind : null;
+  const requestedInput = typeof details.requestedInput === 'string' ? details.requestedInput : null;
+  if (!twoFactorPromptKind && !requestedInput) {
+    return null;
+  }
+
+  return {
+    twoFactorPromptKind,
+    requestedInput,
+  };
 }
 
 function buildNewAuthButtonState(status, message, endpoint) {
