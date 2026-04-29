@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## 2026-04-29 13:44 EEST — v0.3.40
+
+### Added
+- Added Slice 11+12 TypeScript function boundary types for runtime stage orchestration and server route-adjacent helper boundaries.
+
+### Changed
+- Added named request context, handler result, environment check, runtime truth, media collection, database viewer logging, scheduler payload, and orchestration state contracts without changing endpoint payloads, scheduler semantics, or runtime stage ordering.
+- Updated version metadata from v0.3.39 to v0.3.40.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
 ## 2026-04-29 13:05 EEST — v0.3.39
 
 ### Added

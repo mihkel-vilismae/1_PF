@@ -1,4 +1,5 @@
 import { createServer } from 'node:http';
+import type { IncomingMessage, ServerResponse } from 'node:http';
 import { spawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { promises as fs } from 'node:fs';
@@ -8,6 +9,7 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { createAuthRoutes } from './auth/authRoutes.ts';
 import { createDatabaseService } from './database/databaseService.ts';
+import type { DatabaseService } from './database/databaseService.ts';
 import { attachSafeAuthRuntimeTruth } from './auth/authRuntimeTruth.ts';
 import { createProjectLogger, DEFAULT_LOG_DIR } from './logging/projectLogger.ts';
 import {
@@ -17,6 +19,7 @@ import {
   SCHEDULER_OPERATION_SUPPORT,
   SCHEDULER_SUPPORT_LEVELS,
 } from '../shared/schedulerPlatformCapabilities.ts';
+import type { SchedulerCapability, SchedulerOperation, SchedulerSupportLevel } from '../shared/schedulerPlatformCapabilities.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -69,14 +72,228 @@ const supportedMediaExtensions = new Set([
   '.mpeg',
   '.mpg',
 ]);
-let databaseViewerLoggingSession: any = null;
+
+
+type JsonObject = Record<string, unknown>;
+type EnvSchemaKind = 'string' | 'path' | 'integer' | 'boolean';
+type EnvCheckSeverity = 'info' | 'warning' | 'error';
+type SchedulerRouteOperation = SchedulerOperation | string;
+type RuntimeTruthSource = 'file' | 'request';
+
+interface EnvValues {
+  [key: string]: string | undefined;
+}
+
+interface RequestContext {
+  envValues: EnvValues;
+  platform: NodeJS.Platform;
+  nodePath: string;
+  username: string | null;
+}
+
+interface DatabaseStatusPayload {
+  exists: boolean;
+  absolutePath?: string;
+  [key: string]: unknown;
+}
+
+interface EnvSchemaEntry {
+  key: string;
+  label: string;
+  required: boolean;
+  sensitive?: boolean;
+  kind: EnvSchemaKind;
+}
+
+interface EnvValidationResult {
+  valid: boolean;
+  message: string;
+}
+
+interface EnvCheckDetails {
+  kind: EnvSchemaKind;
+  nonEmpty?: boolean;
+  absolutePath?: string;
+  exists?: boolean;
+  parentDirectory?: string;
+}
+
+interface EnvCheck {
+  key: string;
+  label: string;
+  required: boolean;
+  present: boolean;
+  valid: boolean;
+  severity: EnvCheckSeverity;
+  message: string;
+  valuePreview: string | null;
+  details: EnvCheckDetails;
+}
+
+interface HandlerArgs {
+  request: IncomingMessage;
+  response: ServerResponse;
+  url: URL;
+  body: JsonObject;
+  context: RequestContext;
+}
+
+interface HandlerResult {
+  statusCode: number;
+  payload: unknown;
+}
+
+type RouteHandler = (args: HandlerArgs) => HandlerResult | Promise<HandlerResult>;
+
+interface DatabaseViewerLoggingEntry {
+  id: string;
+  at: string;
+  endpoint: string;
+  operation: string;
+  status: string;
+  message: string;
+  details: unknown;
+}
+
+interface DatabaseViewerLoggingSession {
+  id: string;
+  startedAt: string;
+  coverage: string;
+  entries: DatabaseViewerLoggingEntry[];
+}
+
+interface DatabaseViewerLoggingStateOptions {
+  active?: boolean;
+  endedAt?: string | null;
+  entries?: DatabaseViewerLoggingEntry[];
+  id?: string | null;
+  startedAt?: string | null;
+  coverage?: string;
+}
+
+interface DatabaseViewerActivityInput {
+  endpoint?: string;
+  operation?: string;
+  status?: string;
+  message?: string;
+  details?: unknown;
+}
+
+interface ProcessResult {
+  code: number | null;
+  stdout: string;
+  stderr: string;
+}
+
+interface CopyMockDownloadFilesInput {
+  sourceFiles: string[];
+  sourceRoot: string;
+  destinationRoot: string;
+}
+
+interface CopyMockDownloadFilesResult {
+  copiedCount: number;
+  copiedRelativePaths: string[];
+  failedCopies: Array<{ relativePath: string; message: string }>;
+}
+
+type OrchestrationStageKey = 'download' | 'index' | 'gps' | 'geocode' | 'queue_prepare' | 'playback_select';
+type OrchestrationStatus = 'RUNNING' | 'SUCCEEDED' | 'FAILED' | 'NOT_RUNNING';
+
+interface OrchestrationState {
+  run_id: number | null;
+  status: OrchestrationStatus;
+  current_stage: OrchestrationStageKey | null;
+  last_successful_stage: OrchestrationStageKey | null;
+  started_at: string | null;
+  finished_at: string | null;
+  failed_stage: OrchestrationStageKey | null;
+  failure_reason: string | null;
+  stage_order_executed: OrchestrationStageKey[];
+  stage_results: Record<string, unknown>;
+  selected_asset_summary: unknown;
+}
+
+interface OrchestrationStageDefinition {
+  key: OrchestrationStageKey;
+  handler: (args: Pick<HandlerArgs, 'context'>) => Promise<HandlerResult>;
+}
+
+interface SchedulerDefinition {
+  routeLabel: string;
+  taskName: string;
+  platformTarget: string;
+  schedulerMode: string;
+  nodePath: string;
+  nodeArguments: readonly string[];
+  scriptPath: string;
+  repoRoot: string;
+  logDirectory: string;
+  runtimeDirectory: string;
+  statusFilePath: string;
+  username: string | null;
+  cadence: typeof schedulerTickSeconds;
+  notes: string[];
+}
+
+interface SchedulerTaskResult {
+  installed?: boolean;
+  supported?: boolean;
+  operation?: SchedulerRouteOperation;
+  supportLevel?: SchedulerSupportLevel;
+  exportedXml?: string;
+  [key: string]: unknown;
+}
+
+interface SchedulerHostStatus {
+  observed: boolean;
+  state: string;
+  statusFilePath?: string;
+  message?: string;
+  heartbeatAgeSeconds?: number | null;
+  payload?: unknown;
+}
+
+interface BuildSchedulerPayloadInput {
+  context: RequestContext;
+  definition: SchedulerDefinition;
+  capability: SchedulerCapability;
+  operation: SchedulerRouteOperation;
+  operationSupportLevel: SchedulerSupportLevel;
+  task: SchedulerTaskResult | null;
+  host: SchedulerHostStatus;
+  includeExportedXml: boolean;
+  overrideStatus?: string;
+  prependMessages?: string[];
+}
+
+interface DeferredSchedulerPayloadInput {
+  context: RequestContext;
+  capability: SchedulerCapability;
+  definition: SchedulerDefinition;
+  operation: SchedulerRouteOperation;
+  operationSupportLevel: SchedulerSupportLevel;
+}
+
+interface RuntimeTruthNormalizeOptions {
+  source?: RuntimeTruthSource;
+}
+
+interface ErrorPayload {
+  status: 'error';
+  error: string;
+  message: string;
+  details: unknown;
+  schemaVersion: number;
+}
+let databaseViewerLoggingSession: DatabaseViewerLoggingSession | null = null;
 
 const authRouteHandlers = createAuthRoutes({
   getAuthReadinessChecks,
   singleFileDownloadDirectory: authSingleFileDownloadDirectory,
 });
 
-const envSchema = [
+const envSchema: EnvSchemaEntry[] = [
   { key: 'user', label: 'Account email', required: true, sensitive: true, kind: 'string' },
   { key: 'pw', label: 'Account password', required: true, sensitive: true, kind: 'string' },
   { key: 'DOWNLOAD_DIR', label: 'Download directory', required: true, kind: 'path' },
@@ -105,7 +322,7 @@ const envSchema = [
   { key: 'PLAYBACK_LEASE_SECONDS', label: 'Playback lease seconds', required: true, kind: 'integer' },
 ];
 
-const routes: any = {
+const routes: Record<string, RouteHandler> = {
   'GET /api/auth/status': authRouteHandlers.statusHandler,
   'POST /api/auth/verify-icloudpd': authRouteHandlers.verifyIcloudpdHandler,
   'POST /api/auth/run': authRouteHandlers.runHandler,
@@ -142,7 +359,7 @@ const routes: any = {
   'POST /api/runtime-truth': updateRuntimeTruthHandler,
 };
 
-const server = createServer(async (request: any, response: any) => {
+const server = createServer(async (request: IncomingMessage, response: ServerResponse) => {
   const startedAt = Date.now();
   let routeKey = `${request.method || 'GET'} ${request.url || ''}`;
   let url = null;
@@ -168,7 +385,7 @@ const server = createServer(async (request: any, response: any) => {
     const result = await handler({ request, response, url, body, context });
     sendJson(response, result.statusCode, result.payload);
     void logRequest({ request, url, routeKey, statusCode: result.statusCode, startedAt });
-  } catch (error: any) {
+  } catch (error: unknown) {
     const statusCode = error instanceof HttpError ? error.statusCode : 500;
     const code = error instanceof HttpError ? error.code : 'internal_error';
     const details = error instanceof HttpError ? error.details : undefined;
@@ -181,7 +398,7 @@ const server = createServer(async (request: any, response: any) => {
       durationMs: Date.now() - startedAt,
       error,
     });
-    sendJson(response, statusCode, errorPayload(code, error.message, details));
+    sendJson(response, statusCode, errorPayload(code, getErrorMessage(error), details));
   }
 });
 
@@ -667,7 +884,7 @@ async function databaseViewerLoggingStopHandler() {
   };
 }
 
-async function getRuntimeTruthHandler() {
+async function getRuntimeTruthHandler(): Promise<HandlerResult> {
   const truth = attachSafeAuthRuntimeTruth(await readRuntimeTruthFile());
   return {
     statusCode: 200,
@@ -681,7 +898,7 @@ async function getRuntimeTruthHandler() {
   };
 }
 
-async function runtimeDownloadRunHandler({ context }) {
+async function runtimeDownloadRunHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
   const envValues = context.envValues;
   const downloadDirectory = resolveRepoPath(envValues.DOWNLOAD_DIR || '');
   const sourceDirectory = resolveRepoPath(envValues.MOCK_DOWNLOAD_SOURCE_DIR || generatedTestDataDirectory);
@@ -695,7 +912,7 @@ async function runtimeDownloadRunHandler({ context }) {
   try {
     sourceStats = await fs.stat(sourceDirectory);
   } catch (error) {
-    if (error?.code === 'ENOENT') {
+    if (isNodeError(error) && error.code === 'ENOENT') {
       throw new HttpError(500, 'download_source_missing', 'Mock download source directory does not exist.', {
         sourceDirectory,
         sourceLabel,
@@ -703,7 +920,7 @@ async function runtimeDownloadRunHandler({ context }) {
     }
     throw new HttpError(500, 'download_source_stat_failed', 'Failed to inspect the mock download source directory.', {
       sourceDirectory,
-      message: error.message,
+      message: getErrorMessage(error),
     });
   }
 
@@ -770,7 +987,7 @@ async function runtimeDownloadRunHandler({ context }) {
   };
 }
 
-async function runtimeIndexRunHandler({ context }) {
+async function runtimeIndexRunHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
   const { database, indexedAt, indexing } = await getDatabaseService().runStage2IndexRegister(context);
 
   return {
@@ -791,7 +1008,7 @@ async function runtimeIndexRunHandler({ context }) {
   };
 }
 
-async function runtimeGpsRunHandler({ context }) {
+async function runtimeGpsRunHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
   const { database, executedAt, gps } = await getDatabaseService().runStage3ProcessGpsQueue(context);
 
   return {
@@ -816,7 +1033,7 @@ async function runtimeGpsRunHandler({ context }) {
   };
 }
 
-async function runtimeGeocodeRunHandler({ context }) {
+async function runtimeGeocodeRunHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
   const { database, executedAt, geocode } = await getDatabaseService().runStage4ProcessGeocodeQueue(context);
 
   return {
@@ -841,7 +1058,7 @@ async function runtimeGeocodeRunHandler({ context }) {
   };
 }
 
-async function runtimeQueuePrepareHandler({ context }) {
+async function runtimeQueuePrepareHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
   const { database, executedAt, queue } = await getDatabaseService().runStage5PrepareQueue(context);
 
   return {
@@ -860,7 +1077,7 @@ async function runtimeQueuePrepareHandler({ context }) {
   };
 }
 
-async function runtimePlaybackSelectCurrentHandler({ context }) {
+async function runtimePlaybackSelectCurrentHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
   const { database, executedAt, playback } = await getDatabaseService().runStage6SelectCurrent(context);
 
   if (playback.outcome === 'no_ready_row') {
@@ -909,7 +1126,7 @@ async function runtimePlaybackSelectCurrentHandler({ context }) {
  * stage and reason.
  */
 
-const ORCHESTRATION_STAGE_PIPELINE = [
+const ORCHESTRATION_STAGE_PIPELINE: OrchestrationStageDefinition[] = [
   { key: 'download', handler: runtimeDownloadRunHandler },
   { key: 'index', handler: runtimeIndexRunHandler },
   { key: 'gps', handler: runtimeGpsRunHandler },
@@ -918,7 +1135,7 @@ const ORCHESTRATION_STAGE_PIPELINE = [
   { key: 'playback_select', handler: runtimePlaybackSelectCurrentHandler },
 ];
 
-async function getOrchestrationState(context, key) {
+async function getOrchestrationState(context: RequestContext, key: string): Promise<OrchestrationState | null> {
   try {
     return await getDatabaseService().getRuntimeState(context, key);
   } catch {
@@ -927,11 +1144,11 @@ async function getOrchestrationState(context, key) {
   }
 }
 
-async function setOrchestrationState(context, key, value) {
+async function setOrchestrationState(context: RequestContext, key: string, value: OrchestrationState): Promise<void> {
   await getDatabaseService().setRuntimeState(context, key, value);
 }
 
-async function runtimeOrchestrationRunHandler({ context }) {
+async function runtimeOrchestrationRunHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
   // Ensure the target database exists
   const database = await buildDatabaseStatus(context);
   if (!database.exists) {
@@ -941,8 +1158,8 @@ async function runtimeOrchestrationRunHandler({ context }) {
   }
 
   // Read existing orchestration states
-  let currentState: any = await getOrchestrationState(context, 'orchestration_current');
-  let lastState: any = await getOrchestrationState(context, 'orchestration_last');
+  let currentState = await getOrchestrationState(context, 'orchestration_current');
+  let lastState = await getOrchestrationState(context, 'orchestration_last');
 
   // Prevent concurrent runs
   if (currentState && currentState.status === 'RUNNING') {
@@ -989,7 +1206,7 @@ async function runtimeOrchestrationRunHandler({ context }) {
       const result = await stage.handler({ context });
       // Stage succeeded
       currentState.last_successful_stage = stage.key;
-      const payload: any = result?.payload || {};
+      const payload = isJsonObject(result?.payload) ? result.payload : {};
       currentState.stage_results[stage.key] = payload;
       if (stage.key === 'playback_select') {
         // Final stage success
@@ -1002,7 +1219,7 @@ async function runtimeOrchestrationRunHandler({ context }) {
       }
     } catch (error) {
       // Stage failed; capture failure and stop
-      const failureReason = error instanceof HttpError && error.code ? error.code : error?.message;
+      const failureReason = error instanceof HttpError && error.code ? error.code : getErrorMessage(error);
       currentState.status = 'FAILED';
       currentState.failed_stage = stage.key;
       currentState.failure_reason = failureReason;
@@ -1020,7 +1237,7 @@ async function runtimeOrchestrationRunHandler({ context }) {
   return { statusCode: 200, payload: currentState };
 }
 
-async function runtimeOrchestrationCurrentHandler({ context }) {
+async function runtimeOrchestrationCurrentHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
   const state = await getOrchestrationState(context, 'orchestration_current');
   if (state) {
     return { statusCode: 200, payload: state };
@@ -1044,7 +1261,7 @@ async function runtimeOrchestrationCurrentHandler({ context }) {
   };
 }
 
-async function runtimeOrchestrationLastHandler({ context }) {
+async function runtimeOrchestrationLastHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
   const last = await getOrchestrationState(context, 'orchestration_last');
   if (last) {
     return { statusCode: 200, payload: last };
@@ -1056,7 +1273,7 @@ async function runtimeOrchestrationLastHandler({ context }) {
   return { statusCode: 200, payload: null };
 }
 
-async function updateRuntimeTruthHandler({ body }) {
+async function updateRuntimeTruthHandler({ body }: Pick<HandlerArgs, 'body'>): Promise<HandlerResult> {
   const truth = attachSafeAuthRuntimeTruth(normalizeRuntimeTruthPayload(body?.truth, { source: 'request' }));
   await writeRuntimeTruthFile(truth);
   return {
@@ -1071,7 +1288,7 @@ async function updateRuntimeTruthHandler({ body }) {
   };
 }
 
-async function buildSchedulerRouteResponse(context, operation) {
+async function buildSchedulerRouteResponse(context: RequestContext, operation: SchedulerRouteOperation): Promise<HandlerResult> {
   const scheduler = await resolveSchedulerOperation(context, operation);
   return {
     statusCode: 200,
@@ -1084,7 +1301,7 @@ async function buildSchedulerRouteResponse(context, operation) {
   };
 }
 
-async function buildRequestContext() {
+async function buildRequestContext(): Promise<RequestContext> {
   const envValues = await loadEnvValues();
   return {
     envValues,
@@ -1094,7 +1311,7 @@ async function buildRequestContext() {
   };
 }
 
-async function loadEnvValues() {
+async function loadEnvValues(): Promise<EnvValues> {
   const envFilePath = resolveEnvFilePath();
   let raw;
   try {
@@ -1102,10 +1319,10 @@ async function loadEnvValues() {
   } catch (error) {
     throw new HttpError(500, 'env_file_read_failed', 'Failed to read the configured env file.', {
       envFilePath,
-      message: error.message,
+      message: getErrorMessage(error),
     });
   }
-  const values = {};
+  const values: EnvValues = {};
   for (const line of raw.split(/\r?\n/)) {
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith('#')) {
@@ -1122,7 +1339,7 @@ async function loadEnvValues() {
   return values;
 }
 
-async function resolveInitialLogDirectory() {
+async function resolveInitialLogDirectory(): Promise<string> {
   if (process.env.LOG_DIR && process.env.LOG_DIR.trim()) {
     return process.env.LOG_DIR;
   }
@@ -1153,7 +1370,7 @@ async function resolveInitialLogDirectory() {
   return DEFAULT_LOG_DIR;
 }
 
-function resolveEnvFilePath() {
+function resolveEnvFilePath(): string {
   const overridePath = process.env.INIT_ENV_FILE;
   if (!overridePath || overridePath.trim() === '') {
     return defaultEnvFilePath;
@@ -1164,14 +1381,14 @@ function resolveEnvFilePath() {
   return path.resolve(repoRoot, overridePath);
 }
 
-function getAuthReadinessChecks(context) {
+function getAuthReadinessChecks(context: RequestContext): EnvCheck[] {
   const authEnvKeys = new Set(['user', 'pw', 'ICLOUDPD_COOKIE_DIR']);
   return envSchema
     .filter((entry) => authEnvKeys.has(entry.key))
     .map((entry) => buildEnvCheck(entry, context.envValues));
 }
 
-function buildEnvCheck(entry, envValues) {
+function buildEnvCheck(entry: EnvSchemaEntry, envValues: EnvValues): EnvCheck {
   const rawValue = envValues[entry.key];
   const present = rawValue !== undefined;
   const nonEmpty = present && rawValue.trim() !== '';
@@ -1189,7 +1406,7 @@ function buildEnvCheck(entry, envValues) {
   };
 }
 
-function buildEnvCheckDetails(entry, rawValue, nonEmpty) {
+function buildEnvCheckDetails(entry: EnvSchemaEntry, rawValue: string | undefined, nonEmpty: boolean): EnvCheckDetails {
   if (entry.kind === 'path' && rawValue) {
     const absolutePath = resolveRepoPath(rawValue);
     return {
@@ -1206,7 +1423,7 @@ function buildEnvCheckDetails(entry, rawValue, nonEmpty) {
   };
 }
 
-function validateEnvValue(entry, rawValue) {
+function validateEnvValue(entry: EnvSchemaEntry, rawValue: string | undefined): EnvValidationResult {
   if (rawValue === undefined) {
     return { valid: !entry.required, message: entry.required ? 'Missing required key.' : 'Optional key is not set.' };
   }
@@ -1230,9 +1447,9 @@ function validateEnvValue(entry, rawValue) {
   return { valid: true, message: 'Value is present and structurally valid.' };
 }
 
-let databaseService: any = null;
+let databaseService: DatabaseService | null = null;
 
-function getDatabaseService() {
+function getDatabaseService(): DatabaseService {
   if (!databaseService) {
     databaseService = createDatabaseService({
       repoRoot,
@@ -1242,7 +1459,7 @@ function getDatabaseService() {
   return databaseService;
 }
 
-function previewValue(entry: any, rawValue: any) {
+function previewValue(entry: EnvSchemaEntry, rawValue: string): string {
   if (entry.sensitive) {
     return '***redacted***';
   }
@@ -1255,19 +1472,19 @@ function previewValue(entry: any, rawValue: any) {
   return `${rawValue.slice(0, 6)}...${rawValue.slice(-4)}`;
 }
 
-async function buildDatabaseStatus(context) {
+async function buildDatabaseStatus(context: RequestContext): Promise<DatabaseStatusPayload> {
   return getDatabaseService().buildDatabaseStatus(context);
 }
 
-async function buildDatabaseViewerVerification(context) {
+async function buildDatabaseViewerVerification(context: RequestContext): Promise<unknown> {
   return getDatabaseService().buildDatabaseViewerVerification(context);
 }
 
-function buildDatabaseViewerVerificationMessages(verification) {
+function buildDatabaseViewerVerificationMessages(verification: Parameters<DatabaseService['buildDatabaseViewerVerificationMessages']>[0]): string[] {
   return getDatabaseService().buildDatabaseViewerVerificationMessages(verification);
 }
 
-function buildDatabaseViewerLoggingState(options: any = {}) {
+function buildDatabaseViewerLoggingState(options: DatabaseViewerLoggingStateOptions = {}) {
   const active = options.active === true;
   const entries = Array.isArray(options.entries)
     ? options.entries.map((entry) => structuredClone(entry))
@@ -1290,7 +1507,7 @@ function buildDatabaseViewerLoggingState(options: any = {}) {
   };
 }
 
-function recordDatabaseViewerActivity(entry: any = {}) {
+function recordDatabaseViewerActivity(entry: DatabaseViewerActivityInput = {}): void {
   if (!databaseViewerLoggingSession) {
     return;
   }
@@ -1306,43 +1523,43 @@ function recordDatabaseViewerActivity(entry: any = {}) {
   });
 }
 
-function resolveRepoPath(relativeOrAbsolutePath) {
+function resolveRepoPath(relativeOrAbsolutePath: string): string {
   return getDatabaseService().resolveRepoPath(relativeOrAbsolutePath);
 }
 
-function getSchemaPath() {
+function getSchemaPath(): string {
   return getDatabaseService().getSchemaPath();
 }
 
-function getDatabaseArtifactPaths(databaseOrAbsolutePath) {
+function getDatabaseArtifactPaths(databaseOrAbsolutePath: Parameters<DatabaseService['getDatabaseArtifactPaths']>[0]): string[] {
   return getDatabaseService().getDatabaseArtifactPaths(databaseOrAbsolutePath);
 }
 
-function getDatabaseViewerLoggingCoverage() {
+function getDatabaseViewerLoggingCoverage(): string {
   return getDatabaseService().getDatabaseViewerLoggingCoverage();
 }
 
-async function inspectDatabase(context) {
+async function inspectDatabase(context: RequestContext): Promise<unknown> {
   return getDatabaseService().inspectDatabase(context);
 }
 
-async function deleteDatabaseArtifacts(context) {
+async function deleteDatabaseArtifacts(context: RequestContext): Promise<unknown> {
   return getDatabaseService().deleteDatabaseArtifacts(context);
 }
 
-async function recreateEmptyDatabase(context) {
+async function recreateEmptyDatabase(context: RequestContext): Promise<unknown> {
   return getDatabaseService().recreateEmptyDatabase(context);
 }
 
-async function listDatabaseViewerTables(context) {
+async function listDatabaseViewerTables(context: RequestContext): Promise<unknown> {
   return getDatabaseService().listDatabaseViewerTables(context);
 }
 
-async function loadDatabaseViewerRows(context, body) {
+async function loadDatabaseViewerRows(context: RequestContext, body: JsonObject): Promise<unknown> {
   return getDatabaseService().loadDatabaseViewerRows(context, body);
 }
 
-async function readRuntimeTruthFile() {
+async function readRuntimeTruthFile(): Promise<JsonObject> {
   if (!(await fileExists(runtimeTruthFilePath))) {
     throw new HttpError(404, 'runtime_truth_missing', 'Runtime truth file does not exist yet.', {
       sourcePath: runtimeTruthRelativePath,
@@ -1355,7 +1572,7 @@ async function readRuntimeTruthFile() {
   } catch (error) {
     throw new HttpError(500, 'runtime_truth_read_failed', 'Failed to read runtime truth file.', {
       sourcePath: runtimeTruthRelativePath,
-      message: error.message,
+      message: getErrorMessage(error),
     });
   }
 
@@ -1365,14 +1582,14 @@ async function readRuntimeTruthFile() {
   } catch (error) {
     throw new HttpError(500, 'runtime_truth_invalid_json', 'Runtime truth file contains invalid JSON.', {
       sourcePath: runtimeTruthRelativePath,
-      message: error.message,
+      message: getErrorMessage(error),
     });
   }
 
   return normalizeRuntimeTruthPayload(parsed, { source: 'file' });
 }
 
-async function writeRuntimeTruthFile(truth) {
+async function writeRuntimeTruthFile(truth: JsonObject): Promise<void> {
   try {
     await fs.mkdir(path.dirname(runtimeTruthFilePath), { recursive: true });
     const serialized = `${JSON.stringify(truth, null, 2)}\n`;
@@ -1380,12 +1597,12 @@ async function writeRuntimeTruthFile(truth) {
   } catch (error) {
     throw new HttpError(500, 'runtime_truth_write_failed', 'Failed to write runtime truth file.', {
       sourcePath: runtimeTruthRelativePath,
-      message: error.message,
+      message: getErrorMessage(error),
     });
   }
 }
 
-function normalizeRuntimeTruthPayload(value: any, options: any = {}) {
+function normalizeRuntimeTruthPayload(value: unknown, options: RuntimeTruthNormalizeOptions = {}): JsonObject {
   const source = options.source === 'file' ? 'file' : 'request';
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     if (source === 'file') {
@@ -1398,12 +1615,12 @@ function normalizeRuntimeTruthPayload(value: any, options: any = {}) {
     });
   }
 
-  const truth = structuredClone(value);
+  const truth = structuredClone(value) as JsonObject;
   truth.sourceOfTruth = runtimeTruthRelativePath;
   return truth;
 }
 
-async function readJsonBody(request) {
+async function readJsonBody(request: IncomingMessage): Promise<JsonObject> {
   const chunks = [];
   for await (const chunk of request) {
     chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
@@ -1413,17 +1630,17 @@ async function readJsonBody(request) {
   }
   const raw = Buffer.concat(chunks).toString('utf8');
   try {
-    return JSON.parse(raw);
+    return JSON.parse(raw) as JsonObject;
   } catch (error) {
     throw new HttpError(400, 'invalid_json', 'Request body must be valid JSON.', { raw });
   }
 }
 
-async function runPythonJson(args) {
+async function runPythonJson<T = unknown>(args: string[]): Promise<T> {
   return getDatabaseService().runPythonJson(args);
 }
 
-function runProcess(command: any, args: any[], options: any = {}): Promise<any> {
+function runProcess(command: string, args: string[], options: { shell?: boolean } = {}): Promise<ProcessResult> {
   void logger.debug('Spawning child process.', {
     command,
     args,
@@ -1456,21 +1673,21 @@ function runProcess(command: any, args: any[], options: any = {}): Promise<any> 
   });
 }
 
-async function collectSupportedMediaFiles(rootDirectory) {
+async function collectSupportedMediaFiles(rootDirectory: string): Promise<string[]> {
   const files = [];
   await collectSupportedMediaFilesRecursive(rootDirectory, files);
   files.sort();
   return files;
 }
 
-async function collectRegularFiles(rootDirectory) {
+async function collectRegularFiles(rootDirectory: string): Promise<string[]> {
   const files = [];
   await collectRegularFilesRecursive(rootDirectory, files);
   files.sort();
   return files;
 }
 
-async function collectSupportedMediaFilesRecursive(directoryPath, sink) {
+async function collectSupportedMediaFilesRecursive(directoryPath: string, sink: string[]): Promise<void> {
   let entries;
   try {
     entries = await fs.readdir(directoryPath, { withFileTypes: true });
@@ -1496,7 +1713,7 @@ async function collectSupportedMediaFilesRecursive(directoryPath, sink) {
   }
 }
 
-async function collectRegularFilesRecursive(directoryPath, sink) {
+async function collectRegularFilesRecursive(directoryPath: string, sink: string[]): Promise<void> {
   const entries = await fs.readdir(directoryPath, { withFileTypes: true });
   for (const entry of entries) {
     const absolutePath = path.join(directoryPath, entry.name);
@@ -1510,7 +1727,7 @@ async function collectRegularFilesRecursive(directoryPath, sink) {
   }
 }
 
-async function copyMockDownloadFiles({ sourceFiles, sourceRoot, destinationRoot }) {
+async function copyMockDownloadFiles({ sourceFiles, sourceRoot, destinationRoot }: CopyMockDownloadFilesInput): Promise<CopyMockDownloadFilesResult> {
   const copiedRelativePaths = [];
   const failedCopies = [];
 
@@ -1521,10 +1738,10 @@ async function copyMockDownloadFiles({ sourceFiles, sourceRoot, destinationRoot 
       await fs.mkdir(path.dirname(destinationFile), { recursive: true });
       await fs.copyFile(sourceFile, destinationFile);
       copiedRelativePaths.push(relativePath);
-    } catch (error: any) {
+    } catch (error: unknown) {
       failedCopies.push({
         relativePath,
-        message: error.message,
+        message: getErrorMessage(error),
       });
     }
   }
@@ -1536,7 +1753,7 @@ async function copyMockDownloadFiles({ sourceFiles, sourceRoot, destinationRoot 
   };
 }
 
-function ensureConfirmed(body, expectedAction) {
+function ensureConfirmed(body: JsonObject, expectedAction: string): void {
   if (!body || body.confirm !== true || body.action !== expectedAction) {
     throw new HttpError(400, 'missing_confirmation', `The ${expectedAction} action requires an explicit confirmation payload.`, {
       expected: { confirm: true, action: expectedAction },
@@ -1544,7 +1761,7 @@ function ensureConfirmed(body, expectedAction) {
   }
 }
 
-async function resolveSchedulerOperation(context, operation) {
+async function resolveSchedulerOperation(context: RequestContext, operation: SchedulerRouteOperation) {
   const capability = createSchedulerCapability({ nodePlatform: context.platform });
   const operationSupportLevel = getOperationSupportLevel(capability, operation);
   const definition = buildSchedulerDefinition(context, capability);
@@ -1592,7 +1809,7 @@ async function resolveSchedulerOperation(context, operation) {
   });
 }
 
-function buildSchedulerDefinition(context, capability) {
+function buildSchedulerDefinition(context: RequestContext, capability: SchedulerCapability): SchedulerDefinition {
   const logDirectory = resolveRepoPath(context.envValues.LOG_DIR || DEFAULT_LOG_DIR);
   return {
     routeLabel: capability.routeCompatibility,
@@ -1612,7 +1829,7 @@ function buildSchedulerDefinition(context, capability) {
   };
 }
 
-async function runWindowsSchedulerCommand(operation: any, definition: any) {
+async function runWindowsSchedulerCommand(operation: SchedulerRouteOperation, definition: SchedulerDefinition): Promise<SchedulerTaskResult | null> {
   const args = [
     '-NoProfile',
     '-ExecutionPolicy',
@@ -1649,13 +1866,13 @@ async function runWindowsSchedulerCommand(operation: any, definition: any) {
   return parsed;
 }
 
-function parseJsonOutput(raw) {
+function parseJsonOutput(raw: string): SchedulerTaskResult | null {
   const trimmed = raw.trim();
   if (!trimmed) {
     return null;
   }
   try {
-    return JSON.parse(trimmed);
+    return JSON.parse(trimmed) as SchedulerTaskResult;
   } catch (error) {
     throw new HttpError(500, 'invalid_scheduler_json', 'Scheduler helper returned invalid JSON.', {
       stdout: trimmed,
@@ -1663,7 +1880,7 @@ function parseJsonOutput(raw) {
   }
 }
 
-async function readSchedulerHostStatus() {
+async function readSchedulerHostStatus(): Promise<SchedulerHostStatus> {
   if (!(await fileExists(schedulerStatusFilePath))) {
     return {
       observed: false,
@@ -1675,8 +1892,14 @@ async function readSchedulerHostStatus() {
 
   try {
     const raw = await fs.readFile(schedulerStatusFilePath, 'utf8');
-    const payload = JSON.parse(raw);
-    const heartbeatAt = payload.heartbeatAt || payload.lastTickAt || null;
+    const payload = JSON.parse(raw) as unknown;
+    const heartbeatAt = isJsonObject(payload)
+      ? typeof payload.heartbeatAt === 'string'
+        ? payload.heartbeatAt
+        : typeof payload.lastTickAt === 'string'
+          ? payload.lastTickAt
+          : null
+      : null;
     const heartbeatAgeSeconds = heartbeatAt ? Math.max(0, Math.round((Date.now() - Date.parse(heartbeatAt)) / 1000)) : null;
     return {
       observed: true,
@@ -1690,12 +1913,12 @@ async function readSchedulerHostStatus() {
       observed: true,
       state: 'invalid-status-file',
       statusFilePath: schedulerStatusFilePath,
-      message: error.message,
+      message: getErrorMessage(error),
     };
   }
 }
 
-function buildDeferredSchedulerPayload({ context, capability, definition, operation, operationSupportLevel }) {
+function buildDeferredSchedulerPayload({ context, capability, definition, operation, operationSupportLevel }: DeferredSchedulerPayloadInput) {
   const profileLabel = capability.profileLabel || 'current platform';
   const operationLabel = operation.toUpperCase();
   const messages = [
@@ -1741,7 +1964,7 @@ function buildSchedulerPayload({
   includeExportedXml,
   overrideStatus,
   prependMessages = [],
-}: any) {
+}: BuildSchedulerPayloadInput) {
   const installed = Boolean(task?.installed);
   const hostRunning = host?.state === 'running';
   const status = overrideStatus || (!installed ? 'warning' : hostRunning ? 'ok' : 'warning');
@@ -1815,7 +2038,7 @@ function buildSchedulerPayload({
   return payload;
 }
 
-function sendJson(response, statusCode, payload) {
+function sendJson(response: ServerResponse, statusCode: number, payload: unknown): void {
   const body = JSON.stringify(payload, null, 2);
   response.writeHead(statusCode, {
     'Content-Type': 'application/json; charset=utf-8',
@@ -1824,7 +2047,7 @@ function sendJson(response, statusCode, payload) {
   response.end(body);
 }
 
-function logRequest({ request, url = null, routeKey, statusCode, startedAt }) {
+function logRequest({ request, url = null, routeKey, statusCode, startedAt }: { request: IncomingMessage; url?: URL | null; routeKey: string; statusCode: number; startedAt: number }) {
   const entry = {
     method: request.method || 'GET',
     path: url?.pathname || request.url || null,
@@ -1839,11 +2062,11 @@ function logRequest({ request, url = null, routeKey, statusCode, startedAt }) {
   return logger.info('HTTP request completed.', entry);
 }
 
-function reportLoggerWriteError(error) {
-  console.warn('[logger] Failed to write project log.', error?.message || error);
+function reportLoggerWriteError(error: unknown): void {
+  console.warn('[logger] Failed to write project log.', getErrorMessage(error) || error);
 }
 
-function errorPayload(code: any, message: any, details: any = undefined) {
+function errorPayload(code: string, message: string, details: unknown = undefined): ErrorPayload {
   return {
     status: 'error',
     error: code,
@@ -1853,7 +2076,19 @@ function errorPayload(code: any, message: any, details: any = undefined) {
   };
 }
 
-async function fileExists(targetPath) {
+function isJsonObject(value: unknown): value is JsonObject {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isNodeError(error: unknown): error is NodeJS.ErrnoException {
+  return error instanceof Error;
+}
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+async function fileExists(targetPath: string): Promise<boolean> {
   try {
     await fs.access(targetPath);
     return true;
@@ -1863,11 +2098,11 @@ async function fileExists(targetPath) {
 }
 
 class HttpError extends Error {
-  statusCode: any;
-  code: any;
-  details: any;
+  statusCode: number;
+  code: string;
+  details: unknown;
 
-  constructor(statusCode: any, code: any, message: any, details: any) {
+  constructor(statusCode: number, code: string, message: string, details?: unknown) {
     super(message);
     this.name = 'HttpError';
     this.statusCode = statusCode;
