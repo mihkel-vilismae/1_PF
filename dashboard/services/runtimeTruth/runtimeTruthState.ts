@@ -6,22 +6,67 @@ import {
   getOperationSupportLevel,
   SCHEDULER_OPERATION_SUPPORT,
   SCHEDULER_SUPPORT_LEVELS,
+  type SchedulerCapability,
+  type SchedulerOperation,
+  type SchedulerSupportLevel,
 } from '../../../shared/schedulerPlatformCapabilities.ts';
 
 export const RUNTIME_TRUTH_SEED_PATH = 'conf/runtime-truth.json';
 
-export function buildInitialSchedulerCapability() {
+export type SchedulerActionKey = 'install-cron' | 'check-cron' | 'print-cron';
+
+export type RuntimeTruthSeed = typeof runtimeTruthSeed & {
+  sourceOfTruth?: string;
+};
+
+export type AuthButtonState = {
+  status: 'neutral' | 'running' | 'success' | 'error';
+  message: string;
+  updatedAt: string | null;
+  endpoint: string | null;
+};
+
+export type DatabaseViewerState = {
+  verification: unknown;
+  connection: unknown;
+  connected: boolean;
+  tables: unknown[];
+  sqlite: unknown;
+  selectedTableName: string | null;
+  rows: unknown;
+  logging: {
+    active: boolean;
+    sessionId: string | null;
+    startedAt: string | null;
+    endedAt: string | null;
+    coverage: string;
+    entries: unknown[];
+    entryCount: number;
+  };
+  results: Record<'E1' | 'E2' | 'E3' | 'E4', unknown>;
+};
+
+export function buildInitialSchedulerCapability(): SchedulerCapability {
   const browserPlatform = typeof navigator !== 'undefined' ? navigator.platform : null;
   const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : null;
   return createSchedulerCapability({ browserPlatform, userAgent });
 }
 
-export function getSchedulerSupportForAction(capability, action) {
-  const operation = {
-    'install-cron': SCHEDULER_OPERATION_SUPPORT.install,
-    'check-cron': SCHEDULER_OPERATION_SUPPORT.status,
-    'print-cron': SCHEDULER_OPERATION_SUPPORT.print,
-  }[action];
+const SCHEDULER_ACTION_OPERATION_MAP: Record<SchedulerActionKey, SchedulerOperation> = {
+  'install-cron': SCHEDULER_OPERATION_SUPPORT.install,
+  'check-cron': SCHEDULER_OPERATION_SUPPORT.status,
+  'print-cron': SCHEDULER_OPERATION_SUPPORT.print,
+};
+
+function isSchedulerActionKey(action: string): action is SchedulerActionKey {
+  return Object.hasOwn(SCHEDULER_ACTION_OPERATION_MAP, action);
+}
+
+export function getSchedulerSupportForAction(
+  capability: SchedulerCapability | null | undefined,
+  action: SchedulerActionKey | string,
+): SchedulerSupportLevel {
+  const operation = isSchedulerActionKey(action) ? SCHEDULER_ACTION_OPERATION_MAP[action] : null;
 
   if (!operation) {
     return SCHEDULER_SUPPORT_LEVELS.supported;
@@ -30,18 +75,21 @@ export function getSchedulerSupportForAction(capability, action) {
   return getOperationSupportLevel(capability, operation);
 }
 
-export function supportsSchedulerAction(capability, action) {
+export function supportsSchedulerAction(
+  capability: SchedulerCapability | null | undefined,
+  action: SchedulerActionKey | string,
+): boolean {
   return getSchedulerSupportForAction(capability, action) === SCHEDULER_SUPPORT_LEVELS.supported;
 }
 
-export function buildSchedulerReadyMessage(capability) {
+export function buildSchedulerReadyMessage(capability: SchedulerCapability | null | undefined): string {
   const label = capability?.profileLabel ?? 'current platform';
   const support = capability?.supportLevel ?? 'unknown';
   return `Scheduler controls are ready to call legacy /api/init/cron/* endpoints for ${label} (${support}).`;
 }
 
-export function buildInitialTruthState() {
-  const truth = structuredClone(runtimeTruthSeed);
+export function buildInitialTruthState(): RuntimeTruthSeed {
+  const truth = structuredClone(runtimeTruthSeed) as RuntimeTruthSeed;
   if (!truth.sourceOfTruth) {
     truth.sourceOfTruth = RUNTIME_TRUTH_SEED_PATH;
   }
@@ -60,9 +108,9 @@ export const AUTH_PREFLIGHT_BUTTON_KEYS = Object.freeze([
   'refresh-b1-auth-status',
   'reset-b1-auth',
   'test-b1-login-download-one',
-]);
+] as const);
 
-export function buildInitialAuthButtonStates() {
+export function buildInitialAuthButtonStates(): Record<(typeof AUTH_PREFLIGHT_BUTTON_KEYS)[number], AuthButtonState> {
   return Object.fromEntries(
     AUTH_PREFLIGHT_BUTTON_KEYS.map((key) => [
       key,
@@ -76,7 +124,7 @@ export function buildInitialAuthButtonStates() {
   );
 }
 
-export function buildInitialDatabaseViewerState() {
+export function buildInitialDatabaseViewerState(): DatabaseViewerState {
   return {
     verification: null,
     connection: null,
@@ -103,7 +151,7 @@ export function buildInitialDatabaseViewerState() {
   };
 }
 
-function createHistoryId() {
+function createHistoryId(): string {
   if (globalThis.crypto?.randomUUID) {
     return globalThis.crypto.randomUUID();
   }

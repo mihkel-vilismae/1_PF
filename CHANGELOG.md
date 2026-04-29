@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## 2026-04-29 14:09 EEST — v0.3.42
+
+### Added
+- Added Slice 15 function boundary types for runtime-truth scheduler, auth-button, truth-seed, and database-viewer state helper contracts.
+
+### Changed
+- Added named runtime-truth state helper types and explicit return types without changing runtime behavior, endpoint payloads, UI labels, scheduler semantics, or database behavior.
+- Updated version metadata from v0.3.41 to v0.3.42.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
 ## 2026-04-29 14:01 EEST — v0.3.41
 
 ### Added
