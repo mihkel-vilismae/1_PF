@@ -1,4 +1,4 @@
-import { VIEW_ORDER } from '../shared/constants.js';
+import { VIEW_ORDER } from '../shared/constants.ts';
 
 const MODE_COPY = {
   controls: {

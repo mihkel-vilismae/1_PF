@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { renderInitView } from '../dashboard/views/initView.js';
+import { renderInitView } from '../dashboard/views/initView.ts';
 import { createInitialState } from '../dashboard/services/runtimeTruth/runtimeTruthState.js';
 import { sanitizeAuthPayload } from '../dashboard/services/runtimeTruth/runtimeTruthAuthActions.js';
 

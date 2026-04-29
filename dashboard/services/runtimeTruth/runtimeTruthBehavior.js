@@ -8,7 +8,7 @@ import {
   installCron,
   checkCronStatus,
   printCron,
-} from '../initService.js';
+} from '../initService.ts';
 import {
   SCHEDULER_OPERATION_SUPPORT,
   SCHEDULER_SUPPORT_LEVELS,
@@ -20,7 +20,7 @@ import {
   runRuntimeGeocode,
   runRuntimeGps,
   runRuntimeIndex,
-} from '../runtimeExecutionService.js';
+} from '../runtimeExecutionService.ts';
 import { createRuntimeTruthDatabaseActions } from './runtimeTruthDatabaseActions.js';
 import { createRuntimeTruthAuthActions } from './runtimeTruthAuthActions.js';
 import { createRuntimeTruthDemoActions } from './runtimeTruthDemoActions.js';

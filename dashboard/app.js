@@ -1,4 +1,4 @@
-import { VIEW_ORDER } from './shared/constants.js';
+import { VIEW_ORDER } from './shared/constants.ts';
 import {
   getState,
   changeDatabaseViewerPage,
@@ -19,8 +19,8 @@ import {
   setSimulationValue,
   subscribe,
 } from './services/runtimeTruth.js';
-import { renderDefinitionList, renderHistory, renderModal } from './services/renderers.js';
-import { createTransitTerminal } from './services/transitTerminal.js';
+import { renderDefinitionList, renderHistory, renderModal } from './services/renderers.ts';
+import { createTransitTerminal } from './services/transitTerminal.ts';
 import {
   bindBackendStatusInspectMode,
   bindInspectMode,
@@ -31,11 +31,11 @@ import { describeInspectableElement, describeValueElement } from './inspect/cont
 import { createRealityMetadataHelpers } from './inspect/realityMetadata.ts';
 import { createBackendStatusMetadataHelpers } from './inspect/backendStatusMetadata.ts';
 import { createGuideTooltipController } from './inspect/tooltipController.ts';
-import { renderInitView } from './views/initView.js';
-import { renderTestView } from './views/testView.js';
-import { renderLastRunView } from './views/lastRunView.js';
-import { renderRunningProcessView } from './views/runningProcessView.js';
-import { renderDatabaseViewerView } from './views/databaseViewerView.js';
+import { renderInitView } from './views/initView.ts';
+import { renderTestView } from './views/testView.ts';
+import { renderLastRunView } from './views/lastRunView.ts';
+import { renderRunningProcessView } from './views/runningProcessView.ts';
+import { renderDatabaseViewerView } from './views/databaseViewerView.ts';
 
 const app = document.getElementById('app');
 const TRANSIT_EVENT_NAME = 'dashboard:transit';

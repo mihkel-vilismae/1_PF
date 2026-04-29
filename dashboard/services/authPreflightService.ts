@@ -1,4 +1,4 @@
-import { requestJson } from './apiClient.js';
+import { requestJson } from './apiClient.ts';
 
 export const AUTH_PREFLIGHT_ENDPOINTS = Object.freeze({
   status: { method: 'GET', path: '/api/auth/status' },

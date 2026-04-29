@@ -6,7 +6,7 @@ import {
   startDatabaseLogging,
   stopDatabaseLogging,
   verifyDatabase,
-} from '../databaseViewerService.js';
+} from '../databaseViewerService.ts';
 import {
   buildInitLogDetails,
   extractSchedulerCapability,

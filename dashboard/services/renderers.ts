@@ -1,10 +1,10 @@
-import { STATUS_LABELS } from '../shared/constants.js';
+import { STATUS_LABELS } from '../shared/constants.ts';
 
 export function statusBadge(status) {
   return `<span class="status-badge status-badge--${escapeHtml(status)}">${escapeHtml(STATUS_LABELS[status] ?? status)}</span>`;
 }
 
-export function renderLogEntries(entries = [], options = {}) {
+export function renderLogEntries(entries = [], options: any = {}) {
   const sourceKey = options.sourceKey ?? 'LOG';
   if (!entries.length) {
     return '<div class="log-entry log-entry--empty"><p class="log-entry__message">No log entries yet.</p></div>';

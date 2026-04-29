@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { renderTestView } from '../dashboard/views/testView.js';
-import { renderLastRunView } from '../dashboard/views/lastRunView.js';
-import { renderRunningProcessView } from '../dashboard/views/runningProcessView.js';
+import { renderTestView } from '../dashboard/views/testView.ts';
+import { renderLastRunView } from '../dashboard/views/lastRunView.ts';
+import { renderRunningProcessView } from '../dashboard/views/runningProcessView.ts';
 import { createInitialState } from '../dashboard/services/runtimeTruth/runtimeTruthState.js';
 
 test('test view renders explicit real, hybrid, and mock source treatments', () => {

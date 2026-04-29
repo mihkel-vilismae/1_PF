@@ -8,7 +8,7 @@ import {
   submitAuthTwoFactor,
   testLoginByDownloadingSingleFile,
   verifyIcloudpdPreflight,
-} from '../authPreflightService.js';
+} from '../authPreflightService.ts';
 import { buildTimelineDetails } from './runtimeTruthActionUtils.js';
 
 const SECRET_FIELD_PATTERN = /(password|passwd|secret|token|cookie|session|credential|authorization|otp|2fa|two_factor_value|mfa|^code$)/i;

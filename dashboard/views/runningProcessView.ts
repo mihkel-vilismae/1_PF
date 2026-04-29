@@ -1,4 +1,4 @@
-import { renderDefinitionList, statusBadge, renderLogEntries, renderSourceBadge } from '../services/renderers.js';
+import { renderDefinitionList, statusBadge, renderLogEntries, renderSourceBadge } from '../services/renderers.ts';
 
 export function renderRunningProcessView(state) {
   const disabled = !state.truth.realRunActive;

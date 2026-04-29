@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { ApiRequestError, requestJson, subscribeTransit } from '../dashboard/services/apiClient.js';
+import { ApiRequestError, requestJson, subscribeTransit } from '../dashboard/services/apiClient.ts';
 
 function installFetchStub(impl) {
   const previous = globalThis.fetch;

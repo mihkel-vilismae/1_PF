@@ -1,4 +1,4 @@
-import { VIEW_ORDER } from '../shared/constants.js';
+import { VIEW_ORDER } from '../shared/constants.ts';
 import {
   ACTION_INSPECT_COPY,
   CURRENT_TRUTH_VALUE_SOURCES,

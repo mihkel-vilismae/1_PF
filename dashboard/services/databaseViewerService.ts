@@ -1,4 +1,4 @@
-import { requestJson } from './apiClient.js';
+import { requestJson } from './apiClient.ts';
 
 export const DATABASE_VIEWER_ENDPOINTS = Object.freeze({
   verifyDatabase: { method: 'POST', path: '/api/database-viewer/verify', operation: 'Verify database' },

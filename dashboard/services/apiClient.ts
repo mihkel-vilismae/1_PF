@@ -1,5 +1,10 @@
 export class ApiRequestError extends Error {
-  constructor(message, options = {}) {
+  declare status;
+  declare payload;
+  declare meta;
+  declare cause;
+
+  constructor(message, options: any = {}) {
     super(message);
     this.name = 'ApiRequestError';
     this.status = options.status ?? null;
@@ -9,7 +14,7 @@ export class ApiRequestError extends Error {
   }
 }
 
-const transitSubscribers = new Set();
+const transitSubscribers = new Set<Function>();
 let nextTransitId = 1;
 
 export function subscribeTransit(listener) {
@@ -43,14 +48,14 @@ function emitTransit(record) {
   }
 }
 
-export async function requestJson(path, options = {}) {
+export async function requestJson(path, options: any = {}) {
   const { method = 'GET', body, headers = {}, captureMeta = false, operation } = options;
   const requestHeaders = {
     Accept: 'application/json, text/plain;q=0.9, */*;q=0.8',
     ...headers,
   };
 
-  const init = {
+  const init: any = {
     method,
     headers: requestHeaders,
   };

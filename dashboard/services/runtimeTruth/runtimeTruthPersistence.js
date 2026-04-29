@@ -1,4 +1,4 @@
-import { loadPersistedRuntimeTruth, savePersistedRuntimeTruth } from '../runtimeTruthPersistenceService.js';
+import { loadPersistedRuntimeTruth, savePersistedRuntimeTruth } from '../runtimeTruthPersistenceService.ts';
 import { RUNTIME_TRUTH_SEED_PATH, buildInitialTruthState } from './runtimeTruthState.js';
 
 const RUNTIME_TRUTH_PERSIST_INTERVAL_MS = 250;

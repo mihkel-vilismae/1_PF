@@ -1,4 +1,4 @@
-import { requestJson } from './apiClient.js';
+import { requestJson } from './apiClient.ts';
 
 export const RUNTIME_TRUTH_ENDPOINTS = Object.freeze({
   load: { method: 'GET', path: '/api/runtime-truth' },

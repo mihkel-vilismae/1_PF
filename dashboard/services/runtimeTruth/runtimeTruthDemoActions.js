@@ -6,7 +6,7 @@ import {
   runRuntimeIndex,
   runRuntimePlaybackSelectCurrent,
   runRuntimeQueuePrepare,
-} from '../runtimeExecutionService.js';
+} from '../runtimeExecutionService.ts';
 import {
   buildInitLogDetails,
   formatInitError,

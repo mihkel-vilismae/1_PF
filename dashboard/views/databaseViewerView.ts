@@ -1,4 +1,4 @@
-import { renderDefinitionList, renderLogEntries, statusBadge } from '../services/renderers.js';
+import { renderDefinitionList, renderLogEntries, statusBadge } from '../services/renderers.ts';
 
 export function renderDatabaseViewerView(state) {
   const databaseViewer = state.databaseViewer;

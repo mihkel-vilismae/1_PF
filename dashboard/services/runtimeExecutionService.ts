@@ -1,4 +1,4 @@
-import { requestJson } from './apiClient.js';
+import { requestJson } from './apiClient.ts';
 
 export const RUNTIME_EXECUTION_ENDPOINTS = Object.freeze({
   downloadRun: { method: 'POST', path: '/api/runtime/download/run' },

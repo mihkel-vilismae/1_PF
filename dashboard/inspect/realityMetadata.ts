@@ -1,4 +1,4 @@
-import { VIEW_ORDER } from '../shared/constants.js';
+import { VIEW_ORDER } from '../shared/constants.ts';
 import { ACTION_REALITY_COPY, VIEW_REALITY_COPY } from './guideCopy.js';
 import { getAuthButtonRealityCopy } from '../data/authButtonStatusCopy.ts';
 import { buildRealityMeta, compactWhitespace, getCardContext } from './guideUtils.ts';

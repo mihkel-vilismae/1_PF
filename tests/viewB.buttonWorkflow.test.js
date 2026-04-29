@@ -3,7 +3,7 @@ import test from 'node:test';
 
 import { createRuntimeTruthBehavior } from '../dashboard/services/runtimeTruth/runtimeTruthBehavior.js';
 import { createInitialState } from '../dashboard/services/runtimeTruth/runtimeTruthState.js';
-import { renderInitView } from '../dashboard/views/initView.js';
+import { renderInitView } from '../dashboard/views/initView.ts';
 
 test('1A-AUTH verify and check login controls call backend-owned auth endpoints', async () => {
   const originalFetch = global.fetch;

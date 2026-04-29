@@ -1,4 +1,4 @@
-import { requestJson } from './apiClient.js';
+import { requestJson } from './apiClient.ts';
 import { SCHEDULER_OPERATION_SUPPORT } from '../../shared/schedulerPlatformCapabilities.js';
 
 export const SCHEDULER_INIT_ENDPOINTS = Object.freeze({

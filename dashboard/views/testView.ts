@@ -1,4 +1,4 @@
-import { statusBadge, renderDefinitionList, renderLogEntries, renderSourceBadge, renderStepList } from '../services/renderers.js';
+import { statusBadge, renderDefinitionList, renderLogEntries, renderSourceBadge, renderStepList } from '../services/renderers.ts';
 
 export function renderTestView(state) {
   const queueReady = !!state.truth.currentMedia;

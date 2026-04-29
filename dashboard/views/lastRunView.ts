@@ -1,4 +1,4 @@
-import { renderDefinitionList, renderLogEntries, renderSourceBadge } from '../services/renderers.js';
+import { renderDefinitionList, renderLogEntries, renderSourceBadge } from '../services/renderers.ts';
 
 export function renderLastRunView(state) {
   const mode = state.lastRunMode;
