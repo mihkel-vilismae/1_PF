@@ -2,6 +2,22 @@ import { VIEW_ORDER } from '../shared/constants.ts';
 
 export type InspectMode = 'controls' | 'values' | 'reality' | 'backend';
 
+export type InspectModeCopy = {
+  title: string;
+  eyebrow: string;
+  summary: string;
+  fallback: string;
+};
+
+export type InspectModeNoteMap = Record<InspectMode, string>;
+
+export type InspectViewModeNotes = Partial<Record<string, InspectModeNoteMap>>;
+
+export type InspectSummaryView = {
+  id: string;
+  name: string;
+};
+
 export type InspectSummaryState = {
   inspectMode?: unknown;
   valueInspectMode?: unknown;
@@ -10,7 +26,7 @@ export type InspectSummaryState = {
   activeView?: string | null;
 };
 
-const MODE_COPY = {
+const MODE_COPY: Record<InspectMode, InspectModeCopy> = {
   controls: {
     title: 'Explain controls',
     eyebrow: 'Control guide active',
@@ -37,7 +53,7 @@ const MODE_COPY = {
   },
 };
 
-const VIEW_MODE_NOTES = {
+const VIEW_MODE_NOTES: InspectViewModeNotes = {
   A: {
     controls: 'Init actions, auth controls, DB controls, and scheduler buttons use control metadata from the existing action registry.',
     values: 'Init status badges, backend result panels, current truth values, logs, and history entries expose their state sources.',
@@ -85,7 +101,7 @@ export function renderInspectModeSummary(state: InspectSummaryState): string {
   }
 
   const viewId = state.activeView ?? 'A';
-  const view = VIEW_ORDER.find((entry) => entry.id === viewId);
+  const view = VIEW_ORDER.find((entry: InspectSummaryView) => entry.id === viewId);
   const modeCopy = MODE_COPY[mode];
   const viewNote = VIEW_MODE_NOTES[viewId]?.[mode] ?? 'No page-specific inspect metadata summary is available yet; hover highlighted items for any mapped metadata and treat unmapped areas as unknown.';
 

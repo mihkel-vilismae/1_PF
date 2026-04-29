@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## 2026-04-29 14:10 EEST — v0.3.43
+
+### Added
+- Added Slice 16 function boundary types for runtime-truth persistence and inspect-mode summary helper contracts.
+
+### Changed
+- Added named persistence endpoint/payload contracts and inspect summary metadata contracts without changing runtime behavior, endpoint payloads, UI labels, auth behavior, scheduler semantics, or database behavior.
+- Updated version metadata from v0.3.42 to v0.3.43.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
 ## 2026-04-29 14:09 EEST — v0.3.42
 
 ### Added
