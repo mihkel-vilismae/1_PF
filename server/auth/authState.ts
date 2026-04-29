@@ -1,4 +1,5 @@
 import { sanitizeAuthValue } from './authLogSanitizer.ts';
+import type { AuthState, AuthStateOverrides, PublicAuthState } from './authTypes.ts';
 
 export const AUTH_PROVIDER = 'icloud';
 
@@ -20,7 +21,7 @@ export const TWO_FACTOR_STATUSES = Object.freeze({
   UNKNOWN: 'unknown',
 });
 
-export function createDefaultAuthState(overrides: any = {}): any {
+export function createDefaultAuthState(overrides: AuthStateOverrides = {}): AuthState {
   return {
     status: AUTH_STATUSES.IDLE,
     has_required_files: false,
@@ -37,7 +38,7 @@ export function createDefaultAuthState(overrides: any = {}): any {
   };
 }
 
-export function projectPublicAuthState(rawState: any): any {
+export function projectPublicAuthState(rawState: Partial<AuthState> | null | undefined): PublicAuthState {
   const state = rawState || createDefaultAuthState();
   return sanitizeAuthValue({
     status: state.status ?? AUTH_STATUSES.IDLE,
@@ -51,5 +52,5 @@ export function projectPublicAuthState(rawState: any): any {
     error: state.error ?? null,
     authenticatedUser: state.authenticatedUser ?? null,
     provider: state.provider ?? AUTH_PROVIDER,
-  });
+  }) as PublicAuthState;
 }

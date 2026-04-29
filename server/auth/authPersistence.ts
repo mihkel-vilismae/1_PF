@@ -1,23 +1,32 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { AUTH_STATUSES, TWO_FACTOR_STATUSES, createDefaultAuthState, projectPublicAuthState } from './authState.ts';
+import type { AuthPersistence, AuthState, AuthStateOverrides } from './authTypes.ts';
 
 const DEFAULT_AUTH_STATE_RELATIVE_PATH = path.join('runtime_data', 'auth', 'auth-state.json');
 
-export function resolveDefaultAuthStatePath({ cwd = process.cwd() } = {}) {
+interface ResolveDefaultAuthStatePathOptions {
+  cwd?: string;
+}
+
+interface CreateAuthPersistenceOptions {
+  filePath?: string;
+}
+
+export function resolveDefaultAuthStatePath({ cwd = process.cwd() }: ResolveDefaultAuthStatePathOptions = {}): string {
   return path.join(cwd, DEFAULT_AUTH_STATE_RELATIVE_PATH);
 }
 
-export function createAuthPersistence({ filePath = resolveDefaultAuthStatePath() } = {}) {
+export function createAuthPersistence({ filePath = resolveDefaultAuthStatePath() }: CreateAuthPersistenceOptions = {}): AuthPersistence {
   return {
     filePath,
-    async load() {
+    async load(): Promise<AuthState | null> {
       try {
         const raw = await fs.readFile(filePath, 'utf8');
-        const parsed = JSON.parse(raw);
+        const parsed = JSON.parse(raw) as AuthStateOverrides;
         return normalizePersistedAuthState(parsed);
       } catch (error) {
-        if (error?.code === 'ENOENT') {
+        if ((error as NodeJS.ErrnoException)?.code === 'ENOENT') {
           return null;
         }
         return createDefaultAuthState({
@@ -30,22 +39,22 @@ export function createAuthPersistence({ filePath = resolveDefaultAuthStatePath()
           error: {
             code: 'auth_persistence_load_failed',
             message: 'Persisted auth state could not be loaded safely.',
-            detailMessage: error.message,
+            detailMessage: (error as Error).message,
           },
         });
       }
     },
-    async save(state) {
+    async save(state: AuthState | AuthStateOverrides): Promise<AuthState> {
       await fs.mkdir(path.dirname(filePath), { recursive: true });
       const safeState = normalizePersistedAuthState(state);
       await fs.writeFile(filePath, `${JSON.stringify(safeState, null, 2)}\n`, 'utf8');
       return safeState;
     },
-    async clear() {
+    async clear(): Promise<void> {
       try {
         await fs.unlink(filePath);
       } catch (error) {
-        if (error?.code !== 'ENOENT') {
+        if ((error as NodeJS.ErrnoException)?.code !== 'ENOENT') {
           throw error;
         }
       }
@@ -53,7 +62,7 @@ export function createAuthPersistence({ filePath = resolveDefaultAuthStatePath()
   };
 }
 
-export function normalizePersistedAuthState(state) {
+export function normalizePersistedAuthState(state: AuthState | AuthStateOverrides): AuthState {
   const projected = projectPublicAuthState(state);
   if (projected.status === AUTH_STATUSES.AUTHENTICATED) {
     return createDefaultAuthState({

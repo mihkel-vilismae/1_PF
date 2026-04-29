@@ -1,4 +1,5 @@
 import { createIcloudAuthProvider } from './icloudAuthProvider.ts';
+import type { AuthProvider, AuthProviderOutcome, AuthProviderRegistry } from '../authTypes.ts';
 
 export const PROVIDER_OUTCOMES = Object.freeze({
   PROVIDER_UNAVAILABLE: 'provider_unavailable',
@@ -9,26 +10,30 @@ export const PROVIDER_OUTCOMES = Object.freeze({
   FAILED: 'failed',
 });
 
-export function createProviderRegistry({ providers = {} } = {}) {
-  const providerMap = new Map(Object.entries({
+interface CreateProviderRegistryOptions {
+  providers?: Record<string, AuthProvider>;
+}
+
+export function createProviderRegistry({ providers = {} }: CreateProviderRegistryOptions = {}): AuthProviderRegistry {
+  const providerMap = new Map<string, AuthProvider>(Object.entries({
     icloud: createIcloudAuthProvider(),
     ...providers,
   }));
 
   return {
-    getProvider(providerName = 'icloud') {
+    getProvider(providerName = 'icloud'): AuthProvider | null {
       return providerMap.get(providerName) || null;
     },
-    hasProvider(providerName = 'icloud') {
+    hasProvider(providerName = 'icloud'): boolean {
       return providerMap.has(providerName);
     },
-    listProviders() {
+    listProviders(): string[] {
       return Array.from(providerMap.keys());
     },
   };
 }
 
-export function normalizeProviderOutcome(outcome) {
+export function normalizeProviderOutcome(outcome: unknown): AuthProviderOutcome {
   if (!outcome || typeof outcome !== 'object') {
     return {
       outcome: PROVIDER_OUTCOMES.FAILED,
@@ -37,15 +42,16 @@ export function normalizeProviderOutcome(outcome) {
     };
   }
 
-  if (!Object.values(PROVIDER_OUTCOMES).includes(outcome.outcome)) {
+  const providerOutcome = outcome as AuthProviderOutcome;
+  if (!Object.values(PROVIDER_OUTCOMES).includes(providerOutcome.outcome)) {
     return {
       outcome: PROVIDER_OUTCOMES.FAILED,
       code: 'provider_unsupported_outcome',
-      message: `Provider returned unsupported auth outcome: ${String(outcome.outcome)}`,
+      message: `Provider returned unsupported auth outcome: ${String(providerOutcome.outcome)}`,
     };
   }
 
-  return outcome;
+  return providerOutcome;
 }
 
-export const defaultProviderRegistry = createProviderRegistry();
+export const defaultProviderRegistry: AuthProviderRegistry = createProviderRegistry();

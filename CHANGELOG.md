@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## 2026-04-29 12:56 EEST — v0.3.38
+
+### Added
+- Added Slice 7+8 TypeScript function boundary types for auth domain, auth routes, auth persistence, auth session resume, icloudpd provider, provider registry, process runner, and sanitizer modules.
+
+### Changed
+- Added named auth/provider/session/icloudpd contracts without changing auth endpoint payload shapes, provider behavior, secret redaction behavior, or icloudpd command construction semantics.
+- Updated version metadata from v0.3.37 to v0.3.38.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
 ## 2026-04-29 12:37 EEST — v0.3.37
 
 ### Added

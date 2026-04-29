@@ -1,4 +1,6 @@
-const GENERIC_SECRET_PATTERNS = [
+import type { IcloudpdConfig } from '../authTypes.ts';
+
+const GENERIC_SECRET_PATTERNS: RegExp[] = [
   /(password\s*[:=]\s*)([^\s]+)/gi,
   /(2fa\s*(?:code)?\s*[:=]\s*)(\d{4,8})/gi,
   /(verification\s*code\s*[:=]\s*)(\d{4,8})/gi,
@@ -7,7 +9,9 @@ const GENERIC_SECRET_PATTERNS = [
   /(session\s*[:=]\s*)([^\s]+)/gi,
 ];
 
-export function sanitizeIcloudpdText(text: any, secrets: any = {}) {
+type IcloudpdSecretSource = Partial<Pick<IcloudpdConfig, 'username' | 'password' | 'twoFactorCode' | 'cookieDir' | 'downloadDir' | 'sessionPath'>>;
+
+export function sanitizeIcloudpdText(text: unknown, secrets: IcloudpdSecretSource = {}): string {
   let sanitized = String(text || '');
   const valuesToRedact = [
     secrets.username,
@@ -16,7 +20,7 @@ export function sanitizeIcloudpdText(text: any, secrets: any = {}) {
     secrets.cookieDir,
     secrets.downloadDir,
     secrets.sessionPath,
-  ].filter((value) => typeof value === 'string' && value.length > 0);
+  ].filter((value): value is string => typeof value === 'string' && value.length > 0);
 
   for (const value of valuesToRedact) {
     sanitized = sanitized.split(value).join('[redacted]');
@@ -29,7 +33,7 @@ export function sanitizeIcloudpdText(text: any, secrets: any = {}) {
   return sanitized;
 }
 
-export function redactedEmail(value: any) {
+export function redactedEmail(value: unknown): string | null {
   if (!value || typeof value !== 'string' || !value.includes('@')) {
     return null;
   }

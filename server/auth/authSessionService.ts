@@ -9,6 +9,23 @@ import {
   PROVIDER_OUTCOMES,
   normalizeProviderOutcome,
 } from './providers/providerRegistry.ts';
+import type { AuthEnvValues, AuthProviderOutcome, AuthProviderRegistry, AuthState } from './authTypes.ts';
+
+interface VerifyResumedAuthSessionOptions {
+  persistedState?: AuthState | null;
+  providerRegistry: AuthProviderRegistry;
+  providerName?: string;
+  envValues?: AuthEnvValues;
+  now?: Date;
+  timeoutMs?: number;
+  mapProviderOutcomeToAuthState(args: {
+    attemptId: string;
+    updatedAt: string;
+    providerName: string;
+    providerOutcome: AuthProviderOutcome;
+  }): AuthState;
+  withTimeout<T>(promise: Promise<T>, timeoutMs: number, code: string): Promise<T>;
+}
 
 export async function verifyResumedAuthSession({
   persistedState,
@@ -19,7 +36,7 @@ export async function verifyResumedAuthSession({
   timeoutMs = 120_000,
   mapProviderOutcomeToAuthState,
   withTimeout,
-}: any = {}) {
+}: VerifyResumedAuthSessionOptions): Promise<AuthState> {
   const updatedAt = now.toISOString();
   const normalizedPersistedState = persistedState ? createDefaultAuthState(persistedState) : null;
 
@@ -91,7 +108,7 @@ export async function verifyResumedAuthSession({
       attemptId,
       updatedAt,
       error: {
-        code: error?.code || 'provider_resume_failed',
+        code: (error as NodeJS.ErrnoException)?.code || 'provider_resume_failed',
         message: 'Provider session verification failed before a usable auth state was produced.',
         detailMessage: null,
       },
@@ -102,7 +119,7 @@ export async function verifyResumedAuthSession({
   }
 }
 
-export function shouldVerifyPersistedSession(persistedState: any) {
+export function shouldVerifyPersistedSession(persistedState: Partial<AuthState> | null | undefined): boolean {
   if (!persistedState) return false;
   if (persistedState.status === AUTH_STATUSES.AUTHENTICATED) return true;
   if (persistedState.next_action === 'verify_provider_session') return true;

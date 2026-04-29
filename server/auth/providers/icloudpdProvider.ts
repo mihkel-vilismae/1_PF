@@ -1,3 +1,7 @@
+import { createIcloudpdProcessRunner, normalizeProviderPath } from './icloudpdProcessRunner.ts';
+import { redactedEmail, sanitizeIcloudpdText } from './icloudpdSanitizer.ts';
+import type { AuthProvider, AuthProviderContext, AuthProviderOutcome, AuthProviderReadiness, IcloudpdConfig, IcloudpdProcessRunner, IcloudpdCommandResult } from '../authTypes.ts';
+
 const PROVIDER_OUTCOMES = Object.freeze({
   PROVIDER_UNAVAILABLE: 'provider_unavailable',
   MISSING_CONFIG: 'missing_config',
@@ -6,16 +10,31 @@ const PROVIDER_OUTCOMES = Object.freeze({
   AUTHENTICATED: 'authenticated',
   FAILED: 'failed',
 });
-import { createIcloudpdProcessRunner, normalizeProviderPath } from './icloudpdProcessRunner.ts';
-import { redactedEmail, sanitizeIcloudpdText } from './icloudpdSanitizer.ts';
 
 const ICLOUDPD_REQUIRED_KEYS = ['user', 'pw', 'ICLOUDPD_COOKIE_DIR'];
 const ICLOUDPD_SESSION_REQUIRED_KEYS = ['user', 'ICLOUDPD_COOKIE_DIR'];
 
-export function createIcloudpdProvider({ runner = createIcloudpdProcessRunner(), cwd = process.cwd() }: any = {}) {
+interface CreateIcloudpdProviderOptions {
+  runner?: IcloudpdProcessRunner;
+  cwd?: string;
+}
+
+interface BuildIcloudpdConfigOptions {
+  cwd?: string;
+}
+
+interface MapIcloudpdResultOptions {
+  config: IcloudpdConfig;
+  defaultSuccessMessage: string;
+}
+
+export function createIcloudpdProvider({
+  runner = createIcloudpdProcessRunner(),
+  cwd = process.cwd(),
+}: CreateIcloudpdProviderOptions = {}): AuthProvider {
   return {
     name: 'icloud',
-    async verifyPreflight(context: any = {}) {
+    async verifyPreflight(context: AuthProviderContext = {}): Promise<AuthProviderReadiness> {
       const config = buildIcloudpdConfig(context, { cwd });
       const missing = validateIcloudpdConfig(config);
       const executableCheck = await runner.checkExecutable();
@@ -37,7 +56,7 @@ export function createIcloudpdProvider({ runner = createIcloudpdProcessRunner(),
             : 'install_or_configure_icloudpd',
       };
     },
-    async startLogin(context: any = {}) {
+    async startLogin(context: AuthProviderContext = {}): Promise<AuthProviderOutcome> {
       const config = buildIcloudpdConfig(context, { cwd });
       const missing = validateIcloudpdConfig(config);
       if (missing.length > 0) {
@@ -55,9 +74,9 @@ export function createIcloudpdProvider({ runner = createIcloudpdProcessRunner(),
         defaultSuccessMessage: 'icloudpd authenticated successfully and created or verified a local session.',
       });
     },
-    async submitTwoFactor(context: any = {}) {
+    async submitTwoFactor(context: AuthProviderContext = {}): Promise<AuthProviderOutcome> {
       const config = buildIcloudpdConfig(context, { cwd });
-      config.twoFactorCode = context.twoFactorCode;
+      config.twoFactorCode = typeof context.twoFactorCode === 'string' ? context.twoFactorCode : null;
       const missing = validateIcloudpdConfig(config);
       if (missing.length > 0) {
         return missingConfigOutcome(missing);
@@ -90,7 +109,7 @@ export function createIcloudpdProvider({ runner = createIcloudpdProcessRunner(),
         defaultSuccessMessage: 'icloudpd accepted the 2FA challenge and verified the session.',
       });
     },
-    async resumeSession(context: any = {}) {
+    async resumeSession(context: AuthProviderContext = {}): Promise<AuthProviderOutcome> {
       const config = buildIcloudpdConfig(context, { cwd });
       const missing = validateIcloudpdSessionConfig(config);
       if (missing.length > 0) {
@@ -108,7 +127,7 @@ export function createIcloudpdProvider({ runner = createIcloudpdProcessRunner(),
         defaultSuccessMessage: 'icloudpd verified the existing local session.',
       });
     },
-    async testLoginByDownloadingSingleFile(context: any = {}) {
+    async testLoginByDownloadingSingleFile(context: AuthProviderContext = {}): Promise<AuthProviderOutcome> {
       const config = buildIcloudpdConfig({
         ...context,
         downloadDir: context.downloadDirectory || context.downloadDir,
@@ -129,7 +148,7 @@ export function createIcloudpdProvider({ runner = createIcloudpdProcessRunner(),
         defaultSuccessMessage: 'icloudpd authenticated and downloaded one recent file into the auth test directory.',
       });
     },
-    async logout(context: any = {}) {
+    async logout(context: AuthProviderContext = {}): Promise<AuthProviderOutcome> {
       const config = buildIcloudpdConfig(context, { cwd });
       if (!config.cookieDir) {
         return {
@@ -150,34 +169,34 @@ export function createIcloudpdProvider({ runner = createIcloudpdProcessRunner(),
   };
 }
 
-export function buildIcloudpdConfig(context: any = {}, { cwd = process.cwd() }: any = {}) {
+export function buildIcloudpdConfig(context: AuthProviderContext = {}, { cwd = process.cwd() }: BuildIcloudpdConfigOptions = {}): IcloudpdConfig {
   const envValues = context.envValues || context.config || {};
-  const config: any = {
-    username: envValues.user || process.env.user || process.env.APPLE_ID || null,
-    password: envValues.pw || process.env.pw || process.env.APPLE_PASSWORD || null,
+  const config: IcloudpdConfig = {
+    username: (envValues.user as string | undefined) || process.env.user || process.env.APPLE_ID || null,
+    password: (envValues.pw as string | undefined) || process.env.pw || process.env.APPLE_PASSWORD || null,
     cookieDir: normalizeProviderPath(envValues.ICLOUDPD_COOKIE_DIR || process.env.ICLOUDPD_COOKIE_DIR, { cwd }),
     downloadDir: normalizeProviderPath(context.downloadDir || context.downloadDirectory || envValues.DOWNLOAD_DIR || process.env.DOWNLOAD_DIR || envValues.TEST_DOWNLOAD_DIR, { cwd }),
-    domain: envValues.ICLOUDPD_DOMAIN || process.env.ICLOUDPD_DOMAIN || null,
-    recentCount: envValues.DOWNLOAD_RECENT || process.env.DOWNLOAD_RECENT || '1',
+    domain: (envValues.ICLOUDPD_DOMAIN as string | undefined) || process.env.ICLOUDPD_DOMAIN || null,
+    recentCount: (envValues.DOWNLOAD_RECENT as string | number | undefined) || process.env.DOWNLOAD_RECENT || '1',
     timeoutMs: Number(envValues.ICLOUDPD_AUTH_TIMEOUT_MS || process.env.ICLOUDPD_AUTH_TIMEOUT_MS || 120_000),
   };
   return config;
 }
 
-export function validateIcloudpdConfig(config: any) {
+export function validateIcloudpdConfig(config: IcloudpdConfig): string[] {
   const missing = validateIcloudpdSessionConfig(config);
   if (!config.password) missing.push('pw');
   return missing;
 }
 
-export function validateIcloudpdSessionConfig(config: any) {
-  const missing = [];
+export function validateIcloudpdSessionConfig(config: IcloudpdConfig): string[] {
+  const missing: string[] = [];
   if (!config.username) missing.push('user');
   if (!config.cookieDir) missing.push('ICLOUDPD_COOKIE_DIR');
   return missing;
 }
 
-export function mapIcloudpdResultToOutcome(result: any, { config, defaultSuccessMessage }: any) {
+export function mapIcloudpdResultToOutcome(result: IcloudpdCommandResult, { config, defaultSuccessMessage }: MapIcloudpdResultOptions): AuthProviderOutcome {
   const output = sanitizeIcloudpdText(result?.sanitizedCombinedOutput || `${result?.stdout || ''}\n${result?.stderr || ''}`, config);
   const lower = output.toLowerCase();
 
@@ -239,7 +258,7 @@ export function mapIcloudpdResultToOutcome(result: any, { config, defaultSuccess
   };
 }
 
-function missingConfigOutcome(missingKeys) {
+function missingConfigOutcome(missingKeys: string[]): AuthProviderOutcome {
   return {
     outcome: PROVIDER_OUTCOMES.MISSING_CONFIG,
     code: 'icloudpd_missing_config',
@@ -249,7 +268,7 @@ function missingConfigOutcome(missingKeys) {
   };
 }
 
-function providerUnavailableOutcome(message, code = 'icloudpd_provider_unavailable', detailMessage = null) {
+function providerUnavailableOutcome(message?: string, code = 'icloudpd_provider_unavailable', detailMessage: string | null = null): AuthProviderOutcome {
   return {
     outcome: PROVIDER_OUTCOMES.PROVIDER_UNAVAILABLE,
     code,
@@ -259,20 +278,22 @@ function providerUnavailableOutcome(message, code = 'icloudpd_provider_unavailab
   };
 }
 
-function indicatesTwoFactorRequired(lower) {
+function indicatesTwoFactorRequired(lower: string): boolean {
   return /two[-\s]?factor|2fa|two[-\s]?step|verification code|mfa|trusted device|trusted phone|enter code|security code/.test(lower);
 }
 
-function inferTwoFactorMethod(lower) {
+function inferTwoFactorMethod(lower: string): string {
   if (/sms|phone/.test(lower)) return 'sms';
   if (/trusted device|device/.test(lower)) return 'trusted_device';
   return 'icloudpd_challenge';
 }
 
-function indicatesInvalidCredentials(lower) {
+function indicatesInvalidCredentials(lower: string): boolean {
   return /invalid.*(password|credential|email)|incorrect.*password|authentication error|failed to login|bad username|bad password/.test(lower);
 }
 
-function indicatesAuthenticated(lower) {
+function indicatesAuthenticated(lower: string): boolean {
   return /authenticated|authentication successful|valid session|cookie.*valid|auth.*successful|successfully authenticated|using existing session|download.*complete|dry run|auth-only/.test(lower) && !indicatesInvalidCredentials(lower);
 }
+
+export { ICLOUDPD_REQUIRED_KEYS, ICLOUDPD_SESSION_REQUIRED_KEYS };

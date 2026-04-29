@@ -13,25 +13,116 @@ import {
   defaultProviderRegistry,
   normalizeProviderOutcome,
 } from './providers/providerRegistry.ts';
+import type {
+  AuthEnvValues,
+  AuthLogoutResult,
+  AuthPersistence,
+  AuthPreflightReadinessResult,
+  AuthProviderOutcome,
+  AuthProviderReadiness,
+  AuthProviderRegistry,
+  AuthReadinessCheck,
+  AuthState,
+  PublicAuthState,
+  SingleFileAuthTestResult,
+  SingleFileAuthTestSummary,
+} from './authTypes.ts';
 
 const REQUIRED_AUTH_CHECK_KEYS = new Set(['user', 'pw', 'ICLOUDPD_COOKIE_DIR']);
 const DEFAULT_OPERATION_TIMEOUT_MS = 120_000;
 
-let currentAuthState: any = createDefaultAuthState();
-let currentPersistence: any = createAuthPersistence();
+interface ConfigureAuthServiceForTestsOptions {
+  state?: Partial<AuthState>;
+  persistence?: AuthPersistence | null;
+}
+
+interface BaseAuthOperationOptions {
+  checks?: AuthReadinessCheck[];
+  now?: Date;
+  attemptId?: string;
+  providerName?: string;
+  providerRegistry?: AuthProviderRegistry;
+  timeoutMs?: number;
+  envValues?: AuthEnvValues;
+}
+
+interface SubmitAuthTwoFactorOptions extends Omit<BaseAuthOperationOptions, 'checks' | 'attemptId'> {
+  code?: unknown;
+}
+
+interface TestAuthLoginByDownloadingSingleFileOptions extends BaseAuthOperationOptions {
+  downloadDirectory?: string | null;
+}
+
+interface ResumeAuthSessionOptions extends Omit<BaseAuthOperationOptions, 'checks' | 'attemptId'> {
+  persistence?: AuthPersistence;
+}
+
+interface LogoutAuthOptions extends Omit<BaseAuthOperationOptions, 'checks' | 'attemptId'> {}
+
+interface PersistAuthStateOptions {
+  persistence?: AuthPersistence;
+}
+
+interface MapProviderOutcomeToAuthStateOptions {
+  attemptId: string | null;
+  updatedAt: string;
+  providerName?: string;
+  providerOutcome: AuthProviderOutcome;
+}
+
+interface ConcurrentAuthStateOptions {
+  now: Date;
+  providerName: string;
+}
+
+interface MissingAuthConfigStateOptions {
+  attemptId: string;
+  updatedAt: string;
+  providerName: string;
+  missingOrInvalidRequiredChecks: AuthReadinessCheck[];
+}
+
+interface ProviderUnavailableStateOptions {
+  attemptId: string | null;
+  updatedAt: string;
+  providerName: string;
+  message: string;
+  nextAction?: string;
+  internalEvent?: string;
+  code?: string;
+}
+
+interface ProviderFailedStateOptions {
+  attemptId: string | null;
+  updatedAt: string;
+  providerName: string;
+  code: string;
+  message: string;
+  detailMessage?: string | null;
+  internalEvent?: string;
+}
+
+interface SingleFileTestSummaryOptions {
+  downloadDirectory?: string | null;
+  providerOutcome?: AuthProviderOutcome | null;
+}
+
+let currentAuthState: AuthState = createDefaultAuthState();
+let currentPersistence: AuthPersistence = createAuthPersistence();
 let authOperationInProgress = false;
 
-export function configureAuthServiceForTests({ state = createDefaultAuthState(), persistence = null }: any = {}) {
+export function configureAuthServiceForTests({ state = createDefaultAuthState(), persistence = null }: ConfigureAuthServiceForTestsOptions = {}): void {
   currentAuthState = createDefaultAuthState(state);
   currentPersistence = persistence || createAuthPersistence();
   authOperationInProgress = false;
 }
 
-export function getRawAuthState() {
+export function getRawAuthState(): AuthState {
   return { ...currentAuthState };
 }
 
-export function getPublicAuthState() {
+export function getPublicAuthState(): PublicAuthState {
   return projectPublicAuthState(currentAuthState);
 }
 
@@ -42,11 +133,11 @@ export async function verifyAuthPreflightReadiness({
   providerName = AUTH_PROVIDER,
   providerRegistry = defaultProviderRegistry,
   envValues = {},
-}: any = {}) {
+}: BaseAuthOperationOptions = {}): Promise<AuthPreflightReadinessResult> {
   const authChecks = selectAuthReadinessChecks(checks);
   const missingOrInvalidRequiredChecks = authChecks.filter((check) => check.required && (!check.present || !check.valid));
   const provider = providerRegistry.getProvider(providerName);
-  let providerReadiness: any = {
+  let providerReadiness: AuthProviderReadiness = {
     provider: providerName,
     icloudpdAvailable: false,
     hasRequiredConfig: missingOrInvalidRequiredChecks.length === 0,
@@ -87,7 +178,7 @@ export async function verifyAuthPreflightReadiness({
   };
 }
 
-export async function loadPersistedAuthState({ persistence = currentPersistence }: any = {}) {
+export async function loadPersistedAuthState({ persistence = currentPersistence }: PersistAuthStateOptions = {}): Promise<PublicAuthState> {
   const loadedState = await persistence.load();
   if (loadedState) {
     currentAuthState = createDefaultAuthState(loadedState);
@@ -95,12 +186,12 @@ export async function loadPersistedAuthState({ persistence = currentPersistence 
   return getPublicAuthState();
 }
 
-async function persistCurrentAuthState({ persistence = currentPersistence }: any = {}) {
+async function persistCurrentAuthState({ persistence = currentPersistence }: PersistAuthStateOptions = {}): Promise<PublicAuthState> {
   await persistence.save(currentAuthState);
   return getPublicAuthState();
 }
 
-export function resetAuthState({ now = new Date() }: any = {}) {
+export function resetAuthState({ now = new Date() }: { now?: Date } = {}): PublicAuthState {
   currentAuthState = createDefaultAuthState({
     updatedAt: now.toISOString(),
     next_action: 'run_auth_preflight',
@@ -117,7 +208,7 @@ export async function runAuthPreflight({
   providerRegistry = defaultProviderRegistry,
   timeoutMs = DEFAULT_OPERATION_TIMEOUT_MS,
   envValues = {},
-}: any = {}) {
+}: BaseAuthOperationOptions = {}): Promise<PublicAuthState> {
   if (authOperationInProgress) {
     return createConcurrentAuthState({ now, providerName });
   }
@@ -188,7 +279,7 @@ export async function submitAuthTwoFactor({
   providerRegistry = defaultProviderRegistry,
   timeoutMs = DEFAULT_OPERATION_TIMEOUT_MS,
   envValues = {},
-}: any = {}) {
+}: SubmitAuthTwoFactorOptions = {}): Promise<PublicAuthState> {
   if (authOperationInProgress) {
     return createConcurrentAuthState({ now, providerName });
   }
@@ -275,7 +366,7 @@ export async function testAuthLoginByDownloadingSingleFile({
   timeoutMs = DEFAULT_OPERATION_TIMEOUT_MS,
   envValues = {},
   downloadDirectory,
-}: any = {}) {
+}: TestAuthLoginByDownloadingSingleFileOptions = {}): Promise<SingleFileAuthTestResult> {
   if (authOperationInProgress) {
     return {
       auth: createConcurrentAuthState({ now, providerName }),
@@ -362,7 +453,7 @@ export async function resumeAuthSession({
   timeoutMs = DEFAULT_OPERATION_TIMEOUT_MS,
   envValues = {},
   persistence = currentPersistence,
-}: any = {}) {
+}: ResumeAuthSessionOptions = {}): Promise<PublicAuthState> {
   if (authOperationInProgress) {
     return createConcurrentAuthState({ now, providerName });
   }
@@ -390,7 +481,7 @@ export async function logoutAuth({
   providerRegistry = defaultProviderRegistry,
   timeoutMs = DEFAULT_OPERATION_TIMEOUT_MS,
   envValues = {},
-}: any = {}) {
+}: LogoutAuthOptions = {}): Promise<AuthLogoutResult> {
   const updatedAt = now.toISOString();
   const previousAttemptId = currentAuthState.attemptId;
   const provider = providerRegistry.getProvider(providerName);
@@ -434,7 +525,7 @@ export async function logoutAuth({
   };
 }
 
-export function mapProviderOutcomeToAuthState({ attemptId, updatedAt, providerName = AUTH_PROVIDER, providerOutcome }: any) {
+export function mapProviderOutcomeToAuthState({ attemptId, updatedAt, providerName = AUTH_PROVIDER, providerOutcome }: MapProviderOutcomeToAuthStateOptions): AuthState {
   const outcome = normalizeProviderOutcome(providerOutcome);
 
   if (outcome.outcome === PROVIDER_OUTCOMES.MISSING_CONFIG) {
@@ -538,7 +629,7 @@ export function mapProviderOutcomeToAuthState({ attemptId, updatedAt, providerNa
   });
 }
 
-function createConcurrentAuthState({ now, providerName }: any) {
+function createConcurrentAuthState({ now, providerName }: ConcurrentAuthStateOptions): PublicAuthState {
   currentAuthState = createDefaultAuthState({
     ...currentAuthState,
     status: AUTH_STATUSES.BLOCKED,
@@ -554,7 +645,7 @@ function createConcurrentAuthState({ now, providerName }: any) {
   return getPublicAuthState();
 }
 
-async function withAuthOperationLock(operation: any) {
+async function withAuthOperationLock<TResult>(operation: () => Promise<TResult>): Promise<TResult> {
   authOperationInProgress = true;
   try {
     return await operation();
@@ -563,28 +654,28 @@ async function withAuthOperationLock(operation: any) {
   }
 }
 
-async function withTimeout(promise: any, timeoutMs: any, code: any) {
+async function withTimeout<TResult>(promise: Promise<TResult>, timeoutMs: number, code: string): Promise<TResult> {
   if (!Number.isFinite(Number(timeoutMs)) || Number(timeoutMs) <= 0) {
     return promise;
   }
-  let timeoutId;
+  let timeoutId: NodeJS.Timeout | undefined;
   const timeoutPromise = new Promise((_, reject) => {
     timeoutId = setTimeout(() => {
-      const error: any = new Error(`Provider operation timed out after ${timeoutMs}ms.`);
-      error.code = code;
+      const error = new Error(`Provider operation timed out after ${timeoutMs}ms.`);
+      (error as NodeJS.ErrnoException).code = code;
       reject(error);
     }, timeoutMs);
     timeoutId.unref?.();
   });
 
   try {
-    return await Promise.race([promise, timeoutPromise]);
+    return await Promise.race([promise, timeoutPromise]) as TResult;
   } finally {
     clearTimeout(timeoutId);
   }
 }
 
-function createMissingAuthConfigState({ attemptId, updatedAt, providerName, missingOrInvalidRequiredChecks }: any) {
+function createMissingAuthConfigState({ attemptId, updatedAt, providerName, missingOrInvalidRequiredChecks }: MissingAuthConfigStateOptions): AuthState {
   return createDefaultAuthState({
     status: AUTH_STATUSES.PREFLIGHT_FAILED,
     has_required_files: false,
@@ -613,7 +704,7 @@ function createMissingAuthConfigState({ attemptId, updatedAt, providerName, miss
   });
 }
 
-function createProviderUnavailableState({ attemptId, updatedAt, providerName, message, nextAction, internalEvent, code = 'provider_unavailable' }: any) {
+function createProviderUnavailableState({ attemptId, updatedAt, providerName, message, nextAction, internalEvent, code = 'provider_unavailable' }: ProviderUnavailableStateOptions): AuthState {
   return createDefaultAuthState({
     status: AUTH_STATUSES.BLOCKED,
     has_required_files: true,
@@ -633,7 +724,7 @@ function createProviderUnavailableState({ attemptId, updatedAt, providerName, me
   });
 }
 
-function createProviderFailedState({ attemptId, updatedAt, providerName, code, message, detailMessage, internalEvent }: any) {
+function createProviderFailedState({ attemptId, updatedAt, providerName, code, message, detailMessage, internalEvent }: ProviderFailedStateOptions): AuthState {
   return createDefaultAuthState({
     status: AUTH_STATUSES.PROVIDER_FAILED,
     has_required_files: true,
@@ -654,7 +745,7 @@ function createProviderFailedState({ attemptId, updatedAt, providerName, code, m
   });
 }
 
-function buildSingleFileTestSummary({ downloadDirectory, providerOutcome }: any) {
+function buildSingleFileTestSummary({ downloadDirectory, providerOutcome }: SingleFileTestSummaryOptions): SingleFileAuthTestSummary {
   return {
     downloadDirectory: downloadDirectory || null,
     requestedRecentCount: 1,
@@ -665,7 +756,7 @@ function buildSingleFileTestSummary({ downloadDirectory, providerOutcome }: any)
   };
 }
 
-export function selectAuthReadinessChecks(checks: any[]) {
+export function selectAuthReadinessChecks(checks: AuthReadinessCheck[]): AuthReadinessCheck[] {
   return checks.filter((check) => REQUIRED_AUTH_CHECK_KEYS.has(check.key));
 }
 

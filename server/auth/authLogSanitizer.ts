@@ -1,4 +1,4 @@
-const SENSITIVE_KEY_PATTERNS = [
+const SENSITIVE_KEY_PATTERNS: RegExp[] = [
   /password/i,
   /^pw$/i,
   /token/i,
@@ -12,11 +12,13 @@ const SENSITIVE_KEY_PATTERNS = [
 
 const REDACTED_VALUE = '[redacted]';
 
-export function sanitizeAuthValue(value) {
-  return sanitizeUnknown(value, new WeakSet());
+type SanitizableObject = Record<string, unknown>;
+
+export function sanitizeAuthValue<T>(value: T): T {
+  return sanitizeUnknown(value, new WeakSet<object>()) as T;
 }
 
-function sanitizeUnknown(value, seen) {
+function sanitizeUnknown(value: unknown, seen: WeakSet<object>): unknown {
   if (value === null || value === undefined) {
     return value;
   }
@@ -31,7 +33,7 @@ function sanitizeUnknown(value, seen) {
     }
     seen.add(value);
 
-    const sanitized = {};
+    const sanitized: SanitizableObject = {};
     for (const [key, childValue] of Object.entries(value)) {
       sanitized[key] = isSensitiveKey(key) ? REDACTED_VALUE : sanitizeUnknown(childValue, seen);
     }
@@ -42,7 +44,7 @@ function sanitizeUnknown(value, seen) {
   return value;
 }
 
-export function isSensitiveKey(key) {
+export function isSensitiveKey(key: string): boolean {
   return SENSITIVE_KEY_PATTERNS.some((pattern) => pattern.test(key));
 }
 
