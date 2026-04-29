@@ -1,71 +1,106 @@
 import { INSPECT_EYEBROWS } from './guideCopy.ts';
 
-export function createGuideTooltipController({ getState }) {
-  let inspectTooltipElement;
-  let inspectTooltipEyebrowElement;
-  let inspectTooltipTitleElement;
-  let inspectTooltipBodyElement;
-  let activeInspectTarget = null;
+type RuntimeInspectState = {
+  inspectMode?: unknown;
+  valueInspectMode?: unknown;
+  realityInspectMode?: unknown;
+  backendStatusInspectMode?: unknown;
+};
 
-  function handleInspectEnter(event) {
+type GuideTooltipControllerDependencies = {
+  getState: () => RuntimeInspectState;
+};
+
+type GuideTooltipController = {
+  handleInspectEnter: (event: Event) => void;
+  handleValueInspectEnter: (event: Event) => void;
+  handleRealityInspectEnter: (event: Event) => void;
+  handleBackendStatusInspectEnter: (event: Event) => void;
+  handleInspectLeave: (event: Event) => void;
+  hideInspectTooltip: () => void;
+};
+
+type GuideTooltipDetails = {
+  element: HTMLElement;
+  label: string | undefined;
+  description: string | undefined;
+  eyebrow: string | undefined;
+};
+
+type InspectTooltipElements = {
+  root: HTMLElement;
+  eyebrow: HTMLElement;
+  title: HTMLElement;
+  body: HTMLElement;
+};
+
+export function createGuideTooltipController({ getState }: GuideTooltipControllerDependencies): GuideTooltipController {
+  let inspectTooltipElements: InspectTooltipElements | null = null;
+  let activeInspectTarget: HTMLElement | null = null;
+
+  function handleInspectEnter(event: Event): void {
     if (!getState().inspectMode) {
       return;
     }
 
+    const element = event.currentTarget as HTMLElement;
     showGuideTooltip({
-      element: event.currentTarget,
-      label: event.currentTarget.dataset.inspectLabel,
-      description: event.currentTarget.dataset.inspectDescription,
+      element,
+      label: element.dataset.inspectLabel,
+      description: element.dataset.inspectDescription,
       eyebrow: INSPECT_EYEBROWS.control,
     });
   }
 
-  function handleValueInspectEnter(event) {
+  function handleValueInspectEnter(event: Event): void {
     if (!getState().valueInspectMode) {
       return;
     }
 
+    const element = event.currentTarget as HTMLElement;
     showGuideTooltip({
-      element: event.currentTarget,
-      label: event.currentTarget.dataset.valueLabel,
-      description: event.currentTarget.dataset.valueDescription,
+      element,
+      label: element.dataset.valueLabel,
+      description: element.dataset.valueDescription,
       eyebrow: INSPECT_EYEBROWS.value,
     });
   }
 
-  function handleRealityInspectEnter(event) {
+  function handleRealityInspectEnter(event: Event): void {
     if (!getState().realityInspectMode) {
       return;
     }
 
+    const element = event.currentTarget as HTMLElement;
     showGuideTooltip({
-      element: event.currentTarget,
-      label: event.currentTarget.dataset.realityLabel,
-      description: event.currentTarget.dataset.realityDescription,
+      element,
+      label: element.dataset.realityLabel,
+      description: element.dataset.realityDescription,
       eyebrow: INSPECT_EYEBROWS.reality,
     });
   }
 
-  function handleBackendStatusInspectEnter(event) {
+  function handleBackendStatusInspectEnter(event: Event): void {
     if (!getState().backendStatusInspectMode) {
       return;
     }
 
+    const element = event.currentTarget as HTMLElement;
     showGuideTooltip({
-      element: event.currentTarget,
-      label: event.currentTarget.dataset.backendStatusLabel,
-      description: event.currentTarget.dataset.backendStatusDescription,
+      element,
+      label: element.dataset.backendStatusLabel,
+      description: element.dataset.backendStatusDescription,
       eyebrow: INSPECT_EYEBROWS.backend,
     });
   }
 
-  function handleInspectLeave(event) {
+  function handleInspectLeave(event: Event): void {
     if (activeInspectTarget === event.currentTarget) {
       hideInspectTooltip();
     }
   }
 
-  function showGuideTooltip({ element, label, description, eyebrow }) {
+  function showGuideTooltip({ element, label, description, eyebrow }: GuideTooltipDetails): void {
     if (!label || !description) {
       return;
     }
@@ -73,56 +108,59 @@ export function createGuideTooltipController({ getState }) {
     const tooltip = ensureInspectTooltip();
     clearInspectTargetState();
 
-    inspectTooltipEyebrowElement.textContent = eyebrow ?? INSPECT_EYEBROWS.fallback;
-    inspectTooltipTitleElement.textContent = label;
-    inspectTooltipBodyElement.textContent = description;
-    tooltip.hidden = false;
+    tooltip.eyebrow.textContent = eyebrow ?? INSPECT_EYEBROWS.fallback;
+    tooltip.title.textContent = label;
+    tooltip.body.textContent = description;
+    tooltip.root.hidden = false;
     activeInspectTarget = element;
     activeInspectTarget.dataset.inspectActive = 'true';
     positionInspectTooltip(element);
   }
 
-  function hideInspectTooltip() {
+  function hideInspectTooltip(): void {
     clearInspectTargetState();
-    if (inspectTooltipElement) {
-      inspectTooltipElement.hidden = true;
+    if (inspectTooltipElements) {
+      inspectTooltipElements.root.hidden = true;
     }
   }
 
-  function clearInspectTargetState() {
+  function clearInspectTargetState(): void {
     if (activeInspectTarget) {
       delete activeInspectTarget.dataset.inspectActive;
       activeInspectTarget = null;
     }
   }
 
-  function ensureInspectTooltip() {
-    if (inspectTooltipElement) {
-      return inspectTooltipElement;
+  function ensureInspectTooltip(): InspectTooltipElements {
+    if (inspectTooltipElements) {
+      return inspectTooltipElements;
     }
 
-    inspectTooltipElement = document.createElement('aside');
-    inspectTooltipElement.className = 'inspect-tooltip';
-    inspectTooltipElement.hidden = true;
-    inspectTooltipElement.innerHTML = `
+    const root = document.createElement('aside');
+    root.className = 'inspect-tooltip';
+    root.hidden = true;
+    root.innerHTML = `
       <p class="inspect-tooltip__eyebrow"></p>
       <h3 class="inspect-tooltip__title"></h3>
       <p class="inspect-tooltip__body"></p>
     `;
-    inspectTooltipEyebrowElement = inspectTooltipElement.querySelector('.inspect-tooltip__eyebrow');
-    inspectTooltipTitleElement = inspectTooltipElement.querySelector('.inspect-tooltip__title');
-    inspectTooltipBodyElement = inspectTooltipElement.querySelector('.inspect-tooltip__body');
-    document.body.appendChild(inspectTooltipElement);
-    return inspectTooltipElement;
+
+    const eyebrow = root.querySelector<HTMLElement>('.inspect-tooltip__eyebrow')!;
+    const title = root.querySelector<HTMLElement>('.inspect-tooltip__title')!;
+    const body = root.querySelector<HTMLElement>('.inspect-tooltip__body')!;
+
+    document.body.appendChild(root);
+    inspectTooltipElements = { root, eyebrow, title, body };
+    return inspectTooltipElements;
   }
 
-  function positionInspectTooltip(element) {
-    if (!inspectTooltipElement || inspectTooltipElement.hidden) {
+  function positionInspectTooltip(element: HTMLElement): void {
+    if (!inspectTooltipElements || inspectTooltipElements.root.hidden) {
       return;
     }
 
     const rect = element.getBoundingClientRect();
-    const tooltipRect = inspectTooltipElement.getBoundingClientRect();
+    const tooltipRect = inspectTooltipElements.root.getBoundingClientRect();
     const margin = 14;
     let top = rect.bottom + margin;
     let left = rect.left + rect.width / 2 - tooltipRect.width / 2;
@@ -140,8 +178,8 @@ export function createGuideTooltipController({ getState }) {
       left = window.innerWidth - tooltipRect.width - margin;
     }
 
-    inspectTooltipElement.style.top = `${Math.round(top)}px`;
-    inspectTooltipElement.style.left = `${Math.round(left)}px`;
+    inspectTooltipElements.root.style.top = `${Math.round(top)}px`;
+    inspectTooltipElements.root.style.left = `${Math.round(left)}px`;
   }
 
   return {

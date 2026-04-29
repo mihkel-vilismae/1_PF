@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## 2026-04-29 12:27 EEST — v0.3.36
+
+### Added
+- Added Slice 5 TypeScript function boundary types for the inspect guide tooltip controller.
+
+### Changed
+- Added explicit controller dependency, public controller API, tooltip detail, and DOM element group types without changing inspect-mode tooltip behavior or visible UI copy.
+- Updated version metadata from v0.3.35 to v0.3.36.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
 ## 2026-04-29 12:19 EEST — v0.3.35
 
 ### Added
