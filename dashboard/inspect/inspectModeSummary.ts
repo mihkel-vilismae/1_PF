@@ -1,5 +1,15 @@
 import { VIEW_ORDER } from '../shared/constants.ts';
 
+export type InspectMode = 'controls' | 'values' | 'reality' | 'backend';
+
+export type InspectSummaryState = {
+  inspectMode?: unknown;
+  valueInspectMode?: unknown;
+  realityInspectMode?: unknown;
+  backendStatusInspectMode?: unknown;
+  activeView?: string | null;
+};
+
 const MODE_COPY = {
   controls: {
     title: 'Explain controls',
@@ -60,7 +70,7 @@ const VIEW_MODE_NOTES = {
   },
 };
 
-export function getActiveInspectMode(state) {
+export function getActiveInspectMode(state: InspectSummaryState): InspectMode | null {
   if (state.inspectMode) return 'controls';
   if (state.valueInspectMode) return 'values';
   if (state.realityInspectMode) return 'reality';
@@ -68,7 +78,7 @@ export function getActiveInspectMode(state) {
   return null;
 }
 
-export function renderInspectModeSummary(state) {
+export function renderInspectModeSummary(state: InspectSummaryState): string {
   const mode = getActiveInspectMode(state);
   if (!mode) {
     return '';
@@ -92,7 +102,7 @@ export function renderInspectModeSummary(state) {
   `;
 }
 
-function escapeHtml(value) {
+function escapeHtml(value: unknown): string {
   return String(value ?? '')
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')

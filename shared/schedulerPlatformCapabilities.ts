@@ -10,6 +10,35 @@ export const SCHEDULER_OPERATION_SUPPORT = Object.freeze({
   print: 'print',
 });
 
+export type SchedulerSupportLevel =
+  (typeof SCHEDULER_SUPPORT_LEVELS)[keyof typeof SCHEDULER_SUPPORT_LEVELS];
+
+export type SchedulerOperation =
+  (typeof SCHEDULER_OPERATION_SUPPORT)[keyof typeof SCHEDULER_OPERATION_SUPPORT];
+
+export type SchedulerCapabilityInput = {
+  runtimePlatform?: string | null;
+  nodePlatform?: string | null;
+  browserPlatform?: string | null;
+  userAgent?: string | null;
+  [key: string]: unknown;
+};
+
+export type SchedulerCapability = {
+  runtimePlatform: string;
+  routeCompatibility: string;
+  profileId: string;
+  profileLabel: string;
+  platformFamily: string;
+  schedulerTarget: string;
+  schedulerMode: string;
+  supportLevel: SchedulerSupportLevel;
+  operationSupport: Record<string, SchedulerSupportLevel>;
+  notes: string[];
+};
+
+type SchedulerCapabilityProfile = Omit<SchedulerCapability, 'runtimePlatform' | 'routeCompatibility'>;
+
 const ROUTE_COMPATIBILITY = '/api/init/cron/*';
 
 const CAPABILITY_PROFILES = Object.freeze({
@@ -69,7 +98,7 @@ const CAPABILITY_PROFILES = Object.freeze({
   },
 });
 
-export function createSchedulerCapability(input = {}) {
+export function createSchedulerCapability(input: SchedulerCapabilityInput = {}): SchedulerCapability {
   const runtimePlatform = normalizeRuntimePlatform(input);
   const profileTemplate = pickProfile(runtimePlatform);
   return {
@@ -86,18 +115,24 @@ export function createSchedulerCapability(input = {}) {
   };
 }
 
-export function getOperationSupportLevel(capability, operation) {
+export function getOperationSupportLevel(
+  capability: SchedulerCapability | null | undefined,
+  operation: SchedulerOperation | string | null | undefined,
+): SchedulerSupportLevel {
   return (
     capability?.operationSupport?.[operation] ??
     SCHEDULER_SUPPORT_LEVELS.unsupported
   );
 }
 
-export function isOperationExecutable(capability, operation) {
+export function isOperationExecutable(
+  capability: SchedulerCapability | null | undefined,
+  operation: SchedulerOperation | string | null | undefined,
+): boolean {
   return getOperationSupportLevel(capability, operation) === SCHEDULER_SUPPORT_LEVELS.supported;
 }
 
-function pickProfile(runtimePlatform) {
+function pickProfile(runtimePlatform: string): SchedulerCapabilityProfile {
   if (runtimePlatform === 'win32' || runtimePlatform === 'windows') {
     return CAPABILITY_PROFILES.windows11;
   }
@@ -109,7 +144,7 @@ function pickProfile(runtimePlatform) {
   return CAPABILITY_PROFILES.unsupported;
 }
 
-function normalizeRuntimePlatform(input) {
+function normalizeRuntimePlatform(input: SchedulerCapabilityInput): string {
   if (typeof input.runtimePlatform === 'string' && input.runtimePlatform.trim()) {
     return input.runtimePlatform.trim().toLowerCase();
   }
@@ -131,7 +166,7 @@ function normalizeRuntimePlatform(input) {
   return 'unknown';
 }
 
-function normalizeBrowserPlatform(platform) {
+function normalizeBrowserPlatform(platform: string | null | undefined): string | null {
   if (typeof platform !== 'string' || !platform.trim()) {
     return null;
   }
@@ -146,7 +181,7 @@ function normalizeBrowserPlatform(platform) {
   return null;
 }
 
-function normalizeUserAgent(userAgent) {
+function normalizeUserAgent(userAgent: string | null | undefined): string | null {
   if (typeof userAgent !== 'string' || !userAgent.trim()) {
     return null;
   }
