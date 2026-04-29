@@ -82,7 +82,7 @@ export function bindInspectMode({
   handleInspectLeave,
   hideInspectTooltip,
 }) {
-  const inspectables = Array.from(app.querySelectorAll(INSPECTABLE_SELECTOR));
+  const inspectables = Array.from(app.querySelectorAll(INSPECTABLE_SELECTOR)) as HTMLElement[];
 
   inspectables.forEach((element, index) => {
     const meta = describeInspectableElement(element);
@@ -198,7 +198,7 @@ function bindFocusableInspectMode({
   hideInspectTooltip,
   applyMeta,
 }) {
-  const elements = Array.from(app.querySelectorAll(selector));
+  const elements = Array.from(app.querySelectorAll(selector)) as HTMLElement[];
 
   elements.forEach((element) => {
     const meta = describeElement(element);

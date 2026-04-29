@@ -26,10 +26,10 @@ import {
   bindInspectMode,
   bindRealityInspectMode,
   bindValueInspectMode,
-} from './inspect/bindInspectModes.js';
-import { describeInspectableElement, describeValueElement } from './inspect/controlMetadata.js';
-import { createRealityMetadataHelpers } from './inspect/realityMetadata.js';
-import { createBackendStatusMetadataHelpers } from './inspect/backendStatusMetadata.js';
+} from './inspect/bindInspectModes.ts';
+import { describeInspectableElement, describeValueElement } from './inspect/controlMetadata.ts';
+import { createRealityMetadataHelpers } from './inspect/realityMetadata.ts';
+import { createBackendStatusMetadataHelpers } from './inspect/backendStatusMetadata.ts';
 import { createGuideTooltipController } from './inspect/tooltipController.ts';
 import { renderInitView } from './views/initView.js';
 import { renderTestView } from './views/testView.js';

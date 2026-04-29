@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { describeInspectableElement, describeValueElement } from '../dashboard/inspect/controlMetadata.js';
-import { createRealityMetadataHelpers } from '../dashboard/inspect/realityMetadata.js';
-import { createBackendStatusMetadataHelpers } from '../dashboard/inspect/backendStatusMetadata.js';
+import { describeInspectableElement, describeValueElement } from '../dashboard/inspect/controlMetadata.ts';
+import { createRealityMetadataHelpers } from '../dashboard/inspect/realityMetadata.ts';
+import { createBackendStatusMetadataHelpers } from '../dashboard/inspect/backendStatusMetadata.ts';
 
 function fakeNode({ textContent = '', query = {} } = {}) {
   return {
