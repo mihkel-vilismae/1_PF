@@ -1,4 +1,11 @@
-import { requestJson } from './apiClient.ts';
+import { requestJson, type ApiResponseWithMeta } from './apiClient.ts';
+
+type AuthEndpoint = {
+  method: string;
+  path: string;
+};
+
+export type AuthEndpointResponse<TPayload = unknown> = ApiResponseWithMeta<TPayload>;
 
 export const AUTH_PREFLIGHT_ENDPOINTS = Object.freeze({
   status: { method: 'GET', path: '/api/auth/status' },
@@ -11,39 +18,39 @@ export const AUTH_PREFLIGHT_ENDPOINTS = Object.freeze({
   logout: { method: 'POST', path: '/api/auth/logout' },
 });
 
-export function fetchAuthStatus() {
+export function fetchAuthStatus(): Promise<AuthEndpointResponse> {
   return callAuthEndpoint(AUTH_PREFLIGHT_ENDPOINTS.status);
 }
 
-export function verifyIcloudpdPreflight() {
+export function verifyIcloudpdPreflight(): Promise<AuthEndpointResponse> {
   return callAuthEndpoint(AUTH_PREFLIGHT_ENDPOINTS.verifyIcloudpd);
 }
 
-export function checkAuthLogin() {
+export function checkAuthLogin(): Promise<AuthEndpointResponse> {
   return callAuthEndpoint(AUTH_PREFLIGHT_ENDPOINTS.resume);
 }
 
-export function runAuthPreflight() {
+export function runAuthPreflight(): Promise<AuthEndpointResponse> {
   return callAuthEndpoint(AUTH_PREFLIGHT_ENDPOINTS.run);
 }
 
-export function testLoginByDownloadingSingleFile() {
+export function testLoginByDownloadingSingleFile(): Promise<AuthEndpointResponse> {
   return callAuthEndpoint(AUTH_PREFLIGHT_ENDPOINTS.testLoginDownloadOne);
 }
 
-export function resetAuthPreflight() {
+export function resetAuthPreflight(): Promise<AuthEndpointResponse> {
   return callAuthEndpoint(AUTH_PREFLIGHT_ENDPOINTS.reset);
 }
 
-export function submitAuthTwoFactor(code) {
+export function submitAuthTwoFactor(code: unknown): Promise<AuthEndpointResponse> {
   return callAuthEndpoint(AUTH_PREFLIGHT_ENDPOINTS.submitTwoFactor, { code });
 }
 
-export function logoutAuthPreflight() {
+export function logoutAuthPreflight(): Promise<AuthEndpointResponse> {
   return callAuthEndpoint(AUTH_PREFLIGHT_ENDPOINTS.logout);
 }
 
-function callAuthEndpoint(endpoint, body = null) {
+function callAuthEndpoint(endpoint: AuthEndpoint, body: unknown = null): Promise<AuthEndpointResponse> {
   return requestJson(endpoint.path, {
     method: endpoint.method,
     body,

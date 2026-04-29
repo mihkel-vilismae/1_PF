@@ -1,10 +1,67 @@
-export class ApiRequestError extends Error {
-  declare status;
-  declare payload;
-  declare meta;
-  declare cause;
+export type ApiRequestPayload = unknown;
 
-  constructor(message, options: any = {}) {
+export type ApiHeaders = Record<string, string>;
+
+export type ApiRequestMeta = {
+  request: {
+    method: string;
+    path: string;
+    headers: ApiHeaders;
+    body: ApiRequestPayload | null;
+  };
+  response: {
+    status: number;
+    statusText: string;
+    ok: boolean;
+    url: string;
+    headers: ApiHeaders;
+    body: unknown;
+  } | null;
+};
+
+export type ApiResponseWithMeta<TPayload = unknown> = {
+  payload: TPayload;
+  meta: ApiRequestMeta;
+};
+
+export type ApiRequestOptions = {
+  method?: string;
+  body?: ApiRequestPayload;
+  headers?: ApiHeaders;
+  captureMeta?: boolean;
+  operation?: string;
+};
+
+export type ApiRequestErrorOptions = {
+  status?: number | null;
+  payload?: unknown;
+  meta?: ApiRequestMeta | null;
+  cause?: unknown;
+};
+
+export type TransitRecord = {
+  id: number;
+  atIso: string;
+  direction: 'outbound' | 'inbound';
+  operation: string;
+  method: string;
+  path: string;
+  hasBody?: boolean;
+  ok?: boolean;
+  status?: number | null;
+  statusText?: string | null;
+  error?: string;
+};
+
+export type TransitListener = (record: TransitRecord) => void;
+
+export class ApiRequestError extends Error {
+  declare status: number | null;
+  declare payload: unknown;
+  declare meta: ApiRequestMeta | null;
+  declare cause: unknown;
+
+  constructor(message: string, options: ApiRequestErrorOptions = {}) {
     super(message);
     this.name = 'ApiRequestError';
     this.status = options.status ?? null;
@@ -14,10 +71,10 @@ export class ApiRequestError extends Error {
   }
 }
 
-const transitSubscribers = new Set<Function>();
+const transitSubscribers = new Set<TransitListener>();
 let nextTransitId = 1;
 
-export function subscribeTransit(listener) {
+export function subscribeTransit(listener: TransitListener): () => boolean {
   if (typeof listener !== 'function') {
     throw new TypeError('subscribeTransit(listener) requires a function.');
   }
@@ -25,7 +82,7 @@ export function subscribeTransit(listener) {
   return () => transitSubscribers.delete(listener);
 }
 
-function emitTransit(record) {
+function emitTransit(record: TransitRecord): void {
   transitSubscribers.forEach((listener) => {
     try {
       listener(record);
@@ -48,14 +105,25 @@ function emitTransit(record) {
   }
 }
 
-export async function requestJson(path, options: any = {}) {
+export function requestJson<TPayload = unknown>(
+  path: string,
+  options: ApiRequestOptions & { captureMeta: true },
+): Promise<ApiResponseWithMeta<TPayload>>;
+export function requestJson<TPayload = unknown>(
+  path: string,
+  options?: ApiRequestOptions & { captureMeta?: false },
+): Promise<TPayload>;
+export async function requestJson<TPayload = unknown>(
+  path: string,
+  options: ApiRequestOptions = {},
+): Promise<TPayload | ApiResponseWithMeta<TPayload>> {
   const { method = 'GET', body, headers = {}, captureMeta = false, operation } = options;
-  const requestHeaders = {
+  const requestHeaders: ApiHeaders = {
     Accept: 'application/json, text/plain;q=0.9, */*;q=0.8',
     ...headers,
   };
 
-  const init: any = {
+  const init: RequestInit = {
     method,
     headers: requestHeaders,
   };
@@ -87,10 +155,11 @@ export async function requestJson(path, options: any = {}) {
     hasBody: body !== undefined,
   });
 
-  let response;
+  let response: Response;
   try {
     response = await fetch(path, init);
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     emitTransit({
       id: transitId,
       atIso: new Date().toISOString(),
@@ -101,7 +170,7 @@ export async function requestJson(path, options: any = {}) {
       ok: false,
       status: null,
       statusText: null,
-      error: error?.message ?? String(error),
+      error: errorMessage,
     });
     throw new ApiRequestError(`Network request failed for ${method} ${path}.`, {
       cause: error,
@@ -112,7 +181,7 @@ export async function requestJson(path, options: any = {}) {
     });
   }
 
-  const payload = await readResponsePayload(response);
+  const payload = await readResponsePayload(response) as TPayload;
   const responseMeta = {
     status: response.status,
     statusText: response.statusText,
@@ -171,7 +240,7 @@ export async function requestJson(path, options: any = {}) {
   return payload;
 }
 
-async function readResponsePayload(response) {
+async function readResponsePayload(response: Response): Promise<unknown> {
   if (response.status === 204) {
     return null;
   }
@@ -187,31 +256,38 @@ async function readResponsePayload(response) {
   }
 
   try {
-    return JSON.parse(text);
+    return JSON.parse(text) as unknown;
   } catch {
     return { message: text };
   }
 }
 
-function extractMessage(payload) {
+function extractMessage(payload: unknown): string | null {
   if (!payload) {
     return null;
   }
   if (typeof payload === 'string') {
     return payload;
   }
-  if (typeof payload.message === 'string') {
+  if (typeof payload !== 'object') {
+    return null;
+  }
+  if ('message' in payload && typeof payload.message === 'string') {
     return payload.message;
   }
-  if (typeof payload.error === 'string') {
+  if ('error' in payload && typeof payload.error === 'string') {
     return payload.error;
   }
   return null;
 }
 
-function normalizeHeaders(headers) {
+function normalizeHeaders(headers: Headers | Record<string, unknown>): ApiHeaders {
   if (headers instanceof Headers) {
-    return Object.fromEntries(headers.entries());
+    const normalizedHeaders: ApiHeaders = {};
+    headers.forEach((value, key) => {
+      normalizedHeaders[key] = value;
+    });
+    return normalizedHeaders;
   }
 
   return Object.fromEntries(

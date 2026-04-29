@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## 2026-04-29 11:44 EEST — v0.3.32
+
+### Added
+- Added Slice 1 low-risk TypeScript function boundary types for the dashboard API client and dashboard service wrappers.
+
+### Changed
+- Added explicit parameter and return types around existing request/response metadata paths without changing endpoint URLs, payload keys, UI copy, or runtime behavior.
+- Updated version metadata from v0.3.31 to v0.3.32.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
 ## 2026-04-28 17:55 EEST — v0.3.31
 
 ### Added

@@ -1,4 +1,13 @@
-import { requestJson } from './apiClient.ts';
+import { requestJson, type ApiResponseWithMeta } from './apiClient.ts';
+
+type RuntimeEndpoint = {
+  method: string;
+  path: string;
+};
+
+type RuntimeRequestBody = Record<string, unknown>;
+
+export type RuntimeEndpointResponse<TPayload = unknown> = ApiResponseWithMeta<TPayload>;
 
 export const RUNTIME_EXECUTION_ENDPOINTS = Object.freeze({
   downloadRun: { method: 'POST', path: '/api/runtime/download/run' },
@@ -9,31 +18,31 @@ export const RUNTIME_EXECUTION_ENDPOINTS = Object.freeze({
   playbackSelectCurrent: { method: 'POST', path: '/api/runtime/playback/select-current' },
 });
 
-export function runRuntimeDownload(body = {}) {
+export function runRuntimeDownload(body: RuntimeRequestBody = {}): Promise<RuntimeEndpointResponse> {
   return callRuntimeEndpoint(RUNTIME_EXECUTION_ENDPOINTS.downloadRun, body);
 }
 
-export function runRuntimeIndex(body = {}) {
+export function runRuntimeIndex(body: RuntimeRequestBody = {}): Promise<RuntimeEndpointResponse> {
   return callRuntimeEndpoint(RUNTIME_EXECUTION_ENDPOINTS.indexRun, body);
 }
 
-export function runRuntimeGps(body = {}) {
+export function runRuntimeGps(body: RuntimeRequestBody = {}): Promise<RuntimeEndpointResponse> {
   return callRuntimeEndpoint(RUNTIME_EXECUTION_ENDPOINTS.gpsRun, body);
 }
 
-export function runRuntimeGeocode(body = {}) {
+export function runRuntimeGeocode(body: RuntimeRequestBody = {}): Promise<RuntimeEndpointResponse> {
   return callRuntimeEndpoint(RUNTIME_EXECUTION_ENDPOINTS.geocodeRun, body);
 }
 
-export function runRuntimeQueuePrepare(body = {}) {
+export function runRuntimeQueuePrepare(body: RuntimeRequestBody = {}): Promise<RuntimeEndpointResponse> {
   return callRuntimeEndpoint(RUNTIME_EXECUTION_ENDPOINTS.queuePrepare, body);
 }
 
-export function runRuntimePlaybackSelectCurrent(body = {}) {
+export function runRuntimePlaybackSelectCurrent(body: RuntimeRequestBody = {}): Promise<RuntimeEndpointResponse> {
   return callRuntimeEndpoint(RUNTIME_EXECUTION_ENDPOINTS.playbackSelectCurrent, body);
 }
 
-function callRuntimeEndpoint(endpoint, body) {
+function callRuntimeEndpoint(endpoint: RuntimeEndpoint, body: RuntimeRequestBody): Promise<RuntimeEndpointResponse> {
   return requestJson(endpoint.path, {
     method: endpoint.method,
     body,
