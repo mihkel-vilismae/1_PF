@@ -40,7 +40,7 @@ export function fetchNewAuthSessionFiles(): Promise<NewAuthEndpointResponse> {
   return callNewAuthEndpoint(NEW_AUTH_ENDPOINTS.sessionFiles);
 }
 
-function callNewAuthEndpoint(endpoint: NewAuthEndpoint, body: unknown = null): Promise<NewAuthEndpointResponse> {
+function callNewAuthEndpoint(endpoint: NewAuthEndpoint, body: unknown = undefined): Promise<NewAuthEndpointResponse> {
   return requestJson(endpoint.path, {
     method: endpoint.method,
     body,

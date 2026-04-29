@@ -8,6 +8,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { createAuthRoutes } from './auth/authRoutes.ts';
+import { createNewAuthRoutes } from './auth/newAuthRoutes.ts';
 import { createDatabaseService } from './database/databaseService.ts';
 import type { DatabaseService } from './database/databaseService.ts';
 import { attachSafeAuthRuntimeTruth } from './auth/authRuntimeTruth.ts';
@@ -292,6 +293,7 @@ const authRouteHandlers = createAuthRoutes({
   getAuthReadinessChecks,
   singleFileDownloadDirectory: authSingleFileDownloadDirectory,
 });
+const newAuthRouteHandlers = createNewAuthRoutes();
 
 const envSchema: EnvSchemaEntry[] = [
   { key: 'user', label: 'Account email', required: true, sensitive: true, kind: 'string' },
@@ -331,6 +333,12 @@ const routes: Record<string, RouteHandler> = {
   'POST /api/auth/reset': authRouteHandlers.resetHandler,
   'POST /api/auth/logout': authRouteHandlers.logoutHandler,
   'POST /api/auth/resume': authRouteHandlers.resumeHandler,
+  'GET /api/auth/new/status': newAuthRouteHandlers.statusHandler,
+  'POST /api/auth/new/verify-icloudpd': newAuthRouteHandlers.verifyIcloudpdHandler,
+  'GET /api/auth/new/session-files': newAuthRouteHandlers.sessionFilesHandler,
+  'POST /api/auth/new/login': newAuthRouteHandlers.loginPendingHandler,
+  'POST /api/auth/new/submit-2fa': newAuthRouteHandlers.submitTwoFactorPendingHandler,
+  'POST /api/auth/new/logout': newAuthRouteHandlers.logoutPendingHandler,
   'POST /api/init/verify-env': verifyEnvHandler,
   'GET /api/init/database/status': databaseStatusHandler,
   'POST /api/init/database/inspect': inspectDatabaseHandler,

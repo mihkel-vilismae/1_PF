@@ -1,5 +1,24 @@
 # CHANGELOG
 
+## 2026-04-29 16:15 EEST — v0.3.46
+
+### Added
+- Added NEW AUTH Slice 2 backend route family for `1A-STASH-OFF` using new `/api/auth/new/*` endpoints only.
+- Added safe iCloudPD executable verification, structured real session-status inspection, and session path/file metadata inspection.
+- Added `tests/newAuthSlice2.verify.mjs` to verify route registration, missing/executable iCloudPD handling, structured status responses, and session-file secrecy.
+
+### Changed
+- Wired the Slice 1 frontend helper to avoid sending JSON bodies on GET-only NEW AUTH endpoints.
+- Registered safe Slice 3 placeholder responses for login, 2FA submit, and logout under the new endpoint family without aliasing old auth routes.
+- Updated version metadata from v0.3.45 to v0.3.46.
+
+### Fixed
+- Prevented NEW AUTH command verification timers and child-process handles from keeping verification scripts alive after checks complete.
+
+### Removed
+- None.
+
+
 ## 2026-04-29 15:50 EEST — v0.3.45
 
 ### Added
