@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process';
 import { existsSync, statSync, readdirSync } from 'node:fs';
+import { mkdir, rm } from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
 
@@ -27,6 +28,19 @@ export interface NewAuthPathMetadata {
   children?: NewAuthPathMetadata[];
 }
 
+export interface NewAuthTwoFactorInput {
+  code?: unknown;
+}
+
+interface NewAuthIcloudpdConfig {
+  username: string | null;
+  password: string | null;
+  cookieDir: string | null;
+  downloadDir: string | null;
+  domain: string | null;
+  timeoutMs: number;
+}
+
 interface CommandResult {
   ok: boolean;
   exitCode: number | null;
@@ -38,6 +52,7 @@ interface CommandResult {
 }
 
 const ICLOUDPD_TIMEOUT_MS = 8000;
+const ICLOUDPD_LOGIN_TIMEOUT_MS = 120_000;
 const MAX_STDIO_CHARS = 6000;
 const MAX_SESSION_CHILDREN = 25;
 const SENSITIVE_ENV_KEYS = new Set(['user', 'pw', 'APPLE_ID', 'APPLE_PASSWORD', 'ICLOUDPD_COOKIE_DIR']);
@@ -131,6 +146,349 @@ export async function getNewAuthSessionFiles(context: NewAuthContext = {}): Prom
       secretValuesShown: false,
     },
   };
+}
+
+export async function startNewAuthLogin(context: NewAuthContext = {}): Promise<Record<string, unknown>> {
+  const config = buildNewAuthIcloudpdConfig(context);
+  const missing = validateNewAuthLoginConfig(config);
+  if (missing.length > 0) {
+    return buildNewAuthMissingConfigPayload(missing, 'login');
+  }
+
+  const executable = await resolveIcloudpdExecutable(context.platform ?? process.platform);
+  if (!executable.found) {
+    return buildNewAuthProviderUnavailablePayload('ICLOUDPD_NOT_FOUND', 'iCloudPD executable was not found on PATH.');
+  }
+
+  await mkdir(config.cookieDir as string, { recursive: true });
+  const result = await runCommand(executable.path ?? 'icloudpd', buildNewAuthLoginArgs(config), { timeoutMs: config.timeoutMs });
+  return mapNewAuthCommandResult(result, config, {
+    successMessage: 'iCloudPD login completed and the local session was verified.',
+    startedMessage: 'iCloudPD login command completed, but authenticated session proof was not strong enough to report success.',
+  });
+}
+
+export async function submitNewAuthTwoFactor(context: NewAuthContext = {}, input: NewAuthTwoFactorInput = {}): Promise<Record<string, unknown>> {
+  const config = buildNewAuthIcloudpdConfig(context);
+  const missing = validateNewAuthLoginConfig(config);
+  if (missing.length > 0) {
+    return buildNewAuthMissingConfigPayload(missing, 'submit_2fa');
+  }
+
+  const code = typeof input.code === 'string' ? input.code.trim() : '';
+  if (!code) {
+    return {
+      ok: false,
+      state: 'failed',
+      errorCode: 'NEW_AUTH_2FA_CODE_MISSING',
+      message: 'Two-factor authentication submission requires a non-empty code.',
+      details: {
+        provider: 'icloudpd',
+        codeReceived: false,
+        secretsShown: false,
+      },
+    };
+  }
+
+  const executable = await resolveIcloudpdExecutable(context.platform ?? process.platform);
+  if (!executable.found) {
+    return buildNewAuthProviderUnavailablePayload('ICLOUDPD_NOT_FOUND', 'iCloudPD executable was not found on PATH.');
+  }
+
+  await mkdir(config.cookieDir as string, { recursive: true });
+  const result = await runCommand(executable.path ?? 'icloudpd', buildNewAuthLoginArgs(config), { timeoutMs: config.timeoutMs, stdinText: `${code}\n` });
+  const mapped = mapNewAuthCommandResult(result, config, {
+    successMessage: 'iCloudPD 2FA follow-up command completed and the local session was verified.',
+    startedMessage: 'iCloudPD 2FA follow-up command completed, but authenticated session proof was not strong enough to report success.',
+  });
+
+  if (mapped.state === 'pending_2fa') {
+    return {
+      ...mapped,
+      message: 'iCloudPD still reports that two-factor authentication is required. The submitted code was not logged or returned.',
+      details: {
+        ...(typeof mapped.details === 'object' && mapped.details ? mapped.details : {}),
+        twoFactorCodeShown: false,
+      },
+    };
+  }
+
+  return mapped;
+}
+
+export async function logoutNewAuthSession(context: NewAuthContext = {}): Promise<Record<string, unknown>> {
+  const config = buildNewAuthIcloudpdConfig(context);
+  if (!config.cookieDir) {
+    return {
+      ok: false,
+      state: 'failed',
+      errorCode: 'NEW_AUTH_COOKIE_DIR_MISSING',
+      message: 'Cannot remove local auth/session data because ICLOUDPD_COOKIE_DIR is not configured.',
+      details: {
+        provider: 'icloudpd',
+        remoteLogoutClaimed: false,
+      },
+    };
+  }
+
+  const safeCookieDir = config.cookieDir;
+  if (!isSafeSessionCleanupPath(safeCookieDir)) {
+    return {
+      ok: false,
+      state: 'failed',
+      errorCode: 'NEW_AUTH_UNSAFE_SESSION_PATH',
+      message: 'Refusing to remove local session data because the configured session path is too broad or unsafe.',
+      details: {
+        provider: 'icloudpd',
+        sessionDirectory: sanitizePathForDisplay(safeCookieDir),
+        remoteLogoutClaimed: false,
+      },
+    };
+  }
+
+  try {
+    await rm(safeCookieDir, { recursive: true, force: true });
+    await mkdir(safeCookieDir, { recursive: true });
+  } catch (error) {
+    return {
+      ok: false,
+      state: 'failed',
+      errorCode: 'NEW_AUTH_SESSION_REMOVE_FAILED',
+      message: `Failed to remove local auth/session data: ${sanitizePreview((error as Error)?.message ?? 'unknown error')}`,
+      details: {
+        provider: 'icloudpd',
+        sessionDirectory: sanitizePathForDisplay(safeCookieDir),
+        remoteLogoutClaimed: false,
+      },
+    };
+  }
+
+  const status = await getNewAuthStatus(context);
+  if (status.state === 'authenticated') {
+    return {
+      ok: false,
+      state: 'failed',
+      errorCode: 'NEW_AUTH_SESSION_STILL_PRESENT',
+      message: 'Local session cleanup ran, but session-like files still appear to exist.',
+      details: {
+        provider: 'icloudpd',
+        sessionDirectory: sanitizePathForDisplay(safeCookieDir),
+        remoteLogoutClaimed: false,
+      },
+    };
+  }
+
+  return {
+    ok: true,
+    state: 'logged_out',
+    message: 'Local iCloudPD session data was removed and the user is logged out locally. Remote Apple logout was not claimed.',
+    details: {
+      provider: 'icloudpd',
+      sessionDirectory: sanitizePathForDisplay(safeCookieDir),
+      remoteLogoutClaimed: false,
+      sessionContentsShown: false,
+    },
+  };
+}
+
+function buildNewAuthIcloudpdConfig(context: NewAuthContext): NewAuthIcloudpdConfig {
+  const envValues = context.envValues ?? {};
+  return {
+    username: stringValue(envValues.user) || stringValue(envValues.APPLE_ID),
+    password: stringValue(envValues.pw) || stringValue(envValues.APPLE_PASSWORD),
+    cookieDir: normalizeNewAuthPath(envValues.ICLOUDPD_COOKIE_DIR),
+    downloadDir: normalizeNewAuthPath(envValues.DOWNLOAD_DIR),
+    domain: stringValue(envValues.ICLOUDPD_DOMAIN),
+    timeoutMs: positiveNumber(envValues.ICLOUDPD_AUTH_TIMEOUT_MS, ICLOUDPD_LOGIN_TIMEOUT_MS),
+  };
+}
+
+function validateNewAuthLoginConfig(config: NewAuthIcloudpdConfig): string[] {
+  const missing: string[] = [];
+  if (!config.username) missing.push('user');
+  if (!config.password) missing.push('pw');
+  if (!config.cookieDir) missing.push('ICLOUDPD_COOKIE_DIR');
+  return missing;
+}
+
+function buildNewAuthLoginArgs(config: NewAuthIcloudpdConfig): string[] {
+  const args = [
+    '--username', config.username,
+    '--password', config.password,
+    '--cookie-directory', config.cookieDir,
+    '--auth-only',
+  ] as string[];
+  if (config.domain) {
+    args.push('--domain', config.domain);
+  }
+  return args;
+}
+
+function buildNewAuthMissingConfigPayload(missingKeys: string[], operation: string): Record<string, unknown> {
+  return {
+    ok: false,
+    state: 'failed',
+    errorCode: 'NEW_AUTH_MISSING_CONFIG',
+    message: `New auth ${operation} is missing required .env configuration: ${missingKeys.join(', ')}.`,
+    missingRequiredKeys: missingKeys,
+    details: {
+      provider: 'icloudpd',
+      secretValuesShown: false,
+    },
+  };
+}
+
+function buildNewAuthProviderUnavailablePayload(errorCode: string, message: string): Record<string, unknown> {
+  return {
+    ok: false,
+    state: 'failed',
+    errorCode,
+    message,
+    details: {
+      provider: 'icloudpd',
+      nextAction: 'install_or_configure_icloudpd',
+    },
+  };
+}
+
+function mapNewAuthCommandResult(result: CommandResult, config: NewAuthIcloudpdConfig, messages: { successMessage: string; startedMessage: string }): Record<string, unknown> {
+  const combined = sanitizeCommandOutput(`${result.stdout}\n${result.stderr}`, config);
+  const lower = combined.toLowerCase();
+
+  if (indicatesNewAuthTwoFactorRequired(lower)) {
+    return {
+      ok: true,
+      state: 'pending_2fa',
+      message: 'iCloudPD reported that a two-factor authentication challenge is required.',
+      details: {
+        provider: 'icloudpd',
+        nextAction: 'submit_two_factor_code',
+        twoFactorCodeShown: false,
+        providerOutputPreview: sanitizePreview(combined),
+      },
+    };
+  }
+
+  if (result.errorCode === 'ICLOUDPD_TIMEOUT') {
+    return {
+      ok: false,
+      state: 'failed',
+      errorCode: 'NEW_AUTH_ICLOUDPD_TIMEOUT',
+      message: 'iCloudPD authentication timed out before a verifiable auth result was produced.',
+      details: {
+        provider: 'icloudpd',
+        providerOutputPreview: sanitizePreview(combined),
+      },
+    };
+  }
+
+  if (indicatesNewAuthInvalidCredentials(lower)) {
+    return {
+      ok: false,
+      state: 'failed',
+      errorCode: 'NEW_AUTH_INVALID_CREDENTIALS',
+      message: 'iCloudPD reported invalid iCloud credentials.',
+      details: {
+        provider: 'icloudpd',
+        providerOutputPreview: sanitizePreview(combined),
+      },
+    };
+  }
+
+  if (result.ok && indicatesNewAuthAuthenticated(lower)) {
+    return {
+      ok: true,
+      state: 'authenticated',
+      message: messages.successMessage,
+      details: {
+        provider: 'icloudpd',
+        authenticatedUser: redactEmail(config.username),
+        providerSessionRef: 'icloudpd_cookie_directory_internal',
+        providerOutputPreview: sanitizePreview(combined),
+      },
+    };
+  }
+
+  if (result.ok) {
+    return {
+      ok: false,
+      state: 'failed',
+      errorCode: 'NEW_AUTH_UNVERIFIED_SESSION',
+      message: messages.startedMessage,
+      details: {
+        provider: 'icloudpd',
+        nextAction: 'inspect_icloudpd_auth_output',
+        providerOutputPreview: sanitizePreview(combined),
+      },
+    };
+  }
+
+  return {
+    ok: false,
+    state: 'failed',
+    errorCode: result.errorCode ?? 'NEW_AUTH_ICLOUDPD_FAILED',
+    message: 'iCloudPD authentication failed before a verifiable auth state was produced.',
+    details: {
+      provider: 'icloudpd',
+      exitCode: result.exitCode,
+      signal: result.signal,
+      providerOutputPreview: sanitizePreview(combined),
+    },
+  };
+}
+
+function sanitizeCommandOutput(value: string, config: NewAuthIcloudpdConfig): string {
+  let sanitized = sanitizePreview(value, 4000);
+  for (const secret of [config.password, config.username]) {
+    if (secret) {
+      sanitized = sanitized.split(secret).join(secret === config.username ? redactEmail(secret) ?? '[redacted-user]' : '[redacted]');
+    }
+  }
+  return sanitized;
+}
+
+function indicatesNewAuthTwoFactorRequired(lower: string): boolean {
+  return /two[-\s]?factor|2fa|two[-\s]?step|verification code|mfa|trusted device|trusted phone|enter code|security code/.test(lower);
+}
+
+function indicatesNewAuthInvalidCredentials(lower: string): boolean {
+  return /invalid.*(password|credential|email)|incorrect.*password|authentication error|failed to login|bad username|bad password/.test(lower);
+}
+
+function indicatesNewAuthAuthenticated(lower: string): boolean {
+  return /authenticated|authentication successful|valid session|cookie.*valid|auth.*successful|successfully authenticated|using existing session|auth-only/.test(lower) && !indicatesNewAuthInvalidCredentials(lower);
+}
+
+function isSafeSessionCleanupPath(candidate: string): boolean {
+  const normalized = path.resolve(candidate);
+  const root = path.parse(normalized).root;
+  if (normalized === root) return false;
+  if (normalized === os.homedir()) return false;
+  if (normalized === process.cwd()) return false;
+  const basename = path.basename(normalized).toLowerCase();
+  return basename.includes('icloud') || basename.includes('auth') || basename.includes('session') || basename.includes('cookie');
+}
+
+function normalizeNewAuthPath(value: unknown): string | null {
+  if (!value || typeof value !== 'string') return null;
+  return path.isAbsolute(value) ? value : path.resolve(process.cwd(), value);
+}
+
+function stringValue(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return trimmed ? trimmed : null;
+}
+
+function positiveNumber(value: unknown, fallback: number): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function redactEmail(value: string | null): string | null {
+  if (!value || !value.includes('@')) return value ? '[redacted-user]' : null;
+  const [name, domain] = value.split('@');
+  return `${name.slice(0, 2)}***@${domain}`;
 }
 
 function getNewAuthPathCandidates(context: NewAuthContext): NewAuthPathMetadata[] {
@@ -281,7 +639,7 @@ async function resolveIcloudpdExecutable(platform: NodeJS.Platform): Promise<{ f
   };
 }
 
-function runCommand(command: string, args: string[], options: { timeoutMs: number; shell?: boolean }): Promise<CommandResult> {
+function runCommand(command: string, args: string[], options: { timeoutMs: number; shell?: boolean; stdinText?: string }): Promise<CommandResult> {
   return new Promise((resolve) => {
     const child = spawn(command, args, {
       shell: options.shell ?? false,
@@ -289,6 +647,7 @@ function runCommand(command: string, args: string[], options: { timeoutMs: numbe
       env: process.env,
     });
     const cleanupChild = () => {
+      try { child.stdin?.destroy(); } catch {}
       try { child.stdout?.destroy(); } catch {}
       try { child.stderr?.destroy(); } catch {}
       try { child.unref(); } catch {}
@@ -313,6 +672,11 @@ function runCommand(command: string, args: string[], options: { timeoutMs: numbe
       });
     }, options.timeoutMs);
     timeout.unref?.();
+
+    if (typeof options.stdinText === 'string') {
+      child.stdin?.write(options.stdinText);
+      child.stdin?.end();
+    }
 
     child.stdout?.on('data', (chunk) => {
       stdout = `${stdout}${chunk}`.slice(-MAX_STDIO_CHARS);
@@ -342,6 +706,7 @@ function runCommand(command: string, args: string[], options: { timeoutMs: numbe
       if (settled) return;
       settled = true;
       clearTimeout(timeout);
+      cleanupChild();
       cleanupChild();
       resolve({
         ok: exitCode === 0,

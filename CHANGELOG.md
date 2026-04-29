@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## 2026-04-29 16:24 EEST — v0.3.47
+
+### Added
+- Completed NEW AUTH Slice 3 endpoint handlers for real login, 2FA submission, and local session cleanup under the new /api/auth/new/* route family.
+- Added safe iCloudPD login command execution using .env values, pending-2FA state detection, 2FA stdin submission support, and deterministic non-secret Slice 3 verification coverage.
+
+### Changed
+- Replaced Slice 2 placeholder handlers for /api/auth/new/login, /api/auth/new/submit-2fa, and /api/auth/new/logout with structured backend behavior.
+- Updated version metadata from v0.3.46 to v0.3.47.
+
+### Fixed
+- Added local-session cleanup path safety checks so logout refuses broad or unsafe directories.
+
+### Removed
+- None.
+
 ## 2026-04-29 16:15 EEST — v0.3.46
 
 ### Added

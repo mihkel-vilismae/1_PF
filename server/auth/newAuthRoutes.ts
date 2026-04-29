@@ -1,12 +1,16 @@
 import {
   getNewAuthSessionFiles,
   getNewAuthStatus,
+  logoutNewAuthSession,
+  startNewAuthLogin,
+  submitNewAuthTwoFactor,
   verifyNewAuthIcloudpd,
   type NewAuthContext,
 } from './newAuthService.ts';
 
 interface NewAuthRouteRequest {
   context: NewAuthContext;
+  body?: Record<string, unknown>;
 }
 
 interface NewAuthRouteResponse<TPayload extends Record<string, unknown>> {
@@ -18,9 +22,9 @@ interface NewAuthRoutes {
   statusHandler(request: NewAuthRouteRequest): Promise<NewAuthRouteResponse<Record<string, unknown>>>;
   verifyIcloudpdHandler(request: NewAuthRouteRequest): Promise<NewAuthRouteResponse<Record<string, unknown>>>;
   sessionFilesHandler(request: NewAuthRouteRequest): Promise<NewAuthRouteResponse<Record<string, unknown>>>;
-  loginPendingHandler(): Promise<NewAuthRouteResponse<Record<string, unknown>>>;
-  submitTwoFactorPendingHandler(): Promise<NewAuthRouteResponse<Record<string, unknown>>>;
-  logoutPendingHandler(): Promise<NewAuthRouteResponse<Record<string, unknown>>>;
+  loginHandler(request: NewAuthRouteRequest): Promise<NewAuthRouteResponse<Record<string, unknown>>>;
+  submitTwoFactorHandler(request: NewAuthRouteRequest): Promise<NewAuthRouteResponse<Record<string, unknown>>>;
+  logoutHandler(request: NewAuthRouteRequest): Promise<NewAuthRouteResponse<Record<string, unknown>>>;
 }
 
 export function createNewAuthRoutes(): NewAuthRoutes {
@@ -49,34 +53,41 @@ export function createNewAuthRoutes(): NewAuthRoutes {
       };
     },
 
-    loginPendingHandler: async () => ({
-      statusCode: 501,
-      payload: buildPendingSlice3Payload('POST /api/auth/new/login'),
-    }),
+    loginHandler: async ({ context }) => {
+      const payload = await startNewAuthLogin(context);
+      return {
+        statusCode: statusCodeForPayload(payload),
+        payload,
+      };
+    },
 
-    submitTwoFactorPendingHandler: async () => ({
-      statusCode: 501,
-      payload: buildPendingSlice3Payload('POST /api/auth/new/submit-2fa'),
-    }),
+    submitTwoFactorHandler: async ({ context, body }) => {
+      const payload = await submitNewAuthTwoFactor(context, { code: body?.code });
+      return {
+        statusCode: statusCodeForPayload(payload),
+        payload,
+      };
+    },
 
-    logoutPendingHandler: async () => ({
-      statusCode: 501,
-      payload: buildPendingSlice3Payload('POST /api/auth/new/logout'),
-    }),
+    logoutHandler: async ({ context }) => {
+      const payload = await logoutNewAuthSession(context);
+      return {
+        statusCode: statusCodeForPayload(payload),
+        payload,
+      };
+    },
   };
 }
 
-function buildPendingSlice3Payload(endpoint: string): Record<string, unknown> {
-  return {
-    ok: false,
-    state: 'failed',
-    errorCode: 'NEW_AUTH_SLICE_3_REQUIRED',
-    message: `${endpoint} is reserved for NEW AUTH Slice 3. Slice 2 registers a safe non-secret placeholder only.`,
-    details: {
-      endpoint,
-      provider: 'icloudpd',
-      implementedInCurrentSlice: false,
-      secretsShown: false,
-    },
-  };
+function statusCodeForPayload(payload: Record<string, unknown>): number {
+  if (payload.ok === true || payload.state === 'pending_2fa') {
+    return 200;
+  }
+  if (payload.errorCode === 'NEW_AUTH_MISSING_CONFIG' || payload.errorCode === 'NEW_AUTH_2FA_CODE_MISSING' || payload.errorCode === 'NEW_AUTH_UNSAFE_SESSION_PATH') {
+    return 400;
+  }
+  if (payload.errorCode === 'ICLOUDPD_NOT_FOUND') {
+    return 404;
+  }
+  return 409;
 }
