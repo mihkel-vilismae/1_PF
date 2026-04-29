@@ -4,6 +4,24 @@ import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
+/**
+ * @typedef {import('node:child_process').ChildProcessWithoutNullStreams} ChildProcessWithoutNullStreams
+ */
+
+/**
+ * @typedef {object} ValidationServer
+ * @property {ChildProcessWithoutNullStreams} child
+ * @property {() => boolean} isReady
+ * @property {() => string} getStdout
+ * @property {() => string} getStderr
+ */
+
+/**
+ * @typedef {object} RequestJsonResult
+ * @property {number} status
+ * @property {unknown} payload
+ */
+
 const repoRoot = process.cwd();
 const tempDir = mkdtempSync(path.join(os.tmpdir(), 'view-e-validate-'));
 const tempDbPath = path.join(tempDir, 'view-e-test.sqlite');
@@ -27,6 +45,9 @@ if (!existsSync(envPath)) {
   );
 }
 
+/**
+ * @returns {ValidationServer}
+ */
 function startServer() {
   const child = spawn(process.execPath, ['--import', 'tsx', 'server/index.ts'], {
     cwd: repoRoot,
@@ -52,6 +73,11 @@ function startServer() {
   return { child, isReady: () => ready, getStdout: () => stdoutBuffer, getStderr: () => stderrBuffer };
 }
 
+/**
+ * @param {ValidationServer} server
+ * @param {number} [timeoutMs]
+ * @returns {Promise<void>}
+ */
 async function waitForServer(server, timeoutMs = 8000) {
   const start = Date.now();
   while (!server.isReady()) {
@@ -62,6 +88,11 @@ async function waitForServer(server, timeoutMs = 8000) {
   }
 }
 
+/**
+ * @param {string} url
+ * @param {RequestInit} [options]
+ * @returns {Promise<RequestJsonResult>}
+ */
 async function requestJson(url, options = {}) {
   const response = await fetch(url, {
     headers: { 'Content-Type': 'application/json', ...(options.headers ?? {}) },
@@ -77,12 +108,20 @@ async function requestJson(url, options = {}) {
   return { status: response.status, payload };
 }
 
+/**
+ * @param {unknown} condition
+ * @param {string} message
+ * @returns {void}
+ */
 function assert(condition, message) {
   if (!condition) {
     throw new Error(message);
   }
 }
 
+/**
+ * @returns {Promise<void>}
+ */
 async function main() {
   const server = startServer();
   try {

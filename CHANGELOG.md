@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## 2026-04-29 14:01 EEST — v0.3.41
+
+### Added
+- Added Slice 13+14 function boundary types for remaining database service result boundaries and low-risk server-side tooling scripts.
+
+### Changed
+- Replaced repeated inline database runtime result return shapes with named local interfaces and added JSDoc helper contracts to server-side maintenance scripts without changing runtime behavior.
+- Updated version metadata from v0.3.40 to v0.3.41.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
 ## 2026-04-29 13:44 EEST — v0.3.40
 
 ### Added

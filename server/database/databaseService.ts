@@ -83,6 +83,55 @@ interface DatabaseRowsRequestBody {
   pageSize?: unknown;
 }
 
+interface DatabaseDeleteResult {
+  database: DatabaseStatus;
+  removedPaths: string[];
+}
+
+interface DatabaseRecreateResult {
+  database: DatabaseStatus;
+  created: unknown;
+  schemaPath: string;
+}
+
+interface DatabaseRowsResult {
+  database: DatabaseStatus;
+  table: unknown;
+}
+
+interface Stage2IndexRegisterResult {
+  database: DatabaseStatus;
+  downloadDirectory: string;
+  schemaPath: string;
+  indexedAt: string;
+  indexing: unknown;
+}
+
+interface RuntimeStageResultBase {
+  database: DatabaseStatus;
+  executedAt: string;
+}
+
+interface Stage3GpsResult extends RuntimeStageResultBase {
+  gps: unknown;
+}
+
+interface Stage4GeocodeResult extends RuntimeStageResultBase {
+  geocode: unknown;
+}
+
+interface Stage5QueueResult extends RuntimeStageResultBase {
+  queue: unknown;
+}
+
+interface Stage6PlaybackResult extends RuntimeStageResultBase {
+  playback: unknown;
+}
+
+interface RunProcessOptions {
+  shell?: boolean;
+}
+
 interface ProcessResult {
   code: number | null;
   stdout: string;
@@ -98,7 +147,7 @@ export interface DatabaseService {
   buildDatabaseStatus(context: DatabaseActionContext): Promise<DatabaseStatus>;
   buildDatabaseViewerVerification(context: DatabaseActionContext): Promise<DatabaseViewerVerification>;
   buildDatabaseViewerVerificationMessages(verification: DatabaseViewerVerification): string[];
-  deleteDatabaseArtifacts(context: DatabaseActionContext): Promise<{ database: DatabaseStatus; removedPaths: string[] }>;
+  deleteDatabaseArtifacts(context: DatabaseActionContext): Promise<DatabaseDeleteResult>;
   fileExists(targetPath: string): Promise<boolean>;
   getDatabaseArtifactPaths(databaseOrAbsolutePath: string | DatabaseArtifactSource): string[];
   getDatabaseViewerLoggingCoverage(): string;
@@ -106,15 +155,15 @@ export interface DatabaseService {
   getSqliteScriptPath(): string;
   inspectDatabase(context: DatabaseActionContext): Promise<DatabaseInspectionResult>;
   listDatabaseViewerTables(context: DatabaseActionContext): Promise<DatabaseInspectionResult>;
-  loadDatabaseViewerRows(context: DatabaseActionContext, body: DatabaseRowsRequestBody): Promise<{ database: DatabaseStatus; table: unknown }>;
-  recreateEmptyDatabase(context: DatabaseActionContext): Promise<{ database: DatabaseStatus; created: unknown; schemaPath: string }>;
+  loadDatabaseViewerRows(context: DatabaseActionContext, body: DatabaseRowsRequestBody): Promise<DatabaseRowsResult>;
+  recreateEmptyDatabase(context: DatabaseActionContext): Promise<DatabaseRecreateResult>;
   resolveRepoPath(relativeOrAbsolutePath: string): string;
   runPythonJson<T = unknown>(args: string[]): Promise<T>;
-  runStage2IndexRegister(context: DatabaseActionContext): Promise<{ database: DatabaseStatus; downloadDirectory: string; schemaPath: string; indexedAt: string; indexing: unknown }>;
-  runStage3ProcessGpsQueue(context: DatabaseActionContext): Promise<{ database: DatabaseStatus; executedAt: string; gps: unknown }>;
-  runStage4ProcessGeocodeQueue(context: DatabaseActionContext): Promise<{ database: DatabaseStatus; executedAt: string; geocode: unknown }>;
-  runStage5PrepareQueue(context: DatabaseActionContext): Promise<{ database: DatabaseStatus; executedAt: string; queue: unknown }>;
-  runStage6SelectCurrent(context: DatabaseActionContext): Promise<{ database: DatabaseStatus; executedAt: string; playback: unknown }>;
+  runStage2IndexRegister(context: DatabaseActionContext): Promise<Stage2IndexRegisterResult>;
+  runStage3ProcessGpsQueue(context: DatabaseActionContext): Promise<Stage3GpsResult>;
+  runStage4ProcessGeocodeQueue(context: DatabaseActionContext): Promise<Stage4GeocodeResult>;
+  runStage5PrepareQueue(context: DatabaseActionContext): Promise<Stage5QueueResult>;
+  runStage6SelectCurrent(context: DatabaseActionContext): Promise<Stage6PlaybackResult>;
   getRuntimeState<T = unknown>(context: DatabaseActionContext, key: string): Promise<T | null>;
   setRuntimeState(context: DatabaseActionContext, key: string, value: unknown): Promise<void>;
 }
@@ -230,7 +279,7 @@ export function createDatabaseService({ repoRoot, createHttpError }: DatabaseSer
     return { database, inspection };
   }
 
-  async function deleteDatabaseArtifacts(context: DatabaseActionContext): Promise<{ database: DatabaseStatus; removedPaths: string[] }> {
+  async function deleteDatabaseArtifacts(context: DatabaseActionContext): Promise<DatabaseDeleteResult> {
     const database = await buildDatabaseStatus(context);
     const removedPaths: string[] = [];
     const candidatePaths = getDatabaseArtifactPaths(database);
@@ -245,7 +294,7 @@ export function createDatabaseService({ repoRoot, createHttpError }: DatabaseSer
     return { database, removedPaths };
   }
 
-  async function recreateEmptyDatabase(context: DatabaseActionContext): Promise<{ database: DatabaseStatus; created: unknown; schemaPath: string }> {
+  async function recreateEmptyDatabase(context: DatabaseActionContext): Promise<DatabaseRecreateResult> {
     const database = await buildDatabaseStatus(context);
     const candidatePaths = getDatabaseArtifactPaths(database);
 
@@ -324,7 +373,7 @@ export function createDatabaseService({ repoRoot, createHttpError }: DatabaseSer
     return { database, inspection };
   }
 
-  async function loadDatabaseViewerRows(context: DatabaseActionContext, body: DatabaseRowsRequestBody): Promise<{ database: DatabaseStatus; table: unknown }> {
+  async function loadDatabaseViewerRows(context: DatabaseActionContext, body: DatabaseRowsRequestBody): Promise<DatabaseRowsResult> {
     const tableName = String(body?.tableName ?? '').trim();
     if (!tableName) {
       throw createHttpError(400, 'missing_table_name', 'tableName is required when loading database rows.');
@@ -366,7 +415,7 @@ export function createDatabaseService({ repoRoot, createHttpError }: DatabaseSer
   }
 
 
-  async function runStage2IndexRegister(context: DatabaseActionContext): Promise<{ database: DatabaseStatus; downloadDirectory: string; schemaPath: string; indexedAt: string; indexing: unknown }> {
+  async function runStage2IndexRegister(context: DatabaseActionContext): Promise<Stage2IndexRegisterResult> {
     const database = await buildDatabaseStatus(context);
     if (!database.exists) {
       throw createHttpError(404, 'database_missing', 'Cannot run indexing because the DB file does not exist.', {
@@ -399,7 +448,7 @@ export function createDatabaseService({ repoRoot, createHttpError }: DatabaseSer
     }
   }
 
-  async function runStage3ProcessGpsQueue(context: DatabaseActionContext): Promise<{ database: DatabaseStatus; executedAt: string; gps: unknown }> {
+  async function runStage3ProcessGpsQueue(context: DatabaseActionContext): Promise<Stage3GpsResult> {
     const database = await buildDatabaseStatus(context);
     if (!database.exists) {
       throw createHttpError(404, 'database_missing', 'Cannot run GPS parsing because the DB file does not exist.', {
@@ -412,7 +461,7 @@ export function createDatabaseService({ repoRoot, createHttpError }: DatabaseSer
     return { database, executedAt, gps };
   }
 
-  async function runStage4ProcessGeocodeQueue(context: DatabaseActionContext): Promise<{ database: DatabaseStatus; executedAt: string; geocode: unknown }> {
+  async function runStage4ProcessGeocodeQueue(context: DatabaseActionContext): Promise<Stage4GeocodeResult> {
     const database = await buildDatabaseStatus(context);
     if (!database.exists) {
       throw createHttpError(404, 'database_missing', 'Cannot run geocoding because the DB file does not exist.', {
@@ -425,7 +474,7 @@ export function createDatabaseService({ repoRoot, createHttpError }: DatabaseSer
     return { database, executedAt, geocode };
   }
 
-  async function runStage5PrepareQueue(context: DatabaseActionContext): Promise<{ database: DatabaseStatus; executedAt: string; queue: unknown }> {
+  async function runStage5PrepareQueue(context: DatabaseActionContext): Promise<Stage5QueueResult> {
     const database = await buildDatabaseStatus(context);
     if (!database.exists) {
       throw createHttpError(404, 'database_missing', 'Cannot prepare slideshow queue because the DB file does not exist.', {
@@ -438,7 +487,7 @@ export function createDatabaseService({ repoRoot, createHttpError }: DatabaseSer
     return { database, executedAt, queue };
   }
 
-  async function runStage6SelectCurrent(context: DatabaseActionContext): Promise<{ database: DatabaseStatus; executedAt: string; playback: unknown }> {
+  async function runStage6SelectCurrent(context: DatabaseActionContext): Promise<Stage6PlaybackResult> {
     const database = await buildDatabaseStatus(context);
     if (!database.exists) {
       throw createHttpError(404, 'database_missing', 'Cannot select current media because the DB file does not exist.', {
@@ -492,7 +541,7 @@ export function createDatabaseService({ repoRoot, createHttpError }: DatabaseSer
     }
   }
 
-  function runProcess(command: string, args: string[], options: { shell?: boolean } = {}): Promise<ProcessResult> {
+  function runProcess(command: string, args: string[], options: RunProcessOptions = {}): Promise<ProcessResult> {
     return new Promise((resolve, reject) => {
       const child = spawn(command, args, {
         cwd: repoRoot,

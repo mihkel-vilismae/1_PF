@@ -3,6 +3,31 @@ import path from 'node:path';
 import process from 'node:process';
 import { spawnSync } from 'node:child_process';
 
+/**
+ * @typedef {'proposed' | 'in_progress' | 'implemented' | 'superseded' | 'archived' | 'reference' | 'unknown'} TaskDocStatus
+ */
+
+/**
+ * @typedef {object} TaskDocGitInfo
+ * @property {string} createdDate
+ * @property {string} lastUpdatedDate
+ * @property {string} latestCommit
+ * @property {boolean} committed
+ * @property {boolean} dirty
+ */
+
+/**
+ * @typedef {object} TaskDocTocEntry
+ * @property {string} relativePath
+ * @property {string} title
+ * @property {string} purpose
+ * @property {TaskDocStatus} status
+ * @property {string} created
+ * @property {string} lastUpdated
+ * @property {string} latestCommit
+ * @property {string} notes
+ */
+
 const repoRoot = process.cwd();
 const taskDocsDir = path.join(repoRoot, 'task_docs');
 const tocPath = path.join(taskDocsDir, '_TABLE_OF_CONTENTS.md');
@@ -40,6 +65,10 @@ if (checkMode) {
   console.log(`Wrote ${relativeTocPath} with ${entries.length} entries.`);
 }
 
+/**
+ * @param {string} directory
+ * @returns {string[]}
+ */
 function listFiles(directory) {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const fullPath = path.join(directory, entry.name);
@@ -50,6 +79,10 @@ function listFiles(directory) {
   });
 }
 
+/**
+ * @param {string} filePath
+ * @returns {TaskDocTocEntry}
+ */
 function buildEntry(filePath) {
   const relativePath = normalizeRelativePath(path.relative(taskDocsDir, filePath));
   const content = isMarkdown(filePath) ? readFileSync(filePath, 'utf8') : '';
@@ -67,6 +100,9 @@ function buildEntry(filePath) {
   };
 }
 
+/**
+ * @returns {string}
+ */
 function readCurrentToc() {
   try {
     return readFileSync(tocPath, 'utf8');
@@ -78,14 +114,26 @@ function readCurrentToc() {
   }
 }
 
+/**
+ * @param {string} filePath
+ * @returns {boolean}
+ */
 function isMarkdown(filePath) {
   return path.extname(filePath).toLowerCase() === '.md';
 }
 
+/**
+ * @param {string} relativePath
+ * @returns {string}
+ */
 function normalizeRelativePath(relativePath) {
   return relativePath.split(path.sep).join('/');
 }
 
+/**
+ * @param {string} filePath
+ * @returns {TaskDocGitInfo}
+ */
 function getGitInfo(filePath) {
   const relativeToRepo = normalizeRelativePath(path.relative(repoRoot, filePath));
   const result = spawnSync(
@@ -137,6 +185,11 @@ function getGitInfo(filePath) {
   };
 }
 
+/**
+ * @param {string} relativePath
+ * @param {string} content
+ * @returns {string}
+ */
 function detectTitle(relativePath, content) {
   const heading = content.match(/^#\s+(.+)$/m)?.[1]?.trim();
   if (heading) {
@@ -145,6 +198,11 @@ function detectTitle(relativePath, content) {
   return path.basename(relativePath);
 }
 
+/**
+ * @param {string} relativePath
+ * @param {string} content
+ * @returns {string}
+ */
 function detectPurpose(relativePath, content) {
   if (!content) {
     return 'Non-Markdown file tracked under task_docs/.';
@@ -166,6 +224,11 @@ function detectPurpose(relativePath, content) {
   return 'Task documentation entry.';
 }
 
+/**
+ * @param {string} relativePath
+ * @param {string} content
+ * @returns {TaskDocStatus}
+ */
 function detectStatus(relativePath, content) {
   if (relativePath === 'README.md') {
     return 'reference';
@@ -184,6 +247,12 @@ function detectStatus(relativePath, content) {
   return 'unknown';
 }
 
+/**
+ * @param {string} relativePath
+ * @param {string} content
+ * @param {TaskDocGitInfo} gitInfo
+ * @returns {string}
+ */
 function detectNotes(relativePath, content, gitInfo) {
   const notes = [];
 
@@ -207,12 +276,21 @@ function detectNotes(relativePath, content, gitInfo) {
   return notes.length ? notes.join(' ') : '—';
 }
 
+/**
+ * @param {string} content
+ * @param {string} heading
+ * @returns {string}
+ */
 function extractSection(content, heading) {
   const escapedHeading = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const match = content.match(new RegExp(`^##\\s+${escapedHeading}\\s*$([\\s\\S]*?)(?=^##\\s+|\\Z)`, 'mi'));
   return match?.[1]?.trim() ?? '';
 }
 
+/**
+ * @param {string} content
+ * @returns {string}
+ */
 function firstParagraph(content) {
   const lines = content
     .split(/\r?\n/)
@@ -226,6 +304,10 @@ function firstParagraph(content) {
   return lines[0];
 }
 
+/**
+ * @param {string} value
+ * @returns {string}
+ */
 function cleanInlineMarkdown(value) {
   return value
     .replace(/`([^`]+)`/g, '$1')
@@ -236,6 +318,11 @@ function cleanInlineMarkdown(value) {
     .trim();
 }
 
+/**
+ * @param {string} value
+ * @param {number} maxLength
+ * @returns {string}
+ */
 function clip(value, maxLength) {
   if (value.length <= maxLength) {
     return value;
@@ -243,10 +330,18 @@ function clip(value, maxLength) {
   return `${value.slice(0, maxLength - 1).trimEnd()}…`;
 }
 
+/**
+ * @param {unknown} value
+ * @returns {string}
+ */
 function escapeTableCell(value) {
   return String(value).replace(/\|/g, '\\|');
 }
 
+/**
+ * @param {TaskDocTocEntry[]} entries
+ * @returns {string}
+ */
 function renderToc(entries) {
   const listedFiles = entries.map((entry) => `- \`${entry.relativePath}\``).join('\n');
   const tableRows = entries
