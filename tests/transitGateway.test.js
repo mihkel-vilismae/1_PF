@@ -3,6 +3,32 @@ import test from 'node:test';
 
 import { ApiRequestError, requestJson, subscribeTransit } from '../dashboard/services/apiClient.ts';
 
+/**
+ * @typedef {import('../dashboard/services/apiClient.ts').TransitRecord} TransitRecord
+ */
+
+/**
+ * @typedef {Response | {
+ *   status: number,
+ *   ok: boolean,
+ *   statusText: string,
+ *   url: string,
+ *   headers: Headers,
+ *   json: () => Promise<unknown>,
+ *   text: () => Promise<string>
+ * }} FetchStubResponse
+ */
+
+/**
+ * @typedef {(input: RequestInfo | URL, init?: RequestInit) => Promise<FetchStubResponse>} FetchStub
+ */
+
+/**
+ * Replace global fetch for a single test and return a restore function.
+ *
+ * @param {FetchStub} impl
+ * @returns {() => void}
+ */
 function installFetchStub(impl) {
   const previous = globalThis.fetch;
   globalThis.fetch = impl;
@@ -12,6 +38,7 @@ function installFetchStub(impl) {
 }
 
 test('requestJson emits outbound + inbound transit records (success)', async () => {
+  /** @type {TransitRecord[]} */
   const records = [];
   const unsubscribe = subscribeTransit((record) => records.push(record));
 
@@ -50,6 +77,7 @@ test('requestJson emits outbound + inbound transit records (success)', async () 
 });
 
 test('requestJson emits inbound failure transit record on non-2xx', async () => {
+  /** @type {TransitRecord[]} */
   const records = [];
   const unsubscribe = subscribeTransit((record) => records.push(record));
 
@@ -80,6 +108,7 @@ test('requestJson emits inbound failure transit record on non-2xx', async () => 
 });
 
 test('requestJson emits inbound failure transit record on network error', async () => {
+  /** @type {TransitRecord[]} */
   const records = [];
   const unsubscribe = subscribeTransit((record) => records.push(record));
 

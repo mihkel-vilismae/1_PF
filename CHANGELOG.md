@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## 2026-04-29 12:37 EEST — v0.3.37
+
+### Added
+- Added Slice 6 JSDoc function boundary types for low-risk JavaScript test helpers.
+
+### Changed
+- Added explicit DOM fixture, fetch stub, and transit record test helper types without changing test assertions or production behavior.
+- Updated version metadata from v0.3.36 to v0.3.37.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
 ## 2026-04-29 12:27 EEST — v0.3.36
 
 ### Added

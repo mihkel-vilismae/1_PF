@@ -5,6 +5,44 @@ import { describeInspectableElement, describeValueElement } from '../dashboard/i
 import { createRealityMetadataHelpers } from '../dashboard/inspect/realityMetadata.ts';
 import { createBackendStatusMetadataHelpers } from '../dashboard/inspect/backendStatusMetadata.ts';
 
+/**
+ * @typedef {object} FakeNodeOptions
+ * @property {string} [textContent]
+ * @property {Record<string, FakeNode | FakeElement | null>} [query]
+ */
+
+/**
+ * @typedef {object} FakeNode
+ * @property {string} textContent
+ * @property {(selector: string) => FakeNode | FakeElement | null} querySelector
+ */
+
+/**
+ * @typedef {object} FakeElementOptions
+ * @property {string[]} [matches]
+ * @property {Record<string, string>} [dataset]
+ * @property {string} [textContent]
+ * @property {Record<string, FakeNode | FakeElement | null>} [query]
+ * @property {Record<string, FakeNode | FakeElement | null>} [closest]
+ * @property {string[]} [attributes]
+ */
+
+/**
+ * @typedef {object} FakeElement
+ * @property {Record<string, string>} dataset
+ * @property {string} textContent
+ * @property {(selector: string) => boolean} matches
+ * @property {(selector: string) => FakeNode | FakeElement | null} querySelector
+ * @property {(selector: string) => FakeNode | FakeElement | null} closest
+ * @property {(name: string) => boolean} hasAttribute
+ */
+
+/**
+ * Build the narrow DOM-like node surface used by inspect metadata tests.
+ *
+ * @param {FakeNodeOptions} [options]
+ * @returns {FakeNode}
+ */
 function fakeNode({ textContent = '', query = {} } = {}) {
   return {
     textContent,
@@ -14,6 +52,12 @@ function fakeNode({ textContent = '', query = {} } = {}) {
   };
 }
 
+/**
+ * Build the narrow DOM-like element surface used by inspect metadata tests.
+ *
+ * @param {FakeElementOptions} [options]
+ * @returns {FakeElement}
+ */
 function fakeElement({ matches = [], dataset = {}, textContent = '', query = {}, closest = {}, attributes = [] } = {}) {
   const matchSet = new Set(matches);
   const attributeSet = new Set(attributes);
