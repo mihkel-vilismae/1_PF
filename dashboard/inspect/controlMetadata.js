@@ -7,7 +7,7 @@ import {
   LAST_RUN_MODE_INSPECT_COPY,
 } from './guideCopy.js';
 import { getAuthButtonInspectCopy } from '../data/authButtonStatusCopy.ts';
-import { buildValueMeta, compactWhitespace, getCardContext } from './guideUtils.js';
+import { buildValueMeta, compactWhitespace, getCardContext } from './guideUtils.ts';
 
 export function describeInspectableElement(element) {
   if (element.matches('.nav-link')) {
