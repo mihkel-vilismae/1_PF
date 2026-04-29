@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## 2026-04-29 12:19 EEST — v0.3.35
+
+### Added
+- Added Slice 4 TypeScript function boundary types for dashboard renderer helpers and the transit terminal service.
+
+### Changed
+- Added explicit render input, modal, transport, log/history, step-list, transit record, and terminal API types without changing rendered HTML strings or transit formatting behavior.
+- Updated version metadata from v0.3.34 to v0.3.35.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
 ## 2026-04-29 12:08 EEST — v0.3.34
 
 ### Added

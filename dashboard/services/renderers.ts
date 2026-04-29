@@ -1,10 +1,81 @@
 import { STATUS_LABELS } from '../shared/constants.ts';
 
-export function statusBadge(status) {
-  return `<span class="status-badge status-badge--${escapeHtml(status)}">${escapeHtml(STATUS_LABELS[status] ?? status)}</span>`;
+type StatusLabelKey = keyof typeof STATUS_LABELS;
+type StatusLabel = StatusLabelKey | string;
+
+type LogEntry = {
+  at?: string;
+  atIso?: string;
+  atTallinn?: string;
+  type?: string;
+  message?: string;
+  details?: TransportDetails | Record<string, unknown> | null;
+};
+
+type HistoryEntry = LogEntry & {
+  source?: string;
+};
+
+type RenderLogEntriesOptions = {
+  sourceKey?: string;
+};
+
+type SourceBadgeMode = 'real' | 'hybrid' | 'mock' | string;
+
+type DefinitionListData = Record<string, unknown>;
+
+type ResultSurfaceData = {
+  outcome: string;
+  operation?: string;
+  method?: string;
+  endpoint?: string;
+  receivedAt?: string;
+  status?: string | number | null;
+  message?: string;
+  payload?: unknown;
+  errorPayload?: unknown;
+};
+
+type ModalKind = 'log' | 'history' | string;
+
+type ModalData = {
+  title?: string;
+  subtitle?: string;
+  kind?: ModalKind;
+  entry: LogEntry | HistoryEntry;
+};
+
+type StepListItem = {
+  status?: string;
+  label?: string;
+};
+
+type TransportDetails = {
+  operation?: unknown;
+  endpoint?: unknown;
+  outcome?: unknown;
+  request?: TransportData;
+  response?: TransportData;
+  [key: string]: unknown;
+};
+
+type TransportData = {
+  method?: unknown;
+  path?: unknown;
+  status?: unknown;
+  statusText?: unknown;
+  ok?: unknown;
+  url?: unknown;
+  headers?: unknown;
+  body?: unknown;
+};
+
+export function statusBadge(status: StatusLabel): string {
+  const label = (STATUS_LABELS as Record<string, string>)[status] ?? status;
+  return `<span class="status-badge status-badge--${escapeHtml(status)}">${escapeHtml(label)}</span>`;
 }
 
-export function renderLogEntries(entries = [], options: any = {}) {
+export function renderLogEntries(entries: LogEntry[] = [], options: RenderLogEntriesOptions = {}): string {
   const sourceKey = options.sourceKey ?? 'LOG';
   if (!entries.length) {
     return '<div class="log-entry log-entry--empty"><p class="log-entry__message">No log entries yet.</p></div>';
@@ -36,21 +107,20 @@ export function renderLogEntries(entries = [], options: any = {}) {
     .join('');
 }
 
-export function renderSourceBadge(mode, label = null) {
+export function renderSourceBadge(mode: SourceBadgeMode, label: string | null = null): string {
   const normalizedMode = ['real', 'hybrid', 'mock'].includes(mode) ? mode : 'hybrid';
   const text = label ?? normalizedMode.toUpperCase();
   return `<span class="source-badge source-badge--${escapeHtml(normalizedMode)}">${escapeHtml(text)}</span>`;
 }
 
-export function renderDefinitionList(data = {}) {
-
+export function renderDefinitionList(data: DefinitionListData = {}): string {
   const rows = Object.entries(data)
     .map(([label, value]) => `<div class="definition-row"><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(formatInlineValue(value))}</dd></div>`)
     .join('');
   return `<dl class="definition-list">${rows}</dl>`;
 }
 
-export function renderResultSurface(result) {
+export function renderResultSurface(result: ResultSurfaceData | null | undefined): string {
   if (!result) {
     return `
       <div class="result-surface result-surface--empty">
@@ -59,7 +129,7 @@ export function renderResultSurface(result) {
     `;
   }
 
-  const meta = {
+  const meta: DefinitionListData = {
     Operation: result.operation,
     Endpoint: `${result.method} ${result.endpoint}`,
     Updated: result.receivedAt,
@@ -95,7 +165,7 @@ export function renderResultSurface(result) {
   `;
 }
 
-export function renderHistory(entries = []) {
+export function renderHistory(entries: HistoryEntry[] = []): string {
   if (!entries.length) {
     return '<article class="history-item history-item--empty"><div class="history-item__message">No history yet.</div></article>';
   }
@@ -125,7 +195,7 @@ export function renderHistory(entries = []) {
     .join('');
 }
 
-export function renderModal(modal) {
+export function renderModal(modal: ModalData | null | undefined): string {
   if (!modal) {
     return '';
   }
@@ -153,7 +223,7 @@ export function renderModal(modal) {
   `;
 }
 
-export function renderStepList(steps = []) {
+export function renderStepList(steps: StepListItem[] = []): string {
   return `
     <ol class="step-list">
       ${steps
@@ -170,9 +240,10 @@ export function renderStepList(steps = []) {
   `;
 }
 
-function renderLogModalContent(entry) {
-  const parts = [];
-  const timeline = {
+function renderLogModalContent(entry: LogEntry): string {
+  const parts: string[] = [];
+  const details = asTransportDetails(entry.details);
+  const timeline: DefinitionListData = {
     'Local time': entry.at ?? 'Unavailable',
     'Tallinn time': entry.atTallinn ?? 'Unavailable',
     'ISO time': entry.atIso ?? 'Unavailable',
@@ -180,37 +251,39 @@ function renderLogModalContent(entry) {
 
   parts.push(renderModalSection('Timeline', renderDefinitionList(timeline)));
 
-  if (entry.details?.operation || entry.details?.endpoint || entry.details?.outcome) {
+  if (details?.operation || details?.endpoint || details?.outcome) {
     parts.push(
       renderModalSection(
         'Action',
         renderDefinitionList({
-          Operation: entry.details.operation ?? 'Unavailable',
-          Endpoint: entry.details.endpoint ?? 'Unavailable',
-          Outcome: entry.details.outcome ?? 'Unavailable',
+          Operation: details.operation ?? 'Unavailable',
+          Endpoint: details.endpoint ?? 'Unavailable',
+          Outcome: details.outcome ?? 'Unavailable',
         }),
       ),
     );
   }
 
-  if (entry.details?.request) {
-    parts.push(renderTransportSection('Request', entry.details.request));
+  if (details?.request) {
+    parts.push(renderTransportSection('Request', details.request));
   }
 
-  if (entry.details?.response) {
-    parts.push(renderTransportSection('Response', entry.details.response));
+  if (details?.response) {
+    parts.push(renderTransportSection('Response', details.response));
   }
 
-  if (!entry.details?.request && !entry.details?.response && !entry.details?.operation && !entry.details?.endpoint) {
+  if (!details?.request && !details?.response && !details?.operation && !details?.endpoint) {
     parts.push(renderModalSection('Notes', '<p class="modal-panel__empty">No additional request metadata was captured for this log entry.</p>'));
   }
 
   return parts.join('');
 }
 
-function renderHistoryModalContent(entry) {
-  const parts = [];
-  const timeline = {
+function renderHistoryModalContent(entry: LogEntry | HistoryEntry): string {
+  const parts: string[] = [];
+  const historyEntry = entry as HistoryEntry;
+  const details = asTransportDetails(entry.details);
+  const timeline: DefinitionListData = {
     'Local time': entry.at ?? 'Unavailable',
     'Tallinn time': entry.atTallinn ?? 'Unavailable',
     'ISO time': entry.atIso ?? 'Unavailable',
@@ -220,7 +293,7 @@ function renderHistoryModalContent(entry) {
     renderModalSection(
       'Event summary',
       renderDefinitionList({
-        Source: entry.source ?? 'Unavailable',
+        Source: historyEntry.source ?? 'Unavailable',
         Type: entry.type ?? 'Unavailable',
         Message: entry.message ?? 'Unavailable',
       }),
@@ -228,12 +301,12 @@ function renderHistoryModalContent(entry) {
   );
   parts.push(renderModalSection('Timeline', renderDefinitionList(timeline)));
 
-  if (entry.details?.request || entry.details?.response) {
-    if (entry.details.request) {
-      parts.push(renderTransportSection('Request', entry.details.request));
+  if (details?.request || details?.response) {
+    if (details.request) {
+      parts.push(renderTransportSection('Request', details.request));
     }
-    if (entry.details.response) {
-      parts.push(renderTransportSection('Response', entry.details.response));
+    if (details.response) {
+      parts.push(renderTransportSection('Response', details.response));
     }
   } else if (entry.details) {
     parts.push(renderModalSection('Context', renderDefinitionList(flattenContext(entry.details))));
@@ -249,8 +322,8 @@ function renderHistoryModalContent(entry) {
   return parts.join('');
 }
 
-function renderTransportSection(label, data) {
-  const summaryRows =
+function renderTransportSection(label: 'Request' | 'Response', data: TransportData): string {
+  const summaryRows: DefinitionListData =
     label === 'Request'
       ? {
           Method: data.method ?? 'Unavailable',
@@ -282,7 +355,7 @@ function renderTransportSection(label, data) {
   );
 }
 
-function renderModalSection(title, body) {
+function renderModalSection(title: string, body: string): string {
   return `
     <section class="modal-panel__section">
       <p class="modal-panel__section-title">${escapeHtml(title)}</p>
@@ -291,21 +364,24 @@ function renderModalSection(title, body) {
   `;
 }
 
-function flattenContext(details) {
-  return Object.entries(details).reduce((acc, [key, value]) => {
+function flattenContext(details: unknown): DefinitionListData {
+  if (!details || typeof details !== 'object' || Array.isArray(details)) {
+    return {};
+  }
+  return Object.entries(details).reduce<DefinitionListData>((acc, [key, value]) => {
     acc[key] = typeof value === 'object' && value !== null ? formatPayload(value) : value;
     return acc;
   }, {});
 }
 
-function formatPayload(payload) {
+function formatPayload(payload: unknown): string {
   if (typeof payload === 'string') {
     return payload;
   }
   return JSON.stringify(payload, null, 2);
 }
 
-function formatInlineValue(value) {
+function formatInlineValue(value: unknown): string {
   if (value === null || value === undefined) {
     return '';
   }
@@ -315,7 +391,14 @@ function formatInlineValue(value) {
   return String(value);
 }
 
-function escapeHtml(value) {
+function asTransportDetails(details: unknown): TransportDetails | null {
+  if (!details || typeof details !== 'object' || Array.isArray(details)) {
+    return null;
+  }
+  return details as TransportDetails;
+}
+
+function escapeHtml(value: unknown): string {
   return String(value)
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')

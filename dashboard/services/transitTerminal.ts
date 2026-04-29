@@ -1,3 +1,5 @@
+import type { TransitRecord } from './apiClient.ts';
+
 const MAX_TRANSIT_LINES = 120;
 const placeholderLines = [
   '[PLACEHOLDER] boot: transit terminal is not wired yet',
@@ -9,12 +11,18 @@ const placeholderLines = [
   '[PLACEHOLDER] replace this feed with live gateway traffic',
 ];
 
-export function createTransitTerminal() {
-  const transitLines = [];
+export type TransitTerminal = {
+  consumeRecord: (record: TransitRecord | unknown) => boolean;
+  hasLiveTraffic: () => boolean;
+  renderLines: () => string;
+};
+
+export function createTransitTerminal(): TransitTerminal {
+  const transitLines: string[] = [];
   let hasLiveTraffic = false;
 
   return {
-    consumeRecord(record) {
+    consumeRecord(record: TransitRecord | unknown): boolean {
       const line = formatTransitRecord(record);
       if (!line) {
         return false;
@@ -27,10 +35,10 @@ export function createTransitTerminal() {
       }
       return true;
     },
-    hasLiveTraffic() {
+    hasLiveTraffic(): boolean {
       return hasLiveTraffic;
     },
-    renderLines() {
+    renderLines(): string {
       if (!hasLiveTraffic) {
         return placeholderLines.join('\n');
       }
@@ -42,32 +50,33 @@ export function createTransitTerminal() {
   };
 }
 
-function formatTransitRecord(record) {
+function formatTransitRecord(record: TransitRecord | unknown): string {
   if (!record || typeof record !== 'object') {
     return '';
   }
 
-  const atIso = typeof record.atIso === 'string' ? record.atIso : '';
+  const candidate = record as Partial<TransitRecord>;
+  const atIso = typeof candidate.atIso === 'string' ? candidate.atIso : '';
   const time = atIso
     ? new Date(atIso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
     : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  const direction = record.direction === 'inbound' ? 'IN ' : record.direction === 'outbound' ? 'OUT' : 'IO ';
-  const method = typeof record.method === 'string' ? record.method : 'GET';
-  const path = typeof record.path === 'string' ? record.path : '';
+  const direction = candidate.direction === 'inbound' ? 'IN ' : candidate.direction === 'outbound' ? 'OUT' : 'IO ';
+  const method = typeof candidate.method === 'string' ? candidate.method : 'GET';
+  const path = typeof candidate.path === 'string' ? candidate.path : '';
 
   if (!path) {
     return '';
   }
 
-  const operation = typeof record.operation === 'string' ? record.operation : `${method} ${path}`;
-  const hasBody = record.hasBody === true ? 'body=yes' : record.hasBody === false ? 'body=no' : 'body=?';
+  const operation = typeof candidate.operation === 'string' ? candidate.operation : `${method} ${path}`;
+  const hasBody = candidate.hasBody === true ? 'body=yes' : candidate.hasBody === false ? 'body=no' : 'body=?';
 
-  if (record.direction === 'outbound') {
+  if (candidate.direction === 'outbound') {
     return `${time} ${direction} ${method} ${path} ${hasBody} :: ${operation}`;
   }
 
-  const status = record.status === null || record.status === undefined ? '---' : String(record.status);
-  const ok = record.ok === true ? 'OK ' : record.ok === false ? 'ERR' : '---';
-  const error = typeof record.error === 'string' && record.error.trim() ? ` :: ${record.error.trim()}` : '';
+  const status = candidate.status === null || candidate.status === undefined ? '---' : String(candidate.status);
+  const ok = candidate.ok === true ? 'OK ' : candidate.ok === false ? 'ERR' : '---';
+  const error = typeof candidate.error === 'string' && candidate.error.trim() ? ` :: ${candidate.error.trim()}` : '';
   return `${time} ${direction} ${status} ${ok} ${method} ${path}${error} :: ${operation}`;
 }
