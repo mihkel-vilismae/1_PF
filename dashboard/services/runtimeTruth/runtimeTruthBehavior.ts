@@ -13,7 +13,7 @@ import {
   SCHEDULER_OPERATION_SUPPORT,
   SCHEDULER_SUPPORT_LEVELS,
 } from '../../../shared/schedulerPlatformCapabilities.js';
-import { buildTimelineDetails } from './runtimeTruthActionUtils.js';
+import { buildTimelineDetails } from './runtimeTruthActionUtils.ts';
 import {
   RUNTIME_EXECUTION_ENDPOINTS,
   runRuntimeDownload,
@@ -21,15 +21,15 @@ import {
   runRuntimeGps,
   runRuntimeIndex,
 } from '../runtimeExecutionService.ts';
-import { createRuntimeTruthDatabaseActions } from './runtimeTruthDatabaseActions.js';
-import { createRuntimeTruthAuthActions } from './runtimeTruthAuthActions.js';
-import { createRuntimeTruthDemoActions } from './runtimeTruthDemoActions.js';
-import { createRuntimeTruthGuards } from './runtimeTruthGuards.js';
+import { createRuntimeTruthDatabaseActions } from './runtimeTruthDatabaseActions.ts';
+import { createRuntimeTruthAuthActions } from './runtimeTruthAuthActions.ts';
+import { createRuntimeTruthDemoActions } from './runtimeTruthDemoActions.ts';
+import { createRuntimeTruthGuards } from './runtimeTruthGuards.ts';
 import {
   buildInitialSchedulerCapability,
   getSchedulerSupportForAction,
   supportsSchedulerAction,
-} from './runtimeTruthState.js';
+} from './runtimeTruthState.ts';
 
 const SCHEDULER_ACTION_TO_OPERATION = Object.freeze({
   'install-cron': SCHEDULER_OPERATION_SUPPORT.install,

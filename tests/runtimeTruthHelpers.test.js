@@ -9,11 +9,11 @@ import {
   normalizeActionResult,
   summarizeInitPayload,
   summarizeRuntimePayload,
-} from '../dashboard/services/runtimeTruth/runtimeTruthActionUtils.js';
+} from '../dashboard/services/runtimeTruth/runtimeTruthActionUtils.ts';
 import {
   getTruthSignature,
   normalizeTruthSnapshot,
-} from '../dashboard/services/runtimeTruth/runtimeTruthPersistence.js';
+} from '../dashboard/services/runtimeTruth/runtimeTruthPersistence.ts';
 
 test('runtimeTruth action helpers preserve request metadata and status text', () => {
   assert.deepEqual(buildRequestHeaders(), {

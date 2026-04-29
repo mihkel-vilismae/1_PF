@@ -13,7 +13,7 @@ import {
   mapPayloadStatusToUiStatus,
   normalizeActionResult,
   summarizeRuntimePayload,
-} from './runtimeTruthActionUtils.js';
+} from './runtimeTruthActionUtils.ts';
 
 function inferMediaTypeFromPath(candidatePath) {
   const normalized = String(candidatePath ?? '').toLowerCase();
@@ -168,7 +168,7 @@ export function createRuntimeTruthDemoActions({
     endpoint,
     execute,
     requestBody = {},
-    onSuccess = () => {},
+    onSuccess = (_payload = null, _meta = null) => {},
     afterRun = null,
   }) {
     if (!guardAction(key, source, `${key} action is already running; duplicate trigger was blocked.`)) {

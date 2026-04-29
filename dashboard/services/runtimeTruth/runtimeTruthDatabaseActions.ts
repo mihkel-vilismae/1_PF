@@ -14,8 +14,8 @@ import {
   mapPayloadStatusToUiStatus,
   normalizeActionResult,
   summarizeInitPayload,
-} from './runtimeTruthActionUtils.js';
-import { buildInitialSchedulerCapability } from './runtimeTruthState.js';
+} from './runtimeTruthActionUtils.ts';
+import { buildInitialSchedulerCapability } from './runtimeTruthState.ts';
 
 export function createRuntimeTruthDatabaseActions({
   getState,

@@ -4,7 +4,7 @@ import test from 'node:test';
 import { renderTestView } from '../dashboard/views/testView.ts';
 import { renderLastRunView } from '../dashboard/views/lastRunView.ts';
 import { renderRunningProcessView } from '../dashboard/views/runningProcessView.ts';
-import { createInitialState } from '../dashboard/services/runtimeTruth/runtimeTruthState.js';
+import { createInitialState } from '../dashboard/services/runtimeTruth/runtimeTruthState.ts';
 
 test('test view renders explicit real, hybrid, and mock source treatments', () => {
   const html = renderTestView(createInitialState());

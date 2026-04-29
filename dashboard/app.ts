@@ -18,7 +18,7 @@ import {
   setLastRunMode,
   setSimulationValue,
   subscribe,
-} from './services/runtimeTruth.js';
+} from './services/runtimeTruth.ts';
 import { renderDefinitionList, renderHistory, renderModal } from './services/renderers.ts';
 import { createTransitTerminal } from './services/transitTerminal.ts';
 import {
@@ -213,7 +213,7 @@ function render() {
 }
 
 function bindEvents() {
-  app.querySelectorAll('[data-view]').forEach((button) => {
+  app.querySelectorAll<HTMLElement>('[data-view]').forEach((button) => {
     button.addEventListener('click', () => {
       const id = button.dataset.view;
       const label = VIEW_ORDER.find((view) => view.id === id);
@@ -221,24 +221,26 @@ function bindEvents() {
     });
   });
 
-  app.querySelectorAll('[data-log-entry-open]').forEach((entry) => {
+  app.querySelectorAll<HTMLElement>('[data-log-entry-open]').forEach((entry) => {
     entry.addEventListener('click', () => {
       openLogModal(entry.dataset.logSourceKey, entry.dataset.logEntryIndex);
     });
     entry.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
+      const key = (event as KeyboardEvent).key;
+      if (key === 'Enter' || key === ' ') {
         event.preventDefault();
         openLogModal(entry.dataset.logSourceKey, entry.dataset.logEntryIndex);
       }
     });
   });
 
-  app.querySelectorAll('[data-history-entry-open]').forEach((entry) => {
+  app.querySelectorAll<HTMLElement>('[data-history-entry-open]').forEach((entry) => {
     entry.addEventListener('click', () => {
       openHistoryModal(entry.dataset.historyEntryIndex);
     });
     entry.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
+      const key = (event as KeyboardEvent).key;
+      if (key === 'Enter' || key === ' ') {
         event.preventDefault();
         openHistoryModal(entry.dataset.historyEntryIndex);
       }
@@ -257,7 +259,7 @@ function bindEvents() {
     });
   });
 
-  app.querySelectorAll('[data-action]').forEach((button) => {
+  app.querySelectorAll<HTMLElement>('[data-action]').forEach((button) => {
     button.addEventListener('click', () => {
       const action = button.dataset.action;
       if (action === 'toggle-inspect-mode') {
@@ -281,7 +283,7 @@ function bindEvents() {
         return;
       }
       if (action === 'submit-b1-2fa') {
-        const input = app.querySelector('[data-auth-2fa-code]');
+        const input = app.querySelector<HTMLInputElement>('[data-auth-2fa-code]');
         const code = typeof input?.value === 'string' ? input.value : '';
         runAction(action, { code });
         if (input) input.value = '';
@@ -315,30 +317,30 @@ function bindEvents() {
     });
   });
 
-  app.querySelectorAll('[data-db-table]').forEach((button) => {
+  app.querySelectorAll<HTMLElement>('[data-db-table]').forEach((button) => {
     button.addEventListener('click', () => {
       selectDatabaseViewerTable(button.dataset.dbTable);
     });
   });
 
-  app.querySelectorAll('[data-db-page-delta]').forEach((button) => {
+  app.querySelectorAll<HTMLElement>('[data-db-page-delta]').forEach((button) => {
     button.addEventListener('click', () => {
       changeDatabaseViewerPage(Number(button.dataset.dbPageDelta || 0));
     });
   });
 
-  app.querySelectorAll('input[name="execution-mode"]').forEach((input) => {
-    input.addEventListener('change', (event) => setSimulationValue('executionMode', event.target.value));
+  app.querySelectorAll<HTMLInputElement>('input[name="execution-mode"]').forEach((input) => {
+    input.addEventListener('change', () => setSimulationValue('executionMode', input.value));
   });
 
-  app.querySelectorAll('input[name="input-mode"]').forEach((input) => {
-    input.addEventListener('change', (event) => setSimulationValue('inputMode', event.target.value));
+  app.querySelectorAll<HTMLInputElement>('input[name="input-mode"]').forEach((input) => {
+    input.addEventListener('change', () => setSimulationValue('inputMode', input.value));
   });
 
   ['pirEnabled', 'mouseEnabled', 'keyboardEnabled', 'simulateAllEnabled'].forEach((name) => {
-    app.querySelectorAll(`input[name="${name}"]`).forEach((input) => {
-      input.addEventListener('change', (event) => {
-        const checked = event.target.checked;
+    app.querySelectorAll<HTMLInputElement>(`input[name="${name}"]`).forEach((input) => {
+      input.addEventListener('change', () => {
+        const checked = input.checked;
         setSimulationValue(name, checked);
         pushHistory('SCREEN', 'info', `${name} changed to ${checked ? 'enabled' : 'disabled'}.`, {
           setting: name,
@@ -348,9 +350,9 @@ function bindEvents() {
     });
   });
 
-  app.querySelectorAll('input[name="inactivityTimeoutSeconds"]').forEach((input) => {
-    input.addEventListener('change', (event) => {
-      const value = Number(event.target.value || 5);
+  app.querySelectorAll<HTMLInputElement>('input[name="inactivityTimeoutSeconds"]').forEach((input) => {
+    input.addEventListener('change', () => {
+      const value = Number(input.value || 5);
       setSimulationValue('inactivityTimeoutSeconds', value);
       pushHistory('SCREEN', 'info', `Inactivity timeout changed to ${value} seconds.`, {
         setting: 'inactivityTimeoutSeconds',
@@ -359,7 +361,7 @@ function bindEvents() {
     });
   });
 
-  app.querySelectorAll('[data-last-run-mode]').forEach((button) => {
+  app.querySelectorAll<HTMLElement>('[data-last-run-mode]').forEach((button) => {
     button.addEventListener('click', () => {
       const mode = button.dataset.lastRunMode;
       setLastRunMode(mode);
@@ -438,7 +440,7 @@ window.addEventListener(
 );
 
 window.addEventListener(TRANSIT_EVENT_NAME, (event) => {
-  if (!transitTerminal.consumeRecord(event?.detail)) {
+  if (!transitTerminal.consumeRecord((event as CustomEvent)?.detail)) {
     return;
   }
   render();

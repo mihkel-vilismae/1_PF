@@ -9,7 +9,7 @@ import {
   testLoginByDownloadingSingleFile,
   verifyIcloudpdPreflight,
 } from '../authPreflightService.ts';
-import { buildTimelineDetails } from './runtimeTruthActionUtils.js';
+import { buildTimelineDetails } from './runtimeTruthActionUtils.ts';
 
 const SECRET_FIELD_PATTERN = /(password|passwd|secret|token|cookie|session|credential|authorization|otp|2fa|two_factor_value|mfa|^code$)/i;
 

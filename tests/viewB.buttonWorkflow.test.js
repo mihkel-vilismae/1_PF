@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { createRuntimeTruthBehavior } from '../dashboard/services/runtimeTruth/runtimeTruthBehavior.js';
-import { createInitialState } from '../dashboard/services/runtimeTruth/runtimeTruthState.js';
+import { createRuntimeTruthBehavior } from '../dashboard/services/runtimeTruth/runtimeTruthBehavior.ts';
+import { createInitialState } from '../dashboard/services/runtimeTruth/runtimeTruthState.ts';
 import { renderInitView } from '../dashboard/views/initView.ts';
 
 test('1A-AUTH verify and check login controls call backend-owned auth endpoints', async () => {

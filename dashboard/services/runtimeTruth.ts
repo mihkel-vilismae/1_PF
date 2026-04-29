@@ -1,6 +1,6 @@
-import { createRuntimeTruthBehavior } from './runtimeTruth/runtimeTruthBehavior.js';
-import { createInitialState } from './runtimeTruth/runtimeTruthState.js';
-import { createRuntimeTruthPersistence } from './runtimeTruth/runtimeTruthPersistence.js';
+import { createRuntimeTruthBehavior } from './runtimeTruth/runtimeTruthBehavior.ts';
+import { createInitialState } from './runtimeTruth/runtimeTruthState.ts';
+import { createRuntimeTruthPersistence } from './runtimeTruth/runtimeTruthPersistence.ts';
 
 const stamp = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 const formatTallinnTimestamp = () =>
@@ -15,7 +15,7 @@ const formatTallinnTimestamp = () =>
     hour12: false,
   }).format(new Date());
 
-const listeners = new Set();
+const listeners = new Set<(state: any) => void>();
 
 let state = createInitialState();
 let getTruthSignature = (truthState) => JSON.stringify(truthState);

@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { createRuntimeTruthBehavior } from '../dashboard/services/runtimeTruth/runtimeTruthBehavior.js';
-import { createInitialState } from '../dashboard/services/runtimeTruth/runtimeTruthState.js';
+import { createRuntimeTruthBehavior } from '../dashboard/services/runtimeTruth/runtimeTruthBehavior.ts';
+import { createInitialState } from '../dashboard/services/runtimeTruth/runtimeTruthState.ts';
 import { createSchedulerCapability } from '../shared/schedulerPlatformCapabilities.js';
 
 test('3A scheduler actions map to documented endpoints and store scheduler payload state', async () => {
