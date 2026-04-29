@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { getActiveInspectMode, renderInspectModeSummary } from '../dashboard/inspect/inspectModeSummary.js';
+import { getActiveInspectMode, renderInspectModeSummary } from '../dashboard/inspect/inspectModeSummary.ts';
 
 const baseState = {
   activeView: 'A',
