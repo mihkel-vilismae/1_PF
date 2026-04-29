@@ -30,7 +30,7 @@ import {
 import { describeInspectableElement, describeValueElement } from './inspect/controlMetadata.js';
 import { createRealityMetadataHelpers } from './inspect/realityMetadata.js';
 import { createBackendStatusMetadataHelpers } from './inspect/backendStatusMetadata.js';
-import { createGuideTooltipController } from './inspect/tooltipController.js';
+import { createGuideTooltipController } from './inspect/tooltipController.ts';
 import { renderInitView } from './views/initView.js';
 import { renderTestView } from './views/testView.js';
 import { renderLastRunView } from './views/lastRunView.js';
