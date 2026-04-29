@@ -36,13 +36,15 @@ type ResultSurfaceData = {
   errorPayload?: unknown;
 };
 
-type ModalKind = 'log' | 'history' | string;
+type ModalKind = 'log' | 'history' | 'new-auth-login' | string;
 
 type ModalData = {
   title?: string;
   subtitle?: string;
   kind?: ModalKind;
-  entry: LogEntry | HistoryEntry;
+  entry?: LogEntry | HistoryEntry;
+  stage?: string;
+  message?: string;
 };
 
 type StepListItem = {
@@ -202,8 +204,12 @@ export function renderModal(modal: ModalData | null | undefined): string {
 
   const title = modal.title ?? 'Details';
   const subtitle = modal.subtitle ?? '';
-  const kindLabel = modal.kind === 'log' ? 'Log entry' : 'Event history';
-  const content = modal.kind === 'log' ? renderLogModalContent(modal.entry) : renderHistoryModalContent(modal.entry);
+  const kindLabel = modal.kind === 'log' ? 'Log entry' : modal.kind === 'new-auth-login' ? 'New auth login' : 'Event history';
+  const content = modal.kind === 'log'
+    ? renderLogModalContent(modal.entry ?? {})
+    : modal.kind === 'new-auth-login'
+      ? renderNewAuthLoginModalContent(modal)
+      : renderHistoryModalContent(modal.entry ?? {});
   const describedBy = subtitle ? ' aria-describedby="modal-subtitle"' : '';
 
   return `
@@ -237,6 +243,30 @@ export function renderStepList(steps: StepListItem[] = []): string {
         )
         .join('')}
     </ol>
+  `;
+}
+
+
+function renderNewAuthLoginModalContent(modal: ModalData): string {
+  const stage = modal.stage ?? 'opening';
+  const message = modal.message ?? modal.subtitle ?? 'New auth login modal is ready.';
+  return `
+    ${renderModalSection(
+      'Login progress',
+      renderDefinitionList({
+        Card: '1A-STASH-OFF',
+        Stage: stage,
+        Endpoint: 'POST /api/auth/new/login',
+        '2FA endpoint': 'POST /api/auth/new/submit-2fa',
+      }) + `<p class="modal-panel__empty">${escapeHtml(message)}</p>`,
+    )}
+    ${renderModalSection(
+      'Two-factor authentication',
+      `<label class="field-label" for="new-auth-2fa-code">2FA code</label>
+       <input id="new-auth-2fa-code" class="input" type="text" inputmode="numeric" autocomplete="one-time-code" data-new-auth-2fa-code aria-label="New auth 2FA code" />
+       <div class="button-row"><button class="button button--primary" data-action="new-auth-submit-2fa">Submit 2FA</button></div>
+       <p class="modal-panel__empty">The code is sent only to the new auth endpoint and is cleared from the input after submission.</p>`,
+    )}
   `;
 }
 

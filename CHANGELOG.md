@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## 2026-04-29 15:50 EEST — v0.3.45
+
+### Added
+- Added Slice 1 NEW AUTH View A card `1A-STASH-OFF` with five frontend actions, per-button status circles, explanatory status text, and a login modal shell with 2FA input.
+- Added new frontend-only API helper functions targeting only `/api/auth/new/*` endpoint paths.
+- Added runtime-truth state/action wiring for the new card without reusing existing auth/login endpoints.
+
+### Changed
+- Extended inspect metadata and auth-button status copy for the new auth controls.
+- Added blinking yellow running/pending status styling and row-level status text styling for the new auth card.
+- Updated version metadata from v0.3.44 to v0.3.45.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
 ## 2026-04-29 14:10 EEST — v0.3.44
 
 ### Added

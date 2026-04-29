@@ -23,6 +23,7 @@ import {
 } from '../runtimeExecutionService.ts';
 import { createRuntimeTruthDatabaseActions } from './runtimeTruthDatabaseActions.ts';
 import { createRuntimeTruthAuthActions } from './runtimeTruthAuthActions.ts';
+import { createRuntimeTruthNewAuthActions } from './runtimeTruthNewAuthActions.ts';
 import { createRuntimeTruthDemoActions } from './runtimeTruthDemoActions.ts';
 import { createRuntimeTruthGuards } from './runtimeTruthGuards.ts';
 import {
@@ -69,6 +70,15 @@ export function createRuntimeTruthBehavior({
     pushLog,
     setStatus,
     stamp,
+    guards,
+  });
+
+  const newAuthActions = createRuntimeTruthNewAuthActions({
+    patchState,
+    pushHistory,
+    pushLog,
+    setStatus,
+    openModal: (modal) => patchState((draft) => { draft.modal = modal ? structuredClone(modal) : null; }),
     guards,
   });
 
@@ -134,6 +144,12 @@ export function createRuntimeTruthBehavior({
       'reset-b1-auth': () => void authActions.resetAuthPreflightAction(),
       'submit-b1-2fa': (detail) => void authActions.submitAuthTwoFactorAction(detail?.code ?? ''),
       'logout-b1-auth': () => void authActions.logoutAuthPreflightAction(),
+      'new-auth-verify-icloudpd': () => void newAuthActions.verifyIcloudpdAction(),
+      'new-auth-login-using-env': () => void newAuthActions.loginUsingEnvAction(),
+      'new-auth-check-login': () => void newAuthActions.checkLoginAction(),
+      'new-auth-logout-session': () => void newAuthActions.logoutAction(),
+      'new-auth-session-files': () => void newAuthActions.sessionFilesAction(),
+      'new-auth-submit-2fa': (detail) => void newAuthActions.submitTwoFactorAction(detail?.code ?? ''),
       'run-b2': () => void demoActions.runBackendAction({ key: 'B2', source: 'TEST', operation: 'Run download test action', endpoint: RUNTIME_EXECUTION_ENDPOINTS.downloadRun, execute: runRuntimeDownload }),
       'run-b3-1': () => demoActions.runBackendPipelineStage({ key: 'B3.1', operation: 'Run download stage', endpoint: RUNTIME_EXECUTION_ENDPOINTS.downloadRun, execute: runRuntimeDownload }),
       'run-b3-2': () => demoActions.runBackendPipelineStage({ key: 'B3.2', operation: 'Run index stage', endpoint: RUNTIME_EXECUTION_ENDPOINTS.indexRun, execute: runRuntimeIndex }),

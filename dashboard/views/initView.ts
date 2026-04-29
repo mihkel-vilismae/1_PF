@@ -21,6 +21,14 @@ const AUTH_BUTTONS = Object.freeze([
 
 const AUTH_2FA_BUTTON = Object.freeze({ action: 'submit-b1-2fa', label: 'Submit 2FA', variant: 'primary' });
 
+const NEW_AUTH_BUTTONS = Object.freeze([
+  { action: 'new-auth-verify-icloudpd', label: 'Verify iCloudPD', variant: 'secondary' },
+  { action: 'new-auth-login-using-env', label: 'Login using .env values', variant: 'primary' },
+  { action: 'new-auth-check-login', label: 'Check login', variant: 'secondary' },
+  { action: 'new-auth-logout-session', label: 'Log out and remove existing session', variant: 'danger' },
+  { action: 'new-auth-session-files', label: 'Show auth/session paths and files', variant: 'secondary' },
+]);
+
 export function renderInitView(state) {
   const schedulerCapability = state.initCapabilities?.scheduler ?? null;
   const installSupportLevel = getOperationSupportLevel(schedulerCapability, SCHEDULER_OPERATION_SUPPORT.install);
@@ -44,6 +52,7 @@ export function renderInitView(state) {
       <div class="section-grid section-grid--two">
         ${renderCard('1A', 'Verify .env', state, '1A', '<button class="button button--primary" data-action="verify-env">Run</button>', 'Validate required configuration keys and render the backend response payload directly in this card.')}
         ${renderAuthCard(state)}
+        ${renderNewAuthCard(state)}
         ${renderCard(
           '2A',
           'Database controls',
@@ -73,6 +82,50 @@ export function renderInitView(state) {
       )}
 
     </section>
+  `;
+}
+
+
+function renderNewAuthCard(state) {
+  const newAuth = state.newAuth ?? {};
+  return `
+    <article class="card card--hybrid" data-new-auth-card="1A-STASH-OFF">
+      <header class="card__header">
+        <div><p class="card__code">1A-STASH-OFF</p><h3>NEW AUTH</h3></div>
+        <div class="card__header-tags">${renderSourceBadge('real', 'NEW ENDPOINTS')}</div>
+        ${statusBadge(state.statusByKey['1A-STASH-OFF'])}
+      </header>
+      <p class="card__copy">Fresh real-auth UI boundary for iCloudPD. These controls intentionally target only <code>/api/auth/new/*</code> endpoints and do not reuse the existing login card routes.</p>
+      <div class="new-auth-action-list">
+        ${NEW_AUTH_BUTTONS.map((button) => renderNewAuthActionRow(button, newAuth.buttonStates ?? {})).join('')}
+      </div>
+      ${renderResultSurface(newAuth.latestResult)}
+      ${newAuth.sessionFilesResult ? renderResultSurface(newAuth.sessionFilesResult) : ''}
+      <div class="log-surface">${renderLogEntries(state.logs['1A-STASH-OFF'], { sourceKey: '1A-STASH-OFF' })}</div>
+    </article>
+  `;
+}
+
+function renderNewAuthActionRow(button, buttonStates = {}) {
+  const statusState = buttonStates?.[button.action] ?? { status: 'neutral', message: 'Not checked yet.', endpoint: null };
+  const status = normalizeAuthButtonStatus(statusState.status);
+  const copy = getAuthButtonCopy(button.action);
+  const rawLabel = copy?.label ?? button.label;
+  const label = escapeHtml(rawLabel);
+  const message = statusState.message || copy?.statuses?.[status] || 'Not checked yet.';
+  const endpoint = statusState.endpoint || copy?.endpoint || '';
+  const helpText = getAuthButtonStatusHelp(button.action, status, statusState.message);
+  const statusLabelText = getAuthButtonStatusLabel(status);
+  const title = escapeAttribute(helpText);
+
+  return `
+    <div class="new-auth-action-row" data-new-auth-action-row="${escapeAttribute(button.action)}">
+      <span class="auth-button-shell auth-button-shell--${escapeAttribute(status)}" data-auth-button-key="${escapeAttribute(button.action)}" data-auth-button-status="${escapeAttribute(status)}" data-auth-help-text="${title}" title="${title}">
+        <span class="auth-button-status-dot" aria-label="${escapeAttribute(`${rawLabel} status: ${statusLabelText}`)}" title="${title}"></span>
+        <button class="button button--${escapeAttribute(button.variant)}" data-action="${escapeAttribute(button.action)}" title="${title}" aria-label="${escapeAttribute(`${rawLabel}. ${helpText}`)}">${label}</button>
+      </span>
+      <p class="new-auth-action-row__status"><strong>${escapeHtml(statusLabelText)}.</strong> ${escapeHtml(message)}${endpoint ? ` <span>${escapeHtml(endpoint)}</span>` : ''}</p>
+    </div>
   `;
 }
 

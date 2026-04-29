@@ -82,7 +82,9 @@ export function describeValueElement(element) {
     return buildValueMeta(
       `Auth button ${buttonKey} status`,
       element,
-      `state.authPreflight.buttonStates["${buttonKey}"].status/message, updated by the auth action runtime truth handlers.`,
+      buttonKey.startsWith('new-auth-')
+        ? `state.newAuth.buttonStates["${buttonKey}"].status/message, updated by the NEW AUTH runtime truth handlers.`
+        : `state.authPreflight.buttonStates["${buttonKey}"].status/message, updated by the auth action runtime truth handlers.`,
     );
   }
 
@@ -93,6 +95,13 @@ export function describeValueElement(element) {
         '1A-AUTH status',
         element,
         'state.statusByKey.B1 plus state.authPreflight.buttonStates, preserved through the legacy B1 compatibility key while the visible card is View A auth preflight.',
+      );
+    }
+    if (cardContext?.code === '1A-STASH-OFF') {
+      return buildValueMeta(
+        '1A-STASH-OFF status',
+        element,
+        'state.statusByKey["1A-STASH-OFF"] plus state.newAuth.buttonStates, owned by the new /api/auth/new/* card.',
       );
     }
     if (cardContext?.code) {
@@ -117,6 +126,13 @@ export function describeValueElement(element) {
         'state.authPreflight.latestResult.outcome, derived from the latest safe auth backend request.',
       );
     }
+    if (cardContext?.code === '1A-STASH-OFF') {
+      return buildValueMeta(
+        '1A-STASH-OFF new auth outcome',
+        element,
+        'state.newAuth.latestResult/sessionFilesResult.outcome, derived only from /api/auth/new/* requests.',
+      );
+    }
     if (cardContext?.code) {
       return buildValueMeta(
         `${cardContext.code} backend outcome`,
@@ -133,6 +149,13 @@ export function describeValueElement(element) {
         '1A-AUTH auth result',
         element,
         'state.authPreflight.latestResult and state.authPreflight.publicState, sanitized by the auth runtime truth handlers.',
+      );
+    }
+    if (cardContext?.code === '1A-STASH-OFF') {
+      return buildValueMeta(
+        '1A-STASH-OFF new auth result',
+        element,
+        'state.newAuth.latestResult and state.newAuth.sessionFilesResult, sanitized by the NEW AUTH runtime truth handlers.',
       );
     }
     if (cardContext?.code) {

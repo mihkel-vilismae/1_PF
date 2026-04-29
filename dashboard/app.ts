@@ -289,6 +289,13 @@ function bindEvents() {
         if (input) input.value = '';
         return;
       }
+      if (action === 'new-auth-submit-2fa') {
+        const input = app.querySelector<HTMLInputElement>('[data-new-auth-2fa-code]');
+        const code = typeof input?.value === 'string' ? input.value : '';
+        runAction(action, { code });
+        if (input) input.value = '';
+        return;
+      }
       if (action === 'delete-db') {
         const confirmed = window.confirm('Delete the configured SQLite database file and any WAL/SHM sidecar files?');
         if (!confirmed) {

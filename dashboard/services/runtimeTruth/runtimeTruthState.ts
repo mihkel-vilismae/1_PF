@@ -20,7 +20,7 @@ export type RuntimeTruthSeed = typeof runtimeTruthSeed & {
 };
 
 export type AuthButtonState = {
-  status: 'neutral' | 'running' | 'success' | 'error';
+  status: 'neutral' | 'running' | 'success' | 'failed' | 'blocked' | 'pending' | 'error';
   message: string;
   updatedAt: string | null;
   endpoint: string | null;
@@ -124,6 +124,29 @@ export function buildInitialAuthButtonStates(): Record<(typeof AUTH_PREFLIGHT_BU
   );
 }
 
+
+export const NEW_AUTH_BUTTON_KEYS = Object.freeze([
+  'new-auth-verify-icloudpd',
+  'new-auth-login-using-env',
+  'new-auth-check-login',
+  'new-auth-logout-session',
+  'new-auth-session-files',
+] as const);
+
+export function buildInitialNewAuthButtonStates(): Record<(typeof NEW_AUTH_BUTTON_KEYS)[number], AuthButtonState> {
+  return Object.fromEntries(
+    NEW_AUTH_BUTTON_KEYS.map((key) => [
+      key,
+      {
+        status: 'neutral',
+        message: 'Not checked yet.',
+        updatedAt: null,
+        endpoint: null,
+      },
+    ]),
+  ) as Record<(typeof NEW_AUTH_BUTTON_KEYS)[number], AuthButtonState>;
+}
+
 export function buildInitialDatabaseViewerState(): DatabaseViewerState {
   return {
     verification: null,
@@ -176,6 +199,7 @@ export function createInitialState() {
       '3A': 'idle',
       // B1 is retained as the compatibility status/log key for the visible 1A-AUTH card.
       B1: 'idle',
+      '1A-STASH-OFF': 'idle',
       B2: 'idle',
       B3: 'idle',
       'B3.1': 'idle',
@@ -206,6 +230,7 @@ export function createInitialState() {
       '2A': [{ at: now, type: 'info', message: 'Database controls are ready to call /api/init/database/* endpoints.' }],
       '3A': [{ at: now, type: 'info', message: buildSchedulerReadyMessage(schedulerCapability) }],
       B1: [{ at: now, type: 'info', message: 'Auth preflight status has not been loaded yet.' }],
+      '1A-STASH-OFF': [{ at: now, type: 'info', message: 'New auth UI is ready. Slice 1 points only at /api/auth/new/* endpoints.' }],
       B2: [{ at: now, type: 'info', message: 'Ready to call POST /api/runtime/download/run.' }],
       'B3.1': [{ at: now, type: 'info', message: 'Ready to call POST /api/runtime/download/run.' }],
       'B3.2': [{ at: now, type: 'info', message: 'Ready to call POST /api/runtime/index/run.' }],
@@ -274,6 +299,12 @@ export function createInitialState() {
       publicState: null,
       latestResult: null,
       buttonStates: buildInitialAuthButtonStates(),
+    },
+    newAuth: {
+      loaded: false,
+      latestResult: null,
+      sessionFilesResult: null,
+      buttonStates: buildInitialNewAuthButtonStates(),
     },
     loginSteps: [
       { key: 'preflight', label: 'Auth preflight', status: 'waiting' },
