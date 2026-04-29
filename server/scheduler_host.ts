@@ -4,7 +4,46 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { createProjectLogger, DEFAULT_LOG_DIR, resolveLogDirectory } from './logging/projectLogger.ts';
 
-const DEFAULT_TICKS = Object.freeze({
+type SchedulerTickName = 'pipeline' | 'playbackWatchdog' | 'screenWatchdog' | 'recoveryReconciliation';
+
+type SchedulerHostMode = 'placeholder-services' | 'stopped';
+
+type ParsedArgs = Record<string, string | true>;
+
+interface SchedulerTicks extends Record<SchedulerTickName, number> {}
+
+interface SchedulerHostState {
+  pid: number;
+  startedAt: string;
+  repoRoot: string;
+  mode: SchedulerHostMode;
+  platformTarget: string;
+  tickSeconds: Readonly<Record<SchedulerTickName, number>>;
+  ticks: SchedulerTicks;
+  lastTickAt: string | null;
+  lastSummaryAt: string | null;
+  notes: string[];
+  stopReason?: string;
+}
+
+interface SchedulerStatusPayload extends SchedulerHostState {
+  heartbeatAt: string;
+}
+
+interface SchedulerLogEntry {
+  at: string;
+  pid: number;
+  event: string;
+  message: string;
+}
+
+interface SchedulerLockFile {
+  pid: number;
+  acquiredAt: string;
+  repoRoot: string;
+}
+
+const DEFAULT_TICKS: Readonly<Record<SchedulerTickName, number>> = Object.freeze({
   pipeline: 5,
   playbackWatchdog: 5,
   screenWatchdog: 5,
@@ -14,9 +53,9 @@ const DEFAULT_TICKS = Object.freeze({
 const args = parseArgs(process.argv.slice(2));
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const repoRoot = path.resolve(args['repo-root'] || path.join(__dirname, '..'));
+const repoRoot = path.resolve(stringArg(args['repo-root']) || path.join(__dirname, '..'));
 const runtimeDirectory = path.join(repoRoot, 'runtime_data', 'scheduler');
-const logsDirectory = resolveLogDirectory(args['log-dir'] || process.env.LOG_DIR || DEFAULT_LOG_DIR, { repoRoot });
+const logsDirectory = resolveLogDirectory(stringArg(args['log-dir']) || process.env.LOG_DIR || DEFAULT_LOG_DIR, { repoRoot });
 const statusFilePath = path.join(runtimeDirectory, 'host-status.json');
 const lockFilePath = path.join(runtimeDirectory, 'host-lock.json');
 const logFilePath = path.join(logsDirectory, 'scheduler-host.ndjson');
@@ -26,7 +65,7 @@ const logger = createProjectLogger({
   source: 'scheduler-host',
 });
 
-const state: any = {
+const state: SchedulerHostState = {
   pid: process.pid,
   startedAt: new Date().toISOString(),
   repoRoot,
@@ -47,8 +86,8 @@ const state: any = {
   ],
 };
 
-let summaryTimer = null;
-const intervalHandles = [];
+let summaryTimer: ReturnType<typeof setInterval> | null = null;
+const intervalHandles: Array<ReturnType<typeof setInterval>> = [];
 
 try {
   await fs.mkdir(runtimeDirectory, { recursive: true });
@@ -59,7 +98,7 @@ try {
   await appendLog('host-started', 'Scheduler host started.');
   await writeStatus();
 
-  for (const [name, seconds] of Object.entries(DEFAULT_TICKS)) {
+  for (const [name, seconds] of Object.entries(DEFAULT_TICKS) as Array<[SchedulerTickName, number]>) {
     const handle = setInterval(() => {
       void recordTick(name);
     }, seconds * 1000);
@@ -73,11 +112,11 @@ try {
   process.on('SIGINT', () => void shutdown('sigint'));
   process.on('SIGTERM', () => void shutdown('sigterm'));
   process.on('beforeExit', () => void shutdown('before-exit'));
-  process.on('uncaughtException', (error) => {
+  process.on('uncaughtException', (error: Error) => {
     void appendLog('uncaught-exception', `Scheduler host crashed: ${error.message}`);
     void shutdown('uncaught-exception', 1);
   });
-  process.on('unhandledRejection', (reason) => {
+  process.on('unhandledRejection', (reason: unknown) => {
     const message = reason instanceof Error ? reason.message : String(reason);
     void appendLog('unhandled-rejection', `Scheduler host rejected a promise: ${message}`);
     void shutdown('unhandled-rejection', 1);
@@ -91,13 +130,13 @@ try {
   process.exitCode = 1;
 }
 
-async function recordTick(name) {
+async function recordTick(name: SchedulerTickName): Promise<void> {
   state.ticks[name] += 1;
   state.lastTickAt = new Date().toISOString();
   await writeStatus();
 }
 
-async function appendSummary() {
+async function appendSummary(): Promise<void> {
   state.lastSummaryAt = new Date().toISOString();
   await writeStatus();
   await appendLog(
@@ -106,16 +145,16 @@ async function appendSummary() {
   );
 }
 
-async function writeStatus() {
-  const payload = {
+async function writeStatus(): Promise<void> {
+  const payload: SchedulerStatusPayload = {
     ...state,
     heartbeatAt: new Date().toISOString(),
   };
   await fs.writeFile(statusFilePath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
 }
 
-async function appendLog(event, message) {
-  const entry = {
+async function appendLog(event: string, message: string): Promise<void> {
+  const entry: SchedulerLogEntry = {
     at: new Date().toISOString(),
     pid: process.pid,
     event,
@@ -129,8 +168,8 @@ async function appendLog(event, message) {
   await logger.info(message, { event, pid: process.pid });
 }
 
-async function acquireLock() {
-  const payload = {
+async function acquireLock(): Promise<void> {
+  const payload: SchedulerLockFile = {
     pid: process.pid,
     acquiredAt: new Date().toISOString(),
     repoRoot,
@@ -143,13 +182,13 @@ async function acquireLock() {
     });
     return;
   } catch (error) {
-    if (error?.code !== 'EEXIST') {
+    if (!isNodeErrorWithCode(error, 'EEXIST')) {
       throw error;
     }
   }
 
-  const existing = await readJsonFile(lockFilePath);
-  if (existing?.pid && processExists(existing.pid)) {
+  const existing = await readJsonFile<Partial<SchedulerLockFile>>(lockFilePath);
+  if (typeof existing?.pid === 'number' && processExists(existing.pid)) {
     throw new Error(`Scheduler host is already running with pid ${existing.pid}.`);
   }
 
@@ -160,11 +199,11 @@ async function acquireLock() {
   });
 }
 
-async function releaseLock() {
+async function releaseLock(): Promise<void> {
   await fs.rm(lockFilePath, { force: true });
 }
 
-function processExists(pid) {
+function processExists(pid: number): boolean {
   try {
     process.kill(pid, 0);
     return true;
@@ -173,16 +212,16 @@ function processExists(pid) {
   }
 }
 
-async function readJsonFile(filePath) {
+async function readJsonFile<T = unknown>(filePath: string): Promise<T | null> {
   try {
     const raw = await fs.readFile(filePath, 'utf8');
-    return JSON.parse(raw);
+    return JSON.parse(raw) as T;
   } catch {
     return null;
   }
 }
 
-async function shutdown(reason, exitCode = 0) {
+async function shutdown(reason: string, exitCode = 0): Promise<void> {
   if (summaryTimer) {
     clearInterval(summaryTimer);
     summaryTimer = null;
@@ -198,8 +237,8 @@ async function shutdown(reason, exitCode = 0) {
   process.exit(exitCode);
 }
 
-function parseArgs(argv) {
-  const parsed = {};
+function parseArgs(argv: string[]): ParsedArgs {
+  const parsed: ParsedArgs = {};
   for (let index = 0; index < argv.length; index += 1) {
     const item = argv[index];
     if (!item.startsWith('--')) {
@@ -215,4 +254,12 @@ function parseArgs(argv) {
     index += 1;
   }
   return parsed;
+}
+
+function stringArg(value: string | true | undefined): string | undefined {
+  return typeof value === 'string' ? value : undefined;
+}
+
+function isNodeErrorWithCode(error: unknown, code: string): error is NodeJS.ErrnoException {
+  return typeof error === 'object' && error !== null && 'code' in error && (error as NodeJS.ErrnoException).code === code;
 }

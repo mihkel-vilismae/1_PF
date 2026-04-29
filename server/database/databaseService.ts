@@ -2,7 +2,124 @@ import { spawn } from 'node:child_process';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
-const databaseViewerRequiredTablesAuthority = Object.freeze({
+type JsonObject = Record<string, unknown>;
+
+interface DatabaseServiceOptions {
+  repoRoot: string;
+  createHttpError: CreateHttpErrorFn;
+}
+
+interface CreateHttpErrorFn {
+  (statusCode: number, code: string, message: string, details?: unknown): Error;
+}
+
+interface EnvValues {
+  DB_PATH?: string;
+  DOWNLOAD_DIR?: string;
+  [key: string]: string | undefined;
+}
+
+interface DatabaseActionContext {
+  envValues: EnvValues;
+}
+
+interface DatabaseStatus {
+  kind: 'sqlite';
+  configuredPath: string;
+  absolutePath: string;
+  exists: boolean;
+  sizeBytes: number;
+  parentDirectory: string;
+  parentDirectoryExists: boolean;
+  inspectRuntime: 'python sqlite3 bridge';
+}
+
+interface DatabaseArtifactSource {
+  absolutePath?: string;
+}
+
+interface DatabaseRequiredTablesAuthority {
+  sourcePath: string;
+  sourceLabel: string;
+  note: string;
+}
+
+interface DatabaseRequiredTables extends DatabaseRequiredTablesAuthority {
+  expected: string[];
+  present: string[];
+  missing: string[];
+}
+
+interface SqliteObjectInspectionEntry {
+  name: string;
+  kind: string;
+  columnCount?: number;
+}
+
+interface SqliteInspection {
+  tables: SqliteObjectInspectionEntry[];
+  [key: string]: unknown;
+}
+
+interface DatabaseInspectionResult {
+  database: DatabaseStatus;
+  inspection: SqliteInspection;
+}
+
+interface DatabaseViewerVerification {
+  verificationPassed: boolean;
+  database: DatabaseStatus;
+  requiredTables: DatabaseRequiredTables;
+  availableObjects: Array<{
+    name: string;
+    kind: string;
+    columnCount?: number;
+  }>;
+}
+
+interface DatabaseRowsRequestBody {
+  tableName?: unknown;
+  page?: unknown;
+  pageSize?: unknown;
+}
+
+interface ProcessResult {
+  code: number | null;
+  stdout: string;
+  stderr: string;
+}
+
+interface PythonBridgeFailure {
+  code?: unknown;
+  details?: unknown;
+}
+
+export interface DatabaseService {
+  buildDatabaseStatus(context: DatabaseActionContext): Promise<DatabaseStatus>;
+  buildDatabaseViewerVerification(context: DatabaseActionContext): Promise<DatabaseViewerVerification>;
+  buildDatabaseViewerVerificationMessages(verification: DatabaseViewerVerification): string[];
+  deleteDatabaseArtifacts(context: DatabaseActionContext): Promise<{ database: DatabaseStatus; removedPaths: string[] }>;
+  fileExists(targetPath: string): Promise<boolean>;
+  getDatabaseArtifactPaths(databaseOrAbsolutePath: string | DatabaseArtifactSource): string[];
+  getDatabaseViewerLoggingCoverage(): string;
+  getSchemaPath(): string;
+  getSqliteScriptPath(): string;
+  inspectDatabase(context: DatabaseActionContext): Promise<DatabaseInspectionResult>;
+  listDatabaseViewerTables(context: DatabaseActionContext): Promise<DatabaseInspectionResult>;
+  loadDatabaseViewerRows(context: DatabaseActionContext, body: DatabaseRowsRequestBody): Promise<{ database: DatabaseStatus; table: unknown }>;
+  recreateEmptyDatabase(context: DatabaseActionContext): Promise<{ database: DatabaseStatus; created: unknown; schemaPath: string }>;
+  resolveRepoPath(relativeOrAbsolutePath: string): string;
+  runPythonJson<T = unknown>(args: string[]): Promise<T>;
+  runStage2IndexRegister(context: DatabaseActionContext): Promise<{ database: DatabaseStatus; downloadDirectory: string; schemaPath: string; indexedAt: string; indexing: unknown }>;
+  runStage3ProcessGpsQueue(context: DatabaseActionContext): Promise<{ database: DatabaseStatus; executedAt: string; gps: unknown }>;
+  runStage4ProcessGeocodeQueue(context: DatabaseActionContext): Promise<{ database: DatabaseStatus; executedAt: string; geocode: unknown }>;
+  runStage5PrepareQueue(context: DatabaseActionContext): Promise<{ database: DatabaseStatus; executedAt: string; queue: unknown }>;
+  runStage6SelectCurrent(context: DatabaseActionContext): Promise<{ database: DatabaseStatus; executedAt: string; playback: unknown }>;
+  getRuntimeState<T = unknown>(context: DatabaseActionContext, key: string): Promise<T | null>;
+  setRuntimeState(context: DatabaseActionContext, key: string, value: unknown): Promise<void>;
+}
+
+const databaseViewerRequiredTablesAuthority: DatabaseRequiredTablesAuthority = Object.freeze({
   sourcePath: 'docs/OLD_DOCS/20_STATE_AND_TRUTH_CONTRACT.md',
   sourceLabel: 'Truth Surfaces',
   note: 'This is the current canonical target-state contract for required truth surfaces. It is not proof that those tables already exist in the current repo runtime.',
@@ -22,7 +139,11 @@ const databaseViewerRequiredTables = Object.freeze([
 
 const databaseViewerLoggingCoverage = 'Captures database viewer queries and repo-local backend DB actions observed through this server while the logging session is active. It does not guarantee capture of every SQL statement or activity from external processes.';
 
-export function createDatabaseService({ repoRoot, createHttpError }: any) {
+function isPythonBridgeFailure(error: unknown): error is PythonBridgeFailure {
+  return typeof error === 'object' && error !== null;
+}
+
+export function createDatabaseService({ repoRoot, createHttpError }: DatabaseServiceOptions): DatabaseService {
   if (!repoRoot) {
     throw new Error('repoRoot is required to create the database service.');
   }
@@ -34,26 +155,26 @@ export function createDatabaseService({ repoRoot, createHttpError }: any) {
   const sqliteScriptPath = path.join(serverRoot, 'scripts', 'sqlite_admin.py');
   const schemaPath = path.join(repoRoot, 'schema.sql');
 
-  function resolveRepoPath(relativeOrAbsolutePath) {
+  function resolveRepoPath(relativeOrAbsolutePath: string): string {
     if (path.isAbsolute(relativeOrAbsolutePath)) {
       return relativeOrAbsolutePath;
     }
     return path.resolve(repoRoot, relativeOrAbsolutePath);
   }
 
-  function getSqliteScriptPath() {
+  function getSqliteScriptPath(): string {
     return sqliteScriptPath;
   }
 
-  function getSchemaPath() {
+  function getSchemaPath(): string {
     return schemaPath;
   }
 
-  function getDatabaseViewerLoggingCoverage() {
+  function getDatabaseViewerLoggingCoverage(): string {
     return databaseViewerLoggingCoverage;
   }
 
-  function getDatabaseArtifactPaths(databaseOrAbsolutePath) {
+  function getDatabaseArtifactPaths(databaseOrAbsolutePath: string | DatabaseArtifactSource): string[] {
     const absolutePath = typeof databaseOrAbsolutePath === 'string'
       ? databaseOrAbsolutePath
       : databaseOrAbsolutePath?.absolutePath;
@@ -65,7 +186,7 @@ export function createDatabaseService({ repoRoot, createHttpError }: any) {
     return [absolutePath, `${absolutePath}-wal`, `${absolutePath}-shm`];
   }
 
-  async function fileExists(targetPath) {
+  async function fileExists(targetPath: string): Promise<boolean> {
     try {
       await fs.access(targetPath);
       return true;
@@ -74,7 +195,7 @@ export function createDatabaseService({ repoRoot, createHttpError }: any) {
     }
   }
 
-  async function buildDatabaseStatus(context) {
+  async function buildDatabaseStatus(context: DatabaseActionContext): Promise<DatabaseStatus> {
     const dbPath = context.envValues.DB_PATH;
     if (!dbPath) {
       throw createHttpError(500, 'missing_db_path', 'DB_PATH is required before database actions can run.');
@@ -97,7 +218,7 @@ export function createDatabaseService({ repoRoot, createHttpError }: any) {
     };
   }
 
-  async function inspectDatabase(context) {
+  async function inspectDatabase(context: DatabaseActionContext): Promise<DatabaseInspectionResult> {
     const database = await buildDatabaseStatus(context);
     if (!database.exists) {
       throw createHttpError(404, 'database_missing', 'Cannot inspect the database because the DB file does not exist.', {
@@ -105,13 +226,13 @@ export function createDatabaseService({ repoRoot, createHttpError }: any) {
       });
     }
 
-    const inspection = await runPythonJson(['inspect', database.absolutePath]);
+    const inspection = await runPythonJson<SqliteInspection>(['inspect', database.absolutePath]);
     return { database, inspection };
   }
 
-  async function deleteDatabaseArtifacts(context) {
+  async function deleteDatabaseArtifacts(context: DatabaseActionContext): Promise<{ database: DatabaseStatus; removedPaths: string[] }> {
     const database = await buildDatabaseStatus(context);
-    const removedPaths = [];
+    const removedPaths: string[] = [];
     const candidatePaths = getDatabaseArtifactPaths(database);
 
     for (const candidate of candidatePaths) {
@@ -124,7 +245,7 @@ export function createDatabaseService({ repoRoot, createHttpError }: any) {
     return { database, removedPaths };
   }
 
-  async function recreateEmptyDatabase(context) {
+  async function recreateEmptyDatabase(context: DatabaseActionContext): Promise<{ database: DatabaseStatus; created: unknown; schemaPath: string }> {
     const database = await buildDatabaseStatus(context);
     const candidatePaths = getDatabaseArtifactPaths(database);
 
@@ -138,9 +259,9 @@ export function createDatabaseService({ repoRoot, createHttpError }: any) {
     return { database, created, schemaPath };
   }
 
-  async function buildDatabaseViewerVerification(context) {
+  async function buildDatabaseViewerVerification(context: DatabaseActionContext): Promise<DatabaseViewerVerification> {
     const database = await buildDatabaseStatus(context);
-    const requiredTables = {
+    const requiredTables: DatabaseRequiredTables = {
       ...databaseViewerRequiredTablesAuthority,
       expected: [...databaseViewerRequiredTables],
       present: [],
@@ -156,7 +277,7 @@ export function createDatabaseService({ repoRoot, createHttpError }: any) {
       };
     }
 
-    const inspection = await runPythonJson(['inspect', database.absolutePath]);
+    const inspection = await runPythonJson<SqliteInspection>(['inspect', database.absolutePath]);
     const presentTableNames = inspection.tables
       .filter((entry) => entry.kind === 'table')
       .map((entry) => entry.name);
@@ -177,7 +298,7 @@ export function createDatabaseService({ repoRoot, createHttpError }: any) {
     };
   }
 
-  function buildDatabaseViewerVerificationMessages(verification) {
+  function buildDatabaseViewerVerificationMessages(verification: DatabaseViewerVerification): string[] {
     if (!verification.database.exists) {
       return ['Database file does not exist, so required-table verification could not run.'];
     }
@@ -191,7 +312,7 @@ export function createDatabaseService({ repoRoot, createHttpError }: any) {
     ];
   }
 
-  async function listDatabaseViewerTables(context) {
+  async function listDatabaseViewerTables(context: DatabaseActionContext): Promise<DatabaseInspectionResult> {
     const database = await buildDatabaseStatus(context);
     if (!database.exists) {
       throw createHttpError(404, 'database_missing', 'Cannot list tables because the DB file does not exist.', {
@@ -199,11 +320,11 @@ export function createDatabaseService({ repoRoot, createHttpError }: any) {
       });
     }
 
-    const inspection = await runPythonJson(['inspect', database.absolutePath]);
+    const inspection = await runPythonJson<SqliteInspection>(['inspect', database.absolutePath]);
     return { database, inspection };
   }
 
-  async function loadDatabaseViewerRows(context, body) {
+  async function loadDatabaseViewerRows(context: DatabaseActionContext, body: DatabaseRowsRequestBody): Promise<{ database: DatabaseStatus; table: unknown }> {
     const tableName = String(body?.tableName ?? '').trim();
     if (!tableName) {
       throw createHttpError(400, 'missing_table_name', 'tableName is required when loading database rows.');
@@ -222,7 +343,7 @@ export function createDatabaseService({ repoRoot, createHttpError }: any) {
     return { database, table };
   }
 
-  function normalizeDatabaseViewerPage(value) {
+  function normalizeDatabaseViewerPage(value: unknown): number {
     const page = Number(value ?? 0);
     if (!Number.isInteger(page) || page < 0) {
       throw createHttpError(400, 'invalid_page', 'page must be a zero-based integer.',
@@ -231,7 +352,7 @@ export function createDatabaseService({ repoRoot, createHttpError }: any) {
     return page;
   }
 
-  function normalizeDatabaseViewerPageSize(value) {
+  function normalizeDatabaseViewerPageSize(value: unknown): number {
     if (value === undefined) {
       return 50;
     }
@@ -245,7 +366,7 @@ export function createDatabaseService({ repoRoot, createHttpError }: any) {
   }
 
 
-  async function runStage2IndexRegister(context) {
+  async function runStage2IndexRegister(context: DatabaseActionContext): Promise<{ database: DatabaseStatus; downloadDirectory: string; schemaPath: string; indexedAt: string; indexing: unknown }> {
     const database = await buildDatabaseStatus(context);
     if (!database.exists) {
       throw createHttpError(404, 'database_missing', 'Cannot run indexing because the DB file does not exist.', {
@@ -266,7 +387,7 @@ export function createDatabaseService({ repoRoot, createHttpError }: any) {
       ]);
       return { database, downloadDirectory, schemaPath, indexedAt, indexing };
     } catch (error) {
-      if (error?.code === 'python_bridge_failed') {
+      if (isPythonBridgeFailure(error) && error.code === 'python_bridge_failed') {
         throw createHttpError(500, 'index_schema_bootstrap_failed', 'Indexing failed before Stage 2 could finish. Check schema bootstrap and database setup.', {
           database,
           downloadDirectory,
@@ -278,7 +399,7 @@ export function createDatabaseService({ repoRoot, createHttpError }: any) {
     }
   }
 
-  async function runStage3ProcessGpsQueue(context) {
+  async function runStage3ProcessGpsQueue(context: DatabaseActionContext): Promise<{ database: DatabaseStatus; executedAt: string; gps: unknown }> {
     const database = await buildDatabaseStatus(context);
     if (!database.exists) {
       throw createHttpError(404, 'database_missing', 'Cannot run GPS parsing because the DB file does not exist.', {
@@ -291,7 +412,7 @@ export function createDatabaseService({ repoRoot, createHttpError }: any) {
     return { database, executedAt, gps };
   }
 
-  async function runStage4ProcessGeocodeQueue(context) {
+  async function runStage4ProcessGeocodeQueue(context: DatabaseActionContext): Promise<{ database: DatabaseStatus; executedAt: string; geocode: unknown }> {
     const database = await buildDatabaseStatus(context);
     if (!database.exists) {
       throw createHttpError(404, 'database_missing', 'Cannot run geocoding because the DB file does not exist.', {
@@ -304,7 +425,7 @@ export function createDatabaseService({ repoRoot, createHttpError }: any) {
     return { database, executedAt, geocode };
   }
 
-  async function runStage5PrepareQueue(context) {
+  async function runStage5PrepareQueue(context: DatabaseActionContext): Promise<{ database: DatabaseStatus; executedAt: string; queue: unknown }> {
     const database = await buildDatabaseStatus(context);
     if (!database.exists) {
       throw createHttpError(404, 'database_missing', 'Cannot prepare slideshow queue because the DB file does not exist.', {
@@ -317,7 +438,7 @@ export function createDatabaseService({ repoRoot, createHttpError }: any) {
     return { database, executedAt, queue };
   }
 
-  async function runStage6SelectCurrent(context) {
+  async function runStage6SelectCurrent(context: DatabaseActionContext): Promise<{ database: DatabaseStatus; executedAt: string; playback: unknown }> {
     const database = await buildDatabaseStatus(context);
     if (!database.exists) {
       throw createHttpError(404, 'database_missing', 'Cannot select current media because the DB file does not exist.', {
@@ -330,19 +451,19 @@ export function createDatabaseService({ repoRoot, createHttpError }: any) {
     return { database, executedAt, playback };
   }
 
-  async function getRuntimeState(context, key) {
+  async function getRuntimeState<T = unknown>(context: DatabaseActionContext, key: string): Promise<T | null> {
     const dbPath = context.envValues && context.envValues.DB_PATH;
     if (!dbPath) {
       return null;
     }
 
     const absolutePath = resolveRepoPath(dbPath);
-    const result = await runPythonJson(['runtime_state_get', absolutePath, key]);
+    const result = await runPythonJson<JsonObject>(['runtime_state_get', absolutePath, key]);
     const raw = result?.stateValue;
-    return raw ? JSON.parse(raw) : null;
+    return raw ? JSON.parse(String(raw)) as T : null;
   }
 
-  async function setRuntimeState(context, key, value) {
+  async function setRuntimeState(context: DatabaseActionContext, key: string, value: unknown): Promise<void> {
     const dbPath = context.envValues && context.envValues.DB_PATH;
     if (!dbPath) {
       return;
@@ -353,7 +474,7 @@ export function createDatabaseService({ repoRoot, createHttpError }: any) {
     await runPythonJson(['runtime_state_set', absolutePath, key, serialized, 'json', 'orchestration']);
   }
 
-  async function runPythonJson(args: any[]) {
+  async function runPythonJson<T = unknown>(args: string[]): Promise<T> {
     const { stdout, stderr, code } = await runProcess('python', [sqliteScriptPath, ...args]);
     if (code !== 0) {
       throw createHttpError(500, 'python_bridge_failed', 'Python bridge command failed.', {
@@ -363,7 +484,7 @@ export function createDatabaseService({ repoRoot, createHttpError }: any) {
     }
 
     try {
-      return JSON.parse(stdout.trim());
+      return JSON.parse(stdout.trim()) as T;
     } catch {
       throw createHttpError(500, 'python_bridge_invalid_json', 'Python bridge returned invalid JSON.', {
         stdout: stdout.trim(),
@@ -371,7 +492,7 @@ export function createDatabaseService({ repoRoot, createHttpError }: any) {
     }
   }
 
-  function runProcess(command: any, args: any[], options: any = {}): Promise<any> {
+  function runProcess(command: string, args: string[], options: { shell?: boolean } = {}): Promise<ProcessResult> {
     return new Promise((resolve, reject) => {
       const child = spawn(command, args, {
         cwd: repoRoot,
@@ -382,13 +503,13 @@ export function createDatabaseService({ repoRoot, createHttpError }: any) {
       let stdout = '';
       let stderr = '';
 
-      child.stdout.on('data', (chunk) => {
+      child.stdout.on('data', (chunk: Buffer) => {
         stdout += chunk.toString();
       });
-      child.stderr.on('data', (chunk) => {
+      child.stderr.on('data', (chunk: Buffer) => {
         stderr += chunk.toString();
       });
-      child.on('error', (error) => reject(error));
+      child.on('error', (error: Error) => reject(error));
       child.on('close', (code) => resolve({ code, stdout, stderr }));
     });
   }

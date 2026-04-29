@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## 2026-04-29 13:05 EEST — v0.3.39
+
+### Added
+- Added Slice 9+10 TypeScript function boundary types for database persistence, project logging, and scheduler host runtime boundaries.
+
+### Changed
+- Added named database service, SQLite bridge, logger, scheduler status, lock, and log-entry contracts without changing SQL behavior, scheduler semantics, endpoint payloads, or runtime stage ordering.
+- Updated version metadata from v0.3.38 to v0.3.39.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
 ## 2026-04-29 12:56 EEST — v0.3.38
 
 ### Added
