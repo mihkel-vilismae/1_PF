@@ -1,5 +1,78 @@
-export function buildRequestHeaders(body) {
-  const headers = {
+import type { ApiRequestMeta } from '../apiClient.ts';
+import type { SchedulerCapability } from '../../../shared/schedulerPlatformCapabilities.ts';
+
+export type RuntimeTruthRequestBody = unknown;
+
+export type RuntimeTruthHeaders = Record<string, string>;
+
+export type RuntimeTruthEndpoint = {
+  method: string;
+  path: string;
+};
+
+export type RuntimeTruthTimelineDetails = {
+  local: string;
+  tallinn: string;
+  iso: string;
+};
+
+export type RuntimeTruthActionEnvelope<TPayload = unknown> = {
+  payload: TPayload;
+  meta: ApiRequestMeta | null;
+};
+
+export type RuntimeTruthUiStatus = 'success' | 'info' | 'error';
+
+export type RuntimeTruthApiPayload = Record<string, unknown>;
+
+export type RuntimeTruthLogDetailsInput = {
+  operation: string;
+  endpoint: RuntimeTruthEndpoint;
+  requestBody?: RuntimeTruthRequestBody;
+  apiMeta?: ApiRequestMeta | null;
+  responsePayload?: unknown;
+  outcome: string;
+};
+
+export type RuntimeTruthLogDetails = {
+  timeline: RuntimeTruthTimelineDetails;
+  operation: string;
+  endpoint: string;
+  outcome: string;
+  request: ApiRequestMeta['request'];
+  response: ApiRequestMeta['response'] | null;
+};
+
+export type RuntimeTruthErrorLike = {
+  status?: number | string | null;
+  message?: string;
+};
+
+function isRecord(value: unknown): value is RuntimeTruthApiPayload {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function readRecordField(value: unknown, key: string): unknown {
+  return isRecord(value) ? value[key] : undefined;
+}
+
+function readNestedRecord(value: unknown, key: string): RuntimeTruthApiPayload | null {
+  const candidate = readRecordField(value, key);
+  return isRecord(candidate) ? candidate : null;
+}
+
+function readStringField(value: unknown, key: string): string | null {
+  const candidate = readRecordField(value, key);
+  return typeof candidate === 'string' ? candidate : null;
+}
+
+function readNumberField(value: unknown, key: string): number | null {
+  const candidate = readRecordField(value, key);
+  return typeof candidate === 'number' ? candidate : null;
+}
+
+export function buildRequestHeaders(body: RuntimeTruthRequestBody): RuntimeTruthHeaders {
+  const headers: RuntimeTruthHeaders = {
     Accept: 'application/json, text/plain;q=0.9, */*;q=0.8',
   };
 
@@ -10,15 +83,15 @@ export function buildRequestHeaders(body) {
   return headers;
 }
 
-export function normalizeActionResult(result) {
-  if (result && typeof result === 'object' && 'payload' in result && 'meta' in result) {
-    return result;
+export function normalizeActionResult<TPayload = unknown>(result: TPayload | RuntimeTruthActionEnvelope<TPayload>): RuntimeTruthActionEnvelope<TPayload> {
+  if (isRecord(result) && 'payload' in result && 'meta' in result) {
+    return result as RuntimeTruthActionEnvelope<TPayload>;
   }
 
-  return { payload: result, meta: null };
+  return { payload: result as TPayload, meta: null };
 }
 
-export function buildTimelineDetails() {
+export function buildTimelineDetails(): RuntimeTruthTimelineDetails {
   const now = new Date();
   return {
     local: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
@@ -36,7 +109,7 @@ export function buildTimelineDetails() {
   };
 }
 
-export function buildInitLogDetails({ operation, endpoint, requestBody, apiMeta, responsePayload, outcome }) {
+export function buildInitLogDetails({ operation, endpoint, requestBody, apiMeta, responsePayload, outcome }: RuntimeTruthLogDetailsInput): RuntimeTruthLogDetails {
   const request = apiMeta?.request ?? {
     method: endpoint.method,
     path: endpoint.path,
@@ -64,7 +137,7 @@ export function buildInitLogDetails({ operation, endpoint, requestBody, apiMeta,
   };
 }
 
-export function mapPayloadStatusToUiStatus(payloadStatus) {
+export function mapPayloadStatusToUiStatus(payloadStatus: unknown): RuntimeTruthUiStatus {
   if (payloadStatus === 'error') {
     return 'error';
   }
@@ -74,74 +147,95 @@ export function mapPayloadStatusToUiStatus(payloadStatus) {
   return 'success';
 }
 
-export function extractSchedulerCapability(payload, fallbackCapability) {
-  const candidate = payload?.scheduler?.capability;
-  if (!candidate || typeof candidate !== 'object') {
+export function extractSchedulerCapability(payload: unknown, fallbackCapability: SchedulerCapability | null | undefined): SchedulerCapability | null | undefined {
+  const scheduler = readNestedRecord(payload, 'scheduler');
+  const candidate = scheduler?.capability;
+  if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) {
     return fallbackCapability;
   }
   return {
     ...(fallbackCapability ?? {}),
     ...candidate,
-  };
+  } as SchedulerCapability;
 }
 
-export function summarizeInitPayload(operation, payload) {
+export function summarizeInitPayload(operation: string, payload: unknown): string {
   if (!payload) {
     return `${operation} completed with an empty response body.`;
   }
-  const schedulerSupport = payload?.scheduler?.operationSupportLevel;
-  const schedulerProfile = payload?.scheduler?.platformProfileLabel;
+  const scheduler = readNestedRecord(payload, 'scheduler');
+  const schedulerSupport = scheduler?.operationSupportLevel;
+  const schedulerProfile = scheduler?.platformProfileLabel;
   if (schedulerSupport && schedulerProfile) {
     return `${operation} completed for ${schedulerProfile} with scheduler support level ${schedulerSupport}.`;
   }
   if (typeof payload === 'string') {
     return `${operation} completed: ${payload}`;
   }
-  if (typeof payload.message === 'string') {
-    return `${operation} completed: ${payload.message}`;
+  const message = readStringField(payload, 'message');
+  if (message) {
+    return `${operation} completed: ${message}`;
   }
-  if (typeof payload.status === 'string') {
-    return `${operation} completed with status ${payload.status}.`;
+  const status = readStringField(payload, 'status');
+  if (status) {
+    return `${operation} completed with status ${status}.`;
   }
-  const topLevelKeys = Object.keys(payload);
+  const topLevelKeys = typeof payload === 'object' ? Object.keys(payload as object) : [];
   return `${operation} completed and returned ${topLevelKeys.length} top-level field${topLevelKeys.length === 1 ? '' : 's'}.`;
 }
 
-export function summarizeRuntimePayload(operation, payload) {
+export function summarizeRuntimePayload(operation: string, payload: unknown): string {
   if (!payload) {
     return `${operation} completed with an empty response body.`;
   }
-  if (Array.isArray(payload.messages) && payload.messages.length) {
-    return payload.messages[0];
+
+  const messages = readRecordField(payload, 'messages');
+  if (Array.isArray(messages) && messages.length) {
+    return String(messages[0]);
   }
-  if (payload.playback?.selected?.canonicalPath) {
-    return `${operation} completed and selected ${payload.playback.selected.canonicalPath}.`;
+
+  const playback = readNestedRecord(payload, 'playback');
+  const selected = readNestedRecord(playback, 'selected');
+  const canonicalPath = readStringField(selected, 'canonicalPath');
+  if (canonicalPath) {
+    return `${operation} completed and selected ${canonicalPath}.`;
   }
-  if (payload.queue && typeof payload.queue.insertedCount === 'number') {
-    return `${operation} completed with ${payload.queue.insertedCount} newly queued item(s).`;
+
+  const queue = readNestedRecord(payload, 'queue');
+  const insertedCount = readNumberField(queue, 'insertedCount');
+  if (insertedCount !== null) {
+    return `${operation} completed with ${insertedCount} newly queued item(s).`;
   }
-  if (payload.indexing && typeof payload.indexing.insertedCanonicalCount === 'number') {
-    return `${operation} completed and inserted ${payload.indexing.insertedCanonicalCount} canonical item(s).`;
+
+  const indexing = readNestedRecord(payload, 'indexing');
+  const insertedCanonicalCount = readNumberField(indexing, 'insertedCanonicalCount');
+  if (insertedCanonicalCount !== null) {
+    return `${operation} completed and inserted ${insertedCanonicalCount} canonical item(s).`;
   }
-  if (payload.download && typeof payload.download.newMediaFiles === 'number') {
-    return `${operation} completed and detected ${payload.download.newMediaFiles} new media file(s).`;
+
+  const download = readNestedRecord(payload, 'download');
+  const newMediaFiles = readNumberField(download, 'newMediaFiles');
+  if (newMediaFiles !== null) {
+    return `${operation} completed and detected ${newMediaFiles} new media file(s).`;
   }
-  if (typeof payload.message === 'string') {
-    return `${operation} completed: ${payload.message}`;
+
+  const message = readStringField(payload, 'message');
+  if (message) {
+    return `${operation} completed: ${message}`;
   }
-  if (typeof payload.status === 'string') {
-    return `${operation} completed with status ${payload.status}.`;
+  const status = readStringField(payload, 'status');
+  if (status) {
+    return `${operation} completed with status ${status}.`;
   }
-  const topLevelKeys = Object.keys(payload);
+  const topLevelKeys = typeof payload === 'object' ? Object.keys(payload as object) : [];
   return `${operation} completed and returned ${topLevelKeys.length} top-level field${topLevelKeys.length === 1 ? '' : 's'}.`;
 }
 
-export function formatInitError(operation, error) {
-
-  if (error?.status) {
-    return `${operation} failed with HTTP ${error.status}: ${error.message}`;
+export function formatInitError(operation: string, error: RuntimeTruthErrorLike | unknown): string {
+  if (isRecord(error) && error.status) {
+    return `${operation} failed with HTTP ${error.status}: ${String(error.message)}`;
   }
-  if (error?.message) {
+  if (isRecord(error) && typeof error.message === 'string') {
     return `${operation} failed: ${error.message}`;
   }
   return `${operation} failed for an unknown reason.`;

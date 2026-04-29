@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## 2026-04-29 11:55 EEST — v0.3.33
+
+### Added
+- Added Slice 2 TypeScript function boundary types for runtime-truth action utility helpers and duplicate-action guard helpers.
+
+### Changed
+- Added explicit parameter and return types around existing runtime-truth logging, status mapping, payload summary, scheduler capability extraction, and guard callbacks without changing runtime behavior.
+- Updated version metadata from v0.3.32 to v0.3.33.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
 ## 2026-04-29 11:44 EEST — v0.3.32
 
 ### Added
