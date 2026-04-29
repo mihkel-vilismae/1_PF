@@ -1,4 +1,4 @@
-import { BACKEND_STATUS_TITLES, REALITY_STATE_TITLES } from './guideCopy.js';
+import { BACKEND_STATUS_TITLES, REALITY_STATE_TITLES } from './guideCopy.ts';
 
 export function compactWhitespace(value) {
   return String(value ?? '').replace(/\s+/g, ' ').trim();

@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const serverEntryPath = path.join(repoRoot, 'server', 'index.js');
+const serverEntryPath = path.join(repoRoot, 'server', 'index.ts');
 
 test('GET /api/auth/status returns only the safe public projection', async () => {
   await withAuthServer(buildEnvFile(), async ({ port }) => {
@@ -105,7 +105,7 @@ async function withAuthServer(envContent, run) {
 
   await writeFile(envFilePath, envContent, 'utf8');
 
-  const child = spawn(process.execPath, [serverEntryPath], {
+  const child = spawn(process.execPath, ['--import', 'tsx', serverEntryPath], {
     cwd: repoRoot,
     env: {
       ...process.env,

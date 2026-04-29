@@ -9,6 +9,9 @@ param(
   [Parameter(Mandatory = $true)]
   [string]$NodePath,
 
+  [Parameter(Mandatory = $false)]
+  [string]$NodeArguments = '',
+
   [Parameter(Mandatory = $true)]
   [string]$ScriptPath,
 
@@ -43,6 +46,9 @@ function Build-ExpectedTask() {
   $quotedScript = '"' + $ScriptPath + '"'
   $quotedRepoRoot = '"' + $RepoRoot + '"'
   $arguments = "$quotedScript --repo-root $quotedRepoRoot"
+  if ($NodeArguments) {
+    $arguments = "$NodeArguments $arguments"
+  }
   if ($LogDir) {
     $quotedLogDir = '"' + $LogDir + '"'
     $arguments = "$arguments --log-dir $quotedLogDir"

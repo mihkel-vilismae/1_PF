@@ -5,7 +5,7 @@ import {
   FALLBACK_INSPECT_DESCRIPTION,
   INSPECT_COPY,
   LAST_RUN_MODE_INSPECT_COPY,
-} from './guideCopy.js';
+} from './guideCopy.ts';
 import { getAuthButtonInspectCopy } from '../data/authButtonStatusCopy.ts';
 import { buildValueMeta, compactWhitespace, getCardContext } from './guideUtils.ts';
 

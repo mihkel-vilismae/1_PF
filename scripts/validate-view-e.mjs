@@ -28,7 +28,7 @@ if (!existsSync(envPath)) {
 }
 
 function startServer() {
-  const child = spawn(process.execPath, ['server/index.js'], {
+  const child = spawn(process.execPath, ['--import', 'tsx', 'server/index.ts'], {
     cwd: repoRoot,
     env: { ...process.env, PORT: '4312' },
     stdio: ['ignore', 'pipe', 'pipe'],

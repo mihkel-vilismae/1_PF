@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const serverEntryPath = path.join(repoRoot, 'server', 'index.js');
+const serverEntryPath = path.join(repoRoot, 'server', 'index.ts');
 const schemaPath = path.join(repoRoot, 'schema.sql');
 const pythonCommand = process.platform === 'win32' ? 'python' : 'python3';
 
@@ -148,7 +148,7 @@ async function withRuntimeServer(options, run) {
     await execSqlFile(dbPath, schemaPath);
   }
 
-  const child = spawn(process.execPath, [serverEntryPath], {
+  const child = spawn(process.execPath, ['--import', 'tsx', serverEntryPath], {
     cwd: repoRoot,
     env: { ...process.env, PORT: String(port), INIT_ENV_FILE: envFilePath },
     stdio: ['ignore', 'pipe', 'pipe'],

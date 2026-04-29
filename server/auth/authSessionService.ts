@@ -4,11 +4,11 @@ import {
   AUTH_STATUSES,
   TWO_FACTOR_STATUSES,
   createDefaultAuthState,
-} from './authState.js';
+} from './authState.ts';
 import {
   PROVIDER_OUTCOMES,
   normalizeProviderOutcome,
-} from './providers/providerRegistry.js';
+} from './providers/providerRegistry.ts';
 
 export async function verifyResumedAuthSession({
   persistedState,
@@ -19,7 +19,7 @@ export async function verifyResumedAuthSession({
   timeoutMs = 120_000,
   mapProviderOutcomeToAuthState,
   withTimeout,
-} = {}) {
+}: any = {}) {
   const updatedAt = now.toISOString();
   const normalizedPersistedState = persistedState ? createDefaultAuthState(persistedState) : null;
 
@@ -102,7 +102,7 @@ export async function verifyResumedAuthSession({
   }
 }
 
-export function shouldVerifyPersistedSession(persistedState) {
+export function shouldVerifyPersistedSession(persistedState: any) {
   if (!persistedState) return false;
   if (persistedState.status === AUTH_STATUSES.AUTHENTICATED) return true;
   if (persistedState.next_action === 'verify_provider_session') return true;

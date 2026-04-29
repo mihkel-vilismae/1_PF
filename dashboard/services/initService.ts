@@ -1,5 +1,5 @@
 import { requestJson } from './apiClient.ts';
-import { SCHEDULER_OPERATION_SUPPORT } from '../../shared/schedulerPlatformCapabilities.js';
+import { SCHEDULER_OPERATION_SUPPORT } from '../../shared/schedulerPlatformCapabilities.ts';
 
 export const SCHEDULER_INIT_ENDPOINTS = Object.freeze({
   [SCHEDULER_OPERATION_SUPPORT.install]: { method: 'POST', path: '/api/init/cron/install' },

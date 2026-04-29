@@ -2,7 +2,7 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
-import { createProjectLogger, DEFAULT_LOG_DIR, resolveLogDirectory } from './logging/projectLogger.js';
+import { createProjectLogger, DEFAULT_LOG_DIR, resolveLogDirectory } from './logging/projectLogger.ts';
 
 const DEFAULT_TICKS = Object.freeze({
   pipeline: 5,
@@ -26,7 +26,7 @@ const logger = createProjectLogger({
   source: 'scheduler-host',
 });
 
-const state = {
+const state: any = {
   pid: process.pid,
   startedAt: new Date().toISOString(),
   repoRoot,

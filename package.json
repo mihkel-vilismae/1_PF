@@ -4,7 +4,7 @@
   "version": "0.3.31",
   "type": "module",
   "scripts": {
-    "api": "node server/index.js",
+    "api": "node --import tsx server/index.ts",
     "dev": "vite",
     "test": "tsx --test",
     "typecheck": "tsc --noEmit",

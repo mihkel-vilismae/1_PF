@@ -1,4 +1,4 @@
-import { INSPECT_EYEBROWS } from './guideCopy.js';
+import { INSPECT_EYEBROWS } from './guideCopy.ts';
 
 export function createGuideTooltipController({ getState }) {
   let inspectTooltipElement;

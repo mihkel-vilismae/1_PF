@@ -6,7 +6,7 @@ import {
   getOperationSupportLevel,
   SCHEDULER_OPERATION_SUPPORT,
   SCHEDULER_SUPPORT_LEVELS,
-} from '../../../shared/schedulerPlatformCapabilities.js';
+} from '../../../shared/schedulerPlatformCapabilities.ts';
 
 export const RUNTIME_TRUTH_SEED_PATH = 'conf/runtime-truth.json';
 

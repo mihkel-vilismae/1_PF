@@ -7,7 +7,7 @@ const GENERIC_SECRET_PATTERNS = [
   /(session\s*[:=]\s*)([^\s]+)/gi,
 ];
 
-export function sanitizeIcloudpdText(text, secrets = {}) {
+export function sanitizeIcloudpdText(text: any, secrets: any = {}) {
   let sanitized = String(text || '');
   const valuesToRedact = [
     secrets.username,
@@ -29,7 +29,7 @@ export function sanitizeIcloudpdText(text, secrets = {}) {
   return sanitized;
 }
 
-export function redactedEmail(value) {
+export function redactedEmail(value: any) {
   if (!value || typeof value !== 'string' || !value.includes('@')) {
     return null;
   }

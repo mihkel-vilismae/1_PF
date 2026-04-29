@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const serverEntryPath = path.join(repoRoot, 'server', 'index.js');
+const serverEntryPath = path.join(repoRoot, 'server', 'index.ts');
 const schemaPath = path.join(repoRoot, 'schema.sql');
 
 test('POST /api/runtime/download/run copies mock download files from configured source directory', async () => {
@@ -205,7 +205,7 @@ async function withRuntimeServer(options, run) {
     await writeFile(path.join(downloadDir, 'beta.jpg'), 'beta image payload', 'utf8');
   }
 
-  const child = spawn(process.execPath, [serverEntryPath], {
+  const child = spawn(process.execPath, ['--import', 'tsx', serverEntryPath], {
     cwd: repoRoot,
     env: {
       ...process.env,

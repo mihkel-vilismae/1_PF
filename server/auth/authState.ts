@@ -1,4 +1,4 @@
-import { sanitizeAuthValue } from './authLogSanitizer.js';
+import { sanitizeAuthValue } from './authLogSanitizer.ts';
 
 export const AUTH_PROVIDER = 'icloud';
 
@@ -20,7 +20,7 @@ export const TWO_FACTOR_STATUSES = Object.freeze({
   UNKNOWN: 'unknown',
 });
 
-export function createDefaultAuthState(overrides = {}) {
+export function createDefaultAuthState(overrides: any = {}): any {
   return {
     status: AUTH_STATUSES.IDLE,
     has_required_files: false,
@@ -37,7 +37,7 @@ export function createDefaultAuthState(overrides = {}) {
   };
 }
 
-export function projectPublicAuthState(rawState) {
+export function projectPublicAuthState(rawState: any): any {
   const state = rawState || createDefaultAuthState();
   return sanitizeAuthValue({
     status: state.status ?? AUTH_STATUSES.IDLE,

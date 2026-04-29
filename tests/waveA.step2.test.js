@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const serverEntryPath = path.join(repoRoot, 'server', 'index.js');
+const serverEntryPath = path.join(repoRoot, 'server', 'index.ts');
 const schemaPath = path.join(repoRoot, 'schema.sql');
 const fixedTimestamp = '2026-04-21T12:34:56.000Z';
 
@@ -209,7 +209,7 @@ async function withWaveAServer(run) {
 
   seedWaveADatabase(dbPath, schemaPath, assets);
 
-  const child = spawn(process.execPath, [serverEntryPath], {
+  const child = spawn(process.execPath, ['--import', 'tsx', serverEntryPath], {
     cwd: repoRoot,
     env: {
       ...process.env,

@@ -3,9 +3,9 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { createIcloudpdProvider, mapIcloudpdResultToOutcome } from '../server/auth/providers/icloudpdProvider.js';
-import { buildAuthOnlyArgs, buildSingleFileDownloadArgs, buildVerifySessionArgs, createIcloudpdProcessRunner, redactIcloudpdArgs } from '../server/auth/providers/icloudpdProcessRunner.js';
-import { sanitizeIcloudpdText } from '../server/auth/providers/icloudpdSanitizer.js';
+import { createIcloudpdProvider, mapIcloudpdResultToOutcome } from '../server/auth/providers/icloudpdProvider.ts';
+import { buildAuthOnlyArgs, buildSingleFileDownloadArgs, buildVerifySessionArgs, createIcloudpdProcessRunner, redactIcloudpdArgs } from '../server/auth/providers/icloudpdProcessRunner.ts';
+import { sanitizeIcloudpdText } from '../server/auth/providers/icloudpdSanitizer.ts';
 
 const envValues = {
   user: 'operator@example.com',

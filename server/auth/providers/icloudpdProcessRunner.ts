@@ -2,13 +2,13 @@ import { execFile } from 'node:child_process';
 import { mkdir, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
-import { sanitizeIcloudpdText } from './icloudpdSanitizer.js';
+import { sanitizeIcloudpdText } from './icloudpdSanitizer.ts';
 
 const execFileAsync = promisify(execFile);
 const DEFAULT_TIMEOUT_MS = 120_000;
 const DEFAULT_RECENT_COUNT = '1';
 
-export function createIcloudpdProcessRunner({ execFileImpl, executable = process.env.ICLOUDPD_BIN || 'icloudpd' } = {}) {
+export function createIcloudpdProcessRunner({ execFileImpl, executable = process.env.ICLOUDPD_BIN || 'icloudpd' }: any = {}) {
   const safeExecFileImpl = execFileImpl || execFileAsync;
   return {
     executable,
@@ -25,15 +25,15 @@ export function createIcloudpdProcessRunner({ execFileImpl, executable = process
         };
       }
     },
-    async startAuth({ config }) {
+    async startAuth({ config }: any) {
       const args = buildAuthOnlyArgs(config);
       return runIcloudpdCommand({ execFileImpl: safeExecFileImpl, executable, args, config, timeoutMs: config.timeoutMs });
     },
-    async verifySession({ config }) {
+    async verifySession({ config }: any) {
       const args = buildVerifySessionArgs(config);
       return runIcloudpdCommand({ execFileImpl: safeExecFileImpl, executable, args, config, timeoutMs: config.timeoutMs });
     },
-    async downloadSingleFile({ config }) {
+    async downloadSingleFile({ config }: any) {
       const args = buildSingleFileDownloadArgs(config);
       return runIcloudpdCommand({ execFileImpl: safeExecFileImpl, executable, args, config, timeoutMs: config.timeoutMs });
     },
@@ -46,7 +46,7 @@ export function createIcloudpdProcessRunner({ execFileImpl, executable = process
         unsupportedTwoFactor: true,
       };
     },
-    async cleanup({ config }) {
+    async cleanup({ config }: any) {
       if (!config.cookieDir) {
         return { localCleanupPerformed: false, message: 'No icloudpd cookie directory was configured.' };
       }
@@ -57,7 +57,7 @@ export function createIcloudpdProcessRunner({ execFileImpl, executable = process
   };
 }
 
-export function buildAuthOnlyArgs(config) {
+export function buildAuthOnlyArgs(config: any) {
   const args = [
     '--username', config.username,
     '--password', config.password,
@@ -70,7 +70,7 @@ export function buildAuthOnlyArgs(config) {
   return args;
 }
 
-export function buildVerifySessionArgs(config) {
+export function buildVerifySessionArgs(config: any) {
   const directory = config.downloadDir || config.cookieDir || process.cwd();
   const args = [
     '--username', config.username,
@@ -85,7 +85,7 @@ export function buildVerifySessionArgs(config) {
   return args;
 }
 
-export function buildSingleFileDownloadArgs(config) {
+export function buildSingleFileDownloadArgs(config: any) {
   const directory = config.downloadDir || process.cwd();
   const args = [
     '--username', config.username,
@@ -101,7 +101,7 @@ export function buildSingleFileDownloadArgs(config) {
   return args;
 }
 
-async function runIcloudpdCommand({ execFileImpl, executable, args, config, timeoutMs = DEFAULT_TIMEOUT_MS }) {
+async function runIcloudpdCommand({ execFileImpl, executable, args, config, timeoutMs = DEFAULT_TIMEOUT_MS }: any) {
   await mkdir(config.cookieDir, { recursive: true });
   if (config.downloadDir) {
     await mkdir(config.downloadDir, { recursive: true });
@@ -132,7 +132,7 @@ async function runIcloudpdCommand({ execFileImpl, executable, args, config, time
   }
 }
 
-export function redactIcloudpdArgs(args, config = {}) {
+export function redactIcloudpdArgs(args: any[], config: any = {}) {
   const sensitiveValues = new Set([config.password, config.twoFactorCode].filter(Boolean));
   const redacted = [];
   for (let index = 0; index < args.length; index += 1) {
@@ -152,7 +152,7 @@ export function redactIcloudpdArgs(args, config = {}) {
   return redacted;
 }
 
-export function normalizeProviderPath(value, { cwd = process.cwd() } = {}) {
+export function normalizeProviderPath(value: any, { cwd = process.cwd() }: any = {}) {
   if (!value || typeof value !== 'string') {
     return null;
   }

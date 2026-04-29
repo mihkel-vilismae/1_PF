@@ -1,4 +1,4 @@
-import { PROVIDER_OUTCOMES } from './providerRegistry.js';
+import { PROVIDER_OUTCOMES } from './providerRegistry.ts';
 
 export function createMockDisabledProvider({ outcome = PROVIDER_OUTCOMES.PROVIDER_UNAVAILABLE, overrides = {} } = {}) {
   return {

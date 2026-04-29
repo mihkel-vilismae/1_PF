@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { configureAuthServiceForTests, runAuthPreflight } from '../server/auth/authService.js';
-import { createProviderRegistry, PROVIDER_OUTCOMES } from '../server/auth/providers/providerRegistry.js';
+import { configureAuthServiceForTests, runAuthPreflight } from '../server/auth/authService.ts';
+import { createProviderRegistry, PROVIDER_OUTCOMES } from '../server/auth/providers/providerRegistry.ts';
 
 function check(key) {
   return { key, label: key, required: true, present: true, valid: true, severity: 'info', message: 'ok', details: {} };

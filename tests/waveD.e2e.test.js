@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const serverEntryPath = path.join(repoRoot, 'server', 'index.js');
+const serverEntryPath = path.join(repoRoot, 'server', 'index.ts');
 const pythonCommand = process.platform === 'win32' ? 'python' : 'python3';
 const queueSkipReasons = Object.freeze([
   'already_queued',
@@ -290,7 +290,7 @@ async function withWaveDServer(run) {
 
   await installMockDownloadSource(mockDownloadSourceDir);
 
-  const child = spawn(process.execPath, [serverEntryPath], {
+  const child = spawn(process.execPath, ['--import', 'tsx', serverEntryPath], {
     cwd: repoRoot,
     env: {
       ...process.env,

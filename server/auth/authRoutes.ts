@@ -7,7 +7,7 @@ import {
   submitAuthTwoFactor,
   verifyAuthPreflightReadiness,
   testAuthLoginByDownloadingSingleFile,
-} from './authService.js';
+} from './authService.ts';
 
 const ERROR_AUTH_STATUSES = new Set(['preflight_failed', 'provider_failed']);
 
@@ -16,7 +16,7 @@ export function createAuthRoutes({
   resumeAuthSessionFn = resumeAuthSession,
   singleFileDownloadDirectory = null,
   testAuthLoginByDownloadingSingleFileFn = testAuthLoginByDownloadingSingleFile,
-}) {
+}: any) {
   return {
     statusHandler: async () => ({
       statusCode: 200,
@@ -26,7 +26,7 @@ export function createAuthRoutes({
       },
     }),
 
-    verifyIcloudpdHandler: async ({ context }) => {
+    verifyIcloudpdHandler: async ({ context }: any) => {
       const checks = getAuthReadinessChecks(context);
       const readiness = await verifyAuthPreflightReadiness({ checks, envValues: context.envValues });
       return {
@@ -39,7 +39,7 @@ export function createAuthRoutes({
       };
     },
 
-    runHandler: async ({ context }) => {
+    runHandler: async ({ context }: any) => {
       const checks = getAuthReadinessChecks(context);
       const auth = await runAuthPreflight({ checks, envValues: context.envValues });
       return {
@@ -51,7 +51,7 @@ export function createAuthRoutes({
       };
     },
 
-    twoFactorSubmitHandler: async ({ body, context }) => {
+    twoFactorSubmitHandler: async ({ body, context }: any) => {
       const auth = await submitAuthTwoFactor({ code: body?.code, envValues: context.envValues });
       return {
         statusCode: statusCodeForAuthState(auth),
@@ -62,7 +62,7 @@ export function createAuthRoutes({
       };
     },
 
-    testLoginDownloadOneHandler: async ({ context }) => {
+    testLoginDownloadOneHandler: async ({ context }: any) => {
       const checks = getAuthReadinessChecks(context);
       const result = await testAuthLoginByDownloadingSingleFileFn({
         checks,
@@ -91,7 +91,7 @@ export function createAuthRoutes({
       },
     }),
 
-    logoutHandler: async ({ context }) => {
+    logoutHandler: async ({ context }: any) => {
       const result = await logoutAuth({ envValues: context.envValues });
       return {
         statusCode: 200,
@@ -107,7 +107,7 @@ export function createAuthRoutes({
       };
     },
 
-    resumeHandler: async ({ context }) => {
+    resumeHandler: async ({ context }: any) => {
       const auth = await resumeAuthSessionFn({ envValues: context.envValues });
       return {
         statusCode: statusCodeForAuthState(auth),
@@ -120,7 +120,7 @@ export function createAuthRoutes({
   };
 }
 
-function summarizeSingleFileTest(auth, testDownload) {
+function summarizeSingleFileTest(auth: any, testDownload: any) {
   if (auth?.status === 'authenticated') {
     return `Downloaded one recent iCloud item into ${testDownload?.downloadDirectory ?? 'the configured test directory'}.`;
   }
@@ -130,7 +130,7 @@ function summarizeSingleFileTest(auth, testDownload) {
   return auth?.error?.message || testDownload?.message || 'Single-file auth download test completed without an authenticated result.';
 }
 
-function statusCodeForAuthState(auth) {
+function statusCodeForAuthState(auth: any) {
   if (auth?.error?.code === 'auth_operation_in_progress') {
     return 409;
   }
@@ -143,7 +143,7 @@ function statusCodeForAuthState(auth) {
   return 200;
 }
 
-function responseStatusForAuthState(auth) {
+function responseStatusForAuthState(auth: any) {
   if (auth?.error?.code === 'auth_operation_in_progress') {
     return 'blocked';
   }

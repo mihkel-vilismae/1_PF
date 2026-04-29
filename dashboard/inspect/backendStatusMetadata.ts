@@ -1,4 +1,4 @@
-import { ACTION_BACKEND_STATUS_COPY, INIT_ACTION_TO_CODE } from './guideCopy.js';
+import { ACTION_BACKEND_STATUS_COPY, INIT_ACTION_TO_CODE } from './guideCopy.ts';
 import { getAuthButtonBackendStatusCopy } from '../data/authButtonStatusCopy.ts';
 import { buildBackendStatusMeta, compactWhitespace, getCardContext, isMissingBackendStatus } from './guideUtils.ts';
 

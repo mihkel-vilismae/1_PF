@@ -12,7 +12,7 @@ import {
 import {
   SCHEDULER_OPERATION_SUPPORT,
   SCHEDULER_SUPPORT_LEVELS,
-} from '../../../shared/schedulerPlatformCapabilities.js';
+} from '../../../shared/schedulerPlatformCapabilities.ts';
 import { buildTimelineDetails } from './runtimeTruthActionUtils.ts';
 import {
   RUNTIME_EXECUTION_ENDPOINTS,

@@ -1,4 +1,4 @@
-import { createIcloudAuthProvider } from './icloudAuthProvider.js';
+import { createIcloudAuthProvider } from './icloudAuthProvider.ts';
 
 export const PROVIDER_OUTCOMES = Object.freeze({
   PROVIDER_UNAVAILABLE: 'provider_unavailable',

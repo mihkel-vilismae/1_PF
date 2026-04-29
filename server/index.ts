@@ -6,17 +6,17 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
-import { createAuthRoutes } from './auth/authRoutes.js';
-import { createDatabaseService } from './database/databaseService.js';
-import { attachSafeAuthRuntimeTruth } from './auth/authRuntimeTruth.js';
-import { createProjectLogger, DEFAULT_LOG_DIR } from './logging/projectLogger.js';
+import { createAuthRoutes } from './auth/authRoutes.ts';
+import { createDatabaseService } from './database/databaseService.ts';
+import { attachSafeAuthRuntimeTruth } from './auth/authRuntimeTruth.ts';
+import { createProjectLogger, DEFAULT_LOG_DIR } from './logging/projectLogger.ts';
 import {
   createSchedulerCapability,
   getOperationSupportLevel,
   isOperationExecutable,
   SCHEDULER_OPERATION_SUPPORT,
   SCHEDULER_SUPPORT_LEVELS,
-} from '../shared/schedulerPlatformCapabilities.js';
+} from '../shared/schedulerPlatformCapabilities.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,7 +24,8 @@ const repoRoot = path.resolve(__dirname, '..');
 const generatedTestDataDirectory = path.join(repoRoot, 'generated_test_data');
 const defaultEnvFilePath = path.join(repoRoot, '.env');
 const windowsTaskSchedulerScriptPath = path.join(__dirname, 'scripts', 'windows_task_scheduler.ps1');
-const schedulerHostPath = path.join(__dirname, 'scheduler_host.js');
+const schedulerHostPath = path.join(__dirname, 'scheduler_host.ts');
+const schedulerNodeArguments = Object.freeze(['--import', 'tsx']);
 const port = Number(process.env.PORT || 4301);
 const logger = createProjectLogger({
   repoRoot,
@@ -68,7 +69,7 @@ const supportedMediaExtensions = new Set([
   '.mpeg',
   '.mpg',
 ]);
-let databaseViewerLoggingSession = null;
+let databaseViewerLoggingSession: any = null;
 
 const authRouteHandlers = createAuthRoutes({
   getAuthReadinessChecks,
@@ -104,7 +105,7 @@ const envSchema = [
   { key: 'PLAYBACK_LEASE_SECONDS', label: 'Playback lease seconds', required: true, kind: 'integer' },
 ];
 
-const routes = {
+const routes: any = {
   'GET /api/auth/status': authRouteHandlers.statusHandler,
   'POST /api/auth/verify-icloudpd': authRouteHandlers.verifyIcloudpdHandler,
   'POST /api/auth/run': authRouteHandlers.runHandler,
@@ -141,7 +142,7 @@ const routes = {
   'POST /api/runtime-truth': updateRuntimeTruthHandler,
 };
 
-const server = createServer(async (request, response) => {
+const server = createServer(async (request: any, response: any) => {
   const startedAt = Date.now();
   let routeKey = `${request.method || 'GET'} ${request.url || ''}`;
   let url = null;
@@ -167,7 +168,7 @@ const server = createServer(async (request, response) => {
     const result = await handler({ request, response, url, body, context });
     sendJson(response, result.statusCode, result.payload);
     void logRequest({ request, url, routeKey, statusCode: result.statusCode, startedAt });
-  } catch (error) {
+  } catch (error: any) {
     const statusCode = error instanceof HttpError ? error.statusCode : 500;
     const code = error instanceof HttpError ? error.code : 'internal_error';
     const details = error instanceof HttpError ? error.details : undefined;
@@ -940,8 +941,8 @@ async function runtimeOrchestrationRunHandler({ context }) {
   }
 
   // Read existing orchestration states
-  let currentState = await getOrchestrationState(context, 'orchestration_current');
-  let lastState = await getOrchestrationState(context, 'orchestration_last');
+  let currentState: any = await getOrchestrationState(context, 'orchestration_current');
+  let lastState: any = await getOrchestrationState(context, 'orchestration_last');
 
   // Prevent concurrent runs
   if (currentState && currentState.status === 'RUNNING') {
@@ -988,7 +989,7 @@ async function runtimeOrchestrationRunHandler({ context }) {
       const result = await stage.handler({ context });
       // Stage succeeded
       currentState.last_successful_stage = stage.key;
-      const payload = result?.payload || {};
+      const payload: any = result?.payload || {};
       currentState.stage_results[stage.key] = payload;
       if (stage.key === 'playback_select') {
         // Final stage success
@@ -1229,7 +1230,7 @@ function validateEnvValue(entry, rawValue) {
   return { valid: true, message: 'Value is present and structurally valid.' };
 }
 
-let databaseService = null;
+let databaseService: any = null;
 
 function getDatabaseService() {
   if (!databaseService) {
@@ -1241,7 +1242,7 @@ function getDatabaseService() {
   return databaseService;
 }
 
-function previewValue(entry, rawValue) {
+function previewValue(entry: any, rawValue: any) {
   if (entry.sensitive) {
     return '***redacted***';
   }
@@ -1266,7 +1267,7 @@ function buildDatabaseViewerVerificationMessages(verification) {
   return getDatabaseService().buildDatabaseViewerVerificationMessages(verification);
 }
 
-function buildDatabaseViewerLoggingState(options = {}) {
+function buildDatabaseViewerLoggingState(options: any = {}) {
   const active = options.active === true;
   const entries = Array.isArray(options.entries)
     ? options.entries.map((entry) => structuredClone(entry))
@@ -1289,7 +1290,7 @@ function buildDatabaseViewerLoggingState(options = {}) {
   };
 }
 
-function recordDatabaseViewerActivity(entry = {}) {
+function recordDatabaseViewerActivity(entry: any = {}) {
   if (!databaseViewerLoggingSession) {
     return;
   }
@@ -1384,7 +1385,7 @@ async function writeRuntimeTruthFile(truth) {
   }
 }
 
-function normalizeRuntimeTruthPayload(value, options = {}) {
+function normalizeRuntimeTruthPayload(value: any, options: any = {}) {
   const source = options.source === 'file' ? 'file' : 'request';
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     if (source === 'file') {
@@ -1422,7 +1423,7 @@ async function runPythonJson(args) {
   return getDatabaseService().runPythonJson(args);
 }
 
-function runProcess(command, args, options = {}) {
+function runProcess(command: any, args: any[], options: any = {}): Promise<any> {
   void logger.debug('Spawning child process.', {
     command,
     args,
@@ -1520,7 +1521,7 @@ async function copyMockDownloadFiles({ sourceFiles, sourceRoot, destinationRoot 
       await fs.mkdir(path.dirname(destinationFile), { recursive: true });
       await fs.copyFile(sourceFile, destinationFile);
       copiedRelativePaths.push(relativePath);
-    } catch (error) {
+    } catch (error: any) {
       failedCopies.push({
         relativePath,
         message: error.message,
@@ -1599,6 +1600,7 @@ function buildSchedulerDefinition(context, capability) {
     platformTarget: capability.schedulerTarget,
     schedulerMode: capability.schedulerMode,
     nodePath: context.nodePath,
+    nodeArguments: schedulerNodeArguments,
     scriptPath: schedulerHostPath,
     repoRoot,
     logDirectory,
@@ -1610,7 +1612,7 @@ function buildSchedulerDefinition(context, capability) {
   };
 }
 
-async function runWindowsSchedulerCommand(operation, definition) {
+async function runWindowsSchedulerCommand(operation: any, definition: any) {
   const args = [
     '-NoProfile',
     '-ExecutionPolicy',
@@ -1623,6 +1625,8 @@ async function runWindowsSchedulerCommand(operation, definition) {
     definition.taskName,
     '-NodePath',
     definition.nodePath,
+    '-NodeArguments',
+    definition.nodeArguments.join(' '),
     '-ScriptPath',
     definition.scriptPath,
     '-RepoRoot',
@@ -1737,7 +1741,7 @@ function buildSchedulerPayload({
   includeExportedXml,
   overrideStatus,
   prependMessages = [],
-}) {
+}: any) {
   const installed = Boolean(task?.installed);
   const hostRunning = host?.state === 'running';
   const status = overrideStatus || (!installed ? 'warning' : hostRunning ? 'ok' : 'warning');
@@ -1777,7 +1781,7 @@ function buildSchedulerPayload({
     cadence: definition.cadence,
     command: {
       executable: definition.nodePath,
-      arguments: [definition.scriptPath, '--repo-root', definition.repoRoot],
+      arguments: [...definition.nodeArguments, definition.scriptPath, '--repo-root', definition.repoRoot],
       workingDirectory: definition.repoRoot,
     },
     task: task ?? {
@@ -1839,7 +1843,7 @@ function reportLoggerWriteError(error) {
   console.warn('[logger] Failed to write project log.', error?.message || error);
 }
 
-function errorPayload(code, message, details) {
+function errorPayload(code: any, message: any, details: any = undefined) {
   return {
     status: 'error',
     error: code,
@@ -1859,7 +1863,11 @@ async function fileExists(targetPath) {
 }
 
 class HttpError extends Error {
-  constructor(statusCode, code, message, details) {
+  statusCode: any;
+  code: any;
+  details: any;
+
+  constructor(statusCode: any, code: any, message: any, details: any) {
     super(message);
     this.name = 'HttpError';
     this.statusCode = statusCode;

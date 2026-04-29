@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const serverEntryPath = path.join(repoRoot, 'server', 'index.js');
+const serverEntryPath = path.join(repoRoot, 'server', 'index.ts');
 
 test('POST /api/init/verify-env validates the temp env file', async () => {
   await withInitServer(async ({ port, dbPath }) => {
@@ -155,7 +155,7 @@ async function withInitServer(run) {
     'utf8',
   );
 
-  const child = spawn(process.execPath, [serverEntryPath], {
+  const child = spawn(process.execPath, ['--import', 'tsx', serverEntryPath], {
     cwd: repoRoot,
     env: {
       ...process.env,
@@ -283,7 +283,7 @@ async function withCustomEnvServer(envContent, run) {
   const envFilePath = path.join(workspaceRoot, 'custom.env');
   await writeFile(envFilePath, envContent, 'utf8');
 
-  const child = spawn(process.execPath, [serverEntryPath], {
+  const child = spawn(process.execPath, ['--import', 'tsx', serverEntryPath], {
     cwd: repoRoot,
     env: {
       ...process.env,

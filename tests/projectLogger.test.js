@@ -3,7 +3,7 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { createProjectLogger } from '../server/logging/projectLogger.js';
+import { createProjectLogger } from '../server/logging/projectLogger.ts';
 
 test('project logger creates requested log files and mirrors all entries to full log', async () => {
   const root = await mkdtemp(path.join(tmpdir(), 'project-logger-'));

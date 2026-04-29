@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createDefaultAuthState, projectPublicAuthState } from '../server/auth/authState.js';
+import { createDefaultAuthState, projectPublicAuthState } from '../server/auth/authState.ts';
 
 const expectedPublicKeys = [
   'status',

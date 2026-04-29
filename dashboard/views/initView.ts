@@ -4,7 +4,7 @@ import {
   getOperationSupportLevel,
   SCHEDULER_OPERATION_SUPPORT,
   SCHEDULER_SUPPORT_LEVELS,
-} from '../../shared/schedulerPlatformCapabilities.js';
+} from '../../shared/schedulerPlatformCapabilities.ts';
 
 // View A owns this card as 1A-AUTH. Some data-action values still contain "b1" because
 // they are compatibility action IDs used by existing tests/runtime wiring from the old B1 auth card.

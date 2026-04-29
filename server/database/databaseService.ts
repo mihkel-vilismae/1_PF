@@ -22,7 +22,7 @@ const databaseViewerRequiredTables = Object.freeze([
 
 const databaseViewerLoggingCoverage = 'Captures database viewer queries and repo-local backend DB actions observed through this server while the logging session is active. It does not guarantee capture of every SQL statement or activity from external processes.';
 
-export function createDatabaseService({ repoRoot, createHttpError }) {
+export function createDatabaseService({ repoRoot, createHttpError }: any) {
   if (!repoRoot) {
     throw new Error('repoRoot is required to create the database service.');
   }
@@ -353,7 +353,7 @@ export function createDatabaseService({ repoRoot, createHttpError }) {
     await runPythonJson(['runtime_state_set', absolutePath, key, serialized, 'json', 'orchestration']);
   }
 
-  async function runPythonJson(args) {
+  async function runPythonJson(args: any[]) {
     const { stdout, stderr, code } = await runProcess('python', [sqliteScriptPath, ...args]);
     if (code !== 0) {
       throw createHttpError(500, 'python_bridge_failed', 'Python bridge command failed.', {
@@ -371,7 +371,7 @@ export function createDatabaseService({ repoRoot, createHttpError }) {
     }
   }
 
-  function runProcess(command, args, options = {}) {
+  function runProcess(command: any, args: any[], options: any = {}): Promise<any> {
     return new Promise((resolve, reject) => {
       const child = spawn(command, args, {
         cwd: repoRoot,

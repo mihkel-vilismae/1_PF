@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { attachSafeAuthRuntimeTruth } from '../server/auth/authRuntimeTruth.js';
+import { attachSafeAuthRuntimeTruth } from '../server/auth/authRuntimeTruth.ts';
 
 test('auth runtime truth attachment uses only safe public projection', () => {
   const truth = attachSafeAuthRuntimeTruth(

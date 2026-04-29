@@ -3,9 +3,9 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { createDefaultAuthState } from '../server/auth/authState.js';
-import { createAuthPersistence } from '../server/auth/authPersistence.js';
-import { configureAuthServiceForTests, loadPersistedAuthState } from '../server/auth/authService.js';
+import { createDefaultAuthState } from '../server/auth/authState.ts';
+import { createAuthPersistence } from '../server/auth/authPersistence.ts';
+import { configureAuthServiceForTests, loadPersistedAuthState } from '../server/auth/authService.ts';
 
 async function withTempDir(run) {
   const dir = await mkdtemp(path.join(os.tmpdir(), 'pf-auth-persistence-'));

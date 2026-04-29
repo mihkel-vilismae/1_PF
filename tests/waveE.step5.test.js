@@ -11,7 +11,7 @@ import test from 'node:test';
 // Wave E orchestration tests
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const serverEntryPath = path.join(repoRoot, 'server', 'index.js');
+const serverEntryPath = path.join(repoRoot, 'server', 'index.ts');
 
 async function reservePort() {
   const server = net.createServer();
@@ -101,7 +101,7 @@ async function withOrchestrationServer({ fixtureFiles, mockSourceMissing = false
     'utf8',
   );
   // Spawn the server
-  const child = spawn(process.execPath, [serverEntryPath], {
+  const child = spawn(process.execPath, ['--import', 'tsx', serverEntryPath], {
     cwd: repoRoot,
     env: { ...process.env, PORT: String(port), INIT_ENV_FILE: envFilePath },
     stdio: ['ignore', 'pipe', 'pipe'],

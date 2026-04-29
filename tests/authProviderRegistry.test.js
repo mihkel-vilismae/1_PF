@@ -4,8 +4,8 @@ import {
   PROVIDER_OUTCOMES,
   createProviderRegistry,
   normalizeProviderOutcome,
-} from '../server/auth/providers/providerRegistry.js';
-import { createMockDisabledProvider } from '../server/auth/providers/mockDisabledProvider.js';
+} from '../server/auth/providers/providerRegistry.ts';
+import { createMockDisabledProvider } from '../server/auth/providers/mockDisabledProvider.ts';
 
 test('provider registry selects the requested provider', () => {
   const testProvider = createMockDisabledProvider();

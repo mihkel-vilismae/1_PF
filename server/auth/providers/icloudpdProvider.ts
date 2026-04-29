@@ -6,16 +6,16 @@ const PROVIDER_OUTCOMES = Object.freeze({
   AUTHENTICATED: 'authenticated',
   FAILED: 'failed',
 });
-import { createIcloudpdProcessRunner, normalizeProviderPath } from './icloudpdProcessRunner.js';
-import { redactedEmail, sanitizeIcloudpdText } from './icloudpdSanitizer.js';
+import { createIcloudpdProcessRunner, normalizeProviderPath } from './icloudpdProcessRunner.ts';
+import { redactedEmail, sanitizeIcloudpdText } from './icloudpdSanitizer.ts';
 
 const ICLOUDPD_REQUIRED_KEYS = ['user', 'pw', 'ICLOUDPD_COOKIE_DIR'];
 const ICLOUDPD_SESSION_REQUIRED_KEYS = ['user', 'ICLOUDPD_COOKIE_DIR'];
 
-export function createIcloudpdProvider({ runner = createIcloudpdProcessRunner(), cwd = process.cwd() } = {}) {
+export function createIcloudpdProvider({ runner = createIcloudpdProcessRunner(), cwd = process.cwd() }: any = {}) {
   return {
     name: 'icloud',
-    async verifyPreflight(context = {}) {
+    async verifyPreflight(context: any = {}) {
       const config = buildIcloudpdConfig(context, { cwd });
       const missing = validateIcloudpdConfig(config);
       const executableCheck = await runner.checkExecutable();
@@ -37,7 +37,7 @@ export function createIcloudpdProvider({ runner = createIcloudpdProcessRunner(),
             : 'install_or_configure_icloudpd',
       };
     },
-    async startLogin(context = {}) {
+    async startLogin(context: any = {}) {
       const config = buildIcloudpdConfig(context, { cwd });
       const missing = validateIcloudpdConfig(config);
       if (missing.length > 0) {
@@ -55,7 +55,7 @@ export function createIcloudpdProvider({ runner = createIcloudpdProcessRunner(),
         defaultSuccessMessage: 'icloudpd authenticated successfully and created or verified a local session.',
       });
     },
-    async submitTwoFactor(context = {}) {
+    async submitTwoFactor(context: any = {}) {
       const config = buildIcloudpdConfig(context, { cwd });
       config.twoFactorCode = context.twoFactorCode;
       const missing = validateIcloudpdConfig(config);
@@ -90,7 +90,7 @@ export function createIcloudpdProvider({ runner = createIcloudpdProcessRunner(),
         defaultSuccessMessage: 'icloudpd accepted the 2FA challenge and verified the session.',
       });
     },
-    async resumeSession(context = {}) {
+    async resumeSession(context: any = {}) {
       const config = buildIcloudpdConfig(context, { cwd });
       const missing = validateIcloudpdSessionConfig(config);
       if (missing.length > 0) {
@@ -108,7 +108,7 @@ export function createIcloudpdProvider({ runner = createIcloudpdProcessRunner(),
         defaultSuccessMessage: 'icloudpd verified the existing local session.',
       });
     },
-    async testLoginByDownloadingSingleFile(context = {}) {
+    async testLoginByDownloadingSingleFile(context: any = {}) {
       const config = buildIcloudpdConfig({
         ...context,
         downloadDir: context.downloadDirectory || context.downloadDir,
@@ -129,7 +129,7 @@ export function createIcloudpdProvider({ runner = createIcloudpdProcessRunner(),
         defaultSuccessMessage: 'icloudpd authenticated and downloaded one recent file into the auth test directory.',
       });
     },
-    async logout(context = {}) {
+    async logout(context: any = {}) {
       const config = buildIcloudpdConfig(context, { cwd });
       if (!config.cookieDir) {
         return {
@@ -150,9 +150,9 @@ export function createIcloudpdProvider({ runner = createIcloudpdProcessRunner(),
   };
 }
 
-export function buildIcloudpdConfig(context = {}, { cwd = process.cwd() } = {}) {
+export function buildIcloudpdConfig(context: any = {}, { cwd = process.cwd() }: any = {}) {
   const envValues = context.envValues || context.config || {};
-  return {
+  const config: any = {
     username: envValues.user || process.env.user || process.env.APPLE_ID || null,
     password: envValues.pw || process.env.pw || process.env.APPLE_PASSWORD || null,
     cookieDir: normalizeProviderPath(envValues.ICLOUDPD_COOKIE_DIR || process.env.ICLOUDPD_COOKIE_DIR, { cwd }),
@@ -161,22 +161,23 @@ export function buildIcloudpdConfig(context = {}, { cwd = process.cwd() } = {}) 
     recentCount: envValues.DOWNLOAD_RECENT || process.env.DOWNLOAD_RECENT || '1',
     timeoutMs: Number(envValues.ICLOUDPD_AUTH_TIMEOUT_MS || process.env.ICLOUDPD_AUTH_TIMEOUT_MS || 120_000),
   };
+  return config;
 }
 
-export function validateIcloudpdConfig(config) {
+export function validateIcloudpdConfig(config: any) {
   const missing = validateIcloudpdSessionConfig(config);
   if (!config.password) missing.push('pw');
   return missing;
 }
 
-export function validateIcloudpdSessionConfig(config) {
+export function validateIcloudpdSessionConfig(config: any) {
   const missing = [];
   if (!config.username) missing.push('user');
   if (!config.cookieDir) missing.push('ICLOUDPD_COOKIE_DIR');
   return missing;
 }
 
-export function mapIcloudpdResultToOutcome(result, { config, defaultSuccessMessage }) {
+export function mapIcloudpdResultToOutcome(result: any, { config, defaultSuccessMessage }: any) {
   const output = sanitizeIcloudpdText(result?.sanitizedCombinedOutput || `${result?.stdout || ''}\n${result?.stderr || ''}`, config);
   const lower = output.toLowerCase();
 

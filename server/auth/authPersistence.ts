@@ -1,6 +1,6 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
-import { AUTH_STATUSES, TWO_FACTOR_STATUSES, createDefaultAuthState, projectPublicAuthState } from './authState.js';
+import { AUTH_STATUSES, TWO_FACTOR_STATUSES, createDefaultAuthState, projectPublicAuthState } from './authState.ts';
 
 const DEFAULT_AUTH_STATE_RELATIVE_PATH = path.join('runtime_data', 'auth', 'auth-state.json');
 

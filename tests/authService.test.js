@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { getRawAuthState, resetAuthState, runAuthPreflight, selectAuthReadinessChecks, testAuthLoginByDownloadingSingleFile } from '../server/auth/authService.js';
-import { PROVIDER_OUTCOMES, createProviderRegistry } from '../server/auth/providers/providerRegistry.js';
+import { getRawAuthState, resetAuthState, runAuthPreflight, selectAuthReadinessChecks, testAuthLoginByDownloadingSingleFile } from '../server/auth/authService.ts';
+import { PROVIDER_OUTCOMES, createProviderRegistry } from '../server/auth/providers/providerRegistry.ts';
 
 function check(key, overrides = {}) {
   return {

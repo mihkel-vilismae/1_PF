@@ -1,5 +1,5 @@
 import { VIEW_ORDER } from '../shared/constants.ts';
-import { ACTION_REALITY_COPY, VIEW_REALITY_COPY } from './guideCopy.js';
+import { ACTION_REALITY_COPY, VIEW_REALITY_COPY } from './guideCopy.ts';
 import { getAuthButtonRealityCopy } from '../data/authButtonStatusCopy.ts';
 import { buildRealityMeta, compactWhitespace, getCardContext } from './guideUtils.ts';
 

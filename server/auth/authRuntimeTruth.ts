@@ -1,4 +1,4 @@
-import { getPublicAuthState } from './authService.js';
+import { getPublicAuthState } from './authService.ts';
 
 export function attachSafeAuthRuntimeTruth(truth, { authState = getPublicAuthState() } = {}) {
   return {

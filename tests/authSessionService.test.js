@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createAuthRoutes } from '../server/auth/authRoutes.js';
+import { createAuthRoutes } from '../server/auth/authRoutes.ts';
 import {
   configureAuthServiceForTests,
   resumeAuthSession,
-} from '../server/auth/authService.js';
-import { createDefaultAuthState } from '../server/auth/authState.js';
-import { createProviderRegistry, PROVIDER_OUTCOMES } from '../server/auth/providers/providerRegistry.js';
+} from '../server/auth/authService.ts';
+import { createDefaultAuthState } from '../server/auth/authState.ts';
+import { createProviderRegistry, PROVIDER_OUTCOMES } from '../server/auth/providers/providerRegistry.ts';
 
 function createMemoryPersistence(initialState = null) {
   return {
