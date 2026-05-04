@@ -252,7 +252,7 @@ export function renderStepList(steps: StepListItem[] = []): string {
 function renderNewAuthLoginModalContent(modal: ModalData): string {
   const stage = modal.stage ?? 'opening';
   const message = modal.message ?? modal.subtitle ?? 'New auth login modal is ready.';
-  const requestedInput = modal.requestedInput ?? requestedInputLabelForPromptKind(modal.twoFactorPromptKind);
+  const requestedInput = requestedInputLabelForPromptKind(modal.twoFactorPromptKind) ?? modal.requestedInput;
   return `
     ${renderModalSection(
       'Login progress',
@@ -277,11 +277,11 @@ function renderNewAuthLoginModalContent(modal: ModalData): string {
 function requestedInputLabelForPromptKind(kind: string | null | undefined): string | null {
   switch (kind) {
     case 'device_index':
-      return 'Trusted-device index, such as "a"';
+      return 'Enter device index, for example a';
     case 'verification_code':
-      return 'Six-digit verification code';
+      return 'Enter SMS six-digit code';
     case 'device_index_or_code':
-      return 'Device index or six-digit verification code';
+      return 'Enter device index, for example a';
     case 'apple_hsa2_challenge':
       return 'Apple HSA2 challenge; exact prompt not visible';
     case 'unknown':

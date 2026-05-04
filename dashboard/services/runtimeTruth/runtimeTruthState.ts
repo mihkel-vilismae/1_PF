@@ -93,6 +93,12 @@ export function buildInitialTruthState(): RuntimeTruthSeed {
   if (!truth.sourceOfTruth) {
     truth.sourceOfTruth = RUNTIME_TRUTH_SEED_PATH;
   }
+  truth.pipelineActiveKey = null;
+  truth.playbackActive = false;
+  truth.realRunActive = false;
+  truth.stageLock = 'Pipeline lock available';
+  truth.playbackLock = 'Playback worker lock available';
+  truth.screenLock = 'Screen worker lock available';
   return truth;
 }
 

@@ -14,6 +14,7 @@ import {
   getTruthSignature,
   normalizeTruthSnapshot,
 } from '../dashboard/services/runtimeTruth/runtimeTruthPersistence.ts';
+import { buildInitialTruthState } from '../dashboard/services/runtimeTruth/runtimeTruthState.ts';
 
 test('runtimeTruth action helpers preserve request metadata and status text', () => {
   assert.deepEqual(buildRequestHeaders(), {
@@ -74,4 +75,15 @@ test('runtimeTruth persistence normalizes snapshots to the shared seed path', ()
   const signatureA = getTruthSignature({ sourceOfTruth: 'custom.json', nested: { answer: 42 } });
   const signatureB = getTruthSignature({ sourceOfTruth: 'another.json', nested: { answer: 42 } });
   assert.equal(signatureA, signatureB);
+});
+
+test('runtimeTruth boot state clears stale persisted runtime locks', () => {
+  const truth = buildInitialTruthState();
+
+  assert.equal(truth.pipelineActiveKey, null);
+  assert.equal(truth.playbackActive, false);
+  assert.equal(truth.realRunActive, false);
+  assert.equal(truth.stageLock, 'Pipeline lock available');
+  assert.equal(truth.playbackLock, 'Playback worker lock available');
+  assert.equal(truth.screenLock, 'Screen worker lock available');
 });

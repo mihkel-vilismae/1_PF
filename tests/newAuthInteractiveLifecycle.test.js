@@ -1,0 +1,97 @@
+import assert from 'node:assert/strict';
+import { EventEmitter } from 'node:events';
+import { mkdtempSync } from 'node:fs';
+import { rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { PassThrough } from 'node:stream';
+import path from 'node:path';
+import test from 'node:test';
+
+import {
+  logoutNewAuthSession,
+  startNewAuthLogin,
+  submitNewAuthTwoFactor,
+} from '../server/auth/newAuthService.ts';
+
+test('new auth keeps one live icloudpd process across device index and SMS code submissions', async () => {
+  const cookieDir = mkdtempSync(path.join(tmpdir(), 'new-auth-interactive-'));
+  const spawned = [];
+
+  const commandSpawner = () => {
+    const child = new EventEmitter();
+    child.stdin = new PassThrough();
+    child.stdout = new PassThrough();
+    child.stderr = new PassThrough();
+    child.kill = () => {
+      child.emit('close', null, 'SIGTERM');
+      return true;
+    };
+    child.unref = () => {};
+    spawned.push(child);
+
+    setImmediate(() => {
+      child.stdout.write('Please enter device index (a..b) to send SMS with a code:');
+    });
+
+    child.stdin.on('data', (chunk) => {
+      const value = String(chunk).trim();
+      if (value === 'a') {
+        child.stdout.write('\nSMS sent. Enter verification code:');
+        return;
+      }
+      if (value === '218228') {
+        child.stdout.write('\nAuthentication successful. Valid session cookie.');
+        child.emit('close', 0, null);
+      }
+    });
+
+    return child;
+  };
+
+  const context = {
+    executablePath: 'fake-icloudpd',
+    commandSpawner,
+    envValues: {
+      user: 'person@example.com',
+      pw: 'DO_NOT_EXPOSE_PASSWORD',
+      ICLOUDPD_COOKIE_DIR: cookieDir,
+      ICLOUDPD_AUTH_TIMEOUT_MS: '2000',
+    },
+  };
+
+  try {
+    const login = await startNewAuthLogin(context);
+    assert.equal(login.ok, true);
+    assert.equal(login.state, 'pending_2fa');
+    assert.equal(login.details.twoFactorPromptKind, 'device_index');
+
+    const deviceIndex = await submitNewAuthTwoFactor(context, { code: 'a' });
+    assert.equal(deviceIndex.ok, true);
+    assert.equal(deviceIndex.state, 'pending_2fa');
+    assert.equal(deviceIndex.details.twoFactorPromptKind, 'verification_code');
+
+    const smsCode = await submitNewAuthTwoFactor(context, { code: '218228' });
+    assert.equal(smsCode.ok, true);
+    assert.equal(smsCode.state, 'authenticated');
+    assert.equal(spawned.length, 1);
+    assert.equal(Array.isArray(login?.details?.events), true);
+    assert.equal(Array.isArray(deviceIndex?.details?.events), true);
+    assert.equal(Array.isArray(smsCode?.details?.events), true);
+    assert.equal(login.details.events.some((event) => event.phase === 'process_spawned'), true);
+    assert.equal(login.details.events.some((event) => event.phase === 'provider_prompt_detected'), true);
+    assert.equal(deviceIndex.details.events.some((event) => event.phase === 'response_submitted'), true);
+    assert.equal(smsCode.details.events.some((event) => event.phase === 'process_close_cleanup'), true);
+    assert.equal(login.details.secretValuesShown, false);
+    assert.equal(deviceIndex.details.secretValuesShown, false);
+    assert.equal(smsCode.details.secretValuesShown, false);
+
+    const serialized = JSON.stringify([login, deviceIndex, smsCode]);
+    assert.equal(serialized.includes('218228'), false);
+    assert.equal(serialized.includes('DO_NOT_EXPOSE_PASSWORD'), false);
+    assert.equal(serialized.includes('person@example.com'), false);
+    assert.equal(serialized.includes(cookieDir), false);
+  } finally {
+    await logoutNewAuthSession(context);
+    await rm(cookieDir, { recursive: true, force: true });
+  }
+});

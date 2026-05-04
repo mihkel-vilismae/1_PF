@@ -46,6 +46,9 @@ test('new auth command result keeps hsa2 challenge output pending for another 2F
     assert.equal(result.details.nextAction, 'inspect_hsa2_prompt_then_submit_response');
     assert.equal(result.details.twoFactorPromptKind, 'apple_hsa2_challenge');
     assert.equal(result.details.requestedInput, 'Apple HSA2 challenge; exact prompt not visible');
+    assert.equal(Array.isArray(result.details.events), true);
+    assert.equal(result.details.events.some((event) => event.phase === 'provider_prompt_detected'), true);
+    assert.equal(result.details.providerOutputShown, 'sanitized_preview');
     assert.equal(JSON.stringify(result).includes('DO_NOT_EXPOSE_PASSWORD'), false);
     assert.equal(JSON.stringify(result).includes('DO_NOT_EXPOSE_SESSION_CONTENT'), false);
   } finally {
@@ -80,6 +83,7 @@ test('new auth command result identifies device-index prompts', async () => {
   assert.equal(result.state, 'pending_2fa');
   assert.equal(result.details.twoFactorPromptKind, 'device_index_or_code');
   assert.equal(result.details.requestedInput, 'Device index or six-digit verification code');
+  assert.equal(result.details.events.some((event) => event.promptKind === 'device_index_or_code'), true);
   assert.match(result.message, /device index/);
 });
 
@@ -111,6 +115,64 @@ test('new auth command result identifies verification-code prompts', async () =>
   assert.equal(result.details.twoFactorPromptKind, 'verification_code');
   assert.equal(result.details.requestedInput, 'Six-digit verification code');
   assert.match(result.message, /six-digit verification code/);
+});
+
+test('new auth command result redacts echoed SMS code from provider preview', async () => {
+  const result = mapNewAuthCommandResult(
+    {
+      ok: true,
+      exitCode: 0,
+      signal: null,
+      stdout: 'Apple verification code is 218228. Please enter verification code:',
+      stderr: '',
+    },
+    {
+      username: 'person@example.com',
+      password: 'DO_NOT_EXPOSE_PASSWORD',
+      cookieDir: null,
+      downloadDir: null,
+      domain: null,
+      timeoutMs: 120_000,
+    },
+    {
+      successMessage: 'authenticated',
+      startedMessage: 'unverified',
+    },
+  );
+
+  const serialized = JSON.stringify(result);
+  assert.equal(result.state, 'pending_2fa');
+  assert.equal(serialized.includes('218228'), false);
+  assert.equal(serialized.includes('DO_NOT_EXPOSE_PASSWORD'), false);
+});
+
+test('new auth command result identifies SMS six-digit code prompts', async () => {
+  const result = mapNewAuthCommandResult(
+    {
+      ok: true,
+      exitCode: 0,
+      signal: null,
+      stdout: 'SMS sent to trusted phone. Please enter six-digit code:',
+      stderr: '',
+    },
+    {
+      username: 'person@example.com',
+      password: 'DO_NOT_EXPOSE_PASSWORD',
+      cookieDir: null,
+      downloadDir: null,
+      domain: null,
+      timeoutMs: 120_000,
+    },
+    {
+      successMessage: 'authenticated',
+      startedMessage: 'unverified',
+    },
+  );
+
+  assert.equal(result.ok, true);
+  assert.equal(result.state, 'pending_2fa');
+  assert.equal(result.details.twoFactorPromptKind, 'verification_code');
+  assert.equal(result.details.requestedInput, 'Six-digit verification code');
 });
 
 test('new auth command result accepts fresh session files when output has no active hsa2 challenge', async () => {
@@ -150,6 +212,7 @@ test('new auth command result accepts fresh session files when output has no act
     assert.equal(result.ok, true);
     assert.equal(result.state, 'authenticated');
     assert.equal(result.details.sessionFileCount, 1);
+    assert.equal(result.details.events.some((event) => event.phase === 'session_evidence_collected'), true);
     assert.equal(JSON.stringify(result).includes('DO_NOT_EXPOSE_PASSWORD'), false);
     assert.equal(JSON.stringify(result).includes('DO_NOT_EXPOSE_SESSION_CONTENT'), false);
   } finally {

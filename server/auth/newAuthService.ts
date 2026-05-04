@@ -1,4 +1,4 @@
-import { spawn } from 'node:child_process';
+import { spawn, type ChildProcessWithoutNullStreams, type SpawnOptionsWithoutStdio } from 'node:child_process';
 import { existsSync, statSync, readdirSync } from 'node:fs';
 import { mkdir, rm } from 'node:fs/promises';
 import path from 'node:path';
@@ -15,6 +15,8 @@ export interface NewAuthContext {
   envValues?: NewAuthEnvValues;
   platform?: NodeJS.Platform;
   username?: string | null;
+  executablePath?: string | null;
+  commandSpawner?: NewAuthCommandSpawner;
 }
 
 export interface NewAuthPathMetadata {
@@ -51,6 +53,8 @@ interface CommandResult {
   errorMessage?: string;
 }
 
+export type NewAuthCommandSpawner = (command: string, args: string[], options: SpawnOptionsWithoutStdio) => ChildProcessWithoutNullStreams;
+
 interface NewAuthSessionEvidence {
   hasSessionFiles: boolean;
   sessionFileCount: number;
@@ -67,12 +71,49 @@ interface NewAuthTwoFactorPromptInfo {
   message: string;
 }
 
+interface NewAuthInteractiveAttempt {
+  child: ChildProcessWithoutNullStreams;
+  config: NewAuthIcloudpdConfig;
+  beforeSessionEvidence: NewAuthSessionEvidence;
+  createdAt: number;
+  expiresAt: number;
+  stdout: string;
+  stderr: string;
+  consumedOutputLength: number;
+  closed: boolean;
+  exitCode: number | null;
+  signal: NodeJS.Signals | null;
+  pendingWaiter: boolean;
+}
+
+type NewAuthProviderOutputShown = 'sanitized_preview' | 'classification_only' | 'none';
+
+interface NewAuthStructuredEvent {
+  area: 'new-auth';
+  operation: string;
+  phase: string;
+  stateBefore?: NewAuthSessionState | string;
+  stateAfter?: NewAuthSessionState | string;
+  promptKind?: NewAuthTwoFactorPromptKind | 'none';
+  responseType?: 'device_index' | 'verification_code' | 'unknown' | 'none';
+  endpoint?: string;
+  durationMs?: number;
+  exitCode?: number | null;
+  signal?: NodeJS.Signals | null;
+  secretValuesShown: false;
+  providerOutputShown: NewAuthProviderOutputShown;
+  message: string;
+}
+
 const ICLOUDPD_TIMEOUT_MS = 8000;
 const ICLOUDPD_LOGIN_TIMEOUT_MS = 120_000;
 const MAX_STDIO_CHARS = 6000;
 const MAX_SESSION_CHILDREN = 25;
 const SENSITIVE_ENV_KEYS = new Set(['user', 'pw', 'APPLE_ID', 'APPLE_PASSWORD', 'ICLOUDPD_COOKIE_DIR']);
 const SESSION_FILE_HINT_PATTERN = /(cookie|session|token|auth|icloud|key|credential)/i;
+const INTERACTIVE_RESULT_POLL_MS = 50;
+
+let activeNewAuthAttempt: NewAuthInteractiveAttempt | null = null;
 
 export async function verifyNewAuthIcloudpd(context: NewAuthContext = {}): Promise<Record<string, unknown>> {
   const executable = await resolveIcloudpdExecutable(context.platform ?? process.platform);
@@ -171,18 +212,39 @@ export async function startNewAuthLogin(context: NewAuthContext = {}): Promise<R
     return buildNewAuthMissingConfigPayload(missing, 'login');
   }
 
-  const executable = await resolveIcloudpdExecutable(context.platform ?? process.platform);
+  const executable = await resolveIcloudpdExecutableForContext(context);
   if (!executable.found) {
     return buildNewAuthProviderUnavailablePayload('ICLOUDPD_NOT_FOUND', 'iCloudPD executable was not found on PATH.');
   }
 
   await mkdir(config.cookieDir as string, { recursive: true });
+  const existingAttempt = getActiveNewAuthAttempt();
+  if (existingAttempt) {
+    return buildPendingPayloadFromActiveAttempt(existingAttempt, 'iCloudPD authentication is already waiting for a response.');
+  }
+
   const beforeSessionEvidence = collectNewAuthSessionEvidence(config);
-  const result = await runCommand(executable.path ?? 'icloudpd', buildNewAuthLoginArgs(config), { timeoutMs: config.timeoutMs });
-  return mapNewAuthCommandResult(result, config, {
+  const attempt = startInteractiveNewAuthAttempt({
+    executablePath: executable.path ?? 'icloudpd',
+    config,
+    beforeSessionEvidence,
+    commandSpawner: context.commandSpawner,
+  });
+  const mapped = await waitForInteractiveNewAuthResult(attempt, {
     successMessage: 'iCloudPD login completed and the local session was verified.',
     startedMessage: 'iCloudPD login command completed, but authenticated session proof was not strong enough to report success.',
-  }, beforeSessionEvidence);
+  });
+  return appendStructuredEvents(mapped, [
+    buildStructuredEvent({
+      operation: 'login',
+      phase: 'process_spawned',
+      stateBefore: beforeSessionEvidence.hasSessionFiles ? 'authenticated' : 'logged_out',
+      stateAfter: typeof mapped.state === 'string' ? mapped.state : 'unknown',
+      endpoint: 'POST /api/auth/new/login',
+      message: 'Started interactive iCloudPD login process.',
+      providerOutputShown: 'none',
+    }),
+  ]);
 }
 
 export async function submitNewAuthTwoFactor(context: NewAuthContext = {}, input: NewAuthTwoFactorInput = {}): Promise<Record<string, unknown>> {
@@ -207,37 +269,58 @@ export async function submitNewAuthTwoFactor(context: NewAuthContext = {}, input
     };
   }
 
-  const executable = await resolveIcloudpdExecutable(context.platform ?? process.platform);
+  const messages = {
+    successMessage: 'iCloudPD 2FA follow-up command completed and the local session was verified.',
+    startedMessage: 'iCloudPD 2FA follow-up command completed, but authenticated session proof was not strong enough to report success.',
+  };
+
+  const activeAttempt = getActiveNewAuthAttempt();
+  if (activeAttempt) {
+    activeAttempt.child.stdin.write(`${code}\n`);
+    const mapped = await waitForInteractiveNewAuthResult(activeAttempt, messages);
+    return addTwoFactorResponseHiddenFlag(appendStructuredEvents(mapped, [
+      buildStructuredEvent({
+        operation: 'submit_2fa',
+        phase: 'response_submitted',
+        stateBefore: 'pending_2fa',
+        stateAfter: typeof mapped.state === 'string' ? mapped.state : 'unknown',
+        promptKind: promptKindForResponseType(classifyResponseType(code)),
+        responseType: classifyResponseType(code),
+        endpoint: 'POST /api/auth/new/submit-2fa',
+        message: 'Submitted two-factor response to active iCloudPD process.',
+        providerOutputShown: 'none',
+      }),
+    ]));
+  }
+
+  const executable = await resolveIcloudpdExecutableForContext(context);
   if (!executable.found) {
     return buildNewAuthProviderUnavailablePayload('ICLOUDPD_NOT_FOUND', 'iCloudPD executable was not found on PATH.');
   }
 
   await mkdir(config.cookieDir as string, { recursive: true });
   const beforeSessionEvidence = collectNewAuthSessionEvidence(config);
-  const result = await runCommand(executable.path ?? 'icloudpd', buildNewAuthLoginArgs(config), { timeoutMs: config.timeoutMs, stdinText: `${code}\n` });
-  const mapped = mapNewAuthCommandResult(result, config, {
-    successMessage: 'iCloudPD 2FA follow-up command completed and the local session was verified.',
-    startedMessage: 'iCloudPD 2FA follow-up command completed, but authenticated session proof was not strong enough to report success.',
-  }, beforeSessionEvidence);
+  const result = await runCommand(executable.path ?? 'icloudpd', buildNewAuthLoginArgs(config), { timeoutMs: config.timeoutMs, stdinText: `${code}\n`, spawnImpl: context.commandSpawner });
+  const mapped = mapNewAuthCommandResult(result, config, messages, beforeSessionEvidence);
 
-  if (mapped.state === 'pending_2fa') {
-    return {
-      ...mapped,
-      message: typeof mapped.message === 'string'
-        ? mapped.message
-        : 'iCloudPD still reports that two-factor authentication is required.',
-      details: {
-        ...(typeof mapped.details === 'object' && mapped.details ? mapped.details : {}),
-        twoFactorResponseShown: false,
-      },
-    };
-  }
-
-  return mapped;
+  return addTwoFactorResponseHiddenFlag(appendStructuredEvents(mapped, [
+    buildStructuredEvent({
+      operation: 'submit_2fa',
+      phase: 'response_submitted',
+      stateBefore: beforeSessionEvidence.hasSessionFiles ? 'authenticated' : 'pending_2fa',
+      stateAfter: typeof mapped.state === 'string' ? mapped.state : 'unknown',
+      promptKind: promptKindForResponseType(classifyResponseType(code)),
+      responseType: classifyResponseType(code),
+      endpoint: 'POST /api/auth/new/submit-2fa',
+      message: 'Submitted two-factor response to iCloudPD command process.',
+      providerOutputShown: 'none',
+    }),
+  ]));
 }
 
 export async function logoutNewAuthSession(context: NewAuthContext = {}): Promise<Record<string, unknown>> {
   const config = buildNewAuthIcloudpdConfig(context);
+  clearActiveNewAuthAttempt();
   if (!config.cookieDir) {
     return {
       ok: false,
@@ -307,6 +390,248 @@ export async function logoutNewAuthSession(context: NewAuthContext = {}): Promis
       sessionDirectory: sanitizePathForDisplay(safeCookieDir),
       remoteLogoutClaimed: false,
       sessionContentsShown: false,
+    },
+  };
+}
+
+function startInteractiveNewAuthAttempt({
+  executablePath,
+  config,
+  beforeSessionEvidence,
+  commandSpawner,
+}: {
+  executablePath: string;
+  config: NewAuthIcloudpdConfig;
+  beforeSessionEvidence: NewAuthSessionEvidence;
+  commandSpawner?: NewAuthCommandSpawner;
+}): NewAuthInteractiveAttempt {
+  clearActiveNewAuthAttempt();
+  const child = (commandSpawner ?? spawn)(executablePath, buildNewAuthLoginArgs(config), {
+    shell: false,
+    windowsHide: true,
+    env: process.env,
+  });
+  const now = Date.now();
+  const attempt: NewAuthInteractiveAttempt = {
+    child,
+    config,
+    beforeSessionEvidence,
+    createdAt: now,
+    expiresAt: now + config.timeoutMs,
+    stdout: '',
+    stderr: '',
+    consumedOutputLength: 0,
+    closed: false,
+    exitCode: null,
+    signal: null,
+    pendingWaiter: false,
+  };
+
+  child.stdout?.on('data', (chunk) => {
+    attempt.stdout = `${attempt.stdout}${chunk}`.slice(-MAX_STDIO_CHARS);
+  });
+
+  child.stderr?.on('data', (chunk) => {
+    attempt.stderr = `${attempt.stderr}${chunk}`.slice(-MAX_STDIO_CHARS);
+  });
+
+  child.on('error', (error: NodeJS.ErrnoException) => {
+    attempt.closed = true;
+    attempt.exitCode = 1;
+    attempt.signal = null;
+    attempt.stderr = `${attempt.stderr}\n${error.message}`.slice(-MAX_STDIO_CHARS);
+  });
+
+  child.on('close', (exitCode, signal) => {
+    attempt.closed = true;
+    attempt.exitCode = exitCode;
+    attempt.signal = signal;
+  });
+
+  activeNewAuthAttempt = attempt;
+  return attempt;
+}
+
+function waitForInteractiveNewAuthResult(
+  attempt: NewAuthInteractiveAttempt,
+  messages: { successMessage: string; startedMessage: string },
+): Promise<Record<string, unknown>> {
+  if (attempt.pendingWaiter) {
+    return Promise.resolve(buildPendingPayloadFromActiveAttempt(attempt, 'iCloudPD authentication is already processing a submitted response.'));
+  }
+
+  attempt.pendingWaiter = true;
+  return new Promise((resolve) => {
+    const finish = (payload: Record<string, unknown>, keepAttemptActive: boolean) => {
+      clearInterval(interval);
+      attempt.pendingWaiter = false;
+      const durationMs = Math.max(0, Date.now() - attempt.createdAt);
+      if (keepAttemptActive) {
+        attempt.consumedOutputLength = combinedAttemptOutput(attempt).length;
+      } else {
+        clearActiveNewAuthAttempt(attempt);
+      }
+      const phase = keepAttemptActive ? 'process_prompt_waiting' : 'process_close_cleanup';
+      resolve(appendStructuredEvents(payload, [
+        buildStructuredEvent({
+          operation: 'interactive_auth',
+          phase,
+          stateBefore: 'logging_in',
+          stateAfter: typeof payload.state === 'string' ? payload.state : 'unknown',
+          promptKind: readPromptKindFromPayload(payload),
+          responseType: 'none',
+          durationMs,
+          exitCode: keepAttemptActive ? null : attempt.exitCode,
+          signal: keepAttemptActive ? null : attempt.signal,
+          message: keepAttemptActive ? 'Provider prompt detected; process kept active for follow-up response.' : 'Interactive auth process closed and cleanup completed.',
+          providerOutputShown: providerOutputShownForPayload(payload),
+        }),
+      ]));
+    };
+
+    const inspect = () => {
+      const now = Date.now();
+      const combined = combinedAttemptOutput(attempt);
+      const newOutput = combined.slice(attempt.consumedOutputLength);
+
+      if (newOutput) {
+        const promptResult = mapNewAuthCommandResult(
+          {
+            ok: true,
+            exitCode: 0,
+            signal: null,
+            stdout: newOutput,
+            stderr: '',
+          },
+          attempt.config,
+          messages,
+          attempt.beforeSessionEvidence,
+        );
+        if (promptResult.state === 'pending_2fa') {
+          finish(promptResult, true);
+          return;
+        }
+        if (promptResult.state === 'authenticated' || promptResult.errorCode === 'NEW_AUTH_INVALID_CREDENTIALS') {
+          finish(promptResult, false);
+          return;
+        }
+      }
+
+      if (attempt.closed) {
+        const result = mapNewAuthCommandResult(
+          {
+            ok: attempt.exitCode === 0,
+            exitCode: attempt.exitCode,
+            signal: attempt.signal,
+            stdout: attempt.stdout,
+            stderr: attempt.stderr,
+          },
+          attempt.config,
+          messages,
+          attempt.beforeSessionEvidence,
+        );
+        finish(result, false);
+        return;
+      }
+
+      if (now >= attempt.expiresAt) {
+        try { attempt.child.kill('SIGTERM'); } catch {}
+        finish({
+          ok: false,
+          state: 'failed',
+          errorCode: 'NEW_AUTH_ICLOUDPD_TIMEOUT',
+          message: 'iCloudPD authentication timed out before a verifiable auth result was produced.',
+          details: {
+            provider: 'icloudpd',
+            providerOutputPreview: sanitizePreview(combined),
+          },
+        }, false);
+      }
+    };
+
+    const interval = setInterval(inspect, INTERACTIVE_RESULT_POLL_MS);
+    inspect();
+  });
+}
+
+function getActiveNewAuthAttempt(): NewAuthInteractiveAttempt | null {
+  if (!activeNewAuthAttempt) {
+    return null;
+  }
+  if (activeNewAuthAttempt.closed || Date.now() >= activeNewAuthAttempt.expiresAt) {
+    clearActiveNewAuthAttempt(activeNewAuthAttempt);
+    return null;
+  }
+  return activeNewAuthAttempt;
+}
+
+function clearActiveNewAuthAttempt(attempt: NewAuthInteractiveAttempt | null = activeNewAuthAttempt): void {
+  if (!attempt) {
+    return;
+  }
+  if (!attempt.closed) {
+    try { attempt.child.kill('SIGTERM'); } catch {}
+  }
+  try { attempt.child.stdin?.destroy(); } catch {}
+  try { attempt.child.stdout?.destroy(); } catch {}
+  try { attempt.child.stderr?.destroy(); } catch {}
+  if (activeNewAuthAttempt === attempt) {
+    activeNewAuthAttempt = null;
+  }
+}
+
+function combinedAttemptOutput(attempt: NewAuthInteractiveAttempt): string {
+  return sanitizeCommandOutput(`${attempt.stdout}\n${attempt.stderr}`, attempt.config);
+}
+
+function buildPendingPayloadFromActiveAttempt(attempt: NewAuthInteractiveAttempt, fallbackMessage: string): Record<string, unknown> {
+  const combined = combinedAttemptOutput(attempt);
+  const lower = combined.toLowerCase();
+  if (indicatesNewAuthTwoFactorRequired(lower)) {
+    const promptInfo = buildNewAuthTwoFactorPromptInfo(lower);
+    return {
+      ok: true,
+      state: 'pending_2fa',
+      message: promptInfo.message,
+      details: {
+        provider: 'icloudpd',
+        nextAction: promptInfo.nextAction,
+        twoFactorPromptKind: promptInfo.kind,
+        requestedInput: promptInfo.requestedInput,
+        twoFactorResponseShown: false,
+        providerOutputPreview: sanitizePreview(combined),
+      },
+    };
+  }
+
+  return {
+    ok: true,
+    state: 'pending_2fa',
+    message: fallbackMessage,
+    details: {
+      provider: 'icloudpd',
+      nextAction: 'submit_two_factor_response',
+      twoFactorPromptKind: 'unknown',
+      requestedInput: 'Two-factor response',
+      twoFactorResponseShown: false,
+      providerOutputPreview: sanitizePreview(combined),
+    },
+  };
+}
+
+function addTwoFactorResponseHiddenFlag(mapped: Record<string, unknown>): Record<string, unknown> {
+  if (mapped.state !== 'pending_2fa') {
+    return mapped;
+  }
+
+  return {
+    ...mapped,
+    message: typeof mapped.message === 'string'
+      ? mapped.message
+      : 'iCloudPD still reports that two-factor authentication is required.',
+    details: {
+      ...(typeof mapped.details === 'object' && mapped.details ? mapped.details : {}),
+      twoFactorResponseShown: false,
     },
   };
 }
@@ -382,7 +707,7 @@ export function mapNewAuthCommandResult(
 
   if (indicatesNewAuthTwoFactorRequired(lower)) {
     const promptInfo = buildNewAuthTwoFactorPromptInfo(lower);
-    return {
+    return appendStructuredEvents({
       ok: true,
       state: 'pending_2fa',
       message: promptInfo.message,
@@ -394,11 +719,22 @@ export function mapNewAuthCommandResult(
         twoFactorResponseShown: false,
         providerOutputPreview: sanitizePreview(combined),
       },
-    };
+    }, [
+      buildStructuredEvent({
+        operation: 'map_command_result',
+        phase: 'provider_prompt_detected',
+        stateBefore: 'logging_in',
+        stateAfter: 'pending_2fa',
+        promptKind: promptInfo.kind,
+        responseType: 'none',
+        message: 'Provider output classified as a two-factor prompt.',
+        providerOutputShown: 'classification_only',
+      }),
+    ]);
   }
 
   if (result.errorCode === 'ICLOUDPD_TIMEOUT') {
-    return {
+    return appendStructuredEvents({
       ok: false,
       state: 'failed',
       errorCode: 'NEW_AUTH_ICLOUDPD_TIMEOUT',
@@ -407,11 +743,23 @@ export function mapNewAuthCommandResult(
         provider: 'icloudpd',
         providerOutputPreview: sanitizePreview(combined),
       },
-    };
+    }, [
+      buildStructuredEvent({
+        operation: 'map_command_result',
+        phase: 'process_timeout',
+        stateBefore: 'logging_in',
+        stateAfter: 'failed',
+        responseType: 'none',
+        exitCode: result.exitCode,
+        signal: result.signal,
+        message: 'Provider command timed out.',
+        providerOutputShown: 'sanitized_preview',
+      }),
+    ]);
   }
 
   if (indicatesNewAuthInvalidCredentials(lower)) {
-    return {
+    return appendStructuredEvents({
       ok: false,
       state: 'failed',
       errorCode: 'NEW_AUTH_INVALID_CREDENTIALS',
@@ -420,11 +768,23 @@ export function mapNewAuthCommandResult(
         provider: 'icloudpd',
         providerOutputPreview: sanitizePreview(combined),
       },
-    };
+    }, [
+      buildStructuredEvent({
+        operation: 'map_command_result',
+        phase: 'process_close',
+        stateBefore: 'logging_in',
+        stateAfter: 'failed',
+        responseType: 'none',
+        exitCode: result.exitCode,
+        signal: result.signal,
+        message: 'Provider output indicates invalid credentials.',
+        providerOutputShown: 'sanitized_preview',
+      }),
+    ]);
   }
 
   if (result.ok && indicatesNewAuthAuthenticated(lower)) {
-    return {
+    return appendStructuredEvents({
       ok: true,
       state: 'authenticated',
       message: messages.successMessage,
@@ -434,12 +794,24 @@ export function mapNewAuthCommandResult(
         providerSessionRef: 'icloudpd_cookie_directory_internal',
         providerOutputPreview: sanitizePreview(combined),
       },
-    };
+    }, [
+      buildStructuredEvent({
+        operation: 'map_command_result',
+        phase: 'process_close',
+        stateBefore: 'logging_in',
+        stateAfter: 'authenticated',
+        responseType: 'none',
+        exitCode: result.exitCode,
+        signal: result.signal,
+        message: 'Provider output indicates authenticated state.',
+        providerOutputShown: 'sanitized_preview',
+      }),
+    ]);
   }
 
   const afterSessionEvidence = result.ok ? collectNewAuthSessionEvidence(config) : EMPTY_SESSION_EVIDENCE;
   if (result.ok && hasFreshNewAuthSessionEvidence(beforeSessionEvidence, afterSessionEvidence)) {
-    return {
+    return appendStructuredEvents({
       ok: true,
       state: 'authenticated',
       message: messages.successMessage,
@@ -451,11 +823,21 @@ export function mapNewAuthCommandResult(
         latestSessionFileModifiedAt: afterSessionEvidence.latestModifiedAt,
         providerOutputPreview: sanitizePreview(combined),
       },
-    };
+    }, [
+      buildStructuredEvent({
+        operation: 'map_command_result',
+        phase: 'session_evidence_collected',
+        stateBefore: beforeSessionEvidence.hasSessionFiles ? 'authenticated' : 'logging_in',
+        stateAfter: 'authenticated',
+        responseType: 'none',
+        message: `Session evidence collected: count=${afterSessionEvidence.sessionFileCount}, latest=${afterSessionEvidence.latestModifiedAt ?? 'none'}.`,
+        providerOutputShown: 'sanitized_preview',
+      }),
+    ]);
   }
 
   if (result.ok) {
-    return {
+    return appendStructuredEvents({
       ok: false,
       state: 'failed',
       errorCode: 'NEW_AUTH_UNVERIFIED_SESSION',
@@ -465,10 +847,20 @@ export function mapNewAuthCommandResult(
         nextAction: 'inspect_icloudpd_auth_output',
         providerOutputPreview: sanitizePreview(combined),
       },
-    };
+    }, [
+      buildStructuredEvent({
+        operation: 'map_command_result',
+        phase: 'session_evidence_collected',
+        stateBefore: 'logging_in',
+        stateAfter: 'failed',
+        responseType: 'none',
+        message: 'Command completed without verifiable authenticated session evidence.',
+        providerOutputShown: 'sanitized_preview',
+      }),
+    ]);
   }
 
-  return {
+  return appendStructuredEvents({
     ok: false,
     state: 'failed',
     errorCode: result.errorCode ?? 'NEW_AUTH_ICLOUDPD_FAILED',
@@ -479,7 +871,19 @@ export function mapNewAuthCommandResult(
       signal: result.signal,
       providerOutputPreview: sanitizePreview(combined),
     },
-  };
+  }, [
+    buildStructuredEvent({
+      operation: 'map_command_result',
+      phase: 'process_close',
+      stateBefore: 'logging_in',
+      stateAfter: 'failed',
+      responseType: 'none',
+      exitCode: result.exitCode,
+      signal: result.signal,
+      message: 'Provider command closed without verifiable auth state.',
+      providerOutputShown: 'sanitized_preview',
+    }),
+  ]);
 }
 
 const EMPTY_SESSION_EVIDENCE: NewAuthSessionEvidence = Object.freeze({
@@ -532,7 +936,7 @@ function hasFreshNewAuthSessionEvidence(before: NewAuthSessionEvidence, after: N
 
 function sanitizeCommandOutput(value: string, config: NewAuthIcloudpdConfig): string {
   let sanitized = sanitizePreview(value, 4000);
-  for (const secret of [config.password, config.username]) {
+  for (const secret of [config.password, config.username, config.cookieDir, config.downloadDir]) {
     if (secret) {
       sanitized = sanitized.split(secret).join(secret === config.username ? redactEmail(secret) ?? '[redacted-user]' : '[redacted]');
     }
@@ -545,7 +949,7 @@ function indicatesNewAuthTwoFactorRequired(lower: string): boolean {
 }
 
 function buildNewAuthTwoFactorPromptInfo(lower: string): NewAuthTwoFactorPromptInfo {
-  const mentionsDeviceIndex = /device index|send sms|sms with a code|\([a-z]\.\.[a-z]\)|trusted phone/.test(lower);
+  const mentionsDeviceIndex = /device index|send sms|sms with a code|\([a-z]\.\.[a-z]\)/.test(lower);
   const mentionsVerificationCode = /verification code|security code|enter code|two[-\s]?factor authentication code|2fa code|six[-\s]?digit|6[-\s]?digit/.test(lower);
   const mentionsHsa2 = /auth"?\s*type"?\s*:\s*"?hsa2|"?authtype"?\s*:\s*"?hsa2|hsa2/.test(lower);
 
@@ -781,9 +1185,21 @@ async function resolveIcloudpdExecutable(platform: NodeJS.Platform): Promise<{ f
   };
 }
 
-function runCommand(command: string, args: string[], options: { timeoutMs: number; shell?: boolean; stdinText?: string }): Promise<CommandResult> {
+async function resolveIcloudpdExecutableForContext(context: NewAuthContext): Promise<{ found: boolean; path: string | null; displayPath: string | null; lookupCommand: string }> {
+  if (context.executablePath) {
+    return {
+      found: true,
+      path: context.executablePath,
+      displayPath: sanitizePathForDisplay(context.executablePath),
+      lookupCommand: 'injected executablePath',
+    };
+  }
+  return resolveIcloudpdExecutable(context.platform ?? process.platform);
+}
+
+function runCommand(command: string, args: string[], options: { timeoutMs: number; shell?: boolean; stdinText?: string; spawnImpl?: NewAuthCommandSpawner }): Promise<CommandResult> {
   return new Promise((resolve) => {
-    const child = spawn(command, args, {
+    const child = (options.spawnImpl ?? spawn)(command, args, {
       shell: options.shell ?? false,
       windowsHide: true,
       env: process.env,
@@ -884,11 +1300,79 @@ function summarizeCommandFailure(prefix: string, result: CommandResult): string 
 
 function sanitizePreview(value: string, maxLength = 500): string {
   const text = String(value ?? '')
+    .replace(/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi, '[redacted-email]')
     .replace(/password\s*=\s*[^\s]+/gi, 'password=[redacted]')
     .replace(/pw\s*=\s*[^\s]+/gi, 'pw=[redacted]')
+    .replace(/apple[_\s-]?id\s*[:=]\s*[^\s]+/gi, 'apple_id=[redacted]')
+    .replace(/(otp|2fa|mfa|verification|security)\s*(code)?\s*[:=]\s*[^\s]+/gi, '$1$2=[redacted]')
+    .replace(/\b(otp|2fa|mfa|verification|security|sms)\s*(code)?\s*(?:is|was|:)?\s*\d{4,8}\b/gi, '$1$2 [redacted]')
+    .replace(/\b\d{4,8}\s+(otp|2fa|mfa|verification|security|sms)\s*(code)?\b/gi, '[redacted] $1$2')
     .replace(/token\s*=\s*[^\s]+/gi, 'token=[redacted]')
-    .replace(/cookie\s*=\s*[^\s]+/gi, 'cookie=[redacted]');
+    .replace(/cookie\s*=\s*[^\s]+/gi, 'cookie=[redacted]')
+    .replace(/(session|cookie|token)[^\r\n]*(file|path|dir|directory)\s*[:=]\s*[^\r\n]+/gi, '$1_$2=[redacted-path]')
+    .replace(/\b([A-Z][A-Z0-9_]{2,})\s*=\s*([^\s]+)/g, (full, key: string) => `${key}=${SENSITIVE_ENV_KEYS.has(key) ? '[redacted]' : '[present]'}`);
   return text.length > maxLength ? `${text.slice(0, maxLength)}…` : text;
+}
+
+function appendStructuredEvents(payload: Record<string, unknown>, events: NewAuthStructuredEvent[]): Record<string, unknown> {
+  const details = payload.details && typeof payload.details === 'object' ? payload.details as Record<string, unknown> : {};
+  const existingEvents = Array.isArray(details.events) ? details.events as unknown[] : [];
+  return {
+    ...payload,
+    details: {
+      ...details,
+      secretValuesShown: false,
+      providerOutputShown: providerOutputShownForPayload(payload),
+      events: [...existingEvents, ...events],
+    },
+  };
+}
+
+function buildStructuredEvent(input: Omit<NewAuthStructuredEvent, 'area' | 'secretValuesShown'>): NewAuthStructuredEvent {
+  return {
+    area: 'new-auth',
+    secretValuesShown: false,
+    ...input,
+  };
+}
+
+function readPromptKindFromPayload(payload: Record<string, unknown>): NewAuthTwoFactorPromptKind | 'none' {
+  const details = payload.details && typeof payload.details === 'object' ? payload.details as Record<string, unknown> : null;
+  return typeof details?.twoFactorPromptKind === 'string' ? details.twoFactorPromptKind as NewAuthTwoFactorPromptKind : 'none';
+}
+
+function classifyResponseType(value: string): 'device_index' | 'verification_code' | 'unknown' {
+  if (/^[a-z]$/i.test(value.trim())) {
+    return 'device_index';
+  }
+  if (/^\d{4,8}$/.test(value.trim())) {
+    return 'verification_code';
+  }
+  return 'unknown';
+}
+
+function promptKindForResponseType(responseType: 'device_index' | 'verification_code' | 'unknown'): NewAuthTwoFactorPromptKind {
+  if (responseType === 'device_index') {
+    return 'device_index';
+  }
+  if (responseType === 'verification_code') {
+    return 'verification_code';
+  }
+  return 'unknown';
+}
+
+function providerOutputShownForPayload(payload: Record<string, unknown>): NewAuthProviderOutputShown {
+  const details = payload.details && typeof payload.details === 'object' ? payload.details as Record<string, unknown> : null;
+  if (!details) {
+    return 'none';
+  }
+  if (typeof details.providerOutputPreview === 'string' && details.providerOutputPreview.length > 0) {
+    return 'sanitized_preview';
+  }
+  if (typeof details.twoFactorPromptKind === 'string') {
+    return 'classification_only';
+  }
+  return 'none';
 }
 
 function sanitizePathForDisplay(value: string): string {

@@ -82,6 +82,12 @@ export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, push
   }
 
   function openNewAuthLoginModal(stage, message, twoFactorPrompt = null) {
+    pushLog(NEW_AUTH_CARD_KEY, 'info', `New auth modal ${stage}.`, buildNewAuthLogDetails({
+      operation: 'New auth modal update',
+      endpoint: NEW_AUTH_ENDPOINTS.login,
+      outcome: 'modal',
+      payload: { stage, message, ...sanitizeNewAuthPayload(twoFactorPrompt) },
+    }));
     openModal({
       kind: 'new-auth-login',
       title: '1A-STASH-OFF login using .env values',
@@ -119,7 +125,14 @@ export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, push
       });
       setStatus(NEW_AUTH_CARD_KEY, status === 'success' ? 'success' : 'info');
       pushLog(NEW_AUTH_CARD_KEY, status === 'success' ? 'success' : 'info', message, buildNewAuthLogDetails({ operation, endpoint, outcome: 'success', meta: result.meta, payload: safePayload }));
-      pushHistory(NEW_AUTH_HISTORY_SOURCE, status === 'success' ? 'success' : 'info', message, { operation, endpoint: `${endpoint.method} ${endpoint.path}` });
+      pushHistory(NEW_AUTH_HISTORY_SOURCE, status === 'success' ? 'success' : 'info', message, buildNewAuthHistoryDetails({
+        operation,
+        endpoint,
+        outcome: 'success',
+        uiStatus: status,
+        request: result.meta?.request ?? { method: endpoint.method, path: endpoint.path, body: null },
+        response: result.meta?.response ?? (safePayload ? { body: safePayload } : null),
+      }));
       if (modalStage) {
         openNewAuthLoginModal(status === 'success' ? 'authenticated' : 'waiting_for_2fa', message, getNewAuthTwoFactorPrompt(safePayload));
       }
@@ -134,7 +147,14 @@ export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, push
       });
       setStatus(NEW_AUTH_CARD_KEY, 'error');
       pushLog(NEW_AUTH_CARD_KEY, 'error', message, buildNewAuthLogDetails({ operation, endpoint, outcome: 'error', meta: error?.meta, payload: safePayload }));
-      pushHistory(NEW_AUTH_HISTORY_SOURCE, 'error', message, { operation, endpoint: `${endpoint.method} ${endpoint.path}` });
+      pushHistory(NEW_AUTH_HISTORY_SOURCE, 'error', message, buildNewAuthHistoryDetails({
+        operation,
+        endpoint,
+        outcome: 'error',
+        uiStatus: 'failed',
+        request: error?.meta?.request ?? { method: endpoint.method, path: endpoint.path, body: null },
+        response: error?.meta?.response ?? (safePayload ? { body: safePayload } : null),
+      }));
       if (modalStage) {
         openNewAuthLoginModal('failed', message);
       }
@@ -218,6 +238,19 @@ function buildNewAuthLogDetails({ operation, endpoint, outcome, meta = null, pay
     outcome,
     request: sanitizeNewAuthPayload(meta?.request ?? { method: endpoint.method, path: endpoint.path, body: null }),
     response: sanitizeNewAuthPayload(meta?.response ?? (payload ? { body: payload } : null)),
+  };
+}
+
+function buildNewAuthHistoryDetails({ operation, endpoint, outcome, uiStatus, request, response }) {
+  return {
+    operation,
+    endpoint: `${endpoint.method} ${endpoint.path}`,
+    outcome,
+    uiStatus,
+    buttonStatus: uiStatus,
+    request: sanitizeNewAuthPayload(request),
+    response: sanitizeNewAuthPayload(response),
+    recordedAt: stampSafe(),
   };
 }
 

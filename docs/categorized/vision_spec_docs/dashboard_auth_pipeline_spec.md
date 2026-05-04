@@ -50,9 +50,10 @@ Define operator-facing dashboard contracts, authentication boundary rules, pipel
 
 1. View B actions run in isolated test context and must not mutate real runtime DB/files.
 2. Mock download is strictly test-only copy behavior and must remain separate from real iCloud/provider download flow.
-3. Stage actions after mock download must not force unexpected auth flow coupling.
-4. Geocode and similar provider-dependent stages must preserve explicit partial/placeholder status when applicable.
-5. Manual dashboard stage actions are not equivalent to autonomous worker runtime.
+3. Test database configuration uses `TEST_DB_PATH` when an explicit test SQLite location is needed; it must stay separate from runtime `DB_PATH`.
+4. Stage actions after mock download must not force unexpected auth flow coupling.
+5. Geocode and similar provider-dependent stages must preserve explicit partial/placeholder status when applicable.
+6. Manual dashboard stage actions are not equivalent to autonomous worker runtime.
 
 ### Operator permissions and safety semantics
 

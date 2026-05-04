@@ -2,13 +2,13 @@
 
 ## Purpose
 
-This category is the canonical, documentation-only consolidation for current implementation status reporting.  
-It reduces overlapping status narratives into four files and keeps a strict boundary between:
+This category is the canonical consolidation for current implementation status reporting.
+Most files in this category are documentation-only reductions of older status narratives; code-verified audit files are explicitly named as such and keep their own verification log.
 
 - documentation-derived status claims, and
-- code-verified implementation truth (not performed in this category pass).
+- code-verified implementation truth.
 
-Authority limit: this folder does **not** claim direct code verification.
+Authority limit: documentation-derived files in this folder do **not** claim direct code verification. Code-verified files must state the commands, files, and runtime checks used.
 
 ## Canonical files in this category
 
@@ -16,6 +16,7 @@ Authority limit: this folder does **not** claim direct code verification.
 - `documented_current_system_state.md`: consolidated current-state summary from active docs.
 - `button_and_view_verification_status.md`: consolidated button/view verification statuses from button verification docs.
 - `known_gaps_and_unresolved_questions.md`: consolidated gaps, contradictions, and unresolved items from docs.
+- `code_verified_dashboard_implementation_status.md`: code-verified dashboard implementation status audit from the 2026-05-04 local worktree, including tests, live endpoint checks, and conservative implementation labels.
 
 ## Absorbed source docs
 
