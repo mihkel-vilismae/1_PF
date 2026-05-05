@@ -18,6 +18,7 @@ import { createInitialState } from '../dashboard/services/runtimeTruth/runtimeTr
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const localBackendUnknownActions = new Set([
   'clear-history',
+  'copy-history',
   'toggle-inspect-mode',
   'toggle-value-inspect-mode',
   'toggle-reality-inspect-mode',
