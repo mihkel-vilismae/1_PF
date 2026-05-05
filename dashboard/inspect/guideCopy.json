@@ -50,6 +50,10 @@
       "label": "Clear event history",
       "description": "Removes the sidebar event history list and replaces it with a fresh \"History cleared\" entry."
     },
+    "copy-history": {
+      "label": "Copy event history",
+      "description": "Copies the current sidebar event history state to the clipboard as formatted JSON."
+    },
     "verify-env": {
       "label": "Verify .env",
       "description": "Calls the init endpoint that checks whether the required environment variables and config keys are present."
@@ -204,6 +208,10 @@
       "state": "real",
       "reason": "Implemented local UI action that really clears the sidebar history list."
     },
+    "copy-history": {
+      "state": "real",
+      "reason": "Implemented local UI action that copies the current sidebar history state to the clipboard."
+    },
     "verify-env": {
       "state": "real",
       "reason": "Calls the live `/api/init/verify-env` backend endpoint."
@@ -351,6 +359,10 @@
     "clear-history": {
       "state": "unknown",
       "reason": "Implemented local UI action; it is not a backend-backed operation."
+    },
+    "copy-history": {
+      "state": "unknown",
+      "reason": "Implemented local UI action that writes formatted event history JSON to the clipboard; it is not backend-backed."
     },
     "verify-db-viewer": {
       "state": "real",

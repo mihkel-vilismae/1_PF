@@ -20,6 +20,7 @@ import {
   subscribe,
 } from './services/runtimeTruth.ts';
 import { renderDefinitionList, renderHistory, renderModal } from './services/renderers.ts';
+import { copyEventHistoryExportToClipboard } from './services/eventHistoryExport.ts';
 import { createTransitTerminal } from './services/transitTerminal.ts';
 import {
   bindBackendStatusInspectMode,
@@ -39,6 +40,9 @@ import { renderDatabaseViewerView } from './views/databaseViewerView.ts';
 
 const app = document.getElementById('app');
 const TRANSIT_EVENT_NAME = 'dashboard:transit';
+const COPY_HISTORY_LABEL = 'copy all log';
+let historyCopyStatus: 'idle' | 'copied' | 'failed' = 'idle';
+let historyCopyResetTimer: ReturnType<typeof setTimeout> | null = null;
 const transitTerminal = createTransitTerminal();
 const { describeRealityElement } = createRealityMetadataHelpers({
   getState,
@@ -114,7 +118,10 @@ function render() {
         <article class="side-panel side-panel--history">
           <div class="side-panel__header">
             <h2>Event history</h2>
-            <button class="button button--ghost" data-action="clear-history">Clear</button>
+            <div class="side-panel__actions">
+              <button class="button button--ghost" data-action="copy-history">${getHistoryCopyButtonLabel()}</button>
+              <button class="button button--ghost" data-action="clear-history">Clear</button>
+            </div>
           </div>
           <div class="history-surface">${renderHistory(state.history)}</div>
         </article>
@@ -285,6 +292,10 @@ function bindEvents() {
         resetHistory();
         return;
       }
+      if (action === 'copy-history') {
+        copyHistoryToClipboard();
+        return;
+      }
       if (action === 'submit-b1-2fa') {
         const input = app.querySelector<HTMLInputElement>('[data-auth-2fa-code]');
         const code = typeof input?.value === 'string' ? input.value : '';
@@ -413,6 +424,41 @@ function openLogModal(sourceKey, index) {
       sourceKey,
     },
   });
+}
+
+function getHistoryCopyButtonLabel(): string {
+  if (historyCopyStatus === 'copied') {
+    return 'copied';
+  }
+  if (historyCopyStatus === 'failed') {
+    return 'copy failed';
+  }
+  return COPY_HISTORY_LABEL;
+}
+
+async function copyHistoryToClipboard(): Promise<void> {
+  try {
+    await copyEventHistoryExportToClipboard(getState().history);
+    setHistoryCopyStatus('copied');
+  } catch {
+    setHistoryCopyStatus('failed');
+  }
+}
+
+function setHistoryCopyStatus(status: 'idle' | 'copied' | 'failed'): void {
+  if (historyCopyResetTimer) {
+    clearTimeout(historyCopyResetTimer);
+  }
+  historyCopyStatus = status;
+  render();
+
+  if (status !== 'idle') {
+    historyCopyResetTimer = setTimeout(() => {
+      historyCopyStatus = 'idle';
+      historyCopyResetTimer = null;
+      render();
+    }, 1600);
+  }
 }
 
 function openHistoryModal(index) {
