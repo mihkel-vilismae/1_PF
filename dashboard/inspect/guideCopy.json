@@ -192,6 +192,10 @@
       "state": "real",
       "reason": "Implemented dashboard-shell guide button that classifies UI elements by implementation truth."
     },
+    "toggle-backend-status-inspect-mode": {
+      "state": "real",
+      "reason": "Implemented dashboard-shell guide button that classifies UI elements by backend wiring status."
+    },
     "clear-history": {
       "state": "real",
       "reason": "Implemented local UI action that really clears the sidebar history list."

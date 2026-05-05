@@ -29,10 +29,10 @@ Secondary/older contradiction sources:
 
 ### Documented current major gaps (from active current-state docs)
 
-1. View C remains documented as planned/mock-only rather than a real recovery view (`VISION_SPEC/07-current-implementation-spec.md`).
+1. View C remains documented as planned/mock-only at the dashboard surface rather than a real recovery view (`VISION_SPEC/07-current-implementation-spec.md`). Code-verified status adds an authority boundary: backend orchestration `current`/`last` endpoints exist, but the View C UI does not consume them and no restore workflow is wired.
 2. View D remains documented as planned/frontend simulation rather than a live runtime monitor (`VISION_SPEC/07-current-implementation-spec.md`).
-3. Stage 1 download remains documented as partial and not normal real-provider download semantics in current route behavior (`VISION_SPEC/07-current-implementation-spec.md`).
-4. Geocode stage remains documented as deterministic placeholder-backed semantics (`VISION_SPEC/07-current-implementation-spec.md` and button B3.4 status docs).
+3. Stage 1 download remains documented as partial and not normal real-provider download semantics in current route behavior (`VISION_SPEC/07-current-implementation-spec.md`); current backend wiring should not be described as production provider-backed download.
+4. Geocode stage remains documented as deterministic placeholder-backed semantics (`VISION_SPEC/07-current-implementation-spec.md` and button B3.4 status docs); current backend wiring should not be described as production geocoding.
 5. Auth/2FA remains documented as partially implemented with manual user-owned real-world validation still required (`AI_AUTHENTICATION_2FA_HANDOFF.md`, `AUTH_ICLOUDPD_*`).
 6. Worker/lock/scheduler/recovery semantics are documented as still needing further target-spec closure (`VISION_SPEC/07-current-implementation-spec.md` major gaps list).
 
@@ -41,6 +41,7 @@ Secondary/older contradiction sources:
 1. Backend-driven non-interactive 2FA completion boundary: docs describe current conservative behavior and a still-limited completion path, with manual verification required.
 2. Scheduler behavior standardization across platforms: docs describe current partial platform-aware behavior and remaining target-spec work.
 3. Runtime truth ownership split: docs describe a current bridge role for runtime-truth JSON and unfinished final runtime truth model.
+4. View B orchestration boundary: current dashboard auto-run uses frontend sequential calls, while backend orchestration endpoints exist separately; docs should distinguish "backend endpoint exists" from "dashboard control consumes it."
 
 ### Documented implementation-debt notes (documentation perspective)
 

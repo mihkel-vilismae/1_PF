@@ -58,8 +58,8 @@ All statuses below are documentation-derived from the listed docs.
 | View | Documentation-derived verification position |
 |---|---|
 | View A | Mostly documented as backend-wired controls, with partials in `1A` overlap semantics and `3A` scheduler semantics. |
-| View B | Mixed documented status: many controls marked `Works`, with `Partial` for geocode and playback semantics, and `Mock-only` for B5 simulation controls. |
-| View C | No button-verification reports in `button_verification_results` set; status remains undocumented in this specific corpus. |
+| View B | Mixed documented status: many controls are marked `Works` in the older button-verification corpus, but code-verified status is more conservative: B2/B3/B4 are backend-wired partial runtime paths, Stage 1 download still uses mock/generated semantics, B3.4 geocode is deterministic placeholder-backed, and B5 remains `Mock-only`. |
+| View C | No button-verification reports exist in `button_verification_results`; code-verified status is mock-only at the dashboard surface because `resume-last-run` remains local placeholder behavior. Backend orchestration `current`/`last` endpoints exist separately, but this view does not consume them. |
 | View D | No button-verification reports in `button_verification_results` set; status remains undocumented in this specific corpus. |
 
 ## Conflict / reduction notes
@@ -67,6 +67,7 @@ All statuses below are documentation-derived from the listed docs.
 - `AUTHORITATIVE_MISSING_FUNCTIONALITY.md` marks several findings as resolved, while `INDEX.md` still retains `Partial` labels for some controls. This consolidation keeps `INDEX.md` as the latest per-control classification source and records the ledger as supporting context.
 - `buttons_and_implementation_overview.md` overlaps this subject area but is broader and not used as the primary per-control status source.
 - Status in this file is intentionally documentation-derived and not revalidated against source code in this pass.
+- Where this documentation-derived summary conflicts with `code_verified_dashboard_implementation_status.md`, prefer the code-verified file for implementation status and treat this file as historical button-verification corpus indexing.
 
 ## Migration status
 

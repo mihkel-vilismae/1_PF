@@ -35,6 +35,25 @@ test('POST /api/init/verify-env validates the temp env file', async () => {
   });
 });
 
+test('INIT_ENV_FILE keeps live audit checks isolated from the repo .env database path', async () => {
+  const repoEnvValues = parseEnvContent(await fs.promises.readFile(path.join(repoRoot, '.env'), 'utf8'));
+  const repoDbPath = repoEnvValues.DB_PATH ? path.resolve(repoRoot, repoEnvValues.DB_PATH) : null;
+
+  await withInitServer(async ({ port, dbPath }) => {
+    assert.notEqual(dbPath, repoDbPath);
+
+    const verifyResponse = await requestJson(port, '/api/init/verify-env', { method: 'POST' });
+    assert.equal(verifyResponse.status, 200);
+    const dbCheck = verifyResponse.json.checks.find((check) => check.key === 'DB_PATH');
+    assert.ok(dbCheck);
+    assert.equal(dbCheck.details.absolutePath, dbPath);
+
+    const statusResponse = await requestJson(port, '/api/init/database/status', { method: 'GET' });
+    assert.equal(statusResponse.status, 200);
+    assert.equal(statusResponse.json.database.absolutePath, dbPath);
+  });
+});
+
 test('POST /api/init/database/* follows the recreate/status/inspect/delete flow with confirmation guards', async () => {
   await withInitServer(async ({ port, dbPath }) => {
     const statusBefore = await requestJson(port, '/api/init/database/status', { method: 'GET' });
@@ -272,6 +291,24 @@ function buildEnvFile({ downloadDir, dbPath, logDir, cookieDir }) {
     'LOG_RETENTION_DAYS=14',
     'PLAYBACK_LEASE_SECONDS=45',
   ].join('\n');
+}
+
+function parseEnvContent(content) {
+  const values = {};
+  for (const rawLine of content.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith('#')) {
+      continue;
+    }
+    const separatorIndex = line.indexOf('=');
+    if (separatorIndex === -1) {
+      continue;
+    }
+    const key = line.slice(0, separatorIndex).trim();
+    const value = line.slice(separatorIndex + 1).trim().replace(/^['"]|['"]$/g, '');
+    values[key] = value;
+  }
+  return values;
 }
 
 // Custom helper similar to withInitServer but allows supplying a bespoke .env file.
