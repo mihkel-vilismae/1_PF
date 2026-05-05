@@ -16,6 +16,10 @@ export const RUNTIME_EXECUTION_ENDPOINTS = Object.freeze({
   geocodeRun: { method: 'POST', path: '/api/runtime/geocode/run' },
   queuePrepare: { method: 'POST', path: '/api/runtime/queue/prepare' },
   playbackSelectCurrent: { method: 'POST', path: '/api/runtime/playback/select-current' },
+  orchestrationRun: { method: 'POST', path: '/api/runtime/orchestration/run' },
+  orchestrationLast: { method: 'GET', path: '/api/runtime/orchestration/last' },
+  screenSimulationState: { method: 'GET', path: '/api/runtime/screen-simulation/state' },
+  screenSimulationConfigure: { method: 'POST', path: '/api/runtime/screen-simulation/configure' },
 });
 
 export function runRuntimeDownload(body: RuntimeRequestBody = {}): Promise<RuntimeEndpointResponse> {
@@ -42,11 +46,30 @@ export function runRuntimePlaybackSelectCurrent(body: RuntimeRequestBody = {}): 
   return callRuntimeEndpoint(RUNTIME_EXECUTION_ENDPOINTS.playbackSelectCurrent, body);
 }
 
-function callRuntimeEndpoint(endpoint: RuntimeEndpoint, body: RuntimeRequestBody): Promise<RuntimeEndpointResponse> {
-  return requestJson(endpoint.path, {
+export function runRuntimeOrchestration(body: RuntimeRequestBody = {}): Promise<RuntimeEndpointResponse> {
+  return callRuntimeEndpoint(RUNTIME_EXECUTION_ENDPOINTS.orchestrationRun, body);
+}
+
+export function getRuntimeOrchestrationLast(): Promise<RuntimeEndpointResponse> {
+  return callRuntimeEndpoint(RUNTIME_EXECUTION_ENDPOINTS.orchestrationLast);
+}
+
+export function getRuntimeScreenSimulationState(): Promise<RuntimeEndpointResponse> {
+  return callRuntimeEndpoint(RUNTIME_EXECUTION_ENDPOINTS.screenSimulationState);
+}
+
+export function configureRuntimeScreenSimulation(body: RuntimeRequestBody = {}): Promise<RuntimeEndpointResponse> {
+  return callRuntimeEndpoint(RUNTIME_EXECUTION_ENDPOINTS.screenSimulationConfigure, body);
+}
+
+function callRuntimeEndpoint(endpoint: RuntimeEndpoint, body?: RuntimeRequestBody): Promise<RuntimeEndpointResponse> {
+  const options: Parameters<typeof requestJson>[1] = {
     method: endpoint.method,
-    body,
     captureMeta: true,
     operation: `${endpoint.method} ${endpoint.path}`,
-  });
+  };
+  if (body !== undefined) {
+    options.body = body;
+  }
+  return requestJson(endpoint.path, options);
 }

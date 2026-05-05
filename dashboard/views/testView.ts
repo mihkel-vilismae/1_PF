@@ -8,7 +8,7 @@ export function renderTestView(state) {
         <div>
           <p class="eyebrow">B — Test</p>
         <h2>Use real runtime actions where they already exist, and keep the remaining placeholders unmistakable.</h2>
-          <p class="hero-copy">B2, B3.1, B3.2, B3.3, B3.4, B3.5, and B4 now call documented backend runtime routes. B5 remains a frontend-only placeholder simulation. The login preflight has moved to View A.</p>
+          <p class="hero-copy">B2, B3.1, B3.2, B3.3, B3.4, B3.5, B4, B3 auto-run orchestration, and B5 screen simulation now call documented backend runtime routes. B5 is simulation-only, not real hardware. The login preflight has moved to View A.</p>
         </div>
         <div class="hero-pill-group">
           ${renderSourceBadge('hybrid', 'MIXED VIEW')}
@@ -37,7 +37,7 @@ export function renderTestView(state) {
           <div class="card__header-tags">${renderSourceBadge('hybrid', 'HYBRID')}</div>
           ${statusBadge(state.statusByKey.B3)}
         </header>
-        <p class="card__copy">Real-backed now: B3.1 download, B3.2 index, B3.3 parse GPS, B3.4 geocode, and B3.5 queue prepare. The geocode endpoint still uses a deterministic placeholder geocoder and is not production.</p>
+        <p class="card__copy">Real-backed now: B3 auto-run calls backend orchestration; B3.1 download, B3.2 index, B3.3 parse GPS, B3.4 geocode, and B3.5 queue prepare remain individually runnable. The geocode endpoint still uses a deterministic placeholder geocoder and is not production.</p>
         <div class="toolbar-grid">
           <fieldset class="selector-card selector-card--mock">
             <legend>Execution mode</legend>
@@ -90,13 +90,13 @@ export function renderTestView(state) {
           <div class="log-surface">${renderLogEntries(state.logs.B4, { sourceKey: 'B4' })}</div>
         </article>
 
-        <article class="card card--mock card--feature">
+        <article class="card card--hybrid card--feature">
           <header class="card__header">
             <div><p class="card__code">B5</p><h3>Screen on-off simulation</h3></div>
-            <div class="card__header-tags">${renderSourceBadge('mock', 'MOCK')}</div>
+            <div class="card__header-tags">${renderSourceBadge('hybrid', 'BACKEND SIMULATION')}</div>
             ${statusBadge(state.statusByKey.B5)}
           </header>
-          <p class="card__copy">This panel remains frontend-only. It is intentionally loud because the toggles and the resulting screen/playback state are still simulated in the browser.</p>
+          <p class="card__copy">These controls configure backend-owned simulation state only. The response updates the dashboard preview, but it does not represent real screen hardware.</p>
           <div class="toggle-grid">
             ${renderToggle('pirEnabled', 'Enable PIR sensor', state.simulation.pirEnabled)}
             ${renderToggle('mouseEnabled', 'Enable mouse movement', state.simulation.mouseEnabled)}
@@ -143,11 +143,11 @@ function renderStageCard(code, title, subtitle, state, sourceMode = 'hybrid') {
 
 function renderToggle(name, label, checked) {
   return `
-    <label class="toggle-card toggle-card--mock">
+    <label class="toggle-card toggle-card--hybrid">
       <input type="checkbox" name="${name}" ${checked ? 'checked' : ''} />
       <span class="toggle-card__body">
         <span class="toggle-card__label">${label}</span>
-        <span class="toggle-card__meta">Simulation control</span>
+        <span class="toggle-card__meta">Backend simulation control</span>
       </span>
     </label>
   `;

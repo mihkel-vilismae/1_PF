@@ -15,10 +15,11 @@ test('test view renders explicit real, hybrid, and mock source treatments', () =
   assert.match(html, /POST \/api\/runtime\/playback\/select-current/);
 });
 
-test('last-run and running-process views remain loudly marked as mock', () => {
+test('last-run view is partial while running-process view remains loudly marked as mock', () => {
   const state = createInitialState();
-  assert.match(renderLastRunView(state), /MOCK VIEW/);
-  assert.match(renderLastRunView(state), /card--mock/);
+  assert.match(renderLastRunView(state), /PARTIAL VIEW/);
+  assert.match(renderLastRunView(state), /BACKEND LAST-RUN READ/);
+  assert.match(renderLastRunView(state), /RESTORE PLACEHOLDER/);
   assert.match(renderRunningProcessView(state), /MOCK VIEW/);
   assert.match(renderRunningProcessView(state), /worker-row--mock/);
 });

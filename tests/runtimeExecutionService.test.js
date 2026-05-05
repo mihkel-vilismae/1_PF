@@ -8,4 +8,8 @@ test('runtime execution endpoints stay aligned with implemented backend routes',
   assert.deepEqual(RUNTIME_EXECUTION_ENDPOINTS.indexRun, { method: 'POST', path: '/api/runtime/index/run' });
   assert.deepEqual(RUNTIME_EXECUTION_ENDPOINTS.queuePrepare, { method: 'POST', path: '/api/runtime/queue/prepare' });
   assert.deepEqual(RUNTIME_EXECUTION_ENDPOINTS.playbackSelectCurrent, { method: 'POST', path: '/api/runtime/playback/select-current' });
+  assert.deepEqual(RUNTIME_EXECUTION_ENDPOINTS.orchestrationRun, { method: 'POST', path: '/api/runtime/orchestration/run' });
+  assert.deepEqual(RUNTIME_EXECUTION_ENDPOINTS.orchestrationLast, { method: 'GET', path: '/api/runtime/orchestration/last' });
+  assert.deepEqual(RUNTIME_EXECUTION_ENDPOINTS.screenSimulationState, { method: 'GET', path: '/api/runtime/screen-simulation/state' });
+  assert.deepEqual(RUNTIME_EXECUTION_ENDPOINTS.screenSimulationConfigure, { method: 'POST', path: '/api/runtime/screen-simulation/configure' });
 });

@@ -195,7 +195,7 @@ export function createRealityMetadataHelpers({ getState, getTransitHasLiveTraffi
       return buildRealityMeta('real', `${label} value`, `Rendered from the latest real backend response captured for ${cardContext.code}.`);
     }
     if (cardContext?.code && ['C1', 'C2', 'C3', 'C4', 'C5'].includes(cardContext.code)) {
-      return buildRealityMeta('mock', `${label} value`, 'Rendered from C-view demo state and placeholder recovery data.');
+      return buildRealityMeta('mixed', `${label} value`, 'Rendered from backend orchestration last-run data where available; restore and screen hardware state remain unavailable.');
     }
     if (cardContext?.code && ['D2', 'D3'].includes(cardContext.code)) {
       return buildRealityMeta('mock', `${label} value`, 'Rendered from the frontend-only runtime preview state.');
@@ -284,7 +284,7 @@ export function createRealityMetadataHelpers({ getState, getTransitHasLiveTraffi
       return buildRealityMeta('mock', label, 'This section belongs to the simulation-only test area.');
     }
     if (typeof code === 'string' && code.startsWith('C')) {
-      return buildRealityMeta('mock', label, 'This section is driven by demo state and placeholder recovery behavior.');
+      return buildRealityMeta('mixed', label, 'This section reads backend orchestration last-run data, but restore and full recovery behavior remain placeholder or unavailable.');
     }
     if (typeof code === 'string' && code.startsWith('D')) {
       return buildRealityMeta('mock', label, 'This section belongs to the frontend-only runtime preview.');

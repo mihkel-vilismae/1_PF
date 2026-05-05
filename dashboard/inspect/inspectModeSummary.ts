@@ -67,10 +67,10 @@ const VIEW_MODE_NOTES: InspectViewModeNotes = {
     backend: 'Backend status distinguishes real runtime endpoints from frontend-only simulation and placeholder behavior.',
   },
   C: {
-    controls: 'Last-run demo mode controls and recovery buttons expose what they change in the recovery-facing preview.',
-    values: 'Recovery values explain their source in seeded last-run demo state rather than pretending to read a live recovery service.',
-    reality: 'View C remains mock/recovery-preview only until a real recovery data source is implemented.',
-    backend: 'Backend status marks C-view runtime/recovery surfaces as missing or mock instead of claiming live support.',
+    controls: 'Last-run refresh and recovery buttons expose whether they read backend orchestration state or remain restore placeholders.',
+    values: 'Recovery values distinguish backend orchestration last-run fields from screen or restore data that is not available.',
+    reality: 'View C is partial: read-only orchestration last-run data is backend-wired, while restore remains unavailable.',
+    backend: 'Backend status marks the last-run read path as real and the restore path as missing.',
   },
   D: {
     controls: 'Runtime preview controls expose what preview state they start or update.',

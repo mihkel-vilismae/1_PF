@@ -116,7 +116,7 @@
     },
     "run-b3-auto": {
       "label": "Run all pipeline stages",
-      "description": "Runs B3.1 through B3.5 in sequence using the current execution-mode controls."
+      "description": "Calls the backend orchestration endpoint for the B3 auto-run path while leaving individual stage buttons separate."
     },
     "run-b3-1": {
       "label": "Run download stage",
@@ -145,6 +145,10 @@
     "resume-last-run": {
       "label": "Resume from saved state",
       "description": "Triggers the placeholder recovery action that stands in for a future resume-from-checkpoint flow."
+    },
+    "refresh-last-run": {
+      "label": "Refresh last run",
+      "description": "Calls the backend orchestration last-run endpoint and updates the read-only View C summary."
     },
     "start-real-run": {
       "label": "Start simulated runtime preview",
@@ -286,7 +290,7 @@
     },
     "run-b3-auto": {
       "state": "real",
-      "reason": "Runs the full B3 backend stage sequence (B3.1 through B3.5) with pipeline locking."
+      "reason": "Calls the backend orchestration endpoint for B3 auto-run. Stage 1 remains mock/generated-data backed and geocode remains deterministic placeholder behavior."
     },
     "run-b4": {
       "state": "real",
@@ -295,6 +299,10 @@
     "resume-last-run": {
       "state": "mock",
       "reason": "Triggers a placeholder recovery action; no live runtime restore endpoint exists yet."
+    },
+    "refresh-last-run": {
+      "state": "real",
+      "reason": "Reads the live `/api/runtime/orchestration/last` endpoint for a backend orchestration summary."
     },
     "start-real-run": {
       "state": "mock",
@@ -311,8 +319,8 @@
       "reason": "The Test view is explicitly simulation-only in the current repo."
     },
     "C": {
-      "state": "mock",
-      "reason": "The Last Run view currently uses seeded demo state and placeholder recovery behavior."
+      "state": "mixed",
+      "reason": "The Last Run view reads backend orchestration last-run data, but restore remains placeholder behavior."
     },
     "D": {
       "state": "mock",
@@ -378,7 +386,7 @@
     },
     "run-b3-auto": {
       "state": "real",
-      "reason": "This auto pipeline now orchestrates real backend stage endpoints in sequence."
+      "reason": "This auto pipeline calls POST /api/runtime/orchestration/run while preserving the existing individual stage button endpoints."
     },
     "run-b3-1": {
       "state": "real",
@@ -407,6 +415,10 @@
     "resume-last-run": {
       "state": "missing",
       "reason": "The UI exposes a placeholder restore action, but the real runtime restore backend is not implemented here."
+    },
+    "refresh-last-run": {
+      "state": "real",
+      "reason": "This action calls GET /api/runtime/orchestration/last for read-only backend last-run data."
     },
     "start-real-run": {
       "state": "missing",
@@ -454,15 +466,15 @@
       },
       "pirEnabled": {
         "label": "Toggle PIR sensor activity",
-        "description": "Controls whether the motion-sensor activity source counts as active in the B5 screen simulation."
+        "description": "Controls whether the motion-sensor activity source counts as active in the backend-owned B5 screen simulation."
       },
       "mouseEnabled": {
         "label": "Toggle mouse activity",
-        "description": "Controls whether mouse movement counts as an activity source that keeps the simulated screen awake."
+        "description": "Controls whether mouse movement counts as an activity source that keeps the backend-owned simulated screen awake."
       },
       "keyboardEnabled": {
         "label": "Toggle keyboard activity",
-        "description": "Controls whether keyboard activity counts as a wake/keep-awake signal in the B5 simulation."
+        "description": "Controls whether keyboard activity counts as a wake/keep-awake signal in the backend-owned B5 simulation."
       },
       "simulateAllEnabled": {
         "label": "Toggle all activity sources",

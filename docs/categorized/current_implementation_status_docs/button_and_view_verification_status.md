@@ -44,22 +44,22 @@ All statuses below are documentation-derived from the listed docs.
 | A | 3A Print scheduler | `print-cron` | `Partial` | 2026-04-23 | High |
 | A | B1 Auth preflight / Run | `run-b1` | `Works` | 2026-04-26 | High |
 | B | B2 Download test action / Run | `run-b2` | `Works` | 2026-04-23 | High |
-| B | B3 Auto run all stages | `run-b3-auto` | `Works` | 2026-04-23 | High |
+| B | B3 Auto run all stages | `run-b3-auto` | `Partial` | 2026-05-05 | High |
 | B | B3.1 Download stage / Run | `run-b3-1` | `Works` | 2026-04-23 | High |
 | B | B3.2 Index stage / Run | `run-b3-2` | `Works` | 2026-04-23 | High |
 | B | B3.3 Parse GPS stage / Run | `run-b3-3` | `Works` | 2026-04-23 | High |
 | B | B3.4 Geocode stage / Run | `run-b3-4` | `Partial` | 2026-04-23 | High |
 | B | B3.5 Enqueue playback / Run | `run-b3-5` | `Works` | 2026-04-23 | High |
 | B | B4 Playback selection / Run | `run-b4` | `Partial` | 2026-04-23 | High |
-| B | B5 Screen simulation controls | `b5-simulation-controls` | `Mock-only` | 2026-04-23 | High |
+| B | B5 Screen simulation controls | `b5-simulation-controls` | `Partial` | 2026-05-05 | High |
 
 ### View-level documentation-derived status
 
 | View | Documentation-derived verification position |
 |---|---|
 | View A | Mostly documented as backend-wired controls, with partials in `1A` overlap semantics and `3A` scheduler semantics. |
-| View B | Mixed documented status: many controls are marked `Works` in the older button-verification corpus, but code-verified status is more conservative: B2/B3/B4 are backend-wired partial runtime paths, Stage 1 download still uses mock/generated semantics, B3.4 geocode is deterministic placeholder-backed, and B5 remains `Mock-only`. |
-| View C | No button-verification reports exist in `button_verification_results`; code-verified status is mock-only at the dashboard surface because `resume-last-run` remains local placeholder behavior. Backend orchestration `current`/`last` endpoints exist separately, but this view does not consume them. |
+| View B | Mixed documented status: B2/B3/B4 are backend-wired partial runtime paths, `run-b3-auto` now calls backend orchestration, Stage 1 download still uses mock/generated semantics, B3.4 geocode is deterministic placeholder-backed, and B5 is backend-wired simulation only. |
+| View C | No button-verification reports exist in `button_verification_results`; code-verified status is partial at the dashboard surface because View C reads `/api/runtime/orchestration/last`, while `resume-last-run` remains local placeholder behavior with no restore endpoint. |
 | View D | No button-verification reports in `button_verification_results` set; status remains undocumented in this specific corpus. |
 
 ## Conflict / reduction notes

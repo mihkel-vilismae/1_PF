@@ -287,7 +287,41 @@ interface ErrorPayload {
   details: unknown;
   schemaVersion: number;
 }
+
+interface ScreenSimulationConfig {
+  pirEnabled: boolean;
+  mouseEnabled: boolean;
+  keyboardEnabled: boolean;
+  simulateAllEnabled: boolean;
+  inactivityTimeoutSeconds: number;
+}
+
+interface ScreenSimulationState {
+  status: 'ok';
+  simulationOnly: true;
+  simulation: ScreenSimulationConfig;
+  screen: {
+    screenState: 'ON' | 'OFF';
+    lastActivitySource: string;
+    inactivityTimeoutSeconds: number;
+    playbackStatus: string;
+    lastCheckpoint: string;
+    updatedAt: string;
+  };
+  messages: string[];
+  schemaVersion: number;
+}
 let databaseViewerLoggingSession: DatabaseViewerLoggingSession | null = null;
+let screenSimulationState: ScreenSimulationState = buildScreenSimulationState(
+  {
+    pirEnabled: true,
+    mouseEnabled: true,
+    keyboardEnabled: true,
+    simulateAllEnabled: true,
+    inactivityTimeoutSeconds: 5,
+  },
+  'Initial backend-owned screen simulation state.',
+);
 
 const authRouteHandlers = createAuthRoutes({
   getAuthReadinessChecks,
@@ -363,6 +397,8 @@ const routes: Record<string, RouteHandler> = {
   'POST /api/runtime/orchestration/run': runtimeOrchestrationRunHandler,
   'GET /api/runtime/orchestration/current': runtimeOrchestrationCurrentHandler,
   'GET /api/runtime/orchestration/last': runtimeOrchestrationLastHandler,
+  'GET /api/runtime/screen-simulation/state': runtimeScreenSimulationStateHandler,
+  'POST /api/runtime/screen-simulation/configure': runtimeScreenSimulationConfigureHandler,
   'GET /api/runtime-truth': getRuntimeTruthHandler,
   'POST /api/runtime-truth': updateRuntimeTruthHandler,
 };
@@ -1279,6 +1315,93 @@ async function runtimeOrchestrationLastHandler({ context }: Pick<HandlerArgs, 'c
     return { statusCode: 200, payload: current };
   }
   return { statusCode: 200, payload: null };
+}
+
+async function runtimeScreenSimulationStateHandler(): Promise<HandlerResult> {
+  return { statusCode: 200, payload: screenSimulationState };
+}
+
+async function runtimeScreenSimulationConfigureHandler({ body }: Pick<HandlerArgs, 'body'>): Promise<HandlerResult> {
+  const config = normalizeScreenSimulationConfig(body?.simulation);
+  screenSimulationState = buildScreenSimulationState(config, 'Backend-owned screen simulation state updated.');
+  return { statusCode: 200, payload: screenSimulationState };
+}
+
+function normalizeScreenSimulationConfig(value: unknown): ScreenSimulationConfig {
+  if (!isJsonObject(value)) {
+    throw new HttpError(400, 'invalid_screen_simulation_config', 'Screen simulation configure requires a simulation object.', {
+      expected: {
+        simulation: {
+          pirEnabled: true,
+          mouseEnabled: true,
+          keyboardEnabled: true,
+          simulateAllEnabled: true,
+          inactivityTimeoutSeconds: 5,
+        },
+      },
+    });
+  }
+
+  const timeout = Number(value.inactivityTimeoutSeconds);
+  if (!Number.isInteger(timeout) || timeout < 1 || timeout > 60) {
+    throw new HttpError(400, 'invalid_screen_simulation_timeout', 'Screen simulation inactivityTimeoutSeconds must be an integer from 1 to 60.', {
+      received: value.inactivityTimeoutSeconds,
+      minimum: 1,
+      maximum: 60,
+    });
+  }
+
+  const config = {
+    pirEnabled: Boolean(value.pirEnabled),
+    mouseEnabled: Boolean(value.mouseEnabled),
+    keyboardEnabled: Boolean(value.keyboardEnabled),
+    simulateAllEnabled: Boolean(value.simulateAllEnabled),
+    inactivityTimeoutSeconds: timeout,
+  };
+
+  if (config.simulateAllEnabled) {
+    config.pirEnabled = true;
+    config.mouseEnabled = true;
+    config.keyboardEnabled = true;
+  } else if (!config.pirEnabled || !config.mouseEnabled || !config.keyboardEnabled) {
+    config.simulateAllEnabled = false;
+  }
+
+  return config;
+}
+
+function buildScreenSimulationState(config: ScreenSimulationConfig, message: string): ScreenSimulationState {
+  const anyEnabled = config.simulateAllEnabled || config.pirEnabled || config.mouseEnabled || config.keyboardEnabled;
+  const screenState = anyEnabled ? 'ON' : 'OFF';
+  const lastActivitySource = config.simulateAllEnabled
+    ? 'All simulated activity sources enabled'
+    : config.pirEnabled
+      ? 'PIR sensor activity enabled'
+      : config.mouseEnabled
+        ? 'Mouse movement enabled'
+        : config.keyboardEnabled
+          ? 'Keyboard activity enabled'
+          : 'No simulated activity sources enabled';
+  const updatedAt = new Date().toISOString();
+
+  return {
+    status: 'ok',
+    simulationOnly: true,
+    simulation: structuredClone(config),
+    screen: {
+      screenState,
+      lastActivitySource,
+      inactivityTimeoutSeconds: config.inactivityTimeoutSeconds,
+      playbackStatus: screenState === 'OFF' ? 'Paused by backend screen simulation' : 'Ready for backend playback selection',
+      lastCheckpoint: screenState === 'OFF' ? `${updatedAt} backend screen-simulation checkpoint saved` : updatedAt,
+      updatedAt,
+    },
+    messages: [
+      message,
+      'This endpoint stores simulation state only; it does not control or report real screen hardware.',
+    ],
+    schemaVersion: 1,
+  };
 }
 
 async function updateRuntimeTruthHandler({ body }: Pick<HandlerArgs, 'body'>): Promise<HandlerResult> {

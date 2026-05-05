@@ -33,9 +33,9 @@ export function createBackendStatusMetadataHelpers({ getState, getTransitHasLive
     }
     if (element.matches('.screen-indicator')) {
       return buildBackendStatusMeta(
-        'mock',
+        'real',
         compactWhitespace(element.textContent) || 'Preview indicator',
-        'This indicator is driven by frontend simulation state rather than a real backend/hardware response.',
+        'This indicator is driven by backend-owned simulation state. It is not real screen hardware telemetry.',
       );
     }
     if (element.matches('.worker-row')) {
@@ -183,12 +183,21 @@ export function createBackendStatusMetadataHelpers({ getState, getTransitHasLive
       return buildBackendStatusMeta('mock', `${label} value`, 'This displayed value still comes from frontend-only placeholder state.');
     }
     if (cardContext?.code === 'B5') {
-      return buildBackendStatusMeta('mock', `${label} value`, 'This value is driven by frontend-only simulation controls.');
+      return buildBackendStatusMeta('real', `${label} value`, 'This value is updated from the backend-owned screen simulation contract, not real hardware.');
     }
     if (cardContext?.code && ['E1', 'E2', 'E3', 'E4'].includes(cardContext.code)) {
       return getDatabaseViewerBackendStatusMeta(cardContext.code, `${label} value`);
     }
-    if (cardContext?.code && ['C1', 'C2', 'C3', 'C4', 'C5', 'D1', 'D2', 'D3', 'D4'].includes(cardContext.code)) {
+    if (cardContext?.code && ['C1', 'C2', 'C3'].includes(cardContext.code)) {
+      return buildBackendStatusMeta('real', `${label} value`, 'This value is derived from the live orchestration last-run endpoint.');
+    }
+    if (cardContext?.code === 'C4') {
+      return buildBackendStatusMeta('mock', `${label} value`, 'The orchestration last-run endpoint does not include real screen hardware state; this value is an honest fallback.');
+    }
+    if (cardContext?.code === 'C5') {
+      return buildBackendStatusMeta('missing', `${label} value`, 'Restore remains unavailable because no real restore backend endpoint is implemented.');
+    }
+    if (cardContext?.code && ['D1', 'D2', 'D3', 'D4'].includes(cardContext.code)) {
       return buildBackendStatusMeta('missing', `${label} value`, 'This value represents runtime data that would normally come from backend/runtime APIs that are not implemented here yet.');
     }
     if (element.closest('.modal-panel')) {
@@ -202,6 +211,12 @@ export function createBackendStatusMetadataHelpers({ getState, getTransitHasLive
     const label = compactWhitespace(element.textContent) || 'Notice';
     const text = label.toLowerCase();
 
+    if (text.includes('backend last-run endpoint')) {
+      return buildBackendStatusMeta('real', label, 'This notice is rendered from the read-only backend orchestration last-run response.');
+    }
+    if (text.includes('failed to load the backend last-run')) {
+      return buildBackendStatusMeta('real', label, 'This notice reports a failed backend orchestration last-run request.');
+    }
     if (text.includes('demo state')) {
       return buildBackendStatusMeta('mock', label, 'This notice is part of a local demo-state switch rather than backend behavior.');
     }
@@ -237,9 +252,12 @@ export function createBackendStatusMetadataHelpers({ getState, getTransitHasLive
       return buildBackendStatusMeta('real', label, 'This log entry captures a real backend action response.');
     }
     if (sourceKey === 'B5') {
-      return buildBackendStatusMeta('mock', label, 'This log entry comes from frontend-only simulation behavior.');
+      return buildBackendStatusMeta('real', label, 'This log entry comes from the backend-owned screen simulation contract. It does not represent real hardware.');
     }
-    if (sourceKey.startsWith('B') || sourceKey === 'C' || sourceKey === 'D') {
+    if (sourceKey === 'C') {
+      return buildBackendStatusMeta('real', label, 'This log source includes read-only backend orchestration last-run requests; restore entries remain placeholder-only.');
+    }
+    if (sourceKey.startsWith('B') || sourceKey === 'D') {
       return buildBackendStatusMeta('missing', label, 'This log entry comes from a UI surface that stands in for missing backend/runtime support.');
     }
 
@@ -253,8 +271,14 @@ export function createBackendStatusMetadataHelpers({ getState, getTransitHasLive
     if (['INIT', 'DB', 'SCHEDULER'].includes(source)) {
       return describeHistoryEntryFromDetails(`${source} history event`, entry);
     }
+    if (source === 'RECOVERY' && entry?.details?.response) {
+      return describeHistoryEntryFromDetails(`${source} history event`, entry);
+    }
     if (['TEST', 'PIPELINE', 'PLAYBACK', 'RECOVERY', 'RUNTIME'].includes(source)) {
       return buildBackendStatusMeta('missing', `${source} history event`, 'This history event belongs to UI behavior that stands in for missing backend/runtime support.');
+    }
+    if (source === 'SCREEN' && entry?.details?.response) {
+      return describeHistoryEntryFromDetails(`${source} history event`, entry);
     }
     if (['SCREEN', 'DEMO'].includes(source)) {
       return buildBackendStatusMeta('mock', `${source} history event`, 'This history event comes from frontend-only simulation or demo-state behavior.');
@@ -280,10 +304,16 @@ export function createBackendStatusMetadataHelpers({ getState, getTransitHasLive
       if (sourceKey?.startsWith('E')) {
         return getDatabaseViewerBackendStatusMeta(sourceKey, `${label} modal value`, modal.entry);
       }
-      if (sourceKey === 'B3.1' || sourceKey === 'B5') {
+      if (sourceKey === 'B5') {
+        return buildBackendStatusMeta('real', `${label} modal value`, 'This modal is showing details from the backend-owned screen simulation contract.');
+      }
+      if (sourceKey === 'B3.1') {
         return buildBackendStatusMeta('mock', `${label} modal value`, 'This modal is showing details for frontend-only simulation data.');
       }
-      if (typeof sourceKey === 'string' && (sourceKey.startsWith('B') || sourceKey === 'C' || sourceKey === 'D')) {
+      if (sourceKey === 'C') {
+        return buildBackendStatusMeta('real', `${label} modal value`, 'This modal is showing read-only backend orchestration last-run details or an explicit restore placeholder log.');
+      }
+      if (typeof sourceKey === 'string' && (sourceKey.startsWith('B') || sourceKey === 'D')) {
         return buildBackendStatusMeta('missing', `${label} modal value`, 'This modal is showing details for a UI surface that stands in for missing backend/runtime support.');
       }
     }
@@ -317,10 +347,22 @@ export function createBackendStatusMetadataHelpers({ getState, getTransitHasLive
     if (typeof code === 'string' && code.startsWith('E')) {
       return getDatabaseViewerBackendStatusMeta(code, label);
     }
-    if (code === 'B3.1' || code === 'B5') {
+    if (code === 'B5') {
+      return buildBackendStatusMeta('real', label, 'This section is wired to backend-owned screen simulation state only; it does not control real screen hardware.');
+    }
+    if (code === 'B3.1') {
       return buildBackendStatusMeta('mock', label, 'This section is intentionally frontend-only simulation rather than backend-backed.');
     }
-    if (['B1', 'B2', 'B3', 'B3.2', 'B3.5', 'B4', 'C', 'C1', 'C2', 'C3', 'C4', 'C5', 'D1', 'D2', 'D3', 'D4'].includes(code)) {
+    if (['C1', 'C2', 'C3'].includes(code)) {
+      return buildBackendStatusMeta('real', label, 'This section is populated from the read-only backend orchestration last-run endpoint.');
+    }
+    if (code === 'C4') {
+      return buildBackendStatusMeta('mock', label, 'This section is an honest fallback because screen hardware state is not represented by the orchestration last-run endpoint.');
+    }
+    if (code === 'C' || code === 'C5') {
+      return buildBackendStatusMeta('missing', label, 'View C restore remains missing even though the read-only last-run summary is backend-wired.');
+    }
+    if (['B1', 'B2', 'B3', 'B3.2', 'B3.5', 'B4', 'D1', 'D2', 'D3', 'D4'].includes(code)) {
       return buildBackendStatusMeta('missing', label, 'This section stands in for backend/runtime support that is not implemented here yet.');
     }
     if (code === 'IO') {

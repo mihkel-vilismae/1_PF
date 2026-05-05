@@ -418,6 +418,47 @@ test('B2, B3 auto, and B4 actions call backend endpoints and update runtime trut
       );
     }
 
+    if (path === '/api/runtime/orchestration/run' && method === 'POST') {
+      queuePrepared = true;
+      return new Response(
+        JSON.stringify({
+          run_id: 7,
+          status: 'SUCCEEDED',
+          current_stage: 'playback_select',
+          last_successful_stage: 'playback_select',
+          started_at: '2026-04-23T09:59:00.000Z',
+          finished_at: '2026-04-23T10:00:00.000Z',
+          failed_stage: null,
+          failure_reason: null,
+          stage_order_executed: ['download', 'index', 'gps', 'geocode', 'queue_prepare', 'playback_select'],
+          stage_results: {
+            download: { messages: ['Mock download copied 1 file(s) from generated_test_data into the test download directory.'] },
+            index: { indexing: { insertedCanonicalCount: 1 } },
+            gps: { processed_count: 1, success_count: 1 },
+            geocode: { processed_count: 1, success_count: 1 },
+            queue_prepare: { queue: { insertedCount: 1 } },
+            playback_select: {
+              playback: {
+                selected: {
+                  mediaAssetId: 42,
+                  canonicalPath: '/tmp/test-media/sample.jpg',
+                  addressText: 'Tallinn, Harjumaa, Estonia',
+                  selectedAt: '2026-04-23T10:00:00.000Z',
+                },
+              },
+            },
+          },
+          selected_asset_summary: {
+            mediaAssetId: 42,
+            canonicalPath: '/tmp/test-media/sample.jpg',
+            addressText: 'Tallinn, Harjumaa, Estonia',
+            selectedAt: '2026-04-23T10:00:00.000Z',
+          },
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      );
+    }
+
     if (path === '/api/runtime/playback/select-current' && method === 'POST') {
       if (!queuePrepared) {
         return new Response(
@@ -474,14 +515,209 @@ test('B2, B3 auto, and B4 actions call backend endpoints and update runtime trut
       requests.map(({ path, method }) => ({ path, method })),
       [
         { path: '/api/runtime/download/run', method: 'POST' },
+        { path: '/api/runtime/orchestration/run', method: 'POST' },
+        { path: '/api/runtime/playback/select-current', method: 'POST' },
+      ],
+    );
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+test('B3 auto surfaces backend orchestration failure without fabricated success', async () => {
+  const originalFetch = global.fetch;
+  const requests = [];
+
+  global.fetch = async (path, init = {}) => {
+    const method = init.method ?? 'GET';
+    requests.push({ path, method });
+
+    if (path === '/api/runtime/orchestration/run' && method === 'POST') {
+      return new Response(
+        JSON.stringify({
+          run_id: 8,
+          status: 'FAILED',
+          current_stage: 'download',
+          last_successful_stage: null,
+          started_at: '2026-04-23T09:59:00.000Z',
+          finished_at: '2026-04-23T10:00:00.000Z',
+          failed_stage: 'download',
+          failure_reason: 'mock_source_missing',
+          stage_order_executed: ['download'],
+          stage_results: {},
+          selected_asset_summary: null,
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      );
+    }
+
+    throw new Error(`Unexpected request: ${method} ${path}`);
+  };
+
+  try {
+    const harness = createRuntimeTruthHarness();
+    const behavior = createRuntimeTruthBehavior(harness.actions);
+
+    behavior.runAction('run-b3-auto');
+    await waitFor(() => harness.state.statusByKey.B3 === 'error');
+
+    assert.deepEqual(requests, [{ path: '/api/runtime/orchestration/run', method: 'POST' }]);
+    assert.equal(harness.state.logs.B3[0]?.type, 'error');
+    assert.match(harness.state.logs.B3[0]?.message ?? '', /mock_source_missing/);
+    assert.equal(harness.state.history[0]?.type, 'error');
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+test('individual B3 stage buttons keep their existing backend endpoints', async () => {
+  const originalFetch = global.fetch;
+  const requests = [];
+
+  global.fetch = async (path, init = {}) => {
+    const method = init.method ?? 'GET';
+    requests.push({ path, method });
+
+    const responseByPath = {
+      '/api/runtime/download/run': { status: 'ok', messages: ['Downloaded.'], download: { newMediaFiles: 1 } },
+      '/api/runtime/index/run': { status: 'ok', messages: ['Indexed.'], indexing: { insertedCanonicalCount: 1 } },
+      '/api/runtime/gps/run': { status: 'ok', messages: ['Parsed GPS.'], processed_count: 1 },
+      '/api/runtime/geocode/run': { status: 'ok', messages: ['Geocoded with deterministic placeholder.'], processed_count: 1 },
+      '/api/runtime/queue/prepare': { status: 'ok', message: 'Inserted 1 slideshow queue row.', queue: { insertedCount: 1 } },
+    };
+
+    if (method === 'POST' && responseByPath[path]) {
+      return new Response(JSON.stringify(responseByPath[path]), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      });
+    }
+
+    throw new Error(`Unexpected request: ${method} ${path}`);
+  };
+
+  try {
+    const harness = createRuntimeTruthHarness();
+    const behavior = createRuntimeTruthBehavior(harness.actions);
+
+    for (const action of ['run-b3-1', 'run-b3-2', 'run-b3-3', 'run-b3-4', 'run-b3-5']) {
+      behavior.runAction(action);
+      await waitFor(() => harness.state.statusByKey.B3 !== 'running');
+    }
+
+    assert.deepEqual(
+      requests.map(({ path, method }) => ({ path, method })),
+      [
         { path: '/api/runtime/download/run', method: 'POST' },
         { path: '/api/runtime/index/run', method: 'POST' },
         { path: '/api/runtime/gps/run', method: 'POST' },
         { path: '/api/runtime/geocode/run', method: 'POST' },
         { path: '/api/runtime/queue/prepare', method: 'POST' },
-        { path: '/api/runtime/playback/select-current', method: 'POST' },
       ],
     );
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+test('B5 screen simulation calls backend configure endpoint and uses returned simulation state', async () => {
+  const originalFetch = global.fetch;
+  const requests = [];
+
+  global.fetch = async (path, init = {}) => {
+    const method = init.method ?? 'GET';
+    const body = init.body ? JSON.parse(String(init.body)) : null;
+    requests.push({ path, method, body });
+
+    if (path === '/api/runtime/screen-simulation/configure' && method === 'POST') {
+      return new Response(
+        JSON.stringify({
+          status: 'ok',
+          simulationOnly: true,
+          simulation: {
+            pirEnabled: false,
+            mouseEnabled: false,
+            keyboardEnabled: false,
+            simulateAllEnabled: false,
+            inactivityTimeoutSeconds: 9,
+          },
+          screen: {
+            screenState: 'OFF',
+            lastActivitySource: 'No simulated activity sources enabled',
+            inactivityTimeoutSeconds: 9,
+            playbackStatus: 'Paused by backend screen simulation',
+            lastCheckpoint: '2026-04-23T10:00:00.000Z backend screen-simulation checkpoint saved',
+            updatedAt: '2026-04-23T10:00:00.000Z',
+          },
+          messages: ['Backend-owned screen simulation state updated.'],
+          schemaVersion: 1,
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      );
+    }
+
+    throw new Error(`Unexpected request: ${method} ${path}`);
+  };
+
+  try {
+    const harness = createRuntimeTruthHarness();
+    const behavior = createRuntimeTruthBehavior(harness.actions);
+    harness.state.simulation = {
+      ...harness.state.simulation,
+      pirEnabled: false,
+      mouseEnabled: false,
+      keyboardEnabled: false,
+      simulateAllEnabled: false,
+      inactivityTimeoutSeconds: 9,
+    };
+
+    behavior.runAction('configure-screen-simulation');
+    await waitFor(() => harness.state.statusByKey.B5 === 'success');
+
+    assert.equal(requests.length, 1);
+    assert.equal(requests[0].path, '/api/runtime/screen-simulation/configure');
+    assert.equal(requests[0].body.simulation.inactivityTimeoutSeconds, 9);
+    assert.equal(harness.state.truth.screenState, 'OFF');
+    assert.equal(harness.state.truth.lastActivitySource, 'No simulated activity sources enabled');
+    assert.equal(harness.state.truth.inactivityTimeoutSeconds, 9);
+    assert.equal(harness.state.truth.playbackStatus, 'Paused by backend screen simulation');
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+test('B5 backend failure is surfaced as an error without changing screen truth', async () => {
+  const originalFetch = global.fetch;
+
+  global.fetch = async (path, init = {}) => {
+    const method = init.method ?? 'GET';
+    if (path === '/api/runtime/screen-simulation/configure' && method === 'POST') {
+      return new Response(
+        JSON.stringify({
+          status: 'error',
+          error: 'invalid_screen_simulation_timeout',
+          message: 'Screen simulation inactivityTimeoutSeconds must be an integer from 1 to 60.',
+          schemaVersion: 1,
+        }),
+        { status: 400, headers: { 'content-type': 'application/json' } },
+      );
+    }
+
+    throw new Error(`Unexpected request: ${method} ${path}`);
+  };
+
+  try {
+    const harness = createRuntimeTruthHarness();
+    const behavior = createRuntimeTruthBehavior(harness.actions);
+    const originalScreenState = harness.state.truth.screenState;
+
+    harness.state.simulation.inactivityTimeoutSeconds = 99;
+    behavior.runAction('configure-screen-simulation');
+    await waitFor(() => harness.state.statusByKey.B5 === 'error');
+
+    assert.equal(harness.state.truth.screenState, originalScreenState);
+    assert.equal(harness.state.logs.B5[0]?.type, 'error');
+    assert.match(harness.state.logs.B5[0]?.message ?? '', /inactivityTimeoutSeconds/);
   } finally {
     global.fetch = originalFetch;
   }

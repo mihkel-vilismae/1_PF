@@ -232,7 +232,7 @@ test('backend status inspect metadata keeps download action marked real', () => 
   assert.equal(meta.label, 'Real: Download 5 files');
 });
 
-test('backend status inspect metadata keeps B3 auto/GPS/geocode actions marked real', () => {
+test('backend status inspect metadata keeps B3 auto/GPS real and geocode mock', () => {
   const { describeBackendStatusElement } = createBackendStatusMetadataHelpers({
     getState: () => ({
       initResults: { '1A': null, '2A': null, '3A': null },
@@ -260,6 +260,33 @@ test('backend status inspect metadata keeps B3 auto/GPS/geocode actions marked r
     );
     assert.equal(meta.state, item.expectedState);
   }
+});
+
+test('backend status inspect metadata marks B5 as backend-wired simulation only', () => {
+  const { describeBackendStatusElement } = createBackendStatusMetadataHelpers({
+    getState: () => ({
+      initResults: { '1A': null, '2A': null, '3A': null },
+      databaseViewer: { results: {} },
+      logs: {},
+      history: [],
+      modal: null,
+    }),
+    getTransitHasLiveTraffic: () => false,
+  });
+  const card = fakeElement({
+    query: { '.card__code': fakeNode({ textContent: 'B5' }) },
+  });
+  const meta = describeBackendStatusElement(
+    fakeElement({
+      matches: ['.status-badge'],
+      textContent: 'Idle',
+      closest: { '.card, .stage-card': card },
+    }),
+  );
+
+  assert.equal(meta.state, 'real');
+  assert.match(meta.description, /simulation/i);
+  assert.match(meta.description, /hardware/i);
 });
 
 test('backend status inspect metadata still reports Current truth values as frontend-backed mock state', () => {

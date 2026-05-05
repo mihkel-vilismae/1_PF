@@ -138,10 +138,10 @@ export function buildInitLogDetails({ operation, endpoint, requestBody, apiMeta,
 }
 
 export function mapPayloadStatusToUiStatus(payloadStatus: unknown): RuntimeTruthUiStatus {
-  if (payloadStatus === 'error') {
+  if (payloadStatus === 'error' || payloadStatus === 'FAILED') {
     return 'error';
   }
-  if (payloadStatus === 'warning') {
+  if (payloadStatus === 'warning' || payloadStatus === 'RUNNING' || payloadStatus === 'NOT_RUNNING') {
     return 'info';
   }
   return 'success';
@@ -187,6 +187,17 @@ export function summarizeInitPayload(operation: string, payload: unknown): strin
 export function summarizeRuntimePayload(operation: string, payload: unknown): string {
   if (!payload) {
     return `${operation} completed with an empty response body.`;
+  }
+
+  const orchestrationStatus = readStringField(payload, 'status');
+  if (orchestrationStatus === 'SUCCEEDED') {
+    const runId = readNumberField(payload, 'run_id');
+    return `${operation} completed orchestration run${runId === null ? '' : ` ${runId}`} successfully.`;
+  }
+  if (orchestrationStatus === 'FAILED') {
+    const failedStage = readStringField(payload, 'failed_stage') ?? 'unknown stage';
+    const failureReason = readStringField(payload, 'failure_reason') ?? 'unknown reason';
+    return `${operation} failed at ${failedStage}: ${failureReason}.`;
   }
 
   const messages = readRecordField(payload, 'messages');

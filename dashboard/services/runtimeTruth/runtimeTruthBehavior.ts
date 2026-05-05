@@ -158,6 +158,8 @@ export function createRuntimeTruthBehavior({
       'run-b3-5': () => demoActions.runEnqueueStage(),
       'run-b3-auto': () => demoActions.runAutoPipeline(),
       'run-b4': () => demoActions.runPlaybackEmulation(),
+      'configure-screen-simulation': () => demoActions.configureScreenSimulation(),
+      'refresh-last-run': () => demoActions.loadLastOrchestrationRun(),
       'resume-last-run': () => demoActions.genericAction('C', 'RECOVERY', 'Restore placeholder activated from the current last-run demo state.'),
       'start-real-run': () => demoActions.startRealRun(),
     };

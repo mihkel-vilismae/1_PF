@@ -218,6 +218,9 @@ function bindEvents() {
       const id = button.dataset.view;
       const label = VIEW_ORDER.find((view) => view.id === id);
       setActiveView(id, `${id} — ${label?.name ?? ''}`);
+      if (id === 'C') {
+        runAction('refresh-last-run');
+      }
     });
   });
 
@@ -349,6 +352,7 @@ function bindEvents() {
       input.addEventListener('change', () => {
         const checked = input.checked;
         setSimulationValue(name, checked);
+        runAction('configure-screen-simulation');
         pushHistory('SCREEN', 'info', `${name} changed to ${checked ? 'enabled' : 'disabled'}.`, {
           setting: name,
           enabled: checked,
@@ -361,6 +365,7 @@ function bindEvents() {
     input.addEventListener('change', () => {
       const value = Number(input.value || 5);
       setSimulationValue('inactivityTimeoutSeconds', value);
+      runAction('configure-screen-simulation');
       pushHistory('SCREEN', 'info', `Inactivity timeout changed to ${value} seconds.`, {
         setting: 'inactivityTimeoutSeconds',
         seconds: value,

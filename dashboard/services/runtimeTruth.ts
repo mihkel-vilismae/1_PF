@@ -287,9 +287,6 @@ export function setSimulationValue(key: string, value: boolean | number | string
       draft.runningProcess.screenWorker.timeout = `${value}s`;
     }
   });
-  if (['pirEnabled', 'mouseEnabled', 'keyboardEnabled', 'simulateAllEnabled', 'inactivityTimeoutSeconds'].includes(key)) {
-    runtimeTruthBehavior.applyScreenSimulationState(`${key} changed`);
-  }
 }
 
 export function selectDatabaseViewerTable(tableName: string | null | undefined): void {

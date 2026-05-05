@@ -1,9 +1,12 @@
 import {
   RUNTIME_EXECUTION_ENDPOINTS,
+  configureRuntimeScreenSimulation,
+  getRuntimeOrchestrationLast,
   runRuntimeDownload,
   runRuntimeGeocode,
   runRuntimeGps,
   runRuntimeIndex,
+  runRuntimeOrchestration,
   runRuntimePlaybackSelectCurrent,
   runRuntimeQueuePrepare,
 } from '../runtimeExecutionService.ts';
@@ -29,6 +32,46 @@ function inferMediaTypeFromPath(candidatePath) {
 function extractFileName(candidatePath) {
   const normalized = String(candidatePath ?? '').replaceAll('\\', '/');
   return normalized.split('/').filter(Boolean).pop() ?? candidatePath ?? 'Unknown media';
+}
+
+function isRecord(value) {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function emptyLastRunData() {
+  return { media: {}, playback: {}, stage: {}, screen: {} };
+}
+
+function mapOrchestrationToLastRunData(payload) {
+  const selected = isRecord(payload?.selected_asset_summary) ? payload.selected_asset_summary : {};
+  const canonicalPath = selected.canonicalPath ?? selected.canonical_path ?? null;
+  const addressText = selected.addressText ?? selected.address_text ?? null;
+  return {
+    media: {
+      file: canonicalPath ? extractFileName(canonicalPath) : 'No selected playback item recorded',
+      type: canonicalPath ? inferMediaTypeFromPath(canonicalPath) : 'Unknown',
+      queuePosition: 'Backend orchestration summary',
+      checkpoint: payload?.finished_at ?? payload?.started_at ?? 'Unavailable',
+    },
+    playback: {
+      status: payload?.status ?? 'Unknown',
+      lastCheckpoint: payload?.finished_at ?? 'Unavailable',
+      resumeMarker: canonicalPath ?? 'No playback selection recorded',
+      crashState: payload?.failure_reason ? `Failed at ${payload.failed_stage ?? 'unknown stage'}: ${payload.failure_reason}` : 'No failure recorded',
+    },
+    stage: {
+      active: payload?.current_stage ?? 'None',
+      lastCompleted: payload?.last_successful_stage ?? 'None',
+      previousStage: Array.isArray(payload?.stage_order_executed) ? payload.stage_order_executed.join(' -> ') : 'Unavailable',
+      stageError: payload?.failure_reason ?? 'None',
+    },
+    screen: {
+      state: 'Unknown',
+      lastActivitySource: 'Not included in orchestration last-run payload',
+      timeout: 'Not included',
+      transition: addressText ?? 'No screen transition is represented by this endpoint',
+    },
+  };
 }
 
 export function createRuntimeTruthDemoActions({
@@ -169,6 +212,7 @@ export function createRuntimeTruthDemoActions({
     execute,
     requestBody = {},
     onSuccess = (_payload = null, _meta = null) => {},
+    onError = (_error = null) => {},
     afterRun = null,
   }) {
     if (!guardAction(key, source, `${key} action is already running; duplicate trigger was blocked.`)) {
@@ -229,6 +273,7 @@ export function createRuntimeTruthDemoActions({
         request: details.request,
         response: details.response,
       });
+      onError(error);
       return null;
     } finally {
       afterRun?.();
@@ -313,52 +358,93 @@ export function createRuntimeTruthDemoActions({
       rejectWhileBusy('B3', 'PIPELINE', `Auto pipeline start was blocked because ${getState().truth.pipelineActiveKey} already holds the pipeline lock.`);
       return;
     }
-    const stages = ['B3.1', 'B3.2', 'B3.3', 'B3.4', 'B3.5'];
-    const runNextStage = (index = 0) => {
-      const stage = stages[index];
-      if (!stage) {
-        setStatus('B3', 'success');
-        pushHistory('PIPELINE', 'success', 'Auto pipeline completed without overlapping stages.', { stages, phase: 'complete' });
-        return;
-      }
 
-      const actionMap = {
-        'B3.1': () => runBackendPipelineStage({
-          key: 'B3.1',
-          operation: 'Run download stage',
-          endpoint: RUNTIME_EXECUTION_ENDPOINTS.downloadRun,
-          execute: runRuntimeDownload,
-          onComplete: () => runNextStage(index + 1),
-        }),
-        'B3.2': () => runBackendPipelineStage({
-          key: 'B3.2',
-          operation: 'Run index stage',
-          endpoint: RUNTIME_EXECUTION_ENDPOINTS.indexRun,
-          execute: runRuntimeIndex,
-          onComplete: () => runNextStage(index + 1),
-        }),
-        'B3.3': () => runBackendPipelineStage({
-          key: 'B3.3',
-          operation: 'Run GPS stage',
-          endpoint: RUNTIME_EXECUTION_ENDPOINTS.gpsRun,
-          execute: runRuntimeGps,
-          onComplete: () => runNextStage(index + 1),
-        }),
-        'B3.4': () => runBackendPipelineStage({
-          key: 'B3.4',
-          operation: 'Run geocode stage',
-          endpoint: RUNTIME_EXECUTION_ENDPOINTS.geocodeRun,
-          execute: runRuntimeGeocode,
-          onComplete: () => runNextStage(index + 1),
-        }),
-        'B3.5': () => runEnqueueStage(() => runNextStage(index + 1)),
-      };
+    startPipelineLock('B3');
+    void runBackendAction({
+      key: 'B3',
+      source: 'PIPELINE',
+      operation: 'Run backend orchestration',
+      endpoint: RUNTIME_EXECUTION_ENDPOINTS.orchestrationRun,
+      execute: runRuntimeOrchestration,
+      onSuccess: (payload) => {
+        patchState((draft) => {
+          if (payload?.status === 'SUCCEEDED') {
+            draft.truth.lastStageCompleted = 'B3.5';
+            const insertedCount = Number(payload?.stage_results?.queue_prepare?.queue?.insertedCount ?? 0);
+            if (insertedCount > 0) {
+              draft.truth.queueLength = Math.max(1, draft.truth.queueLength + insertedCount);
+              draft.truth.playbackStatus = 'Queue prepared by backend orchestration';
+            }
+            draft.statusByKey.B4 = 'idle';
+            return;
+          }
+          if (payload?.status === 'FAILED') {
+            draft.truth.lastStageCompleted = payload.last_successful_stage ?? draft.truth.lastStageCompleted;
+            draft.truth.stageLock = `Backend orchestration failed at ${payload.failed_stage ?? 'unknown stage'}`;
+          }
+        });
+      },
+      afterRun: () => {
+        releasePipelineLock('B3');
+      },
+    });
+  }
 
-      actionMap[stage]?.();
-    };
+  function loadLastOrchestrationRun() {
+    void runBackendAction({
+      key: 'C',
+      source: 'RECOVERY',
+      operation: 'Load last orchestration run',
+      endpoint: RUNTIME_EXECUTION_ENDPOINTS.orchestrationLast,
+      execute: getRuntimeOrchestrationLast,
+      onSuccess: (payload) => {
+        patchState((draft) => {
+          if (!payload) {
+            draft.lastRunMode = 'none';
+            draft.lastRunData = emptyLastRunData();
+            return;
+          }
+          draft.lastRunMode = 'ready';
+          draft.lastRunData = mapOrchestrationToLastRunData(payload);
+        });
+      },
+      onError: () => {
+        patchState((draft) => {
+          draft.lastRunMode = 'error';
+        });
+      },
+    });
+  }
 
-    setStatus('B3', 'running');
-    runNextStage();
+  function configureScreenSimulation() {
+    const simulation = { ...getState().simulation };
+    void runBackendAction({
+      key: 'B5',
+      source: 'SCREEN',
+      operation: 'Configure backend screen simulation',
+      endpoint: RUNTIME_EXECUTION_ENDPOINTS.screenSimulationConfigure,
+      execute: configureRuntimeScreenSimulation,
+      requestBody: { simulation },
+      onSuccess: (payload) => {
+        patchState((draft) => {
+          const nextSimulation = isRecord(payload?.simulation) ? payload.simulation : simulation;
+          const screen = isRecord(payload?.screen) ? payload.screen : {};
+          draft.simulation = { ...draft.simulation, ...nextSimulation };
+          draft.truth.screenState = String(screen.screenState ?? draft.truth.screenState);
+          draft.truth.lastActivitySource = String(screen.lastActivitySource ?? draft.truth.lastActivitySource);
+          draft.truth.inactivityTimeoutSeconds = Number(screen.inactivityTimeoutSeconds ?? draft.truth.inactivityTimeoutSeconds);
+          draft.runningProcess.screenWorker.screenState = draft.truth.screenState;
+          draft.runningProcess.screenWorker.lastActivity = draft.truth.lastActivitySource;
+          draft.runningProcess.screenWorker.timeout = `${draft.truth.inactivityTimeoutSeconds}s`;
+          if (typeof screen.playbackStatus === 'string') {
+            draft.truth.playbackStatus = screen.playbackStatus;
+          }
+          if (typeof screen.lastCheckpoint === 'string') {
+            draft.truth.lastCheckpoint = screen.lastCheckpoint;
+          }
+        });
+      },
+    });
   }
 
   function runPlaybackEmulation() {
@@ -468,6 +554,8 @@ export function createRuntimeTruthDemoActions({
     runPipelineStage,
     runEnqueueStage,
     runAutoPipeline,
+    loadLastOrchestrationRun,
+    configureScreenSimulation,
     runPlaybackEmulation,
     startRealRun,
     runBackendAction,
