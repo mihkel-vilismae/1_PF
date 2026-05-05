@@ -181,6 +181,13 @@ code {
   gap: 1rem;
 }
 .side-panel__header h2 { margin: 0; font-size: 1rem; }
+.side-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+.side-panel__actions .button { white-space: nowrap; }
 
 .definition-list {
   display: grid;
