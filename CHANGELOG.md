@@ -51,6 +51,22 @@
 ### Removed
 - None.
 
+## 2026-05-06 15:30 EEST — v0.3.53
+
+### Added
+- Added NEW AUTH Slice 8 test-download proof endpoint. A new backend route `/api/auth/new/test-download` verifies an authenticated session and returns success if the session is valid.
+- Added a frontend service method `runNewAuthTestDownload` to trigger the test-download proof.
+
+### Changed
+- Registered the new endpoint in the server router and new auth routes, and updated the new auth service endpoint map.
+- Updated version metadata from v0.3.52 to v0.3.53.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
 ## 2026-05-06 14:46 EEST — v0.3.49
 
 ### Added

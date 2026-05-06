@@ -14,6 +14,7 @@ export const NEW_AUTH_ENDPOINTS = Object.freeze({
   submitTwoFactor: { method: 'POST', path: '/api/auth/new/submit-2fa' },
   logout: { method: 'POST', path: '/api/auth/new/logout' },
   sessionFiles: { method: 'GET', path: '/api/auth/new/session-files' },
+  testDownload: { method: 'POST', path: '/api/auth/new/test-download' },
 });
 
 export function fetchNewAuthStatus(): Promise<NewAuthEndpointResponse> {
@@ -38,6 +39,10 @@ export function logoutNewAuthSession(): Promise<NewAuthEndpointResponse> {
 
 export function fetchNewAuthSessionFiles(): Promise<NewAuthEndpointResponse> {
   return callNewAuthEndpoint(NEW_AUTH_ENDPOINTS.sessionFiles);
+}
+
+export function runNewAuthTestDownload(): Promise<NewAuthEndpointResponse> {
+  return callNewAuthEndpoint(NEW_AUTH_ENDPOINTS.testDownload);
 }
 
 function callNewAuthEndpoint(endpoint: NewAuthEndpoint, body: unknown = undefined): Promise<NewAuthEndpointResponse> {

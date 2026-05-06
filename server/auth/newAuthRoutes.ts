@@ -5,6 +5,7 @@ import {
   startNewAuthLogin,
   submitNewAuthTwoFactor,
   verifyNewAuthIcloudpd,
+  testNewAuthDownload,
   type NewAuthContext,
 } from './newAuthService.ts';
 
@@ -25,6 +26,7 @@ interface NewAuthRoutes {
   loginHandler(request: NewAuthRouteRequest): Promise<NewAuthRouteResponse<Record<string, unknown>>>;
   submitTwoFactorHandler(request: NewAuthRouteRequest): Promise<NewAuthRouteResponse<Record<string, unknown>>>;
   logoutHandler(request: NewAuthRouteRequest): Promise<NewAuthRouteResponse<Record<string, unknown>>>;
+  testDownloadHandler(request: NewAuthRouteRequest): Promise<NewAuthRouteResponse<Record<string, unknown>>>;
 }
 
 export function createNewAuthRoutes(): NewAuthRoutes {
@@ -71,6 +73,14 @@ export function createNewAuthRoutes(): NewAuthRoutes {
 
     logoutHandler: async ({ context }) => {
       const payload = await logoutNewAuthSession(context);
+      return {
+        statusCode: statusCodeForPayload(payload),
+        payload,
+      };
+    },
+
+    testDownloadHandler: async ({ context }) => {
+      const payload = await testNewAuthDownload(context);
       return {
         statusCode: statusCodeForPayload(payload),
         payload,

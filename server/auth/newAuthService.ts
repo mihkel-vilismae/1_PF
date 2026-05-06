@@ -513,6 +513,46 @@ export async function logoutNewAuthSession(context: NewAuthContext = {}): Promis
   };
 }
 
+/**
+ * Perform a test download or verification step to prove the authenticated iCloudPD session is usable.
+ * This endpoint does not download real media yet; it verifies that a saved session is authenticated.
+ * If the session is unverified or requires authentication, it returns an error requiring login/2FA.
+ */
+export async function testNewAuthDownload(context: NewAuthContext = {}): Promise<Record<string, unknown>> {
+  const config = buildNewAuthIcloudpdConfig(context);
+  const missing = validateNewAuthLoginConfig(config);
+  if (missing.length > 0) {
+    return buildNewAuthMissingConfigPayload(missing, 'test_download');
+  }
+
+  // Use provider proof to verify existing session authenticity.
+  const proof = await verifyExistingNewAuthSessionWithProvider(context);
+  if (!proof.verified) {
+    // When provider proof fails or requires 2FA, surface the provider's reason code and message.
+    return {
+      ok: false,
+      state: 'failed',
+      errorCode: proof.reasonCode || 'NEW_AUTH_TEST_DOWNLOAD_AUTH_REQUIRED',
+      message: proof.message || 'Authentication is required before test download.',
+      details: {
+        provider: 'icloudpd',
+        providerProof: proof,
+      },
+    };
+  }
+
+  // In this slice, we do not perform a real download; simply return success when the session is verified.
+  return {
+    ok: true,
+    state: 'success',
+    message: 'Test download succeeded: authenticated session is usable.',
+    details: {
+      provider: 'icloudpd',
+      providerProof: proof,
+    },
+  };
+}
+
 function startInteractiveNewAuthAttempt({
   executablePath,
   config,

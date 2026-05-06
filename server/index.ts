@@ -404,6 +404,7 @@ const routes: Record<string, RouteHandler> = {
   'POST /api/auth/new/login': newAuthRouteHandlers.loginHandler,
   'POST /api/auth/new/submit-2fa': newAuthRouteHandlers.submitTwoFactorHandler,
   'POST /api/auth/new/logout': newAuthRouteHandlers.logoutHandler,
+  'POST /api/auth/new/test-download': newAuthRouteHandlers.testDownloadHandler,
   'POST /api/init/verify-env': verifyEnvHandler,
   'GET /api/init/database/status': databaseStatusHandler,
   'POST /api/init/database/inspect': inspectDatabaseHandler,
