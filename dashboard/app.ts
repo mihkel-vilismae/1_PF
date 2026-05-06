@@ -72,10 +72,17 @@ function render() {
     D: renderRunningProcessView(state),
     E: renderDatabaseViewerView(state),
   }[state.activeView];
+  const escapedAppVersion = escapeHtml(__APP_VERSION__);
 
   document.body.classList.toggle('modal-open', Boolean(state.modal));
 
   app.innerHTML = `
+    <div
+      id="versionBadge"
+      class="version-badge"
+      aria-label="PC dashboard version"
+      title="PC dashboard version ${escapedAppVersion}"
+    >v${escapedAppVersion}</div>
     <div class="shell">
       <aside class="sidebar">
         <div class="brand-card">
@@ -135,7 +142,6 @@ function render() {
             <h1>${state.currentViewTitle}</h1>
           </div>
           <div class="topbar__actions">
-            <span class="app-version-badge" aria-label="Application version">v${escapeHtml(__APP_VERSION__)}</span>
             <button
               class="button ${state.inspectMode ? 'button--primary' : 'button--secondary'} inspect-toggle"
               type="button"
