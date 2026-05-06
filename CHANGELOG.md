@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## 2026-05-06 14:46 EEST — v0.3.49
+
+### Added
+- Added NEW AUTH Slice 4 provider-proof 2FA diagnostics so provider output that reaches a two-factor prompt is classified as `NEW_AUTH_PROVIDER_REQUIRES_2FA`.
+- Added visible user action prompts for 2FA-required responses: `ENTER 6-DIGIT CODE` and `ENTER DEVICE INDEX (A)`.
+- Added regression coverage for 2FA-vs-timeout classification, prompt extraction, and visible prompt rendering outside raw JSON.
+
+### Changed
+- Changed `/api/auth/new/status` classification priority so 2FA provider prompts win over generic timeout when both are present.
+- Updated version metadata from v0.3.48 to v0.3.49.
+
+### Fixed
+- Fixed misleading status diagnostics where iCloudPD output clearly requested 2FA but the UI primarily reported a provider-proof timeout.
+- Preserved sanitized provider previews and secret/session redaction while exposing only safe prompt metadata.
+
+### Removed
+- None.
+
 ## 2026-05-06 12:58 EEST — v0.3.48
 
 ### Added

@@ -176,11 +176,24 @@ export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, push
 
 function classifyNewAuthButtonStatus(buttonKey, payload, transportOutcome) {
   if (transportOutcome === 'error') return 'failed';
+  if (hasNewAuthTwoFactorPrompt(payload)) return 'pending';
   if (payload?.ok === false || payload?.state === 'failed' || payload?.status === 'error') return 'failed';
-  if (payload?.state === 'pending_2fa' || payload?.requires2fa === true || payload?.requires_2fa === true) return 'pending';
   if (buttonKey === 'new-auth-check-login') return 'success';
   if (buttonKey === 'new-auth-session-files') return Array.isArray(payload?.paths) || payload?.ok === true ? 'success' : 'pending';
   return payload?.ok === true || payload?.state === 'authenticated' || payload?.status === 'ok' ? 'success' : 'pending';
+}
+
+function hasNewAuthTwoFactorPrompt(payload) {
+  const details = payload?.details && typeof payload.details === 'object' ? payload.details : null;
+  const providerProof = details?.providerProof && typeof details.providerProof === 'object' ? details.providerProof : null;
+  return payload?.state === 'pending_2fa'
+    || payload?.state === 'requires_2fa'
+    || payload?.requires2fa === true
+    || payload?.requires_2fa === true
+    || details?.requires2fa === true
+    || providerProof?.requires2fa === true
+    || Array.isArray(details?.userPrompts)
+    || Array.isArray(providerProof?.userPrompts);
 }
 
 function summarizeNewAuthResult(operation, payload) {

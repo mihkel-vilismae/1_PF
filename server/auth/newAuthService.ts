@@ -4,7 +4,7 @@ import { mkdir, rm } from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
 
-export type NewAuthSessionState = 'logged_out' | 'logging_in' | 'pending_2fa' | 'authenticated' | 'failed' | 'unverified' | 'unknown';
+export type NewAuthSessionState = 'logged_out' | 'logging_in' | 'pending_2fa' | 'requires_2fa' | 'authenticated' | 'failed' | 'unverified' | 'unknown';
 export type NewAuthPathType = 'file' | 'directory' | 'missing' | 'unknown';
 
 export interface NewAuthEnvValues {
@@ -73,6 +73,11 @@ interface NewAuthProviderSessionProof {
   providerOutputPreview?: string;
   providerOutputShown: NewAuthProviderOutputShown;
   secretValuesShown: false;
+  requires2fa?: boolean;
+  canEnterSixDigitCode?: boolean;
+  canEnterDeviceIndex?: boolean;
+  availableDeviceIndexes?: string[];
+  userPrompts?: string[];
 }
 
 type NewAuthTwoFactorPromptKind = 'device_index' | 'verification_code' | 'device_index_or_code' | 'apple_hsa2_challenge' | 'unknown';
@@ -650,6 +655,7 @@ function buildPendingPayloadFromActiveAttempt(attempt: NewAuthInteractiveAttempt
         twoFactorPromptKind: promptInfo.kind,
         requestedInput: promptInfo.requestedInput,
         twoFactorResponseShown: false,
+        ...buildTwoFactorPromptDiagnostics(combined),
         providerOutputPreview: sanitizePreview(combined),
       },
     };
@@ -768,6 +774,7 @@ export function mapNewAuthCommandResult(
         twoFactorPromptKind: promptInfo.kind,
         requestedInput: promptInfo.requestedInput,
         twoFactorResponseShown: false,
+        ...buildTwoFactorPromptDiagnostics(combined),
         providerOutputPreview: sanitizePreview(combined),
       },
     }, [
@@ -995,6 +1002,53 @@ function sanitizeCommandOutput(value: string, config: NewAuthIcloudpdConfig): st
   return sanitized;
 }
 
+
+interface NewAuthTwoFactorPromptDiagnostics {
+  requires2fa: true;
+  canEnterSixDigitCode: boolean;
+  canEnterDeviceIndex: boolean;
+  availableDeviceIndexes: string[];
+  userPrompts: string[];
+}
+
+function buildTwoFactorPromptDiagnostics(output: string): NewAuthTwoFactorPromptDiagnostics {
+  const lower = output.toLowerCase();
+  const canEnterDeviceIndex = /device index|send sms|sms with a code|^[a-z]:/im.test(output);
+  const canEnterSixDigitCode = /verification code|security code|two[-\s]?factor authentication code|enter code|2fa code|six[-\s]?digit|6[-\s]?digit/i.test(output);
+  const availableDeviceIndexes = extractAvailableDeviceIndexes(output);
+  const prompts = new Set<string>();
+  if (canEnterSixDigitCode || !canEnterDeviceIndex || /code/.test(lower)) {
+    prompts.add('ENTER 6-DIGIT CODE');
+  }
+  if (canEnterDeviceIndex || availableDeviceIndexes.length > 0) {
+    const index = availableDeviceIndexes[0]?.toUpperCase() ?? 'A';
+    prompts.add(`ENTER DEVICE INDEX (${index})`);
+  }
+  if (prompts.size === 0) {
+    prompts.add('ENTER 6-DIGIT CODE');
+  }
+
+  return {
+    requires2fa: true,
+    canEnterSixDigitCode,
+    canEnterDeviceIndex: canEnterDeviceIndex || availableDeviceIndexes.length > 0,
+    availableDeviceIndexes,
+    userPrompts: Array.from(prompts),
+  };
+}
+
+function extractAvailableDeviceIndexes(output: string): string[] {
+  const indexes = new Set<string>();
+  for (const match of output.matchAll(/^\s*([a-z])\s*:/gim)) {
+    indexes.add(match[1].toLowerCase());
+  }
+  const rangeMatch = output.match(/device index\s*\(([a-z])\.\.([a-z])\)/i);
+  if (rangeMatch) {
+    indexes.add(rangeMatch[1].toLowerCase());
+  }
+  return Array.from(indexes).sort();
+}
+
 function indicatesNewAuthTwoFactorRequired(lower: string): boolean {
   return /two[-\s]?factor|2fa|two[-\s]?step|verification code|mfa|trusted device|trusted phone|enter code|security code|device index|auth"?\s*type"?\s*:\s*"?hsa2|"?authtype"?\s*:\s*"?hsa2|hsa2/.test(lower);
 }
@@ -1210,22 +1264,23 @@ async function verifyExistingNewAuthSessionWithProvider(context: NewAuthContext)
   const lower = combined.toLowerCase();
   const command = `icloudpd ${args.map(sanitizeProviderProofArgForDisplay).join(' ')}`;
 
+  if (indicatesNewAuthTwoFactorRequired(lower)) {
+    return buildProviderProofAttempted({
+      verified: false,
+      reasonCode: 'NEW_AUTH_PROVIDER_REQUIRES_2FA',
+      message: 'iCloudPD requires two-factor authentication. ENTER 6-DIGIT CODE or ENTER DEVICE INDEX (A) when prompted by the provider.',
+      command,
+      result,
+      providerOutputPreview: combined,
+      twoFactorDiagnostics: buildTwoFactorPromptDiagnostics(combined),
+    });
+  }
+
   if (result.errorCode === 'ICLOUDPD_TIMEOUT') {
     return buildProviderProofAttempted({
       verified: false,
       reasonCode: 'NEW_AUTH_PROVIDER_PROOF_TIMEOUT',
       message: 'Local session files exist, but iCloudPD provider proof timed out before verifying them.',
-      command,
-      result,
-      providerOutputPreview: combined,
-    });
-  }
-
-  if (indicatesNewAuthTwoFactorRequired(lower)) {
-    return buildProviderProofAttempted({
-      verified: false,
-      reasonCode: 'NEW_AUTH_PROVIDER_REQUIRES_2FA',
-      message: 'Local session files exist, but iCloudPD provider proof requires a two-factor response before authentication can be verified.',
       command,
       result,
       providerOutputPreview: combined,
@@ -1296,6 +1351,7 @@ function buildProviderProofAttempted({
   command,
   result,
   providerOutputPreview,
+  twoFactorDiagnostics = null,
 }: {
   verified: boolean;
   reasonCode: string;
@@ -1303,6 +1359,7 @@ function buildProviderProofAttempted({
   command: string;
   result: CommandResult;
   providerOutputPreview: string;
+  twoFactorDiagnostics?: NewAuthTwoFactorPromptDiagnostics | null;
 }): NewAuthProviderSessionProof {
   return {
     attempted: true,
@@ -1315,6 +1372,7 @@ function buildProviderProofAttempted({
     providerOutputPreview: sanitizePreview(providerOutputPreview),
     providerOutputShown: 'sanitized_preview',
     secretValuesShown: false,
+    ...(twoFactorDiagnostics ?? {}),
   };
 }
 
@@ -1323,7 +1381,7 @@ function stateFromProviderProof(proof: NewAuthProviderSessionProof): NewAuthSess
     return 'authenticated';
   }
   if (proof.reasonCode === 'NEW_AUTH_PROVIDER_REQUIRES_2FA') {
-    return 'pending_2fa';
+    return 'requires_2fa';
   }
   if (proof.reasonCode === 'NEW_AUTH_INVALID_CREDENTIALS') {
     return 'failed';
@@ -1351,7 +1409,9 @@ function statusMessageForState(state: NewAuthSessionState, providerProof?: NewAu
     case 'logged_out':
       return 'No active iCloudPD session files were found.';
     case 'pending_2fa':
-      return 'iCloudPD provider proof reports that authentication is waiting for two-factor verification.';
+      return 'iCloudPD authentication is waiting for two-factor verification.';
+    case 'requires_2fa':
+      return providerProof?.message ?? 'iCloudPD requires two-factor authentication. ENTER 6-DIGIT CODE or ENTER DEVICE INDEX (A).';
     case 'logging_in':
       return 'Authentication is currently in progress.';
     case 'failed':

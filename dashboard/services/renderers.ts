@@ -151,6 +151,8 @@ export function renderResultSurface(result: ResultSurfaceData | null | undefined
         ? 'Error payload'
         : 'Pending request payload';
 
+  const userPrompts = extractUserPrompts(payload);
+
   return `
     <section class="result-surface result-surface--${escapeHtml(result.outcome)}">
       <div class="result-surface__header">
@@ -159,6 +161,7 @@ export function renderResultSurface(result: ResultSurfaceData | null | undefined
       </div>
       ${renderDefinitionList(meta)}
       ${result.message ? `<p class="result-message">${escapeHtml(result.message)}</p>` : ''}
+      ${userPrompts.length ? renderUserPromptList(userPrompts) : ''}
       ${payload !== undefined && payload !== null ? `
         <div class="result-json-block">
           <p class="result-json-label">${escapeHtml(payloadLabel)}</p>
@@ -166,6 +169,29 @@ export function renderResultSurface(result: ResultSurfaceData | null | undefined
         </div>
       ` : ''}
     </section>
+  `;
+}
+
+
+function extractUserPrompts(payload: unknown): string[] {
+  if (!payload || typeof payload !== 'object') {
+    return [];
+  }
+  const root = payload as Record<string, unknown>;
+  const details = root.details && typeof root.details === 'object' ? root.details as Record<string, unknown> : null;
+  const proof = details?.providerProof && typeof details.providerProof === 'object' ? details.providerProof as Record<string, unknown> : null;
+  const directPrompts = Array.isArray(details?.userPrompts) ? details?.userPrompts : [];
+  const proofPrompts = Array.isArray(proof?.userPrompts) ? proof?.userPrompts : [];
+  return [...directPrompts, ...proofPrompts]
+    .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+    .filter((value, index, values) => values.indexOf(value) === index);
+}
+
+function renderUserPromptList(prompts: string[]): string {
+  return `
+    <div class="result-user-prompts" aria-label="User action prompts">
+      ${prompts.map((prompt) => `<strong class="result-user-prompt">${escapeHtml(prompt)}</strong>`).join('')}
+    </div>
   `;
 }
 

@@ -1620,3 +1620,17 @@ body.modal-open {
     grid-template-columns: 1fr;
   }
 }
+
+.result-user-prompts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.75rem 0;
+}
+
+.result-user-prompt {
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  letter-spacing: 0.04em;
+}
