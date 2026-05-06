@@ -4,7 +4,7 @@ import { mkdir, rm } from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
 
-export type NewAuthSessionState = 'logged_out' | 'logging_in' | 'pending_2fa' | 'authenticated' | 'failed' | 'unknown';
+export type NewAuthSessionState = 'logged_out' | 'logging_in' | 'pending_2fa' | 'authenticated' | 'failed' | 'unverified' | 'unknown';
 export type NewAuthPathType = 'file' | 'directory' | 'missing' | 'unknown';
 
 export interface NewAuthEnvValues {
@@ -60,6 +60,19 @@ interface NewAuthSessionEvidence {
   sessionFileCount: number;
   latestModifiedMs: number | null;
   latestModifiedAt: string | null;
+}
+
+interface NewAuthProviderSessionProof {
+  attempted: boolean;
+  verified: boolean;
+  reasonCode: string;
+  message: string;
+  command?: string;
+  exitCode?: number | null;
+  signal?: NodeJS.Signals | null;
+  providerOutputPreview?: string;
+  providerOutputShown: NewAuthProviderOutputShown;
+  secretValuesShown: false;
 }
 
 type NewAuthTwoFactorPromptKind = 'device_index' | 'verification_code' | 'device_index_or_code' | 'apple_hsa2_challenge' | 'unknown';
@@ -163,21 +176,59 @@ export async function verifyNewAuthIcloudpd(context: NewAuthContext = {}): Promi
 }
 
 export async function getNewAuthStatus(context: NewAuthContext = {}): Promise<Record<string, unknown>> {
+  const activeAttempt = getActiveNewAuthAttempt();
+  if (activeAttempt) {
+    return appendStructuredEvents(buildPendingPayloadFromActiveAttempt(activeAttempt, 'iCloudPD authentication is still waiting for provider output or a two-factor response.'), [
+      buildStructuredEvent({
+        operation: 'status',
+        phase: 'active_attempt_detected',
+        stateBefore: 'logging_in',
+        stateAfter: 'pending_2fa',
+        endpoint: 'GET /api/auth/new/status',
+        message: 'Status check found an active iCloudPD authentication process.',
+        providerOutputShown: 'classification_only',
+      }),
+    ]);
+  }
+
   const paths = getNewAuthPathCandidates(context);
   const sessionDirectory = paths.find((entry) => entry.label === 'Configured session directory');
   const sessionFiles = flattenPathMetadata(paths).filter((entry) => entry.exists && entry.type === 'file' && SESSION_FILE_HINT_PATTERN.test(path.basename(entry.path)));
-  const state = classifySessionState(paths, sessionFiles);
-
-  return {
-    ok: true,
-    state,
-    message: statusMessageForState(state),
-    details: {
-      provider: 'icloudpd',
-      sessionDirectoryKnown: Boolean(sessionDirectory),
-      sessionDirectoryExists: Boolean(sessionDirectory?.exists),
+  const baseDetails = {
+    provider: 'icloudpd',
+    sessionDirectoryKnown: Boolean(sessionDirectory),
+    sessionDirectoryExists: Boolean(sessionDirectory?.exists),
+    sessionFileCount: sessionFiles.length,
+    localSessionEvidence: {
+      hasSessionFiles: sessionFiles.length > 0,
       sessionFileCount: sessionFiles.length,
-      envPresence: summarizeEnvPresence(context.envValues ?? {}),
+      contentsShown: false,
+    },
+    envPresence: summarizeEnvPresence(context.envValues ?? {}),
+  };
+
+  if (!sessionDirectory || !sessionDirectory.exists || sessionFiles.length === 0) {
+    return {
+      ok: true,
+      state: 'logged_out',
+      message: statusMessageForState('logged_out'),
+      details: {
+        ...baseDetails,
+        providerProof: buildProviderProofSkipped('NO_LOCAL_SESSION_FILES', 'No local session-like files were found, so provider proof was not attempted.'),
+      },
+    };
+  }
+
+  const proof = await verifyExistingNewAuthSessionWithProvider(context);
+  const state = stateFromProviderProof(proof);
+  return {
+    ok: state === 'authenticated',
+    state,
+    errorCode: state === 'authenticated' ? undefined : proof.reasonCode,
+    message: statusMessageForState(state, proof),
+    details: {
+      ...baseDetails,
+      providerProof: proof,
     },
   };
 }
@@ -1136,29 +1187,177 @@ function flattenPathMetadata(paths: NewAuthPathMetadata[]): NewAuthPathMetadata[
   return paths.flatMap((entry) => [entry, ...(entry.children ? flattenPathMetadata(entry.children) : [])]);
 }
 
-function classifySessionState(paths: NewAuthPathMetadata[], sessionFiles: NewAuthPathMetadata[]): NewAuthSessionState {
-  const configuredDirectory = paths.find((entry) => entry.label === 'Configured session directory');
-  if (!configuredDirectory || !configuredDirectory.exists) {
-    return 'logged_out';
+async function verifyExistingNewAuthSessionWithProvider(context: NewAuthContext): Promise<NewAuthProviderSessionProof> {
+  const config = buildNewAuthIcloudpdConfig(context);
+  if (!config.username) {
+    return buildProviderProofSkipped('NEW_AUTH_USERNAME_MISSING', 'Local session files exist, but provider proof requires the configured iCloud username.');
   }
-  if (sessionFiles.length > 0) {
-    return 'authenticated';
+  if (!config.cookieDir) {
+    return buildProviderProofSkipped('NEW_AUTH_COOKIE_DIR_MISSING', 'Local session files exist, but provider proof requires ICLOUDPD_COOKIE_DIR.');
   }
-  return 'logged_out';
+
+  const executable = await resolveIcloudpdExecutableForContext(context);
+  if (!executable.found) {
+    return buildProviderProofSkipped('ICLOUDPD_NOT_FOUND', 'Local session files exist, but iCloudPD could not be found to verify them.');
+  }
+
+  const args = buildNewAuthSessionProofArgs(config);
+  const result = await runCommand(executable.path ?? 'icloudpd', args, {
+    timeoutMs: Math.min(config.timeoutMs, ICLOUDPD_TIMEOUT_MS),
+    spawnImpl: context.commandSpawner,
+  });
+  const combined = sanitizeCommandOutput(`${result.stdout}\n${result.stderr}`, config);
+  const lower = combined.toLowerCase();
+  const command = `icloudpd ${args.map(sanitizeProviderProofArgForDisplay).join(' ')}`;
+
+  if (result.errorCode === 'ICLOUDPD_TIMEOUT') {
+    return buildProviderProofAttempted({
+      verified: false,
+      reasonCode: 'NEW_AUTH_PROVIDER_PROOF_TIMEOUT',
+      message: 'Local session files exist, but iCloudPD provider proof timed out before verifying them.',
+      command,
+      result,
+      providerOutputPreview: combined,
+    });
+  }
+
+  if (indicatesNewAuthTwoFactorRequired(lower)) {
+    return buildProviderProofAttempted({
+      verified: false,
+      reasonCode: 'NEW_AUTH_PROVIDER_REQUIRES_2FA',
+      message: 'Local session files exist, but iCloudPD provider proof requires a two-factor response before authentication can be verified.',
+      command,
+      result,
+      providerOutputPreview: combined,
+    });
+  }
+
+  if (indicatesNewAuthInvalidCredentials(lower)) {
+    return buildProviderProofAttempted({
+      verified: false,
+      reasonCode: 'NEW_AUTH_INVALID_CREDENTIALS',
+      message: 'Local session files exist, but iCloudPD provider proof reported invalid credentials.',
+      command,
+      result,
+      providerOutputPreview: combined,
+    });
+  }
+
+  if (result.ok && indicatesNewAuthAuthenticated(lower)) {
+    return buildProviderProofAttempted({
+      verified: true,
+      reasonCode: 'NEW_AUTH_PROVIDER_VERIFIED',
+      message: 'iCloudPD provider proof verified the saved local session.',
+      command,
+      result,
+      providerOutputPreview: combined,
+    });
+  }
+
+  return buildProviderProofAttempted({
+    verified: false,
+    reasonCode: result.ok ? 'NEW_AUTH_PROVIDER_PROOF_INCONCLUSIVE' : (result.errorCode ?? 'NEW_AUTH_PROVIDER_PROOF_FAILED'),
+    message: result.ok
+      ? 'Local session files exist, but iCloudPD provider proof did not verify an authenticated session.'
+      : 'Local session files exist, but iCloudPD provider proof failed before verifying them.',
+    command,
+    result,
+    providerOutputPreview: combined,
+  });
 }
 
-function statusMessageForState(state: NewAuthSessionState): string {
+function buildNewAuthSessionProofArgs(config: NewAuthIcloudpdConfig): string[] {
+  const args = [
+    '--username', config.username,
+    '--cookie-directory', config.cookieDir,
+    '--auth-only',
+  ] as string[];
+  if (config.domain) {
+    args.push('--domain', config.domain);
+  }
+  return args;
+}
+
+function buildProviderProofSkipped(reasonCode: string, message: string): NewAuthProviderSessionProof {
+  return {
+    attempted: false,
+    verified: false,
+    reasonCode,
+    message,
+    providerOutputShown: 'none',
+    secretValuesShown: false,
+  };
+}
+
+function buildProviderProofAttempted({
+  verified,
+  reasonCode,
+  message,
+  command,
+  result,
+  providerOutputPreview,
+}: {
+  verified: boolean;
+  reasonCode: string;
+  message: string;
+  command: string;
+  result: CommandResult;
+  providerOutputPreview: string;
+}): NewAuthProviderSessionProof {
+  return {
+    attempted: true,
+    verified,
+    reasonCode,
+    message,
+    command,
+    exitCode: result.exitCode,
+    signal: result.signal,
+    providerOutputPreview: sanitizePreview(providerOutputPreview),
+    providerOutputShown: 'sanitized_preview',
+    secretValuesShown: false,
+  };
+}
+
+function stateFromProviderProof(proof: NewAuthProviderSessionProof): NewAuthSessionState {
+  if (proof.verified) {
+    return 'authenticated';
+  }
+  if (proof.reasonCode === 'NEW_AUTH_PROVIDER_REQUIRES_2FA') {
+    return 'pending_2fa';
+  }
+  if (proof.reasonCode === 'NEW_AUTH_INVALID_CREDENTIALS') {
+    return 'failed';
+  }
+  return 'unverified';
+}
+
+function sanitizeProviderProofArgForDisplay(value: string): string {
+  if (value === '--username' || value === '--cookie-directory' || value === '--auth-only' || value === '--domain') {
+    return value;
+  }
+  if (value.includes('@')) {
+    return redactEmail(value) ?? '[redacted-user]';
+  }
+  if (path.isAbsolute(value) || value.includes(path.sep)) {
+    return '[redacted-path]';
+  }
+  return value;
+}
+
+function statusMessageForState(state: NewAuthSessionState, providerProof?: NewAuthProviderSessionProof): string {
   switch (state) {
     case 'authenticated':
-      return 'Authentication session files were found. Treating the local session as authenticated until Slice 3 adds provider proof.';
+      return 'iCloudPD provider proof verified the saved local session as authenticated.';
     case 'logged_out':
       return 'No active iCloudPD session files were found.';
     case 'pending_2fa':
-      return 'Authentication is waiting for two-factor verification.';
+      return 'iCloudPD provider proof reports that authentication is waiting for two-factor verification.';
     case 'logging_in':
       return 'Authentication is currently in progress.';
     case 'failed':
-      return 'Authentication state check failed.';
+      return 'iCloudPD provider proof reported an authentication failure.';
+    case 'unverified':
+      return providerProof?.message ?? 'Local session files exist, but iCloudPD provider proof has not verified them.';
     default:
       return 'Authentication state is unknown.';
   }

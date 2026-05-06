@@ -20,6 +20,10 @@ assert.doesNotMatch(routes, /createAuthRoutes|authRouteHandlers|\/api\/auth\/(st
 assert.ok(service.includes('export async function startNewAuthLogin'));
 assert.ok(service.includes('export async function submitNewAuthTwoFactor'));
 assert.ok(service.includes('export async function logoutNewAuthSession'));
+assert.ok(service.includes('verifyExistingNewAuthSessionWithProvider'));
+assert.ok(service.includes('buildNewAuthSessionProofArgs'));
+assert.ok(service.includes('NEW_AUTH_PROVIDER_VERIFIED'));
+assert.doesNotMatch(service, /Treating the local session as authenticated until Slice 3 adds provider proof/);
 assert.ok(service.includes('NEW_AUTH_MISSING_CONFIG'));
 assert.ok(service.includes('NEW_AUTH_2FA_CODE_MISSING'));
 assert.ok(service.includes('NEW_AUTH_UNSAFE_SESSION_PATH'));

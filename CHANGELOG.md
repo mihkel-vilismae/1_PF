@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## 2026-05-06 12:58 EEST — v0.3.48
+
+### Added
+- Added NEW AUTH Slice 3 provider-proof status verification for saved local iCloudPD sessions.
+- Added regression coverage proving local session files are not promoted to authenticated without provider verification.
+
+### Changed
+- Changed `/api/auth/new/status` so session-like files now report `unverified` unless iCloudPD provider proof verifies the session.
+- Updated version metadata from v0.3.47 to v0.3.48.
+
+### Fixed
+- Removed the temporary Slice 2 message that treated local session files as authenticated until provider proof existed.
+- Redacted provider-proof command paths and secret-adjacent values from status diagnostics.
+
+### Removed
+- None.
+
 ## 2026-04-29 16:24 EEST — v0.3.47
 
 ### Added

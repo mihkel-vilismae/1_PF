@@ -50,8 +50,9 @@ const statusResult = await getNewAuthStatus({
     pw: 'DO_NOT_EXPOSE_PASSWORD',
   },
 });
-assert.equal(statusResult.ok, true);
-assert.equal(statusResult.state, 'authenticated');
+assert.equal(statusResult.ok, false);
+assert.equal(statusResult.state, 'unverified');
+assert.equal(statusResult.details.providerProof.verified, false);
 assert.doesNotMatch(JSON.stringify(statusResult), /DO_NOT_EXPOSE_PASSWORD|DO_NOT_EXPOSE_COOKIE_CONTENT/);
 
 const filesResult = await getNewAuthSessionFiles({
