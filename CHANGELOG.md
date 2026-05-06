@@ -1,5 +1,24 @@
 # CHANGELOG
 
+## 2026-05-06 15:00 EEST — v0.3.50
+
+### Added
+- Added NEW AUTH Slice 5 interactive 2FA submission flow.
+- Added validation for six‑digit verification codes and single‑letter device indices.
+- Added new error codes `NEW_AUTH_INVALID_2FA_CODE`, `NEW_AUTH_INVALID_2FA_DEVICE_INDEX`, and `NEW_AUTH_NO_ACTIVE_2FA_CHALLENGE` for 2FA submission failures.
+
+### Changed
+- Disabled fallback login spawn for two‑factor submissions; submissions now require an active login attempt.
+- Updated `/api/auth/new/submit-2fa` to return HTTP 400 for invalid or missing input and HTTP 409 for other errors.
+- Updated version metadata from v0.3.49 to v0.3.50.
+
+### Fixed
+- Prevented two‑factor submissions from starting a new login when no active challenge exists.
+- Ensured six‑digit code length is enforced and device index is validated before forwarding to the provider.
+
+### Removed
+- None.
+
 ## 2026-05-06 14:46 EEST — v0.3.49
 
 ### Added

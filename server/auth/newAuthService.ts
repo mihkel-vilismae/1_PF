@@ -304,14 +304,16 @@ export async function startNewAuthLogin(context: NewAuthContext = {}): Promise<R
 }
 
 export async function submitNewAuthTwoFactor(context: NewAuthContext = {}, input: NewAuthTwoFactorInput = {}): Promise<Record<string, unknown>> {
+  // Validate that required config values are present.
   const config = buildNewAuthIcloudpdConfig(context);
   const missing = validateNewAuthLoginConfig(config);
   if (missing.length > 0) {
     return buildNewAuthMissingConfigPayload(missing, 'submit_2fa');
   }
 
-  const code = typeof input.code === 'string' ? input.code.trim() : '';
-  if (!code) {
+  // Normalize input and validate that a value was provided.
+  const raw = typeof input.code === 'string' ? input.code.trim() : '';
+  if (!raw) {
     return {
       ok: false,
       state: 'failed',
@@ -325,53 +327,87 @@ export async function submitNewAuthTwoFactor(context: NewAuthContext = {}, input
     };
   }
 
+  // Determine response type. Only allow a single letter device index or exactly six digits as verification code.
+  const responseType = classifyResponseType(raw);
+  if (responseType === 'verification_code' && !/^\d{6}$/.test(raw)) {
+    return {
+      ok: false,
+      state: 'failed',
+      errorCode: 'NEW_AUTH_INVALID_2FA_CODE',
+      message: 'The verification code must be exactly six digits.',
+      details: {
+        provider: 'icloudpd',
+        responseReceived: false,
+        secretsShown: false,
+      },
+    };
+  }
+  if (responseType === 'device_index' && !/^[a-z]$/i.test(raw)) {
+    return {
+      ok: false,
+      state: 'failed',
+      errorCode: 'NEW_AUTH_INVALID_2FA_DEVICE_INDEX',
+      message: 'The device index must be a single letter.',
+      details: {
+        provider: 'icloudpd',
+        responseReceived: false,
+        secretsShown: false,
+      },
+    };
+  }
+  if (responseType === 'unknown') {
+    return {
+      ok: false,
+      state: 'failed',
+      errorCode: 'NEW_AUTH_INVALID_2FA_CODE',
+      message: 'Two-factor authentication input must be either a six-digit code or a device index letter.',
+      details: {
+        provider: 'icloudpd',
+        responseReceived: false,
+        secretsShown: false,
+      },
+    };
+  }
+
+  // Only allow submissions if an interactive login attempt is active.
+  const activeAttempt = getActiveNewAuthAttempt();
+  if (!activeAttempt) {
+    return {
+      ok: false,
+      state: 'failed',
+      errorCode: 'NEW_AUTH_NO_ACTIVE_2FA_CHALLENGE',
+      message: 'There is no active two-factor authentication challenge in progress. Start a login first.',
+      details: {
+        provider: 'icloudpd',
+        responseReceived: false,
+        secretsShown: false,
+      },
+    };
+  }
+
+  // Submit the response to the active attempt.
+  activeAttempt.child.stdin.write(`${raw}\n`);
   const messages = {
     successMessage: 'iCloudPD 2FA follow-up command completed and the local session was verified.',
     startedMessage: 'iCloudPD 2FA follow-up command completed, but authenticated session proof was not strong enough to report success.',
   };
+  const mapped = await waitForInteractiveNewAuthResult(activeAttempt, messages);
 
-  const activeAttempt = getActiveNewAuthAttempt();
-  if (activeAttempt) {
-    activeAttempt.child.stdin.write(`${code}\n`);
-    const mapped = await waitForInteractiveNewAuthResult(activeAttempt, messages);
-    return addTwoFactorResponseHiddenFlag(appendStructuredEvents(mapped, [
+  return addTwoFactorResponseHiddenFlag(
+    appendStructuredEvents(mapped, [
       buildStructuredEvent({
         operation: 'submit_2fa',
         phase: 'response_submitted',
         stateBefore: 'pending_2fa',
-        stateAfter: typeof mapped.state === 'string' ? mapped.state : 'unknown',
-        promptKind: promptKindForResponseType(classifyResponseType(code)),
-        responseType: classifyResponseType(code),
+        stateAfter: typeof mapped.state === 'string' ? (mapped.state as string) : 'unknown',
+        promptKind: promptKindForResponseType(responseType),
+        responseType,
         endpoint: 'POST /api/auth/new/submit-2fa',
         message: 'Submitted two-factor response to active iCloudPD process.',
         providerOutputShown: 'none',
       }),
-    ]));
-  }
-
-  const executable = await resolveIcloudpdExecutableForContext(context);
-  if (!executable.found) {
-    return buildNewAuthProviderUnavailablePayload('ICLOUDPD_NOT_FOUND', 'iCloudPD executable was not found on PATH.');
-  }
-
-  await mkdir(config.cookieDir as string, { recursive: true });
-  const beforeSessionEvidence = collectNewAuthSessionEvidence(config);
-  const result = await runCommand(executable.path ?? 'icloudpd', buildNewAuthLoginArgs(config), { timeoutMs: config.timeoutMs, stdinText: `${code}\n`, spawnImpl: context.commandSpawner });
-  const mapped = mapNewAuthCommandResult(result, config, messages, beforeSessionEvidence);
-
-  return addTwoFactorResponseHiddenFlag(appendStructuredEvents(mapped, [
-    buildStructuredEvent({
-      operation: 'submit_2fa',
-      phase: 'response_submitted',
-      stateBefore: beforeSessionEvidence.hasSessionFiles ? 'authenticated' : 'pending_2fa',
-      stateAfter: typeof mapped.state === 'string' ? mapped.state : 'unknown',
-      promptKind: promptKindForResponseType(classifyResponseType(code)),
-      responseType: classifyResponseType(code),
-      endpoint: 'POST /api/auth/new/submit-2fa',
-      message: 'Submitted two-factor response to iCloudPD command process.',
-      providerOutputShown: 'none',
-    }),
-  ]));
+    ]),
+  );
 }
 
 export async function logoutNewAuthSession(context: NewAuthContext = {}): Promise<Record<string, unknown>> {

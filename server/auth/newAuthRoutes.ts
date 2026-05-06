@@ -83,7 +83,15 @@ function statusCodeForPayload(payload: Record<string, unknown>): number {
   if (payload.ok === true || payload.state === 'pending_2fa') {
     return 200;
   }
-  if (payload.errorCode === 'NEW_AUTH_MISSING_CONFIG' || payload.errorCode === 'NEW_AUTH_2FA_CODE_MISSING' || payload.errorCode === 'NEW_AUTH_UNSAFE_SESSION_PATH') {
+  if (
+    payload.errorCode === 'NEW_AUTH_MISSING_CONFIG' ||
+    payload.errorCode === 'NEW_AUTH_2FA_CODE_MISSING' ||
+    payload.errorCode === 'NEW_AUTH_INVALID_2FA_CODE' ||
+    payload.errorCode === 'NEW_AUTH_INVALID_2FA_DEVICE_INDEX' ||
+    payload.errorCode === 'NEW_AUTH_NO_ACTIVE_2FA_CHALLENGE' ||
+    payload.errorCode === 'NEW_AUTH_UNSAFE_SESSION_PATH'
+  ) {
+    // Treat configuration problems and invalid 2FA submissions as bad requests (400).
     return 400;
   }
   if (payload.errorCode === 'ICLOUDPD_NOT_FOUND') {
