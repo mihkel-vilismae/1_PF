@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This category consolidates non-feature support documentation that remains operationally useful: run/setup notes, auth/operator guidance, documentation workflow governance, inventory references, and reduced archive orientation.
+This category consolidates non-feature support documentation that remains operationally useful: run/setup notes, auth/operator guidance, documentation workflow governance, default project reference checklists, inventory references, and reduced archive orientation.
 
 ## Absorbed source docs
 
@@ -33,6 +33,7 @@ Canonical files in this category:
 | `main_readme.md` | category index and migration map | index-only |
 | `operator_setup_and_auth_notes.md` | run/setup/auth practical notes | operator support only |
 | `documentation_workflow_and_inventory.md` | workflow, inventory, consolidation tracking | process governance only |
+| `default_project_settings_and_elements_checklist.md` | ideal default project settings, files, workflows, and quality gates | aspirational/reference only; not current implementation status or active backlog by itself |
 | `archive_and_reference_material.md` | reduced archive/reference orientation | explicitly non-authoritative |
 
 Authority limits for this category:
@@ -42,6 +43,7 @@ Authority limits for this category:
 3. `VERSIONING_AND_CHANGELOG_POLICY.md` remains active governance for version/changelog workflow.
 4. `HOW_TO_RUN.md` remains active run guidance while present.
 5. Reconciliation reports are audit/reference support, not direct runtime behavior authority.
+6. The default project settings checklist is an ideal/reference checklist; unchecked or missing items require separate promotion before they become implementation tasks.
 
 ## Conflict / reduction notes
 
@@ -57,4 +59,5 @@ Authority limits for this category:
 | VISION_SPEC authority/readme/reconciliation docs | merged (authority constraints and conflicts retained) | `main_readme.md`, `documentation_workflow_and_inventory.md` |
 | Auth handoff/manual/session docs | merged and deduplicated | `operator_setup_and_auth_notes.md` |
 | `active_workflow_docs/*` inventory/governance docs | merged and reduced | `documentation_workflow_and_inventory.md` |
+| User-supplied default project checklist | added as reference | `default_project_settings_and_elements_checklist.md` |
 | `OLD_DOCS/*`, older reconciliation slices, and workflow evidence backlog | reduced to reference-only summary | `archive_and_reference_material.md` |

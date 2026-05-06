@@ -17,7 +17,7 @@ Implementation status in this documentation set is derived only from documentati
 | `vision_spec_docs` | Product vision, normative specs, architecture intent, dashboard/auth/pipeline contracts. | `docs/categorized/vision_spec_docs/main_readme.md` |
 | `current_implementation_status_docs` | Documentation-derived current status, button/view verification evidence, known gaps. | `docs/categorized/current_implementation_status_docs/main_readme.md` |
 | `task_documentation_still_to_implement` | Still-actionable implementation, verification, and reconciliation tasks that do not conflict with vision/spec authority. | `docs/categorized/task_documentation_still_to_implement/main_readme.md` |
-| `other_documentation` | Operator notes, run/setup guidance, documentation workflow, archive/reference material. | `docs/categorized/other_documentation/main_readme.md` |
+| `other_documentation` | Operator notes, run/setup guidance, documentation workflow, default project checklist, archive/reference material. | `docs/categorized/other_documentation/main_readme.md` |
 
 ## Authority rules
 
@@ -64,8 +64,15 @@ docs/
       main_readme.md
       operator_setup_and_auth_notes.md
       documentation_workflow_and_inventory.md
+      default_project_settings_and_elements_checklist.md
       archive_and_reference_material.md
 ```
+
+## Additional repo-local reference docs
+
+| Document | Scope | Authority limit |
+|---|---|---|
+| `docs/categorized/other_documentation/default_project_settings_and_elements_checklist.md` | User-supplied checklist of ideal default project settings, files, workflows, and quality gates. | Aspirational/reference only; it does not assert that this repository currently implements every item and does not create active implementation tasks unless separately promoted. |
 
 ## Global old-to-new migration map
 

@@ -42,6 +42,10 @@ Capture documentation governance workflow rules, inventory strategy, and source-
 | Reconciliation outcomes | final reconciliation reports + slice findings | preserved as audit notes, not runtime authority |
 | Version/changelog governance | versioning policy | preserved as active governance reference |
 
+### Default project checklist
+
+The checklist in `default_project_settings_and_elements_checklist.md` is a repo-local reference for ideal default project settings, files, workflows, and quality gates. Treat it as guidance until a specific item is separately promoted into an active implementation task or verified as already present.
+
 ## Conflict / reduction notes
 
 - Conflict retained: bundle-style ranking in `VISION_SPEC_readme.md` can elevate chat addenda, but category governance defaults to authority-map tiering unless explicit promotion exists.
