@@ -83,6 +83,24 @@
 ### Removed
 - None.
 
+## 2026-05-06 15:50 EEST — v0.3.55
+
+### Added
+- Added NEW AUTH Slice 10 final audit and closure. Completed all remaining slices and documentation updates for the new authentication system.
+- Added a final audit report describing the endpoints, states, safety considerations, and usage guidelines.
+
+### Changed
+- Verified that all NEW AUTH controls call only `/api/auth/new/*` endpoints and that old auth endpoints remain intact.
+- Audited secret safety to ensure passwords, two‑factor codes, cookies, and session contents are never exposed in logs, UI, or tests.
+- Audited authentication truth: sessions are authenticated only after provider proof or test‑download proof; local session files alone are never trusted.
+- Updated version metadata from v0.3.54 to v0.3.55.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
 ## 2026-05-06 14:46 EEST — v0.3.49
 
 ### Added
