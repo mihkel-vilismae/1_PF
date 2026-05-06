@@ -6,14 +6,17 @@ import {
   getOperationSupportLevel,
   SCHEDULER_OPERATION_SUPPORT,
   SCHEDULER_SUPPORT_LEVELS,
+  SCHEDULER_TARGETS,
   type SchedulerCapability,
   type SchedulerOperation,
   type SchedulerSupportLevel,
+  type SchedulerTarget,
 } from '../../../shared/schedulerPlatformCapabilities.ts';
 
 export const RUNTIME_TRUTH_SEED_PATH = 'conf/runtime-truth.json';
 
 export type SchedulerActionKey = 'install-cron' | 'check-cron' | 'print-cron';
+export type SchedulerTargetActionKey = 'select-scheduler-target-windows' | 'select-scheduler-target-raspberry';
 
 export type RuntimeTruthSeed = typeof runtimeTruthSeed & {
   sourceOfTruth?: string;
@@ -58,6 +61,11 @@ const SCHEDULER_ACTION_OPERATION_MAP: Record<SchedulerActionKey, SchedulerOperat
   'print-cron': SCHEDULER_OPERATION_SUPPORT.print,
 };
 
+export const SCHEDULER_TARGET_ACTION_MAP: Record<SchedulerTargetActionKey, SchedulerTarget> = {
+  'select-scheduler-target-windows': SCHEDULER_TARGETS.windowsCronEmulator,
+  'select-scheduler-target-raspberry': SCHEDULER_TARGETS.raspberryRealCrontab,
+};
+
 function isSchedulerActionKey(action: string): action is SchedulerActionKey {
   return Object.hasOwn(SCHEDULER_ACTION_OPERATION_MAP, action);
 }
@@ -86,6 +94,13 @@ export function buildSchedulerReadyMessage(capability: SchedulerCapability | nul
   const label = capability?.profileLabel ?? 'current platform';
   const support = capability?.supportLevel ?? 'unknown';
   return `Scheduler controls are ready to call legacy /api/init/cron/* endpoints for ${label} (${support}).`;
+}
+
+export function buildInitialSchedulerTarget(): SchedulerTarget {
+  const capability = buildInitialSchedulerCapability();
+  return capability.schedulerTarget === SCHEDULER_TARGETS.raspberryRealCrontab
+    ? SCHEDULER_TARGETS.raspberryRealCrontab
+    : SCHEDULER_TARGETS.windowsCronEmulator;
 }
 
 export function buildInitialTruthState(): RuntimeTruthSeed {
@@ -191,6 +206,9 @@ function createHistoryId(): string {
 export function createInitialState() {
   const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   const schedulerCapability = buildInitialSchedulerCapability();
+  const selectedSchedulerTarget = schedulerCapability.schedulerTarget === SCHEDULER_TARGETS.raspberryRealCrontab
+    ? SCHEDULER_TARGETS.raspberryRealCrontab
+    : SCHEDULER_TARGETS.windowsCronEmulator;
   return {
     activeView: 'A',
     inspectMode: false,
@@ -257,6 +275,7 @@ export function createInitialState() {
       '2A': null,
       '3A': null,
     },
+    selectedSchedulerTarget,
     initCapabilities: {
       scheduler: schedulerCapability,
     },

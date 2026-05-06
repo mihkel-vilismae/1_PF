@@ -10,11 +10,19 @@ export const SCHEDULER_OPERATION_SUPPORT = Object.freeze({
   print: 'print',
 });
 
+export const SCHEDULER_TARGETS = Object.freeze({
+  windowsCronEmulator: 'windows-cron-emulator',
+  raspberryRealCrontab: 'raspberry-real-crontab',
+});
+
 export type SchedulerSupportLevel =
   (typeof SCHEDULER_SUPPORT_LEVELS)[keyof typeof SCHEDULER_SUPPORT_LEVELS];
 
 export type SchedulerOperation =
   (typeof SCHEDULER_OPERATION_SUPPORT)[keyof typeof SCHEDULER_OPERATION_SUPPORT];
+
+export type SchedulerTarget =
+  (typeof SCHEDULER_TARGETS)[keyof typeof SCHEDULER_TARGETS];
 
 export type SchedulerCapabilityInput = {
   runtimePlatform?: string | null;
@@ -30,7 +38,7 @@ export type SchedulerCapability = {
   profileId: string;
   profileLabel: string;
   platformFamily: string;
-  schedulerTarget: string;
+  schedulerTarget: SchedulerTarget | string;
   schedulerMode: string;
   supportLevel: SchedulerSupportLevel;
   operationSupport: Record<string, SchedulerSupportLevel>;
@@ -46,8 +54,8 @@ const CAPABILITY_PROFILES = Object.freeze({
     profileId: 'windows11',
     profileLabel: 'Windows 11',
     platformFamily: 'windows',
-    schedulerTarget: 'windows-task-scheduler',
-    schedulerMode: 'bootstrap-host',
+    schedulerTarget: SCHEDULER_TARGETS.windowsCronEmulator,
+    schedulerMode: 'cron-emulator-process',
     supportLevel: SCHEDULER_SUPPORT_LEVELS.supported,
     operationSupport: {
       [SCHEDULER_OPERATION_SUPPORT.install]: SCHEDULER_SUPPORT_LEVELS.supported,
@@ -56,27 +64,27 @@ const CAPABILITY_PROFILES = Object.freeze({
     },
     notes: [
       'Legacy /api/init/cron/* route names remain in place for frontend compatibility.',
-      'Windows uses an AtLogOn Task Scheduler task that starts one repo-local scheduler host.',
-      'The scheduler host, not Task Scheduler repetition, preserves the documented 5s/5s/5s/15s cadence.',
-      'The host currently reports heartbeat/tick state only; runtime services remain future work.',
+      'Windows uses the repo-local tools/CronEmulator project as the cron job runner.',
+      'CronEmulator is launched as an external process; its source is not modified by this dashboard integration.',
+      'Windows cron emulation is a development/operator target and must not be presented as Unix cron parity.',
     ],
   },
   raspberryPiOs: {
     profileId: 'raspberry-pi-os',
     profileLabel: 'Raspberry Pi OS',
     platformFamily: 'linux',
-    schedulerTarget: 'unix-cron',
+    schedulerTarget: SCHEDULER_TARGETS.raspberryRealCrontab,
     schedulerMode: 'native-cron',
-    supportLevel: SCHEDULER_SUPPORT_LEVELS.deferred,
+    supportLevel: SCHEDULER_SUPPORT_LEVELS.supported,
     operationSupport: {
-      [SCHEDULER_OPERATION_SUPPORT.install]: SCHEDULER_SUPPORT_LEVELS.deferred,
+      [SCHEDULER_OPERATION_SUPPORT.install]: SCHEDULER_SUPPORT_LEVELS.supported,
       [SCHEDULER_OPERATION_SUPPORT.status]: SCHEDULER_SUPPORT_LEVELS.supported,
       [SCHEDULER_OPERATION_SUPPORT.print]: SCHEDULER_SUPPORT_LEVELS.supported,
     },
     notes: [
       'Legacy /api/init/cron/* route names remain in place for frontend compatibility.',
-      'A Unix-style cron target is defined for Raspberry Pi OS alignment, but install wiring is not implemented yet in this repository.',
-      'Scheduler support is intentionally deferred on this platform until a real install/status/print implementation is added.',
+      'Raspberry Pi OS uses real user crontab entries managed inside a project-owned block.',
+      'Crontab install must preserve unrelated user crontab entries.',
     ],
   },
   unsupported: {
@@ -97,6 +105,10 @@ const CAPABILITY_PROFILES = Object.freeze({
     ],
   },
 });
+
+export function isSchedulerTarget(value: unknown): value is SchedulerTarget {
+  return Object.values(SCHEDULER_TARGETS).includes(value as SchedulerTarget);
+}
 
 export function createSchedulerCapability(input: SchedulerCapabilityInput = {}): SchedulerCapability {
   const runtimePlatform = normalizeRuntimePlatform(input);

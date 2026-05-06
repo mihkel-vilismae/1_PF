@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
+import { renderInitView } from '../dashboard/views/initView.ts';
 import { createRuntimeTruthBehavior } from '../dashboard/services/runtimeTruth/runtimeTruthBehavior.ts';
 import { createInitialState } from '../dashboard/services/runtimeTruth/runtimeTruthState.ts';
-import { createSchedulerCapability } from '../shared/schedulerPlatformCapabilities.ts';
+import { createSchedulerCapability, SCHEDULER_TARGETS } from '../shared/schedulerPlatformCapabilities.ts';
 
 test('3A scheduler actions map to documented endpoints and store scheduler payload state', async () => {
   const originalFetch = global.fetch;
@@ -14,6 +15,7 @@ test('3A scheduler actions map to documented endpoints and store scheduler paylo
     requests.push({ path, method });
 
     if (path === '/api/init/cron/install' && method === 'POST') {
+      assert.equal(JSON.parse(init.body).target, SCHEDULER_TARGETS.windowsCronEmulator);
       return new Response(
         JSON.stringify({
           status: 'warning',
@@ -105,6 +107,57 @@ test('3A scheduler actions map to documented endpoints and store scheduler paylo
 
     assert.equal(harness.state.history[0]?.source, 'SCHEDULER');
     assert.equal(harness.state.activeActions['3A'], undefined);
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+test('3A scheduler target tabs disable inactive controls and persist target selection through backend', async () => {
+  const originalFetch = global.fetch;
+  const requests = [];
+
+  global.fetch = async (path, init = {}) => {
+    const method = init.method ?? 'GET';
+    requests.push({ path, method, body: init.body ? JSON.parse(init.body) : null });
+    if (path === '/api/init/cron/target' && method === 'POST') {
+      const body = JSON.parse(init.body);
+      return new Response(
+        JSON.stringify({
+          status: 'ok',
+          messages: [`Selected scheduler target: ${body.target}.`],
+          selectedTarget: body.target,
+          selection: { selectedTarget: body.target, source: 'request' },
+          schemaVersion: 3,
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      );
+    }
+    throw new Error(`Unexpected request: ${method} ${path}`);
+  };
+
+  try {
+    const harness = createRuntimeTruthHarness();
+    const behavior = createRuntimeTruthBehavior(harness.actions);
+
+    let html = renderInitView(harness.state);
+    assert.match(html, /WINDOWS \(crontab emulator\)/);
+    assert.match(html, /RASPBERRY \(real crontab\)/);
+    assert.match(html, /data-scheduler-target="windows-cron-emulator"[\s\S]*?status-badge--info[\s\S]*?Active/);
+    assert.match(html, /data-scheduler-target="raspberry-real-crontab"[\s\S]*?status-badge--disabled[\s\S]*?Disabled/);
+
+    behavior.runAction('select-scheduler-target-raspberry');
+    await waitFor(() => harness.state.selectedSchedulerTarget === SCHEDULER_TARGETS.raspberryRealCrontab && harness.state.initResults['3A']?.outcome === 'success');
+
+    html = renderInitView(harness.state);
+    assert.match(html, /data-scheduler-target="windows-cron-emulator"[\s\S]*?status-badge--disabled[\s\S]*?Disabled/);
+    assert.match(html, /data-scheduler-target="raspberry-real-crontab"[\s\S]*?status-badge--info[\s\S]*?Active/);
+    assert.deepEqual(requests, [
+      {
+        path: '/api/init/cron/target',
+        method: 'POST',
+        body: { target: SCHEDULER_TARGETS.raspberryRealCrontab },
+      },
+    ]);
   } finally {
     global.fetch = originalFetch;
   }

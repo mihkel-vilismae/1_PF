@@ -1,7 +1,9 @@
 import { requestJson, type ApiResponseWithMeta } from './apiClient.ts';
 import {
   SCHEDULER_OPERATION_SUPPORT,
+  SCHEDULER_TARGETS,
   type SchedulerOperation,
+  type SchedulerTarget,
 } from '../../shared/schedulerPlatformCapabilities.ts';
 
 type InitEndpoint = {
@@ -22,6 +24,11 @@ export const SCHEDULER_INIT_ENDPOINTS: Readonly<Record<SchedulerOperation, InitE
   [SCHEDULER_OPERATION_SUPPORT.status]: { method: 'GET', path: '/api/init/cron/status' },
   [SCHEDULER_OPERATION_SUPPORT.print]: { method: 'GET', path: '/api/init/cron/print' },
 });
+
+export const SCHEDULER_TARGET_ENDPOINTS = {
+  status: { method: 'GET', path: '/api/init/cron/target' },
+  select: { method: 'POST', path: '/api/init/cron/target' },
+} as const;
 
 export const INIT_ENDPOINTS = {
   verifyEnv: { method: 'POST', path: '/api/init/verify-env' },
@@ -66,22 +73,38 @@ export function recreateEmptyDatabase(confirmation: ConfirmationPayload = {}): P
   });
 }
 
-export function installCron(): Promise<InitEndpointResponse> {
-  return callSchedulerOperation(SCHEDULER_OPERATION_SUPPORT.install);
+export function getCronTarget(): Promise<InitEndpointResponse> {
+  return callInitEndpoint(SCHEDULER_TARGET_ENDPOINTS.status);
 }
 
-export function checkCronStatus(): Promise<InitEndpointResponse> {
-  return callSchedulerOperation(SCHEDULER_OPERATION_SUPPORT.status);
+export function selectCronTarget(target: SchedulerTarget): Promise<InitEndpointResponse> {
+  return callInitEndpoint(SCHEDULER_TARGET_ENDPOINTS.select, {
+    body: { target },
+  });
 }
 
-export function printCron(): Promise<InitEndpointResponse> {
-  return callSchedulerOperation(SCHEDULER_OPERATION_SUPPORT.print);
+export function installCron(options: { target?: SchedulerTarget } = {}): Promise<InitEndpointResponse> {
+  return callSchedulerOperation(SCHEDULER_OPERATION_SUPPORT.install, options);
 }
 
-export function callSchedulerOperation(operation: SchedulerOperation): Promise<InitEndpointResponse> {
+export function checkCronStatus(options: { target?: SchedulerTarget } = {}): Promise<InitEndpointResponse> {
+  return callSchedulerOperation(SCHEDULER_OPERATION_SUPPORT.status, options);
+}
+
+export function printCron(options: { target?: SchedulerTarget } = {}): Promise<InitEndpointResponse> {
+  return callSchedulerOperation(SCHEDULER_OPERATION_SUPPORT.print, options);
+}
+
+export function callSchedulerOperation(
+  operation: SchedulerOperation,
+  options: { target?: SchedulerTarget } = {},
+): Promise<InitEndpointResponse> {
   const endpoint = SCHEDULER_INIT_ENDPOINTS[operation];
   if (!endpoint) {
     throw new Error(`Unsupported scheduler operation: ${operation}`);
+  }
+  if (options.target && Object.values(SCHEDULER_TARGETS).includes(options.target)) {
+    return callInitEndpoint(endpoint, { body: { target: options.target } });
   }
   return callInitEndpoint(endpoint);
 }

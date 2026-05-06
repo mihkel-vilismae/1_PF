@@ -8,7 +8,15 @@ For top-level behavioral intent and requirement authority, use:
 
 This file is an implementation audit/tracking document and does not override that high-level authoritative behavior spec.
 
-## Latest Update (Step 2 Wave A queue-backed current-item selection)
+## Latest Update (View A 3A scheduler target split)
+
+- Added explicit 3A scheduler target selection between `WINDOWS (crontab emulator)` and `RASPBERRY (real crontab)`.
+- Windows target now uses `tools/CronEmulator` as an external cron runner without modifying the nested CronEmulator project.
+- Raspberry target now models real user crontab behavior and manages only a marked project-owned block on Linux/Raspberry hosts.
+- Legacy `/api/init/cron/*` route compatibility remains in place, with backend gating so inactive target operations return deferred payloads instead of executing.
+- Added focused frontend/backend tests for tab disabling, selected-target persistence, route compatibility, and inactive-target gating.
+
+## Previous Update (Step 2 Wave A queue-backed current-item selection)
 
 - Added minimal Wave A backend endpoints in `server/index.ts`:
   - `POST /api/runtime/queue/prepare` for Stage 5 idempotent `slideshow_queue` enqueue.
@@ -37,16 +45,16 @@ This file is an implementation audit/tracking document and does not override tha
 - Added a shared scheduler platform/capability model used by both `server/index.ts` and `dashboard` View A state/rendering.
 - Split dashboard inspect tooltip authorship and classifier logic into `dashboard/inspect/*` modules plus JSON-backed copy so `dashboard/app.ts` stays below the local 500-line cap without changing Explain values, Show real vs mock, or Show backend status behavior.
 - Legacy `/api/init/cron/*` route compatibility remains unchanged.
-- Windows 11 profile stays `supported` and continues to use the Task Scheduler bootstrap-host implementation.
-- Raspberry Pi OS profile is now represented explicitly as `deferred` for install (not implemented yet), while status/print return informational capability payloads.
-- The scheduler host still reports heartbeat/tick state only and still does **not** imply real pipeline/playback/screen/recovery service implementation.
+- Windows 11 profile stays `supported` through the selected `windows-cron-emulator` target.
+- Raspberry Pi OS profile is represented by the selected `raspberry-real-crontab` target; real crontab execution is only performed on Linux/Raspberry hosts.
+- The selected scheduler runner still does **not** imply real pipeline/playback/screen/recovery service implementation.
 - Documentation references in this checkout should be read from `docs/OLD_DOCS/*` for current-truth alignment.
 
 ## Summary Table
 
 | Area | Main Files | Purpose | Status | Placeholder Evidence | Real Code Needed | Priority | Blockers |
 |------|------------|---------|--------|----------------------|------------------|----------|----------|
-| A Init | `dashboard/views/initView.ts`, `dashboard/app.ts`, `dashboard/services/runtimeTruth.ts`, `dashboard/services/runtimeTruth/*`, `dashboard/services/initService.ts`, `dashboard/services/apiClient.ts`, `server/index.ts`, `server/scheduler_host.ts`, `server/scripts/sqlite_admin.py`, `server/scripts/windows_task_scheduler.ps1`, `docs/OLD_DOCS/VIEW_A_INIT.md`, `docs/OLD_DOCS/13_FRONTEND_BACKEND_CONTRACT.md` | Prepare configuration, database, and scheduler readiness before tests or real runs. | Partial | A now has real env verification, real SQLite status/inspect/delete/recreate-empty endpoints, destructive-action confirmation, and a shared platform capability model behind legacy cron routes. Windows install/status/print stays real; Raspberry Pi OS install is explicitly deferred. The remaining gap is the absence of real runtime services behind the installed scheduler host. | Wire real runtime services into the scheduler host, decide whether A should preload status on entry, and refine the env/config schema assumptions if product requirements differ from the checked-in `.env`. | High | The scheduler host currently reports tick/heartbeat state only, non-Windows install support is still deferred in the current capability model, and the env verification rules are currently derived from the checked-in `.env` rather than a separately approved config spec. |
+| A Init | `dashboard/views/initView.ts`, `dashboard/app.ts`, `dashboard/services/runtimeTruth.ts`, `dashboard/services/runtimeTruth/*`, `dashboard/services/initService.ts`, `dashboard/services/apiClient.ts`, `server/index.ts`, `server/scheduler_host.ts`, `server/scripts/sqlite_admin.py`, `server/scripts/windows_task_scheduler.ps1`, `docs/OLD_DOCS/VIEW_A_INIT.md`, `docs/OLD_DOCS/13_FRONTEND_BACKEND_CONTRACT.md` | Prepare configuration, database, and scheduler readiness before tests or real runs. | Partial | A now has real env verification, real SQLite status/inspect/delete/recreate-empty endpoints, destructive-action confirmation, and a selected scheduler target model behind legacy cron routes. Windows uses CronEmulator as an external runner; Raspberry uses a real crontab block on Linux/Raspberry hosts. The remaining gap is the absence of real runtime services behind scheduler-triggered jobs. | Wire real runtime services into the scheduler jobs, decide whether A should preload status on entry, and refine the env/config schema assumptions if product requirements differ from the checked-in `.env`. | High | Scheduler runner selection is implemented, but the target worker commands still need real pipeline/playback/screen/recovery services, and the env verification rules are currently derived from the checked-in `.env` rather than a separately approved config spec. |
 | B Test | `dashboard/views/testView.ts`, `dashboard/app.ts`, `dashboard/services/runtimeTruth.ts`, `dashboard/services/runtimeTruth/*`, `dashboard/services/runtimeExecutionService.ts`, `server/index.ts` | Exercise test-only flows for login, staged pipeline runs, playback emulation, and screen simulation without touching real runtime state. | Partial | Current code has real backend calls for B2, individual B3.1-B3.5 stages, B4, and B3 auto-run via `/api/runtime/orchestration/run`. B5 now calls backend-owned `/api/runtime/screen-simulation/*` state/configuration endpoints. The remaining limits are important: Stage 1 download still uses mock/generated-data semantics, B3.4 geocode uses a deterministic placeholder provider, and B5 is simulation-only, not real screen hardware. | Replace mock/generated Stage 1 download and placeholder geocoding only if production behavior is required; add real hardware/screen support only through a separate approved contract. | Medium | The area mixes backend-wired partial runtime stages with simulation-only surfaces, and several contracts depend on backend services or provider choices that are not settled yet. |
 | C Last Run info | `dashboard/views/lastRunView.ts`, `dashboard/app.ts`, `dashboard/services/runtimeTruth.ts`, `dashboard/services/runtimeTruth/*`, `dashboard/services/runtimeExecutionService.ts` | Show the last durable runtime snapshot and offer a controlled restore entry point. | Partial | View C now reads `/api/runtime/orchestration/last` for read-only last-run data and distinguishes backend-loaded, no-run, and failed-load states. `resume-last-run` remains a labeled placeholder action and does not call a restore endpoint. | Define and implement a real administrative restore contract before making the resume button operational. | High | Durable restore/checkpoint behavior is only partially represented by runtime/orchestration state today, and the dashboard restore path is not implemented. |
 | D Running process | `dashboard/views/runningProcessView.ts`, `dashboard/app.ts`, `dashboard/services/runtimeTruth.ts`, `dashboard/services/runtimeTruth/*`, `docs/OLD_DOCS/VIEW_D_RUNNING_PROCESS.md`, `docs/OLD_DOCS/07_PIPELINE_STAGES.md`, `docs/OLD_DOCS/09_CRON_AND_WATCHDOG.md`, `docs/OLD_DOCS/13_FRONTEND_BACKEND_CONTRACT.md` | Preview the intended runtime pipeline and watchdog monitor without mixing it with simulation controls. | Partial | `startRealRun()` still fabricates worker state in memory, there is no polling, and D2/D3 summaries are generated locally rather than read from worker heartbeats. The trigger is now a local `Start simulated runtime preview` button instead of a global topbar action. | Replace local fake runtime state with `/api/runtime/*` projections, add polling/refresh behavior, and expose real worker health plus runtime control paths. | High | There is no runtime monitor backend wired to this view, and the UI only exposes a frontend-only preview start path even though the contract includes `start` and `stop` endpoints. |
@@ -57,7 +65,7 @@ This file is an implementation audit/tracking document and does not override tha
 ## A Init
 
 ### 1. Purpose
-This area is meant to validate installation readiness before any test or real runtime starts. It now includes a repo-local backend slice for env verification and SQLite file operations, frontend confirmation for destructive DB actions, and a Windows Task Scheduler bootstrap path that launches a repo-local scheduler host. The remaining incomplete part is not scheduler installation semantics anymore; it is the absence of real runtime business services behind that host.
+This area is meant to validate installation readiness before any test or real runtime starts. It now includes a repo-local backend slice for env verification and SQLite file operations, frontend confirmation for destructive DB actions, and a selected scheduler target path: Windows uses `tools/CronEmulator` as an external runner, while Raspberry uses a real user crontab block on Linux/Raspberry hosts. The remaining incomplete part is not scheduler target selection anymore; it is the absence of real runtime business services behind the scheduled jobs.
 
 ### 2. Evidence
 
@@ -93,7 +101,7 @@ This area is meant to validate installation readiness before any test or real ru
 
 | Placeholder or Mock Behavior | Evidence | Why It Is Placeholder | Required Real Behavior |
 |------------------------------|----------|-----------------------|------------------------|
-| The installed scheduler host is still a timing shell and does not yet call real pipeline, playback, screen, or recovery services. | `server/scheduler_host.ts`; `server/index.ts`; `docs/OLD_DOCS/09_CRON_AND_WATCHDOG.md` | The platform contradiction is resolved for Windows, but 3A does not yet bootstrap real runtime behavior beyond heartbeat and tick reporting. | Wire the scheduler host to the future backend services once those services exist. |
+| The selected scheduler runner does not yet call real pipeline, playback, screen, or recovery services. | `server/index.ts`; `docs/OLD_DOCS/09_CRON_AND_WATCHDOG.md` | The platform target contradiction is resolved, but 3A still cannot prove end-to-end runtime behavior until worker services exist. | Wire scheduled commands to real worker services once those services exist. |
 | A does not yet preload current env/DB/cron status when the view opens. | `dashboard/services/runtimeTruth.ts`; no init preload path in `dashboard/app.ts` | Operators only see results after manual actions, not a current readiness snapshot. | Add initial read endpoints or a refresh action if always-on status visibility is required. |
 | `.env` verification rules are based on the currently checked-in config sample rather than a separately approved specification. | `server/index.ts` env schema; `.env` | The implementation works, but future config changes may drift unless the schema is formally owned. | Promote the current verification schema into an explicit product/config contract. |
 
@@ -127,8 +135,8 @@ This area is meant to validate installation readiness before any test or real ru
 
 | Issue | Evidence | Why It Matters | What Is Needed To Resolve It |
 |-------|----------|----------------|------------------------------|
-| The current scheduler implementation is Windows-specific. | `server/index.ts`; `server/scripts/windows_task_scheduler.ps1` | The repo now has an honest platform target for the current machine, but `/api/init/cron/*` still needs another implementation for Unix-like hosts if cross-platform support matters. | Add a Unix scheduler path or explicitly scope 3A to Windows. |
-| The scheduler host does not yet invoke real runtime services. | `server/scheduler_host.ts`; `docs/09_CRON_AND_WATCHDOG.md` | Install/check/print semantics are real now, but A still cannot prove end-to-end runtime execution. | Implement the underlying pipeline, playback, screen, and recovery services and wire them into the host. |
+| The current scheduler implementation is target-specific. | `server/index.ts`; `tools/CronEmulator`; system `crontab` on Linux/Raspberry | Windows and Raspberry targets are separated and inactive target calls are gated, but each target still depends on local platform tools being available. | Validate CronEmulator availability on Windows and crontab availability on Raspberry during deployment. |
+| The scheduler runner does not yet invoke real runtime services. | `server/index.ts`; `docs/09_CRON_AND_WATCHDOG.md` | Install/check/print semantics are target-aware now, but A still cannot prove end-to-end runtime execution. | Implement the underlying pipeline, playback, screen, and recovery services and wire them into scheduled commands. |
 | `.env` verification rules are based on the current checked-in config, not a separately approved schema. | `server/index.ts` env schema | The endpoint works today, but future config changes need a formally owned contract. | Promote the current env schema into an explicit config spec or reference doc. |
 | A still lacks preload/refresh behavior. | `dashboard/app.ts`; `dashboard/services/runtimeTruth.ts` | Operators must click actions to discover readiness state. | Decide whether A should preload status automatically or expose a dedicated refresh action. |
 
@@ -367,7 +375,7 @@ This area is meant to monitor the real runtime pipeline and watchdog workers usi
 
 ## Extra Notes
 
-- The new 3A implementation is honest for the current Windows host only. I did not add a Unix/macOS scheduler path because the repo and current environment point clearly at Windows Task Scheduler.
-- The scheduler host currently writes heartbeat and tick state under `runtime_data/`; it does not run the real pipeline, playback, screen, or recovery services because those services do not exist in this repository yet.
-- I did not smoke-test the live `install` endpoint against the host Task Scheduler during this audit because it would create a persistent scheduled task on the machine. The install/status/print code paths were checked statically instead.
+- The new 3A implementation is target-aware: Windows uses CronEmulator, and Raspberry uses real crontab only on Linux/Raspberry hosts.
+- The scheduler runner does not run the real pipeline, playback, screen, or recovery services because those services do not exist in this repository yet.
+- I did not smoke-test the live Windows `install` endpoint against CronEmulator during this audit because it would launch a long-running local process. The status/print and inactive-gating code paths were covered by focused tests.
 - A still lacks an automatic preload/refresh path, so operators only see env/DB/scheduler truth after pressing the relevant buttons.

@@ -34,7 +34,7 @@ All rows below are documentation-derived from the listed sources.
 | Backend HTTP server route surface | `IMPLEMENTED` / `PARTIAL` (as documented) | `VISION_SPEC/07-current-implementation-spec.md` | High |
 | SQLite schema baseline | `IMPLEMENTED` (as documented) | `VISION_SPEC/07-current-implementation-spec.md` | High |
 | Runtime truth bridge | `IMPLEMENTED` / `PARTIAL` (as documented) | `VISION_SPEC/07-current-implementation-spec.md` | High |
-| Scheduler API | `PARTIAL` (as documented) | `VISION_SPEC/07-current-implementation-spec.md` | High |
+| Scheduler API | `PARTIAL` (as documented; current code now exposes selected Windows CronEmulator vs Raspberry crontab targets behind legacy `/api/init/cron/*` routes) | `VISION_SPEC/07-current-implementation-spec.md` plus current 3A target split | High |
 | View C recovery view | `PLANNED` (doc wording indicates mock/frontend-only) | `VISION_SPEC/07-current-implementation-spec.md`, `README.md` | High |
 | View D runtime monitor | `PLANNED` (doc wording indicates frontend simulation preview) | `VISION_SPEC/07-current-implementation-spec.md`, `README.md` | High |
 

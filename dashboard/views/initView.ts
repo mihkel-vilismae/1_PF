@@ -4,6 +4,7 @@ import {
   getOperationSupportLevel,
   SCHEDULER_OPERATION_SUPPORT,
   SCHEDULER_SUPPORT_LEVELS,
+  SCHEDULER_TARGETS,
 } from '../../shared/schedulerPlatformCapabilities.ts';
 
 // View A owns this card as 1A-AUTH. Some data-action values still contain "b1" because
@@ -68,19 +69,77 @@ export function renderInitView(state) {
         )}
       </div>
 
-      ${renderCard(
-        '3A',
-        'Scheduler controls',
-        state,
-        '3A',
-          `
-            <button class="button button--secondary" data-action="install-cron"${buildSchedulerButtonAttributes(installSupportLevel)}>Install scheduler</button>
-            <button class="button button--secondary" data-action="check-cron"${buildSchedulerButtonAttributes(statusSupportLevel)}>Check scheduler</button>
-            <button class="button button--secondary" data-action="print-cron"${buildSchedulerButtonAttributes(printSupportLevel)}>Print scheduler</button>
-          `,
-          renderSchedulerCopy(schedulerCapability, installSupportLevel),
-      )}
+      ${renderSchedulerCard(state, schedulerCapability, { installSupportLevel, statusSupportLevel, printSupportLevel })}
 
+    </section>
+  `;
+}
+
+function renderSchedulerCard(state, schedulerCapability, supportLevels) {
+  const selectedTarget = state.selectedSchedulerTarget ?? schedulerCapability?.schedulerTarget ?? SCHEDULER_TARGETS.windowsCronEmulator;
+  return `
+    <article class="card card--scheduler-targets">
+      <header class="card__header">
+        <div>
+          <p class="card__code">3A</p>
+          <h3>Scheduler controls</h3>
+        </div>
+        ${statusBadge(state.statusByKey['3A'])}
+      </header>
+      <p class="card__copy">${renderSchedulerCopy(schedulerCapability, supportLevels.installSupportLevel)}</p>
+      <div class="scheduler-tabs" role="tablist" aria-label="Scheduler target">
+        ${renderSchedulerTabButton('WINDOWS (crontab emulator)', SCHEDULER_TARGETS.windowsCronEmulator, selectedTarget, 'select-scheduler-target-windows')}
+        ${renderSchedulerTabButton('RASPBERRY (real crontab)', SCHEDULER_TARGETS.raspberryRealCrontab, selectedTarget, 'select-scheduler-target-raspberry')}
+      </div>
+      <div class="scheduler-target-grid">
+        ${renderSchedulerTargetPanel({
+          title: 'WINDOWS',
+          subtitle: 'crontab emulator',
+          target: SCHEDULER_TARGETS.windowsCronEmulator,
+          selectedTarget,
+          supportLevels,
+          copy: 'Uses tools/CronEmulator as the Windows cron job runner. The emulator source stays unchanged; the backend launches and inspects it as an external process.',
+        })}
+        ${renderSchedulerTargetPanel({
+          title: 'RASPBERRY',
+          subtitle: 'real crontab',
+          target: SCHEDULER_TARGETS.raspberryRealCrontab,
+          selectedTarget,
+          supportLevels,
+          copy: 'Uses the current user crontab on Raspberry Pi OS/Linux and manages only the project-owned marked block.',
+        })}
+      </div>
+      ${renderResultSurface(state.initResults['3A'])}
+      <div class="log-surface">${renderLogEntries(state.logs['3A'], { sourceKey: '3A' })}</div>
+    </article>
+  `;
+}
+
+function renderSchedulerTabButton(label, target, selectedTarget, action) {
+  const selected = target === selectedTarget;
+  return `<button class="scheduler-tab ${selected ? 'scheduler-tab--active' : ''}" type="button" role="tab" aria-selected="${selected ? 'true' : 'false'}" data-action="${escapeAttribute(action)}">${escapeHtml(label)}</button>`;
+}
+
+function renderSchedulerTargetPanel({ title, subtitle, target, selectedTarget, supportLevels, copy }) {
+  const active = target === selectedTarget;
+  const disabled = active ? '' : ' disabled aria-disabled="true"';
+  const inactiveNote = active ? '' : '<p class="scheduler-target-panel__note">Inactive target. Controls are disabled until this tab is selected.</p>';
+  return `
+    <section class="scheduler-target-panel ${active ? 'scheduler-target-panel--active' : 'scheduler-target-panel--inactive'}" data-scheduler-target="${escapeAttribute(target)}">
+      <div class="scheduler-target-panel__header">
+        <div>
+          <p class="card__code">${escapeHtml(title)}</p>
+          <h4>${escapeHtml(subtitle)}</h4>
+        </div>
+        <span class="status-badge status-badge--${active ? 'info' : 'disabled'}">${active ? 'Active' : 'Disabled'}</span>
+      </div>
+      <p class="card__copy">${escapeHtml(copy)}</p>
+      <div class="button-row">
+        <button class="button button--secondary" data-action="install-cron"${disabled || buildSchedulerButtonAttributes(supportLevels.installSupportLevel)}>Install scheduler</button>
+        <button class="button button--secondary" data-action="check-cron"${disabled || buildSchedulerButtonAttributes(supportLevels.statusSupportLevel)}>Check scheduler</button>
+        <button class="button button--secondary" data-action="print-cron"${disabled || buildSchedulerButtonAttributes(supportLevels.printSupportLevel)}>Print scheduler</button>
+      </div>
+      ${inactiveNote}
     </section>
   `;
 }

@@ -1,10 +1,12 @@
 import {
   INIT_ENDPOINTS,
+  SCHEDULER_TARGET_ENDPOINTS,
   verifyEnv,
   checkDatabaseStatus,
   inspectDatabase,
   deleteDatabase,
   recreateEmptyDatabase,
+  selectCronTarget,
   installCron,
   checkCronStatus,
   printCron,
@@ -12,6 +14,7 @@ import {
 import {
   SCHEDULER_OPERATION_SUPPORT,
   SCHEDULER_SUPPORT_LEVELS,
+  SCHEDULER_TARGETS,
 } from '../../../shared/schedulerPlatformCapabilities.ts';
 import { buildTimelineDetails } from './runtimeTruthActionUtils.ts';
 import {
@@ -30,6 +33,7 @@ import {
   buildInitialSchedulerCapability,
   getSchedulerSupportForAction,
   supportsSchedulerAction,
+  SCHEDULER_TARGET_ACTION_MAP,
 } from './runtimeTruthState.ts';
 
 const SCHEDULER_ACTION_TO_OPERATION = Object.freeze({
@@ -93,6 +97,35 @@ export function createRuntimeTruthBehavior({
   });
 
   function runAction(action, payload = {}) {
+    const schedulerTarget = SCHEDULER_TARGET_ACTION_MAP[action];
+    if (schedulerTarget) {
+      const label = schedulerTarget === SCHEDULER_TARGETS.windowsCronEmulator
+        ? 'WINDOWS (crontab emulator)'
+        : 'RASPBERRY (real crontab)';
+      patchState((draft) => {
+        draft.selectedSchedulerTarget = schedulerTarget;
+        draft.initResults['3A'] = {
+          outcome: 'running',
+          operation: `Select ${label}`,
+          method: SCHEDULER_TARGET_ENDPOINTS.select.method,
+          endpoint: SCHEDULER_TARGET_ENDPOINTS.select.path,
+          receivedAt: stamp(),
+          message: `Selecting scheduler target ${label}...`,
+          request: { body: { target: schedulerTarget } },
+          response: null,
+        };
+      });
+      void databaseActions.runInitAction(
+        '3A',
+        'SCHEDULER',
+        `Select ${label}`,
+        SCHEDULER_TARGET_ENDPOINTS.select,
+        () => selectCronTarget(schedulerTarget),
+        { target: schedulerTarget },
+      );
+      return;
+    }
+
     const schedulerOperation = SCHEDULER_ACTION_TO_OPERATION[action];
     if (schedulerOperation) {
       const schedulerCapability = getState().initCapabilities?.scheduler ?? buildInitialSchedulerCapability();
@@ -125,7 +158,7 @@ export function createRuntimeTruthBehavior({
       'inspect-db': () => databaseActions.runInitAction('2A', 'DB', 'Inspect DB', INIT_ENDPOINTS.inspectDatabase, inspectDatabase),
       'delete-db': () => databaseActions.runInitAction('2A', 'DB', 'Delete DB', INIT_ENDPOINTS.deleteDatabase, deleteDatabase, payload),
       'recreate-db': () => databaseActions.runInitAction('2A', 'DB', 'Recreate DB', INIT_ENDPOINTS.recreateEmptyDatabase, recreateEmptyDatabase, payload),
-      'install-cron': () => databaseActions.runInitAction('3A', 'SCHEDULER', 'Install scheduler', INIT_ENDPOINTS.installCron, installCron),
+      'install-cron': () => databaseActions.runInitAction('3A', 'SCHEDULER', 'Install scheduler', INIT_ENDPOINTS.installCron, installCron, { target: getState().selectedSchedulerTarget }),
       'check-cron': () => databaseActions.runInitAction('3A', 'SCHEDULER', 'Check scheduler', INIT_ENDPOINTS.checkCronStatus, checkCronStatus),
       'print-cron': () => databaseActions.runInitAction('3A', 'SCHEDULER', 'Print scheduler', INIT_ENDPOINTS.printCron, printCron),
       'verify-db-viewer': () => void databaseActions.runDatabaseViewerVerifyAction(),

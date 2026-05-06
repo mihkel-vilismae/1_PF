@@ -154,6 +154,32 @@ test('GET /api/init/cron/status and /api/init/cron/print expose scheduler capabi
   });
 });
 
+test('scheduler target selection gates inactive target operations while preserving cron route compatibility', async () => {
+  await withInitServer(async ({ port }) => {
+    const targetBefore = await requestJson(port, '/api/init/cron/target', { method: 'GET' });
+    assert.equal(targetBefore.status, 200);
+    assert.ok(['windows-cron-emulator', 'raspberry-real-crontab'].includes(targetBefore.json.selectedTarget));
+
+    const selectRaspberry = await requestJson(port, '/api/init/cron/target', {
+      method: 'POST',
+      body: { target: 'raspberry-real-crontab' },
+    });
+    assert.equal(selectRaspberry.status, 200);
+    assert.equal(selectRaspberry.json.selectedTarget, 'raspberry-real-crontab');
+
+    const inactiveWindowsInstall = await requestJson(port, '/api/init/cron/install', {
+      method: 'POST',
+      body: { target: 'windows-cron-emulator' },
+    });
+    assert.equal(inactiveWindowsInstall.status, 200);
+    assert.equal(inactiveWindowsInstall.json.schemaVersion, 3);
+    assert.equal(inactiveWindowsInstall.json.scheduler.routeCompatibility, '/api/init/cron/*');
+    assert.equal(inactiveWindowsInstall.json.scheduler.selectedTarget, 'raspberry-real-crontab');
+    assert.equal(inactiveWindowsInstall.json.scheduler.operationSupportLevel, 'deferred');
+    assert.match(inactiveWindowsInstall.json.messages.join(' '), /inactive/);
+  });
+});
+
 async function withInitServer(run) {
   const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'pf-init-api-step1-'));
   const port = await reservePort();

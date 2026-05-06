@@ -86,6 +86,10 @@ export function createRuntimeTruthDatabaseActions({
             responsePayload,
             draft.initCapabilities.scheduler ?? buildInitialSchedulerCapability(),
           );
+          const selectedTarget = responsePayload?.selectedTarget ?? responsePayload?.scheduler?.selectedTarget;
+          if (typeof selectedTarget === 'string') {
+            draft.selectedSchedulerTarget = selectedTarget;
+          }
         }
       });
       const nextStatus = key === 'E4' && responsePayload?.logging?.active

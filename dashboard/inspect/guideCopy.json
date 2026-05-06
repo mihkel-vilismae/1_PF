@@ -17,6 +17,8 @@
     "inspect-db": "2A",
     "delete-db": "2A",
     "recreate-db": "2A",
+    "select-scheduler-target-windows": "3A",
+    "select-scheduler-target-raspberry": "3A",
     "install-cron": "3A",
     "check-cron": "3A",
     "print-cron": "3A"
@@ -73,6 +75,14 @@
     "recreate-db": {
       "label": "Recreate database",
       "description": "Deletes the current SQLite file if needed, recreates it, and bootstraps canonical schema tables from schema.sql after confirmation."
+    },
+    "select-scheduler-target-windows": {
+      "label": "Select Windows scheduler target",
+      "description": "Selects the Windows CronEmulator target and disables the Raspberry crontab controls."
+    },
+    "select-scheduler-target-raspberry": {
+      "label": "Select Raspberry scheduler target",
+      "description": "Selects the Raspberry real-crontab target and disables the Windows CronEmulator controls."
     },
     "install-cron": {
       "label": "Install scheduler",
@@ -232,6 +242,14 @@
       "state": "real",
       "reason": "Calls the live backend path that recreates the SQLite database file and applies canonical schema tables."
     },
+    "select-scheduler-target-windows": {
+      "state": "real",
+      "reason": "Calls the live scheduler target-selection endpoint and updates the active 3A target."
+    },
+    "select-scheduler-target-raspberry": {
+      "state": "real",
+      "reason": "Calls the live scheduler target-selection endpoint and updates the active 3A target."
+    },
     "install-cron": {
       "state": "real",
       "reason": "Calls the live scheduler-install backend endpoint."
@@ -363,6 +381,14 @@
     "copy-history": {
       "state": "unknown",
       "reason": "Implemented local UI action that writes formatted event history JSON to the clipboard; it is not backend-backed."
+    },
+    "select-scheduler-target-windows": {
+      "state": "real",
+      "reason": "This action is backed by POST /api/init/cron/target and selects the Windows CronEmulator scheduler target."
+    },
+    "select-scheduler-target-raspberry": {
+      "state": "real",
+      "reason": "This action is backed by POST /api/init/cron/target and selects the Raspberry real-crontab scheduler target."
     },
     "verify-db-viewer": {
       "state": "real",

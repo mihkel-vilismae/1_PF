@@ -1,6 +1,7 @@
 import { createServer } from 'node:http';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { spawn } from 'node:child_process';
+import type { ChildProcessWithoutNullStreams } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { promises as fs } from 'node:fs';
 import { existsSync } from 'node:fs';
@@ -19,16 +20,16 @@ import {
   isOperationExecutable,
   SCHEDULER_OPERATION_SUPPORT,
   SCHEDULER_SUPPORT_LEVELS,
+  SCHEDULER_TARGETS,
+  isSchedulerTarget,
 } from '../shared/schedulerPlatformCapabilities.ts';
-import type { SchedulerCapability, SchedulerOperation, SchedulerSupportLevel } from '../shared/schedulerPlatformCapabilities.ts';
+import type { SchedulerCapability, SchedulerOperation, SchedulerSupportLevel, SchedulerTarget } from '../shared/schedulerPlatformCapabilities.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
 const generatedTestDataDirectory = path.join(repoRoot, 'generated_test_data');
 const defaultEnvFilePath = path.join(repoRoot, '.env');
-const windowsTaskSchedulerScriptPath = path.join(__dirname, 'scripts', 'windows_task_scheduler.ps1');
-const schedulerHostPath = path.join(__dirname, 'scheduler_host.ts');
 const schedulerNodeArguments = Object.freeze(['--import', 'tsx']);
 const port = Number(process.env.PORT || 4301);
 const logger = createProjectLogger({
@@ -38,14 +39,22 @@ const logger = createProjectLogger({
   onWriteError: reportLoggerWriteError,
 });
 await logger.initialize().catch(reportLoggerWriteError);
-const schedulerTaskName = 'PhotoFrame-1PF-SchedulerHost';
 const schedulerRuntimeDirectory = path.join(repoRoot, 'runtime_data', 'scheduler');
-const schedulerStatusFilePath = path.join(schedulerRuntimeDirectory, 'host-status.json');
+const schedulerTargetSelectionFilePath = path.join(schedulerRuntimeDirectory, 'selected-target.json');
+const cronEmulatorRoot = path.join(repoRoot, 'tools', 'CronEmulator');
+const cronEmulatorSourcePath = path.join(cronEmulatorRoot, 'src');
+const cronEmulatorDefaultCrontabPath = path.join(cronEmulatorRoot, 'crontab_emulated.txt');
+const cronEmulatorRuntimeDirectory = path.join(schedulerRuntimeDirectory, 'cron-emulator');
+const cronEmulatorLogFilePath = path.join(cronEmulatorRuntimeDirectory, 'cron_calls.jsonl');
+const cronEmulatorHost = '127.0.0.1';
+const cronEmulatorPort = 8765;
+const cronEmulatorStateUrl = `http://${cronEmulatorHost}:${cronEmulatorPort}/api/state`;
+const raspberryCrontabStartMarker = '# BEGIN 1_PF PHOTO FRAME CRON';
+const raspberryCrontabEndMarker = '# END 1_PF PHOTO FRAME CRON';
 const runtimeTruthRelativePath = 'conf/runtime-truth.json';
 const runtimeTruthFilePath = path.join(repoRoot, runtimeTruthRelativePath);
 const authSingleFileDownloadDirectory = path.join(repoRoot, 'runtime_data', 'tmp');
 const schedulerSchemaVersion = 3;
-const schedulerHeartbeatGraceSeconds = 20;
 const schedulerTickSeconds = Object.freeze({
   pipeline: 5,
   playbackWatchdog: 5,
@@ -79,6 +88,7 @@ type JsonObject = Record<string, unknown>;
 type EnvSchemaKind = 'string' | 'path' | 'integer' | 'boolean';
 type EnvCheckSeverity = 'info' | 'warning' | 'error';
 type SchedulerRouteOperation = SchedulerOperation | string;
+type SchedulerTargetSelectionSource = 'file' | 'default' | 'request';
 type RuntimeTruthSource = 'file' | 'request';
 
 interface EnvValues {
@@ -186,6 +196,15 @@ interface ProcessResult {
   stderr: string;
 }
 
+interface SchedulerOperationInput {
+  context: RequestContext;
+  capability: SchedulerCapability;
+  definition: SchedulerDefinition;
+  selection: SchedulerTargetSelection;
+  operation: SchedulerRouteOperation;
+  operationSupportLevel: SchedulerSupportLevel;
+}
+
 interface CopyMockDownloadFilesInput {
   sourceFiles: string[];
   sourceRoot: string;
@@ -222,12 +241,13 @@ interface OrchestrationStageDefinition {
 
 interface SchedulerDefinition {
   routeLabel: string;
-  taskName: string;
+  taskName: string | null;
+  selectedTarget: SchedulerTarget;
   platformTarget: string;
   schedulerMode: string;
   nodePath: string;
   nodeArguments: readonly string[];
-  scriptPath: string;
+  scriptPath: string | null;
   repoRoot: string;
   logDirectory: string;
   runtimeDirectory: string;
@@ -246,6 +266,13 @@ interface SchedulerTaskResult {
   [key: string]: unknown;
 }
 
+interface SchedulerTargetSelection {
+  selectedTarget: SchedulerTarget;
+  source: SchedulerTargetSelectionSource;
+  targetFilePath: string;
+  selectedAt?: string;
+}
+
 interface SchedulerHostStatus {
   observed: boolean;
   state: string;
@@ -259,6 +286,7 @@ interface BuildSchedulerPayloadInput {
   context: RequestContext;
   definition: SchedulerDefinition;
   capability: SchedulerCapability;
+  selection: SchedulerTargetSelection;
   operation: SchedulerRouteOperation;
   operationSupportLevel: SchedulerSupportLevel;
   task: SchedulerTaskResult | null;
@@ -272,8 +300,10 @@ interface DeferredSchedulerPayloadInput {
   context: RequestContext;
   capability: SchedulerCapability;
   definition: SchedulerDefinition;
+  selection: SchedulerTargetSelection;
   operation: SchedulerRouteOperation;
   operationSupportLevel: SchedulerSupportLevel;
+  reason?: string;
 }
 
 interface RuntimeTruthNormalizeOptions {
@@ -312,6 +342,7 @@ interface ScreenSimulationState {
   schemaVersion: number;
 }
 let databaseViewerLoggingSession: DatabaseViewerLoggingSession | null = null;
+let cronEmulatorProcess: ChildProcessWithoutNullStreams | null = null;
 let screenSimulationState: ScreenSimulationState = buildScreenSimulationState(
   {
     pirEnabled: true,
@@ -378,6 +409,8 @@ const routes: Record<string, RouteHandler> = {
   'POST /api/init/database/inspect': inspectDatabaseHandler,
   'POST /api/init/database/delete': deleteDatabaseHandler,
   'POST /api/init/database/recreate-empty': recreateEmptyDatabaseHandler,
+  'GET /api/init/cron/target': cronTargetStatusHandler,
+  'POST /api/init/cron/target': selectCronTargetHandler,
   'POST /api/init/cron/install': installCronHandler,
   'GET /api/init/cron/status': cronStatusHandler,
   'GET /api/init/cron/print': printCronHandler,
@@ -666,16 +699,45 @@ async function recreateEmptyDatabaseHandler({ body, context }) {
   };
 }
 
-async function installCronHandler({ context }) {
-  return buildSchedulerRouteResponse(context, SCHEDULER_OPERATION_SUPPORT.install);
+async function cronTargetStatusHandler({ context }) {
+  const selection = await readSchedulerTargetSelection(context);
+  return {
+    statusCode: 200,
+    payload: buildSchedulerTargetPayload(context, selection, 'Scheduler target selection loaded.'),
+  };
 }
 
-async function cronStatusHandler({ context }) {
-  return buildSchedulerRouteResponse(context, SCHEDULER_OPERATION_SUPPORT.status);
+async function selectCronTargetHandler({ body, context }) {
+  const requestedTarget = normalizeRequestedSchedulerTarget(body?.target);
+  if (!requestedTarget) {
+    throw new HttpError(400, 'invalid_scheduler_target', 'Scheduler target must be windows-cron-emulator or raspberry-real-crontab.', {
+      supportedTargets: Object.values(SCHEDULER_TARGETS),
+    });
+  }
+
+  const selection = await writeSchedulerTargetSelection(context, requestedTarget);
+  return {
+    statusCode: 200,
+    payload: buildSchedulerTargetPayload(context, selection, `Selected scheduler target: ${requestedTarget}.`),
+  };
 }
 
-async function printCronHandler({ context }) {
-  return buildSchedulerRouteResponse(context, SCHEDULER_OPERATION_SUPPORT.print);
+async function installCronHandler({ context, body, url }) {
+  return buildSchedulerRouteResponse(context, SCHEDULER_OPERATION_SUPPORT.install, {
+    requestedTarget: getRequestedSchedulerTarget(url, body),
+  });
+}
+
+async function cronStatusHandler({ context, body, url }) {
+  return buildSchedulerRouteResponse(context, SCHEDULER_OPERATION_SUPPORT.status, {
+    requestedTarget: getRequestedSchedulerTarget(url, body),
+  });
+}
+
+async function printCronHandler({ context, body, url }) {
+  return buildSchedulerRouteResponse(context, SCHEDULER_OPERATION_SUPPORT.print, {
+    requestedTarget: getRequestedSchedulerTarget(url, body),
+  });
 }
 
 async function databaseViewerVerifyHandler({ context }) {
@@ -1419,8 +1481,12 @@ async function updateRuntimeTruthHandler({ body }: Pick<HandlerArgs, 'body'>): P
   };
 }
 
-async function buildSchedulerRouteResponse(context: RequestContext, operation: SchedulerRouteOperation): Promise<HandlerResult> {
-  const scheduler = await resolveSchedulerOperation(context, operation);
+async function buildSchedulerRouteResponse(
+  context: RequestContext,
+  operation: SchedulerRouteOperation,
+  options: { requestedTarget?: SchedulerTarget | null } = {},
+): Promise<HandlerResult> {
+  const scheduler = await resolveSchedulerOperation(context, operation, options);
   return {
     statusCode: 200,
     payload: {
@@ -1892,172 +1958,498 @@ function ensureConfirmed(body: JsonObject, expectedAction: string): void {
   }
 }
 
-async function resolveSchedulerOperation(context: RequestContext, operation: SchedulerRouteOperation) {
-  const capability = createSchedulerCapability({ nodePlatform: context.platform });
+function normalizeRequestedSchedulerTarget(value: unknown): SchedulerTarget | null {
+  if (typeof value !== 'string') {
+    return null;
+  }
+  const normalized = value.trim();
+  return isSchedulerTarget(normalized) ? normalized : null;
+}
+
+function getRequestedSchedulerTarget(url: URL, body: JsonObject): SchedulerTarget | null {
+  return normalizeRequestedSchedulerTarget(url.searchParams.get('target')) ?? normalizeRequestedSchedulerTarget(body?.target);
+}
+
+function defaultSchedulerTargetForContext(context: RequestContext): SchedulerTarget {
+  return context.platform === 'linux' ? SCHEDULER_TARGETS.raspberryRealCrontab : SCHEDULER_TARGETS.windowsCronEmulator;
+}
+
+function runtimePlatformForSchedulerTarget(target: SchedulerTarget): string {
+  return target === SCHEDULER_TARGETS.raspberryRealCrontab ? 'linux' : 'windows';
+}
+
+async function readSchedulerTargetSelection(context: RequestContext): Promise<SchedulerTargetSelection> {
+  try {
+    const raw = await fs.readFile(schedulerTargetSelectionFilePath, 'utf8');
+    const parsed = JSON.parse(raw) as unknown;
+    if (isJsonObject(parsed) && isSchedulerTarget(parsed.selectedTarget)) {
+      return {
+        selectedTarget: parsed.selectedTarget,
+        source: 'file',
+        targetFilePath: schedulerTargetSelectionFilePath,
+        selectedAt: typeof parsed.selectedAt === 'string' ? parsed.selectedAt : undefined,
+      };
+    }
+  } catch {
+    // Missing or invalid selection files fall back to the platform default.
+  }
+
+  return {
+    selectedTarget: defaultSchedulerTargetForContext(context),
+    source: 'default',
+    targetFilePath: schedulerTargetSelectionFilePath,
+  };
+}
+
+async function writeSchedulerTargetSelection(context: RequestContext, selectedTarget: SchedulerTarget): Promise<SchedulerTargetSelection> {
+  const selection = {
+    selectedTarget,
+    selectedAt: new Date().toISOString(),
+    platformAtSelection: context.platform,
+    schemaVersion: schedulerSchemaVersion,
+  };
+  await fs.mkdir(path.dirname(schedulerTargetSelectionFilePath), { recursive: true });
+  await fs.writeFile(schedulerTargetSelectionFilePath, `${JSON.stringify(selection, null, 2)}\n`, 'utf8');
+  return {
+    selectedTarget,
+    source: 'request',
+    targetFilePath: schedulerTargetSelectionFilePath,
+    selectedAt: selection.selectedAt,
+  };
+}
+
+function buildSchedulerTargetPayload(context: RequestContext, selection: SchedulerTargetSelection, message: string): JsonObject {
+  return {
+    status: 'ok',
+    messages: [message],
+    selectedTarget: selection.selectedTarget,
+    selection,
+    platform: context.platform,
+    targets: {
+      [SCHEDULER_TARGETS.windowsCronEmulator]: {
+        label: 'WINDOWS (crontab emulator)',
+        active: selection.selectedTarget === SCHEDULER_TARGETS.windowsCronEmulator,
+        capability: createSchedulerCapability({ runtimePlatform: 'windows' }),
+      },
+      [SCHEDULER_TARGETS.raspberryRealCrontab]: {
+        label: 'RASPBERRY (real crontab)',
+        active: selection.selectedTarget === SCHEDULER_TARGETS.raspberryRealCrontab,
+        capability: createSchedulerCapability({ runtimePlatform: 'linux' }),
+      },
+    },
+    schemaVersion: schedulerSchemaVersion,
+  };
+}
+
+async function resolveSchedulerOperation(
+  context: RequestContext,
+  operation: SchedulerRouteOperation,
+  options: { requestedTarget?: SchedulerTarget | null } = {},
+) {
+  const selection = await readSchedulerTargetSelection(context);
+  const requestedTarget = options.requestedTarget ?? selection.selectedTarget;
+  const capability = createSchedulerCapability({ runtimePlatform: runtimePlatformForSchedulerTarget(requestedTarget) });
   const operationSupportLevel = getOperationSupportLevel(capability, operation);
-  const definition = buildSchedulerDefinition(context, capability);
-  // On non‑Windows platforms, return a deferred (informational) scheduler payload instead of invoking
-  // the Windows Task Scheduler. This prevents misrepresenting Windows behavior as Unix cron and
-  // ensures the frontend receives a safe capability description. See authoritative spec section 3.1.
-  if (capability.platformFamily !== 'windows') {
+  const definition = buildSchedulerDefinition(context, capability, selection);
+
+  if (requestedTarget !== selection.selectedTarget) {
     return buildDeferredSchedulerPayload({
       context,
       capability,
       definition,
+      selection,
       operation,
-      operationSupportLevel,
+      operationSupportLevel: SCHEDULER_SUPPORT_LEVELS.deferred,
+      reason: `${requestedTarget} is inactive because ${selection.selectedTarget} is the selected scheduler target.`,
     });
   }
 
-  // For Windows platforms, continue with existing logic. If the operation is not executable,
-  // return a deferred payload. Otherwise run the Windows scheduler command.
   if (!isOperationExecutable(capability, operation)) {
     return buildDeferredSchedulerPayload({
       context,
       capability,
       definition,
+      selection,
       operation,
       operationSupportLevel,
     });
   }
 
-  if (operation === SCHEDULER_OPERATION_SUPPORT.install) {
-    await fs.mkdir(definition.logDirectory, { recursive: true });
-    await fs.mkdir(definition.runtimeDirectory, { recursive: true });
+  if (selection.selectedTarget === SCHEDULER_TARGETS.windowsCronEmulator) {
+    return resolveWindowsCronEmulatorOperation({
+      context,
+      capability,
+      definition,
+      selection,
+      operation,
+      operationSupportLevel,
+    });
   }
 
-  const task = await runWindowsSchedulerCommand(operation, definition);
-  const host = await readSchedulerHostStatus();
-  return buildSchedulerPayload({
+  if (selection.selectedTarget === SCHEDULER_TARGETS.raspberryRealCrontab) {
+    return resolveRaspberryCrontabOperation({
+      context,
+      capability,
+      definition,
+      selection,
+      operation,
+      operationSupportLevel,
+    });
+  }
+
+  return buildDeferredSchedulerPayload({
     context,
-    definition,
     capability,
+    definition,
+    selection,
     operation,
-    operationSupportLevel,
-    task,
-    host,
-    includeExportedXml: operation === SCHEDULER_OPERATION_SUPPORT.print,
+    operationSupportLevel: SCHEDULER_SUPPORT_LEVELS.unsupported,
+    reason: `No scheduler implementation exists for selected target ${selection.selectedTarget}.`,
   });
 }
 
-function buildSchedulerDefinition(context: RequestContext, capability: SchedulerCapability): SchedulerDefinition {
+function buildSchedulerDefinition(
+  context: RequestContext,
+  capability: SchedulerCapability,
+  selection: SchedulerTargetSelection,
+): SchedulerDefinition {
   const logDirectory = resolveRepoPath(context.envValues.LOG_DIR || DEFAULT_LOG_DIR);
   return {
     routeLabel: capability.routeCompatibility,
-    taskName: schedulerTaskName,
+    taskName: selection.selectedTarget === SCHEDULER_TARGETS.windowsCronEmulator ? 'CronEmulator' : '1_PF user crontab block',
+    selectedTarget: selection.selectedTarget,
     platformTarget: capability.schedulerTarget,
     schedulerMode: capability.schedulerMode,
     nodePath: context.nodePath,
-    nodeArguments: schedulerNodeArguments,
-    scriptPath: schedulerHostPath,
+    nodeArguments: selection.selectedTarget === SCHEDULER_TARGETS.windowsCronEmulator ? [] : schedulerNodeArguments,
+    scriptPath: selection.selectedTarget === SCHEDULER_TARGETS.windowsCronEmulator ? path.join(cronEmulatorRoot, 'src', 'cronemulator', 'app.py') : null,
     repoRoot,
     logDirectory,
     runtimeDirectory: schedulerRuntimeDirectory,
-    statusFilePath: schedulerStatusFilePath,
+    statusFilePath: schedulerTargetSelectionFilePath,
     username: context.username,
     cadence: schedulerTickSeconds,
     notes: capability.notes,
   };
 }
 
-async function runWindowsSchedulerCommand(operation: SchedulerRouteOperation, definition: SchedulerDefinition): Promise<SchedulerTaskResult | null> {
-  const args = [
-    '-NoProfile',
-    '-ExecutionPolicy',
-    'Bypass',
-    '-File',
-    windowsTaskSchedulerScriptPath,
-    '-Operation',
-    operation,
-    '-TaskName',
-    definition.taskName,
-    '-NodePath',
-    definition.nodePath,
-    '-NodeArguments',
-    definition.nodeArguments.join(' '),
-    '-ScriptPath',
-    definition.scriptPath,
-    '-RepoRoot',
-    definition.repoRoot,
-    '-LogDir',
-    definition.logDirectory,
-  ];
-  const { stdout, stderr, code } = await runProcess('powershell.exe', args);
-  const parsed = parseJsonOutput(stdout);
-
-  if (code !== 0) {
-    throw new HttpError(500, 'windows_scheduler_failed', 'Windows Task Scheduler command failed.', {
+async function resolveWindowsCronEmulatorOperation({
+  context,
+  capability,
+  definition,
+  selection,
+  operation,
+  operationSupportLevel,
+}: SchedulerOperationInput) {
+  if (context.platform !== 'win32') {
+    return buildDeferredSchedulerPayload({
+      context,
+      capability,
+      definition,
+      selection,
       operation,
-      stderr: stderr.trim() || null,
-      stdout: stdout.trim() || null,
-      scriptError: parsed?.message || null,
+      operationSupportLevel: SCHEDULER_SUPPORT_LEVELS.deferred,
+      reason: 'Windows CronEmulator runner is only executable from a Windows backend host.',
     });
   }
 
-  return parsed;
+  const toolAvailable = await fileExists(path.join(cronEmulatorSourcePath, 'cronemulator', 'app.py'));
+  if (!toolAvailable) {
+    return buildSchedulerPayload({
+      context,
+      definition,
+      capability,
+      selection,
+      operation,
+      operationSupportLevel,
+      task: buildCronEmulatorTask({ operation, installed: false, running: false }),
+      host: {
+        observed: false,
+        state: 'missing-tool',
+        message: 'tools/CronEmulator is not available in this checkout.',
+      },
+      includeExportedXml: false,
+      overrideStatus: 'error',
+      prependMessages: ['Windows scheduler target is selected, but tools/CronEmulator is missing.'],
+    });
+  }
+
+  await fs.mkdir(cronEmulatorRuntimeDirectory, { recursive: true });
+
+  if (operation === SCHEDULER_OPERATION_SUPPORT.install) {
+    startCronEmulatorProcess();
+    await postCronEmulator('/api/scheduler/start').catch(() => null);
+  }
+
+  const emulatorState = await fetchCronEmulatorState();
+  const running = Boolean(emulatorState && isJsonObject(emulatorState) && emulatorState.scheduler_running === true);
+  const stateObserved = emulatorState !== null;
+  const rawCrontab = await readTextIfExists(cronEmulatorDefaultCrontabPath);
+  const messages = [
+    operation === SCHEDULER_OPERATION_SUPPORT.install
+      ? 'Windows CronEmulator process launch was requested and scheduler start was attempted.'
+      : 'Windows CronEmulator status was inspected through its local dashboard API when available.',
+    stateObserved
+      ? `CronEmulator API responded; scheduler is ${running ? 'running' : 'stopped'}.`
+      : 'CronEmulator API did not respond on 127.0.0.1:8765.',
+  ];
+
+  return buildSchedulerPayload({
+    context,
+    definition,
+    capability,
+    selection,
+    operation,
+    operationSupportLevel,
+    task: buildCronEmulatorTask({
+      operation,
+      installed: true,
+      running,
+      rawCrontab: operation === SCHEDULER_OPERATION_SUPPORT.print ? rawCrontab : undefined,
+      apiState: operation === SCHEDULER_OPERATION_SUPPORT.print || operation === SCHEDULER_OPERATION_SUPPORT.status ? emulatorState : undefined,
+    }),
+    host: {
+      observed: stateObserved,
+      state: stateObserved ? (running ? 'running' : 'stopped') : 'not-observed',
+      statusFilePath: cronEmulatorStateUrl,
+      message: stateObserved ? 'CronEmulator local API responded.' : 'CronEmulator local API is not reachable.',
+      payload: emulatorState ?? undefined,
+    },
+    includeExportedXml: false,
+    overrideStatus: running ? 'ok' : 'warning',
+    prependMessages: messages,
+  });
 }
 
-function parseJsonOutput(raw: string): SchedulerTaskResult | null {
-  const trimmed = raw.trim();
-  if (!trimmed) {
+async function resolveRaspberryCrontabOperation({
+  context,
+  capability,
+  definition,
+  selection,
+  operation,
+  operationSupportLevel,
+}: SchedulerOperationInput) {
+  if (context.platform !== 'linux') {
+    return buildDeferredSchedulerPayload({
+      context,
+      capability,
+      definition,
+      selection,
+      operation,
+      operationSupportLevel: SCHEDULER_SUPPORT_LEVELS.deferred,
+      reason: 'Real Raspberry crontab operations are only executable from a Linux/Raspberry backend host.',
+    });
+  }
+
+  const current = await readUserCrontab();
+  const managedBlock = buildRaspberryCrontabBlock();
+  const installed = current.includes(raspberryCrontabStartMarker) && current.includes(raspberryCrontabEndMarker);
+
+  if (operation === SCHEDULER_OPERATION_SUPPORT.install) {
+    const nextCrontab = upsertManagedCrontabBlock(current, managedBlock);
+    await installUserCrontab(nextCrontab);
+  }
+
+  const latest = operation === SCHEDULER_OPERATION_SUPPORT.install ? await readUserCrontab() : current;
+  const latestInstalled = latest.includes(raspberryCrontabStartMarker) && latest.includes(raspberryCrontabEndMarker);
+
+  return buildSchedulerPayload({
+    context,
+    definition,
+    capability,
+    selection,
+    operation,
+    operationSupportLevel,
+    task: {
+      installed: latestInstalled,
+      supported: true,
+      operation,
+      supportLevel: operationSupportLevel,
+      markers: {
+        start: raspberryCrontabStartMarker,
+        end: raspberryCrontabEndMarker,
+      },
+      managedBlock: operation === SCHEDULER_OPERATION_SUPPORT.print ? managedBlock : undefined,
+      currentCrontab: operation === SCHEDULER_OPERATION_SUPPORT.print ? latest : undefined,
+      previouslyInstalled: installed,
+    },
+    host: {
+      observed: latestInstalled,
+      state: latestInstalled ? 'installed' : 'not-installed',
+      message: latestInstalled
+        ? 'Project-owned crontab block is present in the current user crontab.'
+        : 'Project-owned crontab block is not present in the current user crontab.',
+    },
+    includeExportedXml: false,
+    overrideStatus: latestInstalled ? 'ok' : 'warning',
+    prependMessages: [
+      operation === SCHEDULER_OPERATION_SUPPORT.install
+        ? 'Real Raspberry crontab project block was installed or refreshed.'
+        : 'Real Raspberry crontab state was inspected.',
+      'Only the project-owned crontab block is managed; unrelated user crontab entries are preserved.',
+    ],
+  });
+}
+
+function buildCronEmulatorTask({
+  operation,
+  installed,
+  running,
+  rawCrontab,
+  apiState,
+}: {
+  operation: SchedulerRouteOperation;
+  installed: boolean;
+  running: boolean;
+  rawCrontab?: string;
+  apiState?: unknown;
+}): SchedulerTaskResult {
+  return {
+    installed,
+    supported: true,
+    operation,
+    supportLevel: installed ? SCHEDULER_SUPPORT_LEVELS.supported : SCHEDULER_SUPPORT_LEVELS.unsupported,
+    running,
+    apiUrl: `http://${cronEmulatorHost}:${cronEmulatorPort}`,
+    crontabPath: cronEmulatorDefaultCrontabPath,
+    logFilePath: cronEmulatorLogFilePath,
+    rawCrontab,
+    apiState,
+  };
+}
+
+function startCronEmulatorProcess(): void {
+  if (cronEmulatorProcess && cronEmulatorProcess.exitCode === null && !cronEmulatorProcess.killed) {
+    return;
+  }
+
+  cronEmulatorProcess = spawn(
+    'python',
+    ['-m', 'cronemulator.app', cronEmulatorDefaultCrontabPath, '--log-file', cronEmulatorLogFilePath],
+    {
+      cwd: cronEmulatorRoot,
+      env: {
+        ...process.env,
+        PYTHONPATH: cronEmulatorSourcePath,
+      },
+      stdio: ['ignore', 'pipe', 'pipe'],
+    },
+  );
+
+  cronEmulatorProcess.stdout.on('data', (chunk) => {
+    void logger.info('CronEmulator stdout.', { output: String(chunk).trim() });
+  });
+  cronEmulatorProcess.stderr.on('data', (chunk) => {
+    void logger.error('CronEmulator stderr.', { output: String(chunk).trim() });
+  });
+  cronEmulatorProcess.on('exit', (code, signal) => {
+    void logger.info('CronEmulator process exited.', { code, signal });
+    cronEmulatorProcess = null;
+  });
+}
+
+async function fetchCronEmulatorState(): Promise<unknown | null> {
+  try {
+    const response = await fetchWithTimeout(cronEmulatorStateUrl, { method: 'GET' }, 1200);
+    if (!response.ok) {
+      return null;
+    }
+    return response.json();
+  } catch {
     return null;
   }
+}
+
+async function postCronEmulator(pathname: string): Promise<unknown | null> {
+  const response = await fetchWithTimeout(`http://${cronEmulatorHost}:${cronEmulatorPort}${pathname}`, { method: 'POST' }, 1200);
+  if (!response.ok) {
+    return null;
+  }
+  return response.json();
+}
+
+async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: number): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    return JSON.parse(trimmed) as SchedulerTaskResult;
-  } catch (error) {
-    throw new HttpError(500, 'invalid_scheduler_json', 'Scheduler helper returned invalid JSON.', {
-      stdout: trimmed,
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function readTextIfExists(filePath: string): Promise<string | null> {
+  try {
+    return await fs.readFile(filePath, 'utf8');
+  } catch {
+    return null;
+  }
+}
+
+function buildRaspberryCrontabBlock(): string {
+  return [
+    raspberryCrontabStartMarker,
+    '*/10 * * * * cd "$HOME/1_PF" && npm run api -- --scheduler regular-stage-worker',
+    '* * * * * cd "$HOME/1_PF" && npm run api -- --scheduler playback-worker',
+    '*/3 * * * * cd "$HOME/1_PF" && npm run api -- --scheduler screen-on-off-worker',
+    raspberryCrontabEndMarker,
+  ].join('\n');
+}
+
+async function readUserCrontab(): Promise<string> {
+  const result = await runProcess('crontab', ['-l']);
+  if (result.code === 0) {
+    return result.stdout;
+  }
+  if (/no crontab/i.test(result.stderr)) {
+    return '';
+  }
+  throw new HttpError(500, 'crontab_read_failed', 'Failed to read the current user crontab.', {
+    stderr: result.stderr.trim() || null,
+  });
+}
+
+async function installUserCrontab(content: string): Promise<void> {
+  await fs.mkdir(schedulerRuntimeDirectory, { recursive: true });
+  const tempPath = path.join(schedulerRuntimeDirectory, 'raspberry-crontab.install.tmp');
+  await fs.writeFile(tempPath, content.endsWith('\n') ? content : `${content}\n`, 'utf8');
+  const result = await runProcess('crontab', [tempPath]);
+  await fs.rm(tempPath, { force: true }).catch(() => {});
+  if (result.code !== 0) {
+    throw new HttpError(500, 'crontab_install_failed', 'Failed to install the project-owned crontab block.', {
+      stderr: result.stderr.trim() || null,
     });
   }
 }
 
-async function readSchedulerHostStatus(): Promise<SchedulerHostStatus> {
-  if (!(await fileExists(schedulerStatusFilePath))) {
-    return {
-      observed: false,
-      state: 'not-observed',
-      statusFilePath: schedulerStatusFilePath,
-      message: 'The scheduler host has not written a status file yet.',
-    };
+function upsertManagedCrontabBlock(current: string, managedBlock: string): string {
+  const blockWithNewline = `${managedBlock}\n`;
+  const startIndex = current.indexOf(raspberryCrontabStartMarker);
+  const endIndex = current.indexOf(raspberryCrontabEndMarker);
+  if (startIndex >= 0 && endIndex > startIndex) {
+    const endWithMarker = endIndex + raspberryCrontabEndMarker.length;
+    return `${current.slice(0, startIndex).trimEnd()}\n${blockWithNewline}${current.slice(endWithMarker).trimStart()}`.trim() + '\n';
   }
-
-  try {
-    const raw = await fs.readFile(schedulerStatusFilePath, 'utf8');
-    const payload = JSON.parse(raw) as unknown;
-    const heartbeatAt = isJsonObject(payload)
-      ? typeof payload.heartbeatAt === 'string'
-        ? payload.heartbeatAt
-        : typeof payload.lastTickAt === 'string'
-          ? payload.lastTickAt
-          : null
-      : null;
-    const heartbeatAgeSeconds = heartbeatAt ? Math.max(0, Math.round((Date.now() - Date.parse(heartbeatAt)) / 1000)) : null;
-    return {
-      observed: true,
-      state: heartbeatAgeSeconds !== null && heartbeatAgeSeconds <= schedulerHeartbeatGraceSeconds ? 'running' : 'stale',
-      heartbeatAgeSeconds,
-      statusFilePath: schedulerStatusFilePath,
-      payload,
-    };
-  } catch (error) {
-    return {
-      observed: true,
-      state: 'invalid-status-file',
-      statusFilePath: schedulerStatusFilePath,
-      message: getErrorMessage(error),
-    };
-  }
+  return `${current.trimEnd()}\n\n${blockWithNewline}`.trimStart();
 }
 
-function buildDeferredSchedulerPayload({ context, capability, definition, operation, operationSupportLevel }: DeferredSchedulerPayloadInput) {
+function buildDeferredSchedulerPayload({
+  context,
+  capability,
+  definition,
+  selection,
+  operation,
+  operationSupportLevel,
+  reason,
+}: DeferredSchedulerPayloadInput) {
   const profileLabel = capability.profileLabel || 'current platform';
   const operationLabel = operation.toUpperCase();
   const messages = [
     `${operationLabel} is ${operationSupportLevel} for ${profileLabel} in this repository.`,
-    'No scheduler installation or runtime service wiring was performed by this request.',
+    reason || 'No scheduler installation or runtime service wiring was performed by this request.',
   ];
 
-  if (operation === SCHEDULER_OPERATION_SUPPORT.status || operation === SCHEDULER_OPERATION_SUPPORT.print) {
+  if (!reason && (operation === SCHEDULER_OPERATION_SUPPORT.status || operation === SCHEDULER_OPERATION_SUPPORT.print)) {
     messages[1] = 'This response is informational and reports platform capability state only.';
   }
 
@@ -2065,6 +2457,7 @@ function buildDeferredSchedulerPayload({ context, capability, definition, operat
     context,
     definition,
     capability,
+    selection,
     operation,
     operationSupportLevel,
     task: {
@@ -2088,6 +2481,7 @@ function buildSchedulerPayload({
   context,
   definition,
   capability,
+  selection,
   operation,
   operationSupportLevel,
   task,
@@ -2103,21 +2497,21 @@ function buildSchedulerPayload({
 
   if (operationSupportLevel === SCHEDULER_SUPPORT_LEVELS.supported) {
     if (!installed) {
-      messages.push('Scheduler bootstrap task is not installed for the current Windows user.');
+      messages.push(`Scheduler target ${selection.selectedTarget} is not installed or not reachable.`);
     } else {
-      messages.push('Scheduler bootstrap task is installed through Windows Task Scheduler.');
+      messages.push(`Scheduler target ${selection.selectedTarget} is available.`);
     }
 
     if (hostRunning) {
-      messages.push('The repo-local scheduler host is emitting fresh heartbeats.');
+      messages.push('The selected scheduler runner is reporting an active running state.');
     } else if (host?.observed) {
-      messages.push(`The scheduler host status file is present but not fresh (${host.state}).`);
+      messages.push(`The selected scheduler runner is observable but not running (${host.state}).`);
     } else {
-      messages.push('No scheduler host heartbeat has been observed yet.');
+      messages.push('No selected scheduler runner status has been observed yet.');
     }
   }
 
-  messages.push('Business services for pipeline, playback, screen, and recovery remain future implementation work.');
+  messages.push('Scheduler runner wiring is separate from unfinished pipeline/playback/screen/recovery business services.');
 
   const payload = {
     status,
@@ -2126,6 +2520,8 @@ function buildSchedulerPayload({
     platform: context.platform,
     platformProfile: capability.profileId,
     platformProfileLabel: capability.profileLabel,
+    selectedTarget: selection.selectedTarget,
+    targetSelection: selection,
     schedulerTarget: definition.platformTarget,
     schedulerMode: definition.schedulerMode,
     supportLevel: capability.supportLevel,
@@ -2133,11 +2529,7 @@ function buildSchedulerPayload({
     operationSupportLevel,
     taskName: definition.taskName,
     cadence: definition.cadence,
-    command: {
-      executable: definition.nodePath,
-      arguments: [...definition.nodeArguments, definition.scriptPath, '--repo-root', definition.repoRoot],
-      workingDirectory: definition.repoRoot,
-    },
+    command: buildSchedulerCommandPayload(definition),
     task: task ?? {
       installed: false,
     },
@@ -2167,6 +2559,33 @@ function buildSchedulerPayload({
   }
 
   return payload;
+}
+
+function buildSchedulerCommandPayload(definition: SchedulerDefinition): JsonObject | null {
+  if (definition.selectedTarget === SCHEDULER_TARGETS.windowsCronEmulator) {
+    return {
+      executable: 'python',
+      arguments: ['-m', 'cronemulator.app', cronEmulatorDefaultCrontabPath, '--log-file', cronEmulatorLogFilePath],
+      workingDirectory: cronEmulatorRoot,
+      environment: {
+        PYTHONPATH: cronEmulatorSourcePath,
+      },
+    };
+  }
+
+  if (definition.selectedTarget === SCHEDULER_TARGETS.raspberryRealCrontab) {
+    return {
+      executable: 'crontab',
+      arguments: ['-l'],
+      workingDirectory: definition.repoRoot,
+      managedBlockMarkers: {
+        start: raspberryCrontabStartMarker,
+        end: raspberryCrontabEndMarker,
+      },
+    };
+  }
+
+  return null;
 }
 
 function sendJson(response: ServerResponse, statusCode: number, payload: unknown): void {
