@@ -67,6 +67,22 @@
 ### Removed
 - None.
 
+## 2026-05-06 15:40 EEST — v0.3.54
+
+### Added
+- Added NEW AUTH Slice 9 UI and event-history hardening. Improved button state transitions and clarified prompts for 2FA and login flows.
+- Added structured diagnostics in event history to surface operations, endpoints, reason codes, provider proof, user prompts, and content flags to the user.
+
+### Changed
+- Enhanced UI copy to clearly explain provider installation, local session state, provider proof, 2FA requirements, authenticated state, logged-out state, and test-download results.
+- Updated version metadata from v0.3.53 to v0.3.54.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
 ## 2026-05-06 14:46 EEST — v0.3.49
 
 ### Added
