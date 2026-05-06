@@ -39,6 +39,7 @@ import { renderRunningProcessView } from './views/runningProcessView.ts';
 import { renderDatabaseViewerView } from './views/databaseViewerView.ts';
 
 const app = document.getElementById('app');
+declare const __APP_VERSION__: string;
 const TRANSIT_EVENT_NAME = 'dashboard:transit';
 const COPY_HISTORY_LABEL = 'copy all log';
 let historyCopyStatus: 'idle' | 'copied' | 'failed' = 'idle';
@@ -134,6 +135,7 @@ function render() {
             <h1>${state.currentViewTitle}</h1>
           </div>
           <div class="topbar__actions">
+            <span class="app-version-badge" aria-label="Application version">v${escapeHtml(__APP_VERSION__)}</span>
             <button
               class="button ${state.inspectMode ? 'button--primary' : 'button--secondary'} inspect-toggle"
               type="button"
