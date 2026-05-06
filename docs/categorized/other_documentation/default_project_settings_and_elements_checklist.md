@@ -371,37 +371,37 @@ When code changes are implemented, provide:
 
 ### A. Repository Setup
 
-- [ ] Project folder created.
-- [ ] Git repository initialized.
-- [ ] `.gitignore` added.
-- [ ] Git author configured as `Mihkel Vilismäe (AI-assisted) <mihkel.vilismae@gmail.com>`.
-- [ ] Upstream remote added if known.
+- [x] Project folder created.
+- [x] Git repository initialized.
+- [x] `.gitignore` added.
+- [x] Git author configured as `Mihkel Vilismäe (AI-assisted) <mihkel.vilismae@gmail.com>`.
+- [x] Upstream remote added if known.
 - [ ] If upstream is unknown, repository remains local without fake remote.
-- [ ] Initial commit created.
+- [x] Initial commit created.
 
 ### B. Required Documentation
 
-- [ ] `README.md` created.
-- [ ] `README.md` explains what the project does.
+- [x] `README.md` created.
+- [x] `README.md` explains what the project does.
 - [ ] `README.md` includes install/run/test/package commands.
 - [ ] `README.md` includes expected command results.
-- [ ] `README.md` summarizes visible screens or flows.
-- [ ] `HOW_TO_RUN.md` created.
+- [x] `README.md` summarizes visible screens or flows.
+- [x] `HOW_TO_RUN.md` created.
 - [ ] `HOW_TO_RUN.md` is Windows-first when relevant.
 - [ ] Linux/macOS instructions are included only when applicable.
-- [ ] `CHANGELOG.md` created.
+- [x] `CHANGELOG.md` created.
 - [ ] `main-goal-readme.md` created.
 - [ ] Main project goal is clearly written.
-- [ ] Documentation mentions real vs mock behavior where relevant.
+- [x] Documentation mentions real vs mock behavior where relevant.
 
 ### C. Versioning
 
-- [ ] Initial version selected.
-- [ ] SemVer used where practical.
-- [ ] Version appears in appropriate project metadata.
+- [x] Initial version selected.
+- [x] SemVer used where practical.
+- [x] Version appears in appropriate project metadata.
 - [ ] Visual apps show the current version in the top-right corner where practical.
 - [ ] Visible version badge uses the shared/project metadata version source where practical.
-- [ ] `CHANGELOG.md` includes the initial version entry.
+- [x] `CHANGELOG.md` includes the initial version entry.
 - [ ] Version is updated when functionality changes.
 
 ### D. Start Scripts
@@ -410,53 +410,53 @@ When code changes are implemented, provide:
 - [ ] `start_scripts/start_win.ps1` exists when PowerShell startup logic is needed.
 - [ ] Startup scripts print clear errors when prerequisites are missing.
 - [ ] Startup scripts do not silently fail.
-- [ ] Startup commands are documented in `README.md` and `HOW_TO_RUN.md`.
+- [x] Startup commands are documented in `README.md` and `HOW_TO_RUN.md`.
 
 ### E. Logs
 
-- [ ] `logs/` folder exists.
-- [ ] `logs/error.log` exists.
-- [ ] `logs/debug.log` exists.
-- [ ] `logs/full_log.log` exists.
+- [x] `logs/` folder exists.
+- [x] `logs/error.log` exists.
+- [x] `logs/debug.log` exists.
+- [x] `logs/full_log.log` exists.
 - [ ] Timestamped runtime log pattern is documented: `log_{datetime}.log`.
-- [ ] Runtime errors are written to logs.
-- [ ] Important runtime actions are logged.
+- [x] Runtime errors are written to logs.
+- [x] Important runtime actions are logged.
 
 ### F. Tests
 
-- [ ] `tests/` folder exists when practical.
+- [x] `tests/` folder exists when practical.
 - [ ] Smoke tests exist for startup/basic functionality.
-- [ ] Functional tests exist for core behavior where practical.
+- [x] Functional tests exist for core behavior where practical.
 - [ ] Regression tests are added for fixed bugs.
 - [ ] Test commands are documented.
 - [ ] Tests pass before commit when possible.
 
 ### G. Dashboard / UI Inspection Controls
 
-- [ ] `Explain controls` exists where applicable.
-- [ ] `Explain values` exists where applicable.
-- [ ] `Show real vs mock` exists where applicable.
-- [ ] `Show/Hide backend status` exists where applicable.
-- [ ] UI clearly distinguishes real data from mock/demo data.
+- [x] `Explain controls` exists where applicable.
+- [x] `Explain values` exists where applicable.
+- [x] `Show real vs mock` exists where applicable.
+- [x] `Show/Hide backend status` exists where applicable.
+- [x] UI clearly distinguishes real data from mock/demo data.
 - [ ] UI does not claim backend success without backend confirmation.
 - [ ] Inspect metadata is kept synchronized with actual behavior.
 
 ### H. Real vs Mock Safety
 
-- [ ] Mock/demo behavior is explicitly labeled.
-- [ ] Real/backend-confirmed behavior is explicitly labeled.
+- [x] Mock/demo behavior is explicitly labeled.
+- [x] Real/backend-confirmed behavior is explicitly labeled.
 - [ ] Cached or inferred data is not presented as confirmed truth.
-- [ ] Failure states are visible and honest.
+- [x] Failure states are visible and honest.
 - [ ] No fake success states are shown.
 
 ### I. Packaging
 
 - [ ] `CREATE_TRASNFERABLE.cmd` exists when archive generation is needed.
-- [ ] `scripts/pack_repo_zip.py` or equivalent packaging script exists.
-- [ ] `zip_ignore.json` exists.
-- [ ] Packaging excludes ignored/generated files.
-- [ ] ZIP includes `.git` history when required.
-- [ ] ZIP naming follows `{project_folder}_{creation_datetime}_{VERSION}.zip`.
+- [x] `scripts/pack_repo_zip.py` or equivalent packaging script exists.
+- [x] `zip_ignore.json` exists.
+- [x] Packaging excludes ignored/generated files.
+- [x] ZIP includes `.git` history when required.
+- [x] ZIP naming follows `{project_folder}_{creation_datetime}_{VERSION}.zip`.
 - [ ] Markdown fence safety validation passes before ZIP creation.
 
 ### J. Commit Discipline
