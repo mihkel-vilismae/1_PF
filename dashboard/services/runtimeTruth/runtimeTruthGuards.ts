@@ -6,6 +6,7 @@ export type RuntimeTruthGuardState = {
   activeActions: Record<string, boolean>;
   truth: {
     pipelineActiveKey: string | null;
+    pipelineLockAcquiredAt?: string | null;
     stageLock: string;
     playbackActive: boolean;
     playbackLock: string;
@@ -32,7 +33,8 @@ export type RuntimeTruthGuards = {
   isPipelineBusy: () => boolean;
   startPipelineLock: (key: RuntimeTruthActionKey) => void;
   releasePipelineLock: (key: RuntimeTruthActionKey) => void;
-  rejectWhileBusy: (key: RuntimeTruthActionKey, source: RuntimeTruthHistorySource, message: string) => void;
+  rejectWhileBusy: (key: RuntimeTruthActionKey, source: RuntimeTruthHistorySource, message: string, details?: unknown) => void;
+  rejectPipelineWhileBusy: (key: RuntimeTruthActionKey, source?: RuntimeTruthHistorySource) => void;
   withPlaybackGuard: (fn: RuntimeTruthPlaybackAction) => boolean;
   releasePlaybackGuard: () => void;
   endAction: (key: RuntimeTruthActionKey) => void;
@@ -77,6 +79,7 @@ export function createRuntimeTruthGuards({
   function startPipelineLock(key: RuntimeTruthActionKey): void {
     patchState((draft) => {
       draft.truth.pipelineActiveKey = key;
+      draft.truth.pipelineLockAcquiredAt = new Date().toISOString();
       draft.truth.stageLock = `Pipeline lock held by ${key}`;
     });
   }
@@ -85,15 +88,50 @@ export function createRuntimeTruthGuards({
     patchState((draft) => {
       if (draft.truth.pipelineActiveKey === key) {
         draft.truth.pipelineActiveKey = null;
+        draft.truth.pipelineLockAcquiredAt = null;
         draft.truth.stageLock = `${key} finished and released the pipeline lock`;
       }
     });
   }
 
-  function rejectWhileBusy(key: RuntimeTruthActionKey, source: RuntimeTruthHistorySource, message: string): void {
+  function rejectWhileBusy(key: RuntimeTruthActionKey, source: RuntimeTruthHistorySource, message: string, details?: unknown): void {
     setStatus(key, 'error');
-    pushLog(key, 'error', message);
-    pushHistory(source, 'error', message);
+    pushLog(key, 'error', message, details);
+    pushHistory(source, 'error', message, details);
+  }
+
+  function buildPipelineLockDiagnostics(requestedAction: RuntimeTruthActionKey): {
+    reason: 'pipeline_lock_held';
+    requestedAction: RuntimeTruthActionKey;
+    lockOwner: RuntimeTruthActionKey | null;
+    lockAcquiredAt: string | null;
+    lockAgeSeconds: number | null;
+    selfBlock: boolean;
+    message: string;
+  } {
+    const truth = getState().truth;
+    const lockOwner = truth.pipelineActiveKey;
+    const lockAcquiredAt = truth.pipelineLockAcquiredAt ?? null;
+    const lockAgeSeconds = lockAcquiredAt ? Math.max(0, Math.floor((Date.now() - Date.parse(lockAcquiredAt)) / 1000)) : null;
+    const selfBlock = requestedAction === lockOwner;
+    const message = selfBlock
+      ? `${requestedAction} is already running and cannot be started again.`
+      : `${requestedAction} was blocked because ${lockOwner ?? 'another action'} already holds the pipeline lock.`;
+
+    return {
+      reason: 'pipeline_lock_held',
+      requestedAction,
+      lockOwner,
+      lockAcquiredAt,
+      lockAgeSeconds: Number.isFinite(lockAgeSeconds) ? lockAgeSeconds : null,
+      selfBlock,
+      message,
+    };
+  }
+
+  function rejectPipelineWhileBusy(key: RuntimeTruthActionKey, source: RuntimeTruthHistorySource = 'PIPELINE'): void {
+    const diagnostics = buildPipelineLockDiagnostics(key);
+    rejectWhileBusy(key, source, diagnostics.message, diagnostics);
   }
 
   function withPlaybackGuard(fn: RuntimeTruthPlaybackAction): boolean {
@@ -151,6 +189,7 @@ export function createRuntimeTruthGuards({
     startPipelineLock,
     releasePipelineLock,
     rejectWhileBusy,
+    rejectPipelineWhileBusy,
     withPlaybackGuard,
     releasePlaybackGuard,
     endAction,

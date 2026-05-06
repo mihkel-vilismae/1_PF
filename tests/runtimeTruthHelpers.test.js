@@ -10,6 +10,7 @@ import {
   summarizeInitPayload,
   summarizeRuntimePayload,
 } from '../dashboard/services/runtimeTruth/runtimeTruthActionUtils.ts';
+import { createRuntimeTruthGuards } from '../dashboard/services/runtimeTruth/runtimeTruthGuards.ts';
 import {
   getTruthSignature,
   normalizeTruthSnapshot,
@@ -86,4 +87,71 @@ test('runtimeTruth boot state clears stale persisted runtime locks', () => {
   assert.equal(truth.stageLock, 'Pipeline lock available');
   assert.equal(truth.playbackLock, 'Playback worker lock available');
   assert.equal(truth.screenLock, 'Screen worker lock available');
+});
+
+
+test('runtimeTruth guards expose structured diagnostics for different-action pipeline lock blocks', () => {
+  const state = {
+    activeActions: {},
+    truth: {
+      pipelineActiveKey: 'B3.2',
+      pipelineLockAcquiredAt: '2026-05-06T05:10:53.000Z',
+      stageLock: 'Pipeline lock held by B3.2',
+      playbackActive: false,
+      playbackLock: 'Playback worker lock available',
+      realRunActive: false,
+    },
+  };
+  const logs = [];
+  const history = [];
+  const statuses = {};
+  const guards = createRuntimeTruthGuards({
+    getState: () => state,
+    patchState: (updater) => updater(state),
+    pushHistory: (source, status, message, details) => history.push({ source, status, message, details }),
+    pushLog: (key, level, message, details) => logs.push({ key, level, message, details }),
+    setStatus: (key, status) => { statuses[key] = status; },
+  });
+
+  guards.rejectPipelineWhileBusy('B3.1');
+
+  assert.equal(statuses['B3.1'], 'error');
+  assert.equal(history[0].message, 'B3.1 was blocked because B3.2 already holds the pipeline lock.');
+  assert.equal(history[0].details.reason, 'pipeline_lock_held');
+  assert.equal(history[0].details.requestedAction, 'B3.1');
+  assert.equal(history[0].details.lockOwner, 'B3.2');
+  assert.equal(history[0].details.lockAcquiredAt, '2026-05-06T05:10:53.000Z');
+  assert.equal(typeof history[0].details.lockAgeSeconds, 'number');
+  assert.equal(history[0].details.selfBlock, false);
+  assert.deepEqual(logs[0].details, history[0].details);
+});
+
+test('runtimeTruth guards expose self-block pipeline lock diagnostics', () => {
+  const state = {
+    activeActions: {},
+    truth: {
+      pipelineActiveKey: 'B3.2',
+      pipelineLockAcquiredAt: '2026-05-06T05:10:53.000Z',
+      stageLock: 'Pipeline lock held by B3.2',
+      playbackActive: false,
+      playbackLock: 'Playback worker lock available',
+      realRunActive: false,
+    },
+  };
+  const history = [];
+  const guards = createRuntimeTruthGuards({
+    getState: () => state,
+    patchState: (updater) => updater(state),
+    pushHistory: (source, status, message, details) => history.push({ source, status, message, details }),
+    pushLog: () => {},
+    setStatus: () => {},
+  });
+
+  guards.rejectPipelineWhileBusy('B3.2');
+
+  assert.equal(history[0].message, 'B3.2 is already running and cannot be started again.');
+  assert.equal(history[0].details.reason, 'pipeline_lock_held');
+  assert.equal(history[0].details.requestedAction, 'B3.2');
+  assert.equal(history[0].details.lockOwner, 'B3.2');
+  assert.equal(history[0].details.selfBlock, true);
 });

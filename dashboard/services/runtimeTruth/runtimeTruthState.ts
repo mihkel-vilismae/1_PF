@@ -20,6 +20,7 @@ export type SchedulerTargetActionKey = 'select-scheduler-target-windows' | 'sele
 
 export type RuntimeTruthSeed = typeof runtimeTruthSeed & {
   sourceOfTruth?: string;
+  pipelineLockAcquiredAt?: string | null;
 };
 
 export type AuthButtonState = {
@@ -109,6 +110,7 @@ export function buildInitialTruthState(): RuntimeTruthSeed {
     truth.sourceOfTruth = RUNTIME_TRUTH_SEED_PATH;
   }
   truth.pipelineActiveKey = null;
+  truth.pipelineLockAcquiredAt = null;
   truth.playbackActive = false;
   truth.realRunActive = false;
   truth.stageLock = 'Pipeline lock available';

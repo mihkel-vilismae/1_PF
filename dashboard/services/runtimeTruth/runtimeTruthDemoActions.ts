@@ -87,7 +87,7 @@ export function createRuntimeTruthDemoActions({
     endAction,
     guardAction,
     isPipelineBusy,
-    rejectWhileBusy,
+    rejectPipelineWhileBusy,
     releasePipelineLock,
     releasePlaybackGuard,
     startPipelineLock,
@@ -283,8 +283,7 @@ export function createRuntimeTruthDemoActions({
 
   function runPipelineStage(key, message, onComplete = () => {}) {
     if (isPipelineBusy()) {
-      const owner = getState().truth.pipelineActiveKey;
-      rejectWhileBusy(key, 'PIPELINE', `${key} was blocked because ${owner} already holds the pipeline lock.`);
+      rejectPipelineWhileBusy(key);
       return;
     }
     startPipelineLock(key);
@@ -307,8 +306,7 @@ export function createRuntimeTruthDemoActions({
 
   function runBackendPipelineStage({ key, operation, endpoint, execute, onComplete = () => {} }) {
     if (isPipelineBusy()) {
-      const owner = getState().truth.pipelineActiveKey;
-      rejectWhileBusy(key, 'PIPELINE', `${key} was blocked because ${owner} already holds the pipeline lock.`);
+      rejectPipelineWhileBusy(key);
       return;
     }
 
@@ -355,7 +353,7 @@ export function createRuntimeTruthDemoActions({
 
   function runAutoPipeline() {
     if (isPipelineBusy()) {
-      rejectWhileBusy('B3', 'PIPELINE', `Auto pipeline start was blocked because ${getState().truth.pipelineActiveKey} already holds the pipeline lock.`);
+      rejectPipelineWhileBusy('B3');
       return;
     }
 
