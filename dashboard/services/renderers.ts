@@ -290,14 +290,97 @@ function renderNewAuthLoginModalContent(modal: ModalData): string {
         ...(requestedInput ? { 'Requested input': requestedInput } : {}),
       }) + `<p class="modal-panel__empty">${escapeHtml(message)}</p>`,
     )}
-    ${renderModalSection(
-      'Two-factor authentication',
-      `<label class="field-label" for="new-auth-2fa-code">2FA code or device index</label>
-       <input id="new-auth-2fa-code" class="input" type="text" autocomplete="one-time-code" data-new-auth-2fa-code aria-label="New auth 2FA code or device index" />
-       <div class="button-row"><button class="button button--primary" data-action="new-auth-submit-2fa">Submit 2FA</button></div>
-       <p class="modal-panel__empty">Submit the trusted-device index first if iCloudPD asks for one, then submit the verification code when prompted. The response is sent only to the new auth endpoint and is cleared from the input after submission.</p>`,
-    )}
+    ${renderNewAuthTwoFactorSection(modal)}
   `;
+}
+
+type NewAuthTwoFactorInputCopy = {
+  active: boolean;
+  label: string;
+  ariaLabel: string;
+  placeholder: string;
+  buttonLabel: string;
+  help: string;
+};
+
+function renderNewAuthTwoFactorSection(modal: ModalData): string {
+  const copy = twoFactorInputCopyForModal(modal);
+  if (!copy.active) {
+    return renderModalSection(
+      'Two-factor authentication',
+      `<p class="modal-panel__empty">${escapeHtml(copy.help)}</p>`,
+    );
+  }
+
+  return renderModalSection(
+    'Two-factor authentication',
+    `<label class="field-label" for="new-auth-2fa-code">${escapeHtml(copy.label)}</label>
+     <input id="new-auth-2fa-code" class="input" type="text" autocomplete="one-time-code" data-new-auth-2fa-code aria-label="${escapeHtml(copy.ariaLabel)}" placeholder="${escapeHtml(copy.placeholder)}" />
+     <div class="button-row"><button class="button button--primary" data-action="new-auth-submit-2fa">${escapeHtml(copy.buttonLabel)}</button></div>
+     <p class="modal-panel__empty">${escapeHtml(copy.help)}</p>`,
+  );
+}
+
+function twoFactorInputCopyForModal(modal: ModalData): NewAuthTwoFactorInputCopy {
+  if (modal.stage === 'authenticated') {
+    return {
+      active: false,
+      label: 'No two-factor input needed',
+      ariaLabel: 'No two-factor input needed',
+      placeholder: '',
+      buttonLabel: 'Submit',
+      help: 'No two-factor input is needed. The local session is already authenticated.',
+    };
+  }
+
+  switch (modal.twoFactorPromptKind) {
+    case 'device_index':
+      return {
+        active: true,
+        label: 'Device index',
+        ariaLabel: 'New auth trusted-device index',
+        placeholder: 'a',
+        buttonLabel: 'Submit device index',
+        help: 'Enter the listed trusted-device index, for example a, to ask Apple to send a verification code.',
+      };
+    case 'device_index_or_code':
+      return {
+        active: true,
+        label: 'Device index',
+        ariaLabel: 'New auth trusted-device index',
+        placeholder: 'a',
+        buttonLabel: 'Submit device index',
+        help: 'iCloudPD is asking for a device index before code entry. Submit the listed device index first; submit the six-digit code only after iCloudPD asks for it.',
+      };
+    case 'verification_code':
+      return {
+        active: true,
+        label: 'Six-digit verification code',
+        ariaLabel: 'New auth six-digit verification code',
+        placeholder: '123456',
+        buttonLabel: 'Submit code',
+        help: 'Enter the six-digit Apple verification code.',
+      };
+    case 'apple_hsa2_challenge':
+    case 'unknown':
+      return {
+        active: true,
+        label: 'Two-factor response',
+        ariaLabel: 'New auth two-factor response',
+        placeholder: 'a or 123456',
+        buttonLabel: 'Submit response',
+        help: 'The exact iCloudPD prompt is not visible. Use the provider prompt: submit a device index if it asks for one, otherwise submit the six-digit code.',
+      };
+    default:
+      return {
+        active: false,
+        label: 'Waiting for two-factor prompt',
+        ariaLabel: 'Waiting for two-factor prompt',
+        placeholder: '',
+        buttonLabel: 'Submit',
+        help: 'Waiting for iCloudPD to ask for a device index or a six-digit verification code.',
+      };
+  }
 }
 
 function requestedInputLabelForPromptKind(kind: string | null | undefined): string | null {

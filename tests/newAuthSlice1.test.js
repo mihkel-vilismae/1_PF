@@ -25,7 +25,10 @@ test('Slice 1 NEW AUTH card renders required controls and modal input', () => {
   assert.match(renderers, /data-new-auth-2fa-code/);
   assert.match(renderers, /new-auth-submit-2fa/);
   assert.match(renderers, /Requested input/);
-  assert.match(renderers, /2FA code or device index/);
+  assert.doesNotMatch(renderers, /2FA code or device index/);
+  assert.match(renderers, /No two-factor input is needed/);
+  assert.match(renderers, /Device index/);
+  assert.match(renderers, /Six-digit verification code/);
   assert.match(renderers, /Enter device index, for example a/);
   assert.match(renderers, /Enter SMS six-digit code/);
   assert.match(app, /data-new-auth-2fa-code/);
