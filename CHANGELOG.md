@@ -35,6 +35,22 @@
 ### Removed
 - None.
 
+## 2026-05-06 15:20 EEST — v0.3.52
+
+### Added
+- Added NEW AUTH Slice 7 safe logout flow that counts removed session files and reports removal results.
+
+### Changed
+- Updated `/api/auth/new/logout` to return `removedFileCount` and `skippedFileCount` in the details payload.
+- Ensured logout only deletes the configured session directory and refuses unsafe paths.
+- Updated version metadata from v0.3.51 to v0.3.52.
+
+### Fixed
+- Prevented session cleanup from leaving behind stale session files by recreating the directory after deletion.
+
+### Removed
+- None.
+
 ## 2026-05-06 14:46 EEST — v0.3.49
 
 ### Added

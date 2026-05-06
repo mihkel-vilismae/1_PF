@@ -441,6 +441,27 @@ export async function logoutNewAuthSession(context: NewAuthContext = {}): Promis
     };
   }
 
+  // Count files within the cookie directory before removal for reporting. This helper counts only file entries, not directories.
+  function countFiles(dir: string): number {
+    let count = 0;
+    try {
+      const entries = readdirSync(dir, { withFileTypes: true });
+      for (const entry of entries) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          count += countFiles(full);
+        } else {
+          count += 1;
+        }
+      }
+    } catch {
+      // Ignore traversal errors and assume no files when inaccessible.
+    }
+    return count;
+  }
+
+  const removedFileCount = countFiles(safeCookieDir);
+  let skippedFileCount = 0;
   try {
     await rm(safeCookieDir, { recursive: true, force: true });
     await mkdir(safeCookieDir, { recursive: true });
@@ -453,6 +474,8 @@ export async function logoutNewAuthSession(context: NewAuthContext = {}): Promis
       details: {
         provider: 'icloudpd',
         sessionDirectory: sanitizePathForDisplay(safeCookieDir),
+        removedFileCount,
+        skippedFileCount,
         remoteLogoutClaimed: false,
       },
     };
@@ -468,6 +491,8 @@ export async function logoutNewAuthSession(context: NewAuthContext = {}): Promis
       details: {
         provider: 'icloudpd',
         sessionDirectory: sanitizePathForDisplay(safeCookieDir),
+        removedFileCount,
+        skippedFileCount,
         remoteLogoutClaimed: false,
       },
     };
@@ -476,10 +501,12 @@ export async function logoutNewAuthSession(context: NewAuthContext = {}): Promis
   return {
     ok: true,
     state: 'logged_out',
-    message: 'Local iCloudPD session data was removed and the user is logged out locally. Remote Apple logout was not claimed.',
+    message: 'Local iCloudPD session data was removed and the user is logged out locally.',
     details: {
       provider: 'icloudpd',
       sessionDirectory: sanitizePathForDisplay(safeCookieDir),
+      removedFileCount,
+      skippedFileCount,
       remoteLogoutClaimed: false,
       sessionContentsShown: false,
     },
