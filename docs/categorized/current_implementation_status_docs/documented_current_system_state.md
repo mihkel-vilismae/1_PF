@@ -78,3 +78,20 @@ All rows below are documentation-derived from the listed sources.
 | Auth/session/2FA status summary | Completed in this file from auth-specific active docs. |
 | Route/stage summary duplication | Reduced; canonicalized here with source tagging. |
 | Older summary docs | Kept as reference only; not promoted to active authority. |
+
+
+## 2026-05-06 NEW AUTH closure status
+
+NEW AUTH Slices 1–10 are complete for the dashboard/auth track. The implemented endpoint family is:
+
+- `GET /api/auth/new/status`
+- `POST /api/auth/new/verify-icloudpd`
+- `GET /api/auth/new/session-files`
+- `POST /api/auth/new/login`
+- `POST /api/auth/new/submit-2fa`
+- `POST /api/auth/new/logout`
+- `POST /api/auth/new/test-download`
+
+The important behavioral rule is unchanged and now documented as implemented: local session files are not authentication by themselves. The dashboard may show local session evidence, but `authenticated` requires provider proof or stronger test-download proof.
+
+2FA-required states are actionable but not success. The UI/event history should make the next action visible with prompts such as `ENTER 6-DIGIT CODE` and `ENTER DEVICE INDEX (A)`.

@@ -70,3 +70,17 @@ Conflicts recorded and reduced in this category:
 | Auth handoff/manual/session docs | Absorbed into auth/2FA unresolved-boundary notes. |
 | Button index + ledger | Absorbed into verification-gap and contradiction notes. |
 | Audit/overview/OLD_DOCS | Reduced to conflict/reference evidence only. |
+
+
+## 2026-05-06 resolved NEW AUTH gaps
+
+The earlier NEW AUTH gap where local session files could be treated as authenticated before provider proof is resolved. NEW AUTH now requires provider proof or stronger test-download proof before `authenticated` is projected.
+
+The remaining auth-related risks are operational rather than missing slice work:
+
+- real iCloudPD behavior depends on the local machine, Apple account state, and provider response;
+- 2FA submission must never expose entered codes;
+- test-download proof must remain separate from the normal Stage 2–6 pipeline;
+- secrets and session file contents must remain redacted in responses and event history.
+
+Remaining non-auth gaps stay active: production provider download, production geocoder, real scheduler worker services, View C restore/resume contract, View D live runtime monitor, and live environment-isolation verification before destructive smoke tests.

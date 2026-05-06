@@ -48,3 +48,19 @@ Decision gates are sourced from `docs_to_parse/VISION_SPEC/16-unresolved-questio
 | `placeholder_implementations.md` | Active unimplemented items for A/B/C/D and runtime backend captured; implemented-only E scope removed. |
 | `docs_to_parse/CANONICAL_SCHEMA_PROPOSAL.md` | Proposed migration phases captured as gated implementation tasks; non-goal/deferred table families kept out of active work. |
 | `docs_to_parse/VISION_SPEC/16-unresolved-questions.md` | Converted to explicit decision gates that block risky runtime/auth/scheduler changes. |
+
+
+## 2026-05-06 backlog update after NEW AUTH Slice 10
+
+NEW AUTH Slices 1–10 are no longer active implementation backlog items. The completed scope includes the frontend shell, endpoint family, provider-proof status, 2FA diagnostics, 2FA submission, safe login start, logout/session removal, test-download proof, UI/event diagnostics, and closure audit.
+
+Do not reopen NEW AUTH as generic missing work unless new evidence shows a regression. Future tasks should be narrower, such as provider-specific hardening, additional tests, or UX refinements.
+
+Active implementation backlog that remains outside NEW AUTH:
+
+1. Replace mock/generated Stage 1 download with production provider-backed download when required.
+2. Replace deterministic placeholder geocoding with a production geocoder.
+3. Replace scheduler host placeholder-service mode with real pipeline/playback/screen/recovery worker services.
+4. Decide and implement the View C restore/resume backend contract.
+5. Wire View D to a backend-owned live runtime monitor.
+6. Prove live environment isolation before destructive smoke tests.

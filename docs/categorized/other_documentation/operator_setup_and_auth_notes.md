@@ -67,6 +67,30 @@ Optional:
 4. Treat unsupported/provider-unavailable outcomes as honest boundary states, not silent failures.
 5. Keep secrets out of docs, logs, and issue text.
 
+
+
+### NEW AUTH operator flow after Slice 10
+
+The NEW AUTH dashboard flow is owned by `/api/auth/new/*` only. The endpoint family is:
+
+- `GET /api/auth/new/status`
+- `POST /api/auth/new/verify-icloudpd`
+- `GET /api/auth/new/session-files`
+- `POST /api/auth/new/login`
+- `POST /api/auth/new/submit-2fa`
+- `POST /api/auth/new/logout`
+- `POST /api/auth/new/test-download`
+
+Operator truth rules:
+
+1. Verify iCloudPD first.
+2. Check status next.
+3. If 2FA is required, the dashboard must visibly show `ENTER 6-DIGIT CODE` and/or `ENTER DEVICE INDEX (A)`.
+4. Submit 2FA only through the NEW AUTH controls.
+5. Treat `authenticated` as valid only when provider proof or stronger test-download proof succeeds.
+6. Use logout to remove only configured NEW AUTH session files.
+7. Never paste passwords or 2FA codes into logs, docs, screenshots, or issue text.
+
 ### Version/changelog governance notes for operators
 
 - `VERSION` is canonical version source.

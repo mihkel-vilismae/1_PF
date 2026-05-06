@@ -1,5 +1,26 @@
 # CHANGELOG
 
+## 2026-05-06 16:35 EEST — v0.3.56
+
+### Added
+- Added docs-only closure update after NEW AUTH Slice 10 to align implementation-status, operator, backlog, and auth/pipeline docs with the completed new-auth endpoint family.
+- Documented that NEW AUTH uses only `/api/auth/new/*` endpoints for the new card/control family.
+- Documented visible two-factor prompts: `ENTER 6-DIGIT CODE` and `ENTER DEVICE INDEX (A)`.
+
+### Changed
+- Updated current-status docs so local session files alone are no longer described as authenticated.
+- Clarified that `authenticated` requires provider proof or stronger test-download proof.
+- Updated backlog wording so NEW AUTH Slices 1–10 are no longer tracked as unfinished implementation work.
+- Clarified that View C has a backend last-run read path but restore/resume remains placeholder or decision-gated.
+- Updated version metadata from v0.3.55 to v0.3.56.
+
+### Fixed
+- Removed stale status wording that said provider proof was still future work for NEW AUTH.
+- Reconciled docs with the completed 2FA, login, logout, and test-download proof endpoint family.
+
+### Removed
+- None.
+
 ## 2026-05-06 15:00 EEST — v0.3.50
 
 ### Added

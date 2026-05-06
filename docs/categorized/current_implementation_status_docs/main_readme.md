@@ -16,7 +16,7 @@ Authority limit: documentation-derived files in this folder do **not** claim dir
 - `documented_current_system_state.md`: consolidated current-state summary from active docs.
 - `button_and_view_verification_status.md`: consolidated button/view verification statuses from button verification docs.
 - `known_gaps_and_unresolved_questions.md`: consolidated gaps, contradictions, and unresolved items from docs.
-- `code_verified_dashboard_implementation_status.md`: code-verified dashboard implementation status audit from the 2026-05-04 local worktree, including tests, live endpoint checks, and conservative implementation labels.
+- `code_verified_dashboard_implementation_status.md`: code-verified dashboard implementation status audit from the 2026-05-04 local worktree, plus a 2026-05-06 NEW AUTH closure update that records the completed `/api/auth/new/*` endpoint family and remaining non-auth gaps.
 
 ## Absorbed source docs
 
@@ -66,3 +66,8 @@ Documentation-derived authority order used in this category:
 | `buttons_and_implementation_overview.md` | Reduced to older-reference evidence; conflicts/overlap logged. |
 | `OLD_DOCS/15_CURRENT_IMPLEMENTATION_STATUS.md` | Reduced to archive/reference only. |
 | `OLD_DOCS/issues_errors_discrepancies.md` | Reduced to archive/reference only. |
+
+
+## 2026-05-06 closure note
+
+The NEW AUTH implementation track is documented as closed through Slice 10. The current status docs must not describe local session files as authenticated by themselves. NEW AUTH truth is backend-owned and must require provider proof or stronger test-download proof.

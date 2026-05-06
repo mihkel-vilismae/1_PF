@@ -31,6 +31,7 @@ Track documentation-validation and authority-reconciliation work that should hap
 | VR-7 | Validate inspect-control documentation claims with rendered behavior checks (A/B/C/D/E), while classifying this as workflow verification evidence, not behavioral authority replacement. | `INSPECT_CONTROLS_SLICE1_ANALYSIS.md` | Pending |
 | VR-8 | Prepare future doc-relocation pass (`docs_parsed`/`to_be_deleted`) only after harvesting unique content and adding required deletion markers. | `17-deprecated-superseded-docs-log.md` | Needs decision |
 | VR-9 | Regenerate/expand run instructions documentation from actual command surface as a dedicated documentation workflow. | `part3_slice3_reconciliation_findings.md` Finding 1 | Pending |
+| VR-10 | Reconcile NEW AUTH Slice 10 closure into current-status, operator, backlog, and auth/pipeline docs. | 2026-05-06 NEW AUTH Slice 10 closure | Done |
 
 ## Conflict / reduction notes
 - Workflow-generated reports are used as evidence sources for tasks, not as behavioral authority overrides.

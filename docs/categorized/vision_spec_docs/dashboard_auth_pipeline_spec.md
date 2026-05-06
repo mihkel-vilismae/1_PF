@@ -33,10 +33,24 @@ Define operator-facing dashboard contracts, authentication boundary rules, pipel
 ### Auth and 2FA contract
 
 1. Auth is backend-owned and provider-evidenced.
-2. Public states include: `logged_out`, `checking`/`verifying`, `logging_in`, `pending_2fa`, `authenticated`, `provider_failed`, `unknown`.
+2. Public states include: `logged_out`, `checking`/`verifying`, `logging_in`, `pending_2fa`, `requires_2fa`, `authenticated`, `provider_failed`, `unverified`, and `unknown`.
 3. `authenticated` may only be projected after provider/session proof; HTTP success alone is not enough.
 4. Secrets/tokens/raw 2FA codes must never be exposed in frontend payloads or normal logs.
 5. Valid provider session reuse is allowed until failure/expiry; re-login is required only when evidence indicates it.
+
+### NEW AUTH endpoint family
+
+The NEW AUTH card/control family must use only `/api/auth/new/*` endpoints. The current closed Slice 1–10 family is:
+
+- `GET /api/auth/new/status`
+- `POST /api/auth/new/verify-icloudpd`
+- `GET /api/auth/new/session-files`
+- `POST /api/auth/new/login`
+- `POST /api/auth/new/submit-2fa`
+- `POST /api/auth/new/logout`
+- `POST /api/auth/new/test-download`
+
+Local session files are evidence only. They do not produce `authenticated` without provider proof or stronger test-download proof. 2FA-required states must remain actionable but not successful, and must make the operator-facing prompts visible.
 
 ### View A auth-preflight button semantics (strict)
 

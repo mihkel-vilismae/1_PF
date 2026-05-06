@@ -2,6 +2,8 @@
 
 Audit date: 2026-05-04
 
+Update note: 2026-05-06 16:35 EEST — docs reconciled after NEW AUTH Slice 10 closure / v0.3.56.
+
 This document is a code-verified dashboard implementation status audit. It does not replace the documentation-derived status files in this folder; it records what was checked against the current worktree, code paths, tests, and selected live endpoint responses.
 
 ## Executive Summary
@@ -10,7 +12,7 @@ This document is a code-verified dashboard implementation status audit. It does 
 - Backend route registration is centralized in `server/index.ts:327-368`; the Vite frontend proxies `/api` to `127.0.0.1:4301` via `vite.config.ts`.
 - View A init and DB controls have frontend handlers, backend routes, confirmation guards for destructive DB actions, and tests.
 - View A scheduler controls are real route calls, but the scheduler host advertises placeholder-service mode and the live status response says business services remain future work.
-- Auth and new-auth surfaces are backend-wired, but real-world provider/session proof remains partial and environment-dependent.
+- Auth surfaces are backend-wired. Legacy auth remains environment/provider dependent. NEW AUTH Slices 1–10 are closed: the new endpoint family now requires provider proof or stronger test-download proof before projecting `authenticated`.
 - View B runtime buttons call backend endpoints for download, index, GPS, geocode, queue, and playback, but Stage 1 is mock/generated-data copy and geocode is explicitly deterministic placeholder behavior.
 - View E database viewer is backend-wired for verify/connect/table/row/logging actions, but DB logging is process-local and not a full SQL/activity audit.
 - `npm test` passed 122 tests; `npm run build` and `npm run task-docs:check` passed.
@@ -38,7 +40,7 @@ This document is a code-verified dashboard implementation status audit. It does 
 | View A Database | `check-db`, `inspect-db`, `delete-db`, `recreate-db` / `/api/init/database/*` | Implemented | UI renders all four controls; runtime behavior maps them to backend endpoints; backend has status/inspect/delete/recreate handlers and confirmation guard; tests cover recreate/status/inspect/delete flow. | Destructive live checks were not executed because live DB isolation was not proven; live status reported repo `.env` DB path. | `dashboard/views/initView.ts:62-65`; `dashboard/services/runtimeTruth/runtimeTruthBehavior.ts:124-127`; `dashboard/services/initService.ts:28-60`; `server/index.ts:497-631`; `server/index.ts:1764-1770`; `tests/viewA.2A.databaseButtons.buttonWorkflow.test.js`; `tests/initApi.step1.test.js` | `npm test`; live `GET /api/init/database/status` only |
 | View A Scheduler | `install-cron`, `check-cron`, `print-cron` / `/api/init/cron/*` | Partial | UI renders scheduler controls and maps them to backend routes; live status/print returned 200 warning with `supportLevel=supported`. Backend reports Windows scheduler capability. | Scheduler host is `placeholder-services`; live response says no host heartbeat and business services for pipeline/playback/screen/recovery remain future work. Install endpoint was not live-executed. | `dashboard/views/initView.ts:77-79`; `dashboard/services/runtimeTruth/runtimeTruthBehavior.ts:128-130`; `dashboard/services/initService.ts:20-34`; `server/index.ts:633-643`; `server/index.ts:1776-1787`; `server/index.ts:1997`; `server/scheduler_host.ts:9`; `tests/viewA.3A.schedulerButtons.buttonWorkflow.test.js` | `npm test`; live `GET /api/init/cron/status`; live `GET /api/init/cron/print` |
 | View A Auth | Legacy `1A-AUTH` auth/preflight controls and `/api/auth/*` | Partial | UI renders backend-auth controls; runtime behavior maps to `/api/auth/status`, verify, resume, run, 2FA, reset, logout, and single-file test endpoints; backend route handlers and tests exist. | Real provider authentication remains environment/provider dependent; 2FA and session proof are honest boundary states, not guaranteed success. | `dashboard/views/initView.ts:12-22`; `dashboard/views/initView.ts:176`; `dashboard/services/authPreflightService.ts:10-58`; `dashboard/services/runtimeTruth/runtimeTruthAuthActions.ts:27-116`; `server/index.ts:328-335`; `server/auth/authRoutes.ts:58-165`; `tests/authApi.step1.test.js`; `tests/viewB.buttonWorkflow.test.js` | `npm test`; live `GET /api/auth/status` |
-| View A New Auth | `new-auth-*` controls and `/api/auth/new/*` | Partial | UI renders new-auth controls; frontend service targets only `/api/auth/new/*`; backend routes and new-auth service exist; tests cover route constants, modal, 2FA payload, session evidence, and action metadata. | Live `GET /api/auth/new/status` returned a message treating local session files as authenticated until provider proof is added, so provider-verified truth is still partial. | `dashboard/views/initView.ts:24-125`; `dashboard/services/newAuthService.ts:10-48`; `dashboard/services/runtimeTruth/runtimeTruthNewAuthActions.ts:19-173`; `server/index.ts:336-341`; `server/auth/newAuthRoutes.ts:30-80`; `server/auth/newAuthService.ts:118-391`; `tests/newAuth*.test.js`; `tests/newAuthSlice*.mjs` | `npm test`; live `GET /api/auth/new/status` |
+| View A New Auth | `new-auth-*` controls and `/api/auth/new/*` | Implemented with provider-dependent runtime proof | UI renders new-auth controls; frontend service targets only `/api/auth/new/*`; backend route family covers status, verify iCloudPD, session-files, login, submit-2FA, logout, and test-download proof. | Runtime success still depends on local iCloudPD, Apple account state, and real provider response. Local session files alone are not authenticated. | `dashboard/views/initView.ts`; `dashboard/services/newAuthService.ts`; `dashboard/services/runtimeTruth/runtimeTruthNewAuthActions.ts`; `server/index.ts`; `server/auth/newAuthRoutes.ts`; `server/auth/newAuthService.ts`; `tests/newAuth*.test.js`; `tests/newAuthSlice*.mjs` | Targeted NEW AUTH tests; build; docs reconciliation |
 | View B Runtime Test | B2 download action / `POST /api/runtime/download/run` | Partial | UI action maps to backend runtime download endpoint; backend route copies files from configured mock/generated test data; tests cover success and missing-source error. | This is a real endpoint but explicitly mock/generated-data copy, not production provider download semantics. | `dashboard/views/testView.ts:29`; `dashboard/services/runtimeTruth/runtimeTruthBehavior.ts:153`; `dashboard/services/runtimeExecutionService.ts:12-22`; `server/index.ts:909-995`; `server/index.ts:912-913`; `tests/viewB.buttonWorkflow.test.js`; `tests/waveB.step3.test.js` | `npm test`; live runtime run not executed |
 | View B Runtime Pipeline | B3.1-B3.5 staged actions and B3 auto | Partial | UI renders individual and auto stage controls; frontend calls backend download/index/GPS/geocode/queue endpoints; backend stage handlers and Wave B-D tests exist. | Stage 1 is mock-backed and geocode response explicitly says deterministic placeholder/not production. `run-b3-auto` uses frontend sequencing, not the backend orchestration endpoint. | `dashboard/views/testView.ts:54`; `dashboard/views/testView.ts:138`; `dashboard/services/runtimeTruth/runtimeTruthBehavior.ts:154-159`; `dashboard/services/runtimeTruth/runtimeTruthDemoActions.ts:263-354`; `server/index.ts:998-1079`; `server/index.ts:1052-1060`; `tests/viewB.buttonWorkflow.test.js`; `tests/waveB.step3.test.js`; `tests/waveC.step4.test.js`; `tests/waveD.e2e.test.js` | `npm test`; live runtime run not executed |
 | Runtime Orchestration API | `/api/runtime/orchestration/run`, `/current`, `/last` | Backend-only | Backend registers orchestration routes and tests cover success/failure/inspection paths. | Dashboard View B auto-run does not call `/api/runtime/orchestration/run`; View C/D do not consume `/current` or `/last`. | `server/index.ts:363-365`; `server/index.ts:1159-1282`; `tests/waveE.step5.test.js` | `npm test`; live orchestration run not executed |
@@ -62,7 +64,7 @@ This document is a code-verified dashboard implementation status audit. It does 
 | Placeholder implementation notes imply broad View B frontend-fabricated behavior. | `placeholder_implementations.md:138-173`. | Current code wires B2/B3/B4 to backend runtime endpoints, but some backend behaviors remain mock/placeholder. | Update docs later to distinguish backend-wired partials from mock-only B5. |
 | Scheduler implementation is completed. | `placeholder_implementations.md:123`, `placeholder_implementations.md:362-371`. | Routes and Windows scheduler bootstrap exist, but host mode is `placeholder-services` and live status says business services remain future work. | `Partial`. |
 | View C says no real `/api/runtime/*` endpoint is wired. | `dashboard/views/lastRunView.ts:15`. | Backend exposes `/api/runtime/orchestration/current` and `/api/runtime/orchestration/last`, but View C does not consume them and no restore endpoint is wired. | Keep View C `Mock-only`; clarify wording later to avoid hiding backend-only orchestration endpoints. |
-| New auth can treat local session files as authenticated. | Live `GET /api/auth/new/status` returned: local session files were found and are treated as authenticated until provider proof is added. | Auth docs and service boundaries require provider-backed proof for durable real-world login truth. | `Partial`; provider-proof gap should stay explicit. |
+| New auth local session files | Earlier Slice 2/Slice 3 wording could imply session files alone were enough. | Post-Slice 10 status requires provider proof or stronger test-download proof before `authenticated`. | Resolved; keep provider-runtime dependency explicit. |
 
 ## Verification Log
 
@@ -104,3 +106,27 @@ This document is a code-verified dashboard implementation status audit. It does 
 - Replace scheduler host `placeholder-services` mode with real pipeline/playback/screen/recovery service execution before upgrading scheduler status beyond `Partial`.
 - Replace mock/generated Stage 1 download semantics with real provider-backed download behavior if production download is required from View B.
 - Replace deterministic placeholder geocoding with a production geocoder before upgrading geocode status beyond `Partial`.
+
+
+## 2026-05-06 NEW AUTH closure update
+
+NEW AUTH Slices 1–10 are closed in the current working snapshot. The new auth card/control family must use only `/api/auth/new/*` endpoints:
+
+- `GET /api/auth/new/status`
+- `POST /api/auth/new/verify-icloudpd`
+- `GET /api/auth/new/session-files`
+- `POST /api/auth/new/login`
+- `POST /api/auth/new/submit-2fa`
+- `POST /api/auth/new/logout`
+- `POST /api/auth/new/test-download`
+
+Current truth rules:
+
+1. Local iCloudPD session files are evidence only. They are not authenticated by themselves.
+2. `authenticated` requires provider proof or stronger test-download proof.
+3. `requires_2fa` / `pending_2fa` is not success.
+4. 2FA output that indicates an interactive challenge must surface visible prompts such as `ENTER 6-DIGIT CODE` and `ENTER DEVICE INDEX (A)`.
+5. Passwords, 2FA codes, cookies, tokens, and session contents must not appear in frontend state, event history, logs, tests, or docs.
+6. Provider execution and filesystem inspection remain backend-owned; the frontend consumes API responses only.
+
+Remaining project work after NEW AUTH closure is outside the new-auth track: production provider download, production geocoding, real scheduler worker services, View C restore contract, View D live runtime monitor, and safer live environment-isolation checks before destructive smoke tests.
