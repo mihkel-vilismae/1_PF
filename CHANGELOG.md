@@ -19,6 +19,22 @@
 ### Removed
 - None.
 
+## 2026-05-06 15:10 EEST — v0.3.51
+
+### Added
+- Added NEW AUTH Slice 6 real login flow using `.env` credentials through the backend service.
+- Added structured login states and reason codes for login start, `requires_2fa`, `authenticated`, `failed`, and `unverified`.
+
+### Changed
+- Ensured that the login process reads configured `.env` values and does not expose the password in event messages or logs.
+- Updated version metadata from v0.3.50 to v0.3.51.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
 ## 2026-05-06 14:46 EEST — v0.3.49
 
 ### Added
