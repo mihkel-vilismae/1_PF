@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## 2026-05-08 02:35 EEST — v0.3.59
+
+### Added
+- Added repo-level source comment discipline in `AGENTS.md` for future source-file edits.
+
+### Changed
+- Updated version metadata from v0.3.58 to v0.3.59.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
 ## 2026-05-08 02:32 EEST — v0.3.58
 
 ### Added
