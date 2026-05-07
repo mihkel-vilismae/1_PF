@@ -1,3 +1,7 @@
+/*
+ * Verifies dashboard runtime-truth behavior for NEW AUTH actions, including
+ * safe request metadata, button status updates, and passive check-login wiring.
+ */
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
@@ -108,6 +112,7 @@ test('runtime truth new auth history stores request/response metadata without su
   }
 });
 
+// Ensures the Check login button remains a passive read instead of a provider-proof trigger.
 test('runtime truth new auth check-login uses passive status and marks unverified state as pending', async () => {
   let state = createInitialState();
   const originalFetch = globalThis.fetch;

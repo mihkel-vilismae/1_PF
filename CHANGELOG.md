@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## 2026-05-08 02:49 EEST — v0.3.60
+
+### Added
+- Added regression coverage proving passive NEW AUTH status does not classify active provider output or expose live 2FA prompts.
+- Added route-level coverage proving `/api/auth/new/status?mode=passive` does not start provider proof.
+
+### Changed
+- Changed passive NEW AUTH status handling so passive checks are enforced before active-attempt inspection and provider proof.
+- Updated Slice 4 two-factor diagnostics tests to use an injected fake provider process instead of platform-specific shell scripts.
+- Updated version metadata from v0.3.59 to v0.3.60.
+
+### Fixed
+- Prevented the `Check login` passive status path from reading active iCloudPD output or triggering provider proof that could advance real provider authentication.
+
+### Removed
+- None.
+
 ## 2026-05-08 02:35 EEST — v0.3.59
 
 ### Added

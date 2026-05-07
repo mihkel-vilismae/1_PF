@@ -1,3 +1,8 @@
+/*
+ * Implements the NEW AUTH backend service for iCloudPD-backed authentication.
+ * Owns provider checks, login process lifecycle, 2FA submission, logout cleanup,
+ * session evidence reporting, and safe public result shaping for the dashboard.
+ */
 import { spawn, type ChildProcessWithoutNullStreams, type SpawnOptionsWithoutStdio } from 'node:child_process';
 import { existsSync, statSync, readdirSync } from 'node:fs';
 import { mkdir, rm } from 'node:fs/promises';
@@ -184,22 +189,13 @@ export async function verifyNewAuthIcloudpd(context: NewAuthContext = {}): Promi
   };
 }
 
+/*
+ * Reports NEW AUTH status while respecting passive checks before any provider
+ * interaction. Passive calls only return local/cached state and never inspect,
+ * poll, or advance an active iCloudPD process.
+ */
 export async function getNewAuthStatus(context: NewAuthContext = {}, options: NewAuthStatusOptions = {}): Promise<Record<string, unknown>> {
-  const activeAttempt = getActiveNewAuthAttempt();
-  if (activeAttempt) {
-    return appendStructuredEvents(buildPendingPayloadFromActiveAttempt(activeAttempt, 'iCloudPD authentication is still waiting for provider output or a two-factor response.'), [
-      buildStructuredEvent({
-        operation: 'status',
-        phase: 'active_attempt_detected',
-        stateBefore: 'logging_in',
-        stateAfter: 'pending_2fa',
-        endpoint: 'GET /api/auth/new/status',
-        message: 'Status check found an active iCloudPD authentication process.',
-        providerOutputShown: 'classification_only',
-      }),
-    ]);
-  }
-
+  const passive = options.providerProof === false;
   const config = buildNewAuthIcloudpdConfig(context);
   const paths = getNewAuthPathCandidates(context);
   const sessionDirectory = paths.find((entry) => entry.label === 'Configured session directory');
@@ -217,6 +213,25 @@ export async function getNewAuthStatus(context: NewAuthContext = {}, options: Ne
     envPresence: summarizeEnvPresence(context.envValues ?? {}),
   };
 
+  const activeAttempt = getActiveNewAuthAttempt();
+  if (passive && activeAttempt) {
+    return buildPassiveActiveAttemptStatus(baseDetails);
+  }
+
+  if (!passive && activeAttempt) {
+    return appendStructuredEvents(buildPendingPayloadFromActiveAttempt(activeAttempt, 'iCloudPD authentication is still waiting for provider output or a two-factor response.'), [
+      buildStructuredEvent({
+        operation: 'status',
+        phase: 'active_attempt_detected',
+        stateBefore: 'logging_in',
+        stateAfter: 'pending_2fa',
+        endpoint: 'GET /api/auth/new/status',
+        message: 'Status check found an active iCloudPD authentication process.',
+        providerOutputShown: 'classification_only',
+      }),
+    ]);
+  }
+
   if (!sessionDirectory || !sessionDirectory.exists || !sessionEvidence.hasSessionFiles) {
     return {
       ok: true,
@@ -229,21 +244,8 @@ export async function getNewAuthStatus(context: NewAuthContext = {}, options: Ne
     };
   }
 
-  if (options.providerProof === false) {
-    const proof = buildProviderProofSkipped(
-      'NEW_AUTH_PROVIDER_PROOF_SKIPPED',
-      'Local session files exist, but passive status check did not start provider proof.',
-    );
-    return {
-      ok: false,
-      state: 'unverified',
-      errorCode: proof.reasonCode,
-      message: statusMessageForState('unverified', proof),
-      details: {
-        ...baseDetails,
-        providerProof: proof,
-      },
-    };
+  if (passive) {
+    return buildPassiveUnverifiedStatus(baseDetails);
   }
 
   const proof = await verifyExistingNewAuthSessionWithProvider(context);
@@ -253,6 +255,49 @@ export async function getNewAuthStatus(context: NewAuthContext = {}, options: Ne
     state,
     errorCode: state === 'authenticated' ? undefined : proof.reasonCode,
     message: statusMessageForState(state, proof),
+    details: {
+      ...baseDetails,
+      providerProof: proof,
+    },
+  };
+}
+
+/*
+ * Builds the passive response for an in-progress login without reading live
+ * provider output or classifying fresh prompts from the child process.
+ */
+function buildPassiveActiveAttemptStatus(baseDetails: Record<string, unknown>): Record<string, unknown> {
+  const proof = buildProviderProofSkipped(
+    'NEW_AUTH_PASSIVE_ACTIVE_ATTEMPT',
+    'A NEW AUTH login attempt is in progress, but passive status did not inspect provider output.',
+  );
+  return {
+    ok: true,
+    state: 'logging_in',
+    errorCode: proof.reasonCode,
+    message: 'A NEW AUTH login attempt is in progress. Passive status did not inspect provider output.',
+    details: {
+      ...baseDetails,
+      activeAttemptKnown: true,
+      providerProof: proof,
+    },
+  };
+}
+
+/*
+ * Builds the passive response for local session files when provider proof is
+ * intentionally skipped by the Check login button.
+ */
+function buildPassiveUnverifiedStatus(baseDetails: Record<string, unknown>): Record<string, unknown> {
+  const proof = buildProviderProofSkipped(
+    'NEW_AUTH_PROVIDER_PROOF_SKIPPED',
+    'Local session files exist, but passive status check did not start provider proof.',
+  );
+  return {
+    ok: false,
+    state: 'unverified',
+    errorCode: proof.reasonCode,
+    message: statusMessageForState('unverified', proof),
     details: {
       ...baseDetails,
       providerProof: proof,

@@ -1,29 +1,37 @@
+/*
+ * Verifies NEW AUTH Slice 4 diagnostics for provider-proof timeout,
+ * two-factor prompt extraction, and visible non-secret prompt rendering.
+ */
 import assert from 'node:assert/strict';
-import { chmodSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { EventEmitter } from 'node:events';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { mkdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { PassThrough } from 'node:stream';
 import test from 'node:test';
 
 import { renderResultSurface } from '../dashboard/services/renderers.ts';
 import { getNewAuthStatus } from '../server/auth/newAuthService.ts';
 
-async function withSessionScript(scriptBody, run) {
+/*
+ * Runs status with a fake provider process that emits output and then times out,
+ * avoiding platform-specific shell scripts while exercising provider-proof code.
+ */
+async function withTimedOutProviderOutput(providerOutput, run) {
   const root = mkdtempSync(path.join(tmpdir(), 'new-auth-slice4-'));
   const sessionDir = path.join(root, 'icloud-session');
-  const executablePath = path.join(root, 'icloudpd');
 
   try {
     await mkdir(sessionDir, { recursive: true });
     writeFileSync(path.join(sessionDir, 'cookie'), 'DO_NOT_EXPOSE_COOKIE_CONTENT');
-    writeFileSync(executablePath, scriptBody);
-    chmodSync(executablePath, 0o755);
 
     return await run({
-      executablePath,
+      executablePath: 'fake-icloudpd',
+      commandSpawner: commandSpawnerWithTimedOutput(providerOutput),
       envValues: {
         ICLOUDPD_COOKIE_DIR: sessionDir,
-        ICLOUDPD_AUTH_TIMEOUT_MS: '500',
+        ICLOUDPD_AUTH_TIMEOUT_MS: '20',
         user: 'person@example.com',
         pw: 'DO_NOT_EXPOSE_PASSWORD',
       },
@@ -33,15 +41,34 @@ async function withSessionScript(scriptBody, run) {
   }
 }
 
+/*
+ * Creates a fake child-process spawner that writes provider output but never
+ * closes, forcing the backend timeout path deterministically.
+ */
+function commandSpawnerWithTimedOutput(providerOutput) {
+  return () => {
+    const child = new EventEmitter();
+    child.stdin = new PassThrough();
+    child.stdout = new PassThrough();
+    child.stderr = new PassThrough();
+    child.kill = () => true;
+    child.unref = () => {};
+    setImmediate(() => {
+      child.stdout.write(providerOutput);
+    });
+    setTimeout(() => {}, 50);
+    return child;
+  };
+}
 
+// 2FA output must win over generic timeout and surface safe operator prompts.
 test('provider-proof timeout with 2FA output is classified as requires 2FA with visible prompts', async () => {
-  const status = await withSessionScript(`#!/usr/bin/env sh
-printf '%s\n' 'Processing user: person@example.com'
-printf '%s\n' 'Two-factor authentication is required (2fa)'
-printf '%s\n' '  a: *** **76'
-printf '%s\n' 'Please enter two-factor authentication code or device index (a) to send SMS with a code:'
-sleep 2
-`, (context) => getNewAuthStatus(context));
+  const status = await withTimedOutProviderOutput([
+    'Processing user: person@example.com',
+    'Two-factor authentication is required (2fa)',
+    '  a: *** **76',
+    'Please enter two-factor authentication code or device index (a) to send SMS with a code:',
+  ].join('\n'), (context) => getNewAuthStatus(context));
 
   assert.equal(status.ok, false);
   assert.equal(status.state, 'requires_2fa');
@@ -61,11 +88,9 @@ sleep 2
   assert.equal(serialized.includes('person@example.com'), false);
 });
 
+// Generic provider timeouts without 2FA text must remain timeout/unverified.
 test('generic provider-proof timeout without 2FA output remains timeout', async () => {
-  const status = await withSessionScript(`#!/usr/bin/env sh
-printf '%s\n' 'Checking existing session...'
-sleep 2
-`, (context) => getNewAuthStatus(context));
+  const status = await withTimedOutProviderOutput('Checking existing session...', (context) => getNewAuthStatus(context));
 
   assert.equal(status.ok, false);
   assert.equal(status.state, 'unverified');
@@ -73,6 +98,7 @@ sleep 2
   assert.equal(status.details.providerProof.requires2fa, undefined);
 });
 
+// Result rendering should expose sanitized prompt labels outside the raw JSON.
 test('result surface renders provider-proof user prompts outside raw JSON', () => {
   const markup = renderResultSurface({
     outcome: 'success',
@@ -98,6 +124,7 @@ test('result surface renders provider-proof user prompts outside raw JSON', () =
 });
 
 
+// The runtime classifier must keep 2FA pending before evaluating failed states.
 test('runtime action classifier checks 2FA before failed status', () => {
   const source = readFileSync(new URL('../dashboard/services/runtimeTruth/runtimeTruthNewAuthActions.ts', import.meta.url), 'utf8');
   const twoFactorIndex = source.indexOf("if (hasNewAuthTwoFactorPrompt(payload)) return 'pending';");
