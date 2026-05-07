@@ -175,7 +175,7 @@ test('new auth command result identifies SMS six-digit code prompts', async () =
   assert.equal(result.details.requestedInput, 'Six-digit verification code');
 });
 
-test('new auth command result accepts fresh session files when output has no active hsa2 challenge', async () => {
+test('new auth command result does not authenticate on fresh session files alone', async () => {
   const cookieDir = mkdtempSync(path.join(tmpdir(), 'new-auth-session-evidence-'));
 
   try {
@@ -209,10 +209,13 @@ test('new auth command result accepts fresh session files when output has no act
       },
     );
 
-    assert.equal(result.ok, true);
-    assert.equal(result.state, 'authenticated');
+    assert.equal(result.ok, false);
+    assert.equal(result.state, 'unverified');
+    assert.equal(result.errorCode, 'NEW_AUTH_UNVERIFIED_SESSION');
     assert.equal(result.details.sessionFileCount, 1);
+    assert.equal(result.details.nextAction, 'check_login_status_or_retry_provider_proof');
     assert.equal(result.details.events.some((event) => event.phase === 'session_evidence_collected'), true);
+    assert.equal(result.details.events.some((event) => event.stateAfter === 'unverified'), true);
     assert.equal(JSON.stringify(result).includes('DO_NOT_EXPOSE_PASSWORD'), false);
     assert.equal(JSON.stringify(result).includes('DO_NOT_EXPOSE_SESSION_CONTENT'), false);
   } finally {

@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, chmodSync, readFileSync, symlinkSync } from 'node:fs';
+import { EventEmitter } from 'node:events';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
+import { PassThrough } from 'node:stream';
 import path from 'node:path';
 import {
   getNewAuthSessionFiles,
@@ -10,6 +12,25 @@ import {
 
 const read = (filePath) => readFileSync(new URL(`../${filePath}`, import.meta.url), 'utf8');
 
+function commandSpawnerWithOutput({ stdout = '', stderr = '', exitCode = 0 }) {
+  return () => {
+    const child = new EventEmitter();
+    child.stdin = new PassThrough();
+    child.stdout = new PassThrough();
+    child.stderr = new PassThrough();
+    child.kill = () => true;
+    child.unref = () => {};
+
+    setImmediate(() => {
+      if (stdout) child.stdout.write(stdout);
+      if (stderr) child.stderr.write(stderr);
+      child.emit('close', exitCode, null);
+    });
+
+    return child;
+  };
+}
+
 const index = read('server/index.ts');
 const routes = read('server/auth/newAuthRoutes.ts');
 assert.ok(index.includes("'GET /api/auth/new/status': newAuthRouteHandlers.statusHandler"));
@@ -17,24 +38,17 @@ assert.ok(index.includes("'POST /api/auth/new/verify-icloudpd': newAuthRouteHand
 assert.ok(index.includes("'GET /api/auth/new/session-files': newAuthRouteHandlers.sessionFilesHandler"));
 assert.doesNotMatch(routes, /createAuthRoutes|authRouteHandlers|\/api\/auth\/(status|verify-icloudpd|run|logout|2fa\/submit)/);
 
-const originalPath = process.env.PATH;
-const emptyPath = mkdtempSync(path.join(tmpdir(), 'new-auth-empty-path-'));
-symlinkSync('/bin/sh', path.join(emptyPath, 'sh'));
-process.env.PATH = emptyPath;
-const missingResult = await verifyNewAuthIcloudpd({ envValues: {}, platform: process.platform });
-process.env.PATH = originalPath;
+const missingResult = await verifyNewAuthIcloudpd({ envValues: {}, executablePath: null });
 assert.equal(missingResult.ok, false);
 assert.equal(missingResult.state, 'failed');
 assert.equal(missingResult.errorCode, 'ICLOUDPD_NOT_FOUND');
 assert.doesNotMatch(JSON.stringify(missingResult), /password|super-secret|raw cookie/i);
 
-const binDir = mkdtempSync(path.join(tmpdir(), 'new-auth-bin-'));
-const executablePath = path.join(binDir, 'icloudpd');
-writeFileSync(executablePath, '#!/usr/bin/env sh\necho icloudpd 2026.1\n');
-chmodSync(executablePath, 0o755);
-process.env.PATH = `${binDir}${path.delimiter}${originalPath ?? ''}`;
-const foundResult = await verifyNewAuthIcloudpd({ envValues: {}, platform: process.platform });
-process.env.PATH = originalPath;
+const foundResult = await verifyNewAuthIcloudpd({
+  envValues: {},
+  executablePath: 'fake-icloudpd',
+  commandSpawner: commandSpawnerWithOutput({ stdout: 'icloudpd 2026.1' }),
+});
 assert.equal(foundResult.ok, true);
 assert.equal(foundResult.state, 'success');
 assert.match(String(foundResult.message), /found and can be executed/i);

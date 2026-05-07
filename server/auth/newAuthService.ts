@@ -134,7 +134,7 @@ const INTERACTIVE_RESULT_POLL_MS = 50;
 let activeNewAuthAttempt: NewAuthInteractiveAttempt | null = null;
 
 export async function verifyNewAuthIcloudpd(context: NewAuthContext = {}): Promise<Record<string, unknown>> {
-  const executable = await resolveIcloudpdExecutable(context.platform ?? process.platform);
+  const executable = await resolveIcloudpdExecutableForContext(context);
 
   if (!executable.found) {
     return {
@@ -150,7 +150,7 @@ export async function verifyNewAuthIcloudpd(context: NewAuthContext = {}): Promi
     };
   }
 
-  const version = await runCommand(executable.path ?? 'icloudpd', ['--version'], { timeoutMs: ICLOUDPD_TIMEOUT_MS });
+  const version = await runCommand(executable.path ?? 'icloudpd', ['--version'], { timeoutMs: ICLOUDPD_TIMEOUT_MS, spawnImpl: context.commandSpawner });
   if (!version.ok) {
     return {
       ok: false,
@@ -196,23 +196,24 @@ export async function getNewAuthStatus(context: NewAuthContext = {}): Promise<Re
     ]);
   }
 
+  const config = buildNewAuthIcloudpdConfig(context);
   const paths = getNewAuthPathCandidates(context);
   const sessionDirectory = paths.find((entry) => entry.label === 'Configured session directory');
-  const sessionFiles = flattenPathMetadata(paths).filter((entry) => entry.exists && entry.type === 'file' && SESSION_FILE_HINT_PATTERN.test(path.basename(entry.path)));
+  const sessionEvidence = collectNewAuthSessionEvidence(config);
   const baseDetails = {
     provider: 'icloudpd',
     sessionDirectoryKnown: Boolean(sessionDirectory),
     sessionDirectoryExists: Boolean(sessionDirectory?.exists),
-    sessionFileCount: sessionFiles.length,
+    sessionFileCount: sessionEvidence.sessionFileCount,
     localSessionEvidence: {
-      hasSessionFiles: sessionFiles.length > 0,
-      sessionFileCount: sessionFiles.length,
+      hasSessionFiles: sessionEvidence.hasSessionFiles,
+      sessionFileCount: sessionEvidence.sessionFileCount,
       contentsShown: false,
     },
     envPresence: summarizeEnvPresence(context.envValues ?? {}),
   };
 
-  if (!sessionDirectory || !sessionDirectory.exists || sessionFiles.length === 0) {
+  if (!sessionDirectory || !sessionDirectory.exists || !sessionEvidence.hasSessionFiles) {
     return {
       ok: true,
       state: 'logged_out',
@@ -973,13 +974,13 @@ export function mapNewAuthCommandResult(
   const afterSessionEvidence = result.ok ? collectNewAuthSessionEvidence(config) : EMPTY_SESSION_EVIDENCE;
   if (result.ok && hasFreshNewAuthSessionEvidence(beforeSessionEvidence, afterSessionEvidence)) {
     return appendStructuredEvents({
-      ok: true,
-      state: 'authenticated',
-      message: messages.successMessage,
+      ok: false,
+      state: 'unverified',
+      errorCode: 'NEW_AUTH_UNVERIFIED_SESSION',
+      message: messages.startedMessage,
       details: {
         provider: 'icloudpd',
-        authenticatedUser: redactEmail(config.username),
-        providerSessionRef: 'icloudpd_cookie_directory_internal',
+        nextAction: 'check_login_status_or_retry_provider_proof',
         sessionFileCount: afterSessionEvidence.sessionFileCount,
         latestSessionFileModifiedAt: afterSessionEvidence.latestModifiedAt,
         providerOutputPreview: sanitizePreview(combined),
@@ -988,10 +989,10 @@ export function mapNewAuthCommandResult(
       buildStructuredEvent({
         operation: 'map_command_result',
         phase: 'session_evidence_collected',
-        stateBefore: beforeSessionEvidence.hasSessionFiles ? 'authenticated' : 'logging_in',
-        stateAfter: 'authenticated',
+        stateBefore: beforeSessionEvidence.hasSessionFiles ? 'unverified' : 'logging_in',
+        stateAfter: 'unverified',
         responseType: 'none',
-        message: `Session evidence collected: count=${afterSessionEvidence.sessionFileCount}, latest=${afterSessionEvidence.latestModifiedAt ?? 'none'}.`,
+        message: `Session evidence collected but not promoted to authenticated without provider proof: count=${afterSessionEvidence.sessionFileCount}, latest=${afterSessionEvidence.latestModifiedAt ?? 'none'}.`,
         providerOutputShown: 'sanitized_preview',
       }),
     ]);
@@ -1548,7 +1549,15 @@ async function resolveIcloudpdExecutable(platform: NodeJS.Platform): Promise<{ f
 }
 
 async function resolveIcloudpdExecutableForContext(context: NewAuthContext): Promise<{ found: boolean; path: string | null; displayPath: string | null; lookupCommand: string }> {
-  if (context.executablePath) {
+  if (Object.hasOwn(context, 'executablePath')) {
+    if (!context.executablePath) {
+      return {
+        found: false,
+        path: null,
+        displayPath: null,
+        lookupCommand: 'injected executablePath',
+      };
+    }
     return {
       found: true,
       path: context.executablePath,

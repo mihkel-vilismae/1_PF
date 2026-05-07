@@ -107,3 +107,105 @@ test('runtime truth new auth history stores request/response metadata without su
     globalThis.fetch = originalFetch;
   }
 });
+
+test('runtime truth new auth marks unverified login proof as pending, not success or failed', async () => {
+  let state = createInitialState();
+  const originalFetch = globalThis.fetch;
+
+  globalThis.fetch = async () => new Response(JSON.stringify({
+    ok: false,
+    state: 'unverified',
+    errorCode: 'NEW_AUTH_PROVIDER_PROOF_TIMEOUT',
+    message: 'Local session files exist, but iCloudPD provider proof timed out before verifying them.',
+    details: {
+      provider: 'icloudpd',
+      providerProof: {
+        verified: false,
+        reasonCode: 'NEW_AUTH_PROVIDER_PROOF_TIMEOUT',
+      },
+    },
+  }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+
+  const behavior = createRuntimeTruthBehavior({
+    getState: () => state,
+    patchState: (mutator) => {
+      const nextState = structuredClone(state);
+      mutator(nextState);
+      state = nextState;
+    },
+    pushHistory: () => {},
+    pushLog: () => {},
+    setStatus: (key, status) => {
+      state.statusByKey[key] = status;
+    },
+    stamp: () => '12:00:00',
+  });
+
+  try {
+    behavior.runAction('new-auth-check-login');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    assert.equal(state.newAuth.buttonStates['new-auth-check-login'].status, 'pending');
+    assert.equal(state.statusByKey['1A-STASH-OFF'], 'info');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('runtime truth new auth logout clears stale login and check-login button states', async () => {
+  let state = createInitialState();
+  const originalFetch = globalThis.fetch;
+
+  state.newAuth.buttonStates['new-auth-login-using-env'] = {
+    status: 'success',
+    message: 'Stale authenticated success.',
+    updatedAt: '11:59:00',
+    endpoint: 'POST /api/auth/new/login',
+  };
+  state.newAuth.buttonStates['new-auth-check-login'] = {
+    status: 'success',
+    message: 'Stale authenticated status.',
+    updatedAt: '11:59:01',
+    endpoint: 'GET /api/auth/new/status',
+  };
+
+  globalThis.fetch = async () => new Response(JSON.stringify({
+    ok: true,
+    state: 'logged_out',
+    message: 'Local iCloudPD session data was removed and the user is logged out locally. Remote Apple logout was not claimed.',
+    details: {
+      provider: 'icloudpd',
+      removedFileCount: 1,
+      remoteLogoutClaimed: false,
+    },
+  }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+
+  const behavior = createRuntimeTruthBehavior({
+    getState: () => state,
+    patchState: (mutator) => {
+      const nextState = structuredClone(state);
+      mutator(nextState);
+      state = nextState;
+    },
+    pushHistory: () => {},
+    pushLog: () => {},
+    setStatus: (key, status) => {
+      state.statusByKey[key] = status;
+    },
+    stamp: () => '12:00:00',
+  });
+
+  try {
+    behavior.runAction('new-auth-logout-session');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    assert.equal(state.newAuth.buttonStates['new-auth-logout-session'].status, 'success');
+    assert.equal(state.newAuth.buttonStates['new-auth-login-using-env'].status, 'neutral');
+    assert.equal(state.newAuth.buttonStates['new-auth-check-login'].status, 'neutral');
+    assert.equal(state.newAuth.buttonStates['new-auth-login-using-env'].endpoint, null);
+    assert.equal(state.newAuth.buttonStates['new-auth-check-login'].endpoint, null);
+    assert.match(state.newAuth.buttonStates['new-auth-check-login'].message, /Logged out locally/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});

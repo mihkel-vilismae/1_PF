@@ -120,6 +120,9 @@ export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, push
       patchState((draft) => {
         draft.newAuth.buttonStates ??= {};
         draft.newAuth.buttonStates[buttonKey] = buildNewAuthButtonState(status, message, endpoint);
+        if (buttonKey === 'new-auth-logout-session' && status === 'success') {
+          resetNewAuthDependentSessionStates(draft, message);
+        }
         draft.newAuth.loaded = true;
         draft.newAuth[resultTarget] = buildNewAuthResult({ operation, endpoint, outcome: 'success', message, payload: safePayload, meta: sanitizeNewAuthPayload(result.meta) });
       });
@@ -177,10 +180,23 @@ export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, push
 function classifyNewAuthButtonStatus(buttonKey, payload, transportOutcome) {
   if (transportOutcome === 'error') return 'failed';
   if (hasNewAuthTwoFactorPrompt(payload)) return 'pending';
+  if (payload?.state === 'unverified') return 'pending';
   if (payload?.ok === false || payload?.state === 'failed' || payload?.status === 'error') return 'failed';
   if (buttonKey === 'new-auth-check-login') return 'success';
   if (buttonKey === 'new-auth-session-files') return Array.isArray(payload?.paths) || payload?.ok === true ? 'success' : 'pending';
   return payload?.ok === true || payload?.state === 'authenticated' || payload?.status === 'ok' ? 'success' : 'pending';
+}
+
+function resetNewAuthDependentSessionStates(draft, logoutMessage) {
+  const message = `Logged out locally. Run this action again when a new session is needed. Last logout: ${logoutMessage}`;
+  for (const key of ['new-auth-login-using-env', 'new-auth-check-login']) {
+    draft.newAuth.buttonStates[key] = {
+      status: 'neutral',
+      message,
+      updatedAt: stampSafe(),
+      endpoint: null,
+    };
+  }
 }
 
 function hasNewAuthTwoFactorPrompt(payload) {

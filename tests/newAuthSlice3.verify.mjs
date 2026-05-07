@@ -28,7 +28,7 @@ assert.ok(service.includes('NEW_AUTH_MISSING_CONFIG'));
 assert.ok(service.includes('NEW_AUTH_2FA_CODE_MISSING'));
 assert.ok(service.includes('NEW_AUTH_UNSAFE_SESSION_PATH'));
 assert.ok(service.includes('pending_2fa'));
-assert.ok(service.includes('stdinText: `${code}\\n`'));
+assert.ok(service.includes('activeAttempt.child.stdin.write(`${raw}\\n`)'));
 assert.ok(service.includes("'--auth-only'"));
 assert.ok(service.includes('await rm(safeCookieDir, { recursive: true, force: true })'));
 assert.ok(service.includes('isSafeSessionCleanupPath'));
