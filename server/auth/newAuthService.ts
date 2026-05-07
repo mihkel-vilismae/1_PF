@@ -19,6 +19,10 @@ export interface NewAuthContext {
   commandSpawner?: NewAuthCommandSpawner;
 }
 
+export interface NewAuthStatusOptions {
+  providerProof?: boolean;
+}
+
 export interface NewAuthPathMetadata {
   label: string;
   path: string;
@@ -180,7 +184,7 @@ export async function verifyNewAuthIcloudpd(context: NewAuthContext = {}): Promi
   };
 }
 
-export async function getNewAuthStatus(context: NewAuthContext = {}): Promise<Record<string, unknown>> {
+export async function getNewAuthStatus(context: NewAuthContext = {}, options: NewAuthStatusOptions = {}): Promise<Record<string, unknown>> {
   const activeAttempt = getActiveNewAuthAttempt();
   if (activeAttempt) {
     return appendStructuredEvents(buildPendingPayloadFromActiveAttempt(activeAttempt, 'iCloudPD authentication is still waiting for provider output or a two-factor response.'), [
@@ -221,6 +225,23 @@ export async function getNewAuthStatus(context: NewAuthContext = {}): Promise<Re
       details: {
         ...baseDetails,
         providerProof: buildProviderProofSkipped('NO_LOCAL_SESSION_FILES', 'No local session-like files were found, so provider proof was not attempted.'),
+      },
+    };
+  }
+
+  if (options.providerProof === false) {
+    const proof = buildProviderProofSkipped(
+      'NEW_AUTH_PROVIDER_PROOF_SKIPPED',
+      'Local session files exist, but passive status check did not start provider proof.',
+    );
+    return {
+      ok: false,
+      state: 'unverified',
+      errorCode: proof.reasonCode,
+      message: statusMessageForState('unverified', proof),
+      details: {
+        ...baseDetails,
+        providerProof: proof,
       },
     };
   }

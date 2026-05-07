@@ -59,6 +59,7 @@ Local session files are evidence only. They do not produce `authenticated` witho
 3. Status indicator semantics are per-button semantic outcomes, not transport outcomes.
 4. `Submit 2FA` is green only when both authenticated state and `two_factor_status=complete` are proven by backend-safe projection.
 5. Unsupported non-interactive 2FA paths remain blocked/pending, not success.
+6. NEW AUTH `Check login` is a passive status read. It may observe an active login attempt, 2FA wait, local session evidence, or logged-out state, but it must not start a new login or provider-proof subprocess.
 
 ### Pipeline and test-environment contract
 
@@ -91,4 +92,3 @@ Local session files are evidence only. They do not produce `authenticated` witho
 | `VIEW_A_AUTH_PREFLIGHT_BUTTONS.md` | ABSORBED (strict precedence) | Canonical button semantics and compatibility naming |
 | `chat_generated_addenda/01,04` | ABSORBED (selective) | Real/test isolation, auth/session and mock-download clarifications |
 | Older button overviews in archive docs | REDUCED_TO_REFERENCE | Historical framing only, no canonical ownership |
-

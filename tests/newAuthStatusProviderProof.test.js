@@ -28,6 +28,16 @@ function commandSpawnerWithOutput({ stdout = '', stderr = '', exitCode = 0 }) {
   };
 }
 
+function countingCommandSpawnerWithOutput({ stdout = '', stderr = '', exitCode = 0 }) {
+  const calls = [];
+  const spawner = (command, args) => {
+    calls.push({ command, args });
+    return commandSpawnerWithOutput({ stdout, stderr, exitCode })();
+  };
+  spawner.calls = calls;
+  return spawner;
+}
+
 test('new auth status does not promote local session files without provider proof', async () => {
   const sessionDir = mkdtempSync(path.join(tmpdir(), 'new-auth-status-unverified-'));
 
@@ -86,6 +96,38 @@ test('new auth status promotes authenticated only when provider proof verifies t
     assert.equal(JSON.stringify(status).includes('DO_NOT_EXPOSE_COOKIE_CONTENT'), false);
     assert.equal(JSON.stringify(status).includes('person@example.com'), false);
     assert.equal(JSON.stringify(status).includes(sessionDir), false);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('new auth passive status reports session evidence without starting provider proof', async () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'new-auth-status-passive-'));
+  const sessionDir = path.join(root, 'icloud-session');
+  const commandSpawner = countingCommandSpawnerWithOutput({ stdout: 'Using existing session. Valid session cookie.' });
+
+  try {
+    await mkdir(sessionDir, { recursive: true });
+    writeFileSync(path.join(sessionDir, 'cookie'), 'DO_NOT_EXPOSE_COOKIE_CONTENT');
+
+    const status = await getNewAuthStatus({
+      executablePath: 'fake-icloudpd',
+      commandSpawner,
+      envValues: {
+        ICLOUDPD_COOKIE_DIR: sessionDir,
+        user: 'person@example.com',
+        pw: 'DO_NOT_EXPOSE_PASSWORD',
+      },
+    }, { providerProof: false });
+
+    assert.equal(commandSpawner.calls.length, 0);
+    assert.equal(status.ok, false);
+    assert.equal(status.state, 'unverified');
+    assert.equal(status.errorCode, 'NEW_AUTH_PROVIDER_PROOF_SKIPPED');
+    assert.equal(status.details.providerProof.attempted, false);
+    assert.equal(status.details.localSessionEvidence.hasSessionFiles, true);
+    assert.equal(JSON.stringify(status).includes('DO_NOT_EXPOSE_PASSWORD'), false);
+    assert.equal(JSON.stringify(status).includes('DO_NOT_EXPOSE_COOKIE_CONTENT'), false);
   } finally {
     await rm(root, { recursive: true, force: true });
   }

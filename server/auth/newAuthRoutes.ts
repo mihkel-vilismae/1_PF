@@ -12,6 +12,7 @@ import {
 interface NewAuthRouteRequest {
   context: NewAuthContext;
   body?: Record<string, unknown>;
+  url?: URL;
 }
 
 interface NewAuthRouteResponse<TPayload extends Record<string, unknown>> {
@@ -31,8 +32,9 @@ interface NewAuthRoutes {
 
 export function createNewAuthRoutes(): NewAuthRoutes {
   return {
-    statusHandler: async ({ context }) => {
-      const payload = await getNewAuthStatus(context);
+    statusHandler: async ({ context, url }) => {
+      const passive = url?.searchParams.get('mode') === 'passive' || url?.searchParams.get('providerProof') === 'false';
+      const payload = await getNewAuthStatus(context, { providerProof: !passive });
       return {
         statusCode: 200,
         payload,

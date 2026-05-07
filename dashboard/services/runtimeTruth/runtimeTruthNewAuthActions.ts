@@ -1,7 +1,7 @@
 import {
   NEW_AUTH_ENDPOINTS,
   fetchNewAuthSessionFiles,
-  fetchNewAuthStatus,
+  fetchPassiveNewAuthStatus,
   logoutNewAuthSession,
   startNewAuthLogin,
   submitNewAuthTwoFactor,
@@ -38,8 +38,8 @@ export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, push
     return runNewAuthBackendAction({
       buttonKey: 'new-auth-check-login',
       operation: 'Check new auth login status',
-      endpoint: NEW_AUTH_ENDPOINTS.status,
-      execute: fetchNewAuthStatus,
+      endpoint: NEW_AUTH_ENDPOINTS.passiveStatus,
+      execute: fetchPassiveNewAuthStatus,
       duplicateMessage: '1A-STASH-OFF login status check is already running; duplicate start was blocked.',
     });
   }
@@ -280,7 +280,8 @@ function isNewAuthSessionResult(result) {
 }
 
 function isNewAuthSessionEndpoint(endpointPath) {
-  return endpointPath === NEW_AUTH_ENDPOINTS.status.path
+  const normalizedPath = normalizeNewAuthEndpointPath(endpointPath);
+  return normalizedPath === NEW_AUTH_ENDPOINTS.status.path
     || endpointPath === NEW_AUTH_ENDPOINTS.login.path
     || endpointPath === NEW_AUTH_ENDPOINTS.submitTwoFactor.path
     || endpointPath === NEW_AUTH_ENDPOINTS.logout.path
@@ -302,15 +303,21 @@ function resultToButtonProjection(result) {
 }
 
 function endpointForNewAuthResult(result) {
-  return Object.values(NEW_AUTH_ENDPOINTS).find((endpoint) => endpoint.path === result?.endpoint) ?? null;
+  const normalizedPath = normalizeNewAuthEndpointPath(result?.endpoint);
+  return Object.values(NEW_AUTH_ENDPOINTS).find((endpoint) => normalizeNewAuthEndpointPath(endpoint.path) === normalizedPath) ?? null;
 }
 
 function buttonKeyForNewAuthEndpoint(endpointPath) {
-  if (endpointPath === NEW_AUTH_ENDPOINTS.status.path) return 'new-auth-check-login';
+  const normalizedPath = normalizeNewAuthEndpointPath(endpointPath);
+  if (normalizedPath === NEW_AUTH_ENDPOINTS.status.path) return 'new-auth-check-login';
   if (endpointPath === NEW_AUTH_ENDPOINTS.login.path || endpointPath === NEW_AUTH_ENDPOINTS.submitTwoFactor.path) return 'new-auth-login-using-env';
   if (endpointPath === NEW_AUTH_ENDPOINTS.logout.path) return 'new-auth-logout-session';
   if (endpointPath === NEW_AUTH_ENDPOINTS.sessionFiles.path) return 'new-auth-session-files';
   return 'new-auth-verify-icloudpd';
+}
+
+function normalizeNewAuthEndpointPath(endpointPath) {
+  return typeof endpointPath === 'string' ? endpointPath.split('?')[0] : endpointPath;
 }
 
 function hasNewAuthTwoFactorPrompt(payload) {

@@ -108,23 +108,28 @@ test('runtime truth new auth history stores request/response metadata without su
   }
 });
 
-test('runtime truth new auth marks unverified login proof as pending, not success or failed', async () => {
+test('runtime truth new auth check-login uses passive status and marks unverified state as pending', async () => {
   let state = createInitialState();
   const originalFetch = globalThis.fetch;
+  const requests = [];
 
-  globalThis.fetch = async () => new Response(JSON.stringify({
-    ok: false,
-    state: 'unverified',
-    errorCode: 'NEW_AUTH_PROVIDER_PROOF_TIMEOUT',
-    message: 'Local session files exist, but iCloudPD provider proof timed out before verifying them.',
-    details: {
-      provider: 'icloudpd',
-      providerProof: {
-        verified: false,
-        reasonCode: 'NEW_AUTH_PROVIDER_PROOF_TIMEOUT',
+  globalThis.fetch = async (url) => {
+    requests.push(url);
+    return new Response(JSON.stringify({
+      ok: false,
+      state: 'unverified',
+      errorCode: 'NEW_AUTH_PROVIDER_PROOF_SKIPPED',
+      message: 'Local session files exist, but passive status check did not start provider proof.',
+      details: {
+        provider: 'icloudpd',
+        providerProof: {
+          verified: false,
+          attempted: false,
+          reasonCode: 'NEW_AUTH_PROVIDER_PROOF_SKIPPED',
+        },
       },
-    },
-  }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  };
 
   const behavior = createRuntimeTruthBehavior({
     getState: () => state,
@@ -145,6 +150,7 @@ test('runtime truth new auth marks unverified login proof as pending, not succes
     behavior.runAction('new-auth-check-login');
     await new Promise((resolve) => setTimeout(resolve, 0));
 
+    assert.equal(requests[0], '/api/auth/new/status?mode=passive');
     assert.equal(state.newAuth.buttonStates['new-auth-check-login'].status, 'pending');
     assert.equal(state.statusByKey['1A-STASH-OFF'], 'info');
   } finally {

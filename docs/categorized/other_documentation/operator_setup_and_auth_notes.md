@@ -84,7 +84,7 @@ The NEW AUTH dashboard flow is owned by `/api/auth/new/*` only. The endpoint fam
 Operator truth rules:
 
 1. Verify iCloudPD first.
-2. Check status next.
+2. Check status next. This is a passive state read and must not start login or provider proof.
 3. If 2FA is required, the dashboard must visibly show `ENTER 6-DIGIT CODE` and/or `ENTER DEVICE INDEX (A)`.
 4. Submit 2FA only through the NEW AUTH controls.
 5. Treat `authenticated` as valid only when provider proof or stronger test-download proof succeeds.

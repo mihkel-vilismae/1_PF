@@ -9,6 +9,7 @@ export type NewAuthEndpointResponse<TPayload = unknown> = ApiResponseWithMeta<TP
 
 export const NEW_AUTH_ENDPOINTS = Object.freeze({
   status: { method: 'GET', path: '/api/auth/new/status' },
+  passiveStatus: { method: 'GET', path: '/api/auth/new/status?mode=passive' },
   verifyIcloudpd: { method: 'POST', path: '/api/auth/new/verify-icloudpd' },
   login: { method: 'POST', path: '/api/auth/new/login' },
   submitTwoFactor: { method: 'POST', path: '/api/auth/new/submit-2fa' },
@@ -19,6 +20,10 @@ export const NEW_AUTH_ENDPOINTS = Object.freeze({
 
 export function fetchNewAuthStatus(): Promise<NewAuthEndpointResponse> {
   return callNewAuthEndpoint(NEW_AUTH_ENDPOINTS.status);
+}
+
+export function fetchPassiveNewAuthStatus(): Promise<NewAuthEndpointResponse> {
+  return callNewAuthEndpoint(NEW_AUTH_ENDPOINTS.passiveStatus);
 }
 
 export function verifyNewAuthIcloudpd(): Promise<NewAuthEndpointResponse> {

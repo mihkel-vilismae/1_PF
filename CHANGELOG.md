@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## 2026-05-08 02:32 EEST — v0.3.58
+
+### Added
+- Added regression coverage proving passive NEW AUTH status does not spawn provider proof.
+
+### Changed
+- Changed the NEW AUTH `Check login` button to call passive status mode so it observes current login/session state without starting provider authentication.
+- Clarified button copy and operator docs that `Check login` is passive.
+- Updated version metadata from v0.3.57 to v0.3.58.
+
+### Fixed
+- Prevented the dashboard `Check login` action from starting an `icloudpd` provider-proof subprocess.
+
+### Removed
+- None.
+
 ## 2026-05-08 02:25 EEST — v0.3.57
 
 ### Added
