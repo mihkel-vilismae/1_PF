@@ -209,3 +209,90 @@ test('runtime truth new auth logout clears stale login and check-login button st
     globalThis.fetch = originalFetch;
   }
 });
+
+test('runtime truth new auth status recomputes stale login circle when backend reports logged out', async () => {
+  let state = createInitialState();
+  const originalFetch = globalThis.fetch;
+
+  state.newAuth.buttonStates['new-auth-login-using-env'] = {
+    status: 'success',
+    message: 'Stale authenticated success.',
+    updatedAt: '11:59:00',
+    endpoint: 'POST /api/auth/new/login',
+  };
+
+  globalThis.fetch = async () => new Response(JSON.stringify({
+    ok: true,
+    state: 'logged_out',
+    message: 'No active iCloudPD session files were found.',
+    details: {
+      provider: 'icloudpd',
+    },
+  }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+
+  const behavior = createRuntimeTruthBehavior({
+    getState: () => state,
+    patchState: (mutator) => {
+      const nextState = structuredClone(state);
+      mutator(nextState);
+      state = nextState;
+    },
+    pushHistory: () => {},
+    pushLog: () => {},
+    setStatus: (key, status) => {
+      state.statusByKey[key] = status;
+    },
+    stamp: () => '12:00:00',
+  });
+
+  try {
+    behavior.runAction('new-auth-check-login');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    assert.equal(state.newAuth.buttonStates['new-auth-login-using-env'].status, 'neutral');
+    assert.equal(state.newAuth.buttonStates['new-auth-login-using-env'].endpoint, null);
+    assert.equal(state.newAuth.buttonStates['new-auth-check-login'].status, 'success');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('runtime truth new auth verify result does not make login circle green', async () => {
+  let state = createInitialState();
+  const originalFetch = globalThis.fetch;
+
+  globalThis.fetch = async () => new Response(JSON.stringify({
+    ok: true,
+    state: 'success',
+    message: 'iCloudPD was found and can be executed.',
+    details: {
+      provider: 'icloudpd',
+    },
+  }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+
+  const behavior = createRuntimeTruthBehavior({
+    getState: () => state,
+    patchState: (mutator) => {
+      const nextState = structuredClone(state);
+      mutator(nextState);
+      state = nextState;
+    },
+    pushHistory: () => {},
+    pushLog: () => {},
+    setStatus: (key, status) => {
+      state.statusByKey[key] = status;
+    },
+    stamp: () => '12:00:00',
+  });
+
+  try {
+    behavior.runAction('new-auth-verify-icloudpd');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    assert.equal(state.newAuth.buttonStates['new-auth-verify-icloudpd'].status, 'success');
+    assert.equal(state.newAuth.buttonStates['new-auth-login-using-env'].status, 'neutral');
+    assert.equal(state.newAuth.buttonStates['new-auth-check-login'].status, 'neutral');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});

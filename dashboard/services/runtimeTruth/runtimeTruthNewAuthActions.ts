@@ -12,6 +12,14 @@ import { buildTimelineDetails } from './runtimeTruthActionUtils.ts';
 const NEW_AUTH_CARD_KEY = '1A-STASH-OFF';
 const NEW_AUTH_HISTORY_SOURCE = 'NEW AUTH';
 const SECRET_FIELD_PATTERN = /(password|passwd|secret|token|cookie|session|credential|authorization|otp|2fa|two_factor_value|mfa|^code$|apple_id)/i;
+const NEW_AUTH_BUTTON_DEFAULTS = Object.freeze({
+  'new-auth-verify-icloudpd': 'Not checked yet.',
+  'new-auth-login-using-env': 'Not checked yet.',
+  'new-auth-check-login': 'Not checked yet.',
+  'new-auth-logout-session': 'Not checked yet.',
+  'new-auth-session-files': 'Not checked yet.',
+});
+const NEW_AUTH_SESSION_BUTTON_KEYS = Object.freeze(['new-auth-login-using-env', 'new-auth-check-login']);
 
 export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, pushLog, setStatus, openModal, guards }) {
   const { guardAction, endAction } = guards;
@@ -107,6 +115,7 @@ export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, push
     setStatus(NEW_AUTH_CARD_KEY, 'running');
     patchState((draft) => {
       draft.newAuth.buttonStates ??= {};
+      recalculateNewAuthButtonStates(draft);
       draft.newAuth.buttonStates[buttonKey] = buildNewAuthButtonState('running', runningMessage, endpoint);
       draft.newAuth[resultTarget] = buildNewAuthResult({ operation, endpoint, outcome: 'running', message: runningMessage, payload: null, meta: null });
     });
@@ -120,11 +129,9 @@ export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, push
       patchState((draft) => {
         draft.newAuth.buttonStates ??= {};
         draft.newAuth.buttonStates[buttonKey] = buildNewAuthButtonState(status, message, endpoint);
-        if (buttonKey === 'new-auth-logout-session' && status === 'success') {
-          resetNewAuthDependentSessionStates(draft, message);
-        }
         draft.newAuth.loaded = true;
         draft.newAuth[resultTarget] = buildNewAuthResult({ operation, endpoint, outcome: 'success', message, payload: safePayload, meta: sanitizeNewAuthPayload(result.meta) });
+        recalculateNewAuthButtonStates(draft, { buttonKey, endpoint, status, message, payload: safePayload });
       });
       setStatus(NEW_AUTH_CARD_KEY, status === 'success' ? 'success' : 'info');
       pushLog(NEW_AUTH_CARD_KEY, status === 'success' ? 'success' : 'info', message, buildNewAuthLogDetails({ operation, endpoint, outcome: 'success', meta: result.meta, payload: safePayload }));
@@ -147,6 +154,7 @@ export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, push
         draft.newAuth.buttonStates ??= {};
         draft.newAuth.buttonStates[buttonKey] = buildNewAuthButtonState('failed', message, endpoint);
         draft.newAuth[resultTarget] = buildNewAuthResult({ operation, endpoint, outcome: 'error', message, payload: safePayload, meta: sanitizeNewAuthPayload(error?.meta ?? null) });
+        recalculateNewAuthButtonStates(draft, { buttonKey, endpoint, status: 'failed', message, payload: safePayload });
       });
       setStatus(NEW_AUTH_CARD_KEY, 'error');
       pushLog(NEW_AUTH_CARD_KEY, 'error', message, buildNewAuthLogDetails({ operation, endpoint, outcome: 'error', meta: error?.meta, payload: safePayload }));
@@ -182,21 +190,127 @@ function classifyNewAuthButtonStatus(buttonKey, payload, transportOutcome) {
   if (hasNewAuthTwoFactorPrompt(payload)) return 'pending';
   if (payload?.state === 'unverified') return 'pending';
   if (payload?.ok === false || payload?.state === 'failed' || payload?.status === 'error') return 'failed';
-  if (buttonKey === 'new-auth-check-login') return 'success';
+  if (payload?.state === 'logged_out') {
+    if (buttonKey === 'new-auth-check-login' || buttonKey === 'new-auth-logout-session') return 'success';
+    if (buttonKey === 'new-auth-login-using-env') return 'neutral';
+  }
+  if (buttonKey === 'new-auth-check-login') return payload?.state === 'authenticated' || payload?.state === 'logged_out' ? 'success' : 'pending';
+  if (buttonKey === 'new-auth-login-using-env') return payload?.state === 'authenticated' ? 'success' : 'pending';
   if (buttonKey === 'new-auth-session-files') return Array.isArray(payload?.paths) || payload?.ok === true ? 'success' : 'pending';
   return payload?.ok === true || payload?.state === 'authenticated' || payload?.status === 'ok' ? 'success' : 'pending';
 }
 
-function resetNewAuthDependentSessionStates(draft, logoutMessage) {
-  const message = `Logged out locally. Run this action again when a new session is needed. Last logout: ${logoutMessage}`;
-  for (const key of ['new-auth-login-using-env', 'new-auth-check-login']) {
-    draft.newAuth.buttonStates[key] = {
-      status: 'neutral',
-      message,
-      updatedAt: stampSafe(),
-      endpoint: null,
-    };
+function recalculateNewAuthButtonStates(draft, currentResult = null) {
+  draft.newAuth.buttonStates ??= {};
+  for (const [key, message] of Object.entries(NEW_AUTH_BUTTON_DEFAULTS)) {
+    draft.newAuth.buttonStates[key] ??= buildNewAuthButtonState('neutral', message, null);
   }
+
+  const sessionResult = currentResult?.payload && isNewAuthSessionEndpoint(currentResult.endpoint?.path)
+    ? currentResult
+    : isNewAuthSessionResult(draft.newAuth.latestResult)
+      ? resultToButtonProjection(draft.newAuth.latestResult)
+      : null;
+
+  if (sessionResult?.payload) {
+    applyNewAuthSessionProjection(draft, sessionResult);
+  }
+
+  if (draft.newAuth.sessionFilesResult?.payload && currentResult?.buttonKey !== 'new-auth-session-files') {
+    const payload = draft.newAuth.sessionFilesResult.payload;
+    const message = draft.newAuth.sessionFilesResult.message ?? summarizeNewAuthResult('Show auth/session paths and files', payload);
+    draft.newAuth.buttonStates['new-auth-session-files'] = buildNewAuthButtonState(
+      classifyNewAuthButtonStatus('new-auth-session-files', payload, 'success'),
+      message,
+      NEW_AUTH_ENDPOINTS.sessionFiles,
+    );
+  }
+
+  if (currentResult) {
+    draft.newAuth.buttonStates[currentResult.buttonKey] = buildNewAuthButtonState(
+      currentResult.status,
+      currentResult.message,
+      currentResult.endpoint,
+    );
+  }
+}
+
+function applyNewAuthSessionProjection(draft, { buttonKey, endpoint, status, message, payload }) {
+  const sessionStatus = classifyNewAuthSessionStatus(payload);
+  const sessionMessage = messageForNewAuthSessionStatus(sessionStatus, message);
+
+  for (const key of NEW_AUTH_SESSION_BUTTON_KEYS) {
+    draft.newAuth.buttonStates[key] = buildNewAuthButtonState(sessionStatus, sessionMessage, null);
+  }
+
+  if (buttonKey === 'new-auth-check-login') {
+    draft.newAuth.buttonStates[buttonKey] = buildNewAuthButtonState(status, message, endpoint);
+  }
+
+  if (buttonKey === 'new-auth-login-using-env') {
+    draft.newAuth.buttonStates[buttonKey] = buildNewAuthButtonState(sessionStatus, sessionMessage, endpoint);
+  }
+
+  if (buttonKey === 'new-auth-logout-session' && status === 'success') {
+    const logoutMessage = `Logged out locally. Run this action again when a new session is needed. Last logout: ${message}`;
+    for (const key of NEW_AUTH_SESSION_BUTTON_KEYS) {
+      draft.newAuth.buttonStates[key] = buildNewAuthButtonState('neutral', logoutMessage, null);
+    }
+  }
+}
+
+function classifyNewAuthSessionStatus(payload) {
+  if (!payload || typeof payload !== 'object') return 'neutral';
+  if (payload.state === 'logged_out') return 'neutral';
+  if (payload.state === 'authenticated' || payload.state === 'success') return 'success';
+  if (hasNewAuthTwoFactorPrompt(payload) || payload.state === 'unverified') return 'pending';
+  if (payload.ok === false || payload.state === 'failed' || payload.status === 'error') return 'failed';
+  return 'pending';
+}
+
+function messageForNewAuthSessionStatus(status, fallbackMessage) {
+  if (status === 'neutral') {
+    return fallbackMessage ? `No authenticated new-auth session is active. Last result: ${fallbackMessage}` : 'No authenticated new-auth session is active.';
+  }
+  return fallbackMessage || 'New-auth session state recalculated from the latest backend result.';
+}
+
+function isNewAuthSessionResult(result) {
+  return isNewAuthSessionEndpoint(result?.endpoint);
+}
+
+function isNewAuthSessionEndpoint(endpointPath) {
+  return endpointPath === NEW_AUTH_ENDPOINTS.status.path
+    || endpointPath === NEW_AUTH_ENDPOINTS.login.path
+    || endpointPath === NEW_AUTH_ENDPOINTS.submitTwoFactor.path
+    || endpointPath === NEW_AUTH_ENDPOINTS.logout.path
+    || endpointPath === NEW_AUTH_ENDPOINTS.testDownload.path;
+}
+
+function resultToButtonProjection(result) {
+  const endpoint = endpointForNewAuthResult(result);
+  const buttonKey = buttonKeyForNewAuthEndpoint(result.endpoint);
+  const payload = result.payload ?? null;
+  const message = result.message ?? summarizeNewAuthResult(result.operation ?? 'New auth action', payload);
+  return {
+    buttonKey,
+    endpoint,
+    status: classifyNewAuthButtonStatus(buttonKey, payload, result.outcome === 'error' ? 'error' : 'success'),
+    message,
+    payload,
+  };
+}
+
+function endpointForNewAuthResult(result) {
+  return Object.values(NEW_AUTH_ENDPOINTS).find((endpoint) => endpoint.path === result?.endpoint) ?? null;
+}
+
+function buttonKeyForNewAuthEndpoint(endpointPath) {
+  if (endpointPath === NEW_AUTH_ENDPOINTS.status.path) return 'new-auth-check-login';
+  if (endpointPath === NEW_AUTH_ENDPOINTS.login.path || endpointPath === NEW_AUTH_ENDPOINTS.submitTwoFactor.path) return 'new-auth-login-using-env';
+  if (endpointPath === NEW_AUTH_ENDPOINTS.logout.path) return 'new-auth-logout-session';
+  if (endpointPath === NEW_AUTH_ENDPOINTS.sessionFiles.path) return 'new-auth-session-files';
+  return 'new-auth-verify-icloudpd';
 }
 
 function hasNewAuthTwoFactorPrompt(payload) {

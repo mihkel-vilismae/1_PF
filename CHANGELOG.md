@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## 2026-05-08 02:25 EEST — v0.3.57
+
+### Added
+- Added regression coverage for NEW AUTH button-state recalculation after logged-out status and executable-readiness results.
+
+### Changed
+- Recalculated NEW AUTH button circles on action start and backend result so session-dependent login/check-login status cannot stay stale.
+- Updated version metadata from v0.3.56 to v0.3.57.
+
+### Fixed
+- Cleared stale green login/check-login circles after logout or logged-out status while preserving iCloudPD verification as readiness-only.
+
+### Removed
+- None.
+
 ## 2026-05-06 16:35 EEST — v0.3.56
 
 ### Added
