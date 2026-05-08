@@ -1,37 +1,40 @@
 {
-  "queueLength": 0,
-  "currentMedia": null,
-  "playbackStatus": "Waiting for queued media",
+  "queueLength": 25,
+  "currentMedia": {
+    "name": "duplicate_copy_02.jpg",
+    "type": "Image",
+    "position": "1 of 25",
+    "overlay": "Lat: 59.43700, Lon: 24.75360"
+  },
+  "playbackStatus": "Selected by backend for playback",
   "screenState": "ON",
   "lastActivitySource": "Mouse movement enabled",
   "inactivityTimeoutSeconds": 5,
-  "lastCheckpoint": "No checkpoint yet",
-  "lastStageCompleted": "B3.1",
+  "lastCheckpoint": "2026-05-08T04:56:11.181Z",
+  "lastStageCompleted": "B4",
   "realRunActive": false,
   "sourceOfTruth": "conf/runtime-truth.json",
-  "stageLock": "Pipeline lock held by B3.2",
+  "stageLock": "B3.5 finished and released the pipeline lock",
   "playbackLock": "Playback worker lock available",
   "screenLock": "Screen worker lock available",
-  "pipelineActiveKey": "B3.2",
+  "pipelineActiveKey": null,
   "playbackActive": false,
   "realRunStartCount": 0,
   "auth": {
     "source": "server/auth/projectPublicAuthState",
     "publicState": {
-      "status": "blocked",
-      "has_required_files": true,
+      "status": "idle",
+      "has_required_files": false,
       "requires_2fa": "unknown",
-      "two_factor_status": "unknown",
+      "two_factor_status": "not_started",
       "two_factor_method": null,
-      "next_action": "install_or_configure_icloudpd",
-      "attemptId": "d4ad0cdc-5d40-46b0-8065-feea7c852e8a",
-      "updatedAt": "2026-04-29T15:03:13.417Z",
-      "error": {
-        "code": "icloudpd_executable_unavailable",
-        "message": "icloudpd executable is not available on PATH or could not be started."
-      },
+      "next_action": "run_auth_preflight",
+      "attemptId": null,
+      "updatedAt": null,
+      "error": null,
       "authenticatedUser": null,
       "provider": "icloud"
     }
-  }
+  },
+  "pipelineLockAcquiredAt": null
 }
