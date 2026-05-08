@@ -1,3 +1,8 @@
+/*
+ * Renders the dashboard shell and binds browser-side UI interactions.
+ * The frontend owns presentation state while backend routes provide runtime truth.
+ * This file also displays component versions visible to operators.
+ */
 import { VIEW_ORDER } from './shared/constants.ts';
 import {
   getState,
@@ -42,8 +47,19 @@ const app = document.getElementById('app');
 declare const __APP_VERSION__: string;
 const TRANSIT_EVENT_NAME = 'dashboard:transit';
 const COPY_HISTORY_LABEL = 'copy all log';
+type BackendVersionState = {
+  status: 'checking' | 'ready' | 'unavailable';
+  version: string | null;
+  message: string | null;
+};
+
 let historyCopyStatus: 'idle' | 'copied' | 'failed' = 'idle';
 let historyCopyResetTimer: ReturnType<typeof setTimeout> | null = null;
+let backendVersionState: BackendVersionState = {
+  status: 'checking',
+  version: null,
+  message: null,
+};
 const transitTerminal = createTransitTerminal();
 const { describeRealityElement } = createRealityMetadataHelpers({
   getState,
@@ -62,6 +78,7 @@ const {
   hideInspectTooltip,
 } = createGuideTooltipController({ getState });
 
+// Renders the current dashboard state and the component version badge.
 function render() {
   const state = getState();
   const hasLiveTraffic = transitTerminal.hasLiveTraffic();
@@ -72,17 +89,11 @@ function render() {
     D: renderRunningProcessView(state),
     E: renderDatabaseViewerView(state),
   }[state.activeView];
-  const escapedAppVersion = escapeHtml(__APP_VERSION__);
 
   document.body.classList.toggle('modal-open', Boolean(state.modal));
 
   app.innerHTML = `
-    <div
-      id="versionBadge"
-      class="version-badge"
-      aria-label="PC dashboard version"
-      title="PC dashboard version ${escapedAppVersion}"
-    >v${escapedAppVersion}</div>
+    ${renderVersionBadge(__APP_VERSION__, backendVersionState)}
     <div class="shell">
       <aside class="sidebar">
         <div class="brand-card">
@@ -225,6 +236,64 @@ function render() {
     handleInspectLeave,
     hideInspectTooltip,
   });
+}
+
+// Builds the fixed top-right frontend/backend version display.
+function renderVersionBadge(frontendVersion: string, backendState: BackendVersionState): string {
+  const backendText = getBackendVersionText(backendState);
+  const title = `Frontend version ${frontendVersion}; backend version ${backendText}`;
+
+  return `
+    <div
+      id="versionBadge"
+      class="version-badge"
+      aria-label="${escapeHtml(title)}"
+      title="${escapeHtml(title)}"
+    >
+      <span class="version-badge__line">
+        <span class="version-badge__label">Frontend</span>
+        <span class="version-badge__value">v${escapeHtml(frontendVersion)}</span>
+      </span>
+      <span class="version-badge__line ${backendState.status === 'unavailable' ? 'version-badge__line--muted' : ''}">
+        <span class="version-badge__label">Backend</span>
+        <span class="version-badge__value">${escapeHtml(backendText)}</span>
+      </span>
+    </div>
+  `;
+}
+
+// Formats the backend version state for compact operator display.
+function getBackendVersionText(backendState: BackendVersionState): string {
+  if (backendState.status === 'ready' && backendState.version) {
+    return `v${backendState.version}`;
+  }
+  if (backendState.status === 'checking') {
+    return 'checking';
+  }
+  return 'unavailable';
+}
+
+// Loads the backend component version once without blocking initial render.
+async function loadBackendVersion(): Promise<void> {
+  try {
+    const response = await fetch('/api/version', { headers: { Accept: 'application/json' } });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const payload = await response.json() as { version?: unknown };
+    const version = typeof payload.version === 'string' ? payload.version.trim() : '';
+    backendVersionState = version
+      ? { status: 'ready', version, message: null }
+      : { status: 'unavailable', version: null, message: 'Backend version payload did not include a version.' };
+  } catch (error) {
+    backendVersionState = {
+      status: 'unavailable',
+      version: null,
+      message: error instanceof Error ? error.message : String(error),
+    };
+  }
+  render();
 }
 
 function bindEvents() {
@@ -486,6 +555,7 @@ function openHistoryModal(index) {
 
 subscribe(render);
 render();
+void loadBackendVersion();
 
 window.addEventListener('keydown', (event) => {
   if (event.key === 'Escape' && getState().modal) {

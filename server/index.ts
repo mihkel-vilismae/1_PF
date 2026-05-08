@@ -1,3 +1,8 @@
+/*
+ * Hosts the repo-local HTTP API used by the dashboard frontend.
+ * Routes expose initialization, auth, runtime, scheduler, and status surfaces.
+ * The server owns filesystem and process access that the browser cannot perform.
+ */
 import { createServer } from 'node:http';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { spawn } from 'node:child_process';
@@ -28,6 +33,8 @@ import type { SchedulerCapability, SchedulerOperation, SchedulerSupportLevel, Sc
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
+const versionFilePath = path.join(repoRoot, 'VERSION');
+const backendVersion = (await readTextIfExists(versionFilePath))?.trim() || 'unknown';
 const generatedTestDataDirectory = path.join(repoRoot, 'generated_test_data');
 const defaultEnvFilePath = path.join(repoRoot, '.env');
 const schedulerNodeArguments = Object.freeze(['--import', 'tsx']);
@@ -390,6 +397,7 @@ const envSchema: EnvSchemaEntry[] = [
 ];
 
 const routes: Record<string, RouteHandler> = {
+  'GET /api/version': versionHandler,
   'GET /api/auth/status': authRouteHandlers.statusHandler,
   'POST /api/auth/verify-icloudpd': authRouteHandlers.verifyIcloudpdHandler,
   'POST /api/auth/run': authRouteHandlers.runHandler,
@@ -485,6 +493,20 @@ server.listen(port, '127.0.0.1', () => {
   console.log(message);
   void logger.info(message, { port, url: `http://127.0.0.1:${port}` });
 });
+
+// Returns the backend component version from the backend process workspace.
+function versionHandler(): HandlerResult {
+  return {
+    statusCode: 200,
+    payload: {
+      status: 'ok',
+      component: 'backend',
+      version: backendVersion,
+      versionSource: 'VERSION',
+      schemaVersion: 1,
+    },
+  };
+}
 
 async function verifyEnvHandler({ context }) {
   const checks = envSchema.map((entry) => buildEnvCheck(entry, context.envValues));
