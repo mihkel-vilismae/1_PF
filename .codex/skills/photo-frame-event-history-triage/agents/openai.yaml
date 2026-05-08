@@ -1,0 +1,4 @@
+interface:
+  display_name: "Photo Frame Event History Triage"
+  short_description: "Triage 12_PF dashboard event exports"
+  default_prompt: "Use $photo-frame-event-history-triage to classify this dashboard event-history export and recommend the smallest safe next action."
