@@ -137,14 +137,15 @@ export function callSchedulerEmulatorEndpoint(
   endpoint: InitEndpoint,
   options: { target?: SchedulerTarget; crontabText?: string } = {},
 ): Promise<InitEndpointResponse> {
+  const path = appendSchedulerTargetQuery(endpoint.path, endpoint.method, options.target);
   const body: Record<string, unknown> = {};
-  if (options.target && Object.values(SCHEDULER_TARGETS).includes(options.target)) {
+  if (endpoint.method.toUpperCase() !== 'GET' && options.target && Object.values(SCHEDULER_TARGETS).includes(options.target)) {
     body.target = options.target;
   }
   if (typeof options.crontabText === 'string') {
     body.crontabText = options.crontabText;
   }
-  return callInitEndpoint(endpoint, Object.keys(body).length ? { body } : undefined);
+  return callInitEndpoint({ ...endpoint, path }, Object.keys(body).length ? { body } : undefined);
 }
 
 // Calls one of the legacy scheduler operation endpoints.
@@ -157,9 +158,21 @@ export function callSchedulerOperation(
     throw new Error(`Unsupported scheduler operation: ${operation}`);
   }
   if (options.target && Object.values(SCHEDULER_TARGETS).includes(options.target)) {
+    if (endpoint.method.toUpperCase() === 'GET') {
+      return callInitEndpoint({ ...endpoint, path: appendSchedulerTargetQuery(endpoint.path, endpoint.method, options.target) });
+    }
     return callInitEndpoint(endpoint, { body: { target: options.target } });
   }
   return callInitEndpoint(endpoint);
+}
+
+// Encodes selected scheduler targets on GET routes without creating invalid GET bodies.
+function appendSchedulerTargetQuery(path: string, method: string, target?: SchedulerTarget): string {
+  if (method.toUpperCase() !== 'GET' || !target || !Object.values(SCHEDULER_TARGETS).includes(target)) {
+    return path;
+  }
+  const separator = path.includes('?') ? '&' : '?';
+  return `${path}${separator}target=${encodeURIComponent(target)}`;
 }
 
 // Performs a JSON request against one View A init endpoint.

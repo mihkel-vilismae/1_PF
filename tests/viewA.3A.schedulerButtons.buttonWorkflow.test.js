@@ -7,6 +7,7 @@ import test from 'node:test';
 
 import { renderInitView } from '../dashboard/views/initView.ts';
 import { createRuntimeTruthBehavior } from '../dashboard/services/runtimeTruth/runtimeTruthBehavior.ts';
+import { checkCronStatus, printCron } from '../dashboard/services/initService.ts';
 import {
   SCHEDULER_EMULATOR_DEFAULT_ACTIVE_CRONTAB,
   SCHEDULER_EMULATOR_DEFAULT_INSERT_CRONTAB,
@@ -143,32 +144,40 @@ test('3A Windows CronEmulator controls render ordered buttons, circles, and cron
   assert.equal(SCHEDULER_EMULATOR_DEFAULT_INSERT_CRONTAB.includes('/path/to/screen_on_off_worker'), false);
 });
 
+// Verifies CronEmulator action routing, request shape, and active-crontab state updates.
 test('3A CronEmulator actions call emulator endpoints and only get-active updates active crontab textarea state', async () => {
   const originalFetch = global.fetch;
   const requests = [];
 
+  // Captures scheduler requests while preserving browser-like URL parsing for query checks.
   global.fetch = async (path, init = {}) => {
     const method = init.method ?? 'GET';
-    requests.push({ path, method, body: init.body ? JSON.parse(init.body) : null });
+    const requestUrl = new URL(String(path), 'http://localhost');
+    requests.push({
+      path: requestUrl.pathname,
+      method,
+      queryTarget: requestUrl.searchParams.get('target'),
+      body: init.body ? JSON.parse(init.body) : null,
+    });
 
-    if (path === '/api/init/cron/emulator/check' && method === 'GET') {
+    if (requestUrl.pathname === '/api/init/cron/emulator/check' && method === 'GET') {
       return schedulerResponse({ operation: 'emulator-check', running: false, rawCrontab: '* * * * * /tmp/old\n' });
     }
-    if (path === '/api/init/cron/emulator/run' && method === 'POST') {
+    if (requestUrl.pathname === '/api/init/cron/emulator/run' && method === 'POST') {
       return schedulerResponse({ operation: 'emulator-run', running: true, rawCrontab: '* * * * * /tmp/old\n' });
     }
-    if (path === '/api/init/cron/emulator/stop' && method === 'POST') {
+    if (requestUrl.pathname === '/api/init/cron/emulator/stop' && method === 'POST') {
       return schedulerResponse({ operation: 'emulator-stop', running: false, rawCrontab: '* * * * * /tmp/old\n' });
     }
-    if (path === '/api/init/cron/emulator/crontab' && method === 'POST') {
+    if (requestUrl.pathname === '/api/init/cron/emulator/crontab' && method === 'POST') {
       assert.equal(JSON.parse(init.body).crontabText, SCHEDULER_EMULATOR_DEFAULT_INSERT_CRONTAB);
       return schedulerResponse({ operation: 'emulator-install-crontab', running: false, rawCrontab: `${SCHEDULER_EMULATOR_DEFAULT_INSERT_CRONTAB}\n`, crontabInstalled: true });
     }
-    if (path === '/api/init/cron/emulator/crontab' && method === 'GET') {
+    if (requestUrl.pathname === '/api/init/cron/emulator/crontab' && method === 'GET') {
       return schedulerResponse({ operation: 'emulator-active-crontab', running: false, rawCrontab: '* * * * * /tmp/active\n' });
     }
 
-    throw new Error(`Unexpected request: ${method} ${path}`);
+    throw new Error(`Unexpected request: ${method} ${requestUrl.pathname}`);
   };
 
   try {
@@ -198,15 +207,54 @@ test('3A CronEmulator actions call emulator endpoints and only get-active update
     assert.equal(harness.state.schedulerEmulator.buttonStates['get-active-crontab'].status, 'success');
 
     assert.deepEqual(
-      requests.map(({ path, method }) => ({ path, method })),
+      requests,
       [
-        { path: '/api/init/cron/emulator/check', method: 'GET' },
-        { path: '/api/init/cron/emulator/run', method: 'POST' },
-        { path: '/api/init/cron/emulator/stop', method: 'POST' },
-        { path: '/api/init/cron/emulator/crontab', method: 'POST' },
-        { path: '/api/init/cron/emulator/crontab', method: 'GET' },
+        { path: '/api/init/cron/emulator/check', method: 'GET', queryTarget: SCHEDULER_TARGETS.windowsCronEmulator, body: null },
+        { path: '/api/init/cron/emulator/run', method: 'POST', queryTarget: null, body: { target: SCHEDULER_TARGETS.windowsCronEmulator } },
+        { path: '/api/init/cron/emulator/stop', method: 'POST', queryTarget: null, body: { target: SCHEDULER_TARGETS.windowsCronEmulator } },
+        {
+          path: '/api/init/cron/emulator/crontab',
+          method: 'POST',
+          queryTarget: null,
+          body: {
+            target: SCHEDULER_TARGETS.windowsCronEmulator,
+            crontabText: SCHEDULER_EMULATOR_DEFAULT_INSERT_CRONTAB,
+          },
+        },
+        { path: '/api/init/cron/emulator/crontab', method: 'GET', queryTarget: SCHEDULER_TARGETS.windowsCronEmulator, body: null },
       ],
     );
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+// Verifies optional scheduler targets do not create invalid GET request bodies.
+test('3A scheduler GET helpers encode optional targets as query params without request bodies', async () => {
+  const originalFetch = global.fetch;
+  const requests = [];
+
+  // Captures legacy scheduler GET helper requests for body and query assertions.
+  global.fetch = async (path, init = {}) => {
+    const method = init.method ?? 'GET';
+    const requestUrl = new URL(String(path), 'http://localhost');
+    requests.push({
+      path: requestUrl.pathname,
+      method,
+      queryTarget: requestUrl.searchParams.get('target'),
+      body: init.body ? JSON.parse(init.body) : null,
+    });
+    return schedulerResponse({ operation: requestUrl.pathname.endsWith('/print') ? 'print' : 'status', running: false, rawCrontab: '* * * * * /tmp/current\n' });
+  };
+
+  try {
+    await checkCronStatus({ target: SCHEDULER_TARGETS.windowsCronEmulator });
+    await printCron({ target: SCHEDULER_TARGETS.windowsCronEmulator });
+
+    assert.deepEqual(requests, [
+      { path: '/api/init/cron/status', method: 'GET', queryTarget: SCHEDULER_TARGETS.windowsCronEmulator, body: null },
+      { path: '/api/init/cron/print', method: 'GET', queryTarget: SCHEDULER_TARGETS.windowsCronEmulator, body: null },
+    ]);
   } finally {
     global.fetch = originalFetch;
   }
