@@ -27,6 +27,7 @@ import {
 import { createRuntimeTruthDatabaseActions } from './runtimeTruthDatabaseActions.ts';
 import { createRuntimeTruthAuthActions } from './runtimeTruthAuthActions.ts';
 import { createRuntimeTruthNewAuthActions } from './runtimeTruthNewAuthActions.ts';
+import { createRuntimeTruthSchedulerActions } from './runtimeTruthSchedulerActions.ts';
 import { createRuntimeTruthDemoActions } from './runtimeTruthDemoActions.ts';
 import { createRuntimeTruthGuards } from './runtimeTruthGuards.ts';
 import {
@@ -42,6 +43,7 @@ const SCHEDULER_ACTION_TO_OPERATION = Object.freeze({
   'print-cron': SCHEDULER_OPERATION_SUPPORT.print,
 });
 
+// Creates the shared action dispatcher for dashboard controls.
 export function createRuntimeTruthBehavior({
   getState,
   patchState,
@@ -86,6 +88,16 @@ export function createRuntimeTruthBehavior({
     guards,
   });
 
+  const schedulerActions = createRuntimeTruthSchedulerActions({
+    getState,
+    patchState,
+    pushHistory,
+    pushLog,
+    setStatus,
+    stamp,
+    guards,
+  });
+
   const demoActions = createRuntimeTruthDemoActions({
     getState,
     patchState,
@@ -96,6 +108,7 @@ export function createRuntimeTruthBehavior({
     guards,
   });
 
+  // Routes one UI action ID to the correct backend or local state action.
   function runAction(action, payload = {}) {
     const schedulerTarget = SCHEDULER_TARGET_ACTION_MAP[action];
     if (schedulerTarget) {
@@ -161,6 +174,11 @@ export function createRuntimeTruthBehavior({
       'install-cron': () => databaseActions.runInitAction('3A', 'SCHEDULER', 'Install scheduler', INIT_ENDPOINTS.installCron, installCron, { target: getState().selectedSchedulerTarget }),
       'check-cron': () => databaseActions.runInitAction('3A', 'SCHEDULER', 'Check scheduler', INIT_ENDPOINTS.checkCronStatus, checkCronStatus),
       'print-cron': () => databaseActions.runInitAction('3A', 'SCHEDULER', 'Print scheduler', INIT_ENDPOINTS.printCron, printCron),
+      'check-emulator-scheduler': () => void schedulerActions.checkEmulatorSchedulerAction(),
+      'run-emulator': () => void schedulerActions.runEmulatorAction(),
+      'stop-emulator': () => void schedulerActions.stopEmulatorAction(),
+      'install-crontab': () => void schedulerActions.installCrontabAction(),
+      'get-active-crontab': () => void schedulerActions.getActiveCrontabAction(),
       'verify-db-viewer': () => void databaseActions.runDatabaseViewerVerifyAction(),
       'connect-db-viewer': () => void databaseActions.runDatabaseViewerConnectAction(),
       'show-db-tables': () => void databaseActions.runDatabaseViewerTablesAction(),

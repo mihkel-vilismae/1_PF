@@ -1,3 +1,8 @@
+/*
+ * Provides the mutable browser-side runtime-truth store for the dashboard.
+ * Views dispatch through this module so state changes, logs, and persistence
+ * remain centralized.
+ */
 import { createRuntimeTruthBehavior } from './runtimeTruth/runtimeTruthBehavior.ts';
 import { createInitialState } from './runtimeTruth/runtimeTruthState.ts';
 import {
@@ -286,6 +291,14 @@ export function setSimulationValue(key: string, value: boolean | number | string
       draft.truth.inactivityTimeoutSeconds = Number(value);
       draft.runningProcess.screenWorker.timeout = `${value}s`;
     }
+  });
+}
+
+// Stores the editable View A CronEmulator crontab textarea value.
+export function setSchedulerEditableCrontab(value: string): void {
+  patchState((draft) => {
+    draft.schedulerEmulator ??= {};
+    draft.schedulerEmulator.editableCrontab = value;
   });
 }
 

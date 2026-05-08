@@ -1,6 +1,12 @@
-// Keep the seed as a JSON module so Vite can inline it for the browser bundle
-// while Node-based tests can still import it with the required JSON attribute.
+/*
+ * Builds the dashboard runtime-truth state used by views, logs, and action guards.
+ * It also owns initial View A scheduler target and CronEmulator UI state.
+ */
 import runtimeTruthSeed from '../../../conf/runtime-truth.json' with { type: 'json' };
+import {
+  SCHEDULER_EMULATOR_BUTTON_KEYS,
+  type SchedulerEmulatorButtonKey,
+} from '../../data/schedulerEmulatorStatusCopy.ts';
 import {
   createSchedulerCapability,
   getOperationSupportLevel,
@@ -15,7 +21,11 @@ import {
 
 export const RUNTIME_TRUTH_SEED_PATH = 'conf/runtime-truth.json';
 
-export type SchedulerActionKey = 'install-cron' | 'check-cron' | 'print-cron';
+export type SchedulerActionKey =
+  | 'install-cron'
+  | 'check-cron'
+  | 'print-cron'
+  | SchedulerEmulatorButtonKey;
 export type SchedulerTargetActionKey = 'select-scheduler-target-windows' | 'select-scheduler-target-raspberry';
 
 export type RuntimeTruthSeed = typeof runtimeTruthSeed & {
@@ -29,6 +39,14 @@ export type AuthButtonState = {
   updatedAt: string | null;
   endpoint: string | null;
 };
+
+export const SCHEDULER_EMULATOR_DEFAULT_ACTIVE_CRONTAB = "not checked, press 'Get active crontab'";
+
+export const SCHEDULER_EMULATOR_DEFAULT_INSERT_CRONTAB = [
+  '*/10 * * * * /path/to/regular_stage_worker',
+  '* * * * * /path/to/playback_worker',
+  '*/3 * * * * powershell -NoProfile -ExecutionPolicy Bypass -Command "Invoke-RestMethod -Method Post -Uri \'http://127.0.0.1:4301/api/runtime/screen-simulation/configure\' -ContentType \'application/json\' -Body \'{\"simulateAllEnabled\":true}\' | Out-Null"',
+].join('\n');
 
 export type DatabaseViewerState = {
   verification: unknown;
@@ -60,6 +78,11 @@ const SCHEDULER_ACTION_OPERATION_MAP: Record<SchedulerActionKey, SchedulerOperat
   'install-cron': SCHEDULER_OPERATION_SUPPORT.install,
   'check-cron': SCHEDULER_OPERATION_SUPPORT.status,
   'print-cron': SCHEDULER_OPERATION_SUPPORT.print,
+  'check-emulator-scheduler': SCHEDULER_OPERATION_SUPPORT.status,
+  'run-emulator': SCHEDULER_OPERATION_SUPPORT.install,
+  'stop-emulator': SCHEDULER_OPERATION_SUPPORT.status,
+  'install-crontab': SCHEDULER_OPERATION_SUPPORT.install,
+  'get-active-crontab': SCHEDULER_OPERATION_SUPPORT.print,
 };
 
 export const SCHEDULER_TARGET_ACTION_MAP: Record<SchedulerTargetActionKey, SchedulerTarget> = {
@@ -170,6 +193,21 @@ export function buildInitialNewAuthButtonStates(): Record<(typeof NEW_AUTH_BUTTO
   ) as Record<(typeof NEW_AUTH_BUTTON_KEYS)[number], AuthButtonState>;
 }
 
+// Builds neutral per-button state for the Windows CronEmulator controls.
+export function buildInitialSchedulerEmulatorButtonStates(): Record<SchedulerEmulatorButtonKey, AuthButtonState> {
+  return Object.fromEntries(
+    SCHEDULER_EMULATOR_BUTTON_KEYS.map((key) => [
+      key,
+      {
+        status: 'neutral',
+        message: 'Not checked yet.',
+        updatedAt: null,
+        endpoint: null,
+      },
+    ]),
+  ) as Record<SchedulerEmulatorButtonKey, AuthButtonState>;
+}
+
 export function buildInitialDatabaseViewerState(): DatabaseViewerState {
   return {
     verification: null,
@@ -205,6 +243,7 @@ function createHistoryId(): string {
   return `fallback-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+// Creates the full dashboard state object used at boot and in tests.
 export function createInitialState() {
   const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   const schedulerCapability = buildInitialSchedulerCapability();
@@ -278,6 +317,11 @@ export function createInitialState() {
       '3A': null,
     },
     selectedSchedulerTarget,
+    schedulerEmulator: {
+      editableCrontab: SCHEDULER_EMULATOR_DEFAULT_INSERT_CRONTAB,
+      activeCrontab: SCHEDULER_EMULATOR_DEFAULT_ACTIVE_CRONTAB,
+      buttonStates: buildInitialSchedulerEmulatorButtonStates(),
+    },
     initCapabilities: {
       scheduler: schedulerCapability,
     },

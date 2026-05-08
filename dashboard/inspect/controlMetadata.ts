@@ -1,3 +1,7 @@
+/*
+ * Describes dashboard controls and values for the explain-controls/value modes.
+ * Metadata keeps rendered controls from falling back to generic guidance.
+ */
 import { VIEW_ORDER } from '../shared/constants.ts';
 import {
   ACTION_INSPECT_COPY,
@@ -7,8 +11,10 @@ import {
   LAST_RUN_MODE_INSPECT_COPY,
 } from './guideCopy.ts';
 import { getAuthButtonInspectCopy } from '../data/authButtonStatusCopy.ts';
+import { getSchedulerEmulatorButtonInspectCopy } from '../data/schedulerEmulatorStatusCopy.ts';
 import { buildValueMeta, compactWhitespace, getCardContext } from './guideUtils.ts';
 
+// Returns inspect-mode copy for one rendered control element.
 export function describeInspectableElement(element) {
   if (element.matches('.nav-link')) {
     const viewId = element.dataset.view;
@@ -57,7 +63,10 @@ export function describeInspectableElement(element) {
   }
 
   if (element.matches('[data-action]')) {
-    return getAuthButtonInspectCopy(element.dataset.action) ?? ACTION_INSPECT_COPY[element.dataset.action] ?? fallbackInspectCopy(element);
+    return getAuthButtonInspectCopy(element.dataset.action)
+      ?? getSchedulerEmulatorButtonInspectCopy(element.dataset.action)
+      ?? ACTION_INSPECT_COPY[element.dataset.action]
+      ?? fallbackInspectCopy(element);
   }
 
   if (element.matches('.button')) {

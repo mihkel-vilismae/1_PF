@@ -1,6 +1,11 @@
+/*
+ * Provides real/mock classification metadata for explain real-vs-mock mode.
+ * Button classifications come from central action copy registries.
+ */
 import { VIEW_ORDER } from '../shared/constants.ts';
 import { ACTION_REALITY_COPY, VIEW_REALITY_COPY } from './guideCopy.ts';
 import { getAuthButtonRealityCopy } from '../data/authButtonStatusCopy.ts';
+import { getSchedulerEmulatorButtonRealityCopy } from '../data/schedulerEmulatorStatusCopy.ts';
 import { buildRealityMeta, compactWhitespace, getCardContext } from './guideUtils.ts';
 
 export function createRealityMetadataHelpers({ getState, getTransitHasLiveTraffic }) {
@@ -83,12 +88,17 @@ export function createRealityMetadataHelpers({ getState, getTransitHasLiveTraffi
     return buildRealityMeta(meta.state, `Open ${view.id} - ${view.name}`, meta.reason);
   }
 
+  // Describes the real/mock/runtime nature of action buttons for the inspect overlay.
   function describeButtonReality(element) {
     const label = compactWhitespace(element.textContent) || 'Button';
     const action = element.dataset.action;
 
     if (action && getAuthButtonRealityCopy(action)) {
       const meta = getAuthButtonRealityCopy(action);
+      return buildRealityMeta(meta.state, label, meta.reason);
+    }
+    if (action && getSchedulerEmulatorButtonRealityCopy(action)) {
+      const meta = getSchedulerEmulatorButtonRealityCopy(action);
       return buildRealityMeta(meta.state, label, meta.reason);
     }
     if (action && ACTION_REALITY_COPY[action]) {

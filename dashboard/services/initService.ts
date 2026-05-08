@@ -1,3 +1,7 @@
+/*
+ * Encodes View A init and scheduler backend endpoints for browser callers.
+ * The service keeps request shapes centralized so runtime-truth actions stay thin.
+ */
 import { requestJson, type ApiResponseWithMeta } from './apiClient.ts';
 import {
   SCHEDULER_OPERATION_SUPPORT,
@@ -28,6 +32,14 @@ export const SCHEDULER_INIT_ENDPOINTS: Readonly<Record<SchedulerOperation, InitE
 export const SCHEDULER_TARGET_ENDPOINTS = {
   status: { method: 'GET', path: '/api/init/cron/target' },
   select: { method: 'POST', path: '/api/init/cron/target' },
+} as const;
+
+export const SCHEDULER_EMULATOR_ENDPOINTS = {
+  check: { method: 'GET', path: '/api/init/cron/emulator/check' },
+  run: { method: 'POST', path: '/api/init/cron/emulator/run' },
+  stop: { method: 'POST', path: '/api/init/cron/emulator/stop' },
+  installCrontab: { method: 'POST', path: '/api/init/cron/emulator/crontab' },
+  activeCrontab: { method: 'GET', path: '/api/init/cron/emulator/crontab' },
 } as const;
 
 export const INIT_ENDPOINTS = {
@@ -95,6 +107,47 @@ export function printCron(options: { target?: SchedulerTarget } = {}): Promise<I
   return callSchedulerOperation(SCHEDULER_OPERATION_SUPPORT.print, options);
 }
 
+// Checks whether the selected Windows CronEmulator target is reachable.
+export function checkEmulatorScheduler(options: { target?: SchedulerTarget } = {}): Promise<InitEndpointResponse> {
+  return callSchedulerEmulatorEndpoint(SCHEDULER_EMULATOR_ENDPOINTS.check, options);
+}
+
+// Starts CronEmulator and requests its scheduler loop to run.
+export function runEmulator(options: { target?: SchedulerTarget } = {}): Promise<InitEndpointResponse> {
+  return callSchedulerEmulatorEndpoint(SCHEDULER_EMULATOR_ENDPOINTS.run, options);
+}
+
+// Stops the CronEmulator scheduler loop and any backend-owned process.
+export function stopEmulator(options: { target?: SchedulerTarget } = {}): Promise<InitEndpointResponse> {
+  return callSchedulerEmulatorEndpoint(SCHEDULER_EMULATOR_ENDPOINTS.stop, options);
+}
+
+// Installs text into the active CronEmulator crontab file.
+export function installEmulatorCrontab(options: { target?: SchedulerTarget; crontabText?: string } = {}): Promise<InitEndpointResponse> {
+  return callSchedulerEmulatorEndpoint(SCHEDULER_EMULATOR_ENDPOINTS.installCrontab, options);
+}
+
+// Reads the active CronEmulator crontab text.
+export function getActiveEmulatorCrontab(options: { target?: SchedulerTarget } = {}): Promise<InitEndpointResponse> {
+  return callSchedulerEmulatorEndpoint(SCHEDULER_EMULATOR_ENDPOINTS.activeCrontab, options);
+}
+
+// Calls a scheduler emulator endpoint while preserving the selected target payload.
+export function callSchedulerEmulatorEndpoint(
+  endpoint: InitEndpoint,
+  options: { target?: SchedulerTarget; crontabText?: string } = {},
+): Promise<InitEndpointResponse> {
+  const body: Record<string, unknown> = {};
+  if (options.target && Object.values(SCHEDULER_TARGETS).includes(options.target)) {
+    body.target = options.target;
+  }
+  if (typeof options.crontabText === 'string') {
+    body.crontabText = options.crontabText;
+  }
+  return callInitEndpoint(endpoint, Object.keys(body).length ? { body } : undefined);
+}
+
+// Calls one of the legacy scheduler operation endpoints.
 export function callSchedulerOperation(
   operation: SchedulerOperation,
   options: { target?: SchedulerTarget } = {},
@@ -109,6 +162,7 @@ export function callSchedulerOperation(
   return callInitEndpoint(endpoint);
 }
 
+// Performs a JSON request against one View A init endpoint.
 function callInitEndpoint(endpoint: InitEndpoint, options: InitRequestOptions = {}): Promise<InitEndpointResponse> {
   return requestJson(endpoint.path, { method: endpoint.method, captureMeta: true, ...options });
 }

@@ -1,5 +1,16 @@
+/*
+ * Renders View A initialization cards for env, auth, database, and scheduler.
+ * Scheduler UI stays backend-backed and keeps Windows CronEmulator controls local
+ * to the selected scheduler target.
+ */
 import { statusBadge, renderLogEntries, renderResultSurface, renderStepList, renderSourceBadge } from '../services/renderers.ts';
 import { getAuthButtonCopy, getAuthButtonStatusHelp, getAuthButtonStatusLabel } from '../data/authButtonStatusCopy.ts';
+import {
+  getSchedulerEmulatorButtonCopy,
+  getSchedulerEmulatorButtonStatusHelp,
+  getSchedulerEmulatorButtonStatusLabel,
+  normalizeSchedulerEmulatorButtonStatus,
+} from '../data/schedulerEmulatorStatusCopy.ts';
 import {
   getOperationSupportLevel,
   SCHEDULER_OPERATION_SUPPORT,
@@ -22,6 +33,14 @@ const AUTH_BUTTONS = Object.freeze([
 
 const AUTH_2FA_BUTTON = Object.freeze({ action: 'submit-b1-2fa', label: 'Submit 2FA', variant: 'primary' });
 
+const SCHEDULER_EMULATOR_BUTTONS = Object.freeze([
+  { action: 'check-emulator-scheduler', variant: 'secondary' },
+  { action: 'run-emulator', variant: 'primary' },
+  { action: 'stop-emulator', variant: 'secondary' },
+  { action: 'install-crontab', variant: 'secondary' },
+  { action: 'get-active-crontab', variant: 'secondary' },
+]);
+
 const NEW_AUTH_BUTTONS = Object.freeze([
   { action: 'new-auth-verify-icloudpd', label: 'Verify iCloudPD', variant: 'secondary' },
   { action: 'new-auth-login-using-env', label: 'Login using .env values', variant: 'primary' },
@@ -30,6 +49,7 @@ const NEW_AUTH_BUTTONS = Object.freeze([
   { action: 'new-auth-session-files', label: 'Show auth/session paths and files', variant: 'secondary' },
 ]);
 
+// Renders the full View A page from runtime-truth state.
 export function renderInitView(state) {
   const schedulerCapability = state.initCapabilities?.scheduler ?? null;
   const installSupportLevel = getOperationSupportLevel(schedulerCapability, SCHEDULER_OPERATION_SUPPORT.install);
@@ -75,6 +95,7 @@ export function renderInitView(state) {
   `;
 }
 
+// Renders scheduler target selection and the active target control panel.
 function renderSchedulerCard(state, schedulerCapability, supportLevels) {
   const selectedTarget = state.selectedSchedulerTarget ?? schedulerCapability?.schedulerTarget ?? SCHEDULER_TARGETS.windowsCronEmulator;
   return `
@@ -98,6 +119,7 @@ function renderSchedulerCard(state, schedulerCapability, supportLevels) {
           target: SCHEDULER_TARGETS.windowsCronEmulator,
           selectedTarget,
           supportLevels,
+          state,
           copy: 'Uses tools/CronEmulator as the Windows cron job runner. The emulator source stays unchanged; the backend launches and inspects it as an external process.',
         })}
         ${renderSchedulerTargetPanel({
@@ -106,6 +128,7 @@ function renderSchedulerCard(state, schedulerCapability, supportLevels) {
           target: SCHEDULER_TARGETS.raspberryRealCrontab,
           selectedTarget,
           supportLevels,
+          state,
           copy: 'Uses the current user crontab on Raspberry Pi OS/Linux and manages only the project-owned marked block.',
         })}
       </div>
@@ -115,15 +138,20 @@ function renderSchedulerCard(state, schedulerCapability, supportLevels) {
   `;
 }
 
+// Renders one scheduler target tab button.
 function renderSchedulerTabButton(label, target, selectedTarget, action) {
   const selected = target === selectedTarget;
   return `<button class="scheduler-tab ${selected ? 'scheduler-tab--active' : ''}" type="button" role="tab" aria-selected="${selected ? 'true' : 'false'}" data-action="${escapeAttribute(action)}">${escapeHtml(label)}</button>`;
 }
 
-function renderSchedulerTargetPanel({ title, subtitle, target, selectedTarget, supportLevels, copy }) {
+// Renders one scheduler target panel, using CronEmulator controls for Windows.
+function renderSchedulerTargetPanel({ title, subtitle, target, selectedTarget, supportLevels, copy, state }) {
   const active = target === selectedTarget;
   const disabled = active ? '' : ' disabled aria-disabled="true"';
   const inactiveNote = active ? '' : '<p class="scheduler-target-panel__note">Inactive target. Controls are disabled until this tab is selected.</p>';
+  const controls = target === SCHEDULER_TARGETS.windowsCronEmulator
+    ? renderWindowsSchedulerControls(state, disabled)
+    : renderLegacySchedulerControls(supportLevels, disabled);
   return `
     <section class="scheduler-target-panel ${active ? 'scheduler-target-panel--active' : 'scheduler-target-panel--inactive'}" data-scheduler-target="${escapeAttribute(target)}">
       <div class="scheduler-target-panel__header">
@@ -134,13 +162,61 @@ function renderSchedulerTargetPanel({ title, subtitle, target, selectedTarget, s
         <span class="status-badge status-badge--${active ? 'info' : 'disabled'}">${active ? 'Active' : 'Disabled'}</span>
       </div>
       <p class="card__copy">${escapeHtml(copy)}</p>
-      <div class="button-row">
-        <button class="button button--secondary" data-action="install-cron"${disabled || buildSchedulerButtonAttributes(supportLevels.installSupportLevel)}>Install scheduler</button>
-        <button class="button button--secondary" data-action="check-cron"${disabled || buildSchedulerButtonAttributes(supportLevels.statusSupportLevel)}>Check scheduler</button>
-        <button class="button button--secondary" data-action="print-cron"${disabled || buildSchedulerButtonAttributes(supportLevels.printSupportLevel)}>Print scheduler</button>
-      </div>
+      ${controls}
       ${inactiveNote}
     </section>
+  `;
+}
+
+// Renders the Windows 11 CronEmulator button row and crontab textareas.
+function renderWindowsSchedulerControls(state, disabled) {
+  const schedulerState = state.schedulerEmulator ?? {};
+  return `
+    <div class="scheduler-emulator-controls">
+      <div class="button-row scheduler-emulator-button-row">
+        ${SCHEDULER_EMULATOR_BUTTONS.map((button) => renderSchedulerEmulatorActionButton(button, schedulerState.buttonStates ?? {}, disabled)).join('')}
+      </div>
+      <div class="scheduler-crontab-grid">
+        <label class="scheduler-crontab-field">
+          <span>insert crontab</span>
+          <textarea class="terminal-textarea" data-scheduler-crontab-input spellcheck="false"${disabled}>${escapeHtml(schedulerState.editableCrontab ?? '')}</textarea>
+        </label>
+        <label class="scheduler-crontab-field">
+          <span>crontab from CronEmulator</span>
+          <textarea class="terminal-textarea" data-scheduler-active-crontab readonly spellcheck="false">${escapeHtml(schedulerState.activeCrontab ?? "not checked, press 'Get active crontab'")}</textarea>
+        </label>
+      </div>
+    </div>
+  `;
+}
+
+// Renders one CronEmulator action button with an auth-style status circle.
+function renderSchedulerEmulatorActionButton(button, buttonStates, disabled) {
+  const copy = getSchedulerEmulatorButtonCopy(button.action);
+  const statusState = buttonStates?.[button.action] ?? { status: 'neutral', message: 'Not checked yet.', endpoint: null };
+  const status = normalizeSchedulerEmulatorButtonStatus(statusState.status);
+  const label = copy?.label ?? button.action;
+  const helpText = getSchedulerEmulatorButtonStatusHelp(button.action, status, statusState.message);
+  const statusLabelText = getSchedulerEmulatorButtonStatusLabel(status);
+  const title = escapeAttribute(helpText);
+  const disabledAttribute = disabled || '';
+
+  return `
+    <span class="auth-button-shell auth-button-shell--${escapeAttribute(status)} scheduler-emulator-button" data-scheduler-button-key="${escapeAttribute(button.action)}" data-scheduler-button-status="${escapeAttribute(status)}" data-scheduler-help-text="${title}" title="${title}">
+      <span class="auth-button-status-dot" aria-label="${escapeAttribute(`${label} status: ${statusLabelText}`)}" title="${title}"></span>
+      <button class="button button--${escapeAttribute(button.variant)}" data-action="${escapeAttribute(button.action)}" title="${title}" aria-label="${escapeAttribute(`${label}. ${helpText}`)}"${disabledAttribute}>${escapeHtml(label)}</button>
+    </span>
+  `;
+}
+
+// Keeps legacy non-Windows scheduler controls available for compatibility.
+function renderLegacySchedulerControls(supportLevels, disabled) {
+  return `
+    <div class="button-row">
+      <button class="button button--secondary" data-action="install-cron"${disabled || buildSchedulerButtonAttributes(supportLevels.installSupportLevel)}>Install scheduler</button>
+      <button class="button button--secondary" data-action="check-cron"${disabled || buildSchedulerButtonAttributes(supportLevels.statusSupportLevel)}>Check scheduler</button>
+      <button class="button button--secondary" data-action="print-cron"${disabled || buildSchedulerButtonAttributes(supportLevels.printSupportLevel)}>Print scheduler</button>
+    </div>
   `;
 }
 

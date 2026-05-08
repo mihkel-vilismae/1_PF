@@ -574,6 +574,55 @@ code {
   gap: 1rem;
 }
 
+.scheduler-emulator-controls {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.scheduler-emulator-button-row {
+  align-items: stretch;
+}
+
+.scheduler-emulator-button {
+  flex: 0 1 auto;
+}
+
+.scheduler-crontab-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.scheduler-crontab-field {
+  display: grid;
+  gap: 0.45rem;
+  min-width: 0;
+  color: var(--text);
+  font-weight: 700;
+}
+
+.terminal-textarea {
+  width: 100%;
+  min-height: 9rem;
+  resize: vertical;
+  padding: 0.85rem;
+  border: 1px solid rgba(59, 130, 246, 0.36);
+  border-radius: 12px;
+  color: #dbeafe;
+  background: #020617;
+  font-family: "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  white-space: pre;
+  overflow: auto;
+}
+
+.terminal-textarea:read-only {
+  color: #bfdbfe;
+  border-color: rgba(148, 163, 184, 0.24);
+  background: rgba(2, 6, 23, 0.82);
+}
+
 .scheduler-target-panel__header h4 {
   margin: 0.1rem 0 0;
   font-size: 1rem;
@@ -1423,6 +1472,7 @@ body.modal-open {
 @media (max-width: 900px) {
   .section-grid--two,
   .section-grid--two-uneven,
+  .scheduler-crontab-grid,
   .scheduler-target-grid,
   .toolbar-grid,
   .toggle-grid { grid-template-columns: 1fr; }

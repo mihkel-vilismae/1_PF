@@ -1,5 +1,10 @@
+/*
+ * Provides backend-support classifications for explain backend-status mode.
+ * Action metadata is resolved from central backend-status copy registries.
+ */
 import { ACTION_BACKEND_STATUS_COPY, INIT_ACTION_TO_CODE } from './guideCopy.ts';
 import { getAuthButtonBackendStatusCopy } from '../data/authButtonStatusCopy.ts';
+import { getSchedulerEmulatorButtonBackendStatusCopy } from '../data/schedulerEmulatorStatusCopy.ts';
 import { buildBackendStatusMeta, compactWhitespace, getCardContext, isMissingBackendStatus } from './guideUtils.ts';
 
 export function createBackendStatusMetadataHelpers({ getState, getTransitHasLiveTraffic }) {
@@ -55,6 +60,7 @@ export function createBackendStatusMetadataHelpers({ getState, getTransitHasLive
     return null;
   }
 
+  // Describes whether an action button is wired to a backend endpoint or remains local.
   function describeButtonBackendStatus(element) {
     const label = compactWhitespace(element.textContent) || 'Button';
     const action = element.dataset.action;
@@ -64,6 +70,10 @@ export function createBackendStatusMetadataHelpers({ getState, getTransitHasLive
     }
     if (action && getAuthButtonBackendStatusCopy(action)) {
       const meta = getAuthButtonBackendStatusCopy(action);
+      return buildBackendStatusMeta(meta.state, label, meta.reason);
+    }
+    if (action && getSchedulerEmulatorButtonBackendStatusCopy(action)) {
+      const meta = getSchedulerEmulatorButtonBackendStatusCopy(action);
       return buildBackendStatusMeta(meta.state, label, meta.reason);
     }
     if (action && ACTION_BACKEND_STATUS_COPY[action]) {

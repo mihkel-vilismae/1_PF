@@ -21,6 +21,7 @@ import {
   toggleRealityInspectMode,
   toggleValueInspectMode,
   setLastRunMode,
+  setSchedulerEditableCrontab,
   setSimulationValue,
   subscribe,
 } from './services/runtimeTruth.ts';
@@ -296,6 +297,7 @@ async function loadBackendVersion(): Promise<void> {
   render();
 }
 
+// Binds rendered controls to runtime-truth actions and local state updates.
 function bindEvents() {
   app.querySelectorAll<HTMLElement>('[data-view]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -411,7 +413,21 @@ function bindEvents() {
         runAction(action, { confirmationSource: 'window.confirm' });
         return;
       }
+      if (action === 'install-crontab') {
+        const input = app.querySelector<HTMLTextAreaElement>('[data-scheduler-crontab-input]');
+        if (input) {
+          setSchedulerEditableCrontab(input.value);
+        }
+        runAction(action);
+        return;
+      }
       runAction(action);
+    });
+  });
+
+  app.querySelectorAll<HTMLTextAreaElement>('[data-scheduler-crontab-input]').forEach((textarea) => {
+    textarea.addEventListener('input', () => {
+      setSchedulerEditableCrontab(textarea.value);
     });
   });
 

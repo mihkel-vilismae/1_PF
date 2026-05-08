@@ -1,9 +1,17 @@
+/*
+ * Verifies View A scheduler controls, target tabs, and CronEmulator action wiring.
+ * Tests keep the legacy cron routes compatible while pinning the Windows UI.
+ */
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { renderInitView } from '../dashboard/views/initView.ts';
 import { createRuntimeTruthBehavior } from '../dashboard/services/runtimeTruth/runtimeTruthBehavior.ts';
-import { createInitialState } from '../dashboard/services/runtimeTruth/runtimeTruthState.ts';
+import {
+  SCHEDULER_EMULATOR_DEFAULT_ACTIVE_CRONTAB,
+  SCHEDULER_EMULATOR_DEFAULT_INSERT_CRONTAB,
+  createInitialState,
+} from '../dashboard/services/runtimeTruth/runtimeTruthState.ts';
 import { createSchedulerCapability, SCHEDULER_TARGETS } from '../shared/schedulerPlatformCapabilities.ts';
 
 test('3A scheduler actions map to documented endpoints and store scheduler payload state', async () => {
@@ -112,6 +120,98 @@ test('3A scheduler actions map to documented endpoints and store scheduler paylo
   }
 });
 
+test('3A Windows CronEmulator controls render ordered buttons, circles, and crontab textareas', () => {
+  const harness = createRuntimeTruthHarness();
+  const html = renderInitView(harness.state);
+
+  assert.match(html, /data-scheduler-button-key="check-emulator-scheduler"[\s\S]*?Check emulator scheduler/);
+  assert.match(html, /data-scheduler-button-key="run-emulator"[\s\S]*?Run emulator/);
+  assert.match(html, /data-scheduler-button-key="stop-emulator"[\s\S]*?Stop emulator/);
+  assert.match(html, /data-scheduler-button-key="install-crontab"[\s\S]*?Install crontab/);
+  assert.match(html, /data-scheduler-button-key="get-active-crontab"[\s\S]*?Get active crontab/);
+  assert.match(
+    html,
+    /Check emulator scheduler[\s\S]*?Run emulator[\s\S]*?Stop emulator[\s\S]*?Install crontab[\s\S]*?Get active crontab/,
+  );
+  assert.match(html, /auth-button-status-dot/);
+  assert.match(html, /insert crontab/);
+  assert.match(html, /crontab from CronEmulator/);
+  assert.match(html, /data-scheduler-crontab-input/);
+  assert.match(html, /data-scheduler-active-crontab/);
+  assert.match(html, /not checked, press &#39;Get active crontab&#39;/);
+  assert.match(html, /api\/runtime\/screen-simulation\/configure/);
+  assert.equal(SCHEDULER_EMULATOR_DEFAULT_INSERT_CRONTAB.includes('/path/to/screen_on_off_worker'), false);
+});
+
+test('3A CronEmulator actions call emulator endpoints and only get-active updates active crontab textarea state', async () => {
+  const originalFetch = global.fetch;
+  const requests = [];
+
+  global.fetch = async (path, init = {}) => {
+    const method = init.method ?? 'GET';
+    requests.push({ path, method, body: init.body ? JSON.parse(init.body) : null });
+
+    if (path === '/api/init/cron/emulator/check' && method === 'GET') {
+      return schedulerResponse({ operation: 'emulator-check', running: false, rawCrontab: '* * * * * /tmp/old\n' });
+    }
+    if (path === '/api/init/cron/emulator/run' && method === 'POST') {
+      return schedulerResponse({ operation: 'emulator-run', running: true, rawCrontab: '* * * * * /tmp/old\n' });
+    }
+    if (path === '/api/init/cron/emulator/stop' && method === 'POST') {
+      return schedulerResponse({ operation: 'emulator-stop', running: false, rawCrontab: '* * * * * /tmp/old\n' });
+    }
+    if (path === '/api/init/cron/emulator/crontab' && method === 'POST') {
+      assert.equal(JSON.parse(init.body).crontabText, SCHEDULER_EMULATOR_DEFAULT_INSERT_CRONTAB);
+      return schedulerResponse({ operation: 'emulator-install-crontab', running: false, rawCrontab: `${SCHEDULER_EMULATOR_DEFAULT_INSERT_CRONTAB}\n`, crontabInstalled: true });
+    }
+    if (path === '/api/init/cron/emulator/crontab' && method === 'GET') {
+      return schedulerResponse({ operation: 'emulator-active-crontab', running: false, rawCrontab: '* * * * * /tmp/active\n' });
+    }
+
+    throw new Error(`Unexpected request: ${method} ${path}`);
+  };
+
+  try {
+    const harness = createRuntimeTruthHarness();
+    const behavior = createRuntimeTruthBehavior(harness.actions);
+
+    behavior.runAction('check-emulator-scheduler');
+    await waitFor(() => harness.state.schedulerEmulator.buttonStates['check-emulator-scheduler'].status === 'success');
+    assert.equal(harness.state.schedulerEmulator.buttonStates['check-emulator-scheduler'].status, 'success');
+    assert.equal(harness.state.schedulerEmulator.activeCrontab, SCHEDULER_EMULATOR_DEFAULT_ACTIVE_CRONTAB);
+
+    behavior.runAction('run-emulator');
+    await waitFor(() => harness.state.schedulerEmulator.buttonStates['run-emulator'].status === 'success');
+    assert.equal(harness.state.schedulerEmulator.buttonStates['run-emulator'].status, 'success');
+
+    behavior.runAction('stop-emulator');
+    await waitFor(() => harness.state.schedulerEmulator.buttonStates['stop-emulator'].status === 'success');
+    assert.equal(harness.state.schedulerEmulator.buttonStates['stop-emulator'].status, 'success');
+
+    behavior.runAction('install-crontab');
+    await waitFor(() => harness.state.schedulerEmulator.buttonStates['install-crontab'].status === 'success');
+    assert.equal(harness.state.schedulerEmulator.buttonStates['install-crontab'].status, 'success');
+    assert.equal(harness.state.schedulerEmulator.activeCrontab, SCHEDULER_EMULATOR_DEFAULT_ACTIVE_CRONTAB);
+
+    behavior.runAction('get-active-crontab');
+    await waitFor(() => harness.state.schedulerEmulator.activeCrontab === '* * * * * /tmp/active\n');
+    assert.equal(harness.state.schedulerEmulator.buttonStates['get-active-crontab'].status, 'success');
+
+    assert.deepEqual(
+      requests.map(({ path, method }) => ({ path, method })),
+      [
+        { path: '/api/init/cron/emulator/check', method: 'GET' },
+        { path: '/api/init/cron/emulator/run', method: 'POST' },
+        { path: '/api/init/cron/emulator/stop', method: 'POST' },
+        { path: '/api/init/cron/emulator/crontab', method: 'POST' },
+        { path: '/api/init/cron/emulator/crontab', method: 'GET' },
+      ],
+    );
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
 test('3A scheduler target tabs disable inactive controls and persist target selection through backend', async () => {
   const originalFetch = global.fetch;
   const requests = [];
@@ -163,6 +263,32 @@ test('3A scheduler target tabs disable inactive controls and persist target sele
   }
 });
 
+// Builds a scheduler payload resembling the backend CronEmulator endpoint response.
+function schedulerResponse({ operation, running, rawCrontab, crontabInstalled = false }) {
+  return new Response(
+    JSON.stringify({
+      status: running || operation === 'emulator-install-crontab' || operation === 'emulator-active-crontab' ? 'ok' : 'warning',
+      messages: [`${operation} completed.`],
+      scheduler: {
+        operation,
+        operationSupportLevel: 'supported',
+        platformProfileLabel: 'Windows 11',
+        selectedTarget: SCHEDULER_TARGETS.windowsCronEmulator,
+        task: {
+          installed: true,
+          running,
+          rawCrontab,
+          crontabInstalled,
+        },
+        host: { observed: true, state: running ? 'running' : 'stopped' },
+      },
+      schemaVersion: 3,
+    }),
+    { status: 200, headers: { 'content-type': 'application/json' } },
+  );
+}
+
+// Creates an isolated runtime-truth harness for scheduler button tests.
 function createRuntimeTruthHarness() {
   const state = createInitialState();
   state.initCapabilities.scheduler = createSchedulerCapability({ runtimePlatform: 'windows' });
