@@ -20,6 +20,11 @@ import type { DatabaseService } from './database/databaseService.ts';
 import { attachSafeAuthRuntimeTruth } from './auth/authRuntimeTruth.ts';
 import { createProjectLogger, DEFAULT_LOG_DIR } from './logging/projectLogger.ts';
 import {
+  clearStalePipelineLocks,
+  detectStalePipelineLockIssues,
+  resolvePipelineLockStaleThresholdSeconds,
+} from './runtimePipelineLocks.ts';
+import {
   createSchedulerCapability,
   getOperationSupportLevel,
   isOperationExecutable,
@@ -456,6 +461,8 @@ const routes: Record<string, RouteHandler> = {
   'GET /api/runtime/orchestration/last': runtimeOrchestrationLastHandler,
   'GET /api/runtime/screen-simulation/state': runtimeScreenSimulationStateHandler,
   'POST /api/runtime/screen-simulation/configure': runtimeScreenSimulationConfigureHandler,
+  'POST /api/runtime/pipeline/issues/detect': runtimePipelineIssuesDetectHandler,
+  'POST /api/runtime/pipeline/stale-locks/clear': runtimePipelineStaleLocksClearHandler,
   'GET /api/runtime-truth': getRuntimeTruthHandler,
   'POST /api/runtime-truth': updateRuntimeTruthHandler,
 };
@@ -1074,6 +1081,85 @@ async function getRuntimeTruthHandler(): Promise<HandlerResult> {
       truth,
       schemaVersion: 1,
       persistedAt: new Date().toISOString(),
+    },
+  };
+}
+
+// Reports persisted pipeline lock issues without changing runtime-truth state.
+async function runtimePipelineIssuesDetectHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
+  const truth = attachSafeAuthRuntimeTruth(await readRuntimeTruthFile());
+  const staleThresholdSeconds = resolvePipelineLockStaleThresholdSeconds(context.envValues);
+  const issues = detectStalePipelineLockIssues(truth, { staleThresholdSeconds });
+  return buildRuntimePipelineIssueResponse({
+    truth,
+    issues,
+    staleThresholdSeconds,
+    action: 'detect',
+    cleared: false,
+  });
+}
+
+// Clears stale persisted pipeline locks while preserving fresh active locks.
+async function runtimePipelineStaleLocksClearHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
+  const truth = attachSafeAuthRuntimeTruth(await readRuntimeTruthFile());
+  const staleThresholdSeconds = resolvePipelineLockStaleThresholdSeconds(context.envValues);
+  const result = clearStalePipelineLocks(truth, { staleThresholdSeconds });
+  const nextTruth = attachSafeAuthRuntimeTruth(result.truth);
+  if (result.cleared) {
+    await writeRuntimeTruthFile(nextTruth);
+  }
+  return buildRuntimePipelineIssueResponse({
+    truth: nextTruth,
+    issues: result.issues,
+    staleThresholdSeconds,
+    action: 'clear',
+    cleared: result.cleared,
+  });
+}
+
+// Builds the shared response envelope for pipeline issue maintenance endpoints.
+function buildRuntimePipelineIssueResponse({
+  truth,
+  issues,
+  staleThresholdSeconds,
+  action,
+  cleared,
+}: {
+  truth: JsonObject;
+  issues: ReturnType<typeof detectStalePipelineLockIssues>;
+  staleThresholdSeconds: number;
+  action: 'detect' | 'clear';
+  cleared: boolean;
+}): HandlerResult {
+  const issueCount = issues.length;
+  const status = issueCount > 0 && action === 'detect' ? 'warning' : 'ok';
+  const messages = action === 'clear'
+    ? [
+        cleared
+          ? `Cleared ${issueCount} stale pipeline lock issue(s).`
+          : 'No stale pipeline locks were cleared.',
+      ]
+    : [
+        issueCount
+          ? `Detected ${issueCount} stale pipeline lock issue(s).`
+          : 'No stale pipeline lock issues detected.',
+      ];
+
+  return {
+    statusCode: 200,
+    payload: {
+      status,
+      messages,
+      pipeline: {
+        issueCount,
+        issues,
+        staleLockDetected: issueCount > 0,
+        staleThresholdSeconds,
+        cleared,
+      },
+      truth,
+      schemaVersion: 1,
+      executedAt: new Date().toISOString(),
     },
   };
 }

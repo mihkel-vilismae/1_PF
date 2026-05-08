@@ -1,9 +1,14 @@
+/*
+ * Verifies dashboard button workflows from rendered controls to service calls.
+ * The harness keeps runtime-truth state local so View B action wiring is focused.
+ */
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { createRuntimeTruthBehavior } from '../dashboard/services/runtimeTruth/runtimeTruthBehavior.ts';
 import { createInitialState } from '../dashboard/services/runtimeTruth/runtimeTruthState.ts';
 import { renderInitView } from '../dashboard/views/initView.ts';
+import { renderTestView } from '../dashboard/views/testView.ts';
 
 test('1A-AUTH verify and check login controls call backend-owned auth endpoints', async () => {
   const originalFetch = global.fetch;
@@ -519,6 +524,95 @@ test('B2, B3 auto, and B4 actions call backend endpoints and update runtime trut
         { path: '/api/runtime/playback/select-current', method: 'POST' },
       ],
     );
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+test('View B renders pipeline maintenance buttons between toolbar and stage cards', () => {
+  const markup = renderTestView(createInitialState());
+  const toolbarIndex = markup.indexOf('class="toolbar-grid"');
+  const maintenanceIndex = markup.indexOf('Pipeline maintenance');
+  const stageStackIndex = markup.indexOf('class="stage-stack"');
+
+  assert.ok(toolbarIndex >= 0, 'expected View B toolbar to render');
+  assert.ok(maintenanceIndex > toolbarIndex, 'expected maintenance section after toolbar');
+  assert.ok(stageStackIndex > maintenanceIndex, 'expected stage cards after maintenance section');
+  assert.match(markup, /data-action="detect-pipeline-issues"/);
+  assert.match(markup, /data-action="clear-stale-pipeline-locks"/);
+});
+
+test('pipeline maintenance actions call backend endpoints and sync returned lock truth', async () => {
+  const originalFetch = global.fetch;
+  const requests = [];
+
+  global.fetch = async (path, init = {}) => {
+    const method = init.method ?? 'GET';
+    requests.push({ path, method });
+
+    if (path === '/api/runtime/pipeline/issues/detect' && method === 'POST') {
+      return new Response(
+        JSON.stringify({
+          status: 'warning',
+          messages: ['Detected 1 stale pipeline lock issue(s).'],
+          pipeline: {
+            issueCount: 1,
+            staleLockDetected: true,
+            cleared: false,
+          },
+          truth: {
+            pipelineActiveKey: 'B3.2',
+            pipelineLockAcquiredAt: null,
+            stageLock: 'Pipeline lock held by B3.2',
+          },
+          schemaVersion: 1,
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      );
+    }
+
+    if (path === '/api/runtime/pipeline/stale-locks/clear' && method === 'POST') {
+      return new Response(
+        JSON.stringify({
+          status: 'ok',
+          messages: ['Cleared 1 stale pipeline lock issue(s).'],
+          pipeline: {
+            issueCount: 1,
+            staleLockDetected: true,
+            cleared: true,
+          },
+          truth: {
+            pipelineActiveKey: null,
+            pipelineLockAcquiredAt: null,
+            stageLock: 'Cleared stale pipeline lock held by B3.2',
+          },
+          schemaVersion: 1,
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      );
+    }
+
+    throw new Error(`Unexpected request: ${method} ${path}`);
+  };
+
+  try {
+    const harness = createRuntimeTruthHarness();
+    const behavior = createRuntimeTruthBehavior(harness.actions);
+
+    behavior.runAction('detect-pipeline-issues');
+    await waitFor(() => harness.state.statusByKey['B3-DIAGNOSTICS'] === 'info');
+    assert.equal(harness.state.truth.pipelineActiveKey, 'B3.2');
+    assert.equal(harness.state.truth.stageLock, 'Pipeline lock held by B3.2');
+
+    behavior.runAction('clear-stale-pipeline-locks');
+    await waitFor(() => harness.state.statusByKey['B3-DIAGNOSTICS'] === 'success');
+    assert.equal(harness.state.truth.pipelineActiveKey, null);
+    assert.equal(harness.state.truth.stageLock, 'Cleared stale pipeline lock held by B3.2');
+
+    assert.deepEqual(requests, [
+      { path: '/api/runtime/pipeline/issues/detect', method: 'POST' },
+      { path: '/api/runtime/pipeline/stale-locks/clear', method: 'POST' },
+    ]);
   } finally {
     global.fetch = originalFetch;
   }

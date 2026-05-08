@@ -50,6 +50,8 @@ All statuses below are documentation-derived from the listed docs.
 | B | B3.3 Parse GPS stage / Run | `run-b3-3` | `Works` | 2026-04-23 | High |
 | B | B3.4 Geocode stage / Run | `run-b3-4` | `Partial` | 2026-04-23 | High |
 | B | B3.5 Enqueue playback / Run | `run-b3-5` | `Works` | 2026-04-23 | High |
+| B | Pipeline maintenance / Detect issues in pipeline | `detect-pipeline-issues` | `Works` | 2026-05-08 | High |
+| B | Pipeline maintenance / Clear stale locks | `clear-stale-pipeline-locks` | `Works` | 2026-05-08 | High |
 | B | B4 Playback selection / Run | `run-b4` | `Partial` | 2026-04-23 | High |
 | B | B5 Screen simulation controls | `b5-simulation-controls` | `Partial` | 2026-05-05 | High |
 
@@ -58,7 +60,7 @@ All statuses below are documentation-derived from the listed docs.
 | View | Documentation-derived verification position |
 |---|---|
 | View A | Mostly documented as backend-wired controls, with partials in `1A` overlap semantics and `3A` scheduler semantics. |
-| View B | Mixed documented status: B2/B3/B4 are backend-wired partial runtime paths, `run-b3-auto` now calls backend orchestration, Stage 1 download still uses mock/generated semantics, B3.4 geocode is deterministic placeholder-backed, and B5 is backend-wired simulation only. |
+| View B | Mixed documented status: B2/B3/B4 are backend-wired partial runtime paths, `run-b3-auto` calls backend orchestration, the pipeline maintenance controls call backend stale-lock endpoints, Stage 1 download still uses mock/generated semantics, B3.4 geocode is deterministic placeholder-backed, and B5 is backend-wired simulation only. |
 | View C | No button-verification reports exist in `button_verification_results`; code-verified status is partial at the dashboard surface because View C reads `/api/runtime/orchestration/last`, while `resume-last-run` remains local placeholder behavior with no restore endpoint. |
 | View D | No button-verification reports in `button_verification_results` set; status remains undocumented in this specific corpus. |
 

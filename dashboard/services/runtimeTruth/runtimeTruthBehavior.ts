@@ -1,3 +1,8 @@
+/*
+ * Builds the dashboard action dispatcher that maps data-action controls to services.
+ * It composes auth, init, scheduler, database, and runtime action helpers.
+ * View files stay declarative while this module owns runtime side effects.
+ */
 import {
   INIT_ENDPOINTS,
   SCHEDULER_TARGET_ENDPOINTS,
@@ -207,6 +212,8 @@ export function createRuntimeTruthBehavior({
       'run-b3-3': () => demoActions.runBackendPipelineStage({ key: 'B3.3', operation: 'Run GPS stage', endpoint: RUNTIME_EXECUTION_ENDPOINTS.gpsRun, execute: runRuntimeGps }),
       'run-b3-4': () => demoActions.runBackendPipelineStage({ key: 'B3.4', operation: 'Run geocode stage', endpoint: RUNTIME_EXECUTION_ENDPOINTS.geocodeRun, execute: runRuntimeGeocode }),
       'run-b3-5': () => demoActions.runEnqueueStage(),
+      'detect-pipeline-issues': () => demoActions.detectPipelineIssues(),
+      'clear-stale-pipeline-locks': () => demoActions.clearStalePipelineLocksAction(),
       'run-b3-auto': () => demoActions.runAutoPipeline(),
       'run-b4': () => demoActions.runPlaybackEmulation(),
       'configure-screen-simulation': () => demoActions.configureScreenSimulation(),

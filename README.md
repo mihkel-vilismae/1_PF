@@ -14,9 +14,11 @@ Start here:
 - `docs/categorized/task_documentation_still_to_implement/main_readme.md` - still-actionable implementation, verification, and reconciliation tasks.
 - `docs/categorized/other_documentation/main_readme.md` - operator notes, setup/auth notes, documentation workflow, default project checklist, and archive/reference orientation.
 
-## 2026-05-06 status update
+## 2026-05-08 status update
 
 NEW AUTH Slices 1–10 are documented as closed. The dashboard uses `/api/auth/new/*` for the new auth flow. Local session files alone are not authenticated; provider proof or stronger test-download proof is required.
+
+View B has backend-wired pipeline maintenance controls for stale persisted pipeline lock detection and stale-lock clearing. The detector currently classifies stale pipeline locks only.
 
 View C can read the last orchestration run from the backend, but restore/resume remains a placeholder or decision-gated contract. View D remains a live-runtime-monitoring gap.
 
@@ -110,4 +112,3 @@ CHANGELOG.md      forward-only changelog
 - Do not turn current-status docs into product requirements.
 - Do not preserve task docs as actionable when they conflict with active vision/spec docs.
 - Verify code paths directly before claiming implementation behavior.
-

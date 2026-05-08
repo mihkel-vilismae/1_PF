@@ -152,6 +152,14 @@
       "label": "Prepare playback queue",
       "description": "Calls the backend queue-prepare endpoint so playback selection can use real queue rows."
     },
+    "detect-pipeline-issues": {
+      "label": "Detect pipeline issues",
+      "description": "Calls the backend pipeline diagnostic endpoint and currently reports stale persisted pipeline locks only."
+    },
+    "clear-stale-pipeline-locks": {
+      "label": "Clear stale pipeline locks",
+      "description": "Calls the backend stale-lock cleanup endpoint, which clears only stale persisted pipeline locks and leaves fresh active locks unchanged."
+    },
     "run-b4": {
       "label": "Select current playback item",
       "description": "Calls the backend playback-selection endpoint and updates the operator preview with the selected item."
@@ -318,6 +326,14 @@
       "state": "real",
       "reason": "Calls the backend orchestration endpoint for B3 auto-run. Stage 1 remains mock/generated-data backed and geocode remains deterministic placeholder behavior."
     },
+    "detect-pipeline-issues": {
+      "state": "real",
+      "reason": "Calls a backend diagnostic endpoint that inspects persisted runtime-truth pipeline lock fields. It currently detects stale locks only."
+    },
+    "clear-stale-pipeline-locks": {
+      "state": "real",
+      "reason": "Calls a backend cleanup endpoint that clears only stale persisted pipeline locks and preserves non-stale active locks."
+    },
     "run-b4": {
       "state": "real",
       "reason": "Runs the real backend playback-selection action and shows the selected item in the preview."
@@ -445,6 +461,14 @@
     "run-b3-5": {
       "state": "real",
       "reason": "This stage now calls the real POST /api/runtime/queue/prepare endpoint."
+    },
+    "detect-pipeline-issues": {
+      "state": "real",
+      "reason": "This action calls POST /api/runtime/pipeline/issues/detect and reports stale persisted pipeline locks."
+    },
+    "clear-stale-pipeline-locks": {
+      "state": "real",
+      "reason": "This action calls POST /api/runtime/pipeline/stale-locks/clear and only clears stale persisted pipeline locks."
     },
     "run-b4": {
       "state": "real",

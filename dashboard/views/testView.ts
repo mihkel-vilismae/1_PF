@@ -1,5 +1,11 @@
+/*
+ * Renders View B for runtime test actions and pipeline controls.
+ * The view keeps backend-backed actions visible beside explicit mock/simulation areas.
+ * All interactive buttons dispatch through data-action handlers in runtime truth.
+ */
 import { statusBadge, renderDefinitionList, renderLogEntries, renderSourceBadge, renderStepList } from '../services/renderers.ts';
 
+// Renders the full View B page from runtime-truth state.
 export function renderTestView(state) {
   const queueReady = !!state.truth.currentMedia;
   return `
@@ -54,6 +60,16 @@ export function renderTestView(state) {
             <button class="button button--primary" data-action="run-b3-auto">Run all stages</button>
           </div>
         </div>
+        <section class="pipeline-maintenance selector-card selector-card--hybrid" aria-label="Pipeline maintenance">
+          <div>
+            <p class="selector-card__label">Pipeline maintenance</p>
+            <p class="stage-card__subtitle">Detects stale persisted pipeline locks and clears only stale locks.</p>
+          </div>
+          <div class="button-row pipeline-maintenance__actions">
+            <button class="button button--secondary" data-action="detect-pipeline-issues">Detect issues in pipeline</button>
+            <button class="button button--danger" data-action="clear-stale-pipeline-locks">Clear stale locks</button>
+          </div>
+        </section>
         <div class="stage-stack">
           ${renderStageCard('B3.1', 'Download', 'Calls POST /api/runtime/download/run.', state, 'real')}
           ${renderStageCard('B3.2', 'Index', 'Calls POST /api/runtime/index/run.', state, 'real')}

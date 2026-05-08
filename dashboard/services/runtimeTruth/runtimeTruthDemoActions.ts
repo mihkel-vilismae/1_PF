@@ -1,6 +1,13 @@
+/*
+ * Coordinates View B runtime actions and related dashboard state updates.
+ * The actions keep backend calls, logs, and runtime-truth projections together.
+ * Remaining simulation helpers stay local until a backend contract replaces them.
+ */
 import {
   RUNTIME_EXECUTION_ENDPOINTS,
+  clearRuntimePipelineStaleLocks,
   configureRuntimeScreenSimulation,
+  detectRuntimePipelineIssues,
   getRuntimeOrchestrationLast,
   runRuntimeDownload,
   runRuntimeGeocode,
@@ -281,6 +288,44 @@ export function createRuntimeTruthDemoActions({
     }
   }
 
+  // Copies backend-owned pipeline lock fields into the frontend truth projection.
+  function syncPipelineLockTruth(payload) {
+    if (!isRecord(payload?.truth)) {
+      return;
+    }
+    patchState((draft) => {
+      draft.truth.pipelineActiveKey = payload.truth.pipelineActiveKey ?? null;
+      draft.truth.pipelineLockAcquiredAt = payload.truth.pipelineLockAcquiredAt ?? null;
+      if (typeof payload.truth.stageLock === 'string') {
+        draft.truth.stageLock = payload.truth.stageLock;
+      }
+    });
+  }
+
+  // Runs the backend detector for persisted pipeline issues.
+  function detectPipelineIssues() {
+    void runBackendAction({
+      key: 'B3-DIAGNOSTICS',
+      source: 'PIPELINE',
+      operation: 'Detect pipeline issues',
+      endpoint: RUNTIME_EXECUTION_ENDPOINTS.pipelineIssuesDetect,
+      execute: detectRuntimePipelineIssues,
+      onSuccess: syncPipelineLockTruth,
+    });
+  }
+
+  // Clears stale persisted pipeline locks through the backend.
+  function clearStalePipelineLocksAction() {
+    void runBackendAction({
+      key: 'B3-DIAGNOSTICS',
+      source: 'PIPELINE',
+      operation: 'Clear stale pipeline locks',
+      endpoint: RUNTIME_EXECUTION_ENDPOINTS.pipelineStaleLocksClear,
+      execute: clearRuntimePipelineStaleLocks,
+      onSuccess: syncPipelineLockTruth,
+    });
+  }
+
   function runPipelineStage(key, message, onComplete = () => {}) {
     if (isPipelineBusy()) {
       rejectPipelineWhileBusy(key);
@@ -550,6 +595,8 @@ export function createRuntimeTruthDemoActions({
     genericAction,
     runLoginFlow,
     runPipelineStage,
+    detectPipelineIssues,
+    clearStalePipelineLocksAction,
     runEnqueueStage,
     runAutoPipeline,
     loadLastOrchestrationRun,

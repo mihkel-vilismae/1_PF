@@ -928,6 +928,15 @@ code {
 .selector-option--disabled { opacity: 0.5; }
 .selector-card--actions { justify-content: center; }
 
+.pipeline-maintenance {
+  margin-top: 0.9rem;
+}
+.pipeline-maintenance__actions {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
 .stage-stack { margin-top: 1rem; }
 .stage-card {
   padding: 1rem;

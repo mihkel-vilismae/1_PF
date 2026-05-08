@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## 2026-05-08 07:25 EEST — v0.4.1
+
+### Added
+- Added View B pipeline maintenance controls for detecting pipeline issues and clearing stale pipeline locks.
+- Added backend runtime pipeline maintenance endpoints for stale persisted pipeline lock detection and cleanup.
+- Added regression coverage for stale-lock helper behavior, endpoint constants, View B button placement/action wiring, and inspect metadata drift.
+
+### Changed
+- Updated View B inspect, real-vs-mock, backend-status, current-status, and placeholder documentation for the new pipeline maintenance controls.
+- Updated version metadata from v0.4.0 to v0.4.1.
+
+### Fixed
+- Fixed the stale B3.2 pipeline-lock recovery path by allowing operators to detect stale persisted lock state before clearing only stale locks.
+- Fixed inspect metadata coverage for the new pipeline maintenance buttons so they do not fall back to generic control copy.
+
+### Removed
+- None.
+
 ## 2026-05-08 07:11 EEST — v0.4.0
 
 ### Added

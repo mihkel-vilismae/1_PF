@@ -1,4 +1,9 @@
-import { requestJson, type ApiResponseWithMeta } from './apiClient.ts';
+/*
+ * Defines frontend service calls for backend runtime execution endpoints.
+ * View action handlers import this module instead of issuing raw fetch calls.
+ * Endpoint constants are tested so dashboard wiring stays aligned to the API.
+ */
+import { requestJson, type ApiRequestOptions, type ApiResponseWithMeta } from './apiClient.ts';
 
 type RuntimeEndpoint = {
   method: string;
@@ -20,6 +25,8 @@ export const RUNTIME_EXECUTION_ENDPOINTS = Object.freeze({
   orchestrationLast: { method: 'GET', path: '/api/runtime/orchestration/last' },
   screenSimulationState: { method: 'GET', path: '/api/runtime/screen-simulation/state' },
   screenSimulationConfigure: { method: 'POST', path: '/api/runtime/screen-simulation/configure' },
+  pipelineIssuesDetect: { method: 'POST', path: '/api/runtime/pipeline/issues/detect' },
+  pipelineStaleLocksClear: { method: 'POST', path: '/api/runtime/pipeline/stale-locks/clear' },
 });
 
 export function runRuntimeDownload(body: RuntimeRequestBody = {}): Promise<RuntimeEndpointResponse> {
@@ -62,8 +69,19 @@ export function configureRuntimeScreenSimulation(body: RuntimeRequestBody = {}):
   return callRuntimeEndpoint(RUNTIME_EXECUTION_ENDPOINTS.screenSimulationConfigure, body);
 }
 
+// Calls the backend diagnostic endpoint for persisted pipeline issues.
+export function detectRuntimePipelineIssues(body: RuntimeRequestBody = {}): Promise<RuntimeEndpointResponse> {
+  return callRuntimeEndpoint(RUNTIME_EXECUTION_ENDPOINTS.pipelineIssuesDetect, body);
+}
+
+// Calls the backend endpoint that clears only stale persisted pipeline locks.
+export function clearRuntimePipelineStaleLocks(body: RuntimeRequestBody = {}): Promise<RuntimeEndpointResponse> {
+  return callRuntimeEndpoint(RUNTIME_EXECUTION_ENDPOINTS.pipelineStaleLocksClear, body);
+}
+
+// Applies the shared capture-meta request shape for runtime backend calls.
 function callRuntimeEndpoint(endpoint: RuntimeEndpoint, body?: RuntimeRequestBody): Promise<RuntimeEndpointResponse> {
-  const options: Parameters<typeof requestJson>[1] = {
+  const options: ApiRequestOptions & { captureMeta: true } = {
     method: endpoint.method,
     captureMeta: true,
     operation: `${endpoint.method} ${endpoint.path}`,
