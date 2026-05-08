@@ -1,16 +1,16 @@
 {
   "queueLength": 25,
   "currentMedia": {
-    "name": "duplicate_copy_02.jpg",
+    "name": "gps_valid_10.jpg",
     "type": "Image",
     "position": "1 of 25",
-    "overlay": "Lat: 59.43700, Lon: 24.75360"
+    "overlay": "Lat: 27.17510, Lon: 78.04210"
   },
   "playbackStatus": "Selected by backend for playback",
   "screenState": "ON",
   "lastActivitySource": "Mouse movement enabled",
   "inactivityTimeoutSeconds": 5,
-  "lastCheckpoint": "2026-05-08T04:56:11.181Z",
+  "lastCheckpoint": "2026-05-08T06:03:39.942Z",
   "lastStageCompleted": "B4",
   "realRunActive": false,
   "sourceOfTruth": "conf/runtime-truth.json",

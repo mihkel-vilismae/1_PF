@@ -1,3 +1,8 @@
+/*
+ * Configures the dashboard Vite dev server and production build.
+ * Runtime truth persistence is mutable, so dev-server watch rules keep it
+ * from forcing browser reloads during operator actions.
+ */
 import { defineConfig } from 'vite';
 import { readFileSync } from 'node:fs';
 
@@ -15,6 +20,9 @@ export default defineConfig({
   },
   server: {
     open: false,
+    watch: {
+      ignored: ['**/conf/runtime-truth.json'],
+    },
     proxy: {
       '/api': 'http://127.0.0.1:4301',
     },
