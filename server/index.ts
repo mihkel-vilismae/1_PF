@@ -50,7 +50,9 @@ const schedulerRuntimeDirectory = path.join(repoRoot, 'runtime_data', 'scheduler
 const schedulerTargetSelectionFilePath = path.join(schedulerRuntimeDirectory, 'selected-target.json');
 const cronEmulatorRoot = path.join(repoRoot, 'tools', 'CronEmulator');
 const cronEmulatorSourcePath = path.join(cronEmulatorRoot, 'src');
-const cronEmulatorDefaultCrontabPath = path.join(cronEmulatorRoot, 'crontab_emulated.txt');
+const cronEmulatorDefaultCrontabPath = process.env.CRON_EMULATOR_CRONTAB_FILE
+  ? path.resolve(process.env.CRON_EMULATOR_CRONTAB_FILE)
+  : path.join(cronEmulatorRoot, 'crontab_emulated.txt');
 const cronEmulatorRuntimeDirectory = path.join(schedulerRuntimeDirectory, 'cron-emulator');
 const cronEmulatorLogFilePath = path.join(cronEmulatorRuntimeDirectory, 'cron_calls.jsonl');
 const cronEmulatorHost = '127.0.0.1';
@@ -62,6 +64,13 @@ const runtimeTruthRelativePath = 'conf/runtime-truth.json';
 const runtimeTruthFilePath = path.join(repoRoot, runtimeTruthRelativePath);
 const authSingleFileDownloadDirectory = path.join(repoRoot, 'runtime_data', 'tmp');
 const schedulerSchemaVersion = 3;
+const schedulerEmulatorOperations = Object.freeze({
+  check: 'emulator-check',
+  run: 'emulator-run',
+  stop: 'emulator-stop',
+  installCrontab: 'emulator-install-crontab',
+  activeCrontab: 'emulator-active-crontab',
+});
 const schedulerTickSeconds = Object.freeze({
   pipeline: 5,
   playbackWatchdog: 5,
@@ -210,6 +219,7 @@ interface SchedulerOperationInput {
   selection: SchedulerTargetSelection;
   operation: SchedulerRouteOperation;
   operationSupportLevel: SchedulerSupportLevel;
+  crontabText?: string | null;
 }
 
 interface CopyMockDownloadFilesInput {
@@ -423,6 +433,11 @@ const routes: Record<string, RouteHandler> = {
   'POST /api/init/cron/install': installCronHandler,
   'GET /api/init/cron/status': cronStatusHandler,
   'GET /api/init/cron/print': printCronHandler,
+  'GET /api/init/cron/emulator/check': checkEmulatorSchedulerHandler,
+  'POST /api/init/cron/emulator/run': runEmulatorHandler,
+  'POST /api/init/cron/emulator/stop': stopEmulatorHandler,
+  'POST /api/init/cron/emulator/crontab': installEmulatorCrontabHandler,
+  'GET /api/init/cron/emulator/crontab': activeEmulatorCrontabHandler,
   'POST /api/database-viewer/verify': databaseViewerVerifyHandler,
   'POST /api/database-viewer/connect': databaseViewerConnectHandler,
   'GET /api/database-viewer/tables': databaseViewerTablesHandler,
@@ -759,6 +774,42 @@ async function cronStatusHandler({ context, body, url }) {
 
 async function printCronHandler({ context, body, url }) {
   return buildSchedulerRouteResponse(context, SCHEDULER_OPERATION_SUPPORT.print, {
+    requestedTarget: getRequestedSchedulerTarget(url, body),
+  });
+}
+
+// Checks Windows CronEmulator API reachability without starting it.
+async function checkEmulatorSchedulerHandler({ context, body, url }) {
+  return buildSchedulerRouteResponse(context, schedulerEmulatorOperations.check, {
+    requestedTarget: getRequestedSchedulerTarget(url, body),
+  });
+}
+
+// Starts Windows CronEmulator and its internal scheduler loop.
+async function runEmulatorHandler({ context, body, url }) {
+  return buildSchedulerRouteResponse(context, schedulerEmulatorOperations.run, {
+    requestedTarget: getRequestedSchedulerTarget(url, body),
+  });
+}
+
+// Stops Windows CronEmulator scheduler loop and the backend-owned process.
+async function stopEmulatorHandler({ context, body, url }) {
+  return buildSchedulerRouteResponse(context, schedulerEmulatorOperations.stop, {
+    requestedTarget: getRequestedSchedulerTarget(url, body),
+  });
+}
+
+// Installs the posted crontab text into CronEmulator's active crontab file.
+async function installEmulatorCrontabHandler({ context, body, url }) {
+  return buildSchedulerRouteResponse(context, schedulerEmulatorOperations.installCrontab, {
+    requestedTarget: getRequestedSchedulerTarget(url, body),
+    crontabText: typeof body?.crontabText === 'string' ? body.crontabText : null,
+  });
+}
+
+// Reads the active CronEmulator crontab text.
+async function activeEmulatorCrontabHandler({ context, body, url }) {
+  return buildSchedulerRouteResponse(context, schedulerEmulatorOperations.activeCrontab, {
     requestedTarget: getRequestedSchedulerTarget(url, body),
   });
 }
@@ -1504,10 +1555,11 @@ async function updateRuntimeTruthHandler({ body }: Pick<HandlerArgs, 'body'>): P
   };
 }
 
+// Builds the public scheduler route envelope around the resolved scheduler task result.
 async function buildSchedulerRouteResponse(
   context: RequestContext,
   operation: SchedulerRouteOperation,
-  options: { requestedTarget?: SchedulerTarget | null } = {},
+  options: { requestedTarget?: SchedulerTarget | null; crontabText?: string | null } = {},
 ): Promise<HandlerResult> {
   const scheduler = await resolveSchedulerOperation(context, operation, options);
   return {
@@ -2001,6 +2053,25 @@ function runtimePlatformForSchedulerTarget(target: SchedulerTarget): string {
   return target === SCHEDULER_TARGETS.raspberryRealCrontab ? 'linux' : 'windows';
 }
 
+// Maps emulator-specific routes back to existing scheduler capability operations.
+function schedulerCapabilityOperationForRoute(operation: SchedulerRouteOperation): SchedulerOperation {
+  if (operation === schedulerEmulatorOperations.check || operation === schedulerEmulatorOperations.stop) {
+    return SCHEDULER_OPERATION_SUPPORT.status;
+  }
+  if (operation === schedulerEmulatorOperations.run || operation === schedulerEmulatorOperations.installCrontab) {
+    return SCHEDULER_OPERATION_SUPPORT.install;
+  }
+  if (operation === schedulerEmulatorOperations.activeCrontab) {
+    return SCHEDULER_OPERATION_SUPPORT.print;
+  }
+  return isSchedulerOperation(operation) ? operation : SCHEDULER_OPERATION_SUPPORT.status;
+}
+
+// Checks whether a route operation is one of the shared scheduler capability operations.
+function isSchedulerOperation(operation: SchedulerRouteOperation): operation is SchedulerOperation {
+  return Object.values(SCHEDULER_OPERATION_SUPPORT).includes(operation as SchedulerOperation);
+}
+
 async function readSchedulerTargetSelection(context: RequestContext): Promise<SchedulerTargetSelection> {
   try {
     const raw = await fs.readFile(schedulerTargetSelectionFilePath, 'utf8');
@@ -2064,15 +2135,17 @@ function buildSchedulerTargetPayload(context: RequestContext, selection: Schedul
   };
 }
 
+// Resolves scheduler actions against the selected platform target while preserving inactive-target deferral.
 async function resolveSchedulerOperation(
   context: RequestContext,
   operation: SchedulerRouteOperation,
-  options: { requestedTarget?: SchedulerTarget | null } = {},
+  options: { requestedTarget?: SchedulerTarget | null; crontabText?: string | null } = {},
 ) {
   const selection = await readSchedulerTargetSelection(context);
   const requestedTarget = options.requestedTarget ?? selection.selectedTarget;
   const capability = createSchedulerCapability({ runtimePlatform: runtimePlatformForSchedulerTarget(requestedTarget) });
-  const operationSupportLevel = getOperationSupportLevel(capability, operation);
+  const capabilityOperation = schedulerCapabilityOperationForRoute(operation);
+  const operationSupportLevel = getOperationSupportLevel(capability, capabilityOperation);
   const definition = buildSchedulerDefinition(context, capability, selection);
 
   if (requestedTarget !== selection.selectedTarget) {
@@ -2087,7 +2160,7 @@ async function resolveSchedulerOperation(
     });
   }
 
-  if (!isOperationExecutable(capability, operation)) {
+  if (!isOperationExecutable(capability, capabilityOperation)) {
     return buildDeferredSchedulerPayload({
       context,
       capability,
@@ -2106,6 +2179,7 @@ async function resolveSchedulerOperation(
       selection,
       operation,
       operationSupportLevel,
+      crontabText: options.crontabText ?? null,
     });
   }
 
@@ -2156,6 +2230,7 @@ function buildSchedulerDefinition(
   };
 }
 
+// Executes Windows CronEmulator actions through the external emulator process and crontab file.
 async function resolveWindowsCronEmulatorOperation({
   context,
   capability,
@@ -2163,6 +2238,7 @@ async function resolveWindowsCronEmulatorOperation({
   selection,
   operation,
   operationSupportLevel,
+  crontabText,
 }: SchedulerOperationInput) {
   if (context.platform !== 'win32') {
     return buildDeferredSchedulerPayload({
@@ -2199,9 +2275,22 @@ async function resolveWindowsCronEmulatorOperation({
 
   await fs.mkdir(cronEmulatorRuntimeDirectory, { recursive: true });
 
-  if (operation === SCHEDULER_OPERATION_SUPPORT.install) {
+  if (operation === schedulerEmulatorOperations.installCrontab) {
+    const installedText = normalizeCronEmulatorCrontabText(crontabText);
+    await fs.mkdir(path.dirname(cronEmulatorDefaultCrontabPath), { recursive: true });
+    await fs.writeFile(cronEmulatorDefaultCrontabPath, installedText, 'utf8');
+    await postCronEmulator('/api/reload').catch(() => null);
+  }
+
+  if (operation === SCHEDULER_OPERATION_SUPPORT.install || operation === schedulerEmulatorOperations.run) {
     startCronEmulatorProcess();
+    await waitForCronEmulatorState();
     await postCronEmulator('/api/scheduler/start').catch(() => null);
+  }
+
+  if (operation === schedulerEmulatorOperations.stop) {
+    await postCronEmulator('/api/scheduler/stop').catch(() => null);
+    await stopOwnedCronEmulatorProcess();
   }
 
   const emulatorState = await fetchCronEmulatorState();
@@ -2209,13 +2298,20 @@ async function resolveWindowsCronEmulatorOperation({
   const stateObserved = emulatorState !== null;
   const rawCrontab = await readTextIfExists(cronEmulatorDefaultCrontabPath);
   const messages = [
-    operation === SCHEDULER_OPERATION_SUPPORT.install
+    buildCronEmulatorOperationMessage(operation),
+    operation === schedulerEmulatorOperations.installCrontab
+      ? 'CronEmulator crontab file was written from the submitted textarea content.'
+      : null,
+    operation === SCHEDULER_OPERATION_SUPPORT.install || operation === schedulerEmulatorOperations.run
       ? 'Windows CronEmulator process launch was requested and scheduler start was attempted.'
-      : 'Windows CronEmulator status was inspected through its local dashboard API when available.',
+      : null,
+    operation === schedulerEmulatorOperations.stop
+      ? 'Windows CronEmulator scheduler stop was requested and the backend-owned process was stopped when present.'
+      : null,
     stateObserved
       ? `CronEmulator API responded; scheduler is ${running ? 'running' : 'stopped'}.`
       : 'CronEmulator API did not respond on 127.0.0.1:8765.',
-  ];
+  ].filter(Boolean);
 
   return buildSchedulerPayload({
     context,
@@ -2228,8 +2324,10 @@ async function resolveWindowsCronEmulatorOperation({
       operation,
       installed: true,
       running,
-      rawCrontab: operation === SCHEDULER_OPERATION_SUPPORT.print ? rawCrontab : undefined,
-      apiState: operation === SCHEDULER_OPERATION_SUPPORT.print || operation === SCHEDULER_OPERATION_SUPPORT.status ? emulatorState : undefined,
+      stopped: operation === schedulerEmulatorOperations.stop && !running,
+      crontabInstalled: operation === schedulerEmulatorOperations.installCrontab,
+      rawCrontab: shouldIncludeCronEmulatorCrontab(operation) ? rawCrontab : undefined,
+      apiState: shouldIncludeCronEmulatorApiState(operation) ? emulatorState : undefined,
     }),
     host: {
       observed: stateObserved,
@@ -2239,7 +2337,7 @@ async function resolveWindowsCronEmulatorOperation({
       payload: emulatorState ?? undefined,
     },
     includeExportedXml: false,
-    overrideStatus: running ? 'ok' : 'warning',
+    overrideStatus: resolveCronEmulatorPayloadStatus(operation, { running, stateObserved }),
     prependMessages: messages,
   });
 }
@@ -2314,16 +2412,21 @@ async function resolveRaspberryCrontabOperation({
   });
 }
 
+// Builds the task payload describing the Windows CronEmulator runner.
 function buildCronEmulatorTask({
   operation,
   installed,
   running,
+  stopped,
+  crontabInstalled,
   rawCrontab,
   apiState,
 }: {
   operation: SchedulerRouteOperation;
   installed: boolean;
   running: boolean;
+  stopped?: boolean;
+  crontabInstalled?: boolean;
   rawCrontab?: string;
   apiState?: unknown;
 }): SchedulerTaskResult {
@@ -2333,6 +2436,8 @@ function buildCronEmulatorTask({
     operation,
     supportLevel: installed ? SCHEDULER_SUPPORT_LEVELS.supported : SCHEDULER_SUPPORT_LEVELS.unsupported,
     running,
+    stopped,
+    crontabInstalled,
     apiUrl: `http://${cronEmulatorHost}:${cronEmulatorPort}`,
     crontabPath: cronEmulatorDefaultCrontabPath,
     logFilePath: cronEmulatorLogFilePath,
@@ -2341,6 +2446,102 @@ function buildCronEmulatorTask({
   };
 }
 
+// Builds the top-line message for one CronEmulator operation.
+function buildCronEmulatorOperationMessage(operation: SchedulerRouteOperation): string {
+  if (operation === schedulerEmulatorOperations.check || operation === SCHEDULER_OPERATION_SUPPORT.status) {
+    return 'Windows CronEmulator scheduler status was checked through its local dashboard API when available.';
+  }
+  if (operation === schedulerEmulatorOperations.activeCrontab || operation === SCHEDULER_OPERATION_SUPPORT.print) {
+    return 'Windows CronEmulator active crontab was read from its local API or crontab file.';
+  }
+  if (operation === schedulerEmulatorOperations.installCrontab) {
+    return 'Windows CronEmulator crontab installation was requested.';
+  }
+  if (operation === schedulerEmulatorOperations.stop) {
+    return 'Windows CronEmulator stop was requested.';
+  }
+  return 'Windows CronEmulator operation was requested.';
+}
+
+// Decides whether to include raw crontab text in a scheduler payload.
+function shouldIncludeCronEmulatorCrontab(operation: SchedulerRouteOperation): boolean {
+  return operation === SCHEDULER_OPERATION_SUPPORT.print
+    || operation === schedulerEmulatorOperations.activeCrontab
+    || operation === schedulerEmulatorOperations.installCrontab;
+}
+
+// Decides whether to include the CronEmulator API state snapshot.
+function shouldIncludeCronEmulatorApiState(operation: SchedulerRouteOperation): boolean {
+  return operation === SCHEDULER_OPERATION_SUPPORT.status
+    || operation === SCHEDULER_OPERATION_SUPPORT.print
+    || operation === schedulerEmulatorOperations.check
+    || operation === schedulerEmulatorOperations.run
+    || operation === schedulerEmulatorOperations.stop
+    || operation === schedulerEmulatorOperations.activeCrontab;
+}
+
+// Maps CronEmulator operation state to the shared init payload status.
+function resolveCronEmulatorPayloadStatus(
+  operation: SchedulerRouteOperation,
+  { running, stateObserved }: { running: boolean; stateObserved: boolean },
+): string {
+  if (operation === schedulerEmulatorOperations.run) {
+    return running ? 'ok' : 'warning';
+  }
+  if (operation === schedulerEmulatorOperations.stop) {
+    return running ? 'warning' : 'ok';
+  }
+  if (operation === schedulerEmulatorOperations.installCrontab || operation === schedulerEmulatorOperations.activeCrontab) {
+    return 'ok';
+  }
+  return stateObserved && running ? 'ok' : 'warning';
+}
+
+// Normalizes posted crontab text before writing it to the emulator file.
+function normalizeCronEmulatorCrontabText(value: string | null | undefined): string {
+  if (typeof value !== 'string' || !value.trim()) {
+    throw new HttpError(400, 'invalid_crontab_text', 'Install crontab requires non-empty crontabText.', {
+      expected: { crontabText: 'five cron fields plus command, one row per job' },
+    });
+  }
+
+  return `${value.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trimEnd()}\n`;
+}
+
+// Waits briefly for a newly spawned CronEmulator process to expose its API.
+async function waitForCronEmulatorState(timeoutMs = 2600): Promise<unknown | null> {
+  const deadline = Date.now() + timeoutMs;
+  let state = await fetchCronEmulatorState();
+  while (state === null && Date.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    state = await fetchCronEmulatorState();
+  }
+  return state;
+}
+
+// Stops the backend-owned CronEmulator process without touching external owners.
+async function stopOwnedCronEmulatorProcess(): Promise<void> {
+  if (!cronEmulatorProcess || cronEmulatorProcess.exitCode !== null || cronEmulatorProcess.killed) {
+    return;
+  }
+
+  const processToStop = cronEmulatorProcess;
+  await new Promise<void>((resolve) => {
+    const timer = setTimeout(() => {
+      if (!processToStop.killed) {
+        processToStop.kill();
+      }
+      resolve();
+    }, 1200);
+    processToStop.once('exit', () => {
+      clearTimeout(timer);
+      resolve();
+    });
+    processToStop.kill();
+  });
+}
+
+// Starts the repo-local CronEmulator Python process if this backend does not own one.
 function startCronEmulatorProcess(): void {
   if (cronEmulatorProcess && cronEmulatorProcess.exitCode === null && !cronEmulatorProcess.killed) {
     return;

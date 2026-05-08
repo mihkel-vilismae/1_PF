@@ -1,6 +1,10 @@
+/*
+ * Exercises View A init backend endpoints with isolated env and database paths.
+ * Scheduler checks cover route compatibility plus Windows CronEmulator crontab IO.
+ */
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { mkdtemp, rm, writeFile, access } from 'node:fs/promises';
+import { mkdtemp, rm, writeFile, access, mkdir, readFile } from 'node:fs/promises';
 import fs from 'node:fs';
 import net from 'node:net';
 import os from 'node:os';
@@ -180,6 +184,50 @@ test('scheduler target selection gates inactive target operations while preservi
   });
 });
 
+test('CronEmulator endpoints install and read the active Windows crontab file', async () => {
+  await withInitServer(async ({ port, cronEmulatorCrontabPath }) => {
+    const selectWindows = await requestJson(port, '/api/init/cron/target', {
+      method: 'POST',
+      body: { target: 'windows-cron-emulator' },
+    });
+    assert.equal(selectWindows.status, 200);
+    assert.equal(selectWindows.json.selectedTarget, 'windows-cron-emulator');
+
+    const checkResponse = await requestJson(port, '/api/init/cron/emulator/check', { method: 'GET' });
+    assert.equal(checkResponse.status, 200);
+    assert.equal(checkResponse.json.schemaVersion, 3);
+    assert.equal(checkResponse.json.scheduler.operation, 'emulator-check');
+    assert.equal(checkResponse.json.scheduler.routeCompatibility, '/api/init/cron/*');
+
+    const crontabText = [
+      '*/10 * * * * /path/to/regular_stage_worker',
+      '* * * * * /path/to/playback_worker',
+      '*/3 * * * * powershell -NoProfile -ExecutionPolicy Bypass -Command "Invoke-RestMethod -Method Post -Uri \'http://127.0.0.1:4301/api/runtime/screen-simulation/configure\' -ContentType \'application/json\' -Body \'{\"simulateAllEnabled\":true}\' | Out-Null"',
+    ].join('\n');
+
+    const installResponse = await requestJson(port, '/api/init/cron/emulator/crontab', {
+      method: 'POST',
+      body: { target: 'windows-cron-emulator', crontabText },
+    });
+    assert.equal(installResponse.status, 200);
+    assert.equal(installResponse.json.scheduler.operation, 'emulator-install-crontab');
+    assert.equal(installResponse.json.scheduler.task.crontabInstalled, true);
+    assert.equal(installResponse.json.scheduler.task.rawCrontab, `${crontabText}\n`);
+    assert.equal(await readFile(cronEmulatorCrontabPath, 'utf8'), `${crontabText}\n`);
+
+    const activeResponse = await requestJson(port, '/api/init/cron/emulator/crontab', { method: 'GET' });
+    assert.equal(activeResponse.status, 200);
+    assert.equal(activeResponse.json.scheduler.operation, 'emulator-active-crontab');
+    assert.equal(activeResponse.json.scheduler.task.rawCrontab, `${crontabText}\n`);
+
+    const legacyPrint = await requestJson(port, '/api/init/cron/print', { method: 'GET' });
+    assert.equal(legacyPrint.status, 200);
+    assert.equal(legacyPrint.json.scheduler.operation, 'print');
+    assert.equal(legacyPrint.json.scheduler.routeCompatibility, '/api/init/cron/*');
+  });
+});
+
+// Starts the init API against temporary env, DB, and CronEmulator files.
 async function withInitServer(run) {
   const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'pf-init-api-step1-'));
   const port = await reservePort();
@@ -188,6 +236,11 @@ async function withInitServer(run) {
   const downloadDir = path.join(workspaceRoot, 'downloads');
   const logDir = path.join(workspaceRoot, 'logs');
   const cookieDir = path.join(workspaceRoot, 'cookies');
+  const cronEmulatorDirectory = path.join(workspaceRoot, 'cronemulator');
+  const cronEmulatorCrontabPath = path.join(cronEmulatorDirectory, 'crontab_emulated.txt');
+
+  await mkdir(cronEmulatorDirectory, { recursive: true });
+  await writeFile(cronEmulatorCrontabPath, '* * * * * /tmp/test-worker\n', 'utf8');
 
   await writeFile(
     envFilePath,
@@ -206,6 +259,7 @@ async function withInitServer(run) {
       ...process.env,
       PORT: String(port),
       INIT_ENV_FILE: envFilePath,
+      CRON_EMULATOR_CRONTAB_FILE: cronEmulatorCrontabPath,
     },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
@@ -239,7 +293,7 @@ async function withInitServer(run) {
 
   try {
     await ready;
-    await run({ port, dbPath, envFilePath, workspaceRoot });
+    await run({ port, dbPath, envFilePath, workspaceRoot, cronEmulatorCrontabPath });
   } finally {
     child.kill();
     await onceExit(child);
