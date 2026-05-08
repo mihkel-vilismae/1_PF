@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## 2026-05-08 05:59 EEST — v0.3.61
+
+### Added
+- Added Windows 11 CronEmulator control endpoints for checking, starting, stopping, installing a crontab, and reading the active crontab.
+- Added View A 3A CronEmulator controls with login-style status circles, centralized scheduler button status copy, and terminal-style crontab textareas.
+- Added regression coverage for CronEmulator endpoint crontab install/read behavior and View A CronEmulator button ordering, status circles, and textarea update rules.
+
+### Changed
+- Changed the Windows scheduler panel to expose `Check emulator scheduler`, `Run emulator`, `Stop emulator`, `Install crontab`, and `Get active crontab` controls.
+- Updated version metadata from v0.3.60 to v0.3.61.
+
+### Fixed
+- Wired the Windows scheduler controls to real CronEmulator backend actions instead of leaving the new emulator operations as UI-only controls.
+
+### Removed
+- None.
+
 ## 2026-05-08 02:49 EEST — v0.3.60
 
 ### Added
