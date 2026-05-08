@@ -1,0 +1,4 @@
+interface:
+  display_name: "Source of Truth"
+  short_description: "Audit project truth sources"
+  default_prompt: "Use $source-of-truth to classify this project claim and reconcile the relevant docs, UI, and code evidence."
