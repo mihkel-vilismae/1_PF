@@ -1,3 +1,8 @@
+/*
+ * Renders reusable dashboard HTML fragments for cards, logs, modals, and result surfaces.
+ * These helpers keep frontend presentation deterministic and escape dynamic values.
+ * Modal rendering includes the NEW AUTH login and read-only communication surfaces.
+ */
 import { STATUS_LABELS } from '../shared/constants.ts';
 
 type StatusLabelKey = keyof typeof STATUS_LABELS;
@@ -225,6 +230,7 @@ export function renderHistory(entries: HistoryEntry[] = []): string {
     .join('');
 }
 
+// Renders the active modal, including the split NEW AUTH login communication view.
 export function renderModal(modal: ModalData | null | undefined): string {
   if (!modal) {
     return '';
@@ -239,21 +245,49 @@ export function renderModal(modal: ModalData | null | undefined): string {
       ? renderNewAuthLoginModalContent(modal)
       : renderHistoryModalContent(modal.entry ?? {});
   const describedBy = subtitle ? ' aria-describedby="modal-subtitle"' : '';
+  const panel = `
+    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title"${describedBy}>
+      <div class="modal-panel__header">
+        <div class="modal-panel__header-copy">
+          <p class="modal-panel__eyebrow">${escapeHtml(kindLabel)}</p>
+          <h3 id="modal-title">${escapeHtml(title)}</h3>
+          ${subtitle ? `<p id="modal-subtitle" class="modal-panel__subtitle">${escapeHtml(subtitle)}</p>` : ''}
+        </div>
+        <button type="button" class="button button--ghost modal-panel__close" data-modal-close="1">Close</button>
+      </div>
+      ${content}
+    </section>
+  `;
+
+  if (modal.kind === 'new-auth-login') {
+    return `
+      <div class="modal-backdrop modal-backdrop--split" data-modal-backdrop="1">
+        <div class="modal-layout modal-layout--new-auth">
+          ${panel}
+          ${renderNewAuthCommunicationPanel()}
+        </div>
+      </div>
+    `;
+  }
 
   return `
     <div class="modal-backdrop" data-modal-backdrop="1">
-      <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title"${describedBy}>
-        <div class="modal-panel__header">
-          <div class="modal-panel__header-copy">
-            <p class="modal-panel__eyebrow">${escapeHtml(kindLabel)}</p>
-            <h3 id="modal-title">${escapeHtml(title)}</h3>
-            ${subtitle ? `<p id="modal-subtitle" class="modal-panel__subtitle">${escapeHtml(subtitle)}</p>` : ''}
-          </div>
-          <button type="button" class="button button--ghost modal-panel__close" data-modal-close="1">Close</button>
-        </div>
-        ${content}
-      </section>
+      ${panel}
     </div>
+  `;
+}
+
+// Renders the empty read-only iCloudPD communication panel beside the NEW AUTH login modal.
+function renderNewAuthCommunicationPanel(): string {
+  return `
+    <section class="modal-panel modal-panel--terminal" aria-labelledby="icloudpd-communication-title">
+      <div class="modal-panel__header modal-panel__header--terminal">
+        <div class="modal-panel__header-copy">
+          <h3 id="icloudpd-communication-title">icloudpd communication</h3>
+        </div>
+      </div>
+      <div class="terminal-panel" role="log" aria-live="polite" aria-label="Read-only iCloudPD communication log"></div>
+    </section>
   `;
 }
 

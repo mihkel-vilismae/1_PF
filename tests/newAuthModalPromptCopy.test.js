@@ -1,3 +1,7 @@
+/*
+ * Verifies NEW AUTH modal prompt copy and adjacent communication panel markup.
+ * These tests keep visible operator text stable for the iCloudPD login flow.
+ */
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
@@ -48,4 +52,19 @@ test('new auth modal does not render a live 2FA input after authentication', () 
   assert.equal(markup.includes('data-new-auth-2fa-code'), false);
   assert.equal(markup.includes('new-auth-submit-2fa'), false);
   assert.equal(markup.includes('2FA code or device index'), false);
+});
+
+// Verifies the NEW AUTH modal renders an empty terminal-style communication panel.
+test('new auth modal renders empty icloudpd communication panel beside login panel', () => {
+  const markup = renderModal({
+    kind: 'new-auth-login',
+    title: 'New auth',
+    stage: 'waiting_for_2fa',
+    message: 'Waiting for response.',
+  });
+
+  assert.equal(markup.includes('modal-layout--new-auth'), true);
+  assert.equal(markup.includes('modal-panel--terminal'), true);
+  assert.equal(markup.includes('icloudpd communication'), true);
+  assert.match(markup, /<div class="terminal-panel"[^>]*><\/div>/);
 });
