@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## 2026-05-08 07:11 EEST — v0.4.0
+
+### Added
+- Added a split NEW AUTH modal communication panel with separate status, prompt, and instruction surfaces plus regression coverage for modal prompt copy.
+- Added the source-of-truth Codex skill for classifying repository truth claims, runtime evidence, target specifications, documentation-derived status, and unknown implementation state.
+- Added the photo-frame event history triage Codex skill with an analyzer script for classifying scheduler, CronEmulator, pipeline lock, mock download, runtime truth, and nested failure evidence.
+
+### Changed
+- Changed scheduler GET target requests to send the selected scheduler target as query parameters aligned with the backend route contract.
+- Updated version metadata from v0.3.61 to v0.4.0.
+
+### Fixed
+- Fixed View A scheduler GET control request construction so selected targets are preserved through frontend service calls and covered by button workflow regression tests.
+
+### Removed
+- None.
+
 ## 2026-05-08 05:59 EEST — v0.3.61
 
 ### Added
