@@ -24,6 +24,13 @@ test('runtime truth new auth login opens modal, updates button state, and record
       details: {
         twoFactorPromptKind: 'device_index',
         requestedInput: 'Trusted-device index, such as "a"',
+        providerOutputPreview: [
+          'Processing user: person@example.com',
+          'Authenticating...',
+          'Authentication required for Account. (421)',
+          'Two-factor authentication is required (2fa)',
+          'Please enter two-factor authentication code:',
+        ].join('\n'),
       },
     }), { status: 200, headers: { 'Content-Type': 'application/json' } });
   };
@@ -54,6 +61,9 @@ test('runtime truth new auth login opens modal, updates button state, and record
     assert.equal(requests[0].method, 'POST');
     assert.equal(state.newAuth.buttonStates['new-auth-login-using-env'].status, 'pending');
     assert.equal(state.modal?.twoFactorPromptKind, 'device_index');
+    assert.equal(state.modal?.providerOutputPreview.includes('Processing user: pe***@example.com'), true);
+    assert.equal(state.modal?.providerOutputPreview.includes('person@example.com'), false);
+    assert.equal(state.modal?.providerOutputPreview.includes('Please enter two-factor authentication code:'), true);
 
     const details = history.at(-1)?.[3];
     assert.equal(details.endpoint, 'POST /api/auth/new/login');

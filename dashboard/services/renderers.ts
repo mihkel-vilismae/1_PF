@@ -52,6 +52,8 @@ type ModalData = {
   message?: string;
   requestedInput?: string | null;
   twoFactorPromptKind?: string | null;
+  icloudpdCommunicationLines?: unknown;
+  providerOutputPreview?: unknown;
 };
 
 type StepListItem = {
@@ -264,7 +266,7 @@ export function renderModal(modal: ModalData | null | undefined): string {
       <div class="modal-backdrop modal-backdrop--split" data-modal-backdrop="1">
         <div class="modal-layout modal-layout--new-auth">
           ${panel}
-          ${renderNewAuthCommunicationPanel()}
+          ${renderNewAuthCommunicationPanel(modal)}
         </div>
       </div>
     `;
@@ -277,8 +279,13 @@ export function renderModal(modal: ModalData | null | undefined): string {
   `;
 }
 
-// Renders the empty read-only iCloudPD communication panel beside the NEW AUTH login modal.
-function renderNewAuthCommunicationPanel(): string {
+// Renders read-only sanitized iCloudPD communication beside the NEW AUTH login modal.
+function renderNewAuthCommunicationPanel(modal: ModalData): string {
+  const lines = extractNewAuthCommunicationLines(modal);
+  const body = lines.length
+    ? lines.map((line) => `<div class="terminal-panel__line">${escapeHtml(line)}</div>`).join('')
+    : '<div class="terminal-panel__line terminal-panel__line--muted">Waiting for sanitized iCloudPD communication...</div>';
+
   return `
     <section class="modal-panel modal-panel--terminal" aria-labelledby="icloudpd-communication-title">
       <div class="modal-panel__header modal-panel__header--terminal">
@@ -286,9 +293,37 @@ function renderNewAuthCommunicationPanel(): string {
           <h3 id="icloudpd-communication-title">icloudpd communication</h3>
         </div>
       </div>
-      <div class="terminal-panel" role="log" aria-live="polite" aria-label="Read-only iCloudPD communication log"></div>
+      <div class="terminal-panel" role="log" aria-live="polite" aria-label="Read-only iCloudPD communication log">${body}</div>
     </section>
   `;
+}
+
+// Extracts only frontend-safe terminal lines from modal data supplied by NEW AUTH state.
+function extractNewAuthCommunicationLines(modal: ModalData): string[] {
+  const explicitLines = Array.isArray(modal.icloudpdCommunicationLines) ? modal.icloudpdCommunicationLines : [];
+  const previewLines = typeof modal.providerOutputPreview === 'string' ? modal.providerOutputPreview.split(/\r?\n/) : [];
+  return [...explicitLines, ...previewLines]
+    .filter((line): line is string => typeof line === 'string')
+    .map((line) => sanitizeTerminalCommunicationLine(line))
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+}
+
+// Applies a final UI-side redaction pass before provider text reaches the terminal panel.
+function sanitizeTerminalCommunicationLine(line: string): string {
+  return line
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, (email) => redactEmailForDisplay(email))
+    .replace(/\b\d{6,8}\b/g, '[redacted-code]')
+    .replace(/((?:password|passwd|authorization|bearer|token|cookie|session|secret)\s*[:=]\s*)([^\s]+)/gi, '$1[redacted]')
+    .replace(/(Authorization:\s*)(.+)/gi, '$1[redacted]')
+    .replace(/(Cookie:\s*)(.+)/gi, '$1[redacted]');
+}
+
+// Redacts an email address while keeping enough shape for operator recognition.
+function redactEmailForDisplay(email: string): string {
+  const [name, domain] = email.split('@');
+  const prefix = name.length <= 2 ? `${name[0] ?? '*'}***` : `${name.slice(0, 2)}***`;
+  return `${prefix}@${domain}`;
 }
 
 export function renderStepList(steps: StepListItem[] = []): string {

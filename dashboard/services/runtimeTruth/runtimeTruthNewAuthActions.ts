@@ -1,3 +1,7 @@
+/*
+ * Coordinates NEW AUTH runtime-truth actions for the dashboard.
+ * Keeps frontend modal state, button state, logs, and history aligned with safe endpoint payloads.
+ */
 import {
   NEW_AUTH_ENDPOINTS,
   fetchNewAuthSessionFiles,
@@ -89,12 +93,14 @@ export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, push
     });
   }
 
-  function openNewAuthLoginModal(stage, message, twoFactorPrompt = null) {
+  // Opens or refreshes the NEW AUTH login modal with safe iCloudPD communication text.
+  function openNewAuthLoginModal(stage, message, twoFactorPrompt = null, providerCommunication = null) {
+    const safeCommunication = extractSafeProviderCommunication(providerCommunication);
     pushLog(NEW_AUTH_CARD_KEY, 'info', `New auth modal ${stage}.`, buildNewAuthLogDetails({
       operation: 'New auth modal update',
       endpoint: NEW_AUTH_ENDPOINTS.login,
       outcome: 'modal',
-      payload: { stage, message, ...sanitizeNewAuthPayload(twoFactorPrompt) },
+      payload: { stage, message, ...sanitizeNewAuthPayload(twoFactorPrompt), providerOutputPreview: safeCommunication },
     }));
     openModal({
       kind: 'new-auth-login',
@@ -102,6 +108,7 @@ export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, push
       subtitle: message,
       stage,
       message,
+      providerOutputPreview: safeCommunication,
       ...(twoFactorPrompt ?? {}),
     });
   }
@@ -144,7 +151,7 @@ export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, push
         response: result.meta?.response ?? (safePayload ? { body: safePayload } : null),
       }));
       if (modalStage) {
-        openNewAuthLoginModal(status === 'success' ? 'authenticated' : 'waiting_for_2fa', message, getNewAuthTwoFactorPrompt(safePayload));
+        openNewAuthLoginModal(status === 'success' ? 'authenticated' : 'waiting_for_2fa', message, getNewAuthTwoFactorPrompt(safePayload), safePayload);
       }
       return safePayload;
     } catch (error) {
@@ -167,7 +174,7 @@ export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, push
         response: error?.meta?.response ?? (safePayload ? { body: safePayload } : null),
       }));
       if (modalStage) {
-        openNewAuthLoginModal('failed', message);
+        openNewAuthLoginModal('failed', message, null, safePayload);
       }
       return null;
     } finally {
@@ -340,6 +347,7 @@ function summarizeNewAuthResult(operation, payload) {
   return `${operation} completed.`;
 }
 
+// Reads the backend-supplied 2FA prompt metadata used by the modal input copy.
 function getNewAuthTwoFactorPrompt(payload) {
   const details = payload?.details && typeof payload.details === 'object' ? payload.details : null;
   if (!details) {
@@ -356,6 +364,35 @@ function getNewAuthTwoFactorPrompt(payload) {
     twoFactorPromptKind,
     requestedInput,
   };
+}
+
+// Extracts sanitized provider preview text from active NEW AUTH payload shapes.
+function extractSafeProviderCommunication(payload) {
+  const details = payload?.details && typeof payload.details === 'object' ? payload.details : null;
+  const providerProof = details?.providerProof && typeof details.providerProof === 'object' ? details.providerProof : null;
+  const preview = typeof details?.providerOutputPreview === 'string'
+    ? details.providerOutputPreview
+    : typeof providerProof?.providerOutputPreview === 'string'
+      ? providerProof.providerOutputPreview
+      : null;
+  return preview ? sanitizeNewAuthProviderText(preview) : null;
+}
+
+// Performs a final frontend redaction pass for provider communication text.
+function sanitizeNewAuthProviderText(value) {
+  return String(value)
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, (email) => redactEmailForDisplay(email))
+    .replace(/\b\d{6,8}\b/g, '[redacted-code]')
+    .replace(/((?:password|passwd|authorization|bearer|token|cookie|session|secret)\s*[:=]\s*)([^\s]+)/gi, '$1[redacted]')
+    .replace(/(Authorization:\s*)(.+)/gi, '$1[redacted]')
+    .replace(/(Cookie:\s*)(.+)/gi, '$1[redacted]');
+}
+
+// Redacts an email address while preserving a recognizable account shape.
+function redactEmailForDisplay(email) {
+  const [name, domain] = email.split('@');
+  const prefix = name.length <= 2 ? `${name[0] ?? '*'}***` : `${name.slice(0, 2)}***`;
+  return `${prefix}@${domain}`;
 }
 
 function buildNewAuthButtonState(status, message, endpoint) {

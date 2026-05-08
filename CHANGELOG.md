@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## 2026-05-08 11:24 EEST — v0.4.2
+
+### Added
+- Added sanitized iCloudPD provider communication lines to the NEW AUTH split-modal terminal panel.
+- Added focused regression coverage for terminal panel waiting state, provider preview rendering, and frontend secret/code redaction.
+
+### Changed
+- Updated NEW AUTH modal state passing so only safe provider preview text reaches the right-side communication panel.
+- Updated version metadata from v0.4.1 to v0.4.2.
+
+### Fixed
+- Fixed the NEW AUTH communication panel appearing empty while sanitized provider output is available.
+
+### Removed
+- None.
+
 ## 2026-05-08 07:25 EEST — v0.4.1
 
 ### Added
