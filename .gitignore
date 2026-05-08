@@ -29,6 +29,7 @@ pnpm-debug.log*
 
 # Local runtime data
 runtime_data/
+runtime-truth.json
 *.log
 *.sqlite
 *.sqlite-shm
