@@ -14,11 +14,15 @@ Start here:
 - `docs/categorized/task_documentation_still_to_implement/main_readme.md` - still-actionable implementation, verification, and reconciliation tasks.
 - `docs/categorized/other_documentation/main_readme.md` - operator notes, setup/auth notes, documentation workflow, default project checklist, and archive/reference orientation.
 
-## 2026-05-08 status update
+## 2026-05-10 status update
 
 NEW AUTH Slices 1–10 are documented as closed. The dashboard uses `/api/auth/new/*` for the new auth flow. Local session files alone are not authenticated; provider proof or stronger test-download proof is required.
 
 View B has backend-wired pipeline maintenance controls for stale persisted pipeline lock detection and stale-lock clearing. The detector currently classifies stale pipeline locks only.
+
+B3.5 owns playback queue preparation/building. B4 and `playback_worker` select the current playable item from already prepared queue/state as the final worker-stage action before the loop can begin again. Preview/fullscreen rendering are still not real media display, Raspberry OS rendering remains disabled/planned, and screen hardware control remains outside B4.
+
+Windows CronEmulator playback-worker command wiring is partial: it reaches `npm run api -- --scheduler playback-worker` from the expected `tools/CronEmulator` launch context, but live local scheduler/emulator operation still depends on that context being installed/launched correctly.
 
 View C can read the last orchestration run from the backend, but restore/resume remains a placeholder or decision-gated contract. View D remains a live-runtime-monitoring gap.
 
@@ -45,7 +49,7 @@ High-level documented components:
 - `dashboard/` - frontend UI, views, and inspect surfaces.
 - `docs/` - consolidated documentation entrypoints and categorized docs.
 - `scripts/` - local tooling and governance helpers.
-- staged pipeline model - download, index, GPS parsing, geocode, enqueue, and playback concepts as documented.
+- staged pipeline model - download, index, GPS parsing, geocode, B3.5 queue preparation/building, and B4/current-item playback selection concepts as documented.
 
 ## How to run
 

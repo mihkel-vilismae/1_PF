@@ -22,8 +22,9 @@ test('B4 playback flow status keeps rendering and Raspberry support honest', () 
   assert.match(doc, /Raspberry OS rendering remains disabled\/planned/);
 });
 
-test('B4 playback flow status preserves B3 and B5 boundaries', () => {
-  // Checks that the closure doc keeps B3 pipeline and B5 screen responsibilities outside B4.
-  assert.match(doc, /playback_worker` does not download, index, parse GPS, geocode, or prepare the queue/);
+test('B4 playback flow status preserves B3, B4, B5, and worker-loop boundaries', () => {
+  // Checks that the closure doc keeps B3 queue preparation, B4 selection, and B5 screen responsibilities separate.
+  assert.match(doc, /B3\.5 owns queue preparation\/building/);
+  assert.match(doc, /playback_worker` does not download, index, parse GPS, geocode, prepare\/build the queue, render media, enter fullscreen, or control screen hardware/);
   assert.match(doc, /B5 screen simulation\/hardware behavior is separate/);
 });

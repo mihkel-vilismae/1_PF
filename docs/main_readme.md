@@ -1,5 +1,9 @@
 # Categorized Documentation Index
 
+## 2026-05-10 playback boundary update
+
+B3.5 owns playback queue preparation/building. B4 and `playback_worker` select the current playable item from already prepared queue/state as the final worker-stage action before the loop can begin again. Preview/fullscreen rendering remain non-real media display, Raspberry OS rendering remains disabled/planned, and Windows CronEmulator playback-worker command wiring remains partial because it depends on the expected `tools/CronEmulator` launch context.
+
 ## Purpose
 
 This documentation set replaces the temporary `docs_to_parse/` staging bundle with a categorized, smaller canonical documentation structure.

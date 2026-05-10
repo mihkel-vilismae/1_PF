@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## 2026-05-10 17:38 EEST — v0.5.2
+
+### Added
+- Added documentation clarification that B3.5 owns queue preparation/building and `playback_worker` is the final worker-stage action that selects the current playable item from prepared playback state.
+
+### Changed
+- Reconciled B4 playback, placeholder, README, and code-verified status docs so they do not overclaim real preview/fullscreen rendering, Raspberry OS rendering, queue building inside `playback_worker`, or live Windows CronEmulator execution proof.
+- Updated version metadata from v0.5.1 to v0.5.2.
+
+### Fixed
+- Corrected stale documentation wording that could imply `playback_worker` prepares/builds the queue or that CronEmulator vendoring proves live scheduler execution.
+
+### Removed
+- None
+
 ## 2026-05-10 17:00 EEST — v0.5.1
 
 ### Added

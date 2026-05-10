@@ -71,3 +71,7 @@ Documentation-derived authority order used in this category:
 ## 2026-05-06 closure note
 
 The NEW AUTH implementation track is documented as closed through Slice 10. The current status docs must not describe local session files as authenticated by themselves. NEW AUTH truth is backend-owned and must require provider proof or stronger test-download proof.
+
+## 2026-05-10 B4 playback boundary note
+
+B3.5 owns playback queue preparation/building. B4 and `playback_worker` select the current playable item from already prepared queue/state only. Preview/fullscreen rendering are not real media display, Raspberry OS rendering remains disabled/planned, and Windows CronEmulator playback-worker command wiring is partial because it depends on the expected `tools/CronEmulator` launch context. See `b4_playback_flow_status.md` for the code-verified boundary.
