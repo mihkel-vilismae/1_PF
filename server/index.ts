@@ -34,6 +34,8 @@ import {
   isSchedulerTarget,
 } from '../shared/schedulerPlatformCapabilities.ts';
 import type { SchedulerCapability, SchedulerOperation, SchedulerSupportLevel, SchedulerTarget } from '../shared/schedulerPlatformCapabilities.ts';
+import { selectCurrentPlayableItem } from './playback/playbackSelectionService.ts';
+import { runPlaybackWorker } from './workers/playbackWorker.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -82,6 +84,7 @@ const schedulerTickSeconds = Object.freeze({
   screenWatchdog: 5,
   recoveryReconciliation: 15,
 });
+const schedulerWorkerName = normalizeSchedulerWorkerName(process.argv);
 const supportedMediaExtensions = new Set([
   '.jpg',
   '.jpeg',
@@ -110,6 +113,7 @@ type EnvSchemaKind = 'string' | 'path' | 'integer' | 'boolean';
 type EnvCheckSeverity = 'info' | 'warning' | 'error';
 type SchedulerRouteOperation = SchedulerOperation | string;
 type SchedulerTargetSelectionSource = 'file' | 'default' | 'request';
+type SchedulerWorkerName = 'regular-stage-worker' | 'playback-worker' | 'screen-on-off-worker';
 type RuntimeTruthSource = 'file' | 'request';
 
 interface EnvValues {
@@ -510,11 +514,54 @@ const server = createServer(async (request: IncomingMessage, response: ServerRes
   }
 });
 
-server.listen(port, '127.0.0.1', () => {
-  const message = `Init API server listening on http://127.0.0.1:${port}`;
-  console.log(message);
-  void logger.info(message, { port, url: `http://127.0.0.1:${port}` });
-});
+if (schedulerWorkerName) {
+  await runSchedulerWorker(schedulerWorkerName);
+} else {
+  server.listen(port, '127.0.0.1', () => {
+    const message = `Init API server listening on http://127.0.0.1:${port}`;
+    console.log(message);
+    void logger.info(message, { port, url: `http://127.0.0.1:${port}` });
+  });
+}
+
+
+// Dispatches the scheduler CLI worker mode used by cron/crontab commands.
+async function runSchedulerWorker(workerName: SchedulerWorkerName): Promise<void> {
+  const context = await buildRequestContext();
+  if (workerName !== 'playback-worker') {
+    console.error(`Scheduler worker ${workerName} is not implemented in this slice.`);
+    process.exitCode = 2;
+    return;
+  }
+
+  const result = await runPlaybackWorker({
+    context,
+    databaseService: getDatabaseService(),
+    repoRoot,
+  });
+  console.log(JSON.stringify(result, null, 2));
+  await logger.info('playback_worker completed.', {
+    status: result.status,
+    startedAt: result.startedAt,
+    finishedAt: result.finishedAt,
+    skippedReason: result.skippedReason,
+    failureReason: result.failureReason,
+  });
+  process.exitCode = result.status === 'failed' ? 1 : 0;
+}
+
+// Reads the optional `--scheduler <worker>` argument without affecting HTTP server mode.
+function normalizeSchedulerWorkerName(argv: string[]): SchedulerWorkerName | null {
+  const flagIndex = argv.indexOf('--scheduler');
+  const raw = flagIndex >= 0 ? argv[flagIndex + 1] : null;
+  if (raw === 'playback-worker') {
+    return raw;
+  }
+  if (raw === 'regular-stage-worker' || raw === 'screen-on-off-worker') {
+    return raw;
+  }
+  return null;
+}
 
 // Returns the backend component version from the backend process workspace.
 function versionHandler(): HandlerResult {
@@ -1344,39 +1391,37 @@ async function runtimeQueuePrepareHandler({ context }: Pick<HandlerArgs, 'contex
 }
 
 async function runtimePlaybackSelectCurrentHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
-  const { database, executedAt, playback } = await getDatabaseService().runStage6SelectCurrent(context);
+  const selection = await selectCurrentPlayableItem({
+    context,
+    databaseService: getDatabaseService(),
+  });
 
-  if (playback.outcome === 'no_ready_row') {
+  if (selection.outcome === 'no_ready_row') {
     throw new HttpError(409, 'no_ready_row', 'No READY slideshow rows exist for playback selection.', {
-      database,
-      stage: 'stage6_run_playback',
-      playback,
+      database: selection.database,
+      stage: selection.stage,
+      playback: selection.playback,
     });
   }
 
-  if (playback.outcome === 'no_playable_ready_row') {
+  if (selection.outcome === 'no_playable_ready_row') {
     throw new HttpError(409, 'no_playable_ready_row', 'READY slideshow rows exist but none are currently playable.', {
-      database,
-      stage: 'stage6_run_playback',
-      playback,
+      database: selection.database,
+      stage: selection.stage,
+      playback: selection.playback,
     });
   }
 
-  const selectedAssetId = playback.selected?.mediaAssetId ?? null;
   return {
     statusCode: 200,
     payload: {
-      status: playback.failedCandidateCount ? 'warning' : 'ok',
-      messages: playback.failedCandidateCount
-        ? [
-          `Selected media asset ${selectedAssetId} after failing ${playback.failedCandidateCount} invalid READY candidate(s).`,
-        ]
-        : [`Selected media asset ${selectedAssetId} as the current playback item.`],
-      stage: 'stage6_run_playback',
-      playback,
-      database,
-      schemaVersion: 1,
-      executedAt,
+      status: selection.status,
+      messages: selection.messages,
+      stage: selection.stage,
+      playback: selection.playback,
+      database: selection.database,
+      schemaVersion: selection.schemaVersion,
+      executedAt: selection.executedAt,
     },
   };
 }

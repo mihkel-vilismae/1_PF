@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## 2026-05-10 16:42 EEST — v0.5.0
+
+### Added
+- Added a backend playback selection service shared by the B4 HTTP route and the new playback_worker entrypoint.
+- Added playback_worker single-run execution with a scheduler status file, worker lock file, selected-item evidence, skipped reasons, and failure reasons.
+- Added focused playback_worker tests for selected, skipped, lock-conflict, route-payload-preservation, and no-rendering/no-B3/no-B5 boundaries.
+
+### Changed
+- Reused the shared Stage 6 selection service from `POST /api/runtime/playback/select-current` without changing the route path or successful/error response behavior.
+- Added `--scheduler playback-worker` dispatch so scheduled playback commands no longer start the HTTP server by default.
+
+### Fixed
+- Closed the placeholder gap where the scheduled playback worker command was present in crontab text but had no backend worker dispatch path.
+
+### Removed
+- None
+
 ## 2026-05-10 16:35 EEST — v0.5.0
 
 ### Added
