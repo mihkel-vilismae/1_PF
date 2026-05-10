@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## 2026-05-10 18:46 EEST — v0.5.3
+
+### Added
+- Added dedicated renderer utility and modal renderer modules while preserving the existing dashboard renderer compatibility entrypoint.
+
+### Changed
+- Extracted modal-specific rendering from `dashboard/services/renderers.ts` into a focused renderer module.
+- Bumped version metadata from v0.5.2 to v0.5.3.
+
+### Fixed
+- None
+
+### Removed
+- None
+
 ## 2026-05-10 17:56 EEST — v0.5.2
 
 ### Added

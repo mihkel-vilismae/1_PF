@@ -11,7 +11,7 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf
 test('Slice 1 NEW AUTH card renders required controls and modal input', () => {
   const initView = read('dashboard/views/initView.ts');
   const app = read('dashboard/app.ts');
-  const renderers = read('dashboard/services/renderers.ts');
+  const renderers = read('dashboard/services/renderers/modalRenderer.ts');
 
   assert.match(initView, /1A-STASH-OFF/);
   for (const label of [
