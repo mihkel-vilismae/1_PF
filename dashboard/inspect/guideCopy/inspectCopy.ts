@@ -109,6 +109,10 @@ export const ACTION_INSPECT_COPY = {
     "label": "Run download test action",
     "description": "Calls the backend download endpoint and reports the response in the B2 log."
   },
+  "run-b2-real-download": {
+    "label": "Run authenticated real download",
+    "description": "Calls the dedicated authenticated real iCloudPD download route for B2 after NEW AUTH session proof has verified the operator is logged in."
+  },
   "run-b3-auto": {
     "label": "Run all pipeline stages",
     "description": "Calls the backend orchestration endpoint for the B3 auto-run path while leaving individual stage buttons separate."

@@ -67,6 +67,10 @@ export const ACTION_BACKEND_STATUS_COPY = {
     "state": "real",
     "reason": "This button calls the real POST /api/runtime/download/run endpoint."
   },
+  "run-b2-real-download": {
+    "state": "real",
+    "reason": "This button calls POST /api/runtime/download/real-run and is gated by verified iCloudPD NEW AUTH session proof."
+  },
   "run-b3-auto": {
     "state": "real",
     "reason": "This auto pipeline calls POST /api/runtime/orchestration/run while preserving the existing individual stage button endpoints."

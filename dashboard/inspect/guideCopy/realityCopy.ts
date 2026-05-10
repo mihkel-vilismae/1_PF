@@ -99,6 +99,10 @@ export const ACTION_REALITY_COPY = {
     "state": "real",
     "reason": "Runs the real backend download test action."
   },
+  "run-b2-real-download": {
+    "state": "real",
+    "reason": "Calls the dedicated authenticated real iCloudPD download backend route and does not use the mock download fixture."
+  },
   "run-b3-1": {
     "state": "real",
     "reason": "Runs the real backend download stage."
