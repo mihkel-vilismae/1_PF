@@ -42,6 +42,7 @@ import {
 } from '../shared/schedulerWorkerCommands.ts';
 import { selectCurrentPlayableItem } from './playback/playbackSelectionService.ts';
 import { runPlaybackWorker } from './workers/playbackWorker.ts';
+import { createSchedulerRoutes } from './routes/schedulerRoutes.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -185,7 +186,7 @@ interface HandlerResult {
   payload: unknown;
 }
 
-type RouteHandler = (args: HandlerArgs) => HandlerResult | Promise<HandlerResult>;
+export type RouteHandler = (args: HandlerArgs) => HandlerResult | Promise<HandlerResult>;
 
 interface DatabaseViewerLoggingEntry {
   id: string;
@@ -443,16 +444,18 @@ const routes: Record<string, RouteHandler> = {
   'POST /api/init/database/inspect': inspectDatabaseHandler,
   'POST /api/init/database/delete': deleteDatabaseHandler,
   'POST /api/init/database/recreate-empty': recreateEmptyDatabaseHandler,
-  'GET /api/init/cron/target': cronTargetStatusHandler,
-  'POST /api/init/cron/target': selectCronTargetHandler,
-  'POST /api/init/cron/install': installCronHandler,
-  'GET /api/init/cron/status': cronStatusHandler,
-  'GET /api/init/cron/print': printCronHandler,
-  'GET /api/init/cron/emulator/check': checkEmulatorSchedulerHandler,
-  'POST /api/init/cron/emulator/run': runEmulatorHandler,
-  'POST /api/init/cron/emulator/stop': stopEmulatorHandler,
-  'POST /api/init/cron/emulator/crontab': installEmulatorCrontabHandler,
-  'GET /api/init/cron/emulator/crontab': activeEmulatorCrontabHandler,
+  ...createSchedulerRoutes({
+    cronTargetStatusHandler,
+    selectCronTargetHandler,
+    installCronHandler,
+    cronStatusHandler,
+    printCronHandler,
+    checkEmulatorSchedulerHandler,
+    runEmulatorHandler,
+    stopEmulatorHandler,
+    installEmulatorCrontabHandler,
+    activeEmulatorCrontabHandler,
+  }),
   'POST /api/database-viewer/verify': databaseViewerVerifyHandler,
   'POST /api/database-viewer/connect': databaseViewerConnectHandler,
   'GET /api/database-viewer/tables': databaseViewerTablesHandler,

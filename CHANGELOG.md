@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.5.5 - 2026-05-10 19:00 Tallinn
+
+- Refactored the scheduler and CronEmulator route-key table into `server/routes/schedulerRoutes.ts` while preserving all existing endpoint paths, HTTP methods, and handler wiring.
+- Added a scheduler route compatibility test that pins the extracted route family to the legacy route keys.
+- Preserved `server/index.ts` request parsing, middleware flow, response handling, scheduler behavior, and cron emulator behavior.
+
+
 ## 2026-05-10 18:50 EEST — v0.5.4
 
 ### Added
