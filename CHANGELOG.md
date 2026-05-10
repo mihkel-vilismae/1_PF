@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.5.9 - 2026-05-10 20:10 Tallinn
+
+- Slice 9: extracted the runtime status route family into `server/routes/runtimeStatusRoutes.ts`.
+- Files changed: `server/index.ts`, `server/routes/runtimeStatusRoutes.ts`, `tests/runtimeStatusRoutesCompatibility.test.js`, `VERSION`, `package.json`, `package-lock.json`, and `CHANGELOG.md`.
+- Behavior preserved: `/api/runtime/orchestration/current` and `/api/runtime/orchestration/last` keep the same HTTP methods, paths, handlers, response shapes, and status behavior.
+- Tests run: focused runtime status route compatibility test command attempted; typecheck compared against the Slice 7 baseline and Slice 8 state.
+- Known remaining pre-existing failures: baseline typecheck is blocked by missing Node type definitions in this environment; focused tests are blocked because `tsx` is unavailable.
+
 ## 0.5.8 - 2026-05-10 20:05 Tallinn
 
 - Slice 8: extracted the inspection route family into `server/routes/inspectionRoutes.ts`.

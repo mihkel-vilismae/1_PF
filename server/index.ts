@@ -40,6 +40,7 @@ import { createSchedulerRoutes } from './routes/schedulerRoutes.ts';
 import { createScreenSimulationRoutes } from './routes/screenSimulationRoutes.ts';
 import { createRuntimeTruthRoutes } from './routes/runtimeTruthRoutes.ts';
 import { createInspectionRoutes } from './routes/inspectionRoutes.ts';
+import { createRuntimeStatusRoutes } from './routes/runtimeStatusRoutes.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -431,8 +432,10 @@ const routes: Record<string, RouteHandler> = {
   'POST /api/runtime/playback/select-current': runtimePlaybackSelectCurrentHandler,
   // Wave E orchestration endpoints
   'POST /api/runtime/orchestration/run': runtimeOrchestrationRunHandler,
-  'GET /api/runtime/orchestration/current': runtimeOrchestrationCurrentHandler,
-  'GET /api/runtime/orchestration/last': runtimeOrchestrationLastHandler,
+  ...createRuntimeStatusRoutes({
+    runtimeOrchestrationCurrentHandler,
+    runtimeOrchestrationLastHandler,
+  }),
   ...createScreenSimulationRoutes({
     createBadRequestError: (code, message, details) => new HttpError(400, code, message, details),
     isJsonObject,
