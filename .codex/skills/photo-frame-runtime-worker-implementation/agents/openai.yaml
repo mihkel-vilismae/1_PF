@@ -1,0 +1,4 @@
+interface:
+  display_name: "Photo Frame Runtime Workers"
+  short_description: "Implement 12_PF worker services."
+  default_prompt: "Implement or refine a 12_PF runtime worker while preserving worker boundaries, locks, logs, and scheduler behavior."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Photo Frame Service Extraction"
+  short_description: "Extract shared runtime services."
+  default_prompt: "Extract backend runtime logic so dashboard routes and workers share the same service implementation."

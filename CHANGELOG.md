@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## 2026-05-10 15:55 EEST — v0.4.4
+
+### Added
+- Added project-local runtime worker implementation, worker verification, runtime service extraction, worker documentation reconciliation, and screen hardware contract Codex skills.
+
+### Changed
+- Updated version metadata from v0.4.3 to v0.4.4.
+
+### Fixed
+- None
+
+### Removed
+- None
+
 ## 2026-05-10 15:34 EEST — v0.4.3
 
 ### Added

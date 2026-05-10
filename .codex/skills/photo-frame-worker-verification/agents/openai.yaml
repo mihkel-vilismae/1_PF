@@ -1,0 +1,4 @@
+interface:
+  display_name: "Photo Frame Worker Verification"
+  short_description: "Trace worker execution evidence."
+  default_prompt: "Verify whether a 12_PF worker or scheduler command actually executes and classify the result from evidence."

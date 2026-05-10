@@ -1,0 +1,4 @@
+interface:
+  display_name: "Photo Frame Screen Hardware"
+  short_description: "Define real screen contracts."
+  default_prompt: "Define or audit the 12_PF real screen hardware contract before replacing simulation behavior."

@@ -1,16 +1,16 @@
 {
-  "queueLength": 25,
+  "queueLength": 50,
   "currentMedia": {
     "name": "gps_valid_01.jpg",
     "type": "Image",
-    "position": "1 of 25",
+    "position": "1 of 50",
     "overlay": "Lat: 58.37760, Lon: 26.72900"
   },
   "playbackStatus": "Selected by backend for playback",
   "screenState": "ON",
-  "lastActivitySource": "Mouse movement enabled",
+  "lastActivitySource": "PIR sensor activity enabled",
   "inactivityTimeoutSeconds": 5,
-  "lastCheckpoint": "2026-05-08T06:04:14.773Z",
+  "lastCheckpoint": "2026-05-10T11:57:32.399Z",
   "lastStageCompleted": "B4",
   "realRunActive": false,
   "sourceOfTruth": "conf/runtime-truth.json",

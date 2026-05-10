@@ -1,0 +1,4 @@
+interface:
+  display_name: "Photo Frame Worker Docs"
+  short_description: "Reconcile worker status docs."
+  default_prompt: "Reconcile 12_PF worker implementation changes into placeholder, status, backlog, and source-of-truth docs."
