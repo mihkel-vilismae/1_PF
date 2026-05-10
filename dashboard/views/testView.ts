@@ -17,6 +17,8 @@ import {
 // Renders the full View B page from runtime-truth state.
 export function renderTestView(state) {
   const queueReady = !!state.truth.currentMedia;
+  const realDownloadAuthenticated = isRealDownloadAuthenticated(state);
+  const realDownloadRecentCount = Number(state.simulation?.realDownloadRecentCount || 1);
   const playbackRenderingState = normalizePlaybackRenderingState(state.playbackRendering);
   const playbackRenderingReady = state.truth.playbackActive || state.statusByKey.B4 === 'success';
   const renderingOptions = buildPlaybackRenderingOptions(playbackRenderingReady);
@@ -46,6 +48,24 @@ export function renderTestView(state) {
           <p class="card__copy">This quick action now calls <code>POST /api/runtime/download/run</code> instead of simulating a batch in the browser.</p>
           <div class="button-row"><button class="button button--primary" data-action="run-b2">Run</button></div>
           <div class="log-surface">${renderLogEntries(state.logs.B2, { sourceKey: 'B2' })}</div>
+        </article>
+
+        <article class="card card--real">
+          <header class="card__header">
+            <div><p class="card__code">B2-REAL_DOWNLOAD</p><h3>Authenticated real download</h3></div>
+            <div class="card__header-tags">${renderSourceBadge('real', 'REAL ICLOUDPD')}</div>
+            ${statusBadge(state.statusByKey['B2-REAL_DOWNLOAD'])}
+          </header>
+          <p class="card__copy">This companion action calls <code>POST /api/runtime/download/real-run</code> and requires a verified iCloudPD session before downloading real media.</p>
+          <label class="field-label">
+            <span>Files to download in this batch</span>
+            <select class="select-input" name="realDownloadRecentCount" aria-label="Real download batch size">
+              ${renderRealDownloadBatchOptions(realDownloadRecentCount)}
+            </select>
+          </label>
+          <p class="notice">${realDownloadAuthenticated ? 'Authenticated session detected from dashboard state. Backend verifies again before starting.' : 'Real download requires an authenticated iCloudPD session. Verify/login in View A first.'}</p>
+          <div class="button-row"><button class="button button--primary" data-action="run-b2-real-download" ${realDownloadAuthenticated ? '' : 'disabled'}>Run real download</button></div>
+          <div class="log-surface">${renderLogEntries(state.logs['B2-REAL_DOWNLOAD'], { sourceKey: 'B2-REAL_DOWNLOAD' })}</div>
         </article>
       </div>
 
@@ -168,6 +188,18 @@ export function renderTestView(state) {
       </div>
     </section>
   `;
+}
+
+// Detects whether the dashboard already has a verified auth/session state.
+function isRealDownloadAuthenticated(state) {
+  return state.authPreflight?.publicState?.status === 'authenticated'
+    || state.newAuth?.latestResult?.state === 'authenticated'
+    || state.newAuth?.latestResult?.payload?.state === 'authenticated';
+}
+
+// Renders the fixed safe batch-size selector for real iCloudPD downloads.
+function renderRealDownloadBatchOptions(selectedValue) {
+  return [1, 5, 10, 25, 50].map((value) => `<option value="${value}" ${Number(selectedValue) === value ? 'selected' : ''}>${value} file${value === 1 ? '' : 's'}</option>`).join('');
 }
 
 function renderStageCard(code, title, subtitle, state, sourceMode = 'hybrid') {

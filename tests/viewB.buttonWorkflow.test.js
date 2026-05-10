@@ -991,3 +991,57 @@ test('B4 rendering controls enable after successful playback selection and keep 
     global.fetch = originalFetch;
   }
 });
+
+
+test('View B renders B2 real-download companion disabled until auth is verified', () => {
+  const state = createInitialState();
+  const markup = renderTestView(state);
+  const realDownloadButton = markup.match(/<button[^>]*data-action="run-b2-real-download"[^>]*>/)?.[0] ?? '';
+
+  assert.match(markup, /B2-REAL_DOWNLOAD/);
+  assert.match(markup, /name="realDownloadRecentCount"/);
+  assert.match(realDownloadButton, /disabled/);
+  assert.match(markup, /Real download requires an authenticated iCloudPD session/);
+});
+
+test('B2 real-download action calls the dedicated route with selected batch size', async () => {
+  const originalFetch = global.fetch;
+  const requests = [];
+
+  global.fetch = async (path, init = {}) => {
+    const method = init.method ?? 'GET';
+    const body = init.body ? JSON.parse(String(init.body)) : null;
+    requests.push({ path, method, body });
+
+    if (path === '/api/runtime/download/real-run' && method === 'POST') {
+      return new Response(
+        JSON.stringify({
+          status: 'ok',
+          messages: ['Real iCloudPD download requested 10 recent file(s).'],
+          download: { mode: 'icloudpd_real_download', requestedRecentCount: 10 },
+          auth: { status: 'authenticated' },
+          testDownload: { requestedRecentCount: 10, status: 'authenticated' },
+          schemaVersion: 1,
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      );
+    }
+
+    throw new Error(`Unexpected request: ${method} ${path}`);
+  };
+
+  try {
+    const harness = createRuntimeTruthHarness();
+    const behavior = createRuntimeTruthBehavior(harness.actions);
+    harness.state.authPreflight.publicState = { status: 'authenticated' };
+    harness.state.simulation.realDownloadRecentCount = 10;
+
+    behavior.runAction('run-b2-real-download');
+    await waitFor(() => harness.state.statusByKey['B2-REAL_DOWNLOAD'] === 'success');
+
+    assert.deepEqual(requests, [{ path: '/api/runtime/download/real-run', method: 'POST', body: { recentCount: 10 } }]);
+    assert.match(harness.state.logs['B2-REAL_DOWNLOAD'][0]?.message ?? '', /Real iCloudPD download requested 10/);
+  } finally {
+    global.fetch = originalFetch;
+  }
+});

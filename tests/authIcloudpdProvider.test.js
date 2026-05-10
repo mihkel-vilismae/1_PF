@@ -129,12 +129,13 @@ test('icloudpd session verification args do not pass the password on the command
   assert.equal(args.includes('super-secret-password'), false);
 });
 
-test('icloudpd single-file download args request one recent item into the target directory', () => {
+test('icloudpd single-file download args request the configured recent item count into the target directory', () => {
   const args = buildSingleFileDownloadArgs({
     username: 'operator@example.com',
     password: 'super-secret-password',
     cookieDir: '/private/cookies',
     downloadDir: '/private/tmp',
+    recentCount: 5,
   });
 
   assert.deepEqual(args.slice(0, 8), [
@@ -148,7 +149,7 @@ test('icloudpd single-file download args request one recent item into the target
     '/private/tmp',
   ]);
   assert.equal(args.includes('--recent'), true);
-  assert.equal(args[args.indexOf('--recent') + 1], '1');
+  assert.equal(args[args.indexOf('--recent') + 1], '5');
   assert.equal(args.includes('--folder-structure'), true);
   assert.equal(args[args.indexOf('--folder-structure') + 1], 'none');
 });

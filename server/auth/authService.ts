@@ -52,6 +52,7 @@ interface SubmitAuthTwoFactorOptions extends Omit<BaseAuthOperationOptions, 'che
 
 interface TestAuthLoginByDownloadingSingleFileOptions extends BaseAuthOperationOptions {
   downloadDirectory?: string | null;
+  recentCount?: number | string | null;
 }
 
 interface ResumeAuthSessionOptions extends Omit<BaseAuthOperationOptions, 'checks' | 'attemptId'> {
@@ -106,6 +107,7 @@ interface ProviderFailedStateOptions {
 interface SingleFileTestSummaryOptions {
   downloadDirectory?: string | null;
   providerOutcome?: AuthProviderOutcome | null;
+  recentCount?: number | string | null;
 }
 
 let currentAuthState: AuthState = createDefaultAuthState();
@@ -366,11 +368,12 @@ export async function testAuthLoginByDownloadingSingleFile({
   timeoutMs = DEFAULT_OPERATION_TIMEOUT_MS,
   envValues = {},
   downloadDirectory,
+  recentCount = 1,
 }: TestAuthLoginByDownloadingSingleFileOptions = {}): Promise<SingleFileAuthTestResult> {
   if (authOperationInProgress) {
     return {
       auth: createConcurrentAuthState({ now, providerName }),
-      testDownload: buildSingleFileTestSummary({ downloadDirectory, providerOutcome: null }),
+      testDownload: buildSingleFileTestSummary({ downloadDirectory, providerOutcome: null, recentCount }),
     };
   }
 
@@ -389,7 +392,7 @@ export async function testAuthLoginByDownloadingSingleFile({
       await persistCurrentAuthState();
       return {
         auth: getPublicAuthState(),
-        testDownload: buildSingleFileTestSummary({ downloadDirectory, providerOutcome: null }),
+        testDownload: buildSingleFileTestSummary({ downloadDirectory, providerOutcome: null, recentCount }),
       };
     }
 
@@ -406,7 +409,7 @@ export async function testAuthLoginByDownloadingSingleFile({
       await persistCurrentAuthState();
       return {
         auth: getPublicAuthState(),
-        testDownload: buildSingleFileTestSummary({ downloadDirectory, providerOutcome: null }),
+        testDownload: buildSingleFileTestSummary({ downloadDirectory, providerOutcome: null, recentCount }),
       };
     }
 
@@ -416,6 +419,7 @@ export async function testAuthLoginByDownloadingSingleFile({
         provider: providerName,
         envValues,
         downloadDirectory,
+        recentCount,
       }), timeoutMs, 'provider_single_file_download_timeout'));
       currentAuthState = mapProviderOutcomeToAuthState({
         attemptId,
@@ -426,7 +430,7 @@ export async function testAuthLoginByDownloadingSingleFile({
       await persistCurrentAuthState();
       return {
         auth: getPublicAuthState(),
-        testDownload: buildSingleFileTestSummary({ downloadDirectory, providerOutcome }),
+        testDownload: buildSingleFileTestSummary({ downloadDirectory, providerOutcome, recentCount }),
       };
     } catch (error) {
       currentAuthState = createProviderFailedState({
@@ -440,7 +444,7 @@ export async function testAuthLoginByDownloadingSingleFile({
       await persistCurrentAuthState();
       return {
         auth: getPublicAuthState(),
-        testDownload: buildSingleFileTestSummary({ downloadDirectory, providerOutcome: null }),
+        testDownload: buildSingleFileTestSummary({ downloadDirectory, providerOutcome: null, recentCount }),
       };
     }
   });
@@ -745,15 +749,24 @@ function createProviderFailedState({ attemptId, updatedAt, providerName, code, m
   });
 }
 
-function buildSingleFileTestSummary({ downloadDirectory, providerOutcome }: SingleFileTestSummaryOptions): SingleFileAuthTestSummary {
+function buildSingleFileTestSummary({ downloadDirectory, providerOutcome, recentCount = 1 }: SingleFileTestSummaryOptions): SingleFileAuthTestSummary {
   return {
     downloadDirectory: downloadDirectory || null,
-    requestedRecentCount: 1,
+    requestedRecentCount: normalizeRecentCount(recentCount),
     status: providerOutcome?.outcome ?? 'not_run',
     code: providerOutcome?.code ?? null,
     message: providerOutcome?.message ?? null,
     next_action: providerOutcome?.next_action ?? null,
   };
+}
+
+
+function normalizeRecentCount(value: unknown): number {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) {
+    return 1;
+  }
+  return Math.max(1, Math.min(50, Math.trunc(parsed)));
 }
 
 export function selectAuthReadinessChecks(checks: AuthReadinessCheck[]): AuthReadinessCheck[] {

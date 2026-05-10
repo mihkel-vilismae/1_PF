@@ -16,6 +16,7 @@ export type RuntimeEndpointResponse<TPayload = unknown> = ApiResponseWithMeta<TP
 
 export const RUNTIME_EXECUTION_ENDPOINTS = Object.freeze({
   downloadRun: { method: 'POST', path: '/api/runtime/download/run' },
+  realDownloadRun: { method: 'POST', path: '/api/runtime/download/real-run' },
   indexRun: { method: 'POST', path: '/api/runtime/index/run' },
   gpsRun: { method: 'POST', path: '/api/runtime/gps/run' },
   geocodeRun: { method: 'POST', path: '/api/runtime/geocode/run' },
@@ -31,6 +32,11 @@ export const RUNTIME_EXECUTION_ENDPOINTS = Object.freeze({
 
 export function runRuntimeDownload(body: RuntimeRequestBody = {}): Promise<RuntimeEndpointResponse> {
   return callRuntimeEndpoint(RUNTIME_EXECUTION_ENDPOINTS.downloadRun, body);
+}
+
+// Calls the dedicated backend route for authenticated real iCloudPD downloads.
+export function runRuntimeRealDownload(body: RuntimeRequestBody = {}): Promise<RuntimeEndpointResponse> {
+  return callRuntimeEndpoint(RUNTIME_EXECUTION_ENDPOINTS.realDownloadRun, body);
 }
 
 export function runRuntimeIndex(body: RuntimeRequestBody = {}): Promise<RuntimeEndpointResponse> {

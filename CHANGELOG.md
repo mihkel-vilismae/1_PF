@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## 0.5.11 - 2026-05-10 21:37 Tallinn
+
+- Added a View B `B2-REAL_DOWNLOAD` companion action beside the existing B2 test download action.
+- Added `POST /api/runtime/download/real-run` as a dedicated authenticated real iCloudPD download route with safe batch-size normalization.
+- Added a frontend selector for real-download batch size and guarded the action behind known authenticated session state while preserving backend verification.
+- Preserved existing B2 mock/test download behavior at `POST /api/runtime/download/run`.
+- Tests run: `npm test -- --test-reporter=spec tests/runtimeExecutionService.test.js tests/authIcloudpdProvider.test.js tests/viewB.buttonWorkflow.test.js`.
+
+
 ## 0.5.10 - 2026-05-10 20:50 Tallinn
 
 - Restored `TRANSFERABLE_REPO_PACKAGER.cmd` as a tracked repo utility.

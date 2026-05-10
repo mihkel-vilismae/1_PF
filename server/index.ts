@@ -14,6 +14,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { createAuthRoutes } from './auth/authRoutes.ts';
+import { resumeAuthSession, testAuthLoginByDownloadingSingleFile } from './auth/authService.ts';
 import { createNewAuthRoutes } from './auth/newAuthRoutes.ts';
 import { createDatabaseService } from './database/databaseService.ts';
 import type { DatabaseService } from './database/databaseService.ts';
@@ -425,6 +426,7 @@ const routes: Record<string, RouteHandler> = {
   'POST /api/database-viewer/logging/start': databaseViewerLoggingStartHandler,
   'POST /api/database-viewer/logging/stop': databaseViewerLoggingStopHandler,
   'POST /api/runtime/download/run': runtimeDownloadRunHandler,
+  'POST /api/runtime/download/real-run': runtimeRealDownloadRunHandler,
   'POST /api/runtime/index/run': runtimeIndexRunHandler,
   'POST /api/runtime/gps/run': runtimeGpsRunHandler,
   'POST /api/runtime/geocode/run': runtimeGeocodeRunHandler,
@@ -1183,6 +1185,71 @@ async function runtimeDownloadRunHandler({ context }: Pick<HandlerArgs, 'context
       executedAt,
     },
   };
+}
+
+// Runs the real iCloudPD download path after verifying a local authenticated session.
+async function runtimeRealDownloadRunHandler({ body, context }: Pick<HandlerArgs, 'body' | 'context'>): Promise<HandlerResult> {
+  const requestedRecentCount = normalizeRealDownloadBatchSize(body?.recentCount);
+  const downloadDirectory = resolveRepoPath(context.envValues.DOWNLOAD_DIR || '');
+  const executedAt = new Date().toISOString();
+  const auth = await resumeAuthSession({ envValues: context.envValues });
+
+  if (auth.status !== 'authenticated') {
+    throw new HttpError(409, 'auth_session_required', 'Real download requires an authenticated iCloudPD session. Please verify/login first.', {
+      auth,
+      requestedRecentCount,
+      downloadDirectory,
+    });
+  }
+
+  const checks = getAuthReadinessChecks(context);
+  const result = await testAuthLoginByDownloadingSingleFile({
+    checks: checks as unknown as Parameters<typeof testAuthLoginByDownloadingSingleFile>[0]['checks'],
+    envValues: {
+      ...context.envValues,
+      DOWNLOAD_RECENT: requestedRecentCount,
+    },
+    downloadDirectory,
+    recentCount: requestedRecentCount,
+  });
+
+  if (result.auth.status !== 'authenticated') {
+    const statusCode = result.auth.status === 'provider_failed' ? 502 : 409;
+    throw new HttpError(statusCode, 'real_download_failed', result.auth.error?.message || 'Real iCloudPD download did not complete with an authenticated session.', {
+      auth: result.auth,
+      testDownload: result.testDownload,
+      requestedRecentCount,
+      downloadDirectory,
+    });
+  }
+
+  return {
+    statusCode: 200,
+    payload: {
+      status: 'ok',
+      messages: [`Real iCloudPD download requested ${requestedRecentCount} recent file(s).`],
+      stage: 'stage1_real_icloudpd_download',
+      download: {
+        mode: 'icloudpd_real_download',
+        requestedRecentCount,
+        downloadDirectory,
+        authStatus: result.auth.status,
+      },
+      auth: result.auth,
+      testDownload: result.testDownload,
+      schemaVersion: 1,
+      executedAt,
+    },
+  };
+}
+
+// Normalizes the user-selected real-download batch size to a safe finite range.
+function normalizeRealDownloadBatchSize(value: unknown): number {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) {
+    return 1;
+  }
+  return Math.max(1, Math.min(50, Math.trunc(parsed)));
 }
 
 async function runtimeIndexRunHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {

@@ -472,6 +472,10 @@ function bindEvents() {
     input.addEventListener('change', () => setSimulationValue('inputMode', input.value));
   });
 
+  app.querySelectorAll<HTMLSelectElement>('select[name="realDownloadRecentCount"]').forEach((select) => {
+    select.addEventListener('change', () => setSimulationValue('realDownloadRecentCount', Number(select.value || 1)));
+  });
+
   app.querySelectorAll<HTMLButtonElement>('[data-playback-rendering-mode]').forEach((button) => {
     button.addEventListener('click', () => {
       const mode = button.dataset.playbackRenderingMode;

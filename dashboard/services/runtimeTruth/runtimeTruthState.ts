@@ -282,6 +282,7 @@ export function createInitialState() {
       B1: 'idle',
       '1A-STASH-OFF': 'idle',
       B2: 'idle',
+      'B2-REAL_DOWNLOAD': 'idle',
       B3: 'idle',
       'B3.1': 'idle',
       'B3.2': 'idle',
@@ -313,6 +314,7 @@ export function createInitialState() {
       B1: [{ at: now, type: 'info', message: 'Auth preflight status has not been loaded yet.' }],
       '1A-STASH-OFF': [{ at: now, type: 'info', message: 'New auth UI is ready. Slice 1 points only at /api/auth/new/* endpoints.' }],
       B2: [{ at: now, type: 'info', message: 'Ready to call POST /api/runtime/download/run.' }],
+      'B2-REAL_DOWNLOAD': [{ at: now, type: 'info', message: 'Ready to call POST /api/runtime/download/real-run after auth/session verification.' }],
       'B3.1': [{ at: now, type: 'info', message: 'Ready to call POST /api/runtime/download/run.' }],
       'B3.2': [{ at: now, type: 'info', message: 'Ready to call POST /api/runtime/index/run.' }],
       'B3.3': [{ at: now, type: 'info', message: 'GPS parser waiting.' }],
@@ -345,6 +347,7 @@ export function createInitialState() {
     simulation: {
       executionMode: 'auto',
       inputMode: 'single',
+      realDownloadRecentCount: 1,
       pirEnabled: true,
       mouseEnabled: true,
       keyboardEnabled: true,

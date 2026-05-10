@@ -111,7 +111,7 @@ export function buildSingleFileDownloadArgs(config: IcloudpdConfig): string[] {
     '--password', config.password,
     '--cookie-directory', config.cookieDir,
     '--directory', directory,
-    '--recent', '1',
+    '--recent', String(config.recentCount || DEFAULT_RECENT_COUNT),
     '--folder-structure', 'none',
   ] as string[];
   if (config.domain) {
