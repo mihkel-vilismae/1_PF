@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## 2026-05-10 16:52 EEST — v0.5.0
+
+### Added
+- Added a code-verified B4 playback flow closure/status document covering Run, route, worker, scheduler command, rendering controls, and remaining placeholders.
+- Added a focused documentation guard to prevent the B4 status document from overclaiming real preview/fullscreen or Raspberry display support.
+
+### Changed
+- None
+
+### Fixed
+- None
+
+### Removed
+- None
+
 ## 2026-05-10 16:47 EEST — v0.5.0
 
 ### Added
