@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## 2026-05-10 15:59 EEST — v0.4.5
+
+### Added
+- Added project-local component sync verification and component communication smoke-test Codex skills.
+
+### Changed
+- Updated version metadata from v0.4.4 to v0.4.5.
+
+### Fixed
+- None
+
+### Removed
+- None
+
 ## 2026-05-10 15:55 EEST — v0.4.4
 
 ### Added

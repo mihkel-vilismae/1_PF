@@ -1,0 +1,4 @@
+interface:
+  display_name: "Photo Frame Component Sync"
+  short_description: "Audit component version sync."
+  default_prompt: "Audit 12_PF component synchronization across versions, frontend services, backend routes, UI claims, inspect metadata, CronEmulator configuration, and docs without starting live schedulers."

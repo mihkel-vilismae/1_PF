@@ -1,0 +1,4 @@
+interface:
+  display_name: "Photo Frame Communication Smoke"
+  short_description: "Smoke-test component communication."
+  default_prompt: "Smoke-test 12_PF runtime communication links with the lowest-risk checks first, classify each link, and avoid live scheduler or worker execution unless explicitly approved."
