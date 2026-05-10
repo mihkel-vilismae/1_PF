@@ -17,70 +17,16 @@ import {
   runRuntimePlaybackSelectCurrent,
   runRuntimeQueuePrepare,
 } from '../runtimeExecutionService.ts';
+import { createRuntimeTruthBackendActionRunner } from './demoActions/runtimeTruthBackendRunner.ts';
 import {
-  buildInitLogDetails,
-  formatInitError,
-  mapPayloadStatusToUiStatus,
-  normalizeActionResult,
-  summarizeRuntimePayload,
-} from './runtimeTruthActionUtils.ts';
+  emptyLastRunData,
+  extractFileName,
+  inferMediaTypeFromPath,
+  isRuntimeRecord as isRecord,
+  mapOrchestrationToLastRunData,
+} from './demoActions/runtimeTruthDemoMedia.ts';
 
-function inferMediaTypeFromPath(candidatePath) {
-  const normalized = String(candidatePath ?? '').toLowerCase();
-  if (!normalized) {
-    return 'Media';
-  }
-  if (/(\.mp4|\.mov|\.mkv|\.avi|\.webm)$/i.test(normalized)) {
-    return 'Video';
-  }
-  return 'Image';
-}
-
-function extractFileName(candidatePath) {
-  const normalized = String(candidatePath ?? '').replaceAll('\\', '/');
-  return normalized.split('/').filter(Boolean).pop() ?? candidatePath ?? 'Unknown media';
-}
-
-function isRecord(value) {
-  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
-}
-
-function emptyLastRunData() {
-  return { media: {}, playback: {}, stage: {}, screen: {} };
-}
-
-function mapOrchestrationToLastRunData(payload) {
-  const selected = isRecord(payload?.selected_asset_summary) ? payload.selected_asset_summary : {};
-  const canonicalPath = selected.canonicalPath ?? selected.canonical_path ?? null;
-  const addressText = selected.addressText ?? selected.address_text ?? null;
-  return {
-    media: {
-      file: canonicalPath ? extractFileName(canonicalPath) : 'No selected playback item recorded',
-      type: canonicalPath ? inferMediaTypeFromPath(canonicalPath) : 'Unknown',
-      queuePosition: 'Backend orchestration summary',
-      checkpoint: payload?.finished_at ?? payload?.started_at ?? 'Unavailable',
-    },
-    playback: {
-      status: payload?.status ?? 'Unknown',
-      lastCheckpoint: payload?.finished_at ?? 'Unavailable',
-      resumeMarker: canonicalPath ?? 'No playback selection recorded',
-      crashState: payload?.failure_reason ? `Failed at ${payload.failed_stage ?? 'unknown stage'}: ${payload.failure_reason}` : 'No failure recorded',
-    },
-    stage: {
-      active: payload?.current_stage ?? 'None',
-      lastCompleted: payload?.last_successful_stage ?? 'None',
-      previousStage: Array.isArray(payload?.stage_order_executed) ? payload.stage_order_executed.join(' -> ') : 'Unavailable',
-      stageError: payload?.failure_reason ?? 'None',
-    },
-    screen: {
-      state: 'Unknown',
-      lastActivitySource: 'Not included in orchestration last-run payload',
-      timeout: 'Not included',
-      transition: addressText ?? 'No screen transition is represented by this endpoint',
-    },
-  };
-}
-
+// Creates the View B runtime-truth action bundle consumed by dashboard behavior wiring.
 export function createRuntimeTruthDemoActions({
   getState,
   patchState,
@@ -107,6 +53,7 @@ export function createRuntimeTruthDemoActions({
   let playbackLoopTimer = null;
   let lastPlaybackCanonicalPath = null;
 
+  // Applies local screen simulation truth and records matching log/history entries.
   function applyScreenSimulationState(reason) {
     const simulation = getState().simulation;
     const anyEnabled = simulation.simulateAllEnabled || simulation.pirEnabled || simulation.mouseEnabled || simulation.keyboardEnabled;
@@ -151,6 +98,7 @@ export function createRuntimeTruthDemoActions({
     );
   }
 
+  // Runs a legacy timed placeholder action while preserving duplicate-trigger guards.
   function genericAction(key, source, message) {
     if (!guardAction(key, source, `${key} action is already running; duplicate trigger was blocked.`)) {
       return;
@@ -173,6 +121,7 @@ export function createRuntimeTruthDemoActions({
     }, 420);
   }
 
+  // Runs the existing placeholder B1 login flow used by View B test controls.
   function runLoginFlow() {
     if (!guardAction('B1', 'TEST', 'B1 login flow is already running; duplicate start was blocked.')) {
       return;
@@ -211,82 +160,13 @@ export function createRuntimeTruthDemoActions({
     }, 920);
   }
 
-  async function runBackendAction({
-    key,
-    source,
-    operation,
-    endpoint,
-    execute,
-    requestBody = {},
-    onSuccess = (_payload = null, _meta = null) => {},
-    onError = (_error = null) => {},
-    afterRun = null,
-  }) {
-    if (!guardAction(key, source, `${key} action is already running; duplicate trigger was blocked.`)) {
-      return null;
-    }
-
-    setStatus(key, 'running');
-    pushLog(key, 'info', `${operation} started.`, {
-      operation,
-      endpoint: `${endpoint.method} ${endpoint.path}`,
-      outcome: 'running',
-      request: {
-        method: endpoint.method,
-        path: endpoint.path,
-        body: requestBody,
-      },
-    });
-
-    try {
-      const result = normalizeActionResult(await execute(requestBody));
-      const payload = result.payload ?? null;
-      const details = buildInitLogDetails({
-        operation,
-        endpoint,
-        requestBody,
-        apiMeta: result.meta,
-        responsePayload: payload,
-        outcome: 'success',
-      });
-      const uiStatus = mapPayloadStatusToUiStatus(payload?.status);
-      const summary = summarizeRuntimePayload(operation, payload);
-
-      setStatus(key, uiStatus);
-      pushLog(key, uiStatus, summary, details);
-      pushHistory(source, uiStatus, summary, {
-        actionKey: key,
-        operation,
-        request: details.request,
-        response: details.response,
-      });
-      onSuccess(payload, result.meta);
-      return payload;
-    } catch (error) {
-      const details = buildInitLogDetails({
-        operation,
-        endpoint,
-        requestBody,
-        apiMeta: error?.meta ?? null,
-        responsePayload: error?.payload ?? null,
-        outcome: 'error',
-      });
-      const message = formatInitError(operation, error);
-      setStatus(key, 'error');
-      pushLog(key, 'error', message, details);
-      pushHistory(source, 'error', message, {
-        actionKey: key,
-        operation,
-        request: details.request,
-        response: details.response,
-      });
-      onError(error);
-      return null;
-    } finally {
-      afterRun?.();
-      endAction(key);
-    }
-  }
+  const runBackendAction = createRuntimeTruthBackendActionRunner({
+    guardAction,
+    setStatus,
+    pushLog,
+    pushHistory,
+    endAction,
+  });
 
   // Copies backend-owned pipeline lock fields into the frontend truth projection.
   function syncPipelineLockTruth(payload) {
@@ -326,6 +206,7 @@ export function createRuntimeTruthDemoActions({
     });
   }
 
+  // Runs a locally simulated pipeline stage with the existing frontend pipeline lock.
   function runPipelineStage(key, message, onComplete = () => {}) {
     if (isPipelineBusy()) {
       rejectPipelineWhileBusy(key);
@@ -349,6 +230,7 @@ export function createRuntimeTruthDemoActions({
     }, 420);
   }
 
+  // Runs one backend pipeline stage while preserving aggregate B3 status updates.
   function runBackendPipelineStage({ key, operation, endpoint, execute, onComplete = () => {} }) {
     if (isPipelineBusy()) {
       rejectPipelineWhileBusy(key);
@@ -386,6 +268,7 @@ export function createRuntimeTruthDemoActions({
     });
   }
 
+  // Runs the backend queue-prepare stage behind the existing B3.5 action.
   function runEnqueueStage(onComplete = () => {}) {
     runBackendPipelineStage({
       key: 'B3.5',
@@ -396,6 +279,7 @@ export function createRuntimeTruthDemoActions({
     });
   }
 
+  // Runs backend orchestration for the full automatic View B pipeline action.
   function runAutoPipeline() {
     if (isPipelineBusy()) {
       rejectPipelineWhileBusy('B3');
@@ -433,6 +317,7 @@ export function createRuntimeTruthDemoActions({
     });
   }
 
+  // Loads the latest backend orchestration summary into the View C last-run projection.
   function loadLastOrchestrationRun() {
     void runBackendAction({
       key: 'C',
@@ -459,6 +344,7 @@ export function createRuntimeTruthDemoActions({
     });
   }
 
+  // Sends screen simulation settings to the backend and applies the returned truth state.
   function configureScreenSimulation() {
     const simulation = { ...getState().simulation };
     void runBackendAction({
@@ -490,6 +376,7 @@ export function createRuntimeTruthDemoActions({
     });
   }
 
+  // Runs backend playback selection and schedules the existing auto-advance loop when needed.
   function runPlaybackEmulation() {
     // If a playback loop timer is pending, clear it before starting a new run. This
     // avoids overlapping timers when the user manually triggers the action again.
@@ -545,6 +432,7 @@ export function createRuntimeTruthDemoActions({
     }
   }
 
+  // Starts the simulated runtime preview while preserving the existing single-instance guard.
   function startRealRun() {
     if (getState().truth.realRunActive) {
       pushHistory('RUNTIME', 'info', 'Duplicate simulated runtime preview start request ignored because the preview is already active.', {

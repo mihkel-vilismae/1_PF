@@ -11,23 +11,29 @@ import {
   submitNewAuthTwoFactor,
   verifyNewAuthIcloudpd,
 } from '../newAuthService.ts';
-import { buildTimelineDetails } from './runtimeTruthActionUtils.ts';
+import {
+  NEW_AUTH_BUTTON_DEFAULTS,
+  NEW_AUTH_CARD_KEY,
+  NEW_AUTH_HISTORY_SOURCE,
+  NEW_AUTH_SESSION_BUTTON_KEYS,
+  SECRET_FIELD_PATTERN,
+} from './newAuthActions/runtimeTruthNewAuthConstants.ts';
+import {
+  buildNewAuthButtonState,
+  buildNewAuthHistoryDetails,
+  buildNewAuthLogDetails,
+  buildNewAuthResult,
+} from './newAuthActions/runtimeTruthNewAuthResultBuilders.ts';
+import {
+  extractSafeProviderCommunication,
+  sanitizeNewAuthPayload,
+} from './newAuthActions/runtimeTruthNewAuthSanitize.ts';
 
-const NEW_AUTH_CARD_KEY = '1A-STASH-OFF';
-const NEW_AUTH_HISTORY_SOURCE = 'NEW AUTH';
-const SECRET_FIELD_PATTERN = /(password|passwd|secret|token|cookie|session|credential|authorization|otp|2fa|two_factor_value|mfa|^code$|apple_id)/i;
-const NEW_AUTH_BUTTON_DEFAULTS = Object.freeze({
-  'new-auth-verify-icloudpd': 'Not checked yet.',
-  'new-auth-login-using-env': 'Not checked yet.',
-  'new-auth-check-login': 'Not checked yet.',
-  'new-auth-logout-session': 'Not checked yet.',
-  'new-auth-session-files': 'Not checked yet.',
-});
-const NEW_AUTH_SESSION_BUTTON_KEYS = Object.freeze(['new-auth-login-using-env', 'new-auth-check-login']);
-
+// Creates the NEW AUTH runtime-truth action bundle used by the dashboard card.
 export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, pushLog, setStatus, openModal, guards }) {
   const { guardAction, endAction } = guards;
 
+  // Runs the NEW AUTH iCloudPD verification action without changing endpoint bindings.
   async function verifyIcloudpdAction() {
     return runNewAuthBackendAction({
       buttonKey: 'new-auth-verify-icloudpd',
@@ -38,6 +44,7 @@ export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, push
     });
   }
 
+  // Runs the passive NEW AUTH login/status check action.
   async function checkLoginAction() {
     return runNewAuthBackendAction({
       buttonKey: 'new-auth-check-login',
@@ -48,6 +55,7 @@ export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, push
     });
   }
 
+  // Starts provider login through the NEW AUTH login endpoint and opens the modal.
   async function loginUsingEnvAction() {
     openNewAuthLoginModal('starting_provider_login', 'Starting login using .env values. Waiting for the new backend endpoint response.');
     return runNewAuthBackendAction({
@@ -60,6 +68,7 @@ export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, push
     });
   }
 
+  // Submits the user-entered 2FA code or device index to the NEW AUTH endpoint.
   async function submitTwoFactorAction(code) {
     openNewAuthLoginModal('submitting_2fa', 'Submitting the 2FA code or trusted-device index through the new auth endpoint. The response is not displayed after submission.');
     return runNewAuthBackendAction({
@@ -72,6 +81,7 @@ export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, push
     });
   }
 
+  // Runs the local NEW AUTH session cleanup/logout action.
   async function logoutAction() {
     return runNewAuthBackendAction({
       buttonKey: 'new-auth-logout-session',
@@ -82,6 +92,7 @@ export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, push
     });
   }
 
+  // Loads safe NEW AUTH session file path metadata without file contents.
   async function sessionFilesAction() {
     return runNewAuthBackendAction({
       buttonKey: 'new-auth-session-files',
@@ -113,6 +124,7 @@ export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, push
     });
   }
 
+  // Runs one NEW AUTH backend action and synchronizes button, log, history, and modal state.
   async function runNewAuthBackendAction({ buttonKey, operation, endpoint, execute, duplicateMessage, modalStage = false, resultTarget = 'latestResult' }) {
     if (!guardAction(NEW_AUTH_CARD_KEY, NEW_AUTH_HISTORY_SOURCE, duplicateMessage)) {
       return null;
@@ -192,6 +204,7 @@ export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, push
   };
 }
 
+// Classifies NEW AUTH button status while keeping 2FA pending before failed states.
 function classifyNewAuthButtonStatus(buttonKey, payload, transportOutcome) {
   if (transportOutcome === 'error') return 'failed';
   if (hasNewAuthTwoFactorPrompt(payload)) return 'pending';
@@ -207,6 +220,7 @@ function classifyNewAuthButtonStatus(buttonKey, payload, transportOutcome) {
   return payload?.ok === true || payload?.state === 'authenticated' || payload?.status === 'ok' ? 'success' : 'pending';
 }
 
+// Recalculates all NEW AUTH button states from current and persisted result payloads.
 function recalculateNewAuthButtonStates(draft, currentResult = null) {
   draft.newAuth.buttonStates ??= {};
   for (const [key, message] of Object.entries(NEW_AUTH_BUTTON_DEFAULTS)) {
@@ -242,6 +256,7 @@ function recalculateNewAuthButtonStates(draft, currentResult = null) {
   }
 }
 
+// Applies login/check-login/logout projections consistently across session-related buttons.
 function applyNewAuthSessionProjection(draft, { buttonKey, endpoint, status, message, payload }) {
   const sessionStatus = classifyNewAuthSessionStatus(payload);
   const sessionMessage = messageForNewAuthSessionStatus(sessionStatus, message);
@@ -266,6 +281,7 @@ function applyNewAuthSessionProjection(draft, { buttonKey, endpoint, status, mes
   }
 }
 
+// Converts NEW AUTH session payload state into the dashboard button-state vocabulary.
 function classifyNewAuthSessionStatus(payload) {
   if (!payload || typeof payload !== 'object') return 'neutral';
   if (payload.state === 'logged_out') return 'neutral';
@@ -275,6 +291,7 @@ function classifyNewAuthSessionStatus(payload) {
   return 'pending';
 }
 
+// Builds the session-status message shown on login-related NEW AUTH controls.
 function messageForNewAuthSessionStatus(status, fallbackMessage) {
   if (status === 'neutral') {
     return fallbackMessage ? `No authenticated new-auth session is active. Last result: ${fallbackMessage}` : 'No authenticated new-auth session is active.';
@@ -282,10 +299,12 @@ function messageForNewAuthSessionStatus(status, fallbackMessage) {
   return fallbackMessage || 'New-auth session state recalculated from the latest backend result.';
 }
 
+// Checks whether a stored result belongs to a session-affecting endpoint.
 function isNewAuthSessionResult(result) {
   return isNewAuthSessionEndpoint(result?.endpoint);
 }
 
+// Checks whether an endpoint path can affect NEW AUTH session state.
 function isNewAuthSessionEndpoint(endpointPath) {
   const normalizedPath = normalizeNewAuthEndpointPath(endpointPath);
   return normalizedPath === NEW_AUTH_ENDPOINTS.status.path
@@ -295,6 +314,7 @@ function isNewAuthSessionEndpoint(endpointPath) {
     || endpointPath === NEW_AUTH_ENDPOINTS.testDownload.path;
 }
 
+// Converts a stored NEW AUTH result into the button projection structure.
 function resultToButtonProjection(result) {
   const endpoint = endpointForNewAuthResult(result);
   const buttonKey = buttonKeyForNewAuthEndpoint(result.endpoint);
@@ -309,11 +329,13 @@ function resultToButtonProjection(result) {
   };
 }
 
+// Resolves a stored NEW AUTH result endpoint path back to endpoint metadata.
 function endpointForNewAuthResult(result) {
   const normalizedPath = normalizeNewAuthEndpointPath(result?.endpoint);
   return Object.values(NEW_AUTH_ENDPOINTS).find((endpoint) => normalizeNewAuthEndpointPath(endpoint.path) === normalizedPath) ?? null;
 }
 
+// Maps a NEW AUTH endpoint path to the dashboard button key it controls.
 function buttonKeyForNewAuthEndpoint(endpointPath) {
   const normalizedPath = normalizeNewAuthEndpointPath(endpointPath);
   if (normalizedPath === NEW_AUTH_ENDPOINTS.status.path) return 'new-auth-check-login';
@@ -323,10 +345,12 @@ function buttonKeyForNewAuthEndpoint(endpointPath) {
   return 'new-auth-verify-icloudpd';
 }
 
+// Normalizes endpoint paths before comparing optional query-string variants.
 function normalizeNewAuthEndpointPath(endpointPath) {
   return typeof endpointPath === 'string' ? endpointPath.split('?')[0] : endpointPath;
 }
 
+// Detects backend 2FA prompt shapes that should keep login status pending.
 function hasNewAuthTwoFactorPrompt(payload) {
   const details = payload?.details && typeof payload.details === 'object' ? payload.details : null;
   const providerProof = details?.providerProof && typeof details.providerProof === 'object' ? details.providerProof : null;
@@ -340,6 +364,7 @@ function hasNewAuthTwoFactorPrompt(payload) {
     || Array.isArray(providerProof?.userPrompts);
 }
 
+// Summarizes a NEW AUTH backend payload into the existing button/log message style.
 function summarizeNewAuthResult(operation, payload) {
   if (payload?.message) return payload.message;
   if (payload?.state) return `${operation} returned state: ${payload.state}.`;
@@ -364,93 +389,4 @@ function getNewAuthTwoFactorPrompt(payload) {
     twoFactorPromptKind,
     requestedInput,
   };
-}
-
-// Extracts sanitized provider preview text from active NEW AUTH payload shapes.
-function extractSafeProviderCommunication(payload) {
-  const details = payload?.details && typeof payload.details === 'object' ? payload.details : null;
-  const providerProof = details?.providerProof && typeof details.providerProof === 'object' ? details.providerProof : null;
-  const preview = typeof details?.providerOutputPreview === 'string'
-    ? details.providerOutputPreview
-    : typeof providerProof?.providerOutputPreview === 'string'
-      ? providerProof.providerOutputPreview
-      : null;
-  return preview ? sanitizeNewAuthProviderText(preview) : null;
-}
-
-// Performs a final frontend redaction pass for provider communication text.
-function sanitizeNewAuthProviderText(value) {
-  return String(value)
-    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, (email) => redactEmailForDisplay(email))
-    .replace(/\b\d{6,8}\b/g, '[redacted-code]')
-    .replace(/((?:password|passwd|authorization|bearer|token|cookie|session|secret)\s*[:=]\s*)([^\s]+)/gi, '$1[redacted]')
-    .replace(/(Authorization:\s*)(.+)/gi, '$1[redacted]')
-    .replace(/(Cookie:\s*)(.+)/gi, '$1[redacted]');
-}
-
-// Redacts an email address while preserving a recognizable account shape.
-function redactEmailForDisplay(email) {
-  const [name, domain] = email.split('@');
-  const prefix = name.length <= 2 ? `${name[0] ?? '*'}***` : `${name.slice(0, 2)}***`;
-  return `${prefix}@${domain}`;
-}
-
-function buildNewAuthButtonState(status, message, endpoint) {
-  return {
-    status,
-    message,
-    updatedAt: stampSafe(),
-    endpoint: endpoint ? `${endpoint.method} ${endpoint.path}` : null,
-  };
-}
-
-function buildNewAuthResult({ operation, endpoint, outcome, message, payload, meta }) {
-  return {
-    operation,
-    method: endpoint.method,
-    endpoint: endpoint.path,
-    outcome,
-    message,
-    status: meta?.response?.status ?? null,
-    payload,
-    receivedAt: stampSafe(),
-  };
-}
-
-function buildNewAuthLogDetails({ operation, endpoint, outcome, meta = null, payload = null }) {
-  return {
-    ...buildTimelineDetails(),
-    operation,
-    endpoint: `${endpoint.method} ${endpoint.path}`,
-    outcome,
-    request: sanitizeNewAuthPayload(meta?.request ?? { method: endpoint.method, path: endpoint.path, body: null }),
-    response: sanitizeNewAuthPayload(meta?.response ?? (payload ? { body: payload } : null)),
-  };
-}
-
-function buildNewAuthHistoryDetails({ operation, endpoint, outcome, uiStatus, request, response }) {
-  return {
-    operation,
-    endpoint: `${endpoint.method} ${endpoint.path}`,
-    outcome,
-    uiStatus,
-    buttonStatus: uiStatus,
-    request: sanitizeNewAuthPayload(request),
-    response: sanitizeNewAuthPayload(response),
-    recordedAt: stampSafe(),
-  };
-}
-
-function sanitizeNewAuthPayload(value) {
-  if (Array.isArray(value)) return value.map((item) => sanitizeNewAuthPayload(item));
-  if (!value || typeof value !== 'object') return value;
-  return Object.fromEntries(
-    Object.entries(value)
-      .filter(([key]) => !SECRET_FIELD_PATTERN.test(key))
-      .map(([key, nestedValue]) => [key, sanitizeNewAuthPayload(nestedValue)]),
-  );
-}
-
-function stampSafe() {
-  return typeof Intl !== 'undefined' ? new Date().toLocaleString('et-EE', { timeZone: 'Europe/Tallinn' }) : new Date().toISOString();
 }
