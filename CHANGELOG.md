@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## 2026-05-10 16:24 EEST — v0.5.0
+
+### Added
+- Added a B4 playback rendering contract service that defines the default no-rendering mode, Windows/Raspberry rendering targets, and one shared browser-native renderer abstraction for future preview-window and fullscreen modes.
+- Added focused tests for B4 rendering defaults, disabled preview/fullscreen gating, state normalization, and shared renderer identity.
+
+### Changed
+- Updated version metadata from v0.4.5 to v0.5.0.
+
+### Fixed
+- None
+
+### Removed
+- None
+
 ## 2026-05-10 15:59 EEST — v0.4.5
 
 ### Added
