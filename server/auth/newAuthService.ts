@@ -490,6 +490,15 @@ export async function logoutNewAuthSession(context: NewAuthContext = {}): Promis
  * This endpoint does not download real media yet; it verifies that a saved session is authenticated.
  * If the session is unverified or requires authentication, it returns an error requiring login/2FA.
  */
+/*
+ * Verifies the NEW AUTH session for runtime actions that need real iCloudPD
+ * access. This keeps runtime routes gated by the same provider-proof model as
+ * /api/auth/new/status instead of the older auth-state persistence layer.
+ */
+export async function verifyNewAuthSessionForRuntimeDownload(context: NewAuthContext = {}): Promise<Record<string, unknown>> {
+  return getNewAuthStatus(context, { providerProof: true });
+}
+
 export async function testNewAuthDownload(context: NewAuthContext = {}): Promise<Record<string, unknown>> {
   const config = buildNewAuthIcloudpdConfig(context);
   const missing = validateNewAuthLoginConfig(config);

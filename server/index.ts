@@ -14,7 +14,8 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { createAuthRoutes } from './auth/authRoutes.ts';
-import { resumeAuthSession, testAuthLoginByDownloadingSingleFile } from './auth/authService.ts';
+import { testAuthLoginByDownloadingSingleFile } from './auth/authService.ts';
+import { verifyNewAuthSessionForRuntimeDownload } from './auth/newAuthService.ts';
 import { createNewAuthRoutes } from './auth/newAuthRoutes.ts';
 import { createDatabaseService } from './database/databaseService.ts';
 import type { DatabaseService } from './database/databaseService.ts';
@@ -1192,11 +1193,11 @@ async function runtimeRealDownloadRunHandler({ body, context }: Pick<HandlerArgs
   const requestedRecentCount = normalizeRealDownloadBatchSize(body?.recentCount);
   const downloadDirectory = resolveRepoPath(context.envValues.DOWNLOAD_DIR || '');
   const executedAt = new Date().toISOString();
-  const auth = await resumeAuthSession({ envValues: context.envValues });
+  const newAuth = await verifyNewAuthSessionForRuntimeDownload({ envValues: context.envValues });
 
-  if (auth.status !== 'authenticated') {
+  if (newAuth.state !== 'authenticated') {
     throw new HttpError(409, 'auth_session_required', 'Real download requires an authenticated iCloudPD session. Please verify/login first.', {
-      auth,
+      auth: newAuth,
       requestedRecentCount,
       downloadDirectory,
     });
@@ -1235,6 +1236,7 @@ async function runtimeRealDownloadRunHandler({ body, context }: Pick<HandlerArgs
         downloadDirectory,
         authStatus: result.auth.status,
       },
+      newAuth,
       auth: result.auth,
       testDownload: result.testDownload,
       schemaVersion: 1,

@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.5.12 - 2026-05-10 23:08 Tallinn
+
+- Fixed `B2-REAL_DOWNLOAD` backend auth gating to use the same NEW AUTH provider-proof session model as `/api/auth/new/status`.
+- Preserved the dedicated `POST /api/runtime/download/real-run` route, batch selector behavior, and existing B2 mock/test download action.
+- Added regression tests for missing NEW AUTH session blocking and provider-proof-authenticated runtime gate success.
+
 ## 0.5.11 - 2026-05-10 21:37 Tallinn
 
 - Added a View B `B2-REAL_DOWNLOAD` companion action beside the existing B2 test download action.

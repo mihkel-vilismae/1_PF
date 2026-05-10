@@ -12,7 +12,7 @@ import path from 'node:path';
 import test from 'node:test';
 
 import { createNewAuthRoutes } from '../server/auth/newAuthRoutes.ts';
-import { getNewAuthStatus, logoutNewAuthSession, startNewAuthLogin } from '../server/auth/newAuthService.ts';
+import { getNewAuthStatus, logoutNewAuthSession, startNewAuthLogin, verifyNewAuthSessionForRuntimeDownload } from '../server/auth/newAuthService.ts';
 
 /*
  * Creates a fake child-process spawner that immediately returns configured
@@ -120,6 +120,62 @@ test('new auth status does not promote local session files without provider proo
     assert.equal(JSON.stringify(status).includes(sessionDir), false);
   } finally {
     await rm(sessionDir, { recursive: true, force: true });
+  }
+});
+
+test('runtime real-download auth gate blocks when NEW AUTH session files are missing', async () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'new-auth-runtime-gate-missing-'));
+  const sessionDir = path.join(root, 'icloud-session');
+
+  try {
+    const status = await verifyNewAuthSessionForRuntimeDownload({
+      executablePath: 'fake-icloudpd',
+      commandSpawner: commandSpawnerWithOutput({ stdout: 'Using existing session. Valid session cookie.' }),
+      envValues: {
+        ICLOUDPD_COOKIE_DIR: sessionDir,
+        user: 'person@example.com',
+        pw: 'DO_NOT_EXPOSE_PASSWORD',
+      },
+    });
+
+    assert.equal(status.ok, true);
+    assert.equal(status.state, 'logged_out');
+    assert.equal(status.details.localSessionEvidence.hasSessionFiles, false);
+    assert.equal(JSON.stringify(status).includes('DO_NOT_EXPOSE_PASSWORD'), false);
+    assert.equal(JSON.stringify(status).includes('person@example.com'), false);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('runtime real-download auth gate accepts the same provider-proof session as NEW AUTH status', async () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'new-auth-runtime-gate-proof-'));
+  const sessionDir = path.join(root, 'icloud-session');
+
+  try {
+    await mkdir(sessionDir, { recursive: true });
+    writeFileSync(path.join(sessionDir, 'cookie'), 'DO_NOT_EXPOSE_COOKIE_CONTENT');
+
+    const status = await verifyNewAuthSessionForRuntimeDownload({
+      executablePath: 'fake-icloudpd',
+      commandSpawner: commandSpawnerWithOutput({ stdout: 'Using existing session. Valid session cookie.' }),
+      envValues: {
+        ICLOUDPD_COOKIE_DIR: sessionDir,
+        user: 'person@example.com',
+        pw: 'DO_NOT_EXPOSE_PASSWORD',
+      },
+    });
+
+    assert.equal(status.ok, true);
+    assert.equal(status.state, 'authenticated');
+    assert.equal(status.details.providerProof.verified, true);
+    assert.equal(status.details.providerProof.reasonCode, 'NEW_AUTH_PROVIDER_VERIFIED');
+    assert.equal(JSON.stringify(status).includes('DO_NOT_EXPOSE_PASSWORD'), false);
+    assert.equal(JSON.stringify(status).includes('DO_NOT_EXPOSE_COOKIE_CONTENT'), false);
+    assert.equal(JSON.stringify(status).includes('person@example.com'), false);
+    assert.equal(JSON.stringify(status).includes(sessionDir), false);
+  } finally {
+    await rm(root, { recursive: true, force: true });
   }
 });
 
