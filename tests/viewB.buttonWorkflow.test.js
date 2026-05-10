@@ -9,6 +9,11 @@ import { createRuntimeTruthBehavior } from '../dashboard/services/runtimeTruth/r
 import { createInitialState } from '../dashboard/services/runtimeTruth/runtimeTruthState.ts';
 import { renderInitView } from '../dashboard/views/initView.ts';
 import { renderTestView } from '../dashboard/views/testView.ts';
+import {
+  PLAYBACK_RENDERING_LIBRARY,
+  PLAYBACK_RENDERING_MODES,
+  PLAYBACK_RENDERING_PLATFORMS,
+} from '../dashboard/services/playbackRenderer.ts';
 
 test('1A-AUTH verify and check login controls call backend-owned auth endpoints', async () => {
   const originalFetch = global.fetch;
@@ -879,3 +884,110 @@ async function waitFor(predicate, timeoutMs = 1200) {
   }
   throw new Error('Timed out while waiting for View B action to finish.');
 }
+
+
+test('B4 rendering controls render default mode, platform tabs, and disabled state before playback is ready', () => {
+  const markup = renderTestView(createInitialState());
+
+  assert.match(markup, /B4 rendering controls/);
+  assert.match(markup, /Playback without rendering/);
+  assert.match(markup, /Show real rendering in preview window/);
+  assert.match(markup, /Switch to fullscreen/);
+  assert.match(markup, /data-playback-rendering-platform="windows"/);
+  assert.match(markup, /data-playback-rendering-platform="raspberry-os"/);
+  assert.match(markup, /Raspberry OS \(disabled\)/);
+  assert.equal(markup.includes('Run B4 successfully before changing rendering mode or target.'), true);
+  assert.match(markup, new RegExp(`Shared renderer: ${PLAYBACK_RENDERING_LIBRARY.id}`));
+
+  const noRenderingButton = markup.match(/<button[^>]*data-playback-rendering-mode="playback-without-rendering"[^>]*>/)?.[0] ?? '';
+  const previewButton = markup.match(/<button[^>]*data-playback-rendering-mode="show-real-rendering-in-preview-window"[^>]*>/)?.[0] ?? '';
+  const fullscreenButton = markup.match(/<button[^>]*data-playback-rendering-mode="switch-to-fullscreen"[^>]*>/)?.[0] ?? '';
+
+  assert.match(noRenderingButton, /disabled/);
+  assert.match(previewButton, /disabled/);
+  assert.match(fullscreenButton, /disabled/);
+});
+
+test('B4 rendering controls stay disabled after failed playback selection', async () => {
+  const originalFetch = global.fetch;
+  global.fetch = async (path, init = {}) => {
+    const method = init.method ?? 'GET';
+    if (path === '/api/runtime/playback/select-current' && method === 'POST') {
+      return new Response(
+        JSON.stringify({
+          status: 'error',
+          error: 'no_ready_row',
+          message: 'No READY slideshow rows exist for playback selection.',
+          schemaVersion: 1,
+        }),
+        { status: 409, headers: { 'content-type': 'application/json' } },
+      );
+    }
+    throw new Error(`Unexpected request: ${method} ${path}`);
+  };
+
+  try {
+    const harness = createRuntimeTruthHarness();
+    const behavior = createRuntimeTruthBehavior(harness.actions);
+
+    behavior.runAction('run-b4');
+    await waitFor(() => harness.state.statusByKey.B4 === 'error');
+
+    const markup = renderTestView(harness.state);
+    const previewButton = markup.match(/<button[^>]*data-playback-rendering-mode="show-real-rendering-in-preview-window"[^>]*>/)?.[0] ?? '';
+    assert.match(previewButton, /disabled/);
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+test('B4 rendering controls enable after successful playback selection and keep backend endpoint unchanged', async () => {
+  const originalFetch = global.fetch;
+  const requests = [];
+  global.fetch = async (path, init = {}) => {
+    const method = init.method ?? 'GET';
+    requests.push({ path, method });
+    if (path === '/api/runtime/playback/select-current' && method === 'POST') {
+      return new Response(
+        JSON.stringify({
+          status: 'ok',
+          messages: ['Selected media asset 42 as the current playback item.'],
+          playback: {
+            selected: {
+              mediaAssetId: 42,
+              canonicalPath: '/tmp/test-media/sample.jpg',
+              addressText: 'Tallinn, Harjumaa, Estonia',
+              selectedAt: '2026-04-23T10:00:00.000Z',
+            },
+            failedCandidateCount: 0,
+          },
+          schemaVersion: 1,
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      );
+    }
+    throw new Error(`Unexpected request: ${method} ${path}`);
+  };
+
+  try {
+    const harness = createRuntimeTruthHarness();
+    const behavior = createRuntimeTruthBehavior(harness.actions);
+
+    behavior.runAction('run-b4');
+    await waitFor(() => harness.state.statusByKey.B4 === 'success');
+
+    const markup = renderTestView(harness.state);
+    const previewButton = markup.match(/<button[^>]*data-playback-rendering-mode="show-real-rendering-in-preview-window"[^>]*>/)?.[0] ?? '';
+    const fullscreenButton = markup.match(/<button[^>]*data-playback-rendering-mode="switch-to-fullscreen"[^>]*>/)?.[0] ?? '';
+    const raspberryTab = markup.match(/<button[^>]*data-playback-rendering-platform="raspberry-os"[^>]*>/)?.[0] ?? '';
+
+    assert.doesNotMatch(previewButton, /disabled/);
+    assert.doesNotMatch(fullscreenButton, /disabled/);
+    assert.match(raspberryTab, /disabled/);
+    assert.equal(harness.state.playbackRendering.mode, PLAYBACK_RENDERING_MODES.withoutRendering);
+    assert.equal(harness.state.playbackRendering.platform, PLAYBACK_RENDERING_PLATFORMS.windows);
+    assert.deepEqual(requests, [{ path: '/api/runtime/playback/select-current', method: 'POST' }]);
+  } finally {
+    global.fetch = originalFetch;
+  }
+});

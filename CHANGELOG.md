@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## 2026-05-10 16:35 EEST — v0.5.0
+
+### Added
+- Added B4 rendering mode controls for playback without rendering, preview rendering, and fullscreen rendering.
+- Added Windows and disabled Raspberry OS rendering tabs for B4 while preserving backend playback selection behavior.
+- Added focused View B tests for disabled-before-run, failed-run gating, successful-run enablement, and unchanged select-current endpoint wiring.
+
+### Changed
+- Connected the B4 UI to the shared playback renderer contract from Slice 1 without adding rendering dependencies or backend worker behavior.
+
+### Fixed
+- None
+
+### Removed
+- None
+
 ## 2026-05-10 16:24 EEST — v0.5.0
 
 ### Added

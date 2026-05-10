@@ -21,11 +21,14 @@ import {
   toggleRealityInspectMode,
   toggleValueInspectMode,
   setLastRunMode,
+  setPlaybackRenderingMode,
+  setPlaybackRenderingPlatform,
   setSchedulerEditableCrontab,
   setSimulationValue,
   subscribe,
 } from './services/runtimeTruth.ts';
 import { renderDefinitionList, renderHistory, renderModal } from './services/renderers.ts';
+import type { PlaybackRenderingMode, PlaybackRenderingPlatform } from './services/playbackRenderer.ts';
 import { copyEventHistoryExportToClipboard } from './services/eventHistoryExport.ts';
 import { createTransitTerminal } from './services/transitTerminal.ts';
 import {
@@ -467,6 +470,24 @@ function bindEvents() {
 
   app.querySelectorAll<HTMLInputElement>('input[name="input-mode"]').forEach((input) => {
     input.addEventListener('change', () => setSimulationValue('inputMode', input.value));
+  });
+
+  app.querySelectorAll<HTMLButtonElement>('[data-playback-rendering-mode]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const mode = button.dataset.playbackRenderingMode;
+      if (mode) {
+        setPlaybackRenderingMode(mode as PlaybackRenderingMode);
+      }
+    });
+  });
+
+  app.querySelectorAll<HTMLButtonElement>('[data-playback-rendering-platform]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const platform = button.dataset.playbackRenderingPlatform;
+      if (platform) {
+        setPlaybackRenderingPlatform(platform as PlaybackRenderingPlatform);
+      }
+    });
   });
 
   ['pirEnabled', 'mouseEnabled', 'keyboardEnabled', 'simulateAllEnabled'].forEach((name) => {

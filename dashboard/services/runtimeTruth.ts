@@ -10,6 +10,7 @@ import {
   type RuntimeTruthPersistenceApi,
   type RuntimeTruthSnapshot,
 } from './runtimeTruth/runtimeTruthPersistence.ts';
+import { normalizePlaybackRenderingState, type PlaybackRenderingMode, type PlaybackRenderingPlatform } from './playbackRenderer.ts';
 
 type RuntimeTruthState = {
   activeView: string;
@@ -219,6 +220,26 @@ export function pushLog(key: string, type: string, message: string, details: unk
 export function setStatus(key: string, status: string): void {
   patchState((draft) => {
     draft.statusByKey[key] = status;
+  });
+}
+
+// Selects the B4 rendering mode without changing backend playback selection.
+export function setPlaybackRenderingMode(mode: PlaybackRenderingMode): void {
+  patchState((draft) => {
+    draft.playbackRendering = normalizePlaybackRenderingState({
+      ...(draft.playbackRendering as Record<string, unknown> | null | undefined),
+      mode,
+    });
+  });
+}
+
+// Selects the B4 rendering platform tab while keeping selection backend-owned.
+export function setPlaybackRenderingPlatform(platform: PlaybackRenderingPlatform): void {
+  patchState((draft) => {
+    draft.playbackRendering = normalizePlaybackRenderingState({
+      ...(draft.playbackRendering as Record<string, unknown> | null | undefined),
+      platform,
+    });
   });
 }
 

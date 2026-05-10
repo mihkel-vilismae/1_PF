@@ -18,6 +18,7 @@ import {
   type SchedulerSupportLevel,
   type SchedulerTarget,
 } from '../../../shared/schedulerPlatformCapabilities.ts';
+import { createDefaultPlaybackRenderingState } from '../playbackRenderer.ts';
 
 export const RUNTIME_TRUTH_SEED_PATH = 'conf/runtime-truth.json';
 
@@ -335,6 +336,7 @@ export function createInitialState() {
       inactivityTimeoutSeconds: 5,
       simulateAllEnabled: true,
     },
+    playbackRendering: createDefaultPlaybackRenderingState(),
     lastRunMode: 'none',
     lastRunData: {
       media: {},

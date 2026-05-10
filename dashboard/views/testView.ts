@@ -4,10 +4,22 @@
  * All interactive buttons dispatch through data-action handlers in runtime truth.
  */
 import { statusBadge, renderDefinitionList, renderLogEntries, renderSourceBadge, renderStepList } from '../services/renderers.ts';
+import {
+  PLAYBACK_RENDERING_MODES,
+  PLAYBACK_RENDERING_PLATFORMS,
+  PLAYBACK_RENDERING_LIBRARY,
+  PLAYBACK_RENDERING_PLATFORM_OPTIONS,
+  buildPlaybackRenderingOptions,
+  getSharedPlaybackRendererId,
+  normalizePlaybackRenderingState,
+} from '../services/playbackRenderer.ts';
 
 // Renders the full View B page from runtime-truth state.
 export function renderTestView(state) {
   const queueReady = !!state.truth.currentMedia;
+  const playbackRenderingState = normalizePlaybackRenderingState(state.playbackRendering);
+  const playbackRenderingReady = state.truth.playbackActive || state.statusByKey.B4 === 'success';
+  const renderingOptions = buildPlaybackRenderingOptions(playbackRenderingReady);
   return `
     <section class="view-page">
       <div class="view-hero view-hero--hybrid">
@@ -101,7 +113,26 @@ export function renderTestView(state) {
             'Media type': state.truth.currentMedia?.type ?? 'None',
             'Queue position': state.truth.currentMedia?.position ?? 'Not selected',
             'Playback status': state.truth.playbackStatus,
+            'Rendering mode': getPlaybackRenderingModeLabel(playbackRenderingState.mode),
+            'Rendering target': getPlaybackRenderingPlatformLabel(playbackRenderingState.platform),
           })}</div>
+          <section class="playback-rendering-panel selector-card selector-card--hybrid" aria-label="B4 rendering controls">
+            <div>
+              <p class="selector-card__label">Rendering target</p>
+              <p class="stage-card__subtitle">Rendering tabs affect only preview/fullscreen presentation. Backend selection remains <code>POST /api/runtime/playback/select-current</code>.</p>
+            </div>
+            <div class="playback-rendering-tabs" role="tablist" aria-label="B4 rendering platform tabs">
+              ${renderPlaybackRenderingPlatformTabs(playbackRenderingState.platform, playbackRenderingReady)}
+            </div>
+            <div>
+              <p class="selector-card__label">Rendering mode</p>
+              <p class="stage-card__subtitle">Preview and fullscreen use the same ${PLAYBACK_RENDERING_LIBRARY.label}. Controls unlock after B4 Run selects/activates playback.</p>
+            </div>
+            <div class="playback-rendering-options" role="group" aria-label="B4 rendering mode controls">
+              ${renderPlaybackRenderingModeButtons(renderingOptions, playbackRenderingState.mode, playbackRenderingReady)}
+            </div>
+            <p class="notice playback-rendering-panel__notice">${playbackRenderingReady ? getPlaybackRenderingReadyMessage(playbackRenderingState.mode) : 'Run B4 successfully before changing rendering mode or target.'}</p>
+          </section>
           <div class="button-row"><button class="button button--primary" data-action="run-b4">Run</button></div>
           <div class="log-surface">${renderLogEntries(state.logs.B4, { sourceKey: 'B4' })}</div>
         </article>
@@ -167,4 +198,64 @@ function renderToggle(name, label, checked) {
       </span>
     </label>
   `;
+}
+
+
+// Renders B4 platform tabs while keeping Raspberry OS disabled until implemented.
+function renderPlaybackRenderingPlatformTabs(activePlatform, playbackReady) {
+  return PLAYBACK_RENDERING_PLATFORM_OPTIONS.map((option) => {
+    const isActive = option.value === activePlatform;
+    const isRaspberry = option.value === PLAYBACK_RENDERING_PLATFORMS.raspberryOs;
+    const disabled = !playbackReady || isRaspberry;
+    const title = isRaspberry
+      ? 'Raspberry OS rendering is planned but not implemented in this frontend slice.'
+      : option.description;
+    return `<button
+      class="button ${isActive ? 'button--primary' : 'button--secondary'} playback-rendering-tab"
+      type="button"
+      role="tab"
+      aria-selected="${isActive ? 'true' : 'false'}"
+      data-playback-rendering-platform="${option.value}"
+      title="${title}"
+      ${disabled ? 'disabled' : ''}
+    >${option.label}${isRaspberry ? ' (disabled)' : ''}</button>`;
+  }).join('');
+}
+
+// Renders B4 rendering mode buttons from the shared playbackRenderer contract.
+function renderPlaybackRenderingModeButtons(options, activeMode, playbackReady) {
+  return options.map((option) => {
+    const isActive = option.value === activeMode;
+    const disabled = !playbackReady || !option.enabled;
+    const sharedRendererId = getSharedPlaybackRendererId(option.value);
+    const sharedRendererText = sharedRendererId ? `Shared renderer: ${sharedRendererId}. ` : '';
+    return `<button
+      class="button ${isActive ? 'button--primary' : 'button--secondary'} playback-rendering-mode"
+      type="button"
+      data-playback-rendering-mode="${option.value}"
+      title="${sharedRendererText}${option.description}"
+      ${disabled ? 'disabled' : ''}
+    >${option.label}</button>`;
+  }).join('');
+}
+
+// Returns a human-readable label for the active B4 rendering mode.
+function getPlaybackRenderingModeLabel(mode) {
+  return buildPlaybackRenderingOptions(true).find((option) => option.value === mode)?.label ?? 'Playback without rendering';
+}
+
+// Returns a human-readable label for the active B4 rendering platform tab.
+function getPlaybackRenderingPlatformLabel(platform) {
+  return PLAYBACK_RENDERING_PLATFORM_OPTIONS.find((option) => option.value === platform)?.label ?? 'Windows';
+}
+
+// Explains the current B4 rendering state without claiming backend/player support.
+function getPlaybackRenderingReadyMessage(mode) {
+  if (mode === PLAYBACK_RENDERING_MODES.previewWindow) {
+    return 'Preview rendering mode is selected. Real media presentation remains browser-native and frontend-owned in this slice.';
+  }
+  if (mode === PLAYBACK_RENDERING_MODES.fullscreen) {
+    return 'Fullscreen rendering mode is selected. OS-level or Raspberry hardware control is not implemented in this slice.';
+  }
+  return 'Playback is active. Backend selection can continue without rendering.';
 }
