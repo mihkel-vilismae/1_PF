@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## 2026-05-10 16:47 EEST — v0.5.0
+
+### Added
+- Added shared scheduler playback-worker command constants for Windows CronEmulator and Raspberry cron.
+- Added focused scheduler command tests proving both platform rows reach `npm run api -- --scheduler playback-worker`.
+
+### Changed
+- Updated the View A Windows CronEmulator default install crontab so B4 playback uses the Slice 3 backend playback-worker entrypoint instead of `/path/to/playback_worker`.
+- Kept Raspberry cron generation aligned with the same shared playback-worker command.
+- Kept Node test/server-side initial scheduler rendering Windows-first while preserving browser platform detection in real frontend rendering.
+
+### Fixed
+- Fixed the parent-repo scheduler wiring gap where the Windows CronEmulator default textarea still contained a playback_worker placeholder.
+
+### Removed
+- None
+
 ## 2026-05-10 16:42 EEST — v0.5.0
 
 ### Added

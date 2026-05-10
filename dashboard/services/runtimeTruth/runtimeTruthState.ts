@@ -19,6 +19,7 @@ import {
   type SchedulerTarget,
 } from '../../../shared/schedulerPlatformCapabilities.ts';
 import { createDefaultPlaybackRenderingState } from '../playbackRenderer.ts';
+import { WINDOWS_CRON_EMULATOR_PLAYBACK_WORKER_CRON_ROW } from '../../../shared/schedulerWorkerCommands.ts';
 
 export const RUNTIME_TRUTH_SEED_PATH = 'conf/runtime-truth.json';
 
@@ -45,7 +46,7 @@ export const SCHEDULER_EMULATOR_DEFAULT_ACTIVE_CRONTAB = "not checked, press 'Ge
 
 export const SCHEDULER_EMULATOR_DEFAULT_INSERT_CRONTAB = [
   '*/10 * * * * /path/to/regular_stage_worker',
-  '* * * * * /path/to/playback_worker',
+  WINDOWS_CRON_EMULATOR_PLAYBACK_WORKER_CRON_ROW,
   '*/3 * * * * powershell -NoProfile -ExecutionPolicy Bypass -Command "Invoke-RestMethod -Method Post -Uri \'http://127.0.0.1:4301/api/runtime/screen-simulation/configure\' -ContentType \'application/json\' -Body \'{\"simulateAllEnabled\":true}\' | Out-Null"',
 ].join('\n');
 
@@ -70,9 +71,19 @@ export type DatabaseViewerState = {
 };
 
 export function buildInitialSchedulerCapability(): SchedulerCapability {
-  const browserPlatform = typeof navigator !== 'undefined' ? navigator.platform : null;
-  const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : null;
+  // Builds the initial scheduler platform profile for dashboard boot state.
+  const browserPlatform = resolveBrowserPlatformForSchedulerDefaults();
+  const userAgent = typeof window !== 'undefined' && typeof navigator !== 'undefined' ? navigator.userAgent : null;
   return createSchedulerCapability({ browserPlatform, userAgent });
+}
+
+// Reads browser platform only in real browser rendering so Node tests keep the Windows-first default.
+function resolveBrowserPlatformForSchedulerDefaults(): string | null {
+  // Keeps Node-side rendering deterministic while letting real browsers report their platform.
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+    return 'Win32';
+  }
+  return navigator.platform;
 }
 
 const SCHEDULER_ACTION_OPERATION_MAP: Record<SchedulerActionKey, SchedulerOperation> = {

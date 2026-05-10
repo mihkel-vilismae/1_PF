@@ -34,6 +34,7 @@ import {
   isSchedulerTarget,
 } from '../shared/schedulerPlatformCapabilities.ts';
 import type { SchedulerCapability, SchedulerOperation, SchedulerSupportLevel, SchedulerTarget } from '../shared/schedulerPlatformCapabilities.ts';
+import { RASPBERRY_PLAYBACK_WORKER_CRON_ROW, SCHEDULER_WORKER_NAMES } from '../shared/schedulerWorkerCommands.ts';
 import { selectCurrentPlayableItem } from './playback/playbackSelectionService.ts';
 import { runPlaybackWorker } from './workers/playbackWorker.ts';
 
@@ -113,7 +114,7 @@ type EnvSchemaKind = 'string' | 'path' | 'integer' | 'boolean';
 type EnvCheckSeverity = 'info' | 'warning' | 'error';
 type SchedulerRouteOperation = SchedulerOperation | string;
 type SchedulerTargetSelectionSource = 'file' | 'default' | 'request';
-type SchedulerWorkerName = 'regular-stage-worker' | 'playback-worker' | 'screen-on-off-worker';
+type SchedulerWorkerName = typeof SCHEDULER_WORKER_NAMES[keyof typeof SCHEDULER_WORKER_NAMES];
 type RuntimeTruthSource = 'file' | 'request';
 
 interface EnvValues {
@@ -527,8 +528,9 @@ if (schedulerWorkerName) {
 
 // Dispatches the scheduler CLI worker mode used by cron/crontab commands.
 async function runSchedulerWorker(workerName: SchedulerWorkerName): Promise<void> {
+  // Runs the supported scheduler worker entrypoint without starting the HTTP server.
   const context = await buildRequestContext();
-  if (workerName !== 'playback-worker') {
+  if (workerName !== SCHEDULER_WORKER_NAMES.playback) {
     console.error(`Scheduler worker ${workerName} is not implemented in this slice.`);
     process.exitCode = 2;
     return;
@@ -552,12 +554,13 @@ async function runSchedulerWorker(workerName: SchedulerWorkerName): Promise<void
 
 // Reads the optional `--scheduler <worker>` argument without affecting HTTP server mode.
 function normalizeSchedulerWorkerName(argv: string[]): SchedulerWorkerName | null {
+  // Parses the scheduler worker flag and rejects unknown worker names.
   const flagIndex = argv.indexOf('--scheduler');
   const raw = flagIndex >= 0 ? argv[flagIndex + 1] : null;
-  if (raw === 'playback-worker') {
+  if (raw === SCHEDULER_WORKER_NAMES.playback) {
     return raw;
   }
-  if (raw === 'regular-stage-worker' || raw === 'screen-on-off-worker') {
+  if (raw === SCHEDULER_WORKER_NAMES.regularStage || raw === SCHEDULER_WORKER_NAMES.screenOnOff) {
     return raw;
   }
   return null;
@@ -2742,10 +2745,11 @@ async function readTextIfExists(filePath: string): Promise<string | null> {
 }
 
 function buildRaspberryCrontabBlock(): string {
+  // Builds only the project-owned Raspberry crontab block with shared playback command text.
   return [
     raspberryCrontabStartMarker,
     '*/10 * * * * cd "$HOME/1_PF" && npm run api -- --scheduler regular-stage-worker',
-    '* * * * * cd "$HOME/1_PF" && npm run api -- --scheduler playback-worker',
+    RASPBERRY_PLAYBACK_WORKER_CRON_ROW,
     '*/3 * * * * cd "$HOME/1_PF" && npm run api -- --scheduler screen-on-off-worker',
     raspberryCrontabEndMarker,
   ].join('\n');
