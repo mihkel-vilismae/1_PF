@@ -22,9 +22,9 @@ Use this file to find the smallest set of repo files needed for a button audit.
 
 ## Inspect System
 
-- Control and truth metadata: `dashboard/inspect/guideCopy.json`
+- Control and truth metadata: `dashboard/inspect/guideCopy.ts` and `dashboard/inspect/guideCopy/*`
 - Control metadata helpers: `dashboard/inspect/controlMetadata.js`
-- Backend-status metadata helpers: `dashboard/inspect/backendStatusMetadata.js`
+- Backend-status metadata helpers: `dashboard/inspect/backendStatusMetadata.ts` and `dashboard/inspect/backendStatusMetadata/*`
 - Reality metadata helpers: `dashboard/inspect/realityMetadata.js`
 
 ## Existing Tests Worth Checking First

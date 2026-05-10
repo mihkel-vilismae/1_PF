@@ -1,4 +1,19 @@
-import guideCopy from './guideCopy.json' with { type: 'json' };
+/*
+ * Public compatibility entrypoint for inspect-mode guide copy.
+ * Feature-specific copy now lives in dashboard/inspect/guideCopy/* modules.
+ */
+import { ACTION_BACKEND_STATUS_COPY } from './guideCopy/backendStatusCopy.ts';
+import { INIT_ACTION_TO_CODE } from './guideCopy/initActions.ts';
+import {
+  ACTION_INSPECT_COPY,
+  CURRENT_TRUTH_VALUE_SOURCES,
+  FALLBACK_INSPECT_DESCRIPTION,
+  INSPECT_COPY,
+  INSPECT_EYEBROWS,
+  LAST_RUN_MODE_INSPECT_COPY,
+} from './guideCopy/inspectCopy.ts';
+import { ACTION_REALITY_COPY, VIEW_REALITY_COPY } from './guideCopy/realityCopy.ts';
+import { BACKEND_STATUS_TITLES, REALITY_STATE_TITLES } from './guideCopy/stateTitles.ts';
 
 export type GuideTitleMap = Record<string, string>;
 
@@ -25,15 +40,17 @@ export type InspectCopyMap = {
   simulationControls: Record<string, GuideCopyEntry | Record<string, GuideCopyEntry>>;
 };
 
-export const REALITY_STATE_TITLES: GuideTitleMap = guideCopy.realityStateTitles;
-export const BACKEND_STATUS_TITLES: GuideTitleMap = guideCopy.backendStatusTitles;
-export const INIT_ACTION_TO_CODE: GuideTitleMap = guideCopy.initActionToCode;
-export const INSPECT_EYEBROWS: GuideTitleMap = guideCopy.inspectEyebrows;
-export const FALLBACK_INSPECT_DESCRIPTION: string = guideCopy.fallbackInspectDescription;
-export const ACTION_INSPECT_COPY: GuideCopyEntryMap = guideCopy.actionInspectCopy;
-export const LAST_RUN_MODE_INSPECT_COPY: GuideCopyEntryMap = guideCopy.lastRunModeInspectCopy;
-export const CURRENT_TRUTH_VALUE_SOURCES: GuideTextSourceMap = guideCopy.currentTruthValueSources;
-export const ACTION_REALITY_COPY: GuideStateReasonMap = guideCopy.actionRealityCopy;
-export const VIEW_REALITY_COPY: GuideStateReasonMap = guideCopy.viewRealityCopy;
-export const ACTION_BACKEND_STATUS_COPY: GuideStateReasonMap = guideCopy.actionBackendStatusCopy;
-export const INSPECT_COPY: InspectCopyMap = guideCopy.inspectCopy;
+export {
+  ACTION_BACKEND_STATUS_COPY,
+  ACTION_INSPECT_COPY,
+  ACTION_REALITY_COPY,
+  BACKEND_STATUS_TITLES,
+  CURRENT_TRUTH_VALUE_SOURCES,
+  FALLBACK_INSPECT_DESCRIPTION,
+  INIT_ACTION_TO_CODE,
+  INSPECT_COPY,
+  INSPECT_EYEBROWS,
+  LAST_RUN_MODE_INSPECT_COPY,
+  REALITY_STATE_TITLES,
+  VIEW_REALITY_COPY,
+};
