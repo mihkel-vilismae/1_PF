@@ -3,144 +3,38 @@
  * Owns provider checks, login process lifecycle, 2FA submission, logout cleanup,
  * session evidence reporting, and safe public result shaping for the dashboard.
  */
-import { spawn, type ChildProcessWithoutNullStreams, type SpawnOptionsWithoutStdio } from 'node:child_process';
-import { existsSync, statSync, readdirSync } from 'node:fs';
+import { spawn } from 'node:child_process';
+import { readdirSync } from 'node:fs';
 import { mkdir, rm } from 'node:fs/promises';
 import path from 'node:path';
-import os from 'node:os';
-
-export type NewAuthSessionState = 'logged_out' | 'logging_in' | 'pending_2fa' | 'requires_2fa' | 'authenticated' | 'failed' | 'unverified' | 'unknown';
-export type NewAuthPathType = 'file' | 'directory' | 'missing' | 'unknown';
-
-export interface NewAuthEnvValues {
-  [key: string]: string | undefined;
-}
-
-export interface NewAuthContext {
-  envValues?: NewAuthEnvValues;
-  platform?: NodeJS.Platform;
-  username?: string | null;
-  executablePath?: string | null;
-  commandSpawner?: NewAuthCommandSpawner;
-}
-
-export interface NewAuthStatusOptions {
-  providerProof?: boolean;
-}
-
-export interface NewAuthPathMetadata {
-  label: string;
-  path: string;
-  exists: boolean;
-  type: NewAuthPathType;
-  sizeBytes?: number;
-  lastModified?: string;
-  contentsShown: false;
-  children?: NewAuthPathMetadata[];
-}
-
-export interface NewAuthTwoFactorInput {
-  code?: unknown;
-}
-
-interface NewAuthIcloudpdConfig {
-  username: string | null;
-  password: string | null;
-  cookieDir: string | null;
-  downloadDir: string | null;
-  domain: string | null;
-  timeoutMs: number;
-}
-
-interface CommandResult {
-  ok: boolean;
-  exitCode: number | null;
-  signal: NodeJS.Signals | null;
-  stdout: string;
-  stderr: string;
-  errorCode?: string;
-  errorMessage?: string;
-}
-
-export type NewAuthCommandSpawner = (command: string, args: string[], options: SpawnOptionsWithoutStdio) => ChildProcessWithoutNullStreams;
-
-interface NewAuthSessionEvidence {
-  hasSessionFiles: boolean;
-  sessionFileCount: number;
-  latestModifiedMs: number | null;
-  latestModifiedAt: string | null;
-}
-
-interface NewAuthProviderSessionProof {
-  attempted: boolean;
-  verified: boolean;
-  reasonCode: string;
-  message: string;
-  command?: string;
-  exitCode?: number | null;
-  signal?: NodeJS.Signals | null;
-  providerOutputPreview?: string;
-  providerOutputShown: NewAuthProviderOutputShown;
-  secretValuesShown: false;
-  requires2fa?: boolean;
-  canEnterSixDigitCode?: boolean;
-  canEnterDeviceIndex?: boolean;
-  availableDeviceIndexes?: string[];
-  userPrompts?: string[];
-}
-
-type NewAuthTwoFactorPromptKind = 'device_index' | 'verification_code' | 'device_index_or_code' | 'apple_hsa2_challenge' | 'unknown';
-
-interface NewAuthTwoFactorPromptInfo {
-  kind: NewAuthTwoFactorPromptKind;
-  requestedInput: string;
-  nextAction: string;
-  message: string;
-}
-
-interface NewAuthInteractiveAttempt {
-  child: ChildProcessWithoutNullStreams;
-  config: NewAuthIcloudpdConfig;
-  beforeSessionEvidence: NewAuthSessionEvidence;
-  createdAt: number;
-  expiresAt: number;
-  stdout: string;
-  stderr: string;
-  consumedOutputLength: number;
-  closed: boolean;
-  exitCode: number | null;
-  signal: NodeJS.Signals | null;
-  pendingWaiter: boolean;
-}
-
-type NewAuthProviderOutputShown = 'sanitized_preview' | 'classification_only' | 'none';
-
-interface NewAuthStructuredEvent {
-  area: 'new-auth';
-  operation: string;
-  phase: string;
-  stateBefore?: NewAuthSessionState | string;
-  stateAfter?: NewAuthSessionState | string;
-  promptKind?: NewAuthTwoFactorPromptKind | 'none';
-  responseType?: 'device_index' | 'verification_code' | 'unknown' | 'none';
-  endpoint?: string;
-  durationMs?: number;
-  exitCode?: number | null;
-  signal?: NodeJS.Signals | null;
-  secretValuesShown: false;
-  providerOutputShown: NewAuthProviderOutputShown;
-  message: string;
-}
-
-const ICLOUDPD_TIMEOUT_MS = 8000;
-const ICLOUDPD_LOGIN_TIMEOUT_MS = 120_000;
-const MAX_STDIO_CHARS = 6000;
-const MAX_SESSION_CHILDREN = 25;
-const SENSITIVE_ENV_KEYS = new Set(['user', 'pw', 'APPLE_ID', 'APPLE_PASSWORD', 'ICLOUDPD_COOKIE_DIR']);
-const SESSION_FILE_HINT_PATTERN = /(cookie|session|token|auth|icloud|key|credential)/i;
-const INTERACTIVE_RESULT_POLL_MS = 50;
+import { EMPTY_SESSION_EVIDENCE, ICLOUDPD_LOGIN_TIMEOUT_MS, ICLOUDPD_TIMEOUT_MS, INTERACTIVE_RESULT_POLL_MS, MAX_STDIO_CHARS } from './newAuth/newAuthConstants.js';
+import { resolveIcloudpdExecutableForContext, runCommand, extractVersion, summarizeCommandFailure } from './newAuth/newAuthCommandRunner.js';
+import { collectNewAuthSessionEvidence, flattenPathMetadata, getNewAuthPathCandidates, hasFreshNewAuthSessionEvidence, isSafeSessionCleanupPath } from './newAuth/newAuthPathMetadata.js';
+import { normalizeNewAuthPath, positiveNumber, redactEmail, sanitizeCommandOutput, sanitizePathForDisplay, sanitizePreview, sanitizeProviderProofArgForDisplay, stringValue, summarizeEnvPresence } from './newAuth/newAuthSanitization.js';
+import { appendStructuredEvents, buildStructuredEvent, classifyResponseType, promptKindForResponseType, providerOutputShownForPayload, readPromptKindFromPayload } from './newAuth/newAuthStructuredEvents.js';
+import type {
+  CommandResult,
+  NewAuthContext,
+  NewAuthIcloudpdConfig,
+  NewAuthInteractiveAttempt,
+  NewAuthPathMetadata,
+  NewAuthPathType,
+  NewAuthProviderOutputShown,
+  NewAuthProviderSessionProof,
+  NewAuthSessionEvidence,
+  NewAuthSessionState,
+  NewAuthStatusOptions,
+  NewAuthStructuredEvent,
+  NewAuthTwoFactorInput,
+  NewAuthTwoFactorPromptInfo,
+  NewAuthTwoFactorPromptKind,
+  NewAuthCommandSpawner,
+  NewAuthEnvValues,
+} from './newAuth/newAuthTypes.js';
+export type { NewAuthCommandSpawner, NewAuthContext, NewAuthEnvValues, NewAuthPathMetadata, NewAuthPathType, NewAuthSessionState, NewAuthStatusOptions, NewAuthTwoFactorInput } from './newAuth/newAuthTypes.js';
 
 let activeNewAuthAttempt: NewAuthInteractiveAttempt | null = null;
+
 
 export async function verifyNewAuthIcloudpd(context: NewAuthContext = {}): Promise<Record<string, unknown>> {
   const executable = await resolveIcloudpdExecutableForContext(context);
@@ -305,12 +199,23 @@ function buildPassiveUnverifiedStatus(baseDetails: Record<string, unknown>): Rec
   };
 }
 
+/*
+ * Reports executable/session/auth paths as safe metadata only.
+ * File paths may be listed for diagnostics, but file contents and secrets are
+ * never read or returned.
+ */
 export async function getNewAuthSessionFiles(context: NewAuthContext = {}): Promise<Record<string, unknown>> {
-  const executable = await resolveIcloudpdExecutable(context.platform ?? process.platform);
+  const executable = await resolveIcloudpdExecutableForContext(context);
   const basePaths = getNewAuthPathCandidates(context);
   const paths: NewAuthPathMetadata[] = [];
 
-  paths.push(buildPathMetadata('iCloudPD executable', executable.displayPath ?? 'icloudpd', executable.found ? executable.path : null));
+  paths.push({
+    label: 'iCloudPD executable',
+    path: executable.displayPath ?? 'icloudpd',
+    exists: executable.found,
+    type: executable.found ? 'file' : 'missing',
+    contentsShown: false,
+  });
   for (const candidate of basePaths) {
     paths.push(candidate);
   }
@@ -1114,64 +1019,6 @@ export function mapNewAuthCommandResult(
   ]);
 }
 
-const EMPTY_SESSION_EVIDENCE: NewAuthSessionEvidence = Object.freeze({
-  hasSessionFiles: false,
-  sessionFileCount: 0,
-  latestModifiedMs: null,
-  latestModifiedAt: null,
-});
-
-function collectNewAuthSessionEvidence(config: NewAuthIcloudpdConfig): NewAuthSessionEvidence {
-  if (!config.cookieDir) {
-    return EMPTY_SESSION_EVIDENCE;
-  }
-
-  const configuredDirectory = buildPathMetadata('Configured session directory', config.cookieDir, config.cookieDir, true);
-  const sessionFiles = flattenPathMetadata([configuredDirectory]).filter((entry) => (
-    entry.exists && entry.type === 'file' && SESSION_FILE_HINT_PATTERN.test(path.basename(entry.path))
-  ));
-  const latestModifiedMs = sessionFiles.reduce<number | null>((latest, entry) => {
-    const modifiedMs = entry.lastModified ? Date.parse(entry.lastModified) : Number.NaN;
-    if (!Number.isFinite(modifiedMs)) {
-      return latest;
-    }
-    return latest === null || modifiedMs > latest ? modifiedMs : latest;
-  }, null);
-
-  return {
-    hasSessionFiles: sessionFiles.length > 0,
-    sessionFileCount: sessionFiles.length,
-    latestModifiedMs,
-    latestModifiedAt: latestModifiedMs === null ? null : new Date(latestModifiedMs).toISOString(),
-  };
-}
-
-function hasFreshNewAuthSessionEvidence(before: NewAuthSessionEvidence, after: NewAuthSessionEvidence): boolean {
-  if (!after.hasSessionFiles) {
-    return false;
-  }
-  if (!before.hasSessionFiles) {
-    return true;
-  }
-  if (after.sessionFileCount > before.sessionFileCount) {
-    return true;
-  }
-  if (before.latestModifiedMs === null || after.latestModifiedMs === null) {
-    return false;
-  }
-  return after.latestModifiedMs > before.latestModifiedMs;
-}
-
-function sanitizeCommandOutput(value: string, config: NewAuthIcloudpdConfig): string {
-  let sanitized = sanitizePreview(value, 4000);
-  for (const secret of [config.password, config.username, config.cookieDir, config.downloadDir]) {
-    if (secret) {
-      sanitized = sanitized.split(secret).join(secret === config.username ? redactEmail(secret) ?? '[redacted-user]' : '[redacted]');
-    }
-  }
-  return sanitized;
-}
-
 
 interface NewAuthTwoFactorPromptDiagnostics {
   requires2fa: true;
@@ -1278,137 +1125,6 @@ function indicatesNewAuthInvalidCredentials(lower: string): boolean {
 
 function indicatesNewAuthAuthenticated(lower: string): boolean {
   return /authenticated|authentication successful|valid session|cookie.*valid|auth.*successful|successfully authenticated|using existing session|auth-only/.test(lower) && !indicatesNewAuthInvalidCredentials(lower);
-}
-
-function isSafeSessionCleanupPath(candidate: string): boolean {
-  const normalized = path.resolve(candidate);
-  const root = path.parse(normalized).root;
-  if (normalized === root) return false;
-  if (normalized === os.homedir()) return false;
-  if (normalized === process.cwd()) return false;
-  const basename = path.basename(normalized).toLowerCase();
-  return basename.includes('icloud') || basename.includes('auth') || basename.includes('session') || basename.includes('cookie');
-}
-
-function normalizeNewAuthPath(value: unknown): string | null {
-  if (!value || typeof value !== 'string') return null;
-  return path.isAbsolute(value) ? value : path.resolve(process.cwd(), value);
-}
-
-function stringValue(value: unknown): string | null {
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  return trimmed ? trimmed : null;
-}
-
-function positiveNumber(value: unknown, fallback: number): number {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
-}
-
-function redactEmail(value: string | null): string | null {
-  if (!value || !value.includes('@')) return value ? '[redacted-user]' : null;
-  const [name, domain] = value.split('@');
-  return `${name.slice(0, 2)}***@${domain}`;
-}
-
-function getNewAuthPathCandidates(context: NewAuthContext): NewAuthPathMetadata[] {
-  const envValues = context.envValues ?? {};
-  const candidates: NewAuthPathMetadata[] = [];
-  const envPath = envValues.INIT_ENV_FILE || process.env.INIT_ENV_FILE || '.env';
-  const cookieDir = envValues.ICLOUDPD_COOKIE_DIR;
-  const downloadDir = envValues.DOWNLOAD_DIR;
-  const homeDir = os.homedir();
-
-  candidates.push(buildPathMetadata('.env file', envPath, resolveCandidatePath(envPath)));
-  if (cookieDir) {
-    candidates.push(buildPathMetadata('Configured session directory', cookieDir, resolveCandidatePath(cookieDir), true));
-  } else {
-    candidates.push(buildPathMetadata('Configured session directory', 'ICLOUDPD_COOKIE_DIR is not configured', null));
-  }
-
-  if (downloadDir) {
-    candidates.push(buildPathMetadata('Configured download/cache directory', downloadDir, resolveCandidatePath(downloadDir), true));
-  }
-
-  candidates.push(buildPathMetadata('Default iCloudPD directory', path.join(homeDir, '.icloudpd'), path.join(homeDir, '.icloudpd'), true));
-  candidates.push(buildPathMetadata('Default pyicloud directory', path.join(homeDir, '.pyicloud'), path.join(homeDir, '.pyicloud'), true));
-  candidates.push(buildPathMetadata('Operating-system cache directory hint', path.join(homeDir, '.cache'), path.join(homeDir, '.cache'), true));
-  candidates.push(...buildEnvPresenceMetadata(envValues));
-  return candidates;
-}
-
-function buildEnvPresenceMetadata(envValues: NewAuthEnvValues): NewAuthPathMetadata[] {
-  return Array.from(SENSITIVE_ENV_KEYS).map((key) => ({
-    label: `Environment value ${key}`,
-    path: `${key}=${envValues[key] ? '[present]' : '[missing]'}`,
-    exists: Boolean(envValues[key]),
-    type: envValues[key] ? 'unknown' : 'missing',
-    contentsShown: false,
-  }));
-}
-
-function resolveCandidatePath(candidate: string): string {
-  if (path.isAbsolute(candidate)) {
-    return candidate;
-  }
-  return path.resolve(process.cwd(), candidate);
-}
-
-function buildPathMetadata(label: string, displayPath: string, absolutePath: string | null, includeChildren = false): NewAuthPathMetadata {
-  if (!absolutePath || !existsSync(absolutePath)) {
-    return {
-      label,
-      path: sanitizePathForDisplay(displayPath),
-      exists: false,
-      type: 'missing',
-      contentsShown: false,
-    };
-  }
-
-  try {
-    const stat = statSync(absolutePath);
-    const metadata: NewAuthPathMetadata = {
-      label,
-      path: sanitizePathForDisplay(absolutePath),
-      exists: true,
-      type: stat.isDirectory() ? 'directory' : stat.isFile() ? 'file' : 'unknown',
-      lastModified: stat.mtime.toISOString(),
-      contentsShown: false,
-    };
-
-    if (stat.isFile()) {
-      metadata.sizeBytes = stat.size;
-    }
-
-    if (includeChildren && stat.isDirectory()) {
-      metadata.children = readSafeChildren(absolutePath);
-    }
-
-    return metadata;
-  } catch {
-    return {
-      label,
-      path: sanitizePathForDisplay(absolutePath),
-      exists: true,
-      type: 'unknown',
-      contentsShown: false,
-    };
-  }
-}
-
-function readSafeChildren(directoryPath: string): NewAuthPathMetadata[] {
-  try {
-    return readdirSync(directoryPath, { withFileTypes: true })
-      .slice(0, MAX_SESSION_CHILDREN)
-      .map((entry) => buildPathMetadata(entry.name, entry.name, path.join(directoryPath, entry.name), false));
-  } catch {
-    return [];
-  }
-}
-
-function flattenPathMetadata(paths: NewAuthPathMetadata[]): NewAuthPathMetadata[] {
-  return paths.flatMap((entry) => [entry, ...(entry.children ? flattenPathMetadata(entry.children) : [])]);
 }
 
 async function verifyExistingNewAuthSessionWithProvider(context: NewAuthContext): Promise<NewAuthProviderSessionProof> {
@@ -1559,18 +1275,6 @@ function stateFromProviderProof(proof: NewAuthProviderSessionProof): NewAuthSess
   return 'unverified';
 }
 
-function sanitizeProviderProofArgForDisplay(value: string): string {
-  if (value === '--username' || value === '--cookie-directory' || value === '--auth-only' || value === '--domain') {
-    return value;
-  }
-  if (value.includes('@')) {
-    return redactEmail(value) ?? '[redacted-user]';
-  }
-  if (path.isAbsolute(value) || value.includes(path.sep)) {
-    return '[redacted-path]';
-  }
-  return value;
-}
 
 function statusMessageForState(state: NewAuthSessionState, providerProof?: NewAuthProviderSessionProof): string {
   switch (state) {
@@ -1591,231 +1295,4 @@ function statusMessageForState(state: NewAuthSessionState, providerProof?: NewAu
     default:
       return 'Authentication state is unknown.';
   }
-}
-
-function summarizeEnvPresence(envValues: NewAuthEnvValues): Record<string, boolean> {
-  const summary: Record<string, boolean> = {};
-  for (const key of SENSITIVE_ENV_KEYS) {
-    summary[key] = Boolean(envValues[key]);
-  }
-  return summary;
-}
-
-async function resolveIcloudpdExecutable(platform: NodeJS.Platform): Promise<{ found: boolean; path: string | null; displayPath: string | null; lookupCommand: string }> {
-  const lookupCommand = platform === 'win32' ? 'where' : 'sh';
-  const lookupArgs = platform === 'win32' ? ['icloudpd'] : ['-c', 'command -v icloudpd'];
-  const result = await runCommand(lookupCommand, lookupArgs, { timeoutMs: ICLOUDPD_TIMEOUT_MS });
-  const rawPath = result.stdout.split(/\r?\n/).map((line) => line.trim()).find(Boolean) ?? null;
-  return {
-    found: result.ok && Boolean(rawPath),
-    path: rawPath,
-    displayPath: rawPath ? sanitizePathForDisplay(rawPath) : null,
-    lookupCommand: `${lookupCommand} ${lookupArgs.join(' ')}`,
-  };
-}
-
-async function resolveIcloudpdExecutableForContext(context: NewAuthContext): Promise<{ found: boolean; path: string | null; displayPath: string | null; lookupCommand: string }> {
-  if (Object.hasOwn(context, 'executablePath')) {
-    if (!context.executablePath) {
-      return {
-        found: false,
-        path: null,
-        displayPath: null,
-        lookupCommand: 'injected executablePath',
-      };
-    }
-    return {
-      found: true,
-      path: context.executablePath,
-      displayPath: sanitizePathForDisplay(context.executablePath),
-      lookupCommand: 'injected executablePath',
-    };
-  }
-  return resolveIcloudpdExecutable(context.platform ?? process.platform);
-}
-
-function runCommand(command: string, args: string[], options: { timeoutMs: number; shell?: boolean; stdinText?: string; spawnImpl?: NewAuthCommandSpawner }): Promise<CommandResult> {
-  return new Promise((resolve) => {
-    const child = (options.spawnImpl ?? spawn)(command, args, {
-      shell: options.shell ?? false,
-      windowsHide: true,
-      env: process.env,
-    });
-    const cleanupChild = () => {
-      try { child.stdin?.destroy(); } catch {}
-      try { child.stdout?.destroy(); } catch {}
-      try { child.stderr?.destroy(); } catch {}
-      try { child.unref(); } catch {}
-    };
-    let stdout = '';
-    let stderr = '';
-    let settled = false;
-
-    const timeout = setTimeout(() => {
-      if (settled) return;
-      settled = true;
-      child.kill('SIGTERM');
-      cleanupChild();
-      resolve({
-        ok: false,
-        exitCode: null,
-        signal: 'SIGTERM',
-        stdout: sanitizePreview(stdout),
-        stderr: sanitizePreview(stderr),
-        errorCode: 'ICLOUDPD_TIMEOUT',
-        errorMessage: 'Command timed out.',
-      });
-    }, options.timeoutMs);
-    timeout.unref?.();
-
-    if (typeof options.stdinText === 'string') {
-      child.stdin?.write(options.stdinText);
-      child.stdin?.end();
-    }
-
-    child.stdout?.on('data', (chunk) => {
-      stdout = `${stdout}${chunk}`.slice(-MAX_STDIO_CHARS);
-    });
-
-    child.stderr?.on('data', (chunk) => {
-      stderr = `${stderr}${chunk}`.slice(-MAX_STDIO_CHARS);
-    });
-
-    child.on('error', (error: NodeJS.ErrnoException) => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timeout);
-      cleanupChild();
-      resolve({
-        ok: false,
-        exitCode: null,
-        signal: null,
-        stdout: sanitizePreview(stdout),
-        stderr: sanitizePreview(stderr),
-        errorCode: error.code === 'ENOENT' ? 'ICLOUDPD_NOT_FOUND' : 'ICLOUDPD_EXECUTION_ERROR',
-        errorMessage: error.message,
-      });
-    });
-
-    child.on('close', (exitCode, signal) => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timeout);
-      cleanupChild();
-      cleanupChild();
-      resolve({
-        ok: exitCode === 0,
-        exitCode,
-        signal,
-        stdout: sanitizePreview(stdout),
-        stderr: sanitizePreview(stderr),
-      });
-    });
-  });
-}
-
-function extractVersion(stdout: string, stderr: string): string | null {
-  const text = `${stdout}\n${stderr}`.split(/\r?\n/).map((line) => line.trim()).find(Boolean);
-  return text ? sanitizePreview(text, 300) : null;
-}
-
-function summarizeCommandFailure(prefix: string, result: CommandResult): string {
-  if (result.errorCode === 'ICLOUDPD_TIMEOUT') {
-    return `${prefix} The command timed out.`;
-  }
-  if (result.errorCode === 'ICLOUDPD_NOT_FOUND') {
-    return 'iCloudPD executable was not found on PATH.';
-  }
-  if (result.errorMessage) {
-    return `${prefix} ${sanitizePreview(result.errorMessage, 300)}`;
-  }
-  if (result.stderr) {
-    return `${prefix} ${sanitizePreview(result.stderr, 300)}`;
-  }
-  return `${prefix} Exit code: ${result.exitCode ?? 'unknown'}.`;
-}
-
-function sanitizePreview(value: string, maxLength = 500): string {
-  const text = String(value ?? '')
-    .replace(/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi, '[redacted-email]')
-    .replace(/password\s*=\s*[^\s]+/gi, 'password=[redacted]')
-    .replace(/pw\s*=\s*[^\s]+/gi, 'pw=[redacted]')
-    .replace(/apple[_\s-]?id\s*[:=]\s*[^\s]+/gi, 'apple_id=[redacted]')
-    .replace(/(otp|2fa|mfa|verification|security)\s*(code)?\s*[:=]\s*[^\s]+/gi, '$1$2=[redacted]')
-    .replace(/\b(otp|2fa|mfa|verification|security|sms)\s*(code)?\s*(?:is|was|:)?\s*\d{4,8}\b/gi, '$1$2 [redacted]')
-    .replace(/\b\d{4,8}\s+(otp|2fa|mfa|verification|security|sms)\s*(code)?\b/gi, '[redacted] $1$2')
-    .replace(/token\s*=\s*[^\s]+/gi, 'token=[redacted]')
-    .replace(/cookie\s*=\s*[^\s]+/gi, 'cookie=[redacted]')
-    .replace(/(session|cookie|token)[^\r\n]*(file|path|dir|directory)\s*[:=]\s*[^\r\n]+/gi, '$1_$2=[redacted-path]')
-    .replace(/\b([A-Z][A-Z0-9_]{2,})\s*=\s*([^\s]+)/g, (full, key: string) => `${key}=${SENSITIVE_ENV_KEYS.has(key) ? '[redacted]' : '[present]'}`);
-  return text.length > maxLength ? `${text.slice(0, maxLength)}…` : text;
-}
-
-function appendStructuredEvents(payload: Record<string, unknown>, events: NewAuthStructuredEvent[]): Record<string, unknown> {
-  const details = payload.details && typeof payload.details === 'object' ? payload.details as Record<string, unknown> : {};
-  const existingEvents = Array.isArray(details.events) ? details.events as unknown[] : [];
-  return {
-    ...payload,
-    details: {
-      ...details,
-      secretValuesShown: false,
-      providerOutputShown: providerOutputShownForPayload(payload),
-      events: [...existingEvents, ...events],
-    },
-  };
-}
-
-function buildStructuredEvent(input: Omit<NewAuthStructuredEvent, 'area' | 'secretValuesShown'>): NewAuthStructuredEvent {
-  return {
-    area: 'new-auth',
-    secretValuesShown: false,
-    ...input,
-  };
-}
-
-function readPromptKindFromPayload(payload: Record<string, unknown>): NewAuthTwoFactorPromptKind | 'none' {
-  const details = payload.details && typeof payload.details === 'object' ? payload.details as Record<string, unknown> : null;
-  return typeof details?.twoFactorPromptKind === 'string' ? details.twoFactorPromptKind as NewAuthTwoFactorPromptKind : 'none';
-}
-
-function classifyResponseType(value: string): 'device_index' | 'verification_code' | 'unknown' {
-  if (/^[a-z]$/i.test(value.trim())) {
-    return 'device_index';
-  }
-  if (/^\d{4,8}$/.test(value.trim())) {
-    return 'verification_code';
-  }
-  return 'unknown';
-}
-
-function promptKindForResponseType(responseType: 'device_index' | 'verification_code' | 'unknown'): NewAuthTwoFactorPromptKind {
-  if (responseType === 'device_index') {
-    return 'device_index';
-  }
-  if (responseType === 'verification_code') {
-    return 'verification_code';
-  }
-  return 'unknown';
-}
-
-function providerOutputShownForPayload(payload: Record<string, unknown>): NewAuthProviderOutputShown {
-  const details = payload.details && typeof payload.details === 'object' ? payload.details as Record<string, unknown> : null;
-  if (!details) {
-    return 'none';
-  }
-  if (typeof details.providerOutputPreview === 'string' && details.providerOutputPreview.length > 0) {
-    return 'sanitized_preview';
-  }
-  if (typeof details.twoFactorPromptKind === 'string') {
-    return 'classification_only';
-  }
-  return 'none';
-}
-
-function sanitizePathForDisplay(value: string): string {
-  const homeDir = os.homedir();
-  if (homeDir && value.startsWith(homeDir)) {
-    return value.replace(homeDir, '~');
-  }
-  return value;
 }

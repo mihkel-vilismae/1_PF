@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## 2026-05-10 18:50 EEST — v0.5.4
+
+### Added
+- Added focused internal NEW AUTH helper modules for shared types, constants, command execution, path/session metadata, sanitization, and structured event shaping.
+
+### Changed
+- Refactored `server/auth/newAuthService.ts` into a smaller compatibility facade while preserving NEW AUTH endpoint/service behavior.
+- Bumped version metadata from v0.5.3 to v0.5.4.
+
+### Fixed
+- None
+
+### Removed
+- None
+
 ## 2026-05-10 18:46 EEST — v0.5.3
 
 ### Added
