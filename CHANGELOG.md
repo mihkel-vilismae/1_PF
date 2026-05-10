@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.5.6 - 2026-05-10 19:05 Tallinn
+
+- Extracted the runtime screen-simulation route handlers and private simulation state into `server/routes/screenSimulationRoutes.ts`.
+- Preserved the existing `/api/runtime/screen-simulation/state` and `/api/runtime/screen-simulation/configure` endpoints, response shapes, validation errors, and simulation-only hardware boundary.
+- Bumped version metadata from v0.5.5 to v0.5.6.
+
 ## 0.5.5 - 2026-05-10 19:00 Tallinn
 
 - Refactored the scheduler and CronEmulator route-key table into `server/routes/schedulerRoutes.ts` while preserving all existing endpoint paths, HTTP methods, and handler wiring.
