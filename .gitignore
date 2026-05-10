@@ -41,7 +41,7 @@ tools/CronEmulator/logs/
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
-*.zip
 
 # Local/generated archives
+zip_ignore.json
 *.zip

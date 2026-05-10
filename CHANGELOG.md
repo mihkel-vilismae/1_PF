@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.5.10 - 2026-05-10 20:50 Tallinn
+
+- Restored `TRANSFERABLE_REPO_PACKAGER.cmd` as a tracked repo utility.
+- Kept `zip_ignore.json` as a local-only archive ignore configuration by adding it to `.gitignore`.
+- Removed the stale local `dashboard/inspect/guideCopy.json` artifact from the working tree; current inspect copy remains sourced from `dashboard/inspect/guideCopy.ts` and split modules.
+
 ## 0.5.9 - 2026-05-10 20:10 Tallinn
 
 - Slice 9: extracted the runtime status route family into `server/routes/runtimeStatusRoutes.ts`.
