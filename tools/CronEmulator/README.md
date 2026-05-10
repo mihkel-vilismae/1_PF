@@ -13,10 +13,12 @@ This project can be used to emulate cron behavior on Windows by loading cron-sty
 The live `crontab_emulated.txt` file is local runtime state and is intentionally not tracked by the parent repository. Use `crontab_emulated.example.txt` as the checked-in template for the default rows:
 
 ```cron
-*/10 * * * * /path/to/regular_stage_worker
-* * * * * /path/to/playback_worker
-*/3 * * * * /path/to/screen_on_off_worker
+*/10 * * * * powershell -NoProfile -ExecutionPolicy Bypass -File ".\entrypoints\regular_stage_worker.ps1"
+* * * * * powershell -NoProfile -ExecutionPolicy Bypass -File ".\entrypoints\playback_worker.ps1"
+*/3 * * * * powershell -NoProfile -ExecutionPolicy Bypass -File ".\entrypoints\screen_on_off_worker.ps1"
 ```
+
+These rows keep the three workers separate: regular stages B3.1-B3.5, playback selection, and screen simulation.
 
 ## Quick start
 

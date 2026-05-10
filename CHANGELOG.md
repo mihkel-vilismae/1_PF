@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## 2026-05-10 17:56 EEST — v0.5.2
+
+### Added
+- Added checked-in Windows CronEmulator entrypoint files for `regular_stage_worker`, `playback_worker`, and `screen_on_off_worker`.
+
+### Changed
+- Updated the default Windows CronEmulator crontab to call the three worker entrypoint files instead of inline placeholders or inline screen-simulation commands.
+- Reused shared Raspberry cron row constants for all three scheduler workers while preserving the existing Raspberry disabled/planned UI target state.
+
+### Fixed
+- Kept `regular_stage_worker` scoped to B3.1-B3.5 in its entrypoint and left current playable item selection in `playback_worker`.
+
+### Removed
+- None
+
 ## 2026-05-10 17:38 EEST — v0.5.2
 
 ### Added

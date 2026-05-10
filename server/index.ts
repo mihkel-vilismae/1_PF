@@ -34,7 +34,12 @@ import {
   isSchedulerTarget,
 } from '../shared/schedulerPlatformCapabilities.ts';
 import type { SchedulerCapability, SchedulerOperation, SchedulerSupportLevel, SchedulerTarget } from '../shared/schedulerPlatformCapabilities.ts';
-import { RASPBERRY_PLAYBACK_WORKER_CRON_ROW, SCHEDULER_WORKER_NAMES } from '../shared/schedulerWorkerCommands.ts';
+import {
+  RASPBERRY_PLAYBACK_WORKER_CRON_ROW,
+  RASPBERRY_REGULAR_STAGE_WORKER_CRON_ROW,
+  RASPBERRY_SCREEN_ON_OFF_WORKER_CRON_ROW,
+  SCHEDULER_WORKER_NAMES,
+} from '../shared/schedulerWorkerCommands.ts';
 import { selectCurrentPlayableItem } from './playback/playbackSelectionService.ts';
 import { runPlaybackWorker } from './workers/playbackWorker.ts';
 
@@ -2748,9 +2753,9 @@ function buildRaspberryCrontabBlock(): string {
   // Builds only the project-owned Raspberry crontab block with shared playback command text.
   return [
     raspberryCrontabStartMarker,
-    '*/10 * * * * cd "$HOME/1_PF" && npm run api -- --scheduler regular-stage-worker',
+    RASPBERRY_REGULAR_STAGE_WORKER_CRON_ROW,
     RASPBERRY_PLAYBACK_WORKER_CRON_ROW,
-    '*/3 * * * * cd "$HOME/1_PF" && npm run api -- --scheduler screen-on-off-worker',
+    RASPBERRY_SCREEN_ON_OFF_WORKER_CRON_ROW,
     raspberryCrontabEndMarker,
   ].join('\n');
 }

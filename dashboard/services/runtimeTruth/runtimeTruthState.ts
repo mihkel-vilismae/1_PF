@@ -19,7 +19,11 @@ import {
   type SchedulerTarget,
 } from '../../../shared/schedulerPlatformCapabilities.ts';
 import { createDefaultPlaybackRenderingState } from '../playbackRenderer.ts';
-import { WINDOWS_CRON_EMULATOR_PLAYBACK_WORKER_CRON_ROW } from '../../../shared/schedulerWorkerCommands.ts';
+import {
+  WINDOWS_CRON_EMULATOR_PLAYBACK_WORKER_CRON_ROW,
+  WINDOWS_CRON_EMULATOR_REGULAR_STAGE_WORKER_CRON_ROW,
+  WINDOWS_CRON_EMULATOR_SCREEN_ON_OFF_WORKER_CRON_ROW,
+} from '../../../shared/schedulerWorkerCommands.ts';
 
 export const RUNTIME_TRUTH_SEED_PATH = 'conf/runtime-truth.json';
 
@@ -45,9 +49,9 @@ export type AuthButtonState = {
 export const SCHEDULER_EMULATOR_DEFAULT_ACTIVE_CRONTAB = "not checked, press 'Get active crontab'";
 
 export const SCHEDULER_EMULATOR_DEFAULT_INSERT_CRONTAB = [
-  '*/10 * * * * /path/to/regular_stage_worker',
+  WINDOWS_CRON_EMULATOR_REGULAR_STAGE_WORKER_CRON_ROW,
   WINDOWS_CRON_EMULATOR_PLAYBACK_WORKER_CRON_ROW,
-  '*/3 * * * * powershell -NoProfile -ExecutionPolicy Bypass -Command "Invoke-RestMethod -Method Post -Uri \'http://127.0.0.1:4301/api/runtime/screen-simulation/configure\' -ContentType \'application/json\' -Body \'{\"simulateAllEnabled\":true}\' | Out-Null"',
+  WINDOWS_CRON_EMULATOR_SCREEN_ON_OFF_WORKER_CRON_ROW,
 ].join('\n');
 
 export type DatabaseViewerState = {

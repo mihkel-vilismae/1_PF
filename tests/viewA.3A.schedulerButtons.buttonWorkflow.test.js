@@ -140,7 +140,9 @@ test('3A Windows CronEmulator controls render ordered buttons, circles, and cron
   assert.match(html, /data-scheduler-crontab-input/);
   assert.match(html, /data-scheduler-active-crontab/);
   assert.match(html, /not checked, press &#39;Get active crontab&#39;/);
-  assert.match(html, /api\/runtime\/screen-simulation\/configure/);
+  assert.match(html, /regular_stage_worker\.ps1/);
+  assert.match(html, /playback_worker\.ps1/);
+  assert.match(html, /screen_on_off_worker\.ps1/);
   assert.equal(SCHEDULER_EMULATOR_DEFAULT_INSERT_CRONTAB.includes('/path/to/screen_on_off_worker'), false);
 });
 
