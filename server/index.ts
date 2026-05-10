@@ -39,6 +39,7 @@ import { runPlaybackWorker } from './workers/playbackWorker.ts';
 import { createSchedulerRoutes } from './routes/schedulerRoutes.ts';
 import { createScreenSimulationRoutes } from './routes/screenSimulationRoutes.ts';
 import { createRuntimeTruthRoutes } from './routes/runtimeTruthRoutes.ts';
+import { createInspectionRoutes } from './routes/inspectionRoutes.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -381,7 +382,10 @@ const envSchema: EnvSchemaEntry[] = [
 ];
 
 const routes: Record<string, RouteHandler> = {
-  'GET /api/version': versionHandler,
+  ...createInspectionRoutes({
+    versionHandler,
+    verifyEnvHandler,
+  }),
   'GET /api/auth/status': authRouteHandlers.statusHandler,
   'POST /api/auth/verify-icloudpd': authRouteHandlers.verifyIcloudpdHandler,
   'POST /api/auth/run': authRouteHandlers.runHandler,
@@ -397,7 +401,6 @@ const routes: Record<string, RouteHandler> = {
   'POST /api/auth/new/submit-2fa': newAuthRouteHandlers.submitTwoFactorHandler,
   'POST /api/auth/new/logout': newAuthRouteHandlers.logoutHandler,
   'POST /api/auth/new/test-download': newAuthRouteHandlers.testDownloadHandler,
-  'POST /api/init/verify-env': verifyEnvHandler,
   'GET /api/init/database/status': databaseStatusHandler,
   'POST /api/init/database/inspect': inspectDatabaseHandler,
   'POST /api/init/database/delete': deleteDatabaseHandler,

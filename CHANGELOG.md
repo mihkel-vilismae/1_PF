@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.5.8 - 2026-05-10 20:05 Tallinn
+
+- Slice 8: extracted the inspection route family into `server/routes/inspectionRoutes.ts`.
+- Files changed: `server/index.ts`, `server/routes/inspectionRoutes.ts`, `tests/inspectionRoutesCompatibility.test.js`, `docs/active_workflow_docs/slice_8_9_route_selection.md`, `VERSION`, `package.json`, `package-lock.json`, and `CHANGELOG.md`.
+- Behavior preserved: `/api/version` and `/api/init/verify-env` keep the same HTTP methods, paths, handlers, response shapes, and status behavior.
+- Tests run: focused inspection route compatibility test command attempted; typecheck compared against the Slice 7 baseline.
+- Known remaining pre-existing failures: baseline typecheck is blocked by missing Node type definitions in this environment.
+
 ## 0.5.7 - 2026-05-10 19:21 Tallinn
 
 - Extracted the runtime-truth and pipeline lock maintenance route handlers into `server/routes/runtimeTruthRoutes.ts`.
