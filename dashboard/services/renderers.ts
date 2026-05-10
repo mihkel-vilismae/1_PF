@@ -372,6 +372,7 @@ type NewAuthTwoFactorInputCopy = {
   help: string;
 };
 
+// Renders the 2FA input only when iCloudPD has exposed a specific safe prompt.
 function renderNewAuthTwoFactorSection(modal: ModalData): string {
   const copy = twoFactorInputCopyForModal(modal);
   if (!copy.active) {
@@ -390,6 +391,7 @@ function renderNewAuthTwoFactorSection(modal: ModalData): string {
   );
 }
 
+// Maps backend prompt metadata to conservative operator-facing input copy.
 function twoFactorInputCopyForModal(modal: ModalData): NewAuthTwoFactorInputCopy {
   if (modal.stage === 'authenticated') {
     return {
@@ -433,12 +435,12 @@ function twoFactorInputCopyForModal(modal: ModalData): NewAuthTwoFactorInputCopy
     case 'apple_hsa2_challenge':
     case 'unknown':
       return {
-        active: true,
-        label: 'Two-factor response',
-        ariaLabel: 'New auth two-factor response',
-        placeholder: 'a or 123456',
-        buttonLabel: 'Submit response',
-        help: 'The exact iCloudPD prompt is not visible. Use the provider prompt: submit a device index if it asks for one, otherwise submit the six-digit code.',
+        active: false,
+        label: 'Waiting for visible two-factor prompt',
+        ariaLabel: 'Waiting for visible two-factor prompt',
+        placeholder: '',
+        buttonLabel: 'Submit',
+        help: 'Waiting for iCloudPD to expose whether it needs a device index or a six-digit verification code. Do not submit the SMS code until the prompt is visible.',
       };
     default:
       return {
@@ -452,6 +454,7 @@ function twoFactorInputCopyForModal(modal: ModalData): NewAuthTwoFactorInputCopy
   }
 }
 
+// Formats the login progress requested-input row without exposing secret values.
 function requestedInputLabelForPromptKind(kind: string | null | undefined): string | null {
   switch (kind) {
     case 'device_index':
@@ -461,9 +464,9 @@ function requestedInputLabelForPromptKind(kind: string | null | undefined): stri
     case 'device_index_or_code':
       return 'Enter device index, for example a';
     case 'apple_hsa2_challenge':
-      return 'Apple HSA2 challenge; exact prompt not visible';
+      return 'Waiting for visible Apple HSA2 prompt';
     case 'unknown':
-      return 'Two-factor response';
+      return 'Waiting for visible iCloudPD prompt';
     default:
       return null;
   }

@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## 2026-05-10 15:34 EEST — v0.4.3
+
+### Added
+- Added confirmation before NEW AUTH local iCloudPD session-file removal.
+- Added regression coverage for read-only unknown NEW AUTH 2FA prompts and frontend submission guards.
+
+### Changed
+- Changed NEW AUTH unknown iCloudPD 2FA prompts to wait for a visible provider prompt before rendering a response input.
+- Updated NEW AUTH 2FA submission handling to trim input and cancel empty submissions before calling the backend.
+- Updated version metadata from v0.4.2 to v0.4.3.
+
+### Fixed
+- Fixed the operator path where an SMS code could be submitted while iCloudPD had not yet exposed whether it needed a device index or a six-digit code.
+
+### Removed
+- None.
+
 ## 2026-05-08 11:24 EEST — v0.4.2
 
 ### Added

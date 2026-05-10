@@ -54,6 +54,24 @@ test('new auth modal does not render a live 2FA input after authentication', () 
   assert.equal(markup.includes('2FA code or device index'), false);
 });
 
+// Keeps unknown provider prompts read-only until iCloudPD exposes the requested input.
+test('new auth modal waits instead of rendering a generic input for unknown 2FA prompts', () => {
+  const markup = renderModal({
+    kind: 'new-auth-login',
+    title: 'New auth',
+    stage: 'waiting_for_2fa',
+    message: 'Two-factor authentication is required, but the exact prompt is not visible.',
+    twoFactorPromptKind: 'unknown',
+    requestedInput: 'Two-factor response',
+  });
+
+  assert.equal(markup.includes('Waiting for visible iCloudPD prompt'), true);
+  assert.equal(markup.includes('Waiting for iCloudPD to expose whether it needs a device index or a six-digit verification code.'), true);
+  assert.equal(markup.includes('data-new-auth-2fa-code'), false);
+  assert.equal(markup.includes('new-auth-submit-2fa'), false);
+  assert.equal(markup.includes('Submit response'), false);
+});
+
 // Verifies the NEW AUTH modal renders a sane terminal-style waiting state.
 test('new auth modal renders waiting icloudpd communication panel beside login panel', () => {
   const markup = renderModal({

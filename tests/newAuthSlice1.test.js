@@ -1,3 +1,7 @@
+/*
+ * Verifies the Slice 1 NEW AUTH frontend contract and endpoint isolation.
+ * These checks protect the dedicated /api/auth/new/* UI boundary.
+ */
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
@@ -32,6 +36,8 @@ test('Slice 1 NEW AUTH card renders required controls and modal input', () => {
   assert.match(renderers, /Enter device index, for example a/);
   assert.match(renderers, /Enter SMS six-digit code/);
   assert.match(app, /data-new-auth-2fa-code/);
+  assert.match(app, /confirmNewAuthLogout/);
+  assert.match(app, /New auth 2FA submission was cancelled because no response was entered/);
 });
 
 test('Slice 1 NEW AUTH frontend helpers target only new endpoints', () => {

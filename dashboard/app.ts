@@ -384,9 +384,27 @@ function bindEvents() {
       }
       if (action === 'new-auth-submit-2fa') {
         const input = app.querySelector<HTMLInputElement>('[data-new-auth-2fa-code]');
-        const code = typeof input?.value === 'string' ? input.value : '';
+        const code = typeof input?.value === 'string' ? input.value.trim() : '';
+        if (!code) {
+          pushHistory('NEW AUTH', 'warning', 'New auth 2FA submission was cancelled because no response was entered.', {
+            action: 'new-auth-submit-2fa',
+            submitted: false,
+          });
+          return;
+        }
         runAction(action, { code });
         if (input) input.value = '';
+        return;
+      }
+      if (action === 'new-auth-logout-session') {
+        if (!confirmNewAuthLogout()) {
+          pushHistory('NEW AUTH', 'warning', 'New auth logout/session removal was cancelled before local session files were removed.', {
+            action: 'new-auth-logout-session',
+            confirmed: false,
+          });
+          return;
+        }
+        runAction(action, { confirmationSource: 'window.confirm' });
         return;
       }
       if (action === 'delete-db') {
@@ -499,22 +517,29 @@ function bindEvents() {
   });
 }
 
+// Confirms destructive NEW AUTH session-file removal before dispatching logout.
+function confirmNewAuthLogout(): boolean {
+  return window.confirm('Remove local iCloudPD session files and log out locally? Only continue if you do not need the current authenticated session.');
+}
+
+// Opens a log detail modal for the selected source entry.
 function openLogModal(sourceKey, index) {
   const state = getState();
-  const sourceLogs = state.logs[sourceKey] ?? [];
+  const sourceName = typeof sourceKey === 'string' ? sourceKey : '';
+  const sourceLogs = state.logs[sourceName] ?? [];
   const entry = sourceLogs[Number(index)];
   if (!entry) {
     return;
   }
 
-  const type = entry.type ?? 'info';
+  const type = typeof entry.type === 'string' ? entry.type : 'info';
   openModal({
     kind: 'log',
-    title: `${sourceKey} log • ${type.toUpperCase()}`,
+    title: `${sourceName} log • ${type.toUpperCase()}`,
     subtitle: entry.message ?? 'Log entry details',
     entry: {
       ...entry,
-      sourceKey,
+      sourceKey: sourceName,
     },
   });
 }
@@ -554,6 +579,7 @@ function setHistoryCopyStatus(status: 'idle' | 'copied' | 'failed'): void {
   }
 }
 
+// Opens a history detail modal for the selected event-history entry.
 function openHistoryModal(index) {
   const state = getState();
   const entry = state.history[Number(index)];
@@ -561,9 +587,11 @@ function openHistoryModal(index) {
     return;
   }
 
+  const source = typeof entry.source === 'string' ? entry.source : 'History';
+  const type = typeof entry.type === 'string' ? entry.type : 'info';
   openModal({
     kind: 'history',
-    title: `${entry.source} • ${(entry.type ?? 'info').toUpperCase()}`,
+    title: `${source} • ${type.toUpperCase()}`,
     subtitle: entry.message ?? 'History entry details',
     entry,
   });
