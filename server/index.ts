@@ -17,13 +17,7 @@ import { createAuthRoutes } from './auth/authRoutes.ts';
 import { createNewAuthRoutes } from './auth/newAuthRoutes.ts';
 import { createDatabaseService } from './database/databaseService.ts';
 import type { DatabaseService } from './database/databaseService.ts';
-import { attachSafeAuthRuntimeTruth } from './auth/authRuntimeTruth.ts';
 import { createProjectLogger, DEFAULT_LOG_DIR } from './logging/projectLogger.ts';
-import {
-  clearStalePipelineLocks,
-  detectStalePipelineLockIssues,
-  resolvePipelineLockStaleThresholdSeconds,
-} from './runtimePipelineLocks.ts';
 import {
   createSchedulerCapability,
   getOperationSupportLevel,
@@ -44,6 +38,7 @@ import { selectCurrentPlayableItem } from './playback/playbackSelectionService.t
 import { runPlaybackWorker } from './workers/playbackWorker.ts';
 import { createSchedulerRoutes } from './routes/schedulerRoutes.ts';
 import { createScreenSimulationRoutes } from './routes/screenSimulationRoutes.ts';
+import { createRuntimeTruthRoutes } from './routes/runtimeTruthRoutes.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -122,7 +117,6 @@ type EnvCheckSeverity = 'info' | 'warning' | 'error';
 type SchedulerRouteOperation = SchedulerOperation | string;
 type SchedulerTargetSelectionSource = 'file' | 'default' | 'request';
 type SchedulerWorkerName = typeof SCHEDULER_WORKER_NAMES[keyof typeof SCHEDULER_WORKER_NAMES];
-type RuntimeTruthSource = 'file' | 'request';
 
 interface EnvValues {
   [key: string]: string | undefined;
@@ -340,9 +334,6 @@ interface DeferredSchedulerPayloadInput {
   reason?: string;
 }
 
-interface RuntimeTruthNormalizeOptions {
-  source?: RuntimeTruthSource;
-}
 
 interface ErrorPayload {
   status: 'error';
@@ -443,10 +434,11 @@ const routes: Record<string, RouteHandler> = {
     createBadRequestError: (code, message, details) => new HttpError(400, code, message, details),
     isJsonObject,
   }),
-  'POST /api/runtime/pipeline/issues/detect': runtimePipelineIssuesDetectHandler,
-  'POST /api/runtime/pipeline/stale-locks/clear': runtimePipelineStaleLocksClearHandler,
-  'GET /api/runtime-truth': getRuntimeTruthHandler,
-  'POST /api/runtime-truth': updateRuntimeTruthHandler,
+  ...createRuntimeTruthRoutes({
+    runtimeTruthFilePath,
+    runtimeTruthRelativePath,
+    createHttpError: (statusCode, code, message, details) => new HttpError(statusCode, code, message, details),
+  }),
 };
 
 const server = createServer(async (request: IncomingMessage, response: ServerResponse) => {
@@ -1098,99 +1090,6 @@ async function databaseViewerLoggingStopHandler() {
   };
 }
 
-async function getRuntimeTruthHandler(): Promise<HandlerResult> {
-  const truth = attachSafeAuthRuntimeTruth(await readRuntimeTruthFile());
-  return {
-    statusCode: 200,
-    payload: {
-      status: 'ok',
-      sourcePath: runtimeTruthRelativePath,
-      truth,
-      schemaVersion: 1,
-      persistedAt: new Date().toISOString(),
-    },
-  };
-}
-
-// Reports persisted pipeline lock issues without changing runtime-truth state.
-async function runtimePipelineIssuesDetectHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
-  const truth = attachSafeAuthRuntimeTruth(await readRuntimeTruthFile());
-  const staleThresholdSeconds = resolvePipelineLockStaleThresholdSeconds(context.envValues);
-  const issues = detectStalePipelineLockIssues(truth, { staleThresholdSeconds });
-  return buildRuntimePipelineIssueResponse({
-    truth,
-    issues,
-    staleThresholdSeconds,
-    action: 'detect',
-    cleared: false,
-  });
-}
-
-// Clears stale persisted pipeline locks while preserving fresh active locks.
-async function runtimePipelineStaleLocksClearHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
-  const truth = attachSafeAuthRuntimeTruth(await readRuntimeTruthFile());
-  const staleThresholdSeconds = resolvePipelineLockStaleThresholdSeconds(context.envValues);
-  const result = clearStalePipelineLocks(truth, { staleThresholdSeconds });
-  const nextTruth = attachSafeAuthRuntimeTruth(result.truth);
-  if (result.cleared) {
-    await writeRuntimeTruthFile(nextTruth);
-  }
-  return buildRuntimePipelineIssueResponse({
-    truth: nextTruth,
-    issues: result.issues,
-    staleThresholdSeconds,
-    action: 'clear',
-    cleared: result.cleared,
-  });
-}
-
-// Builds the shared response envelope for pipeline issue maintenance endpoints.
-function buildRuntimePipelineIssueResponse({
-  truth,
-  issues,
-  staleThresholdSeconds,
-  action,
-  cleared,
-}: {
-  truth: JsonObject;
-  issues: ReturnType<typeof detectStalePipelineLockIssues>;
-  staleThresholdSeconds: number;
-  action: 'detect' | 'clear';
-  cleared: boolean;
-}): HandlerResult {
-  const issueCount = issues.length;
-  const status = issueCount > 0 && action === 'detect' ? 'warning' : 'ok';
-  const messages = action === 'clear'
-    ? [
-        cleared
-          ? `Cleared ${issueCount} stale pipeline lock issue(s).`
-          : 'No stale pipeline locks were cleared.',
-      ]
-    : [
-        issueCount
-          ? `Detected ${issueCount} stale pipeline lock issue(s).`
-          : 'No stale pipeline lock issues detected.',
-      ];
-
-  return {
-    statusCode: 200,
-    payload: {
-      status,
-      messages,
-      pipeline: {
-        issueCount,
-        issues,
-        staleLockDetected: issueCount > 0,
-        staleThresholdSeconds,
-        cleared,
-      },
-      truth,
-      schemaVersion: 1,
-      executedAt: new Date().toISOString(),
-    },
-  };
-}
-
 async function runtimeDownloadRunHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
   const envValues = context.envValues;
   const downloadDirectory = resolveRepoPath(envValues.DOWNLOAD_DIR || '');
@@ -1564,21 +1463,6 @@ async function runtimeOrchestrationLastHandler({ context }: Pick<HandlerArgs, 'c
   return { statusCode: 200, payload: null };
 }
 
-async function updateRuntimeTruthHandler({ body }: Pick<HandlerArgs, 'body'>): Promise<HandlerResult> {
-  const truth = attachSafeAuthRuntimeTruth(normalizeRuntimeTruthPayload(body?.truth, { source: 'request' }));
-  await writeRuntimeTruthFile(truth);
-  return {
-    statusCode: 200,
-    payload: {
-      status: 'ok',
-      sourcePath: runtimeTruthRelativePath,
-      truth,
-      schemaVersion: 1,
-      persistedAt: new Date().toISOString(),
-    },
-  };
-}
-
 // Builds the public scheduler route envelope around the resolved scheduler task result.
 async function buildSchedulerRouteResponse(
   context: RequestContext,
@@ -1853,67 +1737,6 @@ async function listDatabaseViewerTables(context: RequestContext): Promise<unknow
 
 async function loadDatabaseViewerRows(context: RequestContext, body: JsonObject): Promise<unknown> {
   return getDatabaseService().loadDatabaseViewerRows(context, body);
-}
-
-async function readRuntimeTruthFile(): Promise<JsonObject> {
-  if (!(await fileExists(runtimeTruthFilePath))) {
-    throw new HttpError(404, 'runtime_truth_missing', 'Runtime truth file does not exist yet.', {
-      sourcePath: runtimeTruthRelativePath,
-    });
-  }
-
-  let raw;
-  try {
-    raw = await fs.readFile(runtimeTruthFilePath, 'utf8');
-  } catch (error) {
-    throw new HttpError(500, 'runtime_truth_read_failed', 'Failed to read runtime truth file.', {
-      sourcePath: runtimeTruthRelativePath,
-      message: getErrorMessage(error),
-    });
-  }
-
-  let parsed;
-  try {
-    parsed = JSON.parse(raw);
-  } catch (error) {
-    throw new HttpError(500, 'runtime_truth_invalid_json', 'Runtime truth file contains invalid JSON.', {
-      sourcePath: runtimeTruthRelativePath,
-      message: getErrorMessage(error),
-    });
-  }
-
-  return normalizeRuntimeTruthPayload(parsed, { source: 'file' });
-}
-
-async function writeRuntimeTruthFile(truth: JsonObject): Promise<void> {
-  try {
-    await fs.mkdir(path.dirname(runtimeTruthFilePath), { recursive: true });
-    const serialized = `${JSON.stringify(truth, null, 2)}\n`;
-    await fs.writeFile(runtimeTruthFilePath, serialized, 'utf8');
-  } catch (error) {
-    throw new HttpError(500, 'runtime_truth_write_failed', 'Failed to write runtime truth file.', {
-      sourcePath: runtimeTruthRelativePath,
-      message: getErrorMessage(error),
-    });
-  }
-}
-
-function normalizeRuntimeTruthPayload(value: unknown, options: RuntimeTruthNormalizeOptions = {}): JsonObject {
-  const source = options.source === 'file' ? 'file' : 'request';
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    if (source === 'file') {
-      throw new HttpError(500, 'runtime_truth_invalid_payload', 'Runtime truth file must contain a JSON object.', {
-        sourcePath: runtimeTruthRelativePath,
-      });
-    }
-    throw new HttpError(400, 'invalid_runtime_truth_payload', 'Runtime truth payload must be a JSON object.', {
-      expected: { truth: { sourceOfTruth: runtimeTruthRelativePath } },
-    });
-  }
-
-  const truth = structuredClone(value) as JsonObject;
-  truth.sourceOfTruth = runtimeTruthRelativePath;
-  return truth;
 }
 
 async function readJsonBody(request: IncomingMessage): Promise<JsonObject> {

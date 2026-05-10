@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.5.7 - 2026-05-10 19:21 Tallinn
+
+- Extracted the runtime-truth and pipeline lock maintenance route handlers into `server/routes/runtimeTruthRoutes.ts`.
+- Preserved `/api/runtime-truth`, `/api/runtime/pipeline/issues/detect`, and `/api/runtime/pipeline/stale-locks/clear` endpoint paths, methods, response envelopes, and persisted runtime-truth file behavior.
+- Bumped version metadata from v0.5.6 to v0.5.7.
+
 ## 0.5.6 - 2026-05-10 19:05 Tallinn
 
 - Extracted the runtime screen-simulation route handlers and private simulation state into `server/routes/screenSimulationRoutes.ts`.
