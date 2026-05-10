@@ -1,0 +1,3 @@
+*/10 * * * * /path/to/regular_stage_worker
+* * * * * /path/to/playback_worker
+*/3 * * * * /path/to/screen_on_off_worker

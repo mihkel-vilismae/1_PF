@@ -19,6 +19,9 @@ node_modules/
 dist/
 .vite/
 coverage/
+.pytest_cache/
+.venv/
+venv/
 __pycache__/
 *.pyc
 
@@ -31,7 +34,10 @@ pnpm-debug.log*
 runtime_data/
 runtime-truth.json
 conf/runtime-truth.json
+tools/CronEmulator/crontab_emulated.txt
+tools/CronEmulator/logs/
 *.log
+*.jsonl
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal

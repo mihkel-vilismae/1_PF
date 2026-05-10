@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## 2026-05-10 17:00 EEST — v0.5.1
+
+### Added
+- Vendored CronEmulator under `tools/CronEmulator` as normal tracked repository files instead of an implicit nested Git repository.
+- Added a tracked `crontab_emulated.example.txt` template and pytest configuration for local CronEmulator tests.
+
+### Changed
+- Updated ignore rules so CronEmulator runtime crontab, logs, caches, bytecode, and virtualenvs stay out of Git.
+- Bumped version metadata from v0.5.0 to v0.5.1.
+
+### Fixed
+- None
+
+### Removed
+- Removed the root Git gitlink dependency for `tools/CronEmulator`.
+
 ## 2026-05-10 16:52 EEST — v0.5.0
 
 ### Added
