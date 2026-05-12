@@ -2,9 +2,12 @@
 
 ```bash
 npm install --verbose
+npm run build
 npm run api
 npm run dev
 ```
+
+On Windows, you can also run `start_win.cmd` from the repository root. It checks Node/npm, installs dependencies when needed, runs `npm run build`, then starts the API server and Vite frontend in separate terminals.
 
 Open the local Vite URL in your browser.
 

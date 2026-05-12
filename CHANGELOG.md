@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.5.19 - 2026-05-12 18:39 Tallinn
+
+- Updated `start_win.cmd` so it runs `npm run build` after dependency checks/install and before launching `npm run api`.
+- The Windows launcher now stops before starting the API server if the production build fails.
+- Bumped version metadata from v0.5.18 to v0.5.19 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.5.18 - 2026-05-12 18:34 Tallinn
 
 - Updated current implementation/status documentation to reflect the completed NEW AUTH passive skipped-proof UX, active `Verify with iCloudPD` provider-proof action, and Slice 3 regression/redaction coverage.

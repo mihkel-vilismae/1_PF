@@ -61,11 +61,14 @@ Install dependencies:
 npm install
 ```
 
-Start the dashboard:
+Build the dashboard and start the frontend during manual development:
 
 ```bash
+npm run build
 npm run dev
 ```
+
+On Windows, `start_win.cmd` checks dependencies, runs `npm run build`, then starts `npm run api` and `npm run dev` in separate terminals.
 
 Open the local app:
 

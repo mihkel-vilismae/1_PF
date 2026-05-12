@@ -31,6 +31,14 @@ if not exist "node_modules" (
   )
 )
 
+echo [INFO] Building 12_PF dashboard before starting the API server...
+call npm run build
+if errorlevel 1 (
+  echo [ERROR] npm run build failed. API server was not started.
+  pause
+  exit /b 1
+)
+
 echo [INFO] Starting 12_PF API server in a new terminal...
 start "12_PF API" cmd /k "cd /d ""%~dp0"" && npm run api"
 
