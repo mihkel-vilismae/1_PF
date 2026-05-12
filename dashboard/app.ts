@@ -46,6 +46,7 @@ import { renderTestView } from './views/testView.ts';
 import { renderLastRunView } from './views/lastRunView.ts';
 import { renderRunningProcessView } from './views/runningProcessView.ts';
 import { renderDatabaseViewerView } from './views/databaseViewerView.ts';
+import { requestJson } from './services/apiClient.ts';
 
 const app = document.getElementById('app');
 declare const __APP_VERSION__: string;
@@ -280,12 +281,10 @@ function getBackendVersionText(backendState: BackendVersionState): string {
 // Loads the backend component version once without blocking initial render.
 async function loadBackendVersion(): Promise<void> {
   try {
-    const response = await fetch('/api/version', { headers: { Accept: 'application/json' } });
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-
-    const payload = await response.json() as { version?: unknown };
+    const payload = await requestJson<{ version?: unknown }>('/api/version', {
+      headers: { Accept: 'application/json' },
+      operation: 'Load backend version',
+    });
     const version = typeof payload.version === 'string' ? payload.version.trim() : '';
     backendVersionState = version
       ? { status: 'ready', version, message: null }
