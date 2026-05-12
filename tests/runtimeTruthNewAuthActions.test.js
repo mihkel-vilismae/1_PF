@@ -122,8 +122,8 @@ test('runtime truth new auth history stores request/response metadata without su
   }
 });
 
-// Ensures the Check login button remains a passive read instead of a provider-proof trigger.
-test('runtime truth new auth check-login uses passive status and marks unverified state as pending', async () => {
+// Ensures the Check login button remains passive while mapping skipped proof to an actionable UI state.
+test('runtime truth new auth check-login maps provider-proof skipped to blocked actionable state', async () => {
   let state = createInitialState();
   const originalFetch = globalThis.fetch;
   const requests = [];
@@ -166,7 +166,10 @@ test('runtime truth new auth check-login uses passive status and marks unverifie
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     assert.equal(requests[0], '/api/auth/new/status?mode=passive');
-    assert.equal(state.newAuth.buttonStates['new-auth-check-login'].status, 'pending');
+    assert.equal(state.newAuth.buttonStates['new-auth-check-login'].status, 'blocked');
+    assert.equal(state.newAuth.buttonStates['new-auth-login-using-env'].status, 'blocked');
+    assert.match(state.newAuth.buttonStates['new-auth-check-login'].message, /Session files found, provider verification not run yet\./);
+    assert.match(state.newAuth.buttonStates['new-auth-check-login'].message, /passive status did not contact iCloudPD/);
     assert.equal(state.statusByKey['1A-STASH-OFF'], 'info');
   } finally {
     globalThis.fetch = originalFetch;

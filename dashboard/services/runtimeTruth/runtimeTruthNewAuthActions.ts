@@ -15,6 +15,9 @@ import {
   NEW_AUTH_BUTTON_DEFAULTS,
   NEW_AUTH_CARD_KEY,
   NEW_AUTH_HISTORY_SOURCE,
+  NEW_AUTH_PROVIDER_PROOF_SKIPPED_CODE,
+  NEW_AUTH_PROVIDER_PROOF_SKIPPED_EXPLANATION,
+  NEW_AUTH_PROVIDER_PROOF_SKIPPED_TITLE,
   NEW_AUTH_SESSION_BUTTON_KEYS,
   SECRET_FIELD_PATTERN,
 } from './newAuthActions/runtimeTruthNewAuthConstants.ts';
@@ -208,6 +211,7 @@ export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, push
 function classifyNewAuthButtonStatus(buttonKey, payload, transportOutcome) {
   if (transportOutcome === 'error') return 'failed';
   if (hasNewAuthTwoFactorPrompt(payload)) return 'pending';
+  if (isNewAuthProviderProofSkipped(payload)) return 'blocked';
   if (payload?.state === 'unverified') return 'pending';
   if (payload?.ok === false || payload?.state === 'failed' || payload?.status === 'error') return 'failed';
   if (payload?.state === 'logged_out') {
@@ -286,6 +290,7 @@ function classifyNewAuthSessionStatus(payload) {
   if (!payload || typeof payload !== 'object') return 'neutral';
   if (payload.state === 'logged_out') return 'neutral';
   if (payload.state === 'authenticated' || payload.state === 'success') return 'success';
+  if (isNewAuthProviderProofSkipped(payload)) return 'blocked';
   if (hasNewAuthTwoFactorPrompt(payload) || payload.state === 'unverified') return 'pending';
   if (payload.ok === false || payload.state === 'failed' || payload.status === 'error') return 'failed';
   return 'pending';
@@ -366,10 +371,21 @@ function hasNewAuthTwoFactorPrompt(payload) {
 
 // Summarizes a NEW AUTH backend payload into the existing button/log message style.
 function summarizeNewAuthResult(operation, payload) {
+  if (isNewAuthProviderProofSkipped(payload)) {
+    return `${NEW_AUTH_PROVIDER_PROOF_SKIPPED_TITLE} ${NEW_AUTH_PROVIDER_PROOF_SKIPPED_EXPLANATION}`;
+  }
   if (payload?.message) return payload.message;
   if (payload?.state) return `${operation} returned state: ${payload.state}.`;
   if (payload?.status) return `${operation} returned status: ${payload.status}.`;
   return `${operation} completed.`;
+}
+
+// Detects passive status responses where local session files exist but provider proof was intentionally skipped.
+function isNewAuthProviderProofSkipped(payload) {
+  const details = payload?.details && typeof payload.details === 'object' ? payload.details : null;
+  const providerProof = details?.providerProof && typeof details.providerProof === 'object' ? details.providerProof : null;
+  return payload?.errorCode === NEW_AUTH_PROVIDER_PROOF_SKIPPED_CODE
+    || providerProof?.reasonCode === NEW_AUTH_PROVIDER_PROOF_SKIPPED_CODE;
 }
 
 // Reads the backend-supplied 2FA prompt metadata used by the modal input copy.

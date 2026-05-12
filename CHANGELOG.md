@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.5.15 - 2026-05-12 17:33 Tallinn
+
+- Slice 1: mapped `NEW_AUTH_PROVIDER_PROOF_SKIPPED` passive new-auth status into a clear actionable UI state instead of a vague pending state.
+- The NEW AUTH card now shows `Session files found, provider verification not run yet.` with explanatory copy telling the user that passive status did not contact iCloudPD.
+- Preserved passive status semantics: `GET /api/auth/new/status?mode=passive` still does not start provider proof, backend contracts are unchanged, and displayed provider/auth data remains sanitized.
+- Added/updated regression coverage for the passive skipped-provider-proof state projection.
+- Bumped version metadata from v0.5.14 to v0.5.15 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.5.14 - 2026-05-12 17:23 Tallinn
 
 - Added root `start_win.cmd` Windows launcher according to the default project setup expectation.

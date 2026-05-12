@@ -5,6 +5,9 @@
 
 export const NEW_AUTH_CARD_KEY = '1A-STASH-OFF';
 export const NEW_AUTH_HISTORY_SOURCE = 'NEW AUTH';
+export const NEW_AUTH_PROVIDER_PROOF_SKIPPED_CODE = 'NEW_AUTH_PROVIDER_PROOF_SKIPPED';
+export const NEW_AUTH_PROVIDER_PROOF_SKIPPED_TITLE = 'Session files found, provider verification not run yet.';
+export const NEW_AUTH_PROVIDER_PROOF_SKIPPED_EXPLANATION = 'Local iCloudPD session files exist, but passive status did not contact iCloudPD. Verify with iCloudPD to confirm the session is still valid.';
 export const SECRET_FIELD_PATTERN = /(password|passwd|secret|token|cookie|session|credential|authorization|otp|2fa|two_factor_value|mfa|^code$|apple_id)/i;
 export const NEW_AUTH_BUTTON_DEFAULTS = Object.freeze({
   'new-auth-verify-icloudpd': 'Not checked yet.',
