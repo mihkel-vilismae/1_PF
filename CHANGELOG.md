@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 2026-05-12 15:50 Tallinn
+
+- Added `docs/RUNTIME_TRUTH_AUTHORITY_MAP_20260512.md` capturing the final runtime truth authority model.  The document codifies that SQLite is the durable source of truth, lock files are for process coordination only, logs are for audit/debugging, `conf/runtime‑truth.json` is a non‑authoritative projection, front‑end local state is transient and backend projections must declare field sources.  It provides view‑specific guidance and recommended next slices without changing any behaviour.
+- Added `shared/runtimeProjectionContracts.ts` defining runtime projection source enums, runtime namespaces, a generic `RuntimeField<T>` wrapper, and high‑level contracts for worker health, last‑run, playback, screen and live runtime projections.  These TypeScript contracts are framework‑agnostic and do not implement any runtime logic.
+- Added `tests/runtimeProjectionContracts.test.js` verifying that the runtime projection sources and namespaces are exported correctly and contain all expected values.
+- Updated `docs/main_readme.md` to link to the new runtime truth authority map document.
+- This documentation and contract slice does not alter runtime, frontend or backend behaviour, and does not bump package versions.
+
 ## 2026-05-12 14:16 Tallinn
 
 - Added `docs/IMPLEMENTATION_GOAL_STATUS_RECONCILIATION_20260512.md` as a canonical reconciliation of implementation goals, current statuses, unresolved questions and conflicts.  The document consolidates existing status docs, harmonises status vocabulary and provides a recommended implementation order without changing runtime behaviour.
