@@ -307,8 +307,16 @@ function bindEvents() {
       const id = button.dataset.view;
       const label = VIEW_ORDER.find((view) => view.id === id);
       setActiveView(id, `${id} — ${label?.name ?? ''}`);
-      if (id === 'C') {
+      // Trigger safe preloads or refresh actions depending on the selected view.
+      if (id === 'A') {
+        runAction('verify-env');
+        runAction('check-db');
+        runAction('check-cron');
+        runAction('new-auth-check-login');
+      } else if (id === 'C') {
         runAction('refresh-last-run');
+      } else if (id === 'D') {
+        runAction('refresh-running-process');
       }
     });
   });
@@ -624,6 +632,19 @@ function openHistoryModal(index) {
 
 subscribe(render);
 render();
+// Automatically run safe read‑only status preloads the first time View A is active.
+let hasInitPreloadRun = false;
+const tryInitPreload = () => {
+  const state = getState();
+  if (!hasInitPreloadRun && state.activeView === 'A') {
+    runAction('verify-env');
+    runAction('check-db');
+    runAction('check-cron');
+    runAction('new-auth-check-login');
+    hasInitPreloadRun = true;
+  }
+};
+tryInitPreload();
 void loadBackendVersion();
 
 window.addEventListener('keydown', (event) => {

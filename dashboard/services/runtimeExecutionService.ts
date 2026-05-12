@@ -28,6 +28,9 @@ export const RUNTIME_EXECUTION_ENDPOINTS = Object.freeze({
   screenSimulationConfigure: { method: 'POST', path: '/api/runtime/screen-simulation/configure' },
   pipelineIssuesDetect: { method: 'POST', path: '/api/runtime/pipeline/issues/detect' },
   pipelineStaleLocksClear: { method: 'POST', path: '/api/runtime/pipeline/stale-locks/clear' },
+  // Returns a live projection of runtime state, including run state and worker health.  This
+  // endpoint is a read‑only monitor surface used by View D and must not mutate backend state.
+  projectionLive: { method: 'GET', path: '/api/runtime/projection/live' },
 });
 
 export function runRuntimeDownload(body: RuntimeRequestBody = {}): Promise<RuntimeEndpointResponse> {
@@ -83,6 +86,14 @@ export function detectRuntimePipelineIssues(body: RuntimeRequestBody = {}): Prom
 // Calls the backend endpoint that clears only stale persisted pipeline locks.
 export function clearRuntimePipelineStaleLocks(body: RuntimeRequestBody = {}): Promise<RuntimeEndpointResponse> {
   return callRuntimeEndpoint(RUNTIME_EXECUTION_ENDPOINTS.pipelineStaleLocksClear, body);
+}
+
+// Reads the current live runtime projection from the backend.  The returned payload is a
+// RuntimeProjectionEnvelope<LiveRuntimeProjection> describing the current namespace,
+// high‑level run state, worker health, playback and screen status.  This call is read‑only
+// and should be used by View D to display backend‑owned monitor data.
+export function getRuntimeLiveProjection(): Promise<RuntimeEndpointResponse> {
+  return callRuntimeEndpoint(RUNTIME_EXECUTION_ENDPOINTS.projectionLive);
 }
 
 // Applies the shared capture-meta request shape for runtime backend calls.

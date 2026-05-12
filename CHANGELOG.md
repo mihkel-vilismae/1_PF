@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## 0.5.13 - 2026-05-12 16:00 Tallinn
+
+- **Wave 2 – Read‑only runtime projections**. Added a live runtime projection endpoint to the backend, wired the dashboard to fetch the projection, and provided safe preload behaviour:
+  - Added `projectionLive` to `RUNTIME_EXECUTION_ENDPOINTS` and a `getRuntimeLiveProjection()` helper in `dashboard/services/runtimeExecutionService.ts`.
+  - Added `runtimeLiveProjectionHandler` and route `'GET /api/runtime/projection/live'` to `server/index.ts`, assembling a combined `LiveRuntimeProjection` with field provenance labels.
+  - Added `loadLiveRuntimeProjection()` to the runtime‑truth demo actions and a `refresh-running-process` action dispatch in `runtimeTruthBehavior.ts`.
+  - Modified `app.ts` to run safe preloads on first entry to View A and to refresh last‑run and running‑process data when switching to views C and D, respectively.
+  - Updated the running process view to support both mock preview and live monitor modes with dynamic hero copy, badges, controls and log titles.
+  - Bumped the project version to 0.5.13 and updated `VERSION`, `package.json` and `package-lock.json` accordingly.
+
+
 ## 2026-05-12 15:50 Tallinn
 
 - Added `docs/RUNTIME_TRUTH_AUTHORITY_MAP_20260512.md` capturing the final runtime truth authority model.  The document codifies that SQLite is the durable source of truth, lock files are for process coordination only, logs are for audit/debugging, `conf/runtime‑truth.json` is a non‑authoritative projection, front‑end local state is transient and backend projections must declare field sources.  It provides view‑specific guidance and recommended next slices without changing any behaviour.

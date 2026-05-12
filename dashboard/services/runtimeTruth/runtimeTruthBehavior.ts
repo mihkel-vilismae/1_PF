@@ -220,6 +220,9 @@ export function createRuntimeTruthBehavior({
       'run-b4': () => demoActions.runPlaybackEmulation(),
       'configure-screen-simulation': () => demoActions.configureScreenSimulation(),
       'refresh-last-run': () => demoActions.loadLastOrchestrationRun(),
+      // Refresh the live runtime projection for View D.  This calls the backend monitor
+      // endpoint and updates worker health without starting/stopping any workers.
+      'refresh-running-process': () => demoActions.loadLiveRuntimeProjection(),
       'resume-last-run': () => demoActions.genericAction('C', 'RECOVERY', 'Restore placeholder activated from the current last-run demo state.'),
       'start-real-run': () => demoActions.startRealRun(),
     };

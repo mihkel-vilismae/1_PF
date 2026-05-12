@@ -9,6 +9,7 @@ import {
   configureRuntimeScreenSimulation,
   detectRuntimePipelineIssues,
   getRuntimeOrchestrationLast,
+  getRuntimeLiveProjection,
   runRuntimeDownload,
   runRuntimeGeocode,
   runRuntimeGps,
@@ -96,6 +97,96 @@ export function createRuntimeTruthDemoActions({
         activitySource: nextActivity,
       },
     );
+  }
+
+  // Loads a combined live runtime projection from the backend and updates View D state.
+  // This action is triggered when entering View D or when the user refreshes the live monitor.
+  function loadLiveRuntimeProjection() {
+    void runBackendAction({
+      key: 'D',
+      source: 'MONITOR',
+      operation: 'Load live runtime projection',
+      endpoint: RUNTIME_EXECUTION_ENDPOINTS.projectionLive,
+      execute: getRuntimeLiveProjection,
+      onSuccess: (payload) => {
+        // The backend returns an envelope with ok, namespace and projection.  If no
+        // projection exists, treat the run as inactive.
+        const projection = payload?.projection;
+        if (!projection) {
+          patchState((draft) => {
+            draft.truth.realRunActive = false;
+            // Reset worker status to idle/inactive for all D workers.
+            draft.statusByKey.D1 = 'Idle';
+            draft.statusByKey.D2 = 'Idle';
+            draft.statusByKey.D3 = 'Idle';
+            // Reset playback worker fields to placeholder values.
+            draft.runningProcess.playbackWorker.status = 'Idle';
+            draft.runningProcess.playbackWorker.heartbeat = 'N/A';
+            draft.runningProcess.playbackWorker.currentMedia = 'None';
+            draft.runningProcess.playbackWorker.summary = 'No playback activity';
+            // Reset screen worker fields to placeholder values.
+            draft.runningProcess.screenWorker.status = 'Inactive';
+            draft.runningProcess.screenWorker.heartbeat = 'N/A';
+            draft.runningProcess.screenWorker.screenState = 'OFF';
+            draft.runningProcess.screenWorker.lastActivity = 'None';
+            draft.runningProcess.screenWorker.timeout = 'N/A';
+            draft.runningProcess.screenWorker.summary = 'No screen activity';
+          });
+          return;
+        }
+        // Mark that a real run is active.
+        patchState((draft) => {
+          draft.truth.realRunActive = true;
+        });
+        // Update D1, D2, D3 statuses based on worker health.
+        const workerHealth = projection.workerHealth ?? {};
+        function toStatus(w) {
+          const status = (w?.value?.status ?? '').toLowerCase();
+          if (status === 'running') return 'Running';
+          if (status === 'idle') return 'Idle';
+          if (status === 'error' || status === 'failed') return 'Error';
+          if (status === 'completed') return 'Completed';
+          if (status === 'unknown' || !status) return 'Inactive';
+          return status.charAt(0).toUpperCase() + status.slice(1);
+        }
+        const d1 = workerHealth['regular-stage-worker'];
+        const d2 = workerHealth['playback-worker'];
+        const d3 = workerHealth['screen-on-off-worker'];
+        patchState((draft) => {
+          draft.statusByKey.D1 = toStatus(d1);
+          draft.statusByKey.D2 = toStatus(d2);
+          draft.statusByKey.D3 = toStatus(d3);
+          // Update playback worker fields
+          const playback = projection.playback ?? {};
+          const queueSize = playback.queueSize?.value;
+          const isPlaying = playback.isPlaying?.value;
+          draft.runningProcess.playbackWorker.status = isPlaying === true ? 'Active' : 'Idle';
+          draft.runningProcess.playbackWorker.heartbeat = 'N/A';
+          draft.runningProcess.playbackWorker.currentMedia = playback.currentItemId?.value ?? 'None';
+          draft.runningProcess.playbackWorker.summary = typeof queueSize === 'number' ? `${queueSize} items in queue` : 'Unknown queue size';
+          // Update screen worker fields
+          const screen = projection.screen ?? {};
+          const preview = screen.previewAvailable?.value;
+          const fullscreen = screen.fullscreenAvailable?.value;
+          draft.runningProcess.screenWorker.status = preview || fullscreen ? 'Active' : 'Inactive';
+          draft.runningProcess.screenWorker.heartbeat = 'N/A';
+          draft.runningProcess.screenWorker.screenState = preview || fullscreen ? 'ON' : 'OFF';
+          draft.runningProcess.screenWorker.lastActivity = screen.lastRenderedAt?.value ?? 'None';
+          draft.runningProcess.screenWorker.timeout = 'N/A';
+          draft.runningProcess.screenWorker.summary =
+            (preview ? 'Preview available' : 'Preview unavailable') + ' / ' + (fullscreen ? 'Fullscreen available' : 'Fullscreen unavailable');
+        });
+      },
+      onError: () => {
+        // Treat error as inactive/failed.
+        patchState((draft) => {
+          draft.truth.realRunActive = false;
+          draft.statusByKey.D1 = 'Error';
+          draft.statusByKey.D2 = 'Error';
+          draft.statusByKey.D3 = 'Error';
+        });
+      },
+    });
   }
 
   // Runs a legacy timed placeholder action while preserving duplicate-trigger guards.
@@ -488,6 +579,8 @@ export function createRuntimeTruthDemoActions({
     runEnqueueStage,
     runAutoPipeline,
     loadLastOrchestrationRun,
+    // Expose live runtime projection loader for View D refreshes.
+    loadLiveRuntimeProjection,
     configureScreenSimulation,
     runPlaybackEmulation,
     startRealRun,

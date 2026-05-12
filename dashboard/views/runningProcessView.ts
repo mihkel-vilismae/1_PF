@@ -1,27 +1,43 @@
 import { renderDefinitionList, statusBadge, renderLogEntries, renderSourceBadge } from '../services/renderers.ts';
 
 export function renderRunningProcessView(state) {
-  const disabled = !state.truth.realRunActive;
+  const real = Boolean(state.truth.realRunActive);
+  const mode = real ? 'real' : 'mock';
+  const heroTitle = real
+    ? 'Monitor the live runtime process'
+    : 'Preview the runtime monitor without implying live backend worker activity.';
+  const heroCopy = real
+    ? 'This view shows live backend worker data for pipeline, playback and screen health. Use Refresh to update statuses.'
+    : 'This view is still a frontend‑only runtime preview. It shows the intended pipeline and watchdog layout, but all worker data here remains simulated until real runtime monitor APIs exist.';
+  const heroPillLabel = real ? 'Live monitor' : 'Preview inactive';
+  const heroPillClass = real ? 'hero-pill--success' : '';
+  const heroButtonAction = real ? 'refresh-running-process' : 'start-real-run';
+  const heroButtonLabel = real ? 'Refresh monitor' : 'Start simulated runtime preview';
+  const disabled = !real;
   return `
     <section class="view-page">
-      <div class="view-hero view-hero--mock">
+      <div class="view-hero view-hero--${mode}">
         <div>
           <p class="eyebrow">D — Running Process</p>
-          <h2>Preview the runtime monitor without implying live backend worker activity.</h2>
-          <p class="hero-copy">This view is still a frontend-only runtime preview. It shows the intended pipeline and watchdog layout, but all worker data here remains simulated until real runtime monitor APIs exist.</p>
+          <h2>${heroTitle}</h2>
+          <p class="hero-copy">${heroCopy}</p>
         </div>
         <div class="hero-pill-group">
-          ${renderSourceBadge('mock', 'MOCK VIEW')}
-          <span class="hero-pill ${disabled ? '' : 'hero-pill--success'}">${disabled ? 'Preview inactive' : 'Preview active'}</span>
-          <button class="button button--secondary" data-action="start-real-run">Start simulated runtime preview</button>
+          ${renderSourceBadge(mode, mode.toUpperCase() + ' VIEW')}
+          <span class="hero-pill ${heroPillClass}">${heroPillLabel}</span>
+          <button class="button button--secondary" data-action="${heroButtonAction}">${heroButtonLabel}</button>
         </div>
       </div>
 
-      ${disabled ? '<div class="notice notice--neutral notice--mock">No simulated runtime preview is currently active.</div>' : '<div class="notice notice--neutral notice--mock">Frontend-only runtime preview is active. Worker rows and heartbeats below are still simulated.</div>'}
+      ${
+        real
+          ? '<div class="notice notice--neutral">Live monitor is active. Worker rows below reflect backend worker state.</div>'
+          : '<div class="notice notice--neutral notice--mock">No simulated runtime preview is currently active.</div>'
+      }
 
       <div class="section-grid ${disabled ? 'section-grid--muted' : ''}">
-        <article class="card card--mock card--feature">
-          <header class="card__header"><div><p class="card__code">D1</p><h3>Pipeline worker</h3></div><div class="card__header-tags">${renderSourceBadge('mock', 'MOCK')}</div>${statusBadge(state.statusByKey.D1)}</header>
+        <article class="card ${mode === 'real' ? 'card--feature' : 'card--mock card--feature'}">
+          <header class="card__header"><div><p class="card__code">D1</p><h3>Pipeline worker</h3></div><div class="card__header-tags">${renderSourceBadge(mode, mode.toUpperCase())}</div>${statusBadge(state.statusByKey.D1)}</header>
           <div class="worker-list">
             ${state.runningProcess.pipelineStages
               .map(
@@ -43,8 +59,8 @@ export function renderRunningProcessView(state) {
         </article>
 
         <div class="section-grid section-grid--two">
-          <article class="card card--mock">
-            <header class="card__header"><div><p class="card__code">D2</p><h3>Playback worker</h3></div><div class="card__header-tags">${renderSourceBadge('mock', 'MOCK')}</div>${statusBadge(state.statusByKey.D2)}</header>
+          <article class="card ${mode === 'real' ? '' : 'card--mock'}">
+            <header class="card__header"><div><p class="card__code">D2</p><h3>Playback worker</h3></div><div class="card__header-tags">${renderSourceBadge(mode, mode.toUpperCase())}</div>${statusBadge(state.statusByKey.D2)}</header>
             ${renderDefinitionList({
               Status: state.runningProcess.playbackWorker.status,
               Heartbeat: state.runningProcess.playbackWorker.heartbeat,
@@ -52,8 +68,8 @@ export function renderRunningProcessView(state) {
               Summary: state.runningProcess.playbackWorker.summary,
             })}
           </article>
-          <article class="card card--mock">
-            <header class="card__header"><div><p class="card__code">D3</p><h3>Screen on-off worker</h3></div><div class="card__header-tags">${renderSourceBadge('mock', 'MOCK')}</div>${statusBadge(state.statusByKey.D3)}</header>
+          <article class="card ${mode === 'real' ? '' : 'card--mock'}">
+            <header class="card__header"><div><p class="card__code">D3</p><h3>Screen on-off worker</h3></div><div class="card__header-tags">${renderSourceBadge(mode, mode.toUpperCase())}</div>${statusBadge(state.statusByKey.D3)}</header>
             ${renderDefinitionList({
               Status: state.runningProcess.screenWorker.status,
               Heartbeat: state.runningProcess.screenWorker.heartbeat,
@@ -66,8 +82,8 @@ export function renderRunningProcessView(state) {
         </div>
       </div>
 
-      <article class="card card--mock">
-        <header class="card__header"><div><p class="card__code">D4</p><h3>Preview log</h3></div><div class="card__header-tags">${renderSourceBadge('mock', 'MOCK')}</div></header>
+      <article class="card ${mode === 'real' ? '' : 'card--mock'}">
+        <header class="card__header"><div><p class="card__code">D4</p><h3>${mode === 'real' ? 'Monitor log' : 'Preview log'}</h3></div><div class="card__header-tags">${renderSourceBadge(mode, mode.toUpperCase())}</div></header>
         <div class="log-surface">${renderLogEntries(state.logs.D, { sourceKey: 'D' })}</div>
       </article>
     </section>

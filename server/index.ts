@@ -30,6 +30,9 @@ import {
   isSchedulerTarget,
 } from '../shared/schedulerPlatformCapabilities.ts';
 import type { SchedulerCapability, SchedulerOperation, SchedulerSupportLevel, SchedulerTarget } from '../shared/schedulerPlatformCapabilities.ts';
+
+// Import runtime projection constants used by the live runtime projection endpoint.
+import { RUNTIME_PROJECTION_SOURCES, RUNTIME_NAMESPACES } from '../shared/runtimeProjectionContracts.ts';
 import {
   RASPBERRY_PLAYBACK_WORKER_CRON_ROW,
   RASPBERRY_REGULAR_STAGE_WORKER_CRON_ROW,
@@ -433,6 +436,10 @@ const routes: Record<string, RouteHandler> = {
   'POST /api/runtime/geocode/run': runtimeGeocodeRunHandler,
   'POST /api/runtime/queue/prepare': runtimeQueuePrepareHandler,
   'POST /api/runtime/playback/select-current': runtimePlaybackSelectCurrentHandler,
+  // Live runtime projection: returns a combined runtime projection for the live monitor (View D).
+  // This read‑only endpoint provides run state, worker health, playback and screen status,
+  // along with field provenance.  It should never mutate runtime truth or lock state.
+  'GET /api/runtime/projection/live': runtimeLiveProjectionHandler,
   // Wave E orchestration endpoints
   'POST /api/runtime/orchestration/run': runtimeOrchestrationRunHandler,
   ...createRuntimeStatusRoutes({
@@ -1536,6 +1543,83 @@ async function runtimeOrchestrationLastHandler({ context }: Pick<HandlerArgs, 'c
     return { statusCode: 200, payload: current };
   }
   return { statusCode: 200, payload: null };
+}
+
+/**
+ * Returns a combined live runtime projection for the dashboard monitor (View D).
+ *
+ * This handler assembles a runtime projection envelope using the shared
+ * `LiveRuntimeProjection` contract.  The projection includes the current run
+ * state, worker health, playback state and screen state.  Each field is
+ * accompanied by a source label indicating where its value originates (e.g.
+ * `db`, `lock`, `heartbeat`, `log`, `computed`, `projection` or `unknown`).
+ *
+ * The handler never mutates runtime state; it reads from the existing
+ * orchestration state and returns unknown or placeholder values for fields
+ * without authoritative data yet.  The namespace is hardcoded to
+ * `realRuntime` because this endpoint reflects the live runtime projection.
+ */
+async function runtimeLiveProjectionHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
+  // Determine the high‑level run state from the current orchestration state.
+  let runStateValue = 'idle';
+  let runStateSource: keyof typeof RUNTIME_PROJECTION_SOURCES = 'unknown';
+  try {
+    const current = await getOrchestrationState(context, 'orchestration_current');
+    const status = (current?.status ?? '').toLowerCase();
+    if (status) {
+      runStateSource = 'db';
+      if (status === 'running') {
+        runStateValue = 'running';
+      } else if (status === 'failed') {
+        runStateValue = 'error';
+      } else if (status === 'succeeded') {
+        runStateValue = 'completed';
+      } else {
+        runStateValue = status;
+      }
+    }
+  } catch {
+    runStateValue = 'unknown';
+    runStateSource = 'unknown';
+  }
+
+  // Default worker health: unknown for each named worker.  Future slices
+  // may populate these values from lock files, heartbeats or other sources.
+  const workerHealth: Record<string, { value: { status: string }; source: keyof typeof RUNTIME_PROJECTION_SOURCES }> = {
+    'regular-stage-worker': { value: { status: 'unknown' }, source: 'unknown' },
+    'playback-worker': { value: { status: 'unknown' }, source: 'unknown' },
+    'screen-on-off-worker': { value: { status: 'unknown' }, source: 'unknown' },
+  };
+
+  // Default playback projection: unknown values until backend contracts are defined.
+  const playback = {
+    queueSize: { value: null, source: 'unknown' as keyof typeof RUNTIME_PROJECTION_SOURCES },
+    currentItemId: { value: null, source: 'unknown' as keyof typeof RUNTIME_PROJECTION_SOURCES },
+    isPlaying: { value: null, source: 'unknown' as keyof typeof RUNTIME_PROJECTION_SOURCES },
+  };
+
+  // Default screen projection: unknown values until backend contracts are defined.
+  const screen = {
+    previewAvailable: { value: null, source: 'unknown' as keyof typeof RUNTIME_PROJECTION_SOURCES },
+    fullscreenAvailable: { value: null, source: 'unknown' as keyof typeof RUNTIME_PROJECTION_SOURCES },
+    lastRenderedAt: { value: null, source: 'unknown' as keyof typeof RUNTIME_PROJECTION_SOURCES },
+  };
+
+  const projection = {
+    namespace: RUNTIME_NAMESPACES.realRuntime,
+    runState: { value: runStateValue, source: runStateSource },
+    workerHealth,
+    playback,
+    screen,
+  };
+
+  const envelope = {
+    ok: true,
+    namespace: RUNTIME_NAMESPACES.realRuntime,
+    projection,
+  };
+
+  return { statusCode: 200, payload: envelope };
 }
 
 // Builds the public scheduler route envelope around the resolved scheduler task result.
