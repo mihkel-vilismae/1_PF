@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## 0.5.17 - 2026-05-12 18:21 Tallinn
+
+- Slice 3: added focused NEW AUTH provider-verification UX regression coverage and operator documentation.
+- Verified that passive skipped-proof status renders actionable copy, keeps `GET /api/auth/new/status?mode=passive` read-only, and leaves active provider proof on `GET /api/auth/new/status`.
+- Added transit/logging coverage proving the active provider-verification action uses the shared frontend API client instead of bypassing request logging.
+- Added redaction coverage for provider communication shown through the NEW AUTH modal/history path.
+- Documented the distinction between `Verify iCloudPD install`, passive `Check login`, and active `Verify with iCloudPD`.
+- Bumped version metadata from v0.5.16 to v0.5.17 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.5.16 - 2026-05-12 17:58 Tallinn
 
 - Slice 2: added the NEW AUTH `Verify with iCloudPD` provider-session proof action for the passive skipped-provider-proof state.

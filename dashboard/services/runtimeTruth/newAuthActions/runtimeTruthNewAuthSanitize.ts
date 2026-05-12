@@ -40,6 +40,19 @@ export function sanitizeNewAuthPayload(value) {
   return Object.fromEntries(
     Object.entries(value)
       .filter(([key]) => !SECRET_FIELD_PATTERN.test(key))
-      .map(([key, nestedValue]) => [key, sanitizeNewAuthPayload(nestedValue)]),
+      .map(([key, nestedValue]) => [key, sanitizeNewAuthPayloadEntry(key, nestedValue)]),
   );
+}
+
+// Sanitizes provider-output text fields before they can enter UI state, logs, or history.
+function sanitizeNewAuthPayloadEntry(key, value) {
+  if (typeof value === 'string' && isProviderCommunicationKey(key)) {
+    return sanitizeNewAuthProviderText(value);
+  }
+  return sanitizeNewAuthPayload(value);
+}
+
+// Detects provider communication fields that may contain emails, codes, cookies, or secrets.
+function isProviderCommunicationKey(key) {
+  return /provider.*output|output.*provider|communication|raw/i.test(String(key));
 }

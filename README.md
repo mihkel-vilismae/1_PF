@@ -13,6 +13,7 @@ Start here:
 - `docs/categorized/current_implementation_status_docs/main_readme.md` - documented current system status, button/view verification evidence, and known gaps.
 - `docs/categorized/task_documentation_still_to_implement/main_readme.md` - still-actionable implementation, verification, and reconciliation tasks.
 - `docs/categorized/other_documentation/main_readme.md` - operator notes, setup/auth notes, documentation workflow, default project checklist, and archive/reference orientation.
+- `docs/NEW_AUTH_PROVIDER_VERIFICATION_FLOW.md` - current NEW AUTH passive-status and active provider-verification operator flow.
 
 ## 2026-05-10 status update
 
