@@ -37,9 +37,11 @@ The following decisions were confirmed after cross‑referencing unresolved ques
 
 ## View‑specific guidance
 
-- **View C (Last Run / Restore)** – The canonical endpoint for reading the last orchestration snapshot should be `/api/runtime/orchestration/last`.  This endpoint must serve a read‑only projection assembled from SQLite.  Restore operations must be implemented separately as controlled mutations after the truth authority model is in place.
+  - **View C (Last Run / Restore)** – The canonical endpoint for reading the last orchestration snapshot should be `/api/runtime/orchestration/last`.  This endpoint must serve a read‑only projection assembled from SQLite.  Restore operations must be implemented separately as controlled mutations after the truth authority model is in place.
+    > **Note**: As of 2026‑05‑12, the dashboard consumes `/api/runtime/orchestration/last` directly and displays a clearly labelled read‑only summary derived from SQLite.  The UI explicitly states that no restore occurs and leaves the “Resume” control disabled until a restore contract exists.
 
-- **View D (Live Monitor)** – The live runtime monitor should use a combined backend projection.  Each field in the projection must include a `source` label indicating whether it originates from the database (`db`), a lock file (`lock`), a heartbeat (`heartbeat`), an application log (`log`), a computed value (`computed`), another projection (`projection`) or is unknown (`unknown`).  The UI must display these origins clearly to avoid misleading users.
+  - **View D (Live Monitor)** – The live runtime monitor should use a combined backend projection.  Each field in the projection must include a `source` label indicating whether it originates from the database (`db`), a lock file (`lock`), a heartbeat (`heartbeat`), an application log (`log`), a computed value (`computed`), another projection (`projection`) or is unknown (`unknown`).  The UI must display these origins clearly to avoid misleading users.
+    > **Note**: Until such a backend projection exists, the dashboard continues to simulate the runtime monitor locally but now displays these source labels on each field (for example, status and summary are computed, heartbeat values are from heartbeat files, and media/screen state values are from the database).  This clarifies the intended provenance of each datum without implying live worker telemetry.
 
 ## Non‑goals
 

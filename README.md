@@ -26,7 +26,7 @@ B3.5 owns playback queue preparation/building. B4 and `playback_worker` select t
 
 Windows CronEmulator playback-worker command wiring is partial: it reaches `npm run api -- --scheduler playback-worker` from the expected `tools/CronEmulator` launch context, but live local scheduler/emulator operation still depends on that context being installed/launched correctly.
 
-View C can read the last orchestration run from the backend, but restore/resume remains a placeholder or decision-gated contract. View D remains a live-runtime-monitoring gap.
+View C now reads the last orchestration run from the backend using the `GET /api/runtime/orchestration/last` endpoint and renders a read‑only summary derived from SQLite.  The dashboard explicitly labels this snapshot as read‑only and does not attempt any restore; the “Resume” button remains a disabled placeholder until a deliberate restore contract exists.  View D continues to be a runtime‑monitoring gap in terms of backend support, but the UI now clarifies the origin of each field (database, lock, heartbeat, log tail or computed) in the simulated runtime preview.
 
 ## Current documented state
 
