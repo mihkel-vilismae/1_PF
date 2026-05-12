@@ -79,6 +79,7 @@ docs/
 | `docs/categorized/other_documentation/default_project_settings_and_elements_checklist.md` | User-supplied checklist of ideal default project settings, files, workflows, and quality gates. | Aspirational/reference only; it does not assert that this repository currently implements every item and does not create active implementation tasks unless separately promoted. |
 | `docs/IMPLEMENTATION_GOAL_STATUS_RECONCILIATION_20260512.md` | Canonical reconciliation of implementation goals, statuses, unresolved questions and conflicts as of 2026‑05‑12. | Documentation-only; snapshot‑safe; does not modify behaviour or assert implementation truth. |
 | `docs/RUNTIME_TRUTH_AUTHORITY_MAP_20260512.md` | Defines the final authority model for runtime state and truth as of 2026‑05‑12. | Documentation‑only; codifies decisions about SQLite, lock files, logs, `conf/runtime‑truth.json`, front‑end state and backend projections without changing behaviour. |
+| `docs/IMPLEMENTATION_STATUS_UPDATE_20260512_NEW_AUTH_PROVIDER_VERIFICATION.md` | Latest status update for NEW AUTH passive skipped-proof UX, active provider verification, shared request logging, and redaction coverage. | Documentation/status update only; records Slice 1-3 implementation state without changing auth behavior. |
 
 ## Global old-to-new migration map
 

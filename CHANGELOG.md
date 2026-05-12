@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.5.18 - 2026-05-12 18:34 Tallinn
+
+- Updated current implementation/status documentation to reflect the completed NEW AUTH passive skipped-proof UX, active `Verify with iCloudPD` provider-proof action, and Slice 3 regression/redaction coverage.
+- Added `docs/IMPLEMENTATION_STATUS_UPDATE_20260512_NEW_AUTH_PROVIDER_VERIFICATION.md` as the latest status update report for the Slice 1-3 login reconciliation work.
+- Updated categorized status docs so local session files remain evidence only, passive status remains read-only, active provider proof uses `GET /api/auth/new/status`, and install verification remains separate from session proof.
+- Updated README, HOW_TO_RUN, and documentation indexes with the v0.5.18 status-doc refresh.
+- Bumped version metadata from v0.5.17 to v0.5.18 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.5.17 - 2026-05-12 18:21 Tallinn
 
 - Slice 3: added focused NEW AUTH provider-verification UX regression coverage and operator documentation.

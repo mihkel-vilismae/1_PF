@@ -14,10 +14,11 @@ Start here:
 - `docs/categorized/task_documentation_still_to_implement/main_readme.md` - still-actionable implementation, verification, and reconciliation tasks.
 - `docs/categorized/other_documentation/main_readme.md` - operator notes, setup/auth notes, documentation workflow, default project checklist, and archive/reference orientation.
 - `docs/NEW_AUTH_PROVIDER_VERIFICATION_FLOW.md` - current NEW AUTH passive-status and active provider-verification operator flow.
+- `docs/IMPLEMENTATION_STATUS_UPDATE_20260512_NEW_AUTH_PROVIDER_VERIFICATION.md` - latest implementation-status update for the NEW AUTH provider-verification UX slices.
 
-## 2026-05-10 status update
+## 2026-05-12 status update
 
-NEW AUTH Slices 1–10 are documented as closed. The dashboard uses `/api/auth/new/*` for the new auth flow. Local session files alone are not authenticated; provider proof or stronger test-download proof is required.
+NEW AUTH Slices 1–10 plus the 2026-05-12 provider-verification UX reconciliation are documented as closed. The dashboard uses `/api/auth/new/*` for the new auth flow. Local session files alone are not authenticated; provider proof or stronger test-download proof is required. Passive status remains read-only; `Verify with iCloudPD` runs active provider proof through `GET /api/auth/new/status`, while `Verify iCloudPD install` remains an executable/config readiness check only.
 
 View B has backend-wired pipeline maintenance controls for stale persisted pipeline lock detection and stale-lock clearing. The detector currently classifies stale pipeline locks only.
 

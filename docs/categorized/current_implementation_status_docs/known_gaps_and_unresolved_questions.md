@@ -84,3 +84,17 @@ The remaining auth-related risks are operational rather than missing slice work:
 - secrets and session file contents must remain redacted in responses and event history.
 
 Remaining non-auth gaps stay active: production provider download, production geocoder, real scheduler worker services, View C restore/resume contract, View D live runtime monitor, and live environment-isolation verification before destructive smoke tests.
+
+
+## 2026-05-12 resolved NEW AUTH UX gap
+
+The passive skipped-provider-proof UX gap is resolved. When passive status returns `NEW_AUTH_PROVIDER_PROOF_SKIPPED`, the UI no longer leaves the operator in a vague pending state. It shows `Session files found, provider verification not run yet.` and provides a distinct `Verify with iCloudPD` action.
+
+This resolution does not change the backend auth truth model. Passive status remains passive, `Verify with iCloudPD` performs active provider proof through `GET /api/auth/new/status`, and local session files are still evidence only.
+
+Remaining auth-related risks are operational and regression-prevention risks:
+
+- future auth UI work must not route active provider proof through passive mode;
+- future frontend backend calls must continue using the shared request/logging path;
+- provider output and raw communication fields must remain sanitized before reaching UI state, logs, or history;
+- real iCloudPD success still depends on the local provider environment and Apple account state.

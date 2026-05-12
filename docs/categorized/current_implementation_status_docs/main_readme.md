@@ -16,7 +16,7 @@ Authority limit: documentation-derived files in this folder do **not** claim dir
 - `documented_current_system_state.md`: consolidated current-state summary from active docs.
 - `button_and_view_verification_status.md`: consolidated button/view verification statuses from button verification docs.
 - `known_gaps_and_unresolved_questions.md`: consolidated gaps, contradictions, and unresolved items from docs.
-- `code_verified_dashboard_implementation_status.md`: code-verified dashboard implementation status audit from the 2026-05-04 local worktree, plus a 2026-05-06 NEW AUTH closure update that records the completed `/api/auth/new/*` endpoint family and remaining non-auth gaps.
+- `code_verified_dashboard_implementation_status.md`: code-verified dashboard implementation status audit from the 2026-05-04 local worktree, plus 2026-05-06 and 2026-05-12 NEW AUTH closure updates that record the completed `/api/auth/new/*` endpoint family, passive skipped-proof UX, active provider verification action, redaction coverage, and remaining non-auth gaps.
 
 ## Absorbed source docs
 
@@ -75,3 +75,12 @@ The NEW AUTH implementation track is documented as closed through Slice 10. The 
 ## 2026-05-10 B4 playback boundary note
 
 B3.5 owns playback queue preparation/building. B4 and `playback_worker` select the current playable item from already prepared queue/state only. Preview/fullscreen rendering are not real media display, Raspberry OS rendering remains disabled/planned, and Windows CronEmulator playback-worker command wiring is partial because it depends on the expected `tools/CronEmulator` launch context. See `b4_playback_flow_status.md` for the code-verified boundary.
+
+
+## 2026-05-12 NEW AUTH provider-verification UX note
+
+The NEW AUTH implementation status now includes the Slice 1-3 provider-verification UX reconciliation. Passive `Check login` remains `GET /api/auth/new/status?mode=passive` and must not start provider proof. When passive status returns `NEW_AUTH_PROVIDER_PROOF_SKIPPED`, the UI shows `Session files found, provider verification not run yet.` and offers the distinct `Verify with iCloudPD` action.
+
+`Verify with iCloudPD` calls active `GET /api/auth/new/status` through the shared frontend request/logging path. `Verify iCloudPD install` remains `POST /api/auth/new/verify-icloudpd` and is only an executable/config readiness check. Local session files remain evidence only, not authenticated state.
+
+See `docs/IMPLEMENTATION_STATUS_UPDATE_20260512_NEW_AUTH_PROVIDER_VERIFICATION.md` and `docs/NEW_AUTH_PROVIDER_VERIFICATION_FLOW.md`.

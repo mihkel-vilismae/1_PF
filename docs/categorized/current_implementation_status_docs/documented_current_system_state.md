@@ -95,3 +95,16 @@ NEW AUTH Slices 1–10 are complete for the dashboard/auth track. The implemente
 The important behavioral rule is unchanged and now documented as implemented: local session files are not authentication by themselves. The dashboard may show local session evidence, but `authenticated` requires provider proof or stronger test-download proof.
 
 2FA-required states are actionable but not success. The UI/event history should make the next action visible with prompts such as `ENTER 6-DIGIT CODE` and `ENTER DEVICE INDEX (A)`.
+
+
+## 2026-05-12 NEW AUTH provider-verification UX status
+
+The latest NEW AUTH status now includes the passive skipped-proof and active provider-verification UX reconciliation. The implemented behavior is:
+
+- Passive `Check login` uses `GET /api/auth/new/status?mode=passive` and remains read-only.
+- `NEW_AUTH_PROVIDER_PROOF_SKIPPED` is shown as `Session files found, provider verification not run yet.` rather than a vague pending state.
+- The `Verify with iCloudPD` action calls active `GET /api/auth/new/status` and must not call passive mode.
+- `Verify iCloudPD install` remains separate executable/config readiness checking through `POST /api/auth/new/verify-icloudpd`.
+- Provider communication displayed in modal/history/log paths remains sanitized.
+
+This does not change the auth truth rule from the 2026-05-06 closure status: local session files are evidence only; authenticated state requires provider proof or stronger test-download proof.

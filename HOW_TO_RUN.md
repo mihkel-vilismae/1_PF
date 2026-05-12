@@ -1,7 +1,7 @@
 # How to Run
 
 ```bash
-npm install
+npm install --verbose
 npm run api
 npm run dev
 ```
@@ -20,4 +20,6 @@ Open View A and use the NEW AUTH card for the new `/api/auth/new/*` flow.
 - `Verify iCloudPD install` only checks executable/config readiness through `POST /api/auth/new/verify-icloudpd`; it does not prove authenticated login.
 
 Provider output, passwords, 2FA codes, cookies, session contents, tokens, and authorization headers must remain redacted in the modal, event history, and logs.
+
+Status documentation for this flow is recorded in `docs/IMPLEMENTATION_STATUS_UPDATE_20260512_NEW_AUTH_PROVIDER_VERIFICATION.md`.
 

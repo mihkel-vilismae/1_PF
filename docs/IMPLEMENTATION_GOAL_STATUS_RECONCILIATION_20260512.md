@@ -7,7 +7,7 @@ This document is a snapshot‑safe reconciliation of implementation goals across
 ## Baseline note
 
 This reconciliation compares the current work tree against the immutable baseline zip:
-`12_PF_20260511_2130_0.5.13_transit_callid_full_git.zip`.
+`12_PF_20260512_1821_new_auth_provider_verification_slice3_full_git.zip` for the latest NEW AUTH provider-verification UX status update. Earlier rows retain their original documentation-derived evidence limits unless explicitly updated below.
 
 ## Status vocabulary
 
@@ -39,7 +39,7 @@ Where conflicting statements were found, the more specific and conservatively ph
 
 | Goal / area | Canonical status | Evidence | Remaining work | Decision gate / risk |
 |---|---|---|---|---|
-| NEW AUTH / iCloudPD login flow | Implemented (provider dependent) | `documented_current_system_state.md` – NEW AUTH closure note; `code_verified_dashboard_implementation_status.md` – NEW AUTH endpoints family described | Real‑world validation; provider success depends on Apple account and local environment | Provider availability, 2FA input and session proof |
+| NEW AUTH / iCloudPD login flow | Implemented (provider dependent) | `documented_current_system_state.md` – NEW AUTH closure note; `code_verified_dashboard_implementation_status.md` – endpoint family plus 2026-05-12 provider-verification UX update; `docs/NEW_AUTH_PROVIDER_VERIFICATION_FLOW.md` | Real-world validation; provider success depends on Apple account and local environment; continue full local test runs when timeouts allow | Provider availability, 2FA input and session proof |
 | iCloudPD secret redaction | Implemented | `code_verified_dashboard_implementation_status.md` – redaction rules: no passwords, codes, cookies or tokens appear in events or logs | Continuous audit; ensure new endpoints never leak sensitive values | Human error could reintroduce leaks |
 | View A init / env and DB controls | Implemented / partial | `documented_current_system_state.md` – View A DB controls are backend‑wired; `code_verified_dashboard_implementation_status.md` – destructive checks guarded but env isolation unproven | Auto preload/refresh of readiness status; isolate destructive actions from real DB by default | Platform differences; env isolation needs proof |
 | View A scheduler (CronEmulator/Raspberry) | Partial | `documented_current_system_state.md` – scheduler API noted as partial; `code_verified_dashboard_implementation_status.md` – scheduler host reports placeholder services | Implement real worker services; unify scheduler semantics across Windows, Linux and Raspberry targets | Decision‑gated by runtime‑worker implementation and platform support |
@@ -118,3 +118,7 @@ Where conflicting statements were found, the more specific and conservatively ph
 ### 2026‑05‑12 14:16 Tallinn
 
 This reconciliation pass adds `docs/IMPLEMENTATION_GOAL_STATUS_RECONCILIATION_20260512.md` as a consolidated status document.  It links the existing documentation sets, records canonical status decisions, preserves unresolved questions, highlights conflicts in status language and provides a recommended implementation order.  The pass does not alter source code, runtime behaviour or package versions.
+
+### 2026-05-12 18:34 Tallinn
+
+This status-doc refresh updates the reconciliation to include the completed NEW AUTH provider-verification UX slices. Passive skipped provider proof is now documented as an actionable UI state, active `Verify with iCloudPD` is documented as `GET /api/auth/new/status`, and `Verify iCloudPD install` remains an install/config readiness check only. This pass updates documentation and version metadata only; it does not alter runtime behavior.
