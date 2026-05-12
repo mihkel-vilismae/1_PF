@@ -28,7 +28,7 @@ import {
   subscribe,
 } from './services/runtimeTruth.ts';
 import { renderDefinitionList, renderHistory, renderModal } from './services/renderers.ts';
-import type { PlaybackRenderingMode, PlaybackRenderingPlatform } from './services/playbackRenderer.ts';
+import { PLAYBACK_RENDERING_MODES, type PlaybackRenderingMode, type PlaybackRenderingPlatform } from './services/playbackRenderer.ts';
 import { copyEventHistoryExportToClipboard } from './services/eventHistoryExport.ts';
 import { createTransitTerminal } from './services/transitTerminal.ts';
 import {
@@ -488,6 +488,9 @@ function bindEvents() {
       const mode = button.dataset.playbackRenderingMode;
       if (mode) {
         setPlaybackRenderingMode(mode as PlaybackRenderingMode);
+        if (mode === PLAYBACK_RENDERING_MODES.fullscreen) {
+          requestPlaybackFullscreen();
+        }
       }
     });
   });
@@ -609,6 +612,27 @@ function setHistoryCopyStatus(status: 'idle' | 'copied' | 'failed'): void {
       render();
     }, 1600);
   }
+}
+
+// Requests browser fullscreen for the Windows playback preview stage after rendering updates.
+function requestPlaybackFullscreen(): void {
+  window.setTimeout(() => {
+    const target = app.querySelector<HTMLElement>('[data-playback-rendering-stage="windows"]');
+    if (!target || typeof target.requestFullscreen !== 'function') {
+      pushHistory('PLAYBACK', 'warning', 'Fullscreen playback was requested, but the browser did not expose a fullscreen target.', {
+        action: 'switch-to-fullscreen',
+        platform: 'windows',
+      });
+      return;
+    }
+    void target.requestFullscreen().catch((error) => {
+      pushHistory('PLAYBACK', 'warning', 'Fullscreen playback request was rejected by the browser.', {
+        action: 'switch-to-fullscreen',
+        platform: 'windows',
+        message: error instanceof Error ? error.message : String(error),
+      });
+    });
+  }, 0);
 }
 
 // Opens a history detail modal for the selected event-history entry.

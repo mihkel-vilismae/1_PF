@@ -20,6 +20,7 @@ import {
 } from '../runtimeExecutionService.ts';
 import { createRuntimeTruthBackendActionRunner } from './demoActions/runtimeTruthBackendRunner.ts';
 import {
+  buildRuntimeMediaUrl,
   emptyLastRunData,
   extractFileName,
   inferMediaTypeFromPath,
@@ -500,6 +501,8 @@ export function createRuntimeTruthDemoActions({
               type: inferMediaTypeFromPath(selected.canonicalPath),
               position: draft.truth.queueLength > 0 ? `1 of ${draft.truth.queueLength}` : 'Selected by backend',
               overlay: selected.addressText ?? 'Address unavailable',
+              canonicalPath: selected.canonicalPath,
+              mediaUrl: buildRuntimeMediaUrl(selected.canonicalPath),
             };
             draft.truth.queueLength = Math.max(draft.truth.queueLength, 1);
             draft.truth.playbackStatus = draft.truth.screenState === 'OFF' ? 'Paused by inactivity' : 'Selected by backend for playback';

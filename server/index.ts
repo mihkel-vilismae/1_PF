@@ -470,6 +470,14 @@ const server = createServer(async (request: IncomingMessage, response: ServerRes
 
     url = new URL(request.url, `http://${request.headers.host || '127.0.0.1'}`);
     routeKey = `${request.method || 'GET'} ${url.pathname}`;
+
+    if (routeKey === 'GET /api/runtime/playback/media') {
+      const context = await buildRequestContext();
+      const statusCode = await runtimePlaybackMediaHandler({ response, url, context });
+      void logRequest({ request, url, routeKey, statusCode, startedAt });
+      return;
+    }
+
     const handler = routes[routeKey];
 
     if (!handler) {
@@ -1385,6 +1393,96 @@ async function runtimePlaybackSelectCurrentHandler({ context }: Pick<HandlerArgs
       executedAt: selection.executedAt,
     },
   };
+}
+
+// Streams the selected Windows playback media through the backend so the browser can render it safely.
+async function runtimePlaybackMediaHandler({ response, url, context }: Pick<HandlerArgs, 'response' | 'url' | 'context'>): Promise<number> {
+  const requestedPath = url.searchParams.get('path');
+  if (!requestedPath) {
+    throw new HttpError(400, 'missing_media_path', 'Playback media path is required.');
+  }
+
+  const mediaPath = path.resolve(requestedPath);
+  const extension = path.extname(mediaPath).toLowerCase();
+  if (!supportedMediaExtensions.has(extension)) {
+    throw new HttpError(415, 'unsupported_media_type', 'Playback media type is not supported by this dashboard renderer.', {
+      extension,
+    });
+  }
+
+  const allowedRoots = buildPlaybackMediaAllowedRoots(context);
+  if (!isPathWithinAnyRoot(mediaPath, allowedRoots)) {
+    throw new HttpError(403, 'media_path_not_allowed', 'Playback media must be inside the configured download/runtime media directories.', {
+      allowedRoots,
+    });
+  }
+
+  let stats;
+  try {
+    stats = await fs.stat(mediaPath);
+  } catch {
+    throw new HttpError(404, 'media_file_missing', 'Playback media file does not exist.', {
+      mediaPath,
+    });
+  }
+
+  if (!stats.isFile()) {
+    throw new HttpError(400, 'media_path_not_file', 'Playback media path must point to a regular file.', {
+      mediaPath,
+    });
+  }
+
+  const body = await fs.readFile(mediaPath);
+  response.writeHead(200, {
+    'Content-Type': resolvePlaybackMediaContentType(extension),
+    'Content-Length': body.byteLength,
+    'Cache-Control': 'no-store',
+  });
+  response.end(body);
+  return 200;
+}
+
+// Builds the allow-list of directories whose media may be streamed to the dashboard.
+function buildPlaybackMediaAllowedRoots(context: RequestContext): string[] {
+  const roots = [generatedTestDataDirectory, path.join(repoRoot, 'runtime_data')];
+  if (context.envValues.DOWNLOAD_DIR) {
+    roots.push(resolveRepoPath(context.envValues.DOWNLOAD_DIR));
+  }
+  return roots.map((candidate) => path.resolve(candidate));
+}
+
+// Checks whether a selected media file stays inside one of the explicit media roots.
+function isPathWithinAnyRoot(candidatePath: string, roots: string[]): boolean {
+  return roots.some((root) => {
+    const relative = path.relative(root, candidatePath);
+    return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));
+  });
+}
+
+// Maps supported media extensions to browser-friendly content types.
+function resolvePlaybackMediaContentType(extension: string): string {
+  const contentTypes = new Map([
+    ['.jpg', 'image/jpeg'],
+    ['.jpeg', 'image/jpeg'],
+    ['.png', 'image/png'],
+    ['.gif', 'image/gif'],
+    ['.bmp', 'image/bmp'],
+    ['.webp', 'image/webp'],
+    ['.tif', 'image/tiff'],
+    ['.tiff', 'image/tiff'],
+    ['.heic', 'image/heic'],
+    ['.heif', 'image/heif'],
+    ['.mp4', 'video/mp4'],
+    ['.mov', 'video/quicktime'],
+    ['.m4v', 'video/x-m4v'],
+    ['.avi', 'video/x-msvideo'],
+    ['.mkv', 'video/x-matroska'],
+    ['.webm', 'video/webm'],
+    ['.wmv', 'video/x-ms-wmv'],
+    ['.mpeg', 'video/mpeg'],
+    ['.mpg', 'video/mpeg'],
+  ]);
+  return contentTypes.get(extension) ?? 'application/octet-stream';
 }
 
 /*

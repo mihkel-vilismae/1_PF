@@ -119,13 +119,13 @@ export function renderTestView(state) {
             ${statusBadge(state.statusByKey.B4)}
           </header>
           <p class="card__copy">This surface still looks like an operator preview, but the Run action now calls <code>POST /api/runtime/playback/select-current</code> and shows the selected backend item.</p>
-          <div class="preview-frame preview-frame--${state.truth.screenState.toLowerCase()}">
+          <div class="preview-frame preview-frame--${state.truth.screenState.toLowerCase()}" data-playback-rendering-stage="windows">
             <div class="preview-frame__bar">
               <span class="screen-indicator screen-indicator--${state.truth.screenState.toLowerCase()}">Screen ${state.truth.screenState}</span>
               <span class="screen-indicator">${queueReady ? 'Backend item selected' : 'No selected item yet'}</span>
             </div>
             <div class="preview-frame__content ${queueReady ? '' : 'preview-frame__content--empty'}">
-              ${queueReady ? `<strong>${state.truth.currentMedia.type}</strong><span>${state.truth.currentMedia.name}</span><small>${state.truth.currentMedia.overlay}</small>` : '<span>No backend-selected media yet. Run B3.5 and then B4.</span>'}
+              ${renderPlaybackPreviewContent(state.truth.currentMedia, playbackRenderingState)}
             </div>
           </div>
           <div class="stat-grid">${renderDefinitionList({
@@ -232,6 +232,41 @@ function renderToggle(name, label, checked) {
   `;
 }
 
+// Renders selected backend media as browser-native image/video when Windows rendering is active.
+function renderPlaybackPreviewContent(currentMedia, playbackRenderingState) {
+  if (!currentMedia) {
+    return '<span>No backend-selected media yet. Run B3.5 and then B4.</span>';
+  }
+
+  const renderingIsActive = playbackRenderingState.platform === PLAYBACK_RENDERING_PLATFORMS.windows
+    && playbackRenderingState.mode !== PLAYBACK_RENDERING_MODES.withoutRendering
+    && typeof currentMedia.mediaUrl === 'string'
+    && currentMedia.mediaUrl.length > 0;
+
+  if (!renderingIsActive) {
+    return `<strong>${escapeHtml(currentMedia.type)}</strong><span>${escapeHtml(currentMedia.name)}</span><small>${escapeHtml(currentMedia.overlay)}</small>`;
+  }
+
+  const mediaUrl = escapeHtml(currentMedia.mediaUrl);
+  const mediaName = escapeHtml(currentMedia.name);
+  const mediaOverlay = escapeHtml(currentMedia.overlay);
+  const modeLabel = playbackRenderingState.mode === PLAYBACK_RENDERING_MODES.fullscreen ? 'Fullscreen mode selected' : 'Preview window mode selected';
+  const mediaElement = String(currentMedia.type).toLowerCase() === 'video'
+    ? `<video class="playback-media playback-media--video" src="${mediaUrl}" controls autoplay muted playsinline></video>`
+    : `<img class="playback-media playback-media--image" src="${mediaUrl}" alt="Selected playback media: ${mediaName}" />`;
+
+  return `
+    <div class="playback-media-stage">
+      ${mediaElement}
+      <div class="playback-media-caption">
+        <strong>${mediaName}</strong>
+        <span>${mediaOverlay}</span>
+        <small>${modeLabel}. Windows rendering uses the browser-native media element.</small>
+      </div>
+    </div>
+  `;
+}
+
 
 // Renders B4 platform tabs while keeping Raspberry OS disabled until implemented.
 function renderPlaybackRenderingPlatformTabs(activePlatform, playbackReady) {
@@ -290,4 +325,14 @@ function getPlaybackRenderingReadyMessage(mode) {
     return 'Fullscreen rendering mode is selected. OS-level or Raspberry hardware control is not implemented in this slice.';
   }
   return 'Playback is active. Backend selection can continue without rendering.';
+}
+
+// Escapes dynamic values before inserting them into the View B HTML string.
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
 }

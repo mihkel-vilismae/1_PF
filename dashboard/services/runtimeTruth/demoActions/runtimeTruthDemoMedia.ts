@@ -21,6 +21,12 @@ export function extractFileName(candidatePath) {
   return normalized.split('/').filter(Boolean).pop() ?? candidatePath ?? 'Unknown media';
 }
 
+// Builds the backend media-serving URL used by browser preview/fullscreen rendering.
+export function buildRuntimeMediaUrl(candidatePath) {
+  const normalizedPath = String(candidatePath ?? '').trim();
+  return normalizedPath ? `/api/runtime/playback/media?path=${encodeURIComponent(normalizedPath)}` : null;
+}
+
 // Checks for non-array records before reading backend payload fields.
 export function isRuntimeRecord(value) {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);

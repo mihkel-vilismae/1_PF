@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## 0.5.20 - 2026-05-12 20:55 Tallinn
+
+- Implemented Windows B4 browser-native playback rendering for the selected backend media item.
+- Added the read-only `GET /api/runtime/playback/media` media stream endpoint with extension and path allow-list checks.
+- Wired selected playback items to a safe media URL so the preview panel can render images/videos after B4 selects an item.
+- Enabled the existing fullscreen rendering mode to request browser fullscreen on the Windows playback preview stage; pressing Esc exits fullscreen while playback state remains selected.
+- Kept Raspberry OS rendering disabled/planned and preserved backend playback selection semantics.
+- Added regression coverage for Windows preview/fullscreen markup and media URL projection.
+- Bumped version metadata from v0.5.19 to v0.5.20 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.5.19 - 2026-05-12 18:39 Tallinn
 
 - Updated `start_win.cmd` so it runs `npm run build` after dependency checks/install and before launching `npm run api`.

@@ -986,10 +986,39 @@ test('B4 rendering controls enable after successful playback selection and keep 
     assert.match(raspberryTab, /disabled/);
     assert.equal(harness.state.playbackRendering.mode, PLAYBACK_RENDERING_MODES.withoutRendering);
     assert.equal(harness.state.playbackRendering.platform, PLAYBACK_RENDERING_PLATFORMS.windows);
+    assert.equal(harness.state.truth.currentMedia.mediaUrl, '/api/runtime/playback/media?path=%2Ftmp%2Ftest-media%2Fsample.jpg');
     assert.deepEqual(requests, [{ path: '/api/runtime/playback/select-current', method: 'POST' }]);
   } finally {
     global.fetch = originalFetch;
   }
+});
+
+test('B4 Windows rendering modes render selected backend media in preview and fullscreen markup', () => {
+  const state = createInitialState();
+  state.statusByKey.B4 = 'success';
+  state.truth.playbackActive = true;
+  state.truth.currentMedia = {
+    name: 'sample.jpg',
+    type: 'Image',
+    position: '1 of 1',
+    overlay: 'Tallinn, Harjumaa, Estonia',
+    canonicalPath: '/tmp/test-media/sample.jpg',
+    mediaUrl: '/api/runtime/playback/media?path=%2Ftmp%2Ftest-media%2Fsample.jpg',
+  };
+  state.playbackRendering = {
+    mode: PLAYBACK_RENDERING_MODES.previewWindow,
+    platform: PLAYBACK_RENDERING_PLATFORMS.windows,
+  };
+
+  const previewMarkup = renderTestView(state);
+  assert.match(previewMarkup, /data-playback-rendering-stage="windows"/);
+  assert.match(previewMarkup, /<img class="playback-media playback-media--image"/);
+  assert.match(previewMarkup, /Preview window mode selected/);
+
+  state.playbackRendering.mode = PLAYBACK_RENDERING_MODES.fullscreen;
+  const fullscreenMarkup = renderTestView(state);
+  assert.match(fullscreenMarkup, /Fullscreen mode selected/);
+  assert.match(fullscreenMarkup, /\/api\/runtime\/playback\/media\?path=%2Ftmp%2Ftest-media%2Fsample\.jpg/);
 });
 
 
