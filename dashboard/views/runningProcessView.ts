@@ -6,9 +6,10 @@ export function renderRunningProcessView(state) {
   const heroTitle = real
     ? 'Monitor the live runtime process'
     : 'Preview the runtime monitor without implying live backend worker activity.';
+  // Provide richer hero copy explaining the origin of each field in the runtime projection.
   const heroCopy = real
-    ? 'This view shows live backend worker data for pipeline, playback and screen health. Use Refresh to update statuses.'
-    : 'This view is still a frontend‑only runtime preview. It shows the intended pipeline and watchdog layout, but all worker data here remains simulated until real runtime monitor APIs exist.';
+    ? 'This view presents a combined runtime projection assembled from authoritative sources. Stage and worker statuses are computed from locks and current process state; heartbeats are read from worker heartbeat files; current media and screen state come from the SQLite database; summaries are computed; log entries display the latest worker log tail. Use Refresh to update statuses.'
+    : 'This view is still a frontend‑only runtime preview. It shows the intended pipeline and watchdog layout, including field‑origin labels for status (computed), heartbeat (heartbeat file), state values (database) and summary (computed), but all worker data here remains simulated until real runtime monitor APIs exist.';
   const heroPillLabel = real ? 'Live monitor' : 'Preview inactive';
   const heroPillClass = real ? 'hero-pill--success' : '';
   const heroButtonAction = real ? 'refresh-running-process' : 'start-real-run';
@@ -38,6 +39,7 @@ export function renderRunningProcessView(state) {
       <div class="section-grid ${disabled ? 'section-grid--muted' : ''}">
         <article class="card ${mode === 'real' ? 'card--feature' : 'card--mock card--feature'}">
           <header class="card__header"><div><p class="card__code">D1</p><h3>Pipeline worker</h3></div><div class="card__header-tags">${renderSourceBadge(mode, mode.toUpperCase())}</div>${statusBadge(state.statusByKey.D1)}</header>
+          <p class="card__copy">Sources: stage status & summary are computed; last run times come from the database.</p>
           <div class="worker-list">
             ${state.runningProcess.pipelineStages
               .map(
@@ -67,6 +69,7 @@ export function renderRunningProcessView(state) {
               'Current media': state.runningProcess.playbackWorker.currentMedia,
               Summary: state.runningProcess.playbackWorker.summary,
             })}
+            <p class="card__copy">Sources: Status & summary are computed; Heartbeat comes from the worker heartbeat file; Current media comes from the database.</p>
           </article>
           <article class="card ${mode === 'real' ? '' : 'card--mock'}">
             <header class="card__header"><div><p class="card__code">D3</p><h3>Screen on-off worker</h3></div><div class="card__header-tags">${renderSourceBadge(mode, mode.toUpperCase())}</div>${statusBadge(state.statusByKey.D3)}</header>
@@ -78,12 +81,14 @@ export function renderRunningProcessView(state) {
               Timeout: state.runningProcess.screenWorker.timeout,
               Summary: state.runningProcess.screenWorker.summary,
             })}
+            <p class="card__copy">Sources: Status & summary are computed; Heartbeat comes from the worker heartbeat file; Screen state & last activity are stored in the database; Timeout reflects lock duration.</p>
           </article>
         </div>
       </div>
 
       <article class="card ${mode === 'real' ? '' : 'card--mock'}">
         <header class="card__header"><div><p class="card__code">D4</p><h3>${mode === 'real' ? 'Monitor log' : 'Preview log'}</h3></div><div class="card__header-tags">${renderSourceBadge(mode, mode.toUpperCase())}</div></header>
+        <p class="card__copy">Sources: Log entries are taken from the application log tail${mode === 'real' ? '' : '; in preview mode the log lines are simulated'}.</p>
         <div class="log-surface">${renderLogEntries(state.logs.D, { sourceKey: 'D' })}</div>
       </article>
     </section>
