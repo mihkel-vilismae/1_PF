@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 2026-05-12 14:16 Tallinn
+
+- Added `docs/IMPLEMENTATION_GOAL_STATUS_RECONCILIATION_20260512.md` as a canonical reconciliation of implementation goals, current statuses, unresolved questions and conflicts.  The document consolidates existing status docs, harmonises status vocabulary and provides a recommended implementation order without changing runtime behaviour.
+- Updated `docs/main_readme.md` to link to the new reconciliation document.
+- This documentation update does not bump the repository version or modify any code.
+
 ## 0.5.12 - 2026-05-10 23:08 Tallinn
 
 - Fixed `B2-REAL_DOWNLOAD` backend auth gating to use the same NEW AUTH provider-proof session model as `/api/auth/new/status`.

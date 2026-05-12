@@ -77,6 +77,7 @@ docs/
 | Document | Scope | Authority limit |
 |---|---|---|
 | `docs/categorized/other_documentation/default_project_settings_and_elements_checklist.md` | User-supplied checklist of ideal default project settings, files, workflows, and quality gates. | Aspirational/reference only; it does not assert that this repository currently implements every item and does not create active implementation tasks unless separately promoted. |
+| `docs/IMPLEMENTATION_GOAL_STATUS_RECONCILIATION_20260512.md` | Canonical reconciliation of implementation goals, statuses, unresolved questions and conflicts as of 2026‑05‑12. | Documentation-only; snapshot-safe; does not modify behaviour or assert implementation truth. |
 
 ## Global old-to-new migration map
 
