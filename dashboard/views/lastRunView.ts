@@ -11,8 +11,17 @@ export function renderLastRunView(state) {
       <div class="view-hero view-hero--hybrid">
         <div>
           <p class="eyebrow">C — Last Run Info</p>
-          <h2>Inspect the backend orchestration last-run summary without claiming restore support.</h2>
-          <p class="hero-copy">This view reads <code>GET /api/runtime/orchestration/last</code> for a read-only last-run summary. Resume remains unavailable until a real restore contract exists.</p>
+          <!-- Updated copy clarifies that this page presents a read‑only snapshot and does not perform restore -->
+          <h2>View the latest orchestration run summary from the backend.</h2>
+          <p class="hero-copy">
+            This page displays a <strong>read‑only</strong> snapshot retrieved from
+            <code>GET /api/runtime/orchestration/last</code>.
+            It does not perform any restore: the “Resume” control is disabled until a deliberate restore contract exists.
+          </p>
+          <p class="hero-copy">
+            Values shown below reflect the durable runtime snapshot recorded in SQLite. Any missing or error states are reported
+            honestly instead of implying success or restore support.
+          </p>
         </div>
         <div class="hero-pill-group">
           ${renderSourceBadge('hybrid', 'PARTIAL VIEW')}
@@ -21,8 +30,8 @@ export function renderLastRunView(state) {
         </div>
       </div>
 
-      ${noRun ? '<div class="notice notice--neutral">Backend last-run endpoint returned no previous orchestration run.</div>' : ''}
-      ${error ? '<div class="notice notice--danger">Failed to load the backend last-run orchestration summary.</div>' : ''}
+      ${noRun ? '<div class="notice notice--neutral">No orchestration run has been recorded yet; refresh after running the pipeline to see details.</div>' : ''}
+      ${error ? '<div class="notice notice--danger">Could not load the last-run summary from the backend; see logs for details.</div>' : ''}
 
       <div class="section-grid section-grid--two ${detailsDisabled ? 'section-grid--muted' : ''}">
         <article class="card card--hybrid"><header class="card__header"><div><p class="card__code">C1</p><h3>Last shown media</h3></div><div class="card__header-tags">${renderSourceBadge('hybrid', 'ORCHESTRATION')}</div></header>${renderDefinitionList(state.lastRunData.media)}</article>
@@ -33,7 +42,10 @@ export function renderLastRunView(state) {
 
       <article class="card card--hybrid">
         <header class="card__header"><div><p class="card__code">C5</p><h3>Restore and evidence</h3></div><div class="card__header-tags">${renderSourceBadge('hybrid', 'PARTIAL')}</div></header>
-        <p class="card__copy">Refresh reads the backend orchestration summary. The resume button stays visible for discoverability, but it remains a placeholder and does not call a restore endpoint.</p>
+        <p class="card__copy">
+          The “Refresh” control reads the backend orchestration summary. The “Resume” control stays visible for discoverability but
+          remains disabled as a placeholder and does not call any restore endpoint.
+        </p>
         <div class="button-row">
           <button class="button button--secondary" data-action="refresh-last-run">Refresh last run</button>
           <button class="button button--primary" data-action="resume-last-run" ${detailsDisabled ? 'disabled' : ''}>Resume from saved state (placeholder)</button>
