@@ -42,7 +42,8 @@ const SCHEDULER_EMULATOR_BUTTONS = Object.freeze([
 ]);
 
 const NEW_AUTH_BUTTONS = Object.freeze([
-  { action: 'new-auth-verify-icloudpd', label: 'Verify iCloudPD', variant: 'secondary' },
+  { action: 'new-auth-verify-icloudpd', label: 'Verify iCloudPD install', variant: 'secondary' },
+  { action: 'new-auth-verify-provider-session', label: 'Verify with iCloudPD', variant: 'primary' },
   { action: 'new-auth-login-using-env', label: 'Login using .env values', variant: 'primary' },
   { action: 'new-auth-check-login', label: 'Check login', variant: 'secondary' },
   { action: 'new-auth-logout-session', label: 'Log out and remove existing session', variant: 'danger' },

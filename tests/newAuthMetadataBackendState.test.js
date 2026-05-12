@@ -7,6 +7,7 @@ const source = readFileSync(new URL('../dashboard/data/authButtonStatusCopy.ts',
 test('NEW AUTH backend-status metadata marks implemented routes as real', () => {
   const buttonKeys = [
     'new-auth-verify-icloudpd',
+    'new-auth-verify-provider-session',
     'new-auth-login-using-env',
     'new-auth-check-login',
     'new-auth-logout-session',

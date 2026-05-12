@@ -30,7 +30,7 @@ const GENERIC_STATUS_COPY = Object.freeze({
 
 export const AUTH_BUTTON_STATUS_COPY = Object.freeze({
   'new-auth-verify-icloudpd': {
-    label: 'Verify iCloudPD',
+    label: 'Verify iCloudPD install',
     endpoint: 'POST /api/auth/new/verify-icloudpd',
     operationType: 'new auth executable readiness check',
     realityState: 'real',
@@ -46,6 +46,26 @@ export const AUTH_BUTTON_STATUS_COPY = Object.freeze({
       failed: 'The new auth endpoint failed or did not prove iCloudPD readiness.',
       blocked: 'The new auth boundary blocked the readiness check.',
       pending: 'The readiness check is not final yet.',
+      providerDependent: GENERIC_STATUS_COPY.providerDependent,
+    },
+  },
+  'new-auth-verify-provider-session': {
+    label: 'Verify with iCloudPD',
+    endpoint: 'GET /api/auth/new/status',
+    operationType: 'new auth active provider session proof',
+    realityState: 'real',
+    backendState: 'real',
+    mutates: 'Actively contacts the provider through the new status endpoint to prove whether existing session files are still valid.',
+    successCriteria: 'Green only when active provider proof verifies the new-auth session.',
+    realityReason: 'Production-real provider-proof action shown after passive status finds local session files but does not contact iCloudPD.',
+    backendReason: 'Targets real backend route GET /api/auth/new/status without passive mode. It must not use GET /api/auth/new/status?mode=passive.',
+    statuses: {
+      neutral: 'Ready to verify existing session files with iCloudPD.',
+      running: 'Contacting iCloudPD through active provider proof.',
+      success: 'iCloudPD actively verified the existing new-auth session.',
+      failed: 'Active iCloudPD provider proof failed.',
+      blocked: 'Active provider proof was blocked or skipped by the new auth boundary.',
+      pending: 'Active provider proof needs follow-up, usually 2FA or provider waiting state.',
       providerDependent: GENERIC_STATUS_COPY.providerDependent,
     },
   },

@@ -11,6 +11,7 @@ export const NEW_AUTH_PROVIDER_PROOF_SKIPPED_EXPLANATION = 'Local iCloudPD sessi
 export const SECRET_FIELD_PATTERN = /(password|passwd|secret|token|cookie|session|credential|authorization|otp|2fa|two_factor_value|mfa|^code$|apple_id)/i;
 export const NEW_AUTH_BUTTON_DEFAULTS = Object.freeze({
   'new-auth-verify-icloudpd': 'Not checked yet.',
+  'new-auth-verify-provider-session': 'Ready to verify existing session files with iCloudPD.',
   'new-auth-login-using-env': 'Not checked yet.',
   'new-auth-check-login': 'Not checked yet.',
   'new-auth-logout-session': 'Not checked yet.',

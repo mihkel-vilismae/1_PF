@@ -20,6 +20,7 @@ test('runtime truth action factory exports remain compatible', () => {
 test('new auth action button keys remain unchanged after split', () => {
   assert.deepEqual(Object.keys(NEW_AUTH_BUTTON_DEFAULTS), [
     'new-auth-verify-icloudpd',
+    'new-auth-verify-provider-session',
     'new-auth-login-using-env',
     'new-auth-check-login',
     'new-auth-logout-session',

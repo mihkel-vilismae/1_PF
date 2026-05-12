@@ -176,6 +176,62 @@ test('runtime truth new auth check-login maps provider-proof skipped to blocked 
   }
 });
 
+
+// Ensures the provider verification action uses active proof, not passive status.
+test('runtime truth new auth verify-with-icloudpd calls active provider proof status path', async () => {
+  let state = createInitialState();
+  const originalFetch = globalThis.fetch;
+  const requests = [];
+  const history = [];
+
+  globalThis.fetch = async (url, init = {}) => {
+    requests.push({ url, method: init.method ?? 'GET' });
+    return new Response(JSON.stringify({
+      ok: true,
+      state: 'authenticated',
+      message: 'Existing iCloudPD session was verified by active provider proof.',
+      details: {
+        provider: 'icloudpd',
+        providerProof: {
+          attempted: true,
+          verified: true,
+          providerOutputShown: 'safe_summary',
+        },
+      },
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  };
+
+  const behavior = createRuntimeTruthBehavior({
+    getState: () => state,
+    patchState: (mutator) => {
+      const nextState = structuredClone(state);
+      mutator(nextState);
+      state = nextState;
+    },
+    pushHistory: (...args) => history.push(args),
+    pushLog: () => {},
+    setStatus: (key, status) => {
+      state.statusByKey[key] = status;
+    },
+    stamp: () => '12:00:00',
+  });
+
+  try {
+    behavior.runAction('new-auth-verify-provider-session');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    assert.equal(requests.length, 1);
+    assert.equal(requests[0].url, '/api/auth/new/status');
+    assert.equal(requests[0].method, 'GET');
+    assert.notEqual(requests[0].url, '/api/auth/new/status?mode=passive');
+    assert.equal(state.newAuth.buttonStates['new-auth-verify-provider-session'].status, 'success');
+    assert.equal(state.newAuth.buttonStates['new-auth-check-login'].status, 'success');
+    assert.equal(history.at(-1)?.[3]?.endpoint, 'GET /api/auth/new/status');
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test('runtime truth new auth logout clears stale login and check-login button states', async () => {
   let state = createInitialState();
   const originalFetch = globalThis.fetch;

@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.5.16 - 2026-05-12 17:58 Tallinn
+
+- Slice 2: added the NEW AUTH `Verify with iCloudPD` provider-session proof action for the passive skipped-provider-proof state.
+- Wired `new-auth-verify-provider-session` through the existing runtime-truth action map and shared `requestJson`/event-history request path, targeting active `GET /api/auth/new/status` instead of passive `GET /api/auth/new/status?mode=passive`.
+- Preserved existing passive check-login semantics, iCloudPD install verification, login/2FA flow, backend endpoint contracts, and secret redaction behavior.
+- Added regression coverage for the new active provider-proof action, button metadata, initial state/action compatibility, and View A rendering.
+- Bumped version metadata from v0.5.15 to v0.5.16 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.5.15 - 2026-05-12 17:33 Tallinn
 
 - Slice 1: mapped `NEW_AUTH_PROVIDER_PROOF_SKIPPED` passive new-auth status into a clear actionable UI state instead of a vague pending state.

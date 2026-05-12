@@ -5,6 +5,7 @@
 import {
   NEW_AUTH_ENDPOINTS,
   fetchNewAuthSessionFiles,
+  fetchNewAuthStatus,
   fetchPassiveNewAuthStatus,
   logoutNewAuthSession,
   startNewAuthLogin,
@@ -55,6 +56,18 @@ export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, push
       endpoint: NEW_AUTH_ENDPOINTS.passiveStatus,
       execute: fetchPassiveNewAuthStatus,
       duplicateMessage: '1A-STASH-OFF login status check is already running; duplicate start was blocked.',
+    });
+  }
+
+
+  // Actively verifies existing session files with iCloudPD provider proof.
+  async function verifyProviderSessionAction() {
+    return runNewAuthBackendAction({
+      buttonKey: 'new-auth-verify-provider-session',
+      operation: 'Verify new auth provider session',
+      endpoint: NEW_AUTH_ENDPOINTS.providerSessionProof,
+      execute: fetchNewAuthStatus,
+      duplicateMessage: '1A-STASH-OFF provider session verification is already running; duplicate start was blocked.',
     });
   }
 
@@ -199,6 +212,7 @@ export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, push
 
   return {
     verifyIcloudpdAction,
+    verifyProviderSessionAction,
     checkLoginAction,
     loginUsingEnvAction,
     submitTwoFactorAction,

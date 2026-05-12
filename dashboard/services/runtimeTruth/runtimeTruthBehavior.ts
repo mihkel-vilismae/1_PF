@@ -202,6 +202,7 @@ export function createRuntimeTruthBehavior({
       'submit-b1-2fa': (detail) => void authActions.submitAuthTwoFactorAction(detail?.code ?? ''),
       'logout-b1-auth': () => void authActions.logoutAuthPreflightAction(),
       'new-auth-verify-icloudpd': () => void newAuthActions.verifyIcloudpdAction(),
+      'new-auth-verify-provider-session': () => void newAuthActions.verifyProviderSessionAction(),
       'new-auth-login-using-env': () => void newAuthActions.loginUsingEnvAction(),
       'new-auth-check-login': () => void newAuthActions.checkLoginAction(),
       'new-auth-logout-session': () => void newAuthActions.logoutAction(),

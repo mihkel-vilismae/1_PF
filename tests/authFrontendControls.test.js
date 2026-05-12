@@ -51,3 +51,13 @@ test('auth payload sanitizer removes submitted 2FA code from request metadata', 
   assert.equal(JSON.stringify(sanitized).includes('123456'), false);
   assert.equal(sanitized.request.body.code, undefined);
 });
+
+test('View A NEW AUTH renders active provider verification action', () => {
+  const state = createInitialState();
+
+  const markup = renderInitView(state);
+
+  assert.equal(markup.includes('data-action="new-auth-verify-provider-session"'), true);
+  assert.equal(markup.includes('Verify with iCloudPD'), true);
+  assert.equal(markup.includes('GET /api/auth/new/status'), true);
+});

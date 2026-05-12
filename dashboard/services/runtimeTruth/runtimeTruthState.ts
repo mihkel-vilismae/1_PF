@@ -189,6 +189,7 @@ export function buildInitialAuthButtonStates(): Record<(typeof AUTH_PREFLIGHT_BU
 
 export const NEW_AUTH_BUTTON_KEYS = Object.freeze([
   'new-auth-verify-icloudpd',
+  'new-auth-verify-provider-session',
   'new-auth-login-using-env',
   'new-auth-check-login',
   'new-auth-logout-session',
