@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.5.14 - 2026-05-12 17:23 Tallinn
+
+- Added root `start_win.cmd` Windows launcher according to the default project setup expectation.
+- The launcher checks for `node` and `npm`, installs dependencies with `npm install --verbose` when `node_modules` is missing, then opens separate terminals for `npm run api` and `npm run dev`.
+- Bumped version metadata from v0.5.13 to v0.5.14 in `VERSION`, `package.json`, and `package-lock.json`.
+- Preserved existing package scripts and runtime behavior; the new script is an additive Windows convenience entrypoint.
+
 ## 0.5.13 - 2026-05-12 16:00 Tallinn
 
 - **Wave 2 – Read‑only runtime projections**. Added a live runtime projection endpoint to the backend, wired the dashboard to fetch the projection, and provided safe preload behaviour:
