@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.5.21 - 2026-05-13 17:57 Tallinn
+
+- Added dashboard request/response correlation ids to the shared frontend API client, HTTP request headers, echoed backend response headers, transit terminal lines, captured metadata, and Event history request/response detail rows.
+- Added a dedicated sanitized `logindebug.log` sink for `/api/auth/*` traffic, including `1A-STASH-OFF NEW AUTH` request, response, and failure diagnostics without raw cookies, passwords, tokens, sessions, or submitted 2FA values.
+- Stopped tracking generated `conf/runtime-truth.json` runtime state while preserving the local ignored file.
+- Added focused regression coverage for request id propagation, Event history id display, backend header echoing, project logger file creation, and sanitized NEW AUTH login debug mirroring.
+- Bumped version metadata from v0.5.20 to v0.5.21 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.5.20 - 2026-05-12 20:55 Tallinn
 
 - Implemented Windows B4 browser-native playback rendering for the selected backend media item.
