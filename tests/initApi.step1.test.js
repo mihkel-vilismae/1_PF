@@ -51,6 +51,107 @@ test('POST /api/init/verify-env echoes dashboard request id header', async () =>
   });
 });
 
+test('POST /api/init/verify-env writes dashboard request id to project log files', async () => {
+  await withInitServer(async ({ port, logDir }) => {
+    const response = await requestJson(port, '/api/init/verify-env', {
+      method: 'POST',
+      headers: { 'X-Dashboard-Request-Id': 'init-log-42' },
+    });
+
+    assert.equal(response.status, 200);
+    const fullLogText = await waitForLogContaining(path.join(logDir, 'full_log.log'), 'init-log-42');
+    const regularLogName = fs.readdirSync(logDir).find((name) => /^log_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.log$/.test(name));
+    assert.ok(regularLogName);
+    const regularLogText = await readFile(path.join(logDir, regularLogName), 'utf8');
+
+    const fullLogEntry = parseLogEntryContaining(fullLogText, 'init-log-42');
+    const regularLogEntry = parseLogEntryContaining(regularLogText, 'init-log-42');
+
+    assert.equal(fullLogEntry.details.requestId, 'init-log-42');
+    assert.equal(regularLogEntry.details.requestId, 'init-log-42');
+    assert.equal(fullLogEntry.details.routeKey, 'POST /api/init/verify-env');
+    assert.equal(regularLogEntry.details.routeKey, 'POST /api/init/verify-env');
+  });
+});
+
+test('FULL_LOG_VERBOSE=true writes sanitized request lifecycle entries', async () => {
+  await withInitServer(async ({ port, logDir }) => {
+    const response = await requestJson(port, '/api/init/verify-env?token=query-secret', {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer raw-auth-secret',
+        Cookie: 'session=raw-cookie-secret',
+        'X-Dashboard-Request-Id': 'verbose-log-42',
+      },
+      body: {
+        password: 'raw-body-secret',
+        note: 'safe diagnostic value',
+        nested: {
+          apiKey: 'raw-nested-secret',
+        },
+      },
+    });
+
+    assert.equal(response.status, 200);
+    const verboseText = await waitForLogContaining(path.join(logDir, 'full_log_verbose.log'), 'request_completed');
+    const entries = parseLogEntries(verboseText).filter((entry) => entry.requestId === 'verbose-log-42');
+    const started = entries.find((entry) => entry.event === 'request_started');
+    const completed = entries.find((entry) => entry.event === 'request_completed');
+
+    assert.ok(started);
+    assert.ok(completed);
+    assert.equal(started.request.method, 'POST');
+    assert.equal(started.request.path, '/api/init/verify-env');
+    assert.equal(started.request.query.token, '[redacted]');
+    assert.equal(started.request.headers.authorization, '[redacted]');
+    assert.equal(started.request.headers.cookie, '[redacted]');
+    assert.equal(started.request.body.password, '[redacted]');
+    assert.equal(started.request.body.nested.apiKey, '[redacted]');
+    assert.equal(started.request.body.note, 'safe diagnostic value');
+    assert.equal(completed.statusCode, 200);
+    assert.equal(completed.response.statusCode, 200);
+    assert.equal(typeof completed.durationMs, 'number');
+    assert.match(completed.response.headers['content-type'], /application\/json/);
+    assert.equal(completed.response.body.status, 'ok');
+    assert.doesNotMatch(verboseText, /raw-auth-secret|raw-cookie-secret|raw-body-secret|raw-nested-secret|query-secret/);
+  }, { fullLogVerbose: true });
+});
+
+test('FULL_LOG_VERBOSE unset does not write verbose log entries', async () => {
+  await withInitServer(async ({ port, logDir }) => {
+    const response = await requestJson(port, '/api/init/verify-env', {
+      method: 'POST',
+      headers: { 'X-Dashboard-Request-Id': 'verbose-off-42' },
+    });
+
+    assert.equal(response.status, 200);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    assert.equal(fs.existsSync(path.join(logDir, 'full_log_verbose.log')), false);
+  });
+});
+
+test('FULL_LOG_VERBOSE=true redacts invalid JSON raw body details', async () => {
+  await withInitServer(async ({ port, logDir }) => {
+    const response = await fetch(`http://127.0.0.1:${port}/api/init/verify-env`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'X-Dashboard-Request-Id': 'verbose-invalid-json-42',
+      },
+      body: '{"password":"raw-invalid-secret"',
+    });
+
+    assert.equal(response.status, 400);
+    const verboseText = await waitForLogContaining(path.join(logDir, 'full_log_verbose.log'), 'request_failed');
+    const failed = parseLogEntries(verboseText).find((entry) => entry.requestId === 'verbose-invalid-json-42' && entry.event === 'request_failed');
+
+    assert.ok(failed);
+    assert.equal(failed.statusCode, 400);
+    assert.equal(failed.error.details.raw, '[redacted]');
+    assert.doesNotMatch(verboseText, /raw-invalid-secret/);
+  }, { fullLogVerbose: true });
+});
+
 test('NEW AUTH routes mirror sanitized entries to logindebug.log', async () => {
   await withInitServer(async ({ port, logDir }) => {
     const response = await requestJson(port, '/api/auth/new/status?mode=passive', {
@@ -258,7 +359,7 @@ test('CronEmulator endpoints install and read the active Windows crontab file', 
 });
 
 // Starts the init API against temporary env, DB, and CronEmulator files.
-async function withInitServer(run) {
+async function withInitServer(run, options = {}) {
   const workspaceRoot = await mkdtemp(path.join(os.tmpdir(), 'pf-init-api-step1-'));
   const port = await reservePort();
   const envFilePath = path.join(workspaceRoot, 'init.test.env');
@@ -279,6 +380,7 @@ async function withInitServer(run) {
       dbPath,
       logDir,
       cookieDir,
+      fullLogVerbose: options.fullLogVerbose,
     }),
     'utf8',
   );
@@ -288,6 +390,7 @@ async function withInitServer(run) {
     env: {
       ...process.env,
       PORT: String(port),
+      FULL_LOG_VERBOSE: '',
       INIT_ENV_FILE: envFilePath,
       CRON_EMULATOR_CRONTAB_FILE: cronEmulatorCrontabPath,
     },
@@ -368,6 +471,21 @@ async function waitForLogContaining(filePath, needle) {
   throw lastError ?? new Error(`Timed out waiting for ${needle} in ${filePath}`);
 }
 
+// Parses the JSONL entry containing a requested text fragment.
+function parseLogEntryContaining(logText, needle) {
+  const line = logText.split(/\r?\n/).find((entry) => entry.includes(needle));
+  assert.ok(line);
+  return JSON.parse(line);
+}
+
+// Parses every non-empty JSONL entry in a log file.
+function parseLogEntries(logText) {
+  return logText
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .map((line) => JSON.parse(line));
+}
+
 async function reservePort() {
   const server = net.createServer();
 
@@ -397,8 +515,9 @@ async function onceExit(child) {
   });
 }
 
-function buildEnvFile({ downloadDir, dbPath, logDir, cookieDir }) {
-  return [
+// Builds the isolated env file content used by init API integration tests.
+function buildEnvFile({ downloadDir, dbPath, logDir, cookieDir, fullLogVerbose = false }) {
+  const lines = [
     'user=test@example.com',
     'pw=super-secret-password',
     `DOWNLOAD_DIR=${downloadDir}`,
@@ -424,7 +543,11 @@ function buildEnvFile({ downloadDir, dbPath, logDir, cookieDir }) {
     'MEDIA_RETENTION_DAYS=30',
     'LOG_RETENTION_DAYS=14',
     'PLAYBACK_LEASE_SECONDS=45',
-  ].join('\n');
+  ];
+  if (fullLogVerbose) {
+    lines.push('FULL_LOG_VERBOSE=true');
+  }
+  return lines.join('\n');
 }
 
 function parseEnvContent(content) {
@@ -459,6 +582,7 @@ async function withCustomEnvServer(envContent, run) {
     env: {
       ...process.env,
       PORT: String(port),
+      FULL_LOG_VERBOSE: '',
       INIT_ENV_FILE: envFilePath,
     },
     stdio: ['ignore', 'pipe', 'pipe'],

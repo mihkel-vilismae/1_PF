@@ -4,7 +4,7 @@
  * The server owns filesystem and process access that the browser cannot perform.
  */
 import { createServer } from 'node:http';
-import type { IncomingMessage, ServerResponse } from 'node:http';
+import type { IncomingMessage, OutgoingHttpHeaders, ServerResponse } from 'node:http';
 import { spawn } from 'node:child_process';
 import type { ChildProcessWithoutNullStreams } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
@@ -15,7 +15,7 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { createAuthRoutes } from './auth/authRoutes.ts';
 import { testAuthLoginByDownloadingSingleFile } from './auth/authService.ts';
-import { REDACTED_VALUE, sanitizeAuthValue } from './auth/authLogSanitizer.ts';
+import { REDACTED_VALUE, isSensitiveKey, sanitizeAuthValue } from './auth/authLogSanitizer.ts';
 import { verifyNewAuthSessionForRuntimeDownload } from './auth/newAuthService.ts';
 import { createNewAuthRoutes } from './auth/newAuthRoutes.ts';
 import { createDatabaseService } from './database/databaseService.ts';
@@ -57,9 +57,11 @@ const generatedTestDataDirectory = path.join(repoRoot, 'generated_test_data');
 const defaultEnvFilePath = path.join(repoRoot, '.env');
 const schedulerNodeArguments = Object.freeze(['--import', 'tsx']);
 const port = Number(process.env.PORT || 4301);
+const fullLogVerboseEnabled = await resolveInitialFullLogVerboseEnabled();
 const logger = createProjectLogger({
   repoRoot,
   logDir: await resolveInitialLogDirectory(),
+  verboseEnabled: fullLogVerboseEnabled,
   source: 'init-api',
   onWriteError: reportLoggerWriteError,
 });
@@ -83,6 +85,7 @@ const runtimeTruthRelativePath = 'conf/runtime-truth.json';
 const runtimeTruthFilePath = path.join(repoRoot, runtimeTruthRelativePath);
 const authSingleFileDownloadDirectory = path.join(repoRoot, 'runtime_data', 'tmp');
 const schedulerSchemaVersion = 3;
+const verboseBodyCharacterLimit = 8000;
 const schedulerEmulatorOperations = Object.freeze({
   check: 'emulator-check',
   run: 'emulator-run',
@@ -187,6 +190,14 @@ interface HandlerArgs {
 
 interface HandlerResult {
   statusCode: number;
+  payload: unknown;
+}
+
+interface SentJsonResponse {
+  statusCode: number;
+  headers: Record<string, string>;
+  body: string;
+  bodyBytes: number;
   payload: unknown;
 }
 
@@ -463,15 +474,18 @@ const routes: Record<string, RouteHandler> = {
 const server = createServer(async (request: IncomingMessage, response: ServerResponse) => {
   const startedAt = Date.now();
   const dashboardRequestId = readDashboardRequestId(request);
+  const verboseRequestId = dashboardRequestId ?? randomUUID();
   if (dashboardRequestId) {
     response.setHeader(dashboardRequestIdHeader, dashboardRequestId);
   }
   let routeKey = `${request.method || 'GET'} ${request.url || ''}`;
   let url = null;
+  let requestBody: JsonObject | null = null;
   try {
     if (!request.url) {
-      sendJson(response, 400, errorPayload('missing_request_url', 'Request URL was not provided.'));
-      void logRequest({ request, routeKey, statusCode: 400, startedAt });
+      const sentResponse = sendJson(response, 400, errorPayload('missing_request_url', 'Request URL was not provided.'));
+      void logRequest({ request, requestId: dashboardRequestId, routeKey, statusCode: 400, startedAt });
+      void logVerboseRequestFailed({ request, requestId: verboseRequestId, url, routeKey, body: requestBody, statusCode: 400, startedAt, sentResponse });
       return;
     }
 
@@ -481,7 +495,7 @@ const server = createServer(async (request: IncomingMessage, response: ServerRes
     if (routeKey === 'GET /api/runtime/playback/media') {
       const context = await buildRequestContext();
       const statusCode = await runtimePlaybackMediaHandler({ response, url, context });
-      void logRequest({ request, url, routeKey, statusCode, startedAt });
+      void logRequest({ request, requestId: dashboardRequestId, url, routeKey, statusCode, startedAt });
       return;
     }
 
@@ -489,21 +503,24 @@ const server = createServer(async (request: IncomingMessage, response: ServerRes
 
     if (!handler) {
       sendJson(response, 404, errorPayload('not_found', `No handler exists for ${routeKey}.`));
-      void logRequest({ request, url, routeKey, statusCode: 404, startedAt });
+      void logRequest({ request, requestId: dashboardRequestId, url, routeKey, statusCode: 404, startedAt });
       return;
     }
 
-    const body = await readJsonBody(request);
-    void logLoginDebugRequestReceived({ request, url, routeKey, body, startedAt });
+    requestBody = await readJsonBody(request);
+    void logVerboseRequestStarted({ request, requestId: verboseRequestId, url, routeKey, body: requestBody, startedAt });
+    void logLoginDebugRequestReceived({ request, url, routeKey, body: requestBody, startedAt });
     const context = await buildRequestContext();
-    const result = await handler({ request, response, url, body, context });
-    sendJson(response, result.statusCode, result.payload);
+    const result = await handler({ request, response, url, body: requestBody, context });
+    const sentResponse = sendJson(response, result.statusCode, result.payload);
     void logLoginDebugRequestCompleted({ request, url, routeKey, statusCode: result.statusCode, startedAt, payload: result.payload });
-    void logRequest({ request, url, routeKey, statusCode: result.statusCode, startedAt });
+    void logRequest({ request, requestId: dashboardRequestId, url, routeKey, statusCode: result.statusCode, startedAt });
+    void logVerboseRequestCompleted({ request, requestId: verboseRequestId, url, routeKey, body: requestBody, statusCode: result.statusCode, startedAt, sentResponse });
   } catch (error: unknown) {
     const statusCode = error instanceof HttpError ? error.statusCode : 500;
     const code = error instanceof HttpError ? error.code : 'internal_error';
     const details = error instanceof HttpError ? error.details : undefined;
+    const errorResponsePayload = errorPayload(code, getErrorMessage(error), details);
     void logger.error('HTTP request failed.', {
       requestId: dashboardRequestId,
       method: request.method || 'GET',
@@ -515,7 +532,8 @@ const server = createServer(async (request: IncomingMessage, response: ServerRes
       error,
     });
     void logLoginDebugRequestFailed({ request, url, routeKey, statusCode, startedAt, code, details, error });
-    sendJson(response, statusCode, errorPayload(code, getErrorMessage(error), details));
+    const sentResponse = sendJson(response, statusCode, errorResponsePayload);
+    void logVerboseRequestFailed({ request, requestId: verboseRequestId, url, routeKey, body: requestBody, statusCode, startedAt, sentResponse, code, details, error });
   }
 });
 
@@ -1818,6 +1836,37 @@ async function resolveInitialLogDirectory(): Promise<string> {
   return DEFAULT_LOG_DIR;
 }
 
+// Reads the startup-only verbose log gate from process env or the configured env file.
+async function resolveInitialFullLogVerboseEnabled(): Promise<boolean> {
+  if (typeof process.env.FULL_LOG_VERBOSE === 'string' && process.env.FULL_LOG_VERBOSE.trim()) {
+    return process.env.FULL_LOG_VERBOSE.trim() === 'true';
+  }
+
+  let raw;
+  try {
+    raw = await fs.readFile(resolveEnvFilePath(), 'utf8');
+  } catch {
+    return false;
+  }
+
+  for (const line of raw.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) {
+      continue;
+    }
+    const separatorIndex = trimmed.indexOf('=');
+    if (separatorIndex === -1) {
+      continue;
+    }
+    const key = trimmed.slice(0, separatorIndex).trim();
+    if (key === 'FULL_LOG_VERBOSE') {
+      return trimmed.slice(separatorIndex + 1).trim() === 'true';
+    }
+  }
+
+  return false;
+}
+
 function resolveEnvFilePath(): string {
   const overridePath = process.env.INIT_ENV_FILE;
   if (!overridePath || overridePath.trim() === '') {
@@ -2928,19 +2977,28 @@ function buildSchedulerCommandPayload(definition: SchedulerDefinition): JsonObje
   return null;
 }
 
-function sendJson(response: ServerResponse, statusCode: number, payload: unknown): void {
+// Sends a JSON response and returns the emitted metadata for verbose logging.
+function sendJson(response: ServerResponse, statusCode: number, payload: unknown): SentJsonResponse {
   const body = JSON.stringify(payload, null, 2);
+  const bodyBytes = Buffer.byteLength(body);
   response.writeHead(statusCode, {
     'Content-Type': 'application/json; charset=utf-8',
-    'Content-Length': Buffer.byteLength(body),
+    'Content-Length': bodyBytes,
   });
   response.end(body);
+  return {
+    statusCode,
+    headers: normalizeResponseHeaders(response.getHeaders()),
+    body,
+    bodyBytes,
+    payload,
+  };
 }
 
 // Logs completed HTTP requests with timing and optional dashboard correlation id.
-function logRequest({ request, url = null, routeKey, statusCode, startedAt }: { request: IncomingMessage; url?: URL | null; routeKey: string; statusCode: number; startedAt: number }) {
+function logRequest({ request, requestId = readDashboardRequestId(request), url = null, routeKey, statusCode, startedAt }: { request: IncomingMessage; requestId?: string | null; url?: URL | null; routeKey: string; statusCode: number; startedAt: number }) {
   const entry = {
-    requestId: readDashboardRequestId(request),
+    requestId,
     method: request.method || 'GET',
     path: url?.pathname || request.url || null,
     routeKey,
@@ -2952,6 +3010,147 @@ function logRequest({ request, url = null, routeKey, statusCode, startedAt }: { 
     return logger.error('HTTP request completed with server error.', entry);
   }
   return logger.info('HTTP request completed.', entry);
+}
+
+// Records the sanitized verbose request-start event for handled API routes.
+function logVerboseRequestStarted({ request, requestId, url, routeKey, body, startedAt }: { request: IncomingMessage; requestId: string; url: URL | null; routeKey: string; body: JsonObject | null; startedAt: number }) {
+  if (!isVerboseApiRequest(url)) {
+    return Promise.resolve();
+  }
+  return logger.verbose({
+    at: new Date(startedAt).toISOString(),
+    event: 'request_started',
+    requestId,
+    request: buildVerboseRequestDetails({ request, url, routeKey, body }),
+  });
+}
+
+// Records the sanitized verbose request-completion event for handled API routes.
+function logVerboseRequestCompleted({ request, requestId, url, routeKey, body, statusCode, startedAt, sentResponse }: { request: IncomingMessage; requestId: string; url: URL | null; routeKey: string; body: JsonObject | null; statusCode: number; startedAt: number; sentResponse: SentJsonResponse }) {
+  if (!isVerboseApiRequest(url)) {
+    return Promise.resolve();
+  }
+  return logger.verbose({
+    at: new Date().toISOString(),
+    event: 'request_completed',
+    requestId,
+    statusCode,
+    durationMs: Date.now() - startedAt,
+    request: buildVerboseRequestDetails({ request, url, routeKey, body }),
+    response: buildVerboseResponseDetails(sentResponse),
+  });
+}
+
+// Records the sanitized verbose failure event without changing the response flow.
+function logVerboseRequestFailed({ request, requestId, url, routeKey, body, statusCode, startedAt, sentResponse, code = null, details = undefined, error = undefined }: { request: IncomingMessage; requestId: string; url: URL | null; routeKey: string; body: JsonObject | null; statusCode: number; startedAt: number; sentResponse: SentJsonResponse; code?: string | null; details?: unknown; error?: unknown }) {
+  if (!isVerboseApiRequest(url)) {
+    return Promise.resolve();
+  }
+  return logger.verbose({
+    at: new Date().toISOString(),
+    event: 'request_failed',
+    requestId,
+    statusCode,
+    durationMs: Date.now() - startedAt,
+    request: buildVerboseRequestDetails({ request, url, routeKey, body }),
+    response: buildVerboseResponseDetails(sentResponse),
+    error: limitVerbosePayload(sanitizeVerboseValue({
+      code,
+      details,
+      message: error instanceof Error ? error.message : error,
+      name: error instanceof Error ? error.name : null,
+    })),
+  });
+}
+
+// Builds the request portion shared by verbose started/completed records.
+function buildVerboseRequestDetails({ request, url, routeKey, body }: { request: IncomingMessage; url: URL | null; routeKey: string; body: JsonObject | null }) {
+  return {
+    method: request.method || 'GET',
+    path: url?.pathname || request.url || null,
+    routeKey,
+    query: limitVerbosePayload(sanitizeVerboseValue(url ? Object.fromEntries(url.searchParams.entries()) : {})),
+    headers: limitVerbosePayload(sanitizeVerboseValue(request.headers)),
+    body: body === null ? null : limitVerbosePayload(sanitizeVerboseValue(body)),
+  };
+}
+
+// Builds the response portion used by verbose completed/failed records.
+function buildVerboseResponseDetails(sentResponse: SentJsonResponse) {
+  return {
+    statusCode: sentResponse.statusCode,
+    headers: limitVerbosePayload(sanitizeVerboseValue(sentResponse.headers)),
+    bodyBytes: sentResponse.bodyBytes,
+    body: limitVerbosePayload(sanitizeVerboseValue(sentResponse.payload)),
+  };
+}
+
+// Keeps verbose logging scoped to backend API requests.
+function isVerboseApiRequest(url: URL | null): boolean {
+  return Boolean(url?.pathname.startsWith('/api/'));
+}
+
+// Converts Node response headers into string data suitable for JSON logs.
+function normalizeResponseHeaders(headers: OutgoingHttpHeaders): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(headers).map(([key, value]) => [key, Array.isArray(value) ? value.join(', ') : value === undefined ? '' : String(value)]),
+  );
+}
+
+// Redacts sensitive keys recursively before verbose data reaches disk.
+function sanitizeVerboseValue(value: unknown, parentKey = '', seen = new WeakSet<object>()): unknown {
+  if (value === null || value === undefined) {
+    return value;
+  }
+
+  if (isVerboseSensitiveKey(parentKey)) {
+    return REDACTED_VALUE;
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((entry) => sanitizeVerboseValue(entry, parentKey, seen));
+  }
+
+  if (typeof value === 'object') {
+    if (seen.has(value)) {
+      return '[circular]';
+    }
+    seen.add(value);
+    const sanitized = Object.fromEntries(
+      Object.entries(value).map(([key, childValue]) => [
+        key,
+        isVerboseSensitiveKey(key) ? REDACTED_VALUE : sanitizeVerboseValue(childValue, key, seen),
+      ]),
+    );
+    seen.delete(value);
+    return sanitized;
+  }
+
+  return value;
+}
+
+// Identifies verbose-log fields that must never be written as raw values.
+function isVerboseSensitiveKey(key: string): boolean {
+  return isSensitiveKey(key)
+    || /^code$/i.test(key)
+    || /^raw$/i.test(key)
+    || /api[_-]?key/i.test(key)
+    || /credential/i.test(key)
+    || /2fa/i.test(key);
+}
+
+// Replaces oversized verbose payloads with a bounded preview and length marker.
+function limitVerbosePayload(value: unknown): unknown {
+  const serialized = JSON.stringify(value);
+  if (serialized.length <= verboseBodyCharacterLimit) {
+    return value;
+  }
+  return {
+    truncated: true,
+    originalLength: serialized.length,
+    limit: verboseBodyCharacterLimit,
+    preview: serialized.slice(0, verboseBodyCharacterLimit),
+  };
 }
 
 // Mirrors sanitized auth/login request arrival details into logindebug.log.

@@ -13,6 +13,7 @@ type LogLevel = 'debug' | 'error' | 'info';
 interface ProjectLoggerOptions {
   repoRoot?: string;
   logDir?: string;
+  verboseEnabled?: boolean;
   now?: () => Date;
   source?: string;
   onWriteError?: ((error: Error) => void) | null;
@@ -24,6 +25,7 @@ interface ProjectLoggerPaths {
   debug: string;
   regular: string;
   full: string;
+  verbose: string;
   loginDebug: string;
 }
 
@@ -43,6 +45,7 @@ export interface ProjectLogger {
   debug(message: unknown, details?: unknown): Promise<void | ProjectLoggerPaths>;
   error(message: unknown, details?: unknown): Promise<void | ProjectLoggerPaths>;
   loginDebug(message: unknown, details?: unknown): Promise<void | ProjectLoggerPaths>;
+  verbose(entry: unknown): Promise<void | ProjectLoggerPaths>;
 }
 
 interface ResolveLogDirectoryOptions {
@@ -65,6 +68,7 @@ const LEVEL_FILE_NAMES = Object.freeze({
 export function createProjectLogger({
   repoRoot = process.cwd(),
   logDir = DEFAULT_LOG_DIR,
+  verboseEnabled = false,
   now = () => new Date(),
   source = 'server',
   onWriteError = null,
@@ -77,6 +81,7 @@ export function createProjectLogger({
     debug: path.join(logDirectory, LEVEL_FILE_NAMES.debug),
     regular: path.join(logDirectory, regularLogFileName),
     full: path.join(logDirectory, 'full_log.log'),
+    verbose: path.join(logDirectory, 'full_log_verbose.log'),
     loginDebug: path.join(logDirectory, 'logindebug.log'),
   };
 
@@ -96,6 +101,7 @@ export function createProjectLogger({
       touchFile(paths.regular),
       touchFile(paths.full),
       touchFile(paths.loginDebug),
+      ...(verboseEnabled ? [touchFile(paths.verbose)] : []),
     ]);
     initialized = true;
     return paths;
@@ -138,6 +144,20 @@ export function createProjectLogger({
     return writeChain;
   }
 
+  // Writes one raw verbose lifecycle entry when verbose logging is enabled.
+  function verbose(entry: unknown): Promise<void | ProjectLoggerPaths> {
+    if (!verboseEnabled) {
+      return Promise.resolve();
+    }
+
+    writeChain = writeChain
+      .then(() => writeVerboseEntry(paths, normalizeDetails(entry)))
+      .catch((error: Error) => {
+        onWriteError?.(error);
+      });
+    return writeChain;
+  }
+
   return {
     paths,
     initialize,
@@ -152,6 +172,7 @@ export function createProjectLogger({
       return write('error', message, details);
     },
     loginDebug,
+    verbose,
   };
 }
 
@@ -181,6 +202,12 @@ async function writeEntry(paths: ProjectLoggerPaths, entry: ProjectLogEntry): Pr
 async function writeLoginDebugEntry(paths: ProjectLoggerPaths, entry: ProjectLogEntry): Promise<void> {
   await fs.mkdir(paths.directory, { recursive: true });
   await fs.appendFile(paths.loginDebug, `${JSON.stringify(entry)}\n`, 'utf8');
+}
+
+// Appends one serialized verbose lifecycle entry to full_log_verbose.log.
+async function writeVerboseEntry(paths: ProjectLoggerPaths, entry: unknown): Promise<void> {
+  await fs.mkdir(paths.directory, { recursive: true });
+  await fs.appendFile(paths.verbose, `${JSON.stringify(entry)}\n`, 'utf8');
 }
 
 // Ensures a log file exists without truncating existing contents.

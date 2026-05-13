@@ -1,0 +1,4 @@
+interface:
+  display_name: "Photo Frame Logging Change"
+  short_description: "Safely change 12_PF logging flows"
+  default_prompt: "Use $photo-frame-logging-change to modify or audit backend/frontend logging without leaking secrets or changing existing behavior."
