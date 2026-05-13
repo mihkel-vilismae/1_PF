@@ -1,0 +1,188 @@
+Use this as the **GPT-5.5 orchestrator prompt**:
+
+```text
+You are GPT-5.5 acting as the orchestrator for a regression-safe implementation planning task in:
+
+I:\_____11111\1234_PF
+
+Goal:
+Analyze the existing docs and code, then create a high-level implementation plan for Page F. Page F should become the operator entry point for the real photo-frame process: login/authentication, downloading files, parsing/staging them, and launching/displaying them full screen as the actual photo-frame experience.
+
+Do not implement code yet. Produce a plan only.
+
+Required skills to use:
+1. source-of-truth
+2. f1-f6-implementation-verification
+3. photo-frame-dashboard-contract-wiring
+4. icloudpd-login
+5. photo-frame-worker-verification
+6. photo-frame-runtime-worker-implementation
+7. photo-frame-worker-doc-reconciliation
+
+Use the skills by opening their SKILL.md files first and following only the relevant workflow sections.
+
+Agent strategy:
+You are the GPT-5.5 orchestrator. Spawn GPT-5.3 workers for bounded read-only analysis. Workers must not edit files. Each worker must return evidence-backed findings with file paths, relevant symbols/routes/docs, and uncertainty clearly marked.
+
+Spawn these GPT-5.3 workers:
+
+Worker 1: Docs and Source-of-Truth Mapper
+Task:
+Analyze repository docs for the intended photo-frame flow, Page F/F1-F6 meaning, current implementation claims, runtime truth docs, placeholder ledgers, and any iCloud/download/playback/fullscreen requirements.
+Use skills: source-of-truth, f1-f6-implementation-verification, photo-frame-worker-doc-reconciliation.
+Return:
+- Canonical docs to trust
+- Conflicting/stale docs
+- Page F intended role from docs
+- Any explicit requirements for login/download/parse/playback/fullscreen
+- File path evidence
+- Open questions
+
+Worker 2: Frontend Page F Mapper
+Task:
+Analyze the frontend/dashboard code for Page F and related F1-F6 panels. Identify routing, UI entrypoints, state flow, button handlers, API calls, mock-only behavior, and existing fullscreen/playback controls.
+Use skills: f1-f6-implementation-verification, photo-frame-dashboard-contract-wiring, photo-frame-frontend-ui-change if relevant.
+Return:
+- Existing Page F files/components
+- Current Page F behavior
+- Existing controls that should be preserved
+- Missing or mock-only wiring
+- Frontend-to-backend contract expectations
+- File path and line evidence
+- Regression risks
+
+Worker 3: Backend/API/Runtime Mapper
+Task:
+Analyze backend routes and services related to init, auth/login, downloads, parsing/staging, worker execution, playback, screen/fullscreen behavior, logs/status, and dashboard contracts.
+Use skills: photo-frame-dashboard-contract-wiring, photo-frame-worker-verification, photo-frame-runtime-worker-implementation.
+Return:
+- Existing backend endpoints Page F can call
+- Existing services/workers that should be reused
+- Missing endpoints or contract gaps
+- Current worker/runtime behavior that is verified from code
+- Any duplicated or mock flows to avoid
+- File path and line evidence
+- Regression risks
+
+Worker 4: iCloud/Auth/Download Flow Mapper
+Task:
+Analyze current iCloud/icloudpd authentication, cookie/session handling, download scripts, parser/staging flow, config/env requirements, and failure modes.
+Use skill: icloudpd-login.
+Return:
+- Current login/auth mechanism
+- Current download command/path/config flow
+- How downloaded files are parsed or staged
+- What Page F can safely trigger
+- What requires user-side validation or real credentials
+- File path and line evidence
+- Edge cases
+
+Worker 5: Playback/Fullscreen Photo-frame Flow Mapper
+Task:
+Analyze how the app currently displays photos/videos full screen, launches playback windows, handles display power/screen state, and starts/stops the actual photo-frame experience.
+Use skills: photo-frame-worker-verification, photo-frame-runtime-worker-implementation.
+Return:
+- Existing playback/fullscreen entrypoints
+- Current launch commands/routes
+- Any real vs simulated behavior
+- How Page F should start the actual photo-frame mode
+- What should remain unchanged
+- File path and line evidence
+- Risks
+
+Orchestrator responsibilities:
+1. Inspect the repository enough locally to understand the structure before and after worker results.
+2. Do not duplicate worker work unless needed to resolve contradictions.
+3. Reconcile all worker findings into one high-level implementation plan.
+4. Clearly separate verified facts, inferred architecture, and unknowns.
+5. Keep the plan regression-safe and minimal.
+6. Prefer wiring Page F into existing routes/services/workers over creating new flows.
+7. Do not propose broad rewrites or parallel systems.
+8. If implementation appears larger than expected, split it into phases.
+
+Final output format:
+
+1. Task Understanding
+Briefly restate what Page F should become.
+
+2. Verified Current-State Summary
+Evidence-backed summary of:
+- Existing Page F frontend
+- Existing backend/API/runtime pieces
+- Existing auth/download/parse pieces
+- Existing playback/fullscreen pieces
+- Existing docs/source-of-truth status
+
+3. Proposed Page F Role
+Define Page F as the operator start page for:
+- login/auth status
+- download start/status
+- parse/stage status
+- launch full-screen photo-frame mode
+- runtime logs/errors/status
+
+4. High-Level Architecture Plan
+Describe how Page F should wire into existing architecture:
+- frontend state and controls
+- backend endpoints/services
+- workers/scripts
+- filesystem/status/log contracts
+- fullscreen/playback launch path
+
+5. Minimal Implementation Phases
+Phase 1: Truth and UI contract alignment
+Phase 2: Backend route/service wiring
+Phase 3: Page F frontend wiring
+Phase 4: Runtime/playback launch integration
+Phase 5: Verification and docs reconciliation
+
+For each phase include:
+- files likely touched
+- behavior modified
+- behavior preserved
+- tests/checks needed
+- risk level
+
+6. API/Contract Plan
+List proposed or existing endpoints Page F should use. Mark each as:
+- existing verified
+- existing but needs adjustment
+- missing and should be added
+- uncertain
+
+7. Regression Risks
+List the main risks:
+- auth/session handling
+- destructive download/staging behavior
+- long-running worker control
+- fullscreen launch/platform behavior
+- frontend mock behavior becoming real
+- docs claiming more than code verifies
+
+8. Verification Plan
+Give exact commands to run where possible:
+- static grep or inspection commands
+- unit/test commands
+- backend route smoke tests
+- frontend build/test commands
+- manual runtime validation requiring real iCloud credentials/display
+
+9. Open Questions
+Only include questions that block safe implementation.
+
+10. Commit Breakdown
+Propose logical commits, for example:
+- docs/source-of-truth alignment for Page F plan
+- backend runtime endpoint wiring
+- Page F frontend service wiring
+- playback/fullscreen launch integration
+- tests and verification docs
+
+Important constraints:
+- Do not edit files.
+- Do not claim behavior is preserved unless verified.
+- Do not treat docs as truth unless code confirms them or source-of-truth skill classifies them.
+- Do not invent new architecture.
+- Do not create duplicate auth/download/playback flows.
+- The plan must be implementation-ready but not an implementation.
+```
