@@ -7,6 +7,17 @@ import test from 'node:test';
 
 import { renderModal } from '../dashboard/services/renderers.ts';
 
+// Renders modal v2 with stable NEW AUTH defaults for focused prompt tests.
+function renderNewAuthModalV2(overrides = {}) {
+  return renderModal({
+    kind: 'new-auth-login-v2',
+    title: 'New auth',
+    stage: 'waiting_for_2fa',
+    message: 'Waiting for response.',
+    ...overrides,
+  });
+}
+
 test('new auth modal renders exact device-index prompt copy from prompt kind', () => {
   const markup = renderModal({
     kind: 'new-auth-login',
@@ -24,12 +35,37 @@ test('new auth modal renders exact device-index prompt copy from prompt kind', (
   assert.equal(markup.includes('2FA code or device index'), false);
 });
 
+test('new auth modal v2 renders device-index prompt through the shared prompt model', () => {
+  const markup = renderNewAuthModalV2({
+    twoFactorPromptKind: 'device_index',
+    requestedInput: 'Trusted-device index, such as "a"',
+  });
+
+  assert.equal(markup.includes('data-new-auth-modal-version="2"'), true);
+  assert.equal(markup.includes('Enter device index, for example a'), true);
+  assert.equal(markup.includes('Device index</label>'), true);
+  assert.equal(markup.includes('Submit device index'), true);
+  assert.equal(markup.includes('Trusted-device index, such as &quot;a&quot;'), false);
+});
+
 test('new auth modal renders exact SMS code prompt copy from prompt kind', () => {
   const markup = renderModal({
     kind: 'new-auth-login',
     title: 'New auth',
     stage: 'waiting_for_2fa',
     message: 'Waiting for response.',
+    twoFactorPromptKind: 'verification_code',
+    requestedInput: 'Six-digit verification code',
+  });
+
+  assert.equal(markup.includes('Enter SMS six-digit code'), true);
+  assert.equal(markup.includes('Six-digit verification code</label>'), true);
+  assert.equal(markup.includes('Submit code'), true);
+  assert.equal(markup.includes('2FA code or device index'), false);
+});
+
+test('new auth modal v2 renders exact SMS code prompt copy from prompt kind', () => {
+  const markup = renderNewAuthModalV2({
     twoFactorPromptKind: 'verification_code',
     requestedInput: 'Six-digit verification code',
   });
@@ -72,6 +108,18 @@ test('new auth modal waits instead of rendering a generic input for unknown 2FA 
   assert.equal(markup.includes('Submit response'), false);
 });
 
+test('new auth modal v2 keeps unknown 2FA prompts read-only', () => {
+  const markup = renderNewAuthModalV2({
+    message: 'Two-factor authentication is required, but the exact prompt is not visible.',
+    twoFactorPromptKind: 'unknown',
+    requestedInput: 'Two-factor response',
+  });
+
+  assert.equal(markup.includes('Waiting for visible iCloudPD prompt'), true);
+  assert.equal(markup.includes('data-new-auth-2fa-code'), false);
+  assert.equal(markup.includes('new-auth-submit-2fa'), false);
+});
+
 // Verifies the NEW AUTH modal renders a sane terminal-style waiting state.
 test('new auth modal renders waiting icloudpd communication panel beside login panel', () => {
   const markup = renderModal({
@@ -111,6 +159,24 @@ test('new auth modal renders sanitized icloudpd provider output lines', () => {
   assert.equal(markup.includes('Please enter two-factor authentication code:'), true);
   assert.equal(markup.includes('person@example.com'), false);
   assert.equal(markup.includes('Waiting for sanitized iCloudPD communication...'), false);
+});
+
+test('new auth modal v2 reuses terminal redaction for provider output lines', () => {
+  const markup = renderNewAuthModalV2({
+    providerOutputPreview: [
+      'Processing user: person@example.com',
+      'password=apple-secret-password',
+      'Cookie: raw-session-cookie',
+      'Please enter code 123456',
+    ].join('\n'),
+  });
+
+  assert.equal(markup.includes('Processing user: pe***@example.com'), true);
+  assert.equal(markup.includes('person@example.com'), false);
+  assert.equal(markup.includes('apple-secret-password'), false);
+  assert.equal(markup.includes('raw-session-cookie'), false);
+  assert.equal(markup.includes('123456'), false);
+  assert.equal(markup.includes('[redacted-code]'), true);
 });
 
 test('new auth modal terminal redacts secrets and submitted 2FA-like values', () => {

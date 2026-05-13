@@ -11,6 +11,7 @@ import {
   type DefinitionListData,
   type TransportData,
 } from './sharedRendererUtils.ts';
+import { sanitizeNewAuthProviderText } from '../newAuthRedaction.ts';
 
 type LogEntry = {
   at?: string;
@@ -25,7 +26,7 @@ type HistoryEntry = LogEntry & {
   source?: string;
 };
 
-type ModalKind = 'log' | 'history' | 'new-auth-login' | string;
+type ModalKind = 'log' | 'history' | 'new-auth-login' | 'new-auth-login-v2' | string;
 
 export type ModalData = {
   title?: string;
@@ -49,6 +50,13 @@ type NewAuthTwoFactorInputCopy = {
   help: string;
 };
 
+type NewAuthLoginModalModel = {
+  stage: string;
+  message: string;
+  requestedInput: string | null | undefined;
+  twoFactorCopy: NewAuthTwoFactorInputCopy;
+};
+
 // Renders the active modal, including the split NEW AUTH login communication view.
 export function renderModal(modal: ModalData | null | undefined): string {
   if (!modal) {
@@ -57,15 +65,17 @@ export function renderModal(modal: ModalData | null | undefined): string {
 
   const title = modal.title ?? 'Details';
   const subtitle = modal.subtitle ?? '';
-  const kindLabel = modal.kind === 'log' ? 'Log entry' : modal.kind === 'new-auth-login' ? 'New auth login' : 'Event history';
+  const isNewAuthLogin = isNewAuthLoginModalKind(modal.kind);
+  const kindLabel = modal.kind === 'log' ? 'Log entry' : isNewAuthLogin ? 'New auth login' : 'Event history';
   const content = modal.kind === 'log'
     ? renderLogModalContent(modal.entry ?? {})
-    : modal.kind === 'new-auth-login'
-      ? renderNewAuthLoginModalContent(modal)
+    : isNewAuthLogin
+      ? renderNewAuthLoginModalContent(modal, modal.kind === 'new-auth-login-v2' ? 'v2' : 'v1')
       : renderHistoryModalContent(modal.entry ?? {});
   const describedBy = subtitle ? ' aria-describedby="modal-subtitle"' : '';
+  const versionAttribute = modal.kind === 'new-auth-login-v2' ? ' data-new-auth-modal-version="2"' : '';
   const panel = `
-    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title"${describedBy}>
+    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title"${describedBy}${versionAttribute}>
       <div class="modal-panel__header">
         <div class="modal-panel__header-copy">
           <p class="modal-panel__eyebrow">${escapeHtml(kindLabel)}</p>
@@ -78,7 +88,7 @@ export function renderModal(modal: ModalData | null | undefined): string {
     </section>
   `;
 
-  if (modal.kind === 'new-auth-login') {
+  if (isNewAuthLogin) {
     return `
       <div class="modal-backdrop modal-backdrop--split" data-modal-backdrop="1">
         <div class="modal-layout modal-layout--new-auth">
@@ -94,6 +104,11 @@ export function renderModal(modal: ModalData | null | undefined): string {
       ${panel}
     </div>
   `;
+}
+
+// Checks whether a modal kind uses the NEW AUTH split login layout.
+function isNewAuthLoginModalKind(kind: ModalKind | undefined): boolean {
+  return kind === 'new-auth-login' || kind === 'new-auth-login-v2';
 }
 
 // Renders read-only sanitized iCloudPD communication beside the NEW AUTH login modal.
@@ -121,51 +136,66 @@ function extractNewAuthCommunicationLines(modal: ModalData): string[] {
   const previewLines = typeof modal.providerOutputPreview === 'string' ? modal.providerOutputPreview.split(/\r?\n/) : [];
   return [...explicitLines, ...previewLines]
     .filter((line): line is string => typeof line === 'string')
-    .map((line) => sanitizeTerminalCommunicationLine(line))
+    .map((line) => sanitizeNewAuthProviderText(line))
     .map((line) => line.trim())
     .filter((line) => line.length > 0);
 }
 
-// Applies a final UI-side redaction pass before provider text reaches the terminal panel.
-function sanitizeTerminalCommunicationLine(line: string): string {
-  return line
-    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, (email) => redactEmailForDisplay(email))
-    .replace(/\b\d{6,8}\b/g, '[redacted-code]')
-    .replace(/((?:password|passwd|authorization|bearer|token|cookie|session|secret)\s*[:=]\s*)([^\s]+)/gi, '$1[redacted]')
-    .replace(/(Authorization:\s*)(.+)/gi, '$1[redacted]')
-    .replace(/(Cookie:\s*)(.+)/gi, '$1[redacted]');
+// Renders the NEW AUTH login content using either the original or v2 composition.
+function renderNewAuthLoginModalContent(modal: ModalData, version: 'v1' | 'v2' = 'v1'): string {
+  if (version === 'v2') {
+    return renderNewAuthLoginModalV2Content(modal);
+  }
+
+  const model = buildNewAuthLoginModalModel(modal);
+  return `
+    ${renderNewAuthLoginProgressSection(model)}
+    ${renderNewAuthTwoFactorSectionFromCopy(model.twoFactorCopy)}
+  `;
 }
 
-// Redacts an email address while keeping enough shape for operator recognition.
-function redactEmailForDisplay(email: string): string {
-  const [name, domain] = email.split('@');
-  const prefix = name.length <= 2 ? `${name[0] ?? '*'}***` : `${name.slice(0, 2)}***`;
-  return `${prefix}@${domain}`;
+// Renders modal v2 from a small normalized model while preserving v1 visual parts.
+function renderNewAuthLoginModalV2Content(modal: ModalData): string {
+  const model = buildNewAuthLoginModalModel(modal);
+  const sections = [
+    renderNewAuthLoginProgressSection(model),
+    renderNewAuthTwoFactorSectionFromCopy(model.twoFactorCopy),
+  ];
+  return sections.join('');
 }
 
-// Renders the NEW AUTH login progress and contextual 2FA section.
-function renderNewAuthLoginModalContent(modal: ModalData): string {
+// Normalizes modal data once so v1 and v2 share prompt copy and progress rows.
+function buildNewAuthLoginModalModel(modal: ModalData): NewAuthLoginModalModel {
   const stage = modal.stage ?? 'opening';
   const message = modal.message ?? modal.subtitle ?? 'New auth login modal is ready.';
   const requestedInput = requestedInputLabelForPromptKind(modal.twoFactorPromptKind) ?? modal.requestedInput;
+  const twoFactorCopy = twoFactorInputCopyForModal(modal);
+  return {
+    stage,
+    message,
+    requestedInput,
+    twoFactorCopy,
+  };
+}
+
+// Renders the login-progress section from normalized NEW AUTH modal data.
+function renderNewAuthLoginProgressSection(model: NewAuthLoginModalModel): string {
   return `
     ${renderModalSection(
       'Login progress',
       renderDefinitionList({
         Card: '1A-STASH-OFF',
-        Stage: stage,
+        Stage: model.stage,
         Endpoint: 'POST /api/auth/new/login',
         '2FA endpoint': 'POST /api/auth/new/submit-2fa',
-        ...(requestedInput ? { 'Requested input': requestedInput } : {}),
-      }) + `<p class="modal-panel__empty">${escapeHtml(message)}</p>`,
+        ...(model.requestedInput ? { 'Requested input': model.requestedInput } : {}),
+      }) + `<p class="modal-panel__empty">${escapeHtml(model.message)}</p>`,
     )}
-    ${renderNewAuthTwoFactorSection(modal)}
   `;
 }
 
-// Renders the 2FA input only when iCloudPD has exposed a specific safe prompt.
-function renderNewAuthTwoFactorSection(modal: ModalData): string {
-  const copy = twoFactorInputCopyForModal(modal);
+// Renders the 2FA input section from precomputed safe copy.
+function renderNewAuthTwoFactorSectionFromCopy(copy: NewAuthTwoFactorInputCopy): string {
   if (!copy.active) {
     return renderModalSection(
       'Two-factor authentication',

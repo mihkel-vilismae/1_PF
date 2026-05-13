@@ -52,7 +52,7 @@ test('runtime truth new auth login opens modal, updates button state, and record
 
   try {
     behavior.runAction('new-auth-login-using-env');
-    assert.equal(state.modal?.kind, 'new-auth-login');
+    assert.equal(state.modal?.kind, 'new-auth-login-v2');
     assert.equal(state.newAuth.buttonStates['new-auth-login-using-env'].status, 'running');
     await new Promise((resolve) => setTimeout(resolve, 0));
 

@@ -3,6 +3,9 @@
  * This frontend pass preserves the backend secret-redaction boundary.
  */
 import { SECRET_FIELD_PATTERN } from './runtimeTruthNewAuthConstants.ts';
+import { sanitizeNewAuthProviderText } from '../../newAuthRedaction.ts';
+
+export { sanitizeNewAuthProviderText };
 
 // Extracts sanitized provider preview text from active NEW AUTH payload shapes.
 export function extractSafeProviderCommunication(payload) {
@@ -14,23 +17,6 @@ export function extractSafeProviderCommunication(payload) {
       ? providerProof.providerOutputPreview
       : null;
   return preview ? sanitizeNewAuthProviderText(preview) : null;
-}
-
-// Performs a final frontend redaction pass for provider communication text.
-export function sanitizeNewAuthProviderText(value) {
-  return String(value)
-    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, (email) => redactEmailForDisplay(email))
-    .replace(/\b\d{6,8}\b/g, '[redacted-code]')
-    .replace(/((?:password|passwd|authorization|bearer|token|cookie|session|secret)\s*[:=]\s*)([^\s]+)/gi, '$1[redacted]')
-    .replace(/(Authorization:\s*)(.+)/gi, '$1[redacted]')
-    .replace(/(Cookie:\s*)(.+)/gi, '$1[redacted]');
-}
-
-// Redacts an email address while preserving a recognizable account shape.
-export function redactEmailForDisplay(email) {
-  const [name, domain] = email.split('@');
-  const prefix = name.length <= 2 ? `${name[0] ?? '*'}***` : `${name.slice(0, 2)}***`;
-  return `${prefix}@${domain}`;
 }
 
 // Recursively removes secret-like fields from NEW AUTH payloads.

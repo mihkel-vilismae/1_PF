@@ -130,7 +130,7 @@ export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, push
       payload: { stage, message, ...sanitizeNewAuthPayload(twoFactorPrompt), providerOutputPreview: safeCommunication },
     }));
     openModal({
-      kind: 'new-auth-login',
+      kind: 'new-auth-login-v2',
       title: '1A-STASH-OFF login using .env values',
       subtitle: message,
       stage,
