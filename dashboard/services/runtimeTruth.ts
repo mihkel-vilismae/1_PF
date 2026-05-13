@@ -19,6 +19,7 @@ type RuntimeTruthState = {
   valueInspectMode: boolean;
   realityInspectMode: boolean;
   backendStatusInspectMode: boolean;
+  showMarkedForRemoval: boolean;
   truth: RuntimeTruthSnapshot & Record<string, unknown>;
   history: Array<Record<string, unknown>>;
   logs: Record<string, Array<Record<string, unknown>>>;
@@ -165,6 +166,15 @@ export function toggleBackendStatusInspectMode(): void {
     inspectMode: nextBackendStatusInspectMode ? false : state.inspectMode,
     valueInspectMode: nextBackendStatusInspectMode ? false : state.valueInspectMode,
     realityInspectMode: nextBackendStatusInspectMode ? false : state.realityInspectMode,
+  };
+  emit();
+}
+
+// Toggles visibility for dashboard blocks explicitly marked for future removal.
+export function toggleMarkedForRemoval(): void {
+  state = {
+    ...state,
+    showMarkedForRemoval: !state.showMarkedForRemoval,
   };
   emit();
 }

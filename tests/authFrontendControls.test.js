@@ -1,3 +1,7 @@
+/*
+ * Verifies View A auth-related frontend markup and payload sanitization.
+ * These tests guard the legacy 1A-AUTH card and newer auth controls.
+ */
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { renderInitView } from '../dashboard/views/initView.ts';
@@ -36,6 +40,7 @@ test('View A 1A-AUTH renders icloudpd/login controls and keeps single-file test 
 
   assert.equal(markup.includes('1A-AUTH'), true);
   assert.equal(markup.includes('Verify icloudpd'), true);
+  assert.equal(markup.includes('data-marked-for-removal="true"'), true);
   assert.equal(markup.indexOf('Verify .env') < markup.indexOf('1A-AUTH'), true);
   assert.equal(markup.indexOf('1A-AUTH') < markup.indexOf('Database controls'), true);
   assert.equal(markup.includes('data-action="verify-icloudpd"'), true);

@@ -19,6 +19,10 @@ export const ACTION_BACKEND_STATUS_COPY = {
     "state": "unknown",
     "reason": "Local UI guide button; it does not represent backend wiring status."
   },
+  "toggle-marked-for-removal": {
+    "state": "unknown",
+    "reason": "Local UI visibility toggle for marked dashboard blocks; it does not represent backend wiring status."
+  },
   "clear-history": {
     "state": "unknown",
     "reason": "Implemented local UI action; it is not a backend-backed operation."

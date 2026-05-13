@@ -273,6 +273,7 @@ export function createInitialState() {
     valueInspectMode: false,
     realityInspectMode: false,
     backendStatusInspectMode: false,
+    showMarkedForRemoval: false,
     currentViewTitle: 'A — Init',
     modeBanner: 'Hybrid UI: A and E are backend-backed, B mixes real runtime endpoints with placeholder panels, and C-D still contain explicit frontend-only previews.',
     statusByKey: {

@@ -29,6 +29,10 @@ export const ACTION_INSPECT_COPY = {
     "label": "Show backend status mode",
     "description": "Highlights whether a section is backed by a real backend, frontend-only mock behavior, or missing backend support."
   },
+  "toggle-marked-for-removal": {
+    "label": "Show marked for removal",
+    "description": "Shows or hides dashboard blocks that have been explicitly marked for future removal."
+  },
   "clear-history": {
     "label": "Clear event history",
     "description": "Removes the sidebar event history list and replaces it with a fresh \"History cleared\" entry."

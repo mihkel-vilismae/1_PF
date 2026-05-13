@@ -270,7 +270,7 @@ function renderAuthCard(state) {
   const authState = state.authPreflight?.publicState ?? null;
   const latestResult = state.authPreflight?.latestResult ?? null;
   return `
-    <article class="card card--hybrid">
+    <article class="card card--hybrid marked-for-removal" data-marked-for-removal="true">
       <header class="card__header">
         <div><p class="card__code">1A-AUTH</p><h3>Verify icloudpd</h3></div>
         <div class="card__header-tags">${renderSourceBadge('real', 'BACKEND')}</div>

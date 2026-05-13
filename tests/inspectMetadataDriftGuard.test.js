@@ -1,3 +1,7 @@
+/*
+ * Verifies rendered dashboard actions stay covered by inspect metadata.
+ * The guard prevents new controls from falling back to generic guide copy.
+ */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -23,6 +27,7 @@ const localBackendUnknownActions = new Set([
   'toggle-value-inspect-mode',
   'toggle-reality-inspect-mode',
   'toggle-backend-status-inspect-mode',
+  'toggle-marked-for-removal',
 ]);
 
 test('rendered dashboard data-action controls have inspect, reality, and backend-status metadata', () => {

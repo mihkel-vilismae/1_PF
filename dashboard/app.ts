@@ -18,6 +18,7 @@ import {
   setActiveView,
   toggleBackendStatusInspectMode,
   toggleInspectMode,
+  toggleMarkedForRemoval,
   toggleRealityInspectMode,
   toggleValueInspectMode,
   setLastRunMode,
@@ -96,6 +97,7 @@ function render() {
   }[state.activeView];
 
   document.body.classList.toggle('modal-open', Boolean(state.modal));
+  document.body.classList.toggle('show-marked-for-removal', Boolean(state.showMarkedForRemoval));
 
   app.innerHTML = `
     ${renderVersionBadge(__APP_VERSION__, backendVersionState)}
@@ -158,6 +160,13 @@ function render() {
             <h1>${state.currentViewTitle}</h1>
           </div>
           <div class="topbar__actions">
+            <button
+              class="button ${state.showMarkedForRemoval ? 'button--danger' : 'button--secondary'} marked-removal-toggle"
+              type="button"
+              data-action="toggle-marked-for-removal"
+            >
+              ${state.showMarkedForRemoval ? 'Hide marked for removal' : 'Show marked for removal'}
+            </button>
             <button
               class="button ${state.inspectMode ? 'button--primary' : 'button--secondary'} inspect-toggle"
               type="button"
@@ -375,6 +384,10 @@ function bindEvents() {
       }
       if (action === 'toggle-backend-status-inspect-mode') {
         toggleBackendStatusInspectMode();
+        return;
+      }
+      if (action === 'toggle-marked-for-removal') {
+        toggleMarkedForRemoval();
         return;
       }
       if (action === 'clear-history') {

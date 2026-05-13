@@ -19,6 +19,10 @@ export const ACTION_REALITY_COPY = {
     "state": "real",
     "reason": "Implemented dashboard-shell guide button that classifies UI elements by backend wiring status."
   },
+  "toggle-marked-for-removal": {
+    "state": "real",
+    "reason": "Implemented dashboard-shell visibility toggle for UI blocks explicitly marked for future removal."
+  },
   "clear-history": {
     "state": "real",
     "reason": "Implemented local UI action that really clears the sidebar history list."
