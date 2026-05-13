@@ -7,7 +7,7 @@ import { spawn } from 'node:child_process';
 import { readdirSync } from 'node:fs';
 import { mkdir, rm } from 'node:fs/promises';
 import path from 'node:path';
-import { EMPTY_SESSION_EVIDENCE, ICLOUDPD_LOGIN_TIMEOUT_MS, ICLOUDPD_TIMEOUT_MS, INTERACTIVE_RESULT_POLL_MS, MAX_STDIO_CHARS } from './newAuth/newAuthConstants.js';
+import { EMPTY_SESSION_EVIDENCE, ICLOUDPD_LOGIN_TIMEOUT_MS, ICLOUDPD_TIMEOUT_MS, INTERACTIVE_RESULT_POLL_MS, MAX_STDIO_CHARS, UNKNOWN_2FA_PROMPT_GRACE_MS } from './newAuth/newAuthConstants.js';
 import { resolveIcloudpdExecutableForContext, runCommand, extractVersion, summarizeCommandFailure } from './newAuth/newAuthCommandRunner.js';
 import { collectNewAuthSessionEvidence, flattenPathMetadata, getNewAuthPathCandidates, hasFreshNewAuthSessionEvidence, isSafeSessionCleanupPath } from './newAuth/newAuthPathMetadata.js';
 import { normalizeNewAuthPath, positiveNumber, redactEmail, sanitizeCommandOutput, sanitizePathForDisplay, sanitizePreview, sanitizeProviderProofArgForDisplay, stringValue, summarizeEnvPresence } from './newAuth/newAuthSanitization.js';
@@ -592,6 +592,11 @@ function startInteractiveNewAuthAttempt({
   return attempt;
 }
 
+/*
+ * Waits for an interactive iCloudPD result while keeping the child process
+ * alive for 2FA follow-up. Generic 2FA text gets a short grace period so a
+ * concrete code/device prompt can arrive before the modal is rendered.
+ */
 function waitForInteractiveNewAuthResult(
   attempt: NewAuthInteractiveAttempt,
   messages: { successMessage: string; startedMessage: string },
@@ -602,6 +607,7 @@ function waitForInteractiveNewAuthResult(
 
   attempt.pendingWaiter = true;
   return new Promise((resolve) => {
+    let unknownPromptDetectedAt: number | null = null;
     const finish = (payload: Record<string, unknown>, keepAttemptActive: boolean) => {
       clearInterval(interval);
       attempt.pendingWaiter = false;
@@ -648,6 +654,13 @@ function waitForInteractiveNewAuthResult(
           attempt.beforeSessionEvidence,
         );
         if (promptResult.state === 'pending_2fa') {
+          const promptKind = readPromptKindFromPayload(promptResult);
+          if (promptKind === 'unknown') {
+            unknownPromptDetectedAt ??= now;
+            if (now - unknownPromptDetectedAt < UNKNOWN_2FA_PROMPT_GRACE_MS) {
+              return;
+            }
+          }
           finish(promptResult, true);
           return;
         }

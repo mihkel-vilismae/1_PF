@@ -1,3 +1,8 @@
+/*
+ * Verifies the NEW AUTH interactive iCloudPD process lifecycle.
+ * These tests cover prompt detection, 2FA follow-up submission,
+ * active child-process reuse, and safe redaction of auth details.
+ */
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
 import { mkdtempSync } from 'node:fs';
@@ -87,6 +92,70 @@ test('new auth keeps one live icloudpd process across device index and SMS code 
 
     const serialized = JSON.stringify([login, deviceIndex, smsCode]);
     assert.equal(serialized.includes('218228'), false);
+    assert.equal(serialized.includes('DO_NOT_EXPOSE_PASSWORD'), false);
+    assert.equal(serialized.includes('person@example.com'), false);
+    assert.equal(serialized.includes(cookieDir), false);
+  } finally {
+    await logoutNewAuthSession(context);
+    await rm(cookieDir, { recursive: true, force: true });
+  }
+});
+
+// Verifies generic 2FA text waits briefly for the concrete code prompt.
+test('new auth waits for delayed verification-code prompt before rendering modal input metadata', async () => {
+  const cookieDir = mkdtempSync(path.join(tmpdir(), 'new-auth-delayed-prompt-'));
+  const spawned = [];
+
+  const commandSpawner = () => {
+    const child = new EventEmitter();
+    child.stdin = new PassThrough();
+    child.stdout = new PassThrough();
+    child.stderr = new PassThrough();
+    child.kill = () => {
+      child.emit('close', null, 'SIGTERM');
+      return true;
+    };
+    child.unref = () => {};
+    spawned.push(child);
+
+    setImmediate(() => {
+      child.stdout.write([
+        'Processing user: person@example.com',
+        'Authenticating...',
+        'Authentication required for Account. (421)',
+        'Two-factor authentication is required (2fa)',
+      ].join('\n'));
+    });
+    setTimeout(() => {
+      child.stdout.write('\nPlease enter two-factor authentication code: ');
+    }, 100);
+
+    return child;
+  };
+
+  const context = {
+    executablePath: 'fake-icloudpd',
+    commandSpawner,
+    envValues: {
+      user: 'person@example.com',
+      pw: 'DO_NOT_EXPOSE_PASSWORD',
+      ICLOUDPD_COOKIE_DIR: cookieDir,
+      ICLOUDPD_AUTH_TIMEOUT_MS: '2000',
+    },
+  };
+
+  try {
+    const login = await startNewAuthLogin(context);
+
+    assert.equal(login.ok, true);
+    assert.equal(login.state, 'pending_2fa');
+    assert.equal(login.details.twoFactorPromptKind, 'verification_code');
+    assert.equal(login.details.canEnterSixDigitCode, true);
+    assert.equal(login.details.canEnterDeviceIndex, false);
+    assert.equal(spawned.length, 1);
+    assert.equal(login.details.providerOutputPreview.includes('Please enter two-factor authentication code:'), true);
+
+    const serialized = JSON.stringify(login);
     assert.equal(serialized.includes('DO_NOT_EXPOSE_PASSWORD'), false);
     assert.equal(serialized.includes('person@example.com'), false);
     assert.equal(serialized.includes(cookieDir), false);

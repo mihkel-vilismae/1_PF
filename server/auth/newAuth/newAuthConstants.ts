@@ -7,6 +7,7 @@ import type { NewAuthSessionEvidence } from './newAuthTypes.js';
 
 export const ICLOUDPD_TIMEOUT_MS = 8000;
 export const ICLOUDPD_LOGIN_TIMEOUT_MS = 120_000;
+export const UNKNOWN_2FA_PROMPT_GRACE_MS = 2_000;
 export const MAX_STDIO_CHARS = 6000;
 export const MAX_SESSION_CHILDREN = 25;
 export const SENSITIVE_ENV_KEYS = new Set(['user', 'pw', 'APPLE_ID', 'APPLE_PASSWORD', 'ICLOUDPD_COOKIE_DIR']);
