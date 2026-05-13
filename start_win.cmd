@@ -5,6 +5,23 @@ REM then opens separate terminals for the API server and Vite frontend.
 setlocal
 cd /d "%~dp0"
 
+REM If the repo-local .env is missing, seed it from the parent folder.
+REM This supports setups where the private .env is kept outside the Git repo.
+if not exist ".env" (
+  if exist "..\.env" (
+    echo [INFO] .env not found in repo root. Copying parent ..\.env into this repo...
+    copy /Y "..\.env" ".env" >nul
+    if errorlevel 1 (
+      echo [ERROR] Failed to copy ..\.env into the repo root.
+      pause
+      exit /b 1
+    )
+  ) else (
+    echo [WARN] .env not found in repo root, and parent ..\.env does not exist.
+    echo [WARN] Continuing startup; backend checks may fail until .env is created.
+  )
+)
+
 where node >nul 2>nul
 if errorlevel 1 (
   echo [ERROR] Node.js was not found on PATH.
