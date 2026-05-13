@@ -33,12 +33,6 @@ set "EXIT_CODE=%ERRORLEVEL%"
 del "%TEMP_PS1%" >nul 2>nul
 popd >nul 2>nul
 
-if not "%EXIT_CODE%"=="0" (
-  echo.
-  echo Packaging failed with exit code %EXIT_CODE%.
-  pause
-)
-
 exit /b %EXIT_CODE%
 
 # POWERSHELL_PAYLOAD_START
@@ -74,12 +68,13 @@ import argparse
 import fnmatch
 import json
 import os
+import re
 import subprocess
-import sys
+import threading
+import time
 import zipfile
 from dataclasses import dataclass
 from datetime import datetime, timezone
-import re
 from pathlib import Path
 from typing import Iterable
 
@@ -89,6 +84,12 @@ class IgnoreConfig:
     files: tuple[str, ...]
     directories: tuple[str, ...]
     patterns: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class SizeSnapshot:
+    total_bytes: int
+    git_bytes: int
 
 
 DEFAULT_IGNORE_CONFIG = IgnoreConfig(
@@ -114,6 +115,37 @@ DEFAULT_IGNORE_CONFIG = IgnoreConfig(
 )
 
 
+class DynamicProgressLine:
+    """Animate one console line using one, two, and three dots."""
+
+    def __init__(self, message: str, interval_seconds: float = 1.0) -> None:
+        self.message = message
+        self.interval_seconds = interval_seconds
+        self.stop_event = threading.Event()
+        self.thread = threading.Thread(target=self._run, daemon=True)
+
+    def _run(self) -> None:
+        """Update one console line until the stop event is set."""
+        dot_count = 1
+
+        while not self.stop_event.is_set():
+            dots = "." * dot_count
+            print(f"\r{self.message}{dots}   ", end="", flush=True)
+            dot_count = 1 if dot_count >= 3 else dot_count + 1
+            self.stop_event.wait(self.interval_seconds)
+
+    def __enter__(self) -> "DynamicProgressLine":
+        """Start the animated progress line."""
+        self.thread.start()
+        return self
+
+    def __exit__(self, exc_type: object, exc_value: object, traceback: object) -> None:
+        """Stop the animation and replace it with a completed line."""
+        self.stop_event.set()
+        self.thread.join(timeout=2)
+        print(f"\r{self.message} done.   ")
+
+
 def normalize_zip_path(path: Path) -> str:
     """Return a ZIP-safe relative path using forward slashes."""
     return path.as_posix().strip("/")
@@ -124,6 +156,103 @@ def sanitize_filename_part(value: str, fallback: str) -> str:
     cleaned = re.sub(r"[^A-Za-z0-9._-]+", "_", value.strip())
     cleaned = cleaned.strip("._-")
     return cleaned or fallback
+
+
+def format_datetime(value: datetime) -> str:
+    """Format a local datetime for human-readable console output."""
+    return value.strftime("%Y-%m-%d %H:%M:%S")
+
+
+def format_size(size_bytes: int) -> str:
+    """Format a byte count as KB or MB for readable output."""
+    size_kb = size_bytes / 1024
+    size_mb = size_kb / 1024
+
+    if size_mb >= 1:
+        return f"{size_mb:.2f} MB"
+
+    return f"{size_kb:.2f} KB"
+
+
+def color_print(message: str, color: str | None = None) -> None:
+    """Print a message with optional ANSI console color."""
+    if color is None:
+        print(message, flush=True)
+        return
+
+    color_codes = {
+        "Green": "\033[92m",
+        "Red": "\033[91m",
+    }
+
+    reset_code = "\033[0m"
+    color_code = color_codes.get(color)
+
+    if color_code is None:
+        print(message, flush=True)
+        return
+
+    print(f"{color_code}{message}{reset_code}", flush=True)
+
+
+def directory_size_bytes(root: Path, excluded_paths: set[Path] | None = None) -> int:
+    """Return the total file size under a directory."""
+    if not root.exists():
+        return 0
+
+    excluded_resolved = {path.resolve() for path in excluded_paths or set()}
+    total = 0
+
+    for current_root, dir_names, file_names in os.walk(root):
+        dir_names.sort()
+        file_names.sort()
+        current_path = Path(current_root)
+
+        for file_name in file_names:
+            file_path = current_path / file_name
+
+            try:
+                resolved_file = file_path.resolve()
+            except OSError:
+                continue
+
+            if resolved_file in excluded_resolved:
+                continue
+
+            try:
+                total += file_path.stat().st_size
+            except OSError:
+                continue
+
+    return total
+
+
+def capture_size_snapshot(repo_root: Path, output_zip_path: Path | None = None) -> SizeSnapshot:
+    """Capture total repository size and .git folder size."""
+    excluded_paths = {output_zip_path.resolve()} if output_zip_path is not None else set()
+    git_root = repo_root / ".git"
+
+    return SizeSnapshot(
+        total_bytes=directory_size_bytes(repo_root, excluded_paths),
+        git_bytes=directory_size_bytes(git_root),
+    )
+
+
+def wait_for_keypress() -> None:
+    """Wait for one key press before closing the console."""
+    if os.name == "nt":
+        try:
+            import msvcrt
+
+            msvcrt.getch()
+            return
+        except Exception:
+            pass
+
+    try:
+        input()
+    except EOFError:
+        pass
 
 
 def read_version_value(repo_root: Path) -> str:
@@ -141,12 +270,12 @@ def read_version_value(repo_root: Path) -> str:
 
 
 def build_default_output_zip_path(repo_root: Path) -> Path:
-    """Build {project_root_folder}_{creation_datetime}_{VERSION}.zip."""
+    """Build {project_root_folder}--v{VERSION}--{HH.MM.SS-DDMMYY}.zip."""
     repo_root = repo_root.resolve()
     project_folder = sanitize_filename_part(repo_root.name, "repo")
     version_value = sanitize_filename_part(read_version_value(repo_root), "NO_VERSION")
-    creation_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
-    return repo_root / f"{project_folder}_{creation_datetime}_{version_value}.zip"
+    creation_datetime = datetime.now().strftime("%H.%M.%S-%d%m%y")
+    return repo_root / f"{project_folder}--v{version_value}--{creation_datetime}.zip"
 
 
 def load_ignore_config(config_path: Path | None) -> IgnoreConfig:
@@ -298,23 +427,32 @@ def create_repo_zip(
     added: list[str] = []
     skipped_count = 0
 
-    with zipfile.ZipFile(output_zip_path, "w", compression=zipfile.ZIP_DEFLATED) as zip_file:
-        for file_path in iter_repo_files(repo_root):
-            rel_path = normalize_zip_path(file_path.relative_to(repo_root))
+    print("Creating ZIP archive.")
 
-            if should_include_file(repo_root, file_path, output_zip_path, config):
-                zip_file.write(file_path, rel_path)
-                added.append(rel_path)
-            else:
-                skipped_count += 1
+    with DynamicProgressLine("Scanning repository files"):
+        with zipfile.ZipFile(output_zip_path, "w", compression=zipfile.ZIP_DEFLATED) as zip_file:
+            for file_path in iter_repo_files(repo_root):
+                rel_path = normalize_zip_path(file_path.relative_to(repo_root))
+
+                if should_include_file(repo_root, file_path, output_zip_path, config):
+                    zip_file.write(file_path, rel_path)
+                    added.append(rel_path)
+                else:
+                    skipped_count += 1
+
+    print(f"Files added: {len(added)}")
+    print(f"Files skipped: {skipped_count}")
+    print("ZIP archive write completed.")
 
     if manifest_path is not None:
-        write_manifest(manifest_path, output_zip_path, added, skipped_count)
+        with DynamicProgressLine("Writing manifest"):
+            write_manifest(manifest_path, output_zip_path, added, skipped_count)
 
     return len(added), skipped_count
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments for the embedded packager."""
     parser = argparse.ArgumentParser(
         description="Create a repository ZIP with .git history while excluding .gitignore and JSON ignore matches."
     )
@@ -324,7 +462,7 @@ def parse_args() -> argparse.Namespace:
         default="",
         help=(
             "Output ZIP path. Default: auto-generate "
-            "{project_root_folder}_{YYYYMMDD_HHMMSS}_{VERSION}.zip using the root VERSION file."
+            "{project_root_folder}--v{VERSION}--{HH.MM.SS-DDMMYY}.zip using the root VERSION file."
         ),
     )
     parser.add_argument(
@@ -342,28 +480,83 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def print_final_report(
+    start_datetime: datetime,
+    start_perf: float,
+    before_snapshot: SizeSnapshot,
+    output_zip_path: Path,
+    success: bool,
+) -> None:
+    """Print the required final timing and size report."""
+    end_datetime = datetime.now()
+    elapsed_seconds = time.perf_counter() - start_perf
+    final_color = "Green" if success else "Red"
+    output_zip_size = output_zip_path.stat().st_size if output_zip_path.exists() else 0
+
+    print("")
+    color_print(f"Finished TRANSFERABLE_REPO_PACKAGER at {format_datetime(end_datetime)}.", final_color)
+    color_print(f"Time taken: {elapsed_seconds:.2f} seconds.", final_color)
+    color_print("Total size:", final_color)
+    color_print(f"- before packaging: {format_size(before_snapshot.total_bytes)}.", final_color)
+    color_print(f"- after packaging: {format_size(output_zip_size)}", final_color)
+    color_print(f".git folder size before packaging: {format_size(before_snapshot.git_bytes)}.", final_color)
+    color_print("Press any key to exit.", final_color)
+
+
 def main() -> int:
+    """Run the repo packaging flow and keep the console open with clear status output."""
+    start_datetime = datetime.now()
+    start_perf = time.perf_counter()
+
+    color_print(f"Started TRANSFERABLE_REPO_PACKAGER at {format_datetime(start_datetime)}", "Green")
+
     args = parse_args()
 
-    repo_root = Path(args.repo)
-    output_zip_path = Path(args.out) if args.out else build_default_output_zip_path(repo_root)
+    repo_root = Path(args.repo).resolve()
+    output_zip_path = Path(args.out).resolve() if args.out else build_default_output_zip_path(repo_root)
     ignore_json_path = Path(args.ignore_json) if args.ignore_json else None
     manifest_path = Path(args.manifest) if args.manifest else None
 
+    before_snapshot = SizeSnapshot(total_bytes=0, git_bytes=0)
+
     try:
-        config = load_ignore_config(ignore_json_path)
+        print(f"Repository: {repo_root}")
+        print(f"Filename to create: {output_zip_path.name}")
+        print(f"Output ZIP path: {output_zip_path}")
+
+        with DynamicProgressLine("Calculating repository size before packaging"):
+            before_snapshot = capture_size_snapshot(repo_root, output_zip_path)
+
+        print(f"Total size before packaging: {format_size(before_snapshot.total_bytes)}")
+        print(f".git folder size before packaging: {format_size(before_snapshot.git_bytes)}")
+
+        with DynamicProgressLine("Loading ignore rules"):
+            config = load_ignore_config(ignore_json_path)
+
+        print("Ignore rules loaded.")
+        print("Packaging will preserve .git history.")
+
         added_count, skipped_count = create_repo_zip(repo_root, output_zip_path, config, manifest_path)
 
+        print("")
         print("Repo ZIP created successfully.")
-        print(f"Repository: {repo_root.resolve()}")
-        print(f"Output ZIP: {output_zip_path.resolve()}")
+        print(f"Created filename: {output_zip_path.name}")
+        print(f"Output ZIP: {output_zip_path}")
+        if output_zip_path.exists():
+            print(f"Output ZIP size: {format_size(output_zip_path.stat().st_size)}")
         if manifest_path is not None:
             print(f"Manifest: {manifest_path.resolve()}")
         print(f"Files added: {added_count}")
         print(f"Files skipped: {skipped_count}")
+        print("Calculating created ZIP size.")
+
+        print_final_report(start_datetime, start_perf, before_snapshot, output_zip_path, True)
+        wait_for_keypress()
         return 0
     except Exception as error:
-        print(f"ERROR: {error}", file=sys.stderr)
+        color_print(f"ERROR: {error}", "Red")
+        print_final_report(start_datetime, start_perf, before_snapshot, output_zip_path, False)
+        wait_for_keypress()
         return 1
 
 
@@ -378,8 +571,7 @@ $ignoreJsonSource = @'
     "packaged_repo.zip",
     "repo_zip_packager.zip",
     "repo_zip_packager_regen.zip",
-    "TRANSFERABLE_REPO_PACKAGER.cmd",
-    "CREATE_TRASNFERABLE.cmd",
+    "CREATE_TRANSFERABLE.cmd",
     "pack_repo_zip.py",
     "zip_ignore.json",
     "repo_package_manifest.json"
@@ -425,7 +617,24 @@ try {
   [IO.File]::WriteAllText($ignorePath, $ignoreJsonSource, [Text.UTF8Encoding]::new($false))
 
   py $packagerPath --repo . --ignore-json $ignorePath
-  exit $LASTEXITCODE
+  $exitCode = $LASTEXITCODE
+
+  if ($exitCode -ne 0) {
+    Write-Host ""
+    Write-Host "ERROR: Python packager exited with code $exitCode" -ForegroundColor Red
+    Write-Host "Press any key to exit." -ForegroundColor Red
+    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+  }
+
+  exit $exitCode
+} catch {
+  Write-Host ""
+  Write-Host "ERROR: TRANSFERABLE_REPO_PACKAGER failed before Python packaging could finish." -ForegroundColor Red
+  Write-Host $_.Exception.Message -ForegroundColor Red
+  Write-Host ""
+  Write-Host "Press any key to exit." -ForegroundColor Red
+  $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+  exit 1
 } finally {
   Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
 }
