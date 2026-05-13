@@ -1,3 +1,7 @@
+/*
+ * Builds runtime-truth action request, response, and summary details.
+ * Helpers keep event-history metadata consistent across init/runtime actions.
+ */
 import type { ApiRequestMeta } from '../apiClient.ts';
 import type { SchedulerCapability } from '../../../shared/schedulerPlatformCapabilities.ts';
 
@@ -109,6 +113,7 @@ export function buildTimelineDetails(): RuntimeTruthTimelineDetails {
   };
 }
 
+// Builds event-history log details while preserving captured transport metadata.
 export function buildInitLogDetails({ operation, endpoint, requestBody, apiMeta, responsePayload, outcome }: RuntimeTruthLogDetailsInput): RuntimeTruthLogDetails {
   const request = apiMeta?.request ?? {
     method: endpoint.method,
@@ -126,6 +131,7 @@ export function buildInitLogDetails({ operation, endpoint, requestBody, apiMeta,
     request,
     response: responseMeta
       ? {
+          ...(responseMeta.requestId === undefined ? {} : { requestId: responseMeta.requestId }),
           status: responseMeta.status,
           statusText: responseMeta.statusText,
           ok: responseMeta.ok,

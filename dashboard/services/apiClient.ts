@@ -1,15 +1,22 @@
+/*
+ * Centralizes dashboard HTTP requests and request/response transit diagnostics.
+ * Browser-facing services use this gateway so backend calls share parsing,
+ * errors, metadata capture, and live traffic events.
+ */
 export type ApiRequestPayload = unknown;
 
 export type ApiHeaders = Record<string, string>;
 
 export type ApiRequestMeta = {
   request: {
+    requestId?: number;
     method: string;
     path: string;
     headers: ApiHeaders;
     body: ApiRequestPayload | null;
   };
   response: {
+    requestId?: number;
     status: number;
     statusText: string;
     ok: boolean;
@@ -72,8 +79,10 @@ export class ApiRequestError extends Error {
 }
 
 const transitSubscribers = new Set<TransitListener>();
+const REQUEST_ID_HEADER = 'X-Dashboard-Request-Id';
 let nextTransitId = 1;
 
+// Registers a listener for live request/response transit records.
 export function subscribeTransit(listener: TransitListener): () => boolean {
   if (typeof listener !== 'function') {
     throw new TypeError('subscribeTransit(listener) requires a function.');
@@ -82,6 +91,7 @@ export function subscribeTransit(listener: TransitListener): () => boolean {
   return () => transitSubscribers.delete(listener);
 }
 
+// Emits transit records to subscribers and the browser event bus without blocking requests.
 function emitTransit(record: TransitRecord): void {
   transitSubscribers.forEach((listener) => {
     try {
@@ -105,6 +115,7 @@ function emitTransit(record: TransitRecord): void {
   }
 }
 
+// Sends a JSON-oriented request and records matching request/response diagnostics.
 export function requestJson<TPayload = unknown>(
   path: string,
   options: ApiRequestOptions & { captureMeta: true },
@@ -118,9 +129,11 @@ export async function requestJson<TPayload = unknown>(
   options: ApiRequestOptions = {},
 ): Promise<TPayload | ApiResponseWithMeta<TPayload>> {
   const { method = 'GET', body, headers = {}, captureMeta = false, operation } = options;
+  const transitId = nextTransitId++;
   const requestHeaders: ApiHeaders = {
     Accept: 'application/json, text/plain;q=0.9, */*;q=0.8',
     ...headers,
+    [REQUEST_ID_HEADER]: String(transitId),
   };
 
   const init: RequestInit = {
@@ -133,12 +146,12 @@ export async function requestJson<TPayload = unknown>(
     init.body = JSON.stringify(body);
   }
 
-  const transitId = nextTransitId++;
   const transitOperation = typeof operation === 'string' && operation.trim()
     ? operation.trim()
     : `${method} ${path}`;
 
   const requestMeta = {
+    requestId: transitId,
     method,
     path,
     headers: normalizeHeaders(requestHeaders),
@@ -183,6 +196,7 @@ export async function requestJson<TPayload = unknown>(
 
   const payload = await readResponsePayload(response) as TPayload;
   const responseMeta = {
+    requestId: transitId,
     status: response.status,
     statusText: response.statusText,
     ok: response.ok,
@@ -240,6 +254,7 @@ export async function requestJson<TPayload = unknown>(
   return payload;
 }
 
+// Reads JSON/text responses while preserving empty and no-content responses as null.
 async function readResponsePayload(response: Response): Promise<unknown> {
   if (response.status === 204) {
     return null;
@@ -262,6 +277,7 @@ async function readResponsePayload(response: Response): Promise<unknown> {
   }
 }
 
+// Extracts a human-readable failure message from common backend payload shapes.
 function extractMessage(payload: unknown): string | null {
   if (!payload) {
     return null;
@@ -281,6 +297,7 @@ function extractMessage(payload: unknown): string | null {
   return null;
 }
 
+// Converts Fetch Headers or header-like records into plain string maps.
 function normalizeHeaders(headers: Headers | Record<string, unknown>): ApiHeaders {
   if (headers instanceof Headers) {
     const normalizedHeaders: ApiHeaders = {};

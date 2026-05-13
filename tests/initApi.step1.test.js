@@ -39,6 +39,36 @@ test('POST /api/init/verify-env validates the temp env file', async () => {
   });
 });
 
+test('POST /api/init/verify-env echoes dashboard request id header', async () => {
+  await withInitServer(async ({ port }) => {
+    const response = await requestJson(port, '/api/init/verify-env', {
+      method: 'POST',
+      headers: { 'X-Dashboard-Request-Id': '42' },
+    });
+
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get('x-dashboard-request-id'), '42');
+  });
+});
+
+test('NEW AUTH routes mirror sanitized entries to logindebug.log', async () => {
+  await withInitServer(async ({ port, logDir }) => {
+    const response = await requestJson(port, '/api/auth/new/status?mode=passive', {
+      method: 'GET',
+      headers: { 'X-Dashboard-Request-Id': 'new-auth-debug-1' },
+    });
+
+    assert.equal(response.status, 200);
+    const logText = await waitForLogContaining(path.join(logDir, 'logindebug.log'), 'HTTP auth request completed.');
+
+    assert.match(logText, /HTTP auth request received/);
+    assert.match(logText, /HTTP auth request completed/);
+    assert.match(logText, /1A-STASH-OFF NEW AUTH/);
+    assert.match(logText, /new-auth-debug-1/);
+    assert.doesNotMatch(logText, /super-secret-password/);
+  });
+});
+
 test('INIT_ENV_FILE keeps live audit checks isolated from the repo .env database path', async () => {
   const repoEnvValues = parseEnvContent(await fs.promises.readFile(path.join(repoRoot, '.env'), 'utf8'));
   const repoDbPath = repoEnvValues.DB_PATH ? path.resolve(repoRoot, repoEnvValues.DB_PATH) : null;
@@ -293,7 +323,7 @@ async function withInitServer(run) {
 
   try {
     await ready;
-    await run({ port, dbPath, envFilePath, workspaceRoot, cronEmulatorCrontabPath });
+    await run({ port, dbPath, logDir, envFilePath, workspaceRoot, cronEmulatorCrontabPath });
   } finally {
     child.kill();
     await onceExit(child);
@@ -301,17 +331,41 @@ async function withInitServer(run) {
   }
 }
 
+// Sends JSON test requests to the init API and returns status, headers, and body.
 async function requestJson(port, pathname, options = {}) {
+  const headers = {
+    ...(options.headers ?? {}),
+    ...(options.body ? { 'content-type': 'application/json' } : {}),
+  };
   const response = await fetch(`http://127.0.0.1:${port}${pathname}`, {
     method: options.method ?? 'GET',
-    headers: options.body ? { 'content-type': 'application/json' } : undefined,
+    headers: Object.keys(headers).length ? headers : undefined,
     body: options.body ? JSON.stringify(options.body) : undefined,
   });
 
   return {
     status: response.status,
+    headers: response.headers,
     json: await response.json(),
   };
+}
+
+// Waits for an async logger write to become visible in a log file.
+async function waitForLogContaining(filePath, needle) {
+  const deadline = Date.now() + 3000;
+  let lastError = null;
+  while (Date.now() < deadline) {
+    try {
+      const text = await readFile(filePath, 'utf8');
+      if (text.includes(needle)) {
+        return text;
+      }
+    } catch (error) {
+      lastError = error;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+  throw lastError ?? new Error(`Timed out waiting for ${needle} in ${filePath}`);
 }
 
 async function reservePort() {

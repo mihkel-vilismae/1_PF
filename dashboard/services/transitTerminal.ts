@@ -1,13 +1,18 @@
+/*
+ * Formats live dashboard API transit records for the on-screen terminal.
+ * The terminal mirrors outbound requests and inbound responses from apiClient.
+ * Request ids make paired request/response lines easy to correlate.
+ */
 import type { TransitRecord } from './apiClient.ts';
 
 const MAX_TRANSIT_LINES = 120;
 const placeholderLines = [
   '[PLACEHOLDER] boot: transit terminal is not wired yet',
   '$ tail -f dashboard-transit.log',
-  '00:00:01 OUT GET /api/init/verify-env body=no',
-  '00:00:01 IN  200 OK  GET /api/init/verify-env',
-  '00:00:05 OUT GET /api/init/database/status body=no',
-  '00:00:05 IN  404 ERR GET /api/init/database/status',
+  '00:00:01 OUT #1 GET /api/init/verify-env body=no',
+  '00:00:01 IN  #1 200 OK  GET /api/init/verify-env',
+  '00:00:05 OUT #2 GET /api/init/database/status body=no',
+  '00:00:05 IN  #2 404 ERR GET /api/init/database/status',
   '[PLACEHOLDER] replace this feed with live gateway traffic',
 ];
 
@@ -17,6 +22,7 @@ export type TransitTerminal = {
   renderLines: () => string;
 };
 
+// Creates a bounded in-memory terminal buffer for live transit records.
 export function createTransitTerminal(): TransitTerminal {
   const transitLines: string[] = [];
   let hasLiveTraffic = false;
@@ -50,6 +56,7 @@ export function createTransitTerminal(): TransitTerminal {
   };
 }
 
+// Converts one transit record into a stable single-line terminal entry.
 function formatTransitRecord(record: TransitRecord | unknown): string {
   if (!record || typeof record !== 'object') {
     return '';
@@ -70,13 +77,16 @@ function formatTransitRecord(record: TransitRecord | unknown): string {
 
   const operation = typeof candidate.operation === 'string' ? candidate.operation : `${method} ${path}`;
   const hasBody = candidate.hasBody === true ? 'body=yes' : candidate.hasBody === false ? 'body=no' : 'body=?';
+  const requestId = typeof candidate.id === 'number' && Number.isFinite(candidate.id)
+    ? `#${candidate.id}`
+    : '#?';
 
   if (candidate.direction === 'outbound') {
-    return `${time} ${direction} ${method} ${path} ${hasBody} :: ${operation}`;
+    return `${time} ${direction} ${requestId} ${method} ${path} ${hasBody} :: ${operation}`;
   }
 
   const status = candidate.status === null || candidate.status === undefined ? '---' : String(candidate.status);
   const ok = candidate.ok === true ? 'OK ' : candidate.ok === false ? 'ERR' : '---';
   const error = typeof candidate.error === 'string' && candidate.error.trim() ? ` :: ${candidate.error.trim()}` : '';
-  return `${time} ${direction} ${status} ${ok} ${method} ${path}${error} :: ${operation}`;
+  return `${time} ${direction} ${requestId} ${status} ${ok} ${method} ${path}${error} :: ${operation}`;
 }

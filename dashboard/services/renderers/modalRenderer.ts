@@ -349,13 +349,16 @@ function renderHistoryModalContent(entry: LogEntry | HistoryEntry): string {
 
 // Renders request or response transport metadata for modal diagnostics.
 function renderTransportSection(label: 'Request' | 'Response', data: TransportData): string {
+  const requestId = readTransportRequestId(data) ?? 'Unavailable';
   const summaryRows: DefinitionListData =
     label === 'Request'
       ? {
+          'Request ID': requestId,
           Method: data.method ?? 'Unavailable',
           Endpoint: data.path ?? 'Unavailable',
         }
       : {
+          'Request ID': requestId,
           Status: data.status ?? 'Unavailable',
           'Status text': data.statusText ?? 'Unavailable',
           Success: data.ok === undefined ? 'Unavailable' : String(data.ok),
@@ -379,6 +382,19 @@ function renderTransportSection(label: 'Request' | 'Response', data: TransportDa
       </div>
     `,
   );
+}
+
+// Reads a correlation id from explicit metadata or captured HTTP headers.
+function readTransportRequestId(data: TransportData): unknown {
+  if (data.requestId !== null && data.requestId !== undefined) {
+    return data.requestId;
+  }
+  if (!data.headers || typeof data.headers !== 'object' || Array.isArray(data.headers)) {
+    return null;
+  }
+
+  const headers = data.headers as Record<string, unknown>;
+  return headers['X-Dashboard-Request-Id'] ?? headers['x-dashboard-request-id'] ?? null;
 }
 
 // Wraps modal section content with the existing section title structure.

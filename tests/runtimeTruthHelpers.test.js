@@ -1,3 +1,7 @@
+/*
+ * Verifies runtime-truth helper normalization, summaries, and diagnostics.
+ * Request/response metadata assertions keep event-history transport details intact.
+ */
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
@@ -32,13 +36,14 @@ test('runtimeTruth action helpers preserve request metadata and status text', ()
     meta: { response: {} },
   });
 
+  // Verifies captured request ids survive log-detail normalization.
   const details = buildInitLogDetails({
     operation: 'Verify .env',
     endpoint: { method: 'POST', path: '/api/init/verify-env' },
     requestBody: { dryRun: true },
     apiMeta: {
-      request: { method: 'POST', path: '/api/init/verify-env', headers: {}, body: { dryRun: true } },
-      response: { status: 200, statusText: 'OK', ok: true, url: 'http://localhost/api/init/verify-env', headers: {}, body: { status: 'success' } },
+      request: { requestId: 7, method: 'POST', path: '/api/init/verify-env', headers: {}, body: { dryRun: true } },
+      response: { requestId: 7, status: 200, statusText: 'OK', ok: true, url: 'http://localhost/api/init/verify-env', headers: {}, body: { status: 'success' } },
     },
     responsePayload: { status: 'success' },
     outcome: 'success',
@@ -47,6 +52,8 @@ test('runtimeTruth action helpers preserve request metadata and status text', ()
   assert.equal(details.operation, 'Verify .env');
   assert.equal(details.endpoint, 'POST /api/init/verify-env');
   assert.equal(details.outcome, 'success');
+  assert.equal(details.request.requestId, 7);
+  assert.equal(details.response.requestId, 7);
   assert.equal(details.response.body.status, 'success');
   assert.match(details.timeline.iso, /^20\d\d-/);
 

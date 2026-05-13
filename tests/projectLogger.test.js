@@ -1,3 +1,7 @@
+/*
+ * Verifies backend project logger file creation and mirrored log sinks.
+ * The dedicated login debug sink keeps auth diagnostics separate from normal logs.
+ */
 import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -19,12 +23,14 @@ test('project logger creates requested log files and mirrors all entries to full
     await logger.info('regular event');
     await logger.debug('debug event');
     await logger.error('error event', new Error('boom'));
+    await logger.loginDebug('login event', { route: '/api/auth/new/status' });
 
     assert.match(path.basename(logger.paths.regular), /^log_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.log$/);
     const regular = await readFile(logger.paths.regular, 'utf8');
     const debug = await readFile(path.join(root, 'logs', 'debug.log'), 'utf8');
     const error = await readFile(path.join(root, 'logs', 'error.log'), 'utf8');
     const full = await readFile(path.join(root, 'logs', 'full_log.log'), 'utf8');
+    const loginDebug = await readFile(path.join(root, 'logs', 'logindebug.log'), 'utf8');
 
     assert.match(regular, /regular event/);
     assert.doesNotMatch(regular, /debug event|error event/);
@@ -33,6 +39,8 @@ test('project logger creates requested log files and mirrors all entries to full
     assert.match(full, /regular event/);
     assert.match(full, /debug event/);
     assert.match(full, /error event/);
+    assert.match(loginDebug, /login event/);
+    assert.doesNotMatch(loginDebug, /regular event|debug event|error event/);
   } finally {
     await rm(root, { recursive: true, force: true });
   }

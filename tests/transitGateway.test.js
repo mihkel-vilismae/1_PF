@@ -1,3 +1,7 @@
+/*
+ * Verifies the shared dashboard API gateway emits paired transit diagnostics.
+ * Tests cover success, backend failure, and network failure request/response ids.
+ */
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
@@ -37,30 +41,43 @@ function installFetchStub(impl) {
   };
 }
 
+// Verifies successful requests emit a visible id and matching metadata ids.
 test('requestJson emits outbound + inbound transit records (success)', async () => {
   /** @type {TransitRecord[]} */
   const records = [];
+  const fetchCalls = [];
   const unsubscribe = subscribeTransit((record) => records.push(record));
 
-  const restoreFetch = installFetchStub(async () => ({
-    status: 200,
-    ok: true,
-    statusText: 'OK',
-    url: 'http://localhost/api/test',
-    headers: new Headers({ 'content-type': 'application/json' }),
-    json: async () => ({ status: 'ok' }),
-    text: async () => '',
-  }));
+  const restoreFetch = installFetchStub(async (path, init) => {
+    fetchCalls.push({ path, init });
+    return {
+      status: 200,
+      ok: true,
+      statusText: 'OK',
+      url: 'http://localhost/api/test',
+      headers: new Headers({ 'content-type': 'application/json', 'x-dashboard-request-id': String(records[0]?.id ?? '') }),
+      json: async () => ({ status: 'ok' }),
+      text: async () => '',
+    };
+  });
 
-  const payload = await requestJson('/api/test', {
+  const result = await requestJson('/api/test', {
     method: 'POST',
     body: { hello: 'world' },
     operation: 'Test operation',
+    captureMeta: true,
   });
 
-  assert.deepEqual(payload, { status: 'ok' });
+  assert.deepEqual(result.payload, { status: 'ok' });
+  assert.equal(result.meta.request.requestId, result.meta.response.requestId);
   assert.equal(records.length, 2);
+  assert.equal(fetchCalls.length, 1);
 
+  assert.equal(records[0].id, records[1].id);
+  assert.equal(records[0].id, result.meta.request.requestId);
+  assert.equal(fetchCalls[0].init.headers['X-Dashboard-Request-Id'], String(records[0].id));
+  assert.equal(result.meta.request.headers['X-Dashboard-Request-Id'], String(records[0].id));
+  assert.equal(result.meta.response.headers['x-dashboard-request-id'], String(records[0].id));
   assert.equal(records[0].direction, 'outbound');
   assert.equal(records[0].method, 'POST');
   assert.equal(records[0].path, '/api/test');
@@ -76,6 +93,7 @@ test('requestJson emits outbound + inbound transit records (success)', async () 
   unsubscribe();
 });
 
+// Verifies non-2xx responses keep the same id as their outbound request.
 test('requestJson emits inbound failure transit record on non-2xx', async () => {
   /** @type {TransitRecord[]} */
   const records = [];
@@ -91,12 +109,19 @@ test('requestJson emits inbound failure transit record on non-2xx', async () => 
     text: async () => '',
   }));
 
-  await assert.rejects(
-    () => requestJson('/api/fail', { method: 'GET', operation: 'Fail operation' }),
-    (error) => error instanceof ApiRequestError && error.status === 500,
-  );
+  let caughtError = null;
+  try {
+    await requestJson('/api/fail', { method: 'GET', operation: 'Fail operation' });
+  } catch (error) {
+    caughtError = error;
+  }
 
+  assert.ok(caughtError instanceof ApiRequestError);
+  assert.equal(caughtError.status, 500);
+  assert.equal(caughtError.meta.request.requestId, caughtError.meta.response.requestId);
   assert.equal(records.length, 2);
+  assert.equal(records[0].id, records[1].id);
+  assert.equal(records[0].id, caughtError.meta.request.requestId);
   assert.equal(records[0].direction, 'outbound');
   assert.equal(records[1].direction, 'inbound');
   assert.equal(records[1].ok, false);
@@ -107,6 +132,7 @@ test('requestJson emits inbound failure transit record on non-2xx', async () => 
   unsubscribe();
 });
 
+// Verifies network failures still correlate the failed inbound record to the request.
 test('requestJson emits inbound failure transit record on network error', async () => {
   /** @type {TransitRecord[]} */
   const records = [];
@@ -122,6 +148,7 @@ test('requestJson emits inbound failure transit record on network error', async 
   );
 
   assert.equal(records.length, 2);
+  assert.equal(records[0].id, records[1].id);
   assert.equal(records[0].direction, 'outbound');
   assert.equal(records[1].direction, 'inbound');
   assert.equal(records[1].ok, false);
@@ -131,4 +158,3 @@ test('requestJson emits inbound failure transit record on network error', async 
   restoreFetch();
   unsubscribe();
 });
-

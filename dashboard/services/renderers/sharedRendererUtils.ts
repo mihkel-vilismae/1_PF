@@ -7,6 +7,7 @@
 export type DefinitionListData = Record<string, unknown>;
 
 export type TransportData = {
+  requestId?: unknown;
   method?: unknown;
   path?: unknown;
   status?: unknown;

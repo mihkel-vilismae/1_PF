@@ -15,6 +15,7 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { createAuthRoutes } from './auth/authRoutes.ts';
 import { testAuthLoginByDownloadingSingleFile } from './auth/authService.ts';
+import { REDACTED_VALUE, sanitizeAuthValue } from './auth/authLogSanitizer.ts';
 import { verifyNewAuthSessionForRuntimeDownload } from './auth/newAuthService.ts';
 import { createNewAuthRoutes } from './auth/newAuthRoutes.ts';
 import { createDatabaseService } from './database/databaseService.ts';
@@ -63,6 +64,7 @@ const logger = createProjectLogger({
   onWriteError: reportLoggerWriteError,
 });
 await logger.initialize().catch(reportLoggerWriteError);
+const dashboardRequestIdHeader = 'X-Dashboard-Request-Id';
 const schedulerRuntimeDirectory = path.join(repoRoot, 'runtime_data', 'scheduler');
 const schedulerTargetSelectionFilePath = path.join(schedulerRuntimeDirectory, 'selected-target.json');
 const cronEmulatorRoot = path.join(repoRoot, 'tools', 'CronEmulator');
@@ -457,8 +459,13 @@ const routes: Record<string, RouteHandler> = {
   }),
 };
 
+// Handles every backend HTTP request and mirrors auth/login diagnostics when applicable.
 const server = createServer(async (request: IncomingMessage, response: ServerResponse) => {
   const startedAt = Date.now();
+  const dashboardRequestId = readDashboardRequestId(request);
+  if (dashboardRequestId) {
+    response.setHeader(dashboardRequestIdHeader, dashboardRequestId);
+  }
   let routeKey = `${request.method || 'GET'} ${request.url || ''}`;
   let url = null;
   try {
@@ -487,15 +494,18 @@ const server = createServer(async (request: IncomingMessage, response: ServerRes
     }
 
     const body = await readJsonBody(request);
+    void logLoginDebugRequestReceived({ request, url, routeKey, body, startedAt });
     const context = await buildRequestContext();
     const result = await handler({ request, response, url, body, context });
     sendJson(response, result.statusCode, result.payload);
+    void logLoginDebugRequestCompleted({ request, url, routeKey, statusCode: result.statusCode, startedAt, payload: result.payload });
     void logRequest({ request, url, routeKey, statusCode: result.statusCode, startedAt });
   } catch (error: unknown) {
     const statusCode = error instanceof HttpError ? error.statusCode : 500;
     const code = error instanceof HttpError ? error.code : 'internal_error';
     const details = error instanceof HttpError ? error.details : undefined;
     void logger.error('HTTP request failed.', {
+      requestId: dashboardRequestId,
       method: request.method || 'GET',
       path: url?.pathname || request.url || null,
       routeKey,
@@ -504,6 +514,7 @@ const server = createServer(async (request: IncomingMessage, response: ServerRes
       durationMs: Date.now() - startedAt,
       error,
     });
+    void logLoginDebugRequestFailed({ request, url, routeKey, statusCode, startedAt, code, details, error });
     sendJson(response, statusCode, errorPayload(code, getErrorMessage(error), details));
   }
 });
@@ -2926,8 +2937,10 @@ function sendJson(response: ServerResponse, statusCode: number, payload: unknown
   response.end(body);
 }
 
+// Logs completed HTTP requests with timing and optional dashboard correlation id.
 function logRequest({ request, url = null, routeKey, statusCode, startedAt }: { request: IncomingMessage; url?: URL | null; routeKey: string; statusCode: number; startedAt: number }) {
   const entry = {
+    requestId: readDashboardRequestId(request),
     method: request.method || 'GET',
     path: url?.pathname || request.url || null,
     routeKey,
@@ -2939,6 +2952,92 @@ function logRequest({ request, url = null, routeKey, statusCode, startedAt }: { 
     return logger.error('HTTP request completed with server error.', entry);
   }
   return logger.info('HTTP request completed.', entry);
+}
+
+// Mirrors sanitized auth/login request arrival details into logindebug.log.
+function logLoginDebugRequestReceived({ request, url, routeKey, body, startedAt }: { request: IncomingMessage; url: URL; routeKey: string; body: JsonObject; startedAt: number }) {
+  if (!isLoginDebugRoute(url)) {
+    return Promise.resolve();
+  }
+  return logger.loginDebug('HTTP auth request received.', {
+    ...buildLoginDebugBaseEntry({ request, url, routeKey, startedAt }),
+    headers: sanitizeAuthValue(request.headers),
+    body: sanitizeLoginDebugBody(body),
+  });
+}
+
+// Mirrors sanitized auth/login response details into logindebug.log.
+function logLoginDebugRequestCompleted({ request, url, routeKey, statusCode, startedAt, payload }: { request: IncomingMessage; url: URL; routeKey: string; statusCode: number; startedAt: number; payload: unknown }) {
+  if (!isLoginDebugRoute(url)) {
+    return Promise.resolve();
+  }
+  return logger.loginDebug('HTTP auth request completed.', {
+    ...buildLoginDebugBaseEntry({ request, url, routeKey, startedAt }),
+    statusCode,
+    payload: sanitizeAuthValue(payload),
+  });
+}
+
+// Mirrors sanitized auth/login failures into logindebug.log before the error response is sent.
+function logLoginDebugRequestFailed({ request, url, routeKey, statusCode, startedAt, code, details, error }: { request: IncomingMessage; url: URL | null; routeKey: string; statusCode: number; startedAt: number; code: string; details: unknown; error: unknown }) {
+  if (!isLoginDebugRoute(url, routeKey)) {
+    return Promise.resolve();
+  }
+  return logger.loginDebug('HTTP auth request failed.', {
+    ...buildLoginDebugBaseEntry({ request, url, routeKey, startedAt }),
+    statusCode,
+    code,
+    details: sanitizeAuthValue(details),
+    error: sanitizeAuthValue(error instanceof Error ? { name: error.name, message: error.message, stack: error.stack } : error),
+  });
+}
+
+// Builds the common auth/login debug fields used by request and response entries.
+function buildLoginDebugBaseEntry({ request, url, routeKey, startedAt }: { request: IncomingMessage; url: URL | null; routeKey: string; startedAt: number }) {
+  const pathName = url?.pathname ?? extractPathFromRouteKey(routeKey);
+  return {
+    surface: pathName.startsWith('/api/auth/new/') ? '1A-STASH-OFF NEW AUTH' : 'login/auth',
+    requestId: readDashboardRequestId(request),
+    method: request.method || 'GET',
+    path: pathName,
+    routeKey,
+    query: url ? Object.fromEntries(url.searchParams.entries()) : {},
+    durationMs: Date.now() - startedAt,
+  };
+}
+
+// Checks whether a route belongs to the auth/login surfaces that need mirrored logging.
+function isLoginDebugRoute(url: URL | null, routeKey = ''): boolean {
+  const pathName = url?.pathname ?? extractPathFromRouteKey(routeKey);
+  return pathName === '/api/auth' || pathName.startsWith('/api/auth/');
+}
+
+// Extracts a pathname-like value from a route key when URL parsing failed.
+function extractPathFromRouteKey(routeKey: string): string {
+  const separatorIndex = routeKey.indexOf(' ');
+  return separatorIndex === -1 ? routeKey : routeKey.slice(separatorIndex + 1);
+}
+
+// Redacts request body fields that may contain submitted login or 2FA secrets.
+function sanitizeLoginDebugBody(body: JsonObject): unknown {
+  const sanitized = sanitizeAuthValue(body);
+  if (!sanitized || typeof sanitized !== 'object' || Array.isArray(sanitized)) {
+    return sanitized;
+  }
+  return Object.fromEntries(
+    Object.entries(sanitized).map(([key, value]) => [key, key === 'code' ? REDACTED_VALUE : value]),
+  );
+}
+
+// Reads the dashboard correlation id from request headers when the frontend sent one.
+function readDashboardRequestId(request: IncomingMessage): string | null {
+  const header = request.headers[dashboardRequestIdHeader.toLowerCase()];
+  const value = Array.isArray(header) ? header[0] : header;
+  if (typeof value !== 'string') {
+    return null;
+  }
+  const trimmed = value.trim();
+  return /^[A-Za-z0-9._:-]{1,80}$/.test(trimmed) ? trimmed : null;
 }
 
 function reportLoggerWriteError(error: unknown): void {
