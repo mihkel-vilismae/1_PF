@@ -36,6 +36,7 @@ runtime-truth.json
 conf/runtime-truth.json
 tools/CronEmulator/crontab_emulated.txt
 tools/CronEmulator/logs/
+tools/docs_labels/
 *.log
 *.jsonl
 *.sqlite
