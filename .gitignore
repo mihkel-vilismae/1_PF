@@ -32,6 +32,7 @@ pnpm-debug.log*
 
 # Local runtime data
 runtime_data/
+runtime_data/private_logs/
 runtime-truth.json
 conf/runtime-truth.json
 tools/CronEmulator/crontab_emulated.txt

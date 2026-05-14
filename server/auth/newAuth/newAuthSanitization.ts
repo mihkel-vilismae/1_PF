@@ -16,6 +16,8 @@ export function sanitizeCommandOutput(value: string, config: NewAuthIcloudpdConf
     sanitized = sanitized.split(secret).join('[REDACTED]');
   }
   sanitized = sanitized.replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[REDACTED_EMAIL]');
+  sanitized = sanitized.replace(/\b(cookie|authorization|token|session)\s*:\s*[^\r\n]+/gi, '$1: [REDACTED]');
+  sanitized = sanitized.replace(/\b(cookie|authorization|token|session)\s*=\s*[^\s\r\n]+/gi, '$1=[REDACTED]');
   sanitized = sanitized.replace(/\b\d{6}\b/g, '[REDACTED_2FA_CODE]');
   return sanitized;
 }

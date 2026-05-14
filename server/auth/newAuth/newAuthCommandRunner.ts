@@ -4,6 +4,8 @@
  * command diagnostics to callers.
  */
 import { spawn } from 'node:child_process';
+import path from 'node:path';
+import { createIcloudpdRawStdioLogger } from '../icloudpdRawStdioLog.ts';
 import { ICLOUDPD_TIMEOUT_MS, MAX_STDIO_CHARS } from './newAuthConstants.js';
 import type { NewAuthCommandSpawner, NewAuthContext, CommandResult } from './newAuthTypes.js';
 import { sanitizePathForDisplay, sanitizePreview } from './newAuthSanitization.js';
@@ -36,6 +38,9 @@ export async function resolveIcloudpdExecutableForContext(context: NewAuthContex
  */
 export function runCommand(command: string, args: string[], options: { timeoutMs: number; shell?: boolean; stdinText?: string; spawnImpl?: NewAuthCommandSpawner }): Promise<CommandResult> {
   return new Promise((resolve) => {
+    const rawStdioLog = isIcloudpdCommand(command)
+      ? createIcloudpdRawStdioLogger({ label: 'new-auth-command' })
+      : null;
     const child = (options.spawnImpl ?? spawn)(command, args, {
       shell: options.shell ?? false,
       windowsHide: true,
@@ -74,10 +79,12 @@ export function runCommand(command: string, args: string[], options: { timeoutMs
     }
 
     child.stdout?.on('data', (chunk) => {
+      rawStdioLog?.write('stdout', chunk);
       stdout = `${stdout}${chunk}`.slice(-MAX_STDIO_CHARS);
     });
 
     child.stderr?.on('data', (chunk) => {
+      rawStdioLog?.write('stderr', chunk);
       stderr = `${stderr}${chunk}`.slice(-MAX_STDIO_CHARS);
     });
 
@@ -112,6 +119,13 @@ export function runCommand(command: string, args: string[], options: { timeoutMs
       });
     });
   });
+}
+
+/*
+ * Detects commands that are actually iCloudPD executions, not PATH lookups.
+ */
+function isIcloudpdCommand(command: string): boolean {
+  return /^icloudpd(?:\.exe)?$/i.test(path.basename(command));
 }
 
 /*

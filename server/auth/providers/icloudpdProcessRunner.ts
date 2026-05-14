@@ -1,7 +1,12 @@
+/*
+ * Runs iCloudPD provider commands for auth, session proof, test download, and
+ * local cleanup while returning sanitized output to the rest of the system.
+ */
 import { execFile } from 'node:child_process';
 import { mkdir, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
+import { createIcloudpdRawStdioLogger } from '../icloudpdRawStdioLog.ts';
 import { sanitizeIcloudpdText } from './icloudpdSanitizer.ts';
 import type { IcloudpdCleanupResult, IcloudpdCommandResult, IcloudpdConfig, IcloudpdExecutableCheck, IcloudpdProcessRunner } from '../authTypes.ts';
 
@@ -24,6 +29,9 @@ interface RunIcloudpdCommandOptions {
   timeoutMs?: number;
 }
 
+/*
+ * Creates the provider runner around an injectable execFile implementation.
+ */
 export function createIcloudpdProcessRunner({
   execFileImpl,
   executable = process.env.ICLOUDPD_BIN || 'icloudpd',
@@ -76,6 +84,9 @@ export function createIcloudpdProcessRunner({
   };
 }
 
+/*
+ * Builds the iCloudPD command arguments for auth-only login.
+ */
 export function buildAuthOnlyArgs(config: IcloudpdConfig): string[] {
   const args = [
     '--username', config.username,
@@ -89,6 +100,9 @@ export function buildAuthOnlyArgs(config: IcloudpdConfig): string[] {
   return args;
 }
 
+/*
+ * Builds the iCloudPD command arguments for provider-backed session proof.
+ */
 export function buildVerifySessionArgs(config: IcloudpdConfig): string[] {
   const directory = config.downloadDir || config.cookieDir || process.cwd();
   const args = [
@@ -104,6 +118,9 @@ export function buildVerifySessionArgs(config: IcloudpdConfig): string[] {
   return args;
 }
 
+/*
+ * Builds the iCloudPD command arguments for the single-file auth test.
+ */
 export function buildSingleFileDownloadArgs(config: IcloudpdConfig): string[] {
   const directory = config.downloadDir || process.cwd();
   const args = [
@@ -120,6 +137,9 @@ export function buildSingleFileDownloadArgs(config: IcloudpdConfig): string[] {
   return args;
 }
 
+/*
+ * Runs one iCloudPD command and keeps raw stdout/stderr isolated when enabled.
+ */
 async function runIcloudpdCommand({
   execFileImpl,
   executable,
@@ -132,12 +152,15 @@ async function runIcloudpdCommand({
     await mkdir(config.downloadDir, { recursive: true });
   }
   const commandForDebug = redactIcloudpdArgs(args, config);
+  const rawStdioLog = createIcloudpdRawStdioLogger({ label: 'icloudpd-provider' });
   try {
     const { stdout = '', stderr = '' } = await execFileImpl(executable, args, {
       timeout: Number(timeoutMs) > 0 ? Number(timeoutMs) : DEFAULT_TIMEOUT_MS,
       windowsHide: true,
       maxBuffer: 1024 * 1024,
     });
+    rawStdioLog.write('stdout', stdout);
+    rawStdioLog.write('stderr', stderr);
     return {
       exitCode: 0,
       stdout,
@@ -147,6 +170,8 @@ async function runIcloudpdCommand({
     };
   } catch (error) {
     const execError = error as NodeJS.ErrnoException & { stdout?: string; stderr?: string; killed?: boolean; signal?: string };
+    rawStdioLog.write('stdout', execError.stdout || '');
+    rawStdioLog.write('stderr', `${execError.stderr || ''}${execError.message ? `\n${execError.message}` : ''}`);
     return {
       exitCode: typeof execError.code === 'number' ? execError.code : 1,
       stdout: execError.stdout || '',
@@ -158,6 +183,9 @@ async function runIcloudpdCommand({
   }
 }
 
+/*
+ * Redacts sensitive command arguments before exposing command diagnostics.
+ */
 export function redactIcloudpdArgs(args: string[], config: Partial<IcloudpdConfig> = {}): string[] {
   const sensitiveValues = new Set([config.password, config.twoFactorCode].filter(Boolean));
   const redacted: string[] = [];
@@ -178,6 +206,9 @@ export function redactIcloudpdArgs(args: string[], config: Partial<IcloudpdConfi
   return redacted;
 }
 
+/*
+ * Converts provider paths to absolute paths while leaving missing values null.
+ */
 export function normalizeProviderPath(value: unknown, { cwd = process.cwd() }: { cwd?: string } = {}): string | null {
   if (!value || typeof value !== 'string') {
     return null;

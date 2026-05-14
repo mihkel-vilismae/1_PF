@@ -1,0 +1,6 @@
+﻿Network scan saved at: 2026-05-14 04:55:52
+PC IP: 192.168.137.1
+Subnet: 192.168.137.0/24
+
+Quick-use device IPs:
+NONE

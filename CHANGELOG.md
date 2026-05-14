@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.5.22 - 2026-05-14 04:10 Tallinn
+
+- Added an opt-in raw-sensitive iCloudPD stdout/stderr capture sink gated by `ICLOUDPD_RAW_STDIO_LOG=1`.
+- Isolated raw iCloudPD output under `runtime_data/private_logs/icloudpd_raw_stdio.log` by default and rejected configured raw log paths outside `runtime_data`.
+- Preserved sanitized dashboard/API/Event history behavior; raw provider output is never returned through normal UI or API paths by default.
+- Added focused regression coverage for disabled-by-default behavior, runtime_data path isolation, and opt-in raw capture from both provider and NEW AUTH interactive flows.
+- Bumped version metadata from v0.5.21 to v0.5.22 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.5.21 - 2026-05-13 17:57 Tallinn
 
 - Added dashboard request/response correlation ids to the shared frontend API client, HTTP request headers, echoed backend response headers, transit terminal lines, captured metadata, and Event history request/response detail rows.

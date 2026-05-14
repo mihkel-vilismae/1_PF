@@ -7,6 +7,7 @@ import { spawn } from 'node:child_process';
 import { readdirSync } from 'node:fs';
 import { mkdir, rm } from 'node:fs/promises';
 import path from 'node:path';
+import { createIcloudpdRawStdioLogger } from './icloudpdRawStdioLog.js';
 import { EMPTY_SESSION_EVIDENCE, ICLOUDPD_LOGIN_TIMEOUT_MS, ICLOUDPD_TIMEOUT_MS, INTERACTIVE_RESULT_POLL_MS, MAX_STDIO_CHARS, UNKNOWN_2FA_PROMPT_GRACE_MS } from './newAuth/newAuthConstants.js';
 import { resolveIcloudpdExecutableForContext, runCommand, extractVersion, summarizeCommandFailure } from './newAuth/newAuthCommandRunner.js';
 import { collectNewAuthSessionEvidence, flattenPathMetadata, getNewAuthPathCandidates, hasFreshNewAuthSessionEvidence, isSafeSessionCleanupPath } from './newAuth/newAuthPathMetadata.js';
@@ -534,6 +535,10 @@ export async function testNewAuthDownload(context: NewAuthContext = {}): Promise
   };
 }
 
+/*
+ * Starts one interactive iCloudPD login process and captures only bounded,
+ * sanitized output for normal auth state while optional raw stdio stays local.
+ */
 function startInteractiveNewAuthAttempt({
   executablePath,
   config,
@@ -546,6 +551,7 @@ function startInteractiveNewAuthAttempt({
   commandSpawner?: NewAuthCommandSpawner;
 }): NewAuthInteractiveAttempt {
   clearActiveNewAuthAttempt();
+  const rawStdioLog = createIcloudpdRawStdioLogger({ label: 'new-auth-interactive' });
   const child = (commandSpawner ?? spawn)(executablePath, buildNewAuthLoginArgs(config), {
     shell: false,
     windowsHide: true,
@@ -568,10 +574,12 @@ function startInteractiveNewAuthAttempt({
   };
 
   child.stdout?.on('data', (chunk) => {
+    rawStdioLog.write('stdout', chunk);
     attempt.stdout = `${attempt.stdout}${chunk}`.slice(-MAX_STDIO_CHARS);
   });
 
   child.stderr?.on('data', (chunk) => {
+    rawStdioLog.write('stderr', chunk);
     attempt.stderr = `${attempt.stderr}${chunk}`.slice(-MAX_STDIO_CHARS);
   });
 
