@@ -39,10 +39,10 @@ This is a plan only. No existing documentation files were moved, renamed, or del
 | docs/categorized/vision_spec_docs/dashboard_auth_pipeline_spec.md | docs/20_architecture_and_specs/dashboard_auth_pipeline_spec.md | 05_vision_and_target_specs | medium | Target/spec material; not proof of implementation. |
 | docs/categorized/vision_spec_docs/main_readme.md | docs/20_architecture_and_specs/main_readme.md | 05_vision_and_target_specs | medium | Target/spec material; not proof of implementation. |
 | docs/categorized/vision_spec_docs/product_vision_and_authority.md | docs/20_architecture_and_specs/product_vision_and_authority.md | 05_vision_and_target_specs | medium | Target/spec material; not proof of implementation. |
-| _TODO_13_05_26/3A_cronemulator.txt | docs/40_backlog_and_tasks/_TODO_13_05_26__3A_cronemulator.txt | 06_backlog_and_active_task_prompts | low-to-medium | Backlog/task prompt; not current truth. |
-| _TODO_13_05_26/D_monitoring_view.txt | docs/40_backlog_and_tasks/_TODO_13_05_26__D_monitoring_view.txt | 06_backlog_and_active_task_prompts | low-to-medium | Backlog/task prompt; not current truth. |
-| _TODO_13_05_26/F_page.txt | docs/40_backlog_and_tasks/_TODO_13_05_26__F_page.txt | 06_backlog_and_active_task_prompts | low-to-medium | Backlog/task prompt; not current truth. |
-| _TODO_13_05_26/marked_for_removal.md | docs/40_backlog_and_tasks/_TODO_13_05_26__marked_for_removal.md | 06_backlog_and_active_task_prompts | low-to-medium | Backlog/task prompt; not current truth. |
+| _TODO_13_05_26/3A_cronemulator.txt | completed: canonical content moved to docs/40_backlog_and_tasks/todo_2026-05-13/3A_cronemulator.txt; old path is compatibility pointer | 06_backlog_and_active_task_prompts | resolved for old links | Backlog/TODO prompt moved in Slice 9 with link preservation. |
+| _TODO_13_05_26/D_monitoring_view.txt | completed: canonical content moved to docs/40_backlog_and_tasks/todo_2026-05-13/D_monitoring_view.txt; old path is compatibility pointer | 06_backlog_and_active_task_prompts | resolved for old links | Backlog/TODO prompt moved in Slice 9 with link preservation. |
+| _TODO_13_05_26/F_page.txt | not moved: ignored dirty/unrelated file for current workflow | 06_backlog_and_active_task_prompts | unchanged | Do not move unless user explicitly scopes this file later. |
+| _TODO_13_05_26/marked_for_removal.md | completed: canonical content moved to docs/40_backlog_and_tasks/todo_2026-05-13/marked_for_removal.md; old path is compatibility pointer | 06_backlog_and_active_task_prompts | resolved for old links | Backlog/TODO prompt moved in Slice 9 with link preservation. |
 | docs/active_workflow_docs/slice_8_9_route_selection.md | docs/40_backlog_and_tasks/docs__active_workflow_docs__slice_8_9_route_selection.md | 06_backlog_and_active_task_prompts | medium | Backlog/task prompt; not current truth. |
 | docs/categorized/task_documentation_still_to_implement/active_implementation_backlog.md | docs/40_backlog_and_tasks/docs__categorized__task_documentation_still_to_implement__active_implementation_backlog.md | 06_backlog_and_active_task_prompts | medium | Backlog/task prompt; not current truth. |
 | docs/categorized/task_documentation_still_to_implement/main_readme.md | docs/40_backlog_and_tasks/docs__categorized__task_documentation_still_to_implement__main_readme.md | 06_backlog_and_active_task_prompts | medium | Backlog/task prompt; not current truth. |
@@ -110,3 +110,7 @@ The following historical task docs have been moved. Old paths remain as compatib
 | task_docs/2026-04-20_view-e-database-viewer.md | docs/90_archive/task_docs_2026-04-20/2026-04-20_view-e-database-viewer.md | Completed in Slice 8; old path is pointer only. |
 | task_docs/README.md | docs/90_archive/task_docs_2026-04-20/README.md | Completed in Slice 8; old path is pointer only. |
 | task_docs/_TABLE_OF_CONTENTS.md | docs/90_archive/task_docs_2026-04-20/_TABLE_OF_CONTENTS.md | Completed in Slice 8; old path is pointer only. |
+
+## Slice 9 completed backlog move
+
+The non-ignored `_TODO_13_05_26` backlog docs were moved to `docs/40_backlog_and_tasks/todo_2026-05-13/` with compatibility pointers at the old paths. `_TODO_13_05_26/F_page.txt` remains untouched because it is explicitly ignored as dirty/unrelated for the current workflow.

@@ -39,10 +39,13 @@ This matrix groups documentation by freshness and trust risk. Freshness estimate
 | docs/categorized/vision_spec_docs/dashboard_auth_pipeline_spec.md | medium_recent_reference | target_spec | architecture_or_vision_spec | auth, new_auth, icloudpd, provider, view_a, view_d, download | Target/spec material; not proof of implementation. |
 | docs/categorized/vision_spec_docs/main_readme.md | medium_recent_reference | target_spec | architecture_or_vision_spec | auth, cron | Target/spec material; not proof of implementation. |
 | docs/categorized/vision_spec_docs/product_vision_and_authority.md | medium_recent_reference | target_spec | architecture_or_vision_spec | auth, provider | Target/spec material; not proof of implementation. |
-| _TODO_13_05_26/3A_cronemulator.txt | medium_recent_reference | backlog | backlog_or_task_prompt | cron | Backlog/task prompt; not current truth. |
-| _TODO_13_05_26/D_monitoring_view.txt | medium_recent_reference | backlog | backlog_or_task_prompt | auth, runtime_truth, cron, monitoring, view_a, view_d, download | Backlog/task prompt; not current truth. |
-| _TODO_13_05_26/F_page.txt | medium_recent_reference | backlog | backlog_or_task_prompt | auth, icloudpd, runtime_truth, download | Backlog/task prompt; not current truth. |
-| _TODO_13_05_26/marked_for_removal.md | medium_recent_reference | backlog | backlog_or_task_prompt | auth, icloudpd, view_a, download | Backlog/task prompt; not current truth. |
+| docs/40_backlog_and_tasks/todo_2026-05-13/3A_cronemulator.txt | medium_recent_reference | backlog | backlog_or_task_prompt | cron | Canonical backlog/TODO prompt moved in Slice 9; not current truth. |
+| _TODO_13_05_26/3A_cronemulator.txt | recent_verify_against_code | backlog | backlog_or_task_prompt | cron | Compatibility pointer only; use canonical moved file. |
+| docs/40_backlog_and_tasks/todo_2026-05-13/D_monitoring_view.txt | medium_recent_reference | backlog | backlog_or_task_prompt | auth, runtime_truth, cron, monitoring, view_a, view_d, download | Canonical backlog/TODO prompt moved in Slice 9; not current truth. |
+| _TODO_13_05_26/D_monitoring_view.txt | recent_verify_against_code | backlog | backlog_or_task_prompt | monitoring, view_d | Compatibility pointer only; use canonical moved file. |
+| _TODO_13_05_26/F_page.txt | medium_recent_reference | backlog | backlog_or_task_prompt | auth, icloudpd, runtime_truth, download | Backlog task prompt intentionally not moved because it is an ignored dirty/unrelated file for this workflow. |
+| docs/40_backlog_and_tasks/todo_2026-05-13/marked_for_removal.md | medium_recent_reference | backlog | backlog_or_task_prompt | auth, icloudpd, view_a, download | Canonical backlog/TODO prompt moved in Slice 9; not current truth. |
+| _TODO_13_05_26/marked_for_removal.md | recent_verify_against_code | backlog | backlog_or_task_prompt | auth, view_a | Compatibility pointer only; use canonical moved file. |
 | docs/active_workflow_docs/slice_8_9_route_selection.md | medium_recent_reference | backlog | backlog_or_task_prompt | auth, provider | Backlog/task prompt; not current truth. |
 | docs/categorized/task_documentation_still_to_implement/active_implementation_backlog.md | medium_recent_reference | backlog | backlog_or_task_prompt | auth, new_auth, provider, runtime_truth, view_a, view_d, download | Backlog/task prompt; not current truth. |
 | docs/categorized/task_documentation_still_to_implement/main_readme.md | medium_recent_reference | backlog | backlog_or_task_prompt | auth | Backlog/task prompt; not current truth. |
@@ -103,3 +106,7 @@ The operator setup/auth notes moved to `docs/10_runbooks/operator_setup_and_auth
 | task_docs/2026-04-20_view-e-database-viewer.md | docs/90_archive/task_docs_2026-04-20/2026-04-20_view-e-database-viewer.md | historical_reference_only | Pointer only; open canonical archive path for historical content. |
 | task_docs/README.md | docs/90_archive/task_docs_2026-04-20/README.md | historical_reference_only | Pointer only; open canonical archive path for historical content. |
 | task_docs/_TABLE_OF_CONTENTS.md | docs/90_archive/task_docs_2026-04-20/_TABLE_OF_CONTENTS.md | historical_reference_only | Pointer only; open canonical archive path for historical content. |
+
+## Slice 9 backlog/TODO move
+
+The moved non-ignored TODO docs are now canonical under `docs/40_backlog_and_tasks/todo_2026-05-13/`. Old paths are compatibility pointers. `_TODO_13_05_26/F_page.txt` remains untouched due to the ignored dirty-file rule.

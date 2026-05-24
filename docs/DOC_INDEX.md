@@ -16,7 +16,7 @@ This index classifies non-skill documentation files and separates current truth 
 | 03_auth_flow_reference | 2 | 148 | Auth/provider verification reference docs. |
 | 04_current_status_snapshots | 8 | 786 | Status snapshots; verify against code/evidence. |
 | 05_vision_and_target_specs | 4 | 311 | Target architecture/product specs. |
-| 06_backlog_and_active_task_prompts | 9 | 720 | TODOs, backlog, active task prompts. |
+| 06_backlog_and_active_task_prompts | 12 | 739 | TODOs, backlog, active task prompts, including Slice 9 canonical TODO files and compatibility pointers. |
 | 07_historical_task_docs_archive | 18 | 2076 | Historical task archive plus compatibility pointers. |
 | 08_audits_and_migration_reports | 3 | 753 | Audits and migration snapshots. |
 | 09_documentation_indexes_and_reference | 8 | 918 | Legacy indexes/reference docs, including compatibility pointers. |
@@ -49,10 +49,13 @@ This index classifies non-skill documentation files and separates current truth 
 | docs/categorized/vision_spec_docs/dashboard_auth_pipeline_spec.md | 94 | Dashboard, Auth, and Pipeline Spec | architecture_or_vision_spec | target_spec | medium_recent_reference | 05_vision_and_target_specs | auth, new_auth, icloudpd, provider, view_a, view_d, download | Target/spec material; not proof of implementation. |
 | docs/categorized/vision_spec_docs/main_readme.md | 62 | Vision Spec Docs - Canonical Set | architecture_or_vision_spec | target_spec | medium_recent_reference | 05_vision_and_target_specs | auth, cron | Target/spec material; not proof of implementation. |
 | docs/categorized/vision_spec_docs/product_vision_and_authority.md | 64 | Product Vision and Authority | architecture_or_vision_spec | target_spec | medium_recent_reference | 05_vision_and_target_specs | auth, provider | Target/spec material; not proof of implementation. |
-| _TODO_13_05_26/3A_cronemulator.txt | 123 | **1. Task Understanding** | backlog_or_task_prompt | backlog | medium_recent_reference | 06_backlog_and_active_task_prompts | cron | Backlog/task prompt; not current truth. |
-| _TODO_13_05_26/D_monitoring_view.txt | 122 | 1. Task Understanding | backlog_or_task_prompt | backlog | medium_recent_reference | 06_backlog_and_active_task_prompts | auth, runtime_truth, cron, monitoring, view_a, view_d, download | Backlog/task prompt; not current truth. |
-| _TODO_13_05_26/F_page.txt | 188 | Use this as the **GPT-5.5 orchestrator prompt**: | backlog_or_task_prompt | backlog | medium_recent_reference | 06_backlog_and_active_task_prompts | auth, icloudpd, runtime_truth, download | Backlog/task prompt; not current truth. |
-| _TODO_13_05_26/marked_for_removal.md | 54 | Marked For Removal | backlog_or_task_prompt | backlog | medium_recent_reference | 06_backlog_and_active_task_prompts | auth, icloudpd, view_a, download | Backlog/task prompt; not current truth. |
+| docs/40_backlog_and_tasks/todo_2026-05-13/3A_cronemulator.txt | 123 | **1. Task Understanding** | backlog_or_task_prompt | backlog | medium_recent_reference | 06_backlog_and_active_task_prompts | cron | Canonical backlog/TODO prompt moved in Slice 9; not current truth. |
+| _TODO_13_05_26/3A_cronemulator.txt | 7 | Compatibility pointer — historical TODO moved | backlog_or_task_prompt | backlog | recent_verify_against_code | 06_backlog_and_active_task_prompts | cron | Compatibility pointer only; canonical file is in docs/40_backlog_and_tasks/todo_2026-05-13/. |
+| docs/40_backlog_and_tasks/todo_2026-05-13/D_monitoring_view.txt | 122 | 1. Task Understanding | backlog_or_task_prompt | backlog | medium_recent_reference | 06_backlog_and_active_task_prompts | auth, runtime_truth, cron, monitoring, view_a, view_d, download | Canonical backlog/TODO prompt moved in Slice 9; not current truth. |
+| _TODO_13_05_26/D_monitoring_view.txt | 7 | Compatibility pointer — historical TODO moved | backlog_or_task_prompt | backlog | recent_verify_against_code | 06_backlog_and_active_task_prompts | monitoring, view_d | Compatibility pointer only; canonical file is in docs/40_backlog_and_tasks/todo_2026-05-13/. |
+| _TODO_13_05_26/F_page.txt | 188 | Use this as the **GPT-5.5 orchestrator prompt**: | backlog_or_task_prompt | backlog | medium_recent_reference | 06_backlog_and_active_task_prompts | auth, icloudpd, runtime_truth, download | Backlog task prompt intentionally not moved because it is an ignored dirty/unrelated file for this workflow. |
+| docs/40_backlog_and_tasks/todo_2026-05-13/marked_for_removal.md | 54 | Marked For Removal | backlog_or_task_prompt | backlog | medium_recent_reference | 06_backlog_and_active_task_prompts | auth, icloudpd, view_a, download | Canonical backlog/TODO prompt moved in Slice 9; not current truth. |
+| _TODO_13_05_26/marked_for_removal.md | 7 | Compatibility pointer — historical TODO moved | backlog_or_task_prompt | backlog | recent_verify_against_code | 06_backlog_and_active_task_prompts | auth, view_a | Compatibility pointer only; canonical file is in docs/40_backlog_and_tasks/todo_2026-05-13/. |
 | docs/active_workflow_docs/slice_8_9_route_selection.md | 27 | Slice 8 and Slice 9 Route Selection | backlog_or_task_prompt | backlog | medium_recent_reference | 06_backlog_and_active_task_prompts | auth, provider | Backlog/task prompt; not current truth. |
 | docs/categorized/task_documentation_still_to_implement/active_implementation_backlog.md | 66 | Active Implementation Backlog | backlog_or_task_prompt | backlog | medium_recent_reference | 06_backlog_and_active_task_prompts | auth, new_auth, provider, runtime_truth, view_a, view_d, download | Backlog/task prompt; not current truth. |
 | docs/categorized/task_documentation_still_to_implement/main_readme.md | 52 | Task Category: Documentation Still To Implement | backlog_or_task_prompt | backlog | medium_recent_reference | 06_backlog_and_active_task_prompts | auth | Backlog/task prompt; not current truth. |
@@ -118,3 +121,7 @@ These old paths remain only to keep earlier links working. Use the canonical arc
 | task_docs/2026-04-20_view-e-database-viewer.md | docs/90_archive/task_docs_2026-04-20/2026-04-20_view-e-database-viewer.md | Pointer only; not current truth. |
 | task_docs/README.md | docs/90_archive/task_docs_2026-04-20/README.md | Pointer only; not current truth. |
 | task_docs/_TABLE_OF_CONTENTS.md | docs/90_archive/task_docs_2026-04-20/_TABLE_OF_CONTENTS.md | Pointer only; not current truth. |
+
+## Slice 9 backlog/TODO move
+
+The canonical non-ignored `_TODO_13_05_26` backlog docs now live under `docs/40_backlog_and_tasks/todo_2026-05-13/`. The old moved paths remain as compatibility pointers. `_TODO_13_05_26/F_page.txt` remains untouched because it is an ignored dirty/unrelated file for the current workflow.

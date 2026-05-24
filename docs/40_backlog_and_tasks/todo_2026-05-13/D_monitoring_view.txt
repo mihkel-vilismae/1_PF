@@ -1,0 +1,122 @@
+1. Task Understanding
+
+View D is intended to be a live runtime monitor for the current pipeline, playback worker, and screen worker. The immediate goal is to verify what is actually live today, classify mock/stale/partial/real surfaces, then plan the smallest path to make the page honest and useful.
+
+No code was changed.
+
+2. Verified Current-State Summary
+
+View D is rendered by dashboard/views/runningProcessView.ts and selected from dashboard/app.ts. Entering View D triggers runAction('refresh-running-process') at dashboard/app.ts.
+
+There are two View D paths:
+
+- start-real-run is local simulation only: dashboard/services/runtimeTruth/runtimeTruthDemoActions.ts.
+- refresh-running-process calls backend GET /api/runtime/projection/live: dashboard/services/runtimeTruth/runtimeTruthBehavior.ts, dashboard/services/runtimeExecutionService.ts.
+
+The backend route exists at server/index.ts, but its worker/playback/screen fields are mostly hardcoded unknown/null: server/index.ts.
+
+The playback worker is the only backend scheduler CLI worker implemented: server/index.ts. It writes runtime_data/scheduler/playback-worker-status.json: server/workers/playbackWorker.ts.
+
+regular_stage_worker.ps1 and screen_on_off_worker.ps1 exist, but run through CronEmulator PowerShell HTTP calls. Screen is simulation-only, not real hardware control.
+
+Current runtime evidence checked: runtime_data/scheduler contains selected-target.json only; no playback worker status, host status, or heartbeat files were observed. tools/CronEmulator/crontab_emulated.txt is currently missing.
+
+3. Monitoring Page Truth Matrix
+
+| Section | Current classification | Evidence |
+|---|---:|---|
+| D header/live monitor | Partial / UI drift | Frontend marks live based on truth.realRunActive; refresh sets it true whenever projection exists, while backend always returns a projection envelope. |
+| Refresh monitor button | Partial | Real backend transport exists, but no polling and payload is mostly placeholder/unknown. |
+| D1 Pipeline worker | Partial / mostly mock | Badge maps backend regular-stage-worker unknown status; stage rows still come from local pipelineStages. |
+| Download | Mock-only / unknown runtime | Row source is local state; no live per-stage backend projection wired. |
+| Index | Mock-only / unknown runtime | Same as above. |
+| Get GPS | Mock-only / unknown runtime | Same as above. |
+| Geocode | Mock-only / unknown runtime | Same as above. |
+| Queue Slideshow | Mock-only / unknown runtime | Same as above. |
+| D2 Playback worker | Partial | Real playback_worker exists and can write status, but monitor endpoint does not read that artifact; heartbeat is rendered as N/A. |
+| D3 Screen on-off worker | Simulation-only / partial | CronEmulator entrypoint calls screen simulation configure endpoint; no real hardware truth and projection returns unknown/null. |
+
+Overall: View D is no longer purely mock because a backend refresh route exists, but it is not yet a reliable live monitor.
+
+4. Verification Plan
+
+Static contract verification:
+npm test -- --test-reporter=spec tests/runtimeExecutionService.test.js tests/runtimeProjectionContracts.test.js tests/viewSourceBadges.test.js tests/schedulerPlaybackWorkerCommand.test.js tests/playbackWorker.test.js
+Verifies endpoint constants, projection source enum, View D source labels, worker command rows, playback worker artifacts.
+Actual result: passed, 14/14.
+
+Typecheck:
+npm run typecheck
+Verifies repo-wide TS health.
+Actual result: failed in current checkout with existing typing errors in dashboard/services/runtimeTruth.ts, runtimeTruthState.ts, auth route typing, and server/index.ts. This blocks using typecheck as a clean regression signal until fixed separately.
+
+Backend route verification:
+Start backend, call GET /api/runtime/projection/live.
+Expected today: 200 with { ok, namespace, projection }; worker/playback/screen values mostly unknown/null.
+Failure means frontend refresh cannot be trusted.
+
+Worker artifact verification:
+Run only controlled worker tests first; then optionally execute npm run api -- --scheduler playback-worker.
+Expected: status JSON under runtime_data/scheduler/playback-worker-status.json.
+Failure means D2 cannot become real without fixing worker execution.
+
+UI refresh behavior:
+Open View D, capture transit log and state after refresh.
+Expected today: one GET to /api/runtime/projection/live; no repeated polling.
+Failure means frontend action wiring is broken.
+
+Browser smoke test:
+Open dashboard, click D, click Refresh monitor.
+Expected after implementation: visible values match backend projection and unknown values are honestly labeled, not presented as live truth.
+
+5. Implementation Plan To Make It Work
+
+Stage 1: make truth visible without changing workers.
+Fix View D so “Live monitor active” depends on backend projection.runState.value or explicit monitor availability, not merely the presence of a projection object. Show unknown/unavailable honestly.
+
+Stage 2: wire frontend to existing backend projection cleanly.
+Preserve GET /api/runtime/projection/live; map source labels into visible/inspectable UI. Add inspect metadata for refresh-running-process.
+
+Stage 3: make backend projection read existing authoritative artifacts.
+Start with existing artifacts only: orchestration state, playback-worker-status.json, playback DB state, scheduler selected target, host status if present. Do not invent regular/screen worker status files until those workers actually produce them.
+
+Stage 4: add focused tests.
+Add route test for /api/runtime/projection/live, frontend action test for refresh-running-process, and artifact-mapping tests for playback worker status.
+
+Stage 5: reconcile docs/status metadata.
+Update View D status docs and placeholder_implementations.md from “mock-only/no backend” to “partial backend projection; worker artifact ingestion incomplete.”
+
+6. Impact Analysis
+
+Preserved behavior: existing simulation path, View D layout, current runtime endpoints, playback worker behavior, scheduler command constants.
+
+Modified behavior: View D truth labeling and refresh mapping would become less optimistic and more evidence-based.
+
+Untouched areas: auth, View A init, View B test flows, View C restore placeholder, database viewer.
+
+Main risks: overclaiming live status, breaking truth.realRunActive-driven button mode, adding polling that creates noisy transit logs, or treating simulation/historical docs as runtime truth.
+
+7. Files Likely To Change
+
+Frontend: dashboard/views/runningProcessView.ts, dashboard/services/runtimeTruth/runtimeTruthDemoActions.ts, inspect metadata files.
+
+Backend: server/index.ts, possibly a small extracted projection helper if needed.
+
+Worker/runtime: likely none in first slice; later maybe server/workers/* only after deciding artifact contracts.
+
+Tests: tests/runtimeExecutionService.test.js, new/updated projection/action tests.
+
+Docs: docs/categorized/current_implementation_status_docs/*, docs/RUNTIME_TRUTH_AUTHORITY_MAP_20260512.md, placeholder_implementations.md, backlog docs.
+
+8. Commit Breakdown
+
+1. Clarify View D live projection truth state
+2. Read existing playback worker status in live runtime projection
+3. Add View D projection refresh tests
+4. Reconcile View D monitoring status docs
+
+9. Open Questions / Blockers
+
+The only blocker before implementation is product-level: should View D keep the simulated start-real-run preview as a separate preview mode, or should the default D surface become read-only backend projection only?
+
+Also note: conf/runtime-truth.json was already modified in the worktree when I started; I did not edit it.

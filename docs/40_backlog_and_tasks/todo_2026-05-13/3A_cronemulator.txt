@@ -1,0 +1,123 @@
+**1. Task Understanding**
+
+Verify whether the B4 rendering-mode controls actually work, then plan the smallest safe changes needed to make them provably work without changing B4 backend selection semantics.
+
+Controls in scope:
+
+- `Playback without rendering`
+- `Show real rendering in preview window`
+- `Switch to fullscreen`
+
+No files were edited. I used the requested worker-agent split and read-only repo analysis.
+
+**2. Verified Current-State Summary**
+
+`Playback without rendering`
+Current classification: **Works**, as a frontend presentation mode.
+
+Evidence: label and mode contract are in [playbackRenderer.ts](I:/_____11111/1234_PF/dashboard/services/playbackRenderer.ts:46). The button is rendered by [testView.ts](I:/_____11111/1234_PF/dashboard/views/testView.ts:292), handled by [app.ts](I:/_____11111/1234_PF/dashboard/app.ts:486), and updates local rendering state through [runtimeTruth.ts](I:/_____11111/1234_PF/dashboard/services/runtimeTruth.ts:226). It makes no backend call itself. Backend selection remains the separate B4 `Run` action.
+
+`Show real rendering in preview window`
+Current classification: **Works for Windows browser-native preview, not Raspberry/native renderer**.
+
+Evidence: after B4 selection, selected media gets a backend media URL in [runtimeTruthDemoActions.ts](I:/_____11111/1234_PF/dashboard/services/runtimeTruth/runtimeTruthDemoActions.ts:499), using [runtimeTruthDemoMedia.ts](I:/_____11111/1234_PF/dashboard/services/runtimeTruth/demoActions/runtimeTruthDemoMedia.ts:24). The preview renders `<img>` or `<video>` in [testView.ts](I:/_____11111/1234_PF/dashboard/views/testView.ts:235). The backend streams media via `GET /api/runtime/playback/media` in [server/index.ts](I:/_____11111/1234_PF/server/index.ts:481) and validates path/type in [server/index.ts](I:/_____11111/1234_PF/server/index.ts:1410).
+
+`Switch to fullscreen`
+Current classification: **Partial**.
+
+Evidence: the click handler sets fullscreen mode and calls `requestPlaybackFullscreen()` in [app.ts](I:/_____11111/1234_PF/dashboard/app.ts:486). That function calls browser `requestFullscreen()` on the Windows preview stage in [app.ts](I:/_____11111/1234_PF/dashboard/app.ts:617). CSS fullscreen styling exists in [styles.css](I:/_____11111/1234_PF/dashboard/styles.css:981). Gap: only failure is logged; success is browser-dependent and not directly tested.
+
+Important drift: [CHANGELOG.md](I:/_____11111/1234_PF/CHANGELOG.md:3) says v0.5.20 added Windows browser-native rendering and fullscreen request support, but [b4_playback_flow_status.md](I:/_____11111/1234_PF/docs/categorized/current_implementation_status_docs/b4_playback_flow_status.md:35) still says preview/fullscreen rendering are not real media display, and [b4PlaybackFlowStatusDoc.test.js](I:/_____11111/1234_PF/tests/b4PlaybackFlowStatusDoc.test.js:18) pins that older claim.
+
+**3. Impact Analysis**
+
+Preserve:
+
+- `POST /api/runtime/playback/select-current` behavior.
+- B3.5 queue preparation before B4 selection.
+- `playback_worker` as selection-only, not renderer/fullscreen/screen control.
+- Raspberry OS rendering disabled/planned.
+- B5 screen simulation as separate from B4.
+
+May need to change:
+
+- Docs/tests that still describe Windows preview/fullscreen as not real media display.
+- Add focused test coverage for `GET /api/runtime/playback/media`.
+- Add direct fullscreen interaction coverage or explicit operator feedback.
+
+Main risks:
+
+- Overclaiming browser-native rendering as OS-level, Raspberry, or hardware rendering.
+- Accidentally moving rendering into `playback_worker`.
+- Breaking existing B4 selection or auto-advance behavior while improving presentation controls.
+
+**4. Verification Plan**
+
+`Playback without rendering`
+
+- Static: verify mode constants/rendering branch in `playbackRenderer.ts`, `testView.ts`, `runtimeTruth.ts`.
+- Tests: `npm test -- --test-reporter=spec tests/playbackRenderer.test.js tests/viewB.buttonWorkflow.test.js`
+- Browser: after B4 success, click the button and confirm preview returns to metadata-only display.
+- Expected: no new API request; current media remains selected.
+
+`Show real rendering in preview window`
+
+- Static: verify media URL projection and backend media route.
+- Tests: existing `tests/viewB.buttonWorkflow.test.js`; add media endpoint tests for allowed root, unsupported extension, missing file, and content type.
+- API smoke: start backend, call `GET /api/runtime/playback/media?path=...` with a known allowed media file.
+- Browser: run B3.5, run B4, click preview rendering, confirm `<img>`/`<video>` loads.
+- Expected: selected backend item renders through browser-native media element.
+
+`Switch to fullscreen`
+
+- Static: verify `requestFullscreen()` target and CSS fullscreen rules.
+- Tests: add a small frontend test that stubs `requestFullscreen()` and asserts it is called; also test missing/rejected fullscreen warning path.
+- Browser: run B4, click fullscreen, confirm fullscreen enters or warning is logged if blocked.
+- Expected: browser fullscreen is attempted on the preview stage; Esc exits without clearing selected playback state.
+
+**5. Make-It-Work Plan**
+
+1. Do not change backend selection first. Treat B4 `Run` and `playback_worker` as already selection-backed.
+2. Add missing media endpoint tests around `GET /api/runtime/playback/media`.
+3. Add missing fullscreen interaction test around `requestFullscreen()`.
+4. Reconcile docs and doc guard tests to say: Windows browser-native preview/fullscreen exists; OS-level/Raspberry/hardware rendering remains unimplemented.
+5. Fix inspect backend-status drift where [statusResolvers.ts](I:/_____11111/1234_PF/dashboard/inspect/backendStatusMetadata/statusResolvers.ts:45) marks `B4` as missing even though action metadata marks `run-b4` real.
+6. Run focused tests, then browser smoke.
+
+**6. Files Likely Involved**
+
+Frontend:
+
+- [dashboard/views/testView.ts](I:/_____11111/1234_PF/dashboard/views/testView.ts)
+- [dashboard/app.ts](I:/_____11111/1234_PF/dashboard/app.ts)
+- [dashboard/services/playbackRenderer.ts](I:/_____11111/1234_PF/dashboard/services/playbackRenderer.ts)
+- [dashboard/services/runtimeTruth/runtimeTruthDemoActions.ts](I:/_____11111/1234_PF/dashboard/services/runtimeTruth/runtimeTruthDemoActions.ts)
+
+Backend/runtime:
+
+- [server/index.ts](I:/_____11111/1234_PF/server/index.ts)
+- [server/playback/playbackSelectionService.ts](I:/_____11111/1234_PF/server/playback/playbackSelectionService.ts)
+- [server/workers/playbackWorker.ts](I:/_____11111/1234_PF/server/workers/playbackWorker.ts)
+
+Docs/source-of-truth:
+
+- [docs/categorized/current_implementation_status_docs/b4_playback_flow_status.md](I:/_____11111/1234_PF/docs/categorized/current_implementation_status_docs/b4_playback_flow_status.md)
+- [docs/categorized/current_implementation_status_docs/code_verified_dashboard_implementation_status.md](I:/_____11111/1234_PF/docs/categorized/current_implementation_status_docs/code_verified_dashboard_implementation_status.md)
+- [placeholder_implementations.md](I:/_____11111/1234_PF/placeholder_implementations.md)
+
+Tests:
+
+- [tests/viewB.buttonWorkflow.test.js](I:/_____11111/1234_PF/tests/viewB.buttonWorkflow.test.js)
+- [tests/playbackRenderer.test.js](I:/_____11111/1234_PF/tests/playbackRenderer.test.js)
+- [tests/b4PlaybackFlowStatusDoc.test.js](I:/_____11111/1234_PF/tests/b4PlaybackFlowStatusDoc.test.js)
+- new or existing backend API test for playback media route
+
+**7. Missing Evidence / Clarifying Questions**
+
+No blocker for planning. Runtime/browser proof was not executed in this pass, so live fullscreen success and actual media rendering should still be validated locally.
+
+**8. Proposed Commit Breakdown**
+
+1. `test: cover B4 media streaming and fullscreen interaction`
+2. `docs: reconcile B4 browser-native rendering status`
+3. `fix: align B4 inspect backend-status classification`
