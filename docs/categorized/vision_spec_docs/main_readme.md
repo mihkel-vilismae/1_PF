@@ -1,5 +1,15 @@
 # Vision Spec Docs - Canonical Set
 
+## Documentation navigation notice
+
+This category index is preserved for local and historical organization. For current cross-repository navigation, start with:
+
+- [`docs/DOC_INDEX.md`](../../DOC_INDEX.md) — the current main map for documentation by purpose, kind, authority, and freshness.
+- [`docs/DOC_FRESHNESS_MATRIX.md`](../../DOC_FRESHNESS_MATRIX.md) — the trust/freshness guide for current, stale, historical, and risky docs.
+- [`docs/DOC_REORGANIZATION_PLAN.md`](../../DOC_REORGANIZATION_PLAN.md) — the required plan to check before moving documentation files.
+
+Docs in this category may include snapshots, specs, backlog, or reference material. Do not treat them as current implementation truth unless code, tests, or generated evidence confirm the claim.
+
 ## Purpose
 
 This folder consolidates vision/spec documentation into a small active set for product direction, architecture/runtime rules, and dashboard/auth/pipeline contracts.
