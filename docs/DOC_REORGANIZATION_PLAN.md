@@ -92,3 +92,21 @@ This is a plan only. No existing documentation files were moved, renamed, or del
 - Slice 6 moved the canonical NEW AUTH Evidence Pack guide from `docs/AUTH_EVIDENCE_PACK.md` to `docs/00_current_truth/AUTH_EVIDENCE_PACK.md`. The original path remains as a compatibility pointer.
 
 - Slice 7 moved the canonical operator setup/auth runbook from `docs/categorized/other_documentation/operator_setup_and_auth_notes.md` to `docs/10_runbooks/operator_setup_and_auth_notes.md`. The original path remains as a compatibility pointer.
+
+
+## Slice 8 completed archive move
+
+
+The following historical task docs have been moved. Old paths remain as compatibility pointers.
+
+| old pointer path | canonical archive path | status |
+| --- | --- | --- |
+| task_docs/2026-04-20_dashboard-transit-terminal.md | docs/90_archive/task_docs_2026-04-20/2026-04-20_dashboard-transit-terminal.md | Completed in Slice 8; old path is pointer only. |
+| task_docs/2026-04-20_explain-controls-inspect-mode.md | docs/90_archive/task_docs_2026-04-20/2026-04-20_explain-controls-inspect-mode.md | Completed in Slice 8; old path is pointer only. |
+| task_docs/2026-04-20_explain-values-source-mode.md | docs/90_archive/task_docs_2026-04-20/2026-04-20_explain-values-source-mode.md | Completed in Slice 8; old path is pointer only. |
+| task_docs/2026-04-20_runtime-backend-foundation.md | docs/90_archive/task_docs_2026-04-20/2026-04-20_runtime-backend-foundation.md | Completed in Slice 8; old path is pointer only. |
+| task_docs/2026-04-20_show-backend-status-mode.md | docs/90_archive/task_docs_2026-04-20/2026-04-20_show-backend-status-mode.md | Completed in Slice 8; old path is pointer only. |
+| task_docs/2026-04-20_show-real-vs-mock-mode.md | docs/90_archive/task_docs_2026-04-20/2026-04-20_show-real-vs-mock-mode.md | Completed in Slice 8; old path is pointer only. |
+| task_docs/2026-04-20_view-e-database-viewer.md | docs/90_archive/task_docs_2026-04-20/2026-04-20_view-e-database-viewer.md | Completed in Slice 8; old path is pointer only. |
+| task_docs/README.md | docs/90_archive/task_docs_2026-04-20/README.md | Completed in Slice 8; old path is pointer only. |
+| task_docs/_TABLE_OF_CONTENTS.md | docs/90_archive/task_docs_2026-04-20/_TABLE_OF_CONTENTS.md | Completed in Slice 8; old path is pointer only. |

@@ -17,7 +17,7 @@ This index classifies non-skill documentation files and separates current truth 
 | 04_current_status_snapshots | 8 | 786 | Status snapshots; verify against code/evidence. |
 | 05_vision_and_target_specs | 4 | 311 | Target architecture/product specs. |
 | 06_backlog_and_active_task_prompts | 9 | 720 | TODOs, backlog, active task prompts. |
-| 07_historical_task_docs_archive | 9 | 1959 | Historical task archive. |
+| 07_historical_task_docs_archive | 18 | 2076 | Historical task archive plus compatibility pointers. |
 | 08_audits_and_migration_reports | 3 | 753 | Audits and migration snapshots. |
 | 09_documentation_indexes_and_reference | 8 | 918 | Legacy indexes/reference docs, including compatibility pointers. |
 | 13_operator_runbooks | 1 | 115 | Operator-facing runbooks moved into docs/10_runbooks. |
@@ -58,15 +58,15 @@ This index classifies non-skill documentation files and separates current truth 
 | docs/categorized/task_documentation_still_to_implement/main_readme.md | 52 | Task Category: Documentation Still To Implement | backlog_or_task_prompt | backlog | medium_recent_reference | 06_backlog_and_active_task_prompts | auth | Backlog/task prompt; not current truth. |
 | docs/categorized/task_documentation_still_to_implement/rejected_or_superseded_tasks.md | 41 | Rejected Or Superseded Tasks | backlog_or_task_prompt | backlog | medium_recent_reference | 06_backlog_and_active_task_prompts | auth | Backlog/task prompt; not current truth. |
 | docs/categorized/task_documentation_still_to_implement/verification_and_reconciliation_tasks.md | 47 | Verification And Reconciliation Tasks | backlog_or_task_prompt | backlog | medium_recent_reference | 06_backlog_and_active_task_prompts | auth, new_auth | Backlog/task prompt; not current truth. |
-| task_docs/2026-04-20_dashboard-transit-terminal.md | 64 | Task Doc — Dashboard Transit Terminal + Single Gateway | historical_task_archive | historical_reference | historical_reference_only | 07_historical_task_docs_archive | monitoring, view_a | Historical task doc; archive/provenance only. |
-| task_docs/2026-04-20_explain-controls-inspect-mode.md | 232 | Task Doc — Explain Controls Inspect Mode Button | historical_task_archive | historical_reference | historical_reference_only | 07_historical_task_docs_archive | auth, view_a | Historical task doc; archive/provenance only. |
-| task_docs/2026-04-20_explain-values-source-mode.md | 224 | Task Doc — Explain Values Source Mode Button | historical_task_archive | historical_reference | historical_reference_only | 07_historical_task_docs_archive | view_a | Historical task doc; archive/provenance only. |
-| task_docs/2026-04-20_runtime-backend-foundation.md | 374 | Task Doc — Runtime Backend Foundation | historical_task_archive | historical_reference | historical_reference_only | 07_historical_task_docs_archive | auth, icloudpd, runtime_truth, view_a, view_d, download | Historical task doc; archive/provenance only. |
-| task_docs/2026-04-20_show-backend-status-mode.md | 276 | Task Doc — Show Backend Status Inspection Mode Button | historical_task_archive | historical_reference | historical_reference_only | 07_historical_task_docs_archive | view_a, real_vs_mock | Historical task doc; archive/provenance only. |
-| task_docs/2026-04-20_show-real-vs-mock-mode.md | 258 | Task Doc — Show Real vs Mock Inspection Mode Button | historical_task_archive | historical_reference | historical_reference_only | 07_historical_task_docs_archive | auth, view_a, real_vs_mock | Historical task doc; archive/provenance only. |
-| task_docs/2026-04-20_view-e-database-viewer.md | 445 | Task Doc — View E Database Viewer | historical_task_archive | historical_reference | historical_reference_only | 07_historical_task_docs_archive | auth, view_a, view_d | Historical task doc; archive/provenance only. |
-| task_docs/README.md | 44 | Task Docs | historical_task_archive | historical_reference | historical_reference_only | 07_historical_task_docs_archive | auth | Historical task doc; archive/provenance only. |
-| task_docs/_TABLE_OF_CONTENTS.md | 42 | Task Docs Table of Contents | historical_task_archive | historical_reference | historical_reference_only | 07_historical_task_docs_archive | auth, view_a, real_vs_mock | Historical task doc; archive/provenance only. |
+| docs/90_archive/task_docs_2026-04-20/2026-04-20_dashboard-transit-terminal.md | 64 | Task Doc — Dashboard Transit Terminal + Single Gateway | historical_task_archive | historical_reference | historical_reference_only | 07_historical_task_docs_archive | monitoring, view_a | Historical task doc; canonical archive path; provenance only. |
+| docs/90_archive/task_docs_2026-04-20/2026-04-20_explain-controls-inspect-mode.md | 232 | Task Doc — Explain Controls Inspect Mode Button | historical_task_archive | historical_reference | historical_reference_only | 07_historical_task_docs_archive | auth, view_a | Historical task doc; canonical archive path; provenance only. |
+| docs/90_archive/task_docs_2026-04-20/2026-04-20_explain-values-source-mode.md | 224 | Task Doc — Explain Values Source Mode Button | historical_task_archive | historical_reference | historical_reference_only | 07_historical_task_docs_archive | view_a | Historical task doc; canonical archive path; provenance only. |
+| docs/90_archive/task_docs_2026-04-20/2026-04-20_runtime-backend-foundation.md | 374 | Task Doc — Runtime Backend Foundation | historical_task_archive | historical_reference | historical_reference_only | 07_historical_task_docs_archive | auth, icloudpd, runtime_truth, view_a, view_d, download | Historical task doc; canonical archive path; provenance only. |
+| docs/90_archive/task_docs_2026-04-20/2026-04-20_show-backend-status-mode.md | 276 | Task Doc — Show Backend Status Inspection Mode Button | historical_task_archive | historical_reference | historical_reference_only | 07_historical_task_docs_archive | view_a, real_vs_mock | Historical task doc; canonical archive path; provenance only. |
+| docs/90_archive/task_docs_2026-04-20/2026-04-20_show-real-vs-mock-mode.md | 258 | Task Doc — Show Real vs Mock Inspection Mode Button | historical_task_archive | historical_reference | historical_reference_only | 07_historical_task_docs_archive | auth, view_a, real_vs_mock | Historical task doc; canonical archive path; provenance only. |
+| docs/90_archive/task_docs_2026-04-20/2026-04-20_view-e-database-viewer.md | 445 | Task Doc — View E Database Viewer | historical_task_archive | historical_reference | historical_reference_only | 07_historical_task_docs_archive | auth, view_a, view_d | Historical task doc; canonical archive path; provenance only. |
+| docs/90_archive/task_docs_2026-04-20/README.md | 44 | Task Docs | historical_task_archive | historical_reference | historical_reference_only | 07_historical_task_docs_archive | auth | Historical task doc; canonical archive path; provenance only. |
+| docs/90_archive/task_docs_2026-04-20/_TABLE_OF_CONTENTS.md | 42 | Task Docs Table of Contents | historical_task_archive | historical_reference | historical_reference_only | 07_historical_task_docs_archive | auth, view_a, real_vs_mock | Historical task doc; canonical archive path; provenance only. |
 | docs/TYPE_FUNCTION_AUDIT_AND_MIGRATION_PLAN.md | 320 | Type Function Audit and Migration Plan | audit_or_migration_report | historical_reference | medium_recent_reference | 08_audits_and_migration_reports | auth, icloudpd, provider, runtime_truth, cron, download | Audit/migration snapshot; recheck before using. |
 | docs/TYPE_FUNCTION_MIGRATION_CLOSURE_AUDIT.md | 52 | Type Function Migration Closure Audit | audit_or_migration_report | historical_reference | medium_recent_reference | 08_audits_and_migration_reports | auth, provider, view_d | Audit/migration snapshot; recheck before using. |
 | placeholder_implementations.md | 381 | Placeholder Implementation Audit | audit_or_migration_report | historical_reference | medium_recent_reference | 08_audits_and_migration_reports | auth, provider, runtime_truth, cron, monitoring, view_a, real_vs_mock, download | Audit/migration snapshot; recheck before using. |
@@ -101,3 +101,20 @@ Use docs as navigation, not proof. Prefer generated evidence packs, tests, and c
 ## Completed runbook move
 
 Slice 7 moved the canonical operator setup/auth runbook to `docs/10_runbooks/operator_setup_and_auth_notes.md`. The old categorized path remains a compatibility pointer for older links.
+
+
+## Slice 8 compatibility pointers
+
+These old paths remain only to keep earlier links working. Use the canonical archive paths for new references.
+
+| compatibility path | canonical path | status |
+| --- | --- | --- |
+| task_docs/2026-04-20_dashboard-transit-terminal.md | docs/90_archive/task_docs_2026-04-20/2026-04-20_dashboard-transit-terminal.md | Pointer only; not current truth. |
+| task_docs/2026-04-20_explain-controls-inspect-mode.md | docs/90_archive/task_docs_2026-04-20/2026-04-20_explain-controls-inspect-mode.md | Pointer only; not current truth. |
+| task_docs/2026-04-20_explain-values-source-mode.md | docs/90_archive/task_docs_2026-04-20/2026-04-20_explain-values-source-mode.md | Pointer only; not current truth. |
+| task_docs/2026-04-20_runtime-backend-foundation.md | docs/90_archive/task_docs_2026-04-20/2026-04-20_runtime-backend-foundation.md | Pointer only; not current truth. |
+| task_docs/2026-04-20_show-backend-status-mode.md | docs/90_archive/task_docs_2026-04-20/2026-04-20_show-backend-status-mode.md | Pointer only; not current truth. |
+| task_docs/2026-04-20_show-real-vs-mock-mode.md | docs/90_archive/task_docs_2026-04-20/2026-04-20_show-real-vs-mock-mode.md | Pointer only; not current truth. |
+| task_docs/2026-04-20_view-e-database-viewer.md | docs/90_archive/task_docs_2026-04-20/2026-04-20_view-e-database-viewer.md | Pointer only; not current truth. |
+| task_docs/README.md | docs/90_archive/task_docs_2026-04-20/README.md | Pointer only; not current truth. |
+| task_docs/_TABLE_OF_CONTENTS.md | docs/90_archive/task_docs_2026-04-20/_TABLE_OF_CONTENTS.md | Pointer only; not current truth. |

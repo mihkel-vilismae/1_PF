@@ -48,15 +48,15 @@ This matrix groups documentation by freshness and trust risk. Freshness estimate
 | docs/categorized/task_documentation_still_to_implement/main_readme.md | medium_recent_reference | backlog | backlog_or_task_prompt | auth | Backlog/task prompt; not current truth. |
 | docs/categorized/task_documentation_still_to_implement/rejected_or_superseded_tasks.md | medium_recent_reference | backlog | backlog_or_task_prompt | auth | Backlog/task prompt; not current truth. |
 | docs/categorized/task_documentation_still_to_implement/verification_and_reconciliation_tasks.md | medium_recent_reference | backlog | backlog_or_task_prompt | auth, new_auth | Backlog/task prompt; not current truth. |
-| task_docs/2026-04-20_dashboard-transit-terminal.md | historical_reference_only | historical_reference | historical_task_archive | monitoring, view_a | Historical task doc; archive/provenance only. |
-| task_docs/2026-04-20_explain-controls-inspect-mode.md | historical_reference_only | historical_reference | historical_task_archive | auth, view_a | Historical task doc; archive/provenance only. |
-| task_docs/2026-04-20_explain-values-source-mode.md | historical_reference_only | historical_reference | historical_task_archive | view_a | Historical task doc; archive/provenance only. |
-| task_docs/2026-04-20_runtime-backend-foundation.md | historical_reference_only | historical_reference | historical_task_archive | auth, icloudpd, runtime_truth, view_a, view_d, download | Historical task doc; archive/provenance only. |
-| task_docs/2026-04-20_show-backend-status-mode.md | historical_reference_only | historical_reference | historical_task_archive | view_a, real_vs_mock | Historical task doc; archive/provenance only. |
-| task_docs/2026-04-20_show-real-vs-mock-mode.md | historical_reference_only | historical_reference | historical_task_archive | auth, view_a, real_vs_mock | Historical task doc; archive/provenance only. |
-| task_docs/2026-04-20_view-e-database-viewer.md | historical_reference_only | historical_reference | historical_task_archive | auth, view_a, view_d | Historical task doc; archive/provenance only. |
-| task_docs/README.md | historical_reference_only | historical_reference | historical_task_archive | auth | Historical task doc; archive/provenance only. |
-| task_docs/_TABLE_OF_CONTENTS.md | historical_reference_only | historical_reference | historical_task_archive | auth, view_a, real_vs_mock | Historical task doc; archive/provenance only. |
+| docs/90_archive/task_docs_2026-04-20/2026-04-20_dashboard-transit-terminal.md | historical_reference_only | historical_reference | historical_task_archive | monitoring, view_a | Historical task doc; canonical archive path; provenance only. |
+| docs/90_archive/task_docs_2026-04-20/2026-04-20_explain-controls-inspect-mode.md | historical_reference_only | historical_reference | historical_task_archive | auth, view_a | Historical task doc; canonical archive path; provenance only. |
+| docs/90_archive/task_docs_2026-04-20/2026-04-20_explain-values-source-mode.md | historical_reference_only | historical_reference | historical_task_archive | view_a | Historical task doc; canonical archive path; provenance only. |
+| docs/90_archive/task_docs_2026-04-20/2026-04-20_runtime-backend-foundation.md | historical_reference_only | historical_reference | historical_task_archive | auth, icloudpd, runtime_truth, view_a, view_d, download | Historical task doc; canonical archive path; provenance only. |
+| docs/90_archive/task_docs_2026-04-20/2026-04-20_show-backend-status-mode.md | historical_reference_only | historical_reference | historical_task_archive | view_a, real_vs_mock | Historical task doc; canonical archive path; provenance only. |
+| docs/90_archive/task_docs_2026-04-20/2026-04-20_show-real-vs-mock-mode.md | historical_reference_only | historical_reference | historical_task_archive | auth, view_a, real_vs_mock | Historical task doc; canonical archive path; provenance only. |
+| docs/90_archive/task_docs_2026-04-20/2026-04-20_view-e-database-viewer.md | historical_reference_only | historical_reference | historical_task_archive | auth, view_a, view_d | Historical task doc; canonical archive path; provenance only. |
+| docs/90_archive/task_docs_2026-04-20/README.md | historical_reference_only | historical_reference | historical_task_archive | auth | Historical task doc; canonical archive path; provenance only. |
+| docs/90_archive/task_docs_2026-04-20/_TABLE_OF_CONTENTS.md | historical_reference_only | historical_reference | historical_task_archive | auth, view_a, real_vs_mock | Historical task doc; canonical archive path; provenance only. |
 | docs/TYPE_FUNCTION_AUDIT_AND_MIGRATION_PLAN.md | medium_recent_reference | historical_reference | audit_or_migration_report | auth, icloudpd, provider, runtime_truth, cron, download | Audit/migration snapshot; recheck before using. |
 | docs/TYPE_FUNCTION_MIGRATION_CLOSURE_AUDIT.md | medium_recent_reference | historical_reference | audit_or_migration_report | auth, provider, view_d | Audit/migration snapshot; recheck before using. |
 | placeholder_implementations.md | medium_recent_reference | historical_reference | audit_or_migration_report | auth, provider, runtime_truth, cron, monitoring, view_a, real_vs_mock, download | Audit/migration snapshot; recheck before using. |
@@ -87,3 +87,19 @@ The latest auth evidence guide moved to `docs/00_current_truth/AUTH_EVIDENCE_PAC
 ## Completed runbook move
 
 The operator setup/auth notes moved to `docs/10_runbooks/operator_setup_and_auth_notes.md`. The old categorized path remains a compatibility pointer and should not be treated as canonical content.
+
+
+## Slice 8 compatibility pointer freshness
+
+
+| compatibility path | canonical path | freshness | safe use |
+| --- | --- | --- | --- |
+| task_docs/2026-04-20_dashboard-transit-terminal.md | docs/90_archive/task_docs_2026-04-20/2026-04-20_dashboard-transit-terminal.md | historical_reference_only | Pointer only; open canonical archive path for historical content. |
+| task_docs/2026-04-20_explain-controls-inspect-mode.md | docs/90_archive/task_docs_2026-04-20/2026-04-20_explain-controls-inspect-mode.md | historical_reference_only | Pointer only; open canonical archive path for historical content. |
+| task_docs/2026-04-20_explain-values-source-mode.md | docs/90_archive/task_docs_2026-04-20/2026-04-20_explain-values-source-mode.md | historical_reference_only | Pointer only; open canonical archive path for historical content. |
+| task_docs/2026-04-20_runtime-backend-foundation.md | docs/90_archive/task_docs_2026-04-20/2026-04-20_runtime-backend-foundation.md | historical_reference_only | Pointer only; open canonical archive path for historical content. |
+| task_docs/2026-04-20_show-backend-status-mode.md | docs/90_archive/task_docs_2026-04-20/2026-04-20_show-backend-status-mode.md | historical_reference_only | Pointer only; open canonical archive path for historical content. |
+| task_docs/2026-04-20_show-real-vs-mock-mode.md | docs/90_archive/task_docs_2026-04-20/2026-04-20_show-real-vs-mock-mode.md | historical_reference_only | Pointer only; open canonical archive path for historical content. |
+| task_docs/2026-04-20_view-e-database-viewer.md | docs/90_archive/task_docs_2026-04-20/2026-04-20_view-e-database-viewer.md | historical_reference_only | Pointer only; open canonical archive path for historical content. |
+| task_docs/README.md | docs/90_archive/task_docs_2026-04-20/README.md | historical_reference_only | Pointer only; open canonical archive path for historical content. |
+| task_docs/_TABLE_OF_CONTENTS.md | docs/90_archive/task_docs_2026-04-20/_TABLE_OF_CONTENTS.md | historical_reference_only | Pointer only; open canonical archive path for historical content. |
