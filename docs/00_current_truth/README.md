@@ -31,3 +31,9 @@ Use these repository-level documentation guides before adding or moving files:
 - [Documentation Reorganization Plan](../DOC_REORGANIZATION_PLAN.md)
 
 Do not physically move files into this folder until the move is covered by a link-aware documentation slice.
+
+## Current contents
+
+- [NEW AUTH Evidence Pack](AUTH_EVIDENCE_PACK.md) — canonical current-truth guidance for safe login/auth artifact debugging.
+
+Compatibility note: `../AUTH_EVIDENCE_PACK.md` is kept as a pointer only so older links continue to work.

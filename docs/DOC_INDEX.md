@@ -12,7 +12,7 @@ This index classifies non-skill documentation files and separates current truth 
 | Group | Files | LOC | Purpose |
 | --- | --- | --- | --- |
 | 01_root_core | 4 | 1391 | Root README, HOW_TO_RUN, AGENTS, and CHANGELOG entry points. |
-| 02_current_auth_evidence | 1 | 83 | Current auth artifact/evidence guidance. |
+| 02_current_auth_evidence | 2 | 106 | Current auth artifact/evidence guidance plus compatibility pointer. |
 | 03_auth_flow_reference | 2 | 148 | Auth/provider verification reference docs. |
 | 04_current_status_snapshots | 8 | 786 | Status snapshots; verify against code/evidence. |
 | 05_vision_and_target_specs | 4 | 311 | Target architecture/product specs. |
@@ -32,7 +32,8 @@ This index classifies non-skill documentation files and separates current truth 
 | CHANGELOG.md | 1223 | CHANGELOG | root_core | source_of_truth_candidate | recent_verify_against_code | 01_root_core | auth, new_auth, icloudpd, provider, runtime_truth, cron, view_a, view_d, real_vs_mock, download | Root entry point; keep discoverable and link to doc index/freshness matrix. |
 | HOW_TO_RUN.md | 28 | How to Run | root_core | runtime_runbook | recent_verify_against_code | 01_root_core | auth, new_auth, icloudpd, provider, view_a | Root entry point; keep discoverable and link to doc index/freshness matrix. |
 | README.md | 123 | Photo Frame Dashboard System | root_core | runtime_runbook | recent_verify_against_code | 01_root_core | auth, new_auth, icloudpd, provider, cron, monitoring, view_a, view_d, download | Root entry point; keep discoverable and link to doc index/freshness matrix. |
-| docs/AUTH_EVIDENCE_PACK.md | 83 | NEW AUTH Evidence Pack | runbook | runtime_runbook | current_latest_baseline | 02_current_auth_evidence | auth, new_auth, icloudpd, provider, evidence_pack, download | Current auth artifact-debugging entrypoint; verify code endpoints before execution. |
+| docs/00_current_truth/AUTH_EVIDENCE_PACK.md | 87 | NEW AUTH Evidence Pack | current_truth | evidence_pack_current | current_latest_baseline | 02_current_auth_evidence | auth, new_auth, icloudpd, provider, evidence_pack, download | Canonical current-truth auth artifact-debugging guide; verify code endpoints before execution. |
+| docs/AUTH_EVIDENCE_PACK.md | 19 | NEW AUTH Evidence Pack | index_or_table_of_contents | historical_reference | recent_verify_against_code | 02_current_auth_evidence | auth, evidence_pack | Compatibility pointer only; do not add detailed content here. |
 | docs/IMPLEMENTATION_STATUS_UPDATE_20260512_NEW_AUTH_PROVIDER_VERIFICATION.md | 76 | Implementation Status Update — NEW AUTH Provider Verification UX | auth_reference | code_verified_snapshot | recent_verify_against_code | 03_auth_flow_reference | auth, new_auth, icloudpd, provider, view_d, download | Auth/provider reference; verify against routes/tests before making runtime claims. |
 | docs/NEW_AUTH_PROVIDER_VERIFICATION_FLOW.md | 72 | NEW AUTH provider verification flow | auth_reference | code_verified_snapshot | recent_verify_against_code | 03_auth_flow_reference | auth, new_auth, icloudpd, provider | Auth/provider reference; verify against routes/tests before making runtime claims. |
 | docs/IMPLEMENTATION_GOAL_STATUS_RECONCILIATION_20260512.md | 124 | Implementation Goal Status Reconciliation — 2026‑05‑12 | implementation_status_snapshot | code_verified_snapshot | recent_verify_against_code | 04_current_status_snapshots | auth, new_auth, icloudpd, provider, runtime_truth, cron, view_a, download | Status snapshot; useful but not live truth. |
@@ -90,3 +91,7 @@ This index classifies non-skill documentation files and separates current truth 
 ## Trust rule
 
 Use docs as navigation, not proof. Prefer generated evidence packs, tests, and code over stale docs or historical prompts.
+
+## Slice 6 current-truth move note
+
+`docs/00_current_truth/AUTH_EVIDENCE_PACK.md` is now the canonical current-truth copy. `docs/AUTH_EVIDENCE_PACK.md` is preserved only as a compatibility pointer for older links.

@@ -24,7 +24,7 @@ This is a plan only. No existing documentation files were moved, renamed, or del
 | CHANGELOG.md | KEEP_ROOT: CHANGELOG.md | 01_root_core | none if kept in place | Root entry point; keep discoverable and link to doc index/freshness matrix. |
 | HOW_TO_RUN.md | KEEP_ROOT: HOW_TO_RUN.md | 01_root_core | none if kept in place | Root entry point; keep discoverable and link to doc index/freshness matrix. |
 | README.md | KEEP_ROOT: README.md | 01_root_core | none if kept in place | Root entry point; keep discoverable and link to doc index/freshness matrix. |
-| docs/AUTH_EVIDENCE_PACK.md | docs/00_current_truth/AUTH_EVIDENCE_PACK.md | 02_current_auth_evidence | medium | Current auth artifact-debugging entrypoint; verify code endpoints before execution. |
+| docs/AUTH_EVIDENCE_PACK.md | completed: canonical content moved to docs/00_current_truth/AUTH_EVIDENCE_PACK.md; old path is compatibility pointer | 02_current_auth_evidence | resolved for old links | Current auth artifact-debugging guide moved in Slice 6 with link preservation. |
 | docs/IMPLEMENTATION_STATUS_UPDATE_20260512_NEW_AUTH_PROVIDER_VERIFICATION.md | docs/20_architecture_and_specs/auth/IMPLEMENTATION_STATUS_UPDATE_20260512_NEW_AUTH_PROVIDER_VERIFICATION.md | 03_auth_flow_reference | medium | Auth/provider reference; verify against routes/tests before making runtime claims. |
 | docs/NEW_AUTH_PROVIDER_VERIFICATION_FLOW.md | docs/20_architecture_and_specs/auth/NEW_AUTH_PROVIDER_VERIFICATION_FLOW.md | 03_auth_flow_reference | medium | Auth/provider reference; verify against routes/tests before making runtime claims. |
 | docs/IMPLEMENTATION_GOAL_STATUS_RECONCILIATION_20260512.md | docs/30_status_snapshots/2026-05-12/IMPLEMENTATION_GOAL_STATUS_RECONCILIATION_20260512.md | 04_current_status_snapshots | medium | Status snapshot; useful but not live truth. |
@@ -86,3 +86,7 @@ This is a plan only. No existing documentation files were moved, renamed, or del
 3. Current-truth folder slice: move/copy only current docs after link checks.
 4. Snapshot/archive slice: move dated snapshots and task docs with link updates.
 5. Cleanup slice: retire old indexes only after all references are updated.
+
+## Completed physical moves
+
+- Slice 6 moved the canonical NEW AUTH Evidence Pack guide from `docs/AUTH_EVIDENCE_PACK.md` to `docs/00_current_truth/AUTH_EVIDENCE_PACK.md`. The original path remains as a compatibility pointer.

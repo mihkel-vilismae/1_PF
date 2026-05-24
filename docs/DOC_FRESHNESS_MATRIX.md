@@ -8,8 +8,8 @@ This matrix groups documentation by freshness and trust risk. Freshness estimate
 
 | Freshness | Files | LOC | How to use |
 | --- | --- | --- | --- |
-| current_latest_baseline | 1 | 83 | Start here for latest/current docs. |
-| recent_verify_against_code | 22 | 3346 | Useful, but verify against code/tests/evidence. |
+| current_latest_baseline | 1 | 87 | Start here for latest/current docs. |
+| recent_verify_against_code | 23 | 3365 | Useful, but verify against code/tests/evidence. |
 | medium_recent_reference | 22 | 2144 | Reference/spec/workflow value; not proof. |
 | historical_reference_only | 9 | 1959 | Archive/provenance only. |
 | dirty_or_untracked_risk | 4 | 173 | Audit before trusting. |
@@ -23,7 +23,8 @@ This matrix groups documentation by freshness and trust risk. Freshness estimate
 | CHANGELOG.md | recent_verify_against_code | source_of_truth_candidate | root_core | auth, new_auth, icloudpd, provider, runtime_truth, cron, view_a, view_d, real_vs_mock, download | Root entry point; keep discoverable and link to doc index/freshness matrix. |
 | HOW_TO_RUN.md | recent_verify_against_code | runtime_runbook | root_core | auth, new_auth, icloudpd, provider, view_a | Root entry point; keep discoverable and link to doc index/freshness matrix. |
 | README.md | recent_verify_against_code | runtime_runbook | root_core | auth, new_auth, icloudpd, provider, cron, monitoring, view_a, view_d, download | Root entry point; keep discoverable and link to doc index/freshness matrix. |
-| docs/AUTH_EVIDENCE_PACK.md | current_latest_baseline | runtime_runbook | runbook | auth, new_auth, icloudpd, provider, evidence_pack, download | Current auth artifact-debugging entrypoint; verify code endpoints before execution. |
+| docs/00_current_truth/AUTH_EVIDENCE_PACK.md | current_latest_baseline | evidence_pack_current | current_truth | auth, new_auth, icloudpd, provider, evidence_pack, download | Canonical current-truth auth artifact-debugging guide; verify code endpoints before execution. |
+| docs/AUTH_EVIDENCE_PACK.md | recent_verify_against_code | historical_reference | index_or_table_of_contents | auth, evidence_pack | Compatibility pointer only; canonical guide moved to docs/00_current_truth/AUTH_EVIDENCE_PACK.md. |
 | docs/IMPLEMENTATION_STATUS_UPDATE_20260512_NEW_AUTH_PROVIDER_VERIFICATION.md | recent_verify_against_code | code_verified_snapshot | auth_reference | auth, new_auth, icloudpd, provider, view_d, download | Auth/provider reference; verify against routes/tests before making runtime claims. |
 | docs/NEW_AUTH_PROVIDER_VERIFICATION_FLOW.md | recent_verify_against_code | code_verified_snapshot | auth_reference | auth, new_auth, icloudpd, provider | Auth/provider reference; verify against routes/tests before making runtime claims. |
 | docs/IMPLEMENTATION_GOAL_STATUS_RECONCILIATION_20260512.md | recent_verify_against_code | code_verified_snapshot | implementation_status_snapshot | auth, new_auth, icloudpd, provider, runtime_truth, cron, view_a, download | Status snapshot; useful but not live truth. |
@@ -77,3 +78,7 @@ This matrix groups documentation by freshness and trust risk. Freshness estimate
 | tools/network-scan-terminal-gui/README.md | dirty_or_untracked_risk | dirty_or_untracked_risk | tool_local_doc | general | Tool-local submodule doc; audit separately. |
 | tools/network-scan-terminal-gui/docs/IMPLEMENTATION_PROMPT.md | dirty_or_untracked_risk | dirty_or_untracked_risk | tool_local_doc | general | Tool-local submodule doc; audit separately. |
 | generated_test_data/README.md | medium_recent_reference | historical_reference | test_data_doc | general | Dataset README; keep with test data. |
+
+## Slice 6 current-truth move note
+
+The latest auth evidence guide moved to `docs/00_current_truth/AUTH_EVIDENCE_PACK.md`. The old `docs/AUTH_EVIDENCE_PACK.md` path remains a compatibility pointer and should not be treated as the canonical content source.
