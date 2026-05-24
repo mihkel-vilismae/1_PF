@@ -41,3 +41,17 @@ The following status snapshots now have canonical copies under `docs/30_status_s
 - [NEW AUTH Provider Verification UX Status Update](2026-05-12/IMPLEMENTATION_STATUS_UPDATE_20260512_NEW_AUTH_PROVIDER_VERIFICATION.md)
 
 The old root-level `docs/*.md` paths are retained as compatibility pointers only.
+
+## Canonical categorized status snapshots moved in Slice 12
+
+Estonian timestamp: 2026-05-25 01:05 EEST
+
+The following categorized current-status snapshots now have canonical copies under `docs/30_status_snapshots/2026-05-12/`:
+
+- [B4 Playback Flow Status](2026-05-12/b4_playback_flow_status.md)
+- [Button and View Verification Status](2026-05-12/button_and_view_verification_status.md)
+- [Code-Verified Dashboard Implementation Status](2026-05-12/code_verified_dashboard_implementation_status.md)
+- [Documented Current System State](2026-05-12/documented_current_system_state.md)
+- [Known Gaps and Unresolved Questions](2026-05-12/known_gaps_and_unresolved_questions.md)
+
+The old `docs/categorized/current_implementation_status_docs/*.md` paths are retained as compatibility pointers only. The category `main_readme.md` remains in place until the old-index replacement slice.
