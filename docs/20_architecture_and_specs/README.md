@@ -45,3 +45,14 @@ The first controlled vision/spec move placed these canonical files here:
 - [Product Vision and Authority](product_vision_and_authority.md)
 
 The old `docs/categorized/vision_spec_docs/` paths remain compatibility pointers. Keep `docs/categorized/vision_spec_docs/main_readme.md` in place until the old-index replacement slice.
+
+## Canonical auth flow reference docs moved in Slice 14
+
+Estonian timestamp: 2026-05-25 01:28 EEST
+
+The first controlled auth flow reference move placed this canonical file here:
+
+- [NEW AUTH Provider Verification Flow](auth/NEW_AUTH_PROVIDER_VERIFICATION_FLOW.md)
+
+The old `docs/NEW_AUTH_PROVIDER_VERIFICATION_FLOW.md` path remains a compatibility pointer. Treat this document as an architecture/reference guide, not proof that the current runtime is authenticated. Generated evidence packs, code, and tests remain stronger than this reference when they conflict.
+
