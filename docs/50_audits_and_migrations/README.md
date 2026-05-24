@@ -19,6 +19,16 @@ This folder is for audit reports, migration plans, refactor notes, and cleanup/r
 - current-truth summaries that are not audit-based.
 - unverified speculative backlog prompts.
 
+## Canonical audit and migration documents
+
+These audit/migration documents are now canonical in this folder:
+
+- [Type Function Audit and Migration Plan](TYPE_FUNCTION_AUDIT_AND_MIGRATION_PLAN.md)
+- [Type Function Migration Closure Audit](TYPE_FUNCTION_MIGRATION_CLOSURE_AUDIT.md)
+- [Placeholder Implementation Audit](placeholder_implementations.md)
+
+Their old paths remain as compatibility pointers only. These documents are planning/review artifacts and must be rechecked against current code, tests, and generated evidence before being used as implementation truth.
+
 ## Authority rule
 
 Audit and migration docs are planning/review tools. Re-run or re-check audits before making implementation claims. Code, tests, generated evidence packs, and runtime artifacts are stronger than old documentation when there is a conflict.
