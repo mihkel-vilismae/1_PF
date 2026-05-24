@@ -9,7 +9,7 @@ This matrix groups documentation by freshness and trust risk. Freshness estimate
 | Freshness | Files | LOC | How to use |
 | --- | --- | --- | --- |
 | current_latest_baseline | 1 | 87 | Start here for latest/current docs. |
-| recent_verify_against_code | 23 | 3365 | Useful, but verify against code/tests/evidence. |
+| recent_verify_against_code | 26 | 3392 | Useful, but verify against code/tests/evidence; includes Slice 11 status snapshot compatibility pointers. |
 | medium_recent_reference | 22 | 2144 | Reference/spec/workflow value; not proof. |
 | historical_reference_only | 9 | 1959 | Archive/provenance only. |
 | dirty_or_untracked_risk | 4 | 173 | Audit before trusting. |
@@ -25,10 +25,13 @@ This matrix groups documentation by freshness and trust risk. Freshness estimate
 | README.md | recent_verify_against_code | runtime_runbook | root_core | auth, new_auth, icloudpd, provider, cron, monitoring, view_a, view_d, download | Root entry point; keep discoverable and link to doc index/freshness matrix. |
 | docs/00_current_truth/AUTH_EVIDENCE_PACK.md | current_latest_baseline | evidence_pack_current | current_truth | auth, new_auth, icloudpd, provider, evidence_pack, download | Canonical current-truth auth artifact-debugging guide; verify code endpoints before execution. |
 | docs/AUTH_EVIDENCE_PACK.md | recent_verify_against_code | historical_reference | index_or_table_of_contents | auth, evidence_pack | Compatibility pointer only; canonical guide moved to docs/00_current_truth/AUTH_EVIDENCE_PACK.md. |
-| docs/IMPLEMENTATION_STATUS_UPDATE_20260512_NEW_AUTH_PROVIDER_VERIFICATION.md | recent_verify_against_code | code_verified_snapshot | auth_reference | auth, new_auth, icloudpd, provider, view_d, download | Auth/provider reference; verify against routes/tests before making runtime claims. |
+| docs/30_status_snapshots/2026-05-12/IMPLEMENTATION_STATUS_UPDATE_20260512_NEW_AUTH_PROVIDER_VERIFICATION.md | recent_verify_against_code | code_verified_snapshot | implementation_status_snapshot | auth, new_auth, icloudpd, provider, view_d, download | Canonical dated status snapshot moved in Slice 11; verify against current routes/tests/evidence before runtime claims. |
+| docs/IMPLEMENTATION_STATUS_UPDATE_20260512_NEW_AUTH_PROVIDER_VERIFICATION.md | recent_verify_against_code | historical_reference | implementation_status_snapshot | auth | Compatibility pointer only; use canonical moved status snapshot. |
 | docs/NEW_AUTH_PROVIDER_VERIFICATION_FLOW.md | recent_verify_against_code | code_verified_snapshot | auth_reference | auth, new_auth, icloudpd, provider | Auth/provider reference; verify against routes/tests before making runtime claims. |
-| docs/IMPLEMENTATION_GOAL_STATUS_RECONCILIATION_20260512.md | recent_verify_against_code | code_verified_snapshot | implementation_status_snapshot | auth, new_auth, icloudpd, provider, runtime_truth, cron, view_a, download | Status snapshot; useful but not live truth. |
-| docs/RUNTIME_TRUTH_AUTHORITY_MAP_20260512.md | recent_verify_against_code | code_verified_snapshot | implementation_status_snapshot | auth, runtime_truth, monitoring | Status snapshot; useful but not live truth. |
+| docs/30_status_snapshots/2026-05-12/IMPLEMENTATION_GOAL_STATUS_RECONCILIATION_20260512.md | recent_verify_against_code | code_verified_snapshot | implementation_status_snapshot | auth, new_auth, icloudpd, provider, runtime_truth, cron, view_a, download | Canonical dated status snapshot moved in Slice 11; useful but not live truth. |
+| docs/IMPLEMENTATION_GOAL_STATUS_RECONCILIATION_20260512.md | recent_verify_against_code | historical_reference | implementation_status_snapshot | auth | Compatibility pointer only; use canonical moved status snapshot. |
+| docs/30_status_snapshots/2026-05-12/RUNTIME_TRUTH_AUTHORITY_MAP_20260512.md | recent_verify_against_code | code_verified_snapshot | implementation_status_snapshot | auth, runtime_truth, monitoring | Canonical dated status snapshot moved in Slice 11; useful but not live truth. |
+| docs/RUNTIME_TRUTH_AUTHORITY_MAP_20260512.md | recent_verify_against_code | historical_reference | implementation_status_snapshot | runtime_truth | Compatibility pointer only; use canonical moved status snapshot. |
 | docs/categorized/current_implementation_status_docs/b4_playback_flow_status.md | recent_verify_against_code | code_verified_snapshot | implementation_status_snapshot | auth, cron, download | Status snapshot; useful but not live truth. |
 | docs/categorized/current_implementation_status_docs/button_and_view_verification_status.md | recent_verify_against_code | code_verified_snapshot | implementation_status_snapshot | auth, cron, view_a, view_d, download | Status snapshot; useful but not live truth. |
 | docs/categorized/current_implementation_status_docs/code_verified_dashboard_implementation_status.md | recent_verify_against_code | code_verified_snapshot | implementation_status_snapshot | auth, new_auth, icloudpd, provider, runtime_truth, cron, view_a, view_d, download | Status snapshot; useful but not live truth. |

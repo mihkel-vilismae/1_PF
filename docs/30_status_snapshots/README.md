@@ -31,3 +31,13 @@ Use these repository-level documentation guides before adding or moving files:
 - [Documentation Reorganization Plan](../DOC_REORGANIZATION_PLAN.md)
 
 Do not physically move files into this folder until the move is covered by a link-aware documentation slice.
+
+## Canonical 2026-05-12 snapshots moved in Slice 11
+
+The following status snapshots now have canonical copies under `docs/30_status_snapshots/2026-05-12/`:
+
+- [Implementation Goal Status Reconciliation](2026-05-12/IMPLEMENTATION_GOAL_STATUS_RECONCILIATION_20260512.md)
+- [Runtime Truth Authority Map](2026-05-12/RUNTIME_TRUTH_AUTHORITY_MAP_20260512.md)
+- [NEW AUTH Provider Verification UX Status Update](2026-05-12/IMPLEMENTATION_STATUS_UPDATE_20260512_NEW_AUTH_PROVIDER_VERIFICATION.md)
+
+The old root-level `docs/*.md` paths are retained as compatibility pointers only.
