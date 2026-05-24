@@ -9,7 +9,7 @@ This matrix groups documentation by freshness and trust risk. Freshness estimate
 | Freshness | Files | LOC | How to use |
 | --- | --- | --- | --- |
 | current_latest_baseline | 1 | 87 | Start here for latest/current docs. |
-| recent_verify_against_code | 26 | 3392 | Useful, but verify against code/tests/evidence; includes Slice 11 status snapshot compatibility pointers. |
+| recent_verify_against_code | 29 | 3440 | Useful, but verify against code/tests/evidence; includes compatibility pointers for moved docs. |
 | medium_recent_reference | 22 | 2144 | Reference/spec/workflow value; not proof. |
 | historical_reference_only | 9 | 1959 | Archive/provenance only. |
 | dirty_or_untracked_risk | 4 | 173 | Audit before trusting. |
@@ -43,10 +43,13 @@ This matrix groups documentation by freshness and trust risk. Freshness estimate
 | docs/30_status_snapshots/2026-05-12/known_gaps_and_unresolved_questions.md | recent_verify_against_code | code_verified_snapshot | implementation_status_snapshot | auth, new_auth, icloudpd, provider, runtime_truth, view_d, download | Canonical categorized status snapshot moved in Slice 12; verify against code/evidence before current-truth claims. |
 | docs/categorized/current_implementation_status_docs/known_gaps_and_unresolved_questions.md | recent_verify_against_code | historical_reference | implementation_status_snapshot | auth, new_auth, icloudpd, provider, runtime_truth, view_d, download | Compatibility pointer only; use canonical file in docs/30_status_snapshots/2026-05-12/. |
 | docs/categorized/current_implementation_status_docs/main_readme.md | recent_verify_against_code | code_verified_snapshot | implementation_status_snapshot | auth, new_auth, icloudpd, provider, cron, download | Status snapshot; useful but not live truth. |
-| docs/categorized/vision_spec_docs/architecture_runtime_and_recovery_spec.md | medium_recent_reference | target_spec | architecture_or_vision_spec | auth, provider, cron, download | Target/spec material; not proof of implementation. |
-| docs/categorized/vision_spec_docs/dashboard_auth_pipeline_spec.md | medium_recent_reference | target_spec | architecture_or_vision_spec | auth, new_auth, icloudpd, provider, view_a, view_d, download | Target/spec material; not proof of implementation. |
+| docs/20_architecture_and_specs/architecture_runtime_and_recovery_spec.md | medium_recent_reference | target_spec | architecture_or_vision_spec | auth, provider, cron, download | Canonical vision/spec doc moved in Slice 13; target/spec material, not runtime proof. |
+| docs/categorized/vision_spec_docs/architecture_runtime_and_recovery_spec.md | recent_verify_against_code | historical_reference | index_or_table_of_contents | auth, provider, cron, download | Compatibility pointer only; use canonical moved spec. |
+| docs/20_architecture_and_specs/dashboard_auth_pipeline_spec.md | medium_recent_reference | target_spec | architecture_or_vision_spec | auth, new_auth, icloudpd, provider, view_a, view_d, download | Canonical vision/spec doc moved in Slice 13; target/spec material, not runtime proof. |
+| docs/categorized/vision_spec_docs/dashboard_auth_pipeline_spec.md | recent_verify_against_code | historical_reference | index_or_table_of_contents | auth, new_auth, icloudpd, provider, view_a, view_d, download | Compatibility pointer only; use canonical moved spec. |
 | docs/categorized/vision_spec_docs/main_readme.md | medium_recent_reference | target_spec | architecture_or_vision_spec | auth, cron | Target/spec material; not proof of implementation. |
-| docs/categorized/vision_spec_docs/product_vision_and_authority.md | medium_recent_reference | target_spec | architecture_or_vision_spec | auth, provider | Target/spec material; not proof of implementation. |
+| docs/20_architecture_and_specs/product_vision_and_authority.md | medium_recent_reference | target_spec | architecture_or_vision_spec | auth, provider | Canonical vision/spec doc moved in Slice 13; target/spec material, not runtime proof. |
+| docs/categorized/vision_spec_docs/product_vision_and_authority.md | recent_verify_against_code | historical_reference | index_or_table_of_contents | auth, provider | Compatibility pointer only; use canonical moved spec. |
 | docs/40_backlog_and_tasks/todo_2026-05-13/3A_cronemulator.txt | medium_recent_reference | backlog | backlog_or_task_prompt | cron | Canonical backlog/TODO prompt moved in Slice 9; not current truth. |
 | _TODO_13_05_26/3A_cronemulator.txt | recent_verify_against_code | backlog | backlog_or_task_prompt | cron | Compatibility pointer only; use canonical moved file. |
 | docs/40_backlog_and_tasks/todo_2026-05-13/D_monitoring_view.txt | medium_recent_reference | backlog | backlog_or_task_prompt | auth, runtime_truth, cron, monitoring, view_a, view_d, download | Canonical backlog/TODO prompt moved in Slice 9; not current truth. |
