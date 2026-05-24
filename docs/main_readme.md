@@ -1,5 +1,17 @@
 # Categorized Documentation Index
 
+
+## Current documentation navigation
+
+Use these current navigation files before using older categorized docs as authority:
+
+- [`docs/DOC_INDEX.md`](DOC_INDEX.md) is the main map for documentation by purpose, kind, authority, freshness, and topic.
+- [`docs/DOC_FRESHNESS_MATRIX.md`](DOC_FRESHNESS_MATRIX.md) explains which docs are current, stale, historical, or risky.
+- [`docs/DOC_REORGANIZATION_PLAN.md`](DOC_REORGANIZATION_PLAN.md) must be checked before moving documentation files.
+- [`docs/AUTH_EVIDENCE_PACK.md`](AUTH_EVIDENCE_PACK.md) is the starting point for login/auth artifact debugging.
+
+Old TODO docs, `task_docs/`, backlog docs, and vision/spec docs remain useful context. They must not be treated as current implementation truth without code, test, or generated-evidence verification.
+
 ## 2026-05-10 playback boundary update
 
 B3.5 owns playback queue preparation/building. B4 and `playback_worker` select the current playable item from already prepared queue/state as the final worker-stage action before the loop can begin again. Preview/fullscreen rendering remain non-real media display, Raspberry OS rendering remains disabled/planned, and Windows CronEmulator playback-worker command wiring remains partial because it depends on the expected `tools/CronEmulator` launch context.

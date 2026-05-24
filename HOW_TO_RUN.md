@@ -1,5 +1,17 @@
 # How to Run
 
+
+## Documentation navigation
+
+Before following older runbooks or task notes, check the current documentation navigation files:
+
+- [`docs/DOC_INDEX.md`](docs/DOC_INDEX.md) is the main map for documentation by purpose.
+- [`docs/DOC_FRESHNESS_MATRIX.md`](docs/DOC_FRESHNESS_MATRIX.md) explains which docs are current, stale, historical, or risky.
+- [`docs/DOC_REORGANIZATION_PLAN.md`](docs/DOC_REORGANIZATION_PLAN.md) must be checked before moving documentation files.
+- [`docs/AUTH_EVIDENCE_PACK.md`](docs/AUTH_EVIDENCE_PACK.md) is the starting point for login/auth artifact debugging.
+
+Do not treat old TODO docs, `task_docs/`, backlog docs, or vision/spec docs as current implementation truth without code, test, or generated-evidence verification.
+
 ```bash
 npm install --verbose
 npm run build

@@ -6,6 +6,18 @@ The system documentation has been consolidated into categorized canonical docs u
 
 ## Documentation entry points
 
+
+### Documentation navigation (current grouping)
+
+Use the current documentation navigation files before treating older docs as truth:
+
+- [`docs/DOC_INDEX.md`](docs/DOC_INDEX.md) is the main map for docs by purpose, kind, authority, and topic.
+- [`docs/DOC_FRESHNESS_MATRIX.md`](docs/DOC_FRESHNESS_MATRIX.md) shows which docs are current, recent-but-verify, historical, or risky.
+- [`docs/DOC_REORGANIZATION_PLAN.md`](docs/DOC_REORGANIZATION_PLAN.md) must be checked before moving or renaming documentation files.
+- [`docs/AUTH_EVIDENCE_PACK.md`](docs/AUTH_EVIDENCE_PACK.md) is the starting point for login/auth artifact debugging.
+
+Old TODO files, `task_docs/`, backlog docs, and vision/spec docs are useful context, but they are not current implementation truth unless code, tests, or generated evidence confirm them.
+
 Start here:
 
 - `docs/main_readme.md` - global documentation index, authority rules, conflict summary, and full old-to-new migration map.
