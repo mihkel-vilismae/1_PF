@@ -64,7 +64,7 @@ This is a plan only. No existing documentation files were moved, renamed, or del
 | docs/categorized/other_documentation/default_project_settings_and_elements_checklist.md | docs/90_archive/old_indexes/default_project_settings_and_elements_checklist.md | 09_documentation_indexes_and_reference | medium | Index/reference material; new DOC_INDEX supersedes old navigation. |
 | docs/categorized/other_documentation/documentation_workflow_and_inventory.md | docs/90_archive/old_indexes/documentation_workflow_and_inventory.md | 09_documentation_indexes_and_reference | medium | Index/reference material; new DOC_INDEX supersedes old navigation. |
 | docs/categorized/other_documentation/main_readme.md | docs/90_archive/old_indexes/main_readme.md | 09_documentation_indexes_and_reference | medium | Index/reference material; new DOC_INDEX supersedes old navigation. |
-| docs/categorized/other_documentation/operator_setup_and_auth_notes.md | docs/90_archive/old_indexes/operator_setup_and_auth_notes.md | 09_documentation_indexes_and_reference | medium | Index/reference material; new DOC_INDEX supersedes old navigation. |
+| docs/categorized/other_documentation/operator_setup_and_auth_notes.md | completed: canonical content moved to docs/10_runbooks/operator_setup_and_auth_notes.md; old path is compatibility pointer | 13_operator_runbooks | resolved for old links | Operator setup/auth runbook moved in Slice 7 with link preservation. |
 | docs/main_readme.md | docs/90_archive/old_indexes/main_readme.md | 09_documentation_indexes_and_reference | medium | Index/reference material; new DOC_INDEX supersedes old navigation. |
 | tools/CronEmulator/TABLE_OF_CONTENTS.md | docs/90_archive/old_indexes/TABLE_OF_CONTENTS.md | 09_documentation_indexes_and_reference | high if moved | Index/reference material; new DOC_INDEX supersedes old navigation. |
 | tools/network-scan-terminal-gui/TABLE_OF_CONTENTS.md | docs/90_archive/old_indexes/TABLE_OF_CONTENTS.md | 09_documentation_indexes_and_reference | high if moved | Index/reference material; new DOC_INDEX supersedes old navigation. |
@@ -90,3 +90,5 @@ This is a plan only. No existing documentation files were moved, renamed, or del
 ## Completed physical moves
 
 - Slice 6 moved the canonical NEW AUTH Evidence Pack guide from `docs/AUTH_EVIDENCE_PACK.md` to `docs/00_current_truth/AUTH_EVIDENCE_PACK.md`. The original path remains as a compatibility pointer.
+
+- Slice 7 moved the canonical operator setup/auth runbook from `docs/categorized/other_documentation/operator_setup_and_auth_notes.md` to `docs/10_runbooks/operator_setup_and_auth_notes.md`. The original path remains as a compatibility pointer.

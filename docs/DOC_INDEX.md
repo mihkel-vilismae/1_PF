@@ -4,8 +4,8 @@ Estonian timestamp: 2026-05-24 22:58 EEST
 
 This index classifies non-skill documentation files and separates current truth candidates from status snapshots, specs, backlog, archive material, and tool-local docs. No files were moved by this analysis.
 
-- Included documentation files: 58
-- Included documentation LOC: 7705
+- Included documentation files: 59
+- Included documentation LOC: 7717
 
 ## Group summary
 
@@ -19,7 +19,8 @@ This index classifies non-skill documentation files and separates current truth 
 | 06_backlog_and_active_task_prompts | 9 | 720 | TODOs, backlog, active task prompts. |
 | 07_historical_task_docs_archive | 9 | 1959 | Historical task archive. |
 | 08_audits_and_migration_reports | 3 | 753 | Audits and migration snapshots. |
-| 09_documentation_indexes_and_reference | 8 | 1021 | Legacy indexes/reference docs. |
+| 09_documentation_indexes_and_reference | 8 | 918 | Legacy indexes/reference docs, including compatibility pointers. |
+| 13_operator_runbooks | 1 | 115 | Operator-facing runbooks moved into docs/10_runbooks. |
 | 10_tool_docs_cronemulator | 5 | 319 | CronEmulator tool docs. |
 | 11_tool_docs_network_scan_dirty | 4 | 173 | Network-scan submodule/tool docs; audit separately. |
 | 12_test_data_docs | 1 | 41 | Test-data docs. |
@@ -73,7 +74,8 @@ This index classifies non-skill documentation files and separates current truth 
 | docs/categorized/other_documentation/default_project_settings_and_elements_checklist.md | 493 | Default Project Settings and Elements | index_or_table_of_contents | historical_reference | recent_verify_against_code | 09_documentation_indexes_and_reference | auth, real_vs_mock | Index/reference material; new DOC_INDEX supersedes old navigation. |
 | docs/categorized/other_documentation/documentation_workflow_and_inventory.md | 64 | Documentation Workflow and Inventory | index_or_table_of_contents | historical_reference | recent_verify_against_code | 09_documentation_indexes_and_reference | auth | Index/reference material; new DOC_INDEX supersedes old navigation. |
 | docs/categorized/other_documentation/main_readme.md | 63 | Other Documentation | index_or_table_of_contents | historical_reference | recent_verify_against_code | 09_documentation_indexes_and_reference | auth, icloudpd | Index/reference material; new DOC_INDEX supersedes old navigation. |
-| docs/categorized/other_documentation/operator_setup_and_auth_notes.md | 115 | Operator Setup and Auth Notes | index_or_table_of_contents | historical_reference | recent_verify_against_code | 09_documentation_indexes_and_reference | auth, new_auth, icloudpd, provider, download | Index/reference material; new DOC_INDEX supersedes old navigation. |
+| docs/10_runbooks/operator_setup_and_auth_notes.md | 115 | Operator Setup and Auth Notes | runbook | runtime_runbook | recent_verify_against_code | 13_operator_runbooks | auth, new_auth, icloudpd, provider, download | Canonical operator setup/auth runbook moved in Slice 7; verify commands and endpoints against current code before execution. |
+| docs/categorized/other_documentation/operator_setup_and_auth_notes.md | 12 | Operator Setup and Auth Notes | index_or_table_of_contents | historical_reference | recent_verify_against_code | 09_documentation_indexes_and_reference | auth | Compatibility pointer only; canonical runbook moved to docs/10_runbooks/operator_setup_and_auth_notes.md. |
 | docs/main_readme.md | 208 | Categorized Documentation Index | index_or_table_of_contents | historical_reference | recent_verify_against_code | 09_documentation_indexes_and_reference | auth, new_auth, icloudpd, provider, cron, view_a, view_d, download | Index/reference material; new DOC_INDEX supersedes old navigation. |
 | tools/CronEmulator/TABLE_OF_CONTENTS.md | 12 | Table of Contents | index_or_table_of_contents | historical_reference | recent_verify_against_code | 09_documentation_indexes_and_reference | cron, view_a | Index/reference material; new DOC_INDEX supersedes old navigation. |
 | tools/network-scan-terminal-gui/TABLE_OF_CONTENTS.md | 14 | Table of Contents | index_or_table_of_contents | historical_reference | recent_verify_against_code | 09_documentation_indexes_and_reference | view_a | Index/reference material; new DOC_INDEX supersedes old navigation. |
@@ -95,3 +97,7 @@ Use docs as navigation, not proof. Prefer generated evidence packs, tests, and c
 ## Slice 6 current-truth move note
 
 `docs/00_current_truth/AUTH_EVIDENCE_PACK.md` is now the canonical current-truth copy. `docs/AUTH_EVIDENCE_PACK.md` is preserved only as a compatibility pointer for older links.
+
+## Completed runbook move
+
+Slice 7 moved the canonical operator setup/auth runbook to `docs/10_runbooks/operator_setup_and_auth_notes.md`. The old categorized path remains a compatibility pointer for older links.

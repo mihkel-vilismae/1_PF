@@ -64,7 +64,8 @@ This matrix groups documentation by freshness and trust risk. Freshness estimate
 | docs/categorized/other_documentation/default_project_settings_and_elements_checklist.md | recent_verify_against_code | historical_reference | index_or_table_of_contents | auth, real_vs_mock | Index/reference material; new DOC_INDEX supersedes old navigation. |
 | docs/categorized/other_documentation/documentation_workflow_and_inventory.md | recent_verify_against_code | historical_reference | index_or_table_of_contents | auth | Index/reference material; new DOC_INDEX supersedes old navigation. |
 | docs/categorized/other_documentation/main_readme.md | recent_verify_against_code | historical_reference | index_or_table_of_contents | auth, icloudpd | Index/reference material; new DOC_INDEX supersedes old navigation. |
-| docs/categorized/other_documentation/operator_setup_and_auth_notes.md | recent_verify_against_code | historical_reference | index_or_table_of_contents | auth, new_auth, icloudpd, provider, download | Index/reference material; new DOC_INDEX supersedes old navigation. |
+| docs/10_runbooks/operator_setup_and_auth_notes.md | recent_verify_against_code | runtime_runbook | runbook | auth, new_auth, icloudpd, provider, download | Canonical operator setup/auth runbook moved in Slice 7; verify commands and endpoints against current code before execution. |
+| docs/categorized/other_documentation/operator_setup_and_auth_notes.md | recent_verify_against_code | historical_reference | index_or_table_of_contents | auth | Compatibility pointer only; canonical runbook moved to docs/10_runbooks/operator_setup_and_auth_notes.md. |
 | docs/main_readme.md | recent_verify_against_code | historical_reference | index_or_table_of_contents | auth, new_auth, icloudpd, provider, cron, view_a, view_d, download | Index/reference material; new DOC_INDEX supersedes old navigation. |
 | tools/CronEmulator/TABLE_OF_CONTENTS.md | recent_verify_against_code | historical_reference | index_or_table_of_contents | cron, view_a | Index/reference material; new DOC_INDEX supersedes old navigation. |
 | tools/network-scan-terminal-gui/TABLE_OF_CONTENTS.md | recent_verify_against_code | historical_reference | index_or_table_of_contents | view_a | Index/reference material; new DOC_INDEX supersedes old navigation. |
@@ -82,3 +83,7 @@ This matrix groups documentation by freshness and trust risk. Freshness estimate
 ## Slice 6 current-truth move note
 
 The latest auth evidence guide moved to `docs/00_current_truth/AUTH_EVIDENCE_PACK.md`. The old `docs/AUTH_EVIDENCE_PACK.md` path remains a compatibility pointer and should not be treated as the canonical content source.
+
+## Completed runbook move
+
+The operator setup/auth notes moved to `docs/10_runbooks/operator_setup_and_auth_notes.md`. The old categorized path remains a compatibility pointer and should not be treated as canonical content.

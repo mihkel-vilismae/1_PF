@@ -32,3 +32,7 @@ Use these repository-level documentation guides before adding or moving files:
 - [Documentation Reorganization Plan](../DOC_REORGANIZATION_PLAN.md)
 
 Do not physically move files into this folder until the move is covered by a link-aware documentation slice.
+
+## Current runbooks
+
+- [Operator Setup and Auth Notes](operator_setup_and_auth_notes.md) — operator-facing setup, auth, iCloudPD, session, and NEW AUTH usage notes.
