@@ -25,6 +25,14 @@ This folder is for backlog items, TODOs, implementation prompts, and future work
 - The original `_TODO_13_05_26/` paths remain as compatibility pointers where moved.
 - `_TODO_13_05_26/F_page.txt` is intentionally not moved because it is an ignored dirty/unrelated file for the current workflow.
 
+
+## Canonical backlog category docs
+
+- [Active implementation backlog](task_documentation_still_to_implement/active_implementation_backlog.md) contains planning tasks that are not implementation proof.
+- [Rejected or superseded tasks](task_documentation_still_to_implement/rejected_or_superseded_tasks.md) preserves rejected/superseded planning decisions.
+- [Verification and reconciliation tasks](task_documentation_still_to_implement/verification_and_reconciliation_tasks.md) tracks verification work that must be checked against code/tests/evidence before becoming current truth.
+- The original `docs/categorized/task_documentation_still_to_implement/` document paths remain as compatibility pointers where moved.
+
 ## Authority rule
 
 Backlog docs are planning material. They must not be treated as completed implementation without code, tests, or evidence. Code, tests, generated evidence packs, and runtime artifacts are stronger than old documentation when there is a conflict.
