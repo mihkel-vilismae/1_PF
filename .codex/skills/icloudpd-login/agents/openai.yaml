@@ -1,0 +1,4 @@
+interface:
+  display_name: "iCloudPD Login"
+  short_description: "Guide icloudpd auth and 2FA cookie setup"
+  default_prompt: "Use $icloudpd-login to diagnose an icloudpd auth-only login and cookie setup."
