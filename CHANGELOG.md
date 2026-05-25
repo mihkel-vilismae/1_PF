@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.5.31 - 2026-05-26 02:47 EEST
+
+- Added Slice 1 B2 real-download auth handoff characterization coverage, proving active NEW AUTH provider proof authenticates through `verifyNewAuthSessionForRuntimeDownload`.
+- Captured the current legacy single-file download downgrade path where `icloudpd_started_unverified` maps back to blocked auth with the legacy `icloud` provider name.
+- Added a skipped TODO regression assertion for Slice 2 so the backend bridge can enable verified NEW AUTH proof without trusting passive session files.
+- Bumped version metadata from v0.5.30 to v0.5.31 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.5.30 - 2026-05-26 02:21 EEST
 
 - Fixed the dashboard shell CSS so the sidebar/main layout can shrink without forcing the main panel off-screen on narrower browser widths.
