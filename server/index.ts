@@ -17,6 +17,7 @@ import { createAuthRoutes } from './auth/authRoutes.ts';
 import { testAuthLoginByDownloadingSingleFile } from './auth/authService.ts';
 import { REDACTED_VALUE, isSensitiveKey, sanitizeAuthValue } from './auth/authLogSanitizer.ts';
 import { verifyNewAuthSessionForRuntimeDownload } from './auth/newAuthService.ts';
+import { reconcileRuntimeDownloadAuth } from './runtimeRealDownloadAuthBridge.ts';
 import { createNewAuthRoutes } from './auth/newAuthRoutes.ts';
 import { createDatabaseService } from './database/databaseService.ts';
 import type { DatabaseService } from './database/databaseService.ts';
@@ -1295,11 +1296,21 @@ async function runtimeRealDownloadRunHandler({ body, context }: Pick<HandlerArgs
     recentCount: requestedRecentCount,
   });
 
-  if (result.auth.status !== 'authenticated') {
+  const bridgedAuth = reconcileRuntimeDownloadAuth({
+    newAuth,
+    singleFileResult: result,
+    now: new Date(executedAt),
+  });
+
+  if (!bridgedAuth.accepted) {
     const statusCode = result.auth.status === 'provider_failed' ? 502 : 409;
     throw new HttpError(statusCode, 'real_download_failed', result.auth.error?.message || 'Real iCloudPD download did not complete with an authenticated session.', {
-      auth: result.auth,
-      testDownload: result.testDownload,
+      auth: bridgedAuth.auth,
+      testDownload: bridgedAuth.testDownload,
+      newAuthBridge: {
+        applied: bridgedAuth.bridgeApplied,
+        reason: bridgedAuth.bridgeReason,
+      },
       requestedRecentCount,
       downloadDirectory,
     });
@@ -1315,11 +1326,16 @@ async function runtimeRealDownloadRunHandler({ body, context }: Pick<HandlerArgs
         mode: 'icloudpd_real_download',
         requestedRecentCount,
         downloadDirectory,
-        authStatus: result.auth.status,
+        authStatus: bridgedAuth.auth.status,
+        newAuthBridgeApplied: bridgedAuth.bridgeApplied,
       },
       newAuth,
-      auth: result.auth,
-      testDownload: result.testDownload,
+      auth: bridgedAuth.auth,
+      testDownload: bridgedAuth.testDownload,
+      newAuthBridge: {
+        applied: bridgedAuth.bridgeApplied,
+        reason: bridgedAuth.bridgeReason,
+      },
       schemaVersion: 1,
       executedAt,
     },

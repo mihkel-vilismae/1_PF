@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.5.32 - 2026-05-26 02:58 EEST
+
+- Added the Slice 2 B2 real-download auth bridge so ambiguous started iCloudPD download output is accepted only when active NEW AUTH provider proof verifies the saved session.
+- Preserved the strict block for passive/session-file-only NEW AUTH states and unverified provider proof.
+- Normalized the bridged B2 auth projection to `icloudpd` with `auth_ready` while keeping existing NEW AUTH login and provider-proof behavior unchanged.
+- Added regression coverage for verified NEW AUTH bridge acceptance and passive/unverified rejection.
+- Bumped version metadata from v0.5.31 to v0.5.32 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.5.31 - 2026-05-26 02:47 EEST
 
 - Added Slice 1 B2 real-download auth handoff characterization coverage, proving active NEW AUTH provider proof authenticates through `verifyNewAuthSessionForRuntimeDownload`.

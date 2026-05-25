@@ -13,6 +13,7 @@ import test from 'node:test';
 import { resetAuthState, testAuthLoginByDownloadingSingleFile } from '../server/auth/authService.ts';
 import { PROVIDER_OUTCOMES, createProviderRegistry } from '../server/auth/providers/providerRegistry.ts';
 import { verifyNewAuthSessionForRuntimeDownload } from '../server/auth/newAuthService.ts';
+import { reconcileRuntimeDownloadAuth } from '../server/runtimeRealDownloadAuthBridge.ts';
 
 // Builds a valid auth-readiness check while keeping test setup compact.
 function check(key, overrides = {}) {
@@ -107,6 +108,101 @@ test('B2 handoff characterization: legacy single-file auth test can still downgr
   assert.equal(JSON.stringify(result).includes('DO_NOT_EXPOSE_PASSWORD'), false);
 });
 
-test('TODO B2 handoff regression: verified NEW AUTH proof should allow the real-download gate', { skip: 'Slice 2 will implement the backend bridge and enable this route-level assertion.' }, () => {
-  assert.fail('Expected future behavior: verified provider proof is not downgraded by legacy single-file output ambiguity.');
+
+
+// Builds a NEW AUTH provider-proof payload matching the active verified status route.
+function verifiedNewAuthPayload() {
+  return {
+    ok: true,
+    state: 'authenticated',
+    details: {
+      provider: 'icloudpd',
+      providerProof: {
+        verified: true,
+        reasonCode: 'NEW_AUTH_PROVIDER_VERIFIED',
+      },
+    },
+  };
+}
+
+test('B2 handoff bridge: verified NEW AUTH proof accepts ambiguous started iCloudPD download output', () => {
+  const bridged = reconcileRuntimeDownloadAuth({
+    newAuth: verifiedNewAuthPayload(),
+    now: new Date('2026-05-26T00:00:02.000Z'),
+    singleFileResult: {
+      auth: {
+        status: 'blocked',
+        has_required_files: true,
+        requires_2fa: 'unknown',
+        two_factor_status: 'unknown',
+        two_factor_method: null,
+        next_action: 'inspect_icloudpd_auth_output',
+        attemptId: 'attempt-b2-handoff-started',
+        updatedAt: '2026-05-26T00:00:01.000Z',
+        error: null,
+        authenticatedUser: null,
+        provider: 'icloud',
+      },
+      testDownload: {
+        downloadDirectory: 'runtime_data/downloads',
+        requestedRecentCount: 1,
+        status: 'started',
+        code: 'icloudpd_started_unverified',
+        message: 'icloudpd command completed, but the output did not prove an authenticated session.',
+        next_action: 'inspect_icloudpd_auth_output',
+      },
+    },
+  });
+
+  assert.equal(bridged.accepted, true);
+  assert.equal(bridged.bridgeApplied, true);
+  assert.equal(bridged.auth.status, 'authenticated');
+  assert.equal(bridged.auth.provider, 'icloudpd');
+  assert.equal(bridged.auth.next_action, 'auth_ready');
+  assert.equal(bridged.testDownload.status, 'started_verified_by_new_auth');
+});
+
+test('B2 handoff bridge: passive or unverified NEW AUTH proof does not accept ambiguous download output', () => {
+  const bridged = reconcileRuntimeDownloadAuth({
+    newAuth: {
+      ok: false,
+      state: 'unverified',
+      details: {
+        provider: 'icloudpd',
+        providerProof: {
+          attempted: false,
+          verified: false,
+          reasonCode: 'NEW_AUTH_PROVIDER_PROOF_SKIPPED',
+        },
+      },
+    },
+    singleFileResult: {
+      auth: {
+        status: 'blocked',
+        has_required_files: true,
+        requires_2fa: 'unknown',
+        two_factor_status: 'unknown',
+        two_factor_method: null,
+        next_action: 'inspect_icloudpd_auth_output',
+        attemptId: 'attempt-b2-handoff-started',
+        updatedAt: '2026-05-26T00:00:01.000Z',
+        error: null,
+        authenticatedUser: null,
+        provider: 'icloud',
+      },
+      testDownload: {
+        downloadDirectory: 'runtime_data/downloads',
+        requestedRecentCount: 1,
+        status: 'started',
+        code: 'icloudpd_started_unverified',
+        message: 'icloudpd command completed, but the output did not prove an authenticated session.',
+        next_action: 'inspect_icloudpd_auth_output',
+      },
+    },
+  });
+
+  assert.equal(bridged.accepted, false);
+  assert.equal(bridged.bridgeApplied, false);
+  assert.equal(bridged.auth.status, 'blocked');
+  assert.equal(bridged.auth.provider, 'icloud');
 });
