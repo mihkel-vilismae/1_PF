@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.5.24 - 2026-05-25 17:56 EEST
+
+- Added project-local skills `.codex/skills/icloudpd-login` and `.codex/skills/new-auth-login-monitor` for iCloudPD authentication guidance and NEW AUTH login monitoring workflows.
+- Reviewed both added skill folders for GitHub safety and confirmed no hardcoded passwords, tokens, cookie values, API keys, or other credential material are present.
+- Bumped version metadata from v0.5.23 to v0.5.24 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.5.23 - 2026-05-25 02:36 EEST
 
 - Added an AI-first documentation navigation rule to `AGENTS.md` so agents read the closure report, documentation index, freshness matrix, reorganization plan, and link audit before trusting or changing docs.
