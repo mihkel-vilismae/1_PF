@@ -21,6 +21,8 @@ export const NEW_AUTH_ENDPOINTS = Object.freeze({
   logout: { method: 'POST', path: '/api/auth/new/logout' },
   sessionFiles: { method: 'GET', path: '/api/auth/new/session-files' },
   testDownload: { method: 'POST', path: '/api/auth/new/test-download' },
+  generateArtifactPack: { method: 'POST', path: '/api/auth/new/artifacts/generate' },
+  listArtifactPacks: { method: 'GET', path: '/api/auth/new/artifacts' },
 });
 
 // Actively verifies the NEW AUTH provider session through the status endpoint.
@@ -56,6 +58,16 @@ export function fetchNewAuthSessionFiles(): Promise<NewAuthEndpointResponse> {
 
 export function runNewAuthTestDownload(): Promise<NewAuthEndpointResponse> {
   return callNewAuthEndpoint(NEW_AUTH_ENDPOINTS.testDownload);
+}
+
+// Generates a sanitized backend evidence pack for NEW AUTH login debugging.
+export function generateNewAuthArtifactPack(): Promise<NewAuthEndpointResponse> {
+  return callNewAuthEndpoint(NEW_AUTH_ENDPOINTS.generateArtifactPack);
+}
+
+// Lists existing sanitized NEW AUTH login artifact packs.
+export function listNewAuthArtifactPacks(): Promise<NewAuthEndpointResponse> {
+  return callNewAuthEndpoint(NEW_AUTH_ENDPOINTS.listArtifactPacks);
 }
 
 // Sends a NEW AUTH request through the shared API client with metadata capture enabled.

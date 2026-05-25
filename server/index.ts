@@ -420,6 +420,8 @@ const routes: Record<string, RouteHandler> = {
   'POST /api/auth/new/submit-2fa': newAuthRouteHandlers.submitTwoFactorHandler,
   'POST /api/auth/new/logout': newAuthRouteHandlers.logoutHandler,
   'POST /api/auth/new/test-download': newAuthRouteHandlers.testDownloadHandler,
+  'POST /api/auth/new/artifacts/generate': newAuthRouteHandlers.generateArtifactPackHandler,
+  'GET /api/auth/new/artifacts': newAuthRouteHandlers.listArtifactPacksHandler,
   'GET /api/init/database/status': databaseStatusHandler,
   'POST /api/init/database/inspect': inspectDatabaseHandler,
   'POST /api/init/database/delete': deleteDatabaseHandler,

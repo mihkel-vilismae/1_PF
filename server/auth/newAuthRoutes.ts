@@ -8,6 +8,7 @@ import {
   testNewAuthDownload,
   type NewAuthContext,
 } from './newAuthService.ts';
+import { generateNewAuthLoginArtifactPack, listNewAuthLoginArtifactPacks } from './newAuthArtifactPack.ts';
 
 interface NewAuthRouteRequest {
   context: NewAuthContext;
@@ -28,6 +29,8 @@ interface NewAuthRoutes {
   submitTwoFactorHandler(request: NewAuthRouteRequest): Promise<NewAuthRouteResponse<Record<string, unknown>>>;
   logoutHandler(request: NewAuthRouteRequest): Promise<NewAuthRouteResponse<Record<string, unknown>>>;
   testDownloadHandler(request: NewAuthRouteRequest): Promise<NewAuthRouteResponse<Record<string, unknown>>>;
+  generateArtifactPackHandler(request: NewAuthRouteRequest): Promise<NewAuthRouteResponse<Record<string, unknown>>>;
+  listArtifactPacksHandler(request: NewAuthRouteRequest): Promise<NewAuthRouteResponse<Record<string, unknown>>>;
 }
 
 export function createNewAuthRoutes(): NewAuthRoutes {
@@ -85,6 +88,22 @@ export function createNewAuthRoutes(): NewAuthRoutes {
       const payload = await testNewAuthDownload(context);
       return {
         statusCode: statusCodeForPayload(payload),
+        payload,
+      };
+    },
+
+    generateArtifactPackHandler: async ({ context }) => {
+      const payload = await generateNewAuthLoginArtifactPack(context);
+      return {
+        statusCode: payload.ok === true ? 200 : 409,
+        payload,
+      };
+    },
+
+    listArtifactPacksHandler: async () => {
+      const payload = await listNewAuthLoginArtifactPacks();
+      return {
+        statusCode: 200,
         payload,
       };
     },

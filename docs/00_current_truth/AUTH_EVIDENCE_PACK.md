@@ -82,6 +82,15 @@ debug_artifacts/auth/auth_attempt_<estonian_timestamp>/
 4. Do not claim login works unless active provider proof or stronger runtime evidence supports it.
 5. If the UI appears wrong, include screenshots and dashboard event history with the backend evidence.
 
+## Implemented generator endpoints
+
+As of v0.5.26, the backend implements a safe generator endpoint:
+
+- `POST /api/auth/new/artifacts/generate` creates a sanitized pack under `debug_artifacts/auth/auth_attempt_<estonian_timestamp>/`.
+- `GET /api/auth/new/artifacts` lists generated NEW AUTH artifact packs.
+
+The generator captures passive NEW AUTH status, session/path metadata, raw iCloudPD stdio private-log metadata, redaction checks, timeline, status matrix, and investigation notes. It does not copy raw provider stdout/stderr, raw session/cache file contents, raw `.env` values, passwords, cookies, tokens, or submitted 2FA codes.
+
 ## Current documentation warning
 
-This document is documentation guidance. Before calling an evidence-pack endpoint, verify that the current checked-out repository implements that endpoint and that the route appears in code/tests.
+Before relying on any evidence-pack endpoint, verify that the current checked-out repository implements that endpoint and that the route appears in code/tests. Generated packs are debugging evidence only and do not prove that login works without active provider proof or stronger runtime evidence.
