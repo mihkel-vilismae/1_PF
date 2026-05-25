@@ -171,7 +171,8 @@ test('NEW AUTH routes mirror sanitized entries to logindebug.log', async () => {
 });
 
 test('INIT_ENV_FILE keeps live audit checks isolated from the repo .env database path', async () => {
-  const repoEnvValues = parseEnvContent(await fs.promises.readFile(path.join(repoRoot, '.env'), 'utf8'));
+  // Keeps clean ZIP test runs valid when the ignored local .env file is intentionally absent.
+  const repoEnvValues = await readOptionalRepoEnvValues();
   const repoDbPath = repoEnvValues.DB_PATH ? path.resolve(repoRoot, repoEnvValues.DB_PATH) : null;
 
   await withInitServer(async ({ port, dbPath }) => {
@@ -566,6 +567,18 @@ function parseEnvContent(content) {
     values[key] = value;
   }
   return values;
+}
+
+async function readOptionalRepoEnvValues() {
+  // Reads the developer-local .env when present, but keeps tests portable when it is ignored.
+  try {
+    return parseEnvContent(await fs.promises.readFile(path.join(repoRoot, '.env'), 'utf8'));
+  } catch (error) {
+    if (error?.code === 'ENOENT') {
+      return {};
+    }
+    throw error;
+  }
 }
 
 // Custom helper similar to withInitServer but allows supplying a bespoke .env file.

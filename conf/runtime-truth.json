@@ -1,0 +1,19 @@
+{
+  "sourceOfTruth": "conf/runtime-truth.json",
+  "queueLength": 0,
+  "currentMedia": null,
+  "playbackStatus": "Waiting for queued media",
+  "screenState": "ON",
+  "lastActivitySource": "None",
+  "inactivityTimeoutSeconds": 5,
+  "lastCheckpoint": "No checkpoint yet",
+  "lastStageCompleted": "None",
+  "pipelineActiveKey": null,
+  "pipelineLockAcquiredAt": null,
+  "playbackActive": false,
+  "realRunActive": false,
+  "realRunStartCount": 0,
+  "stageLock": "Pipeline lock available",
+  "playbackLock": "Playback worker lock available",
+  "screenLock": "Screen worker lock available"
+}
