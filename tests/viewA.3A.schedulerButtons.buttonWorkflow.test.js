@@ -236,12 +236,34 @@ test('3A CronEmulator actions call emulator endpoints and only get-active update
     );
 
     const html = renderInitView(harness.state);
-    assert.match(html, /cron endpoint live log/);
+    assert.match(html, /cron endpoint \/ row live log/);
     assert.match(html, /scheduler-endpoint-terminal__row--response/);
     assert.match(html, /\/api\/init\/cron\/emulator\/crontab/);
   } finally {
     global.fetch = originalFetch;
   }
+});
+
+// Verifies actual cron row evidence renders with row-call status and highlight classes.
+test('3A scheduler terminal renders actual cron row call evidence with highlight status', () => {
+  const state = createInitialState();
+  state.schedulerEmulator.endpointLog.unshift({
+    id: 'cron-run:line-2:2026-05-26T02:01:00:0:success',
+    at: '02:01:00',
+    atIso: '2026-05-26T02:01:00',
+    type: 'cron-run-success',
+    method: 'CRON',
+    endpoint: 'playback_worker',
+    message: 'playback_worker executed: success rc=0.',
+    status: 0,
+    rawCronRow: '* * * * * powershell -NoProfile -ExecutionPolicy Bypass -File ".\\entrypoints\\playback_worker.ps1"',
+    actualCronRowCall: true,
+  });
+
+  const html = renderInitView(state);
+  assert.match(html, /ROW OK/);
+  assert.match(html, /scheduler-endpoint-terminal__row--cron-run-success/);
+  assert.match(html, /playback_worker executed/);
 });
 
 // Verifies optional scheduler targets do not create invalid GET request bodies.

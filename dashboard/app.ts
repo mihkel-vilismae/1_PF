@@ -53,6 +53,7 @@ const app = document.getElementById('app');
 declare const __APP_VERSION__: string;
 const TRANSIT_EVENT_NAME = 'dashboard:transit';
 const COPY_HISTORY_LABEL = 'copy all log';
+const SCHEDULER_RUN_LOG_POLL_MS = 5000;
 type BackendVersionState = {
   status: 'checking' | 'ready' | 'unavailable';
   version: string | null;
@@ -681,6 +682,7 @@ const tryInitPreload = () => {
   }
 };
 tryInitPreload();
+startSchedulerRunLogPolling();
 void loadBackendVersion();
 
 window.addEventListener('keydown', (event) => {
@@ -707,6 +709,18 @@ window.addEventListener(TRANSIT_EVENT_NAME, (event) => {
   }
   render();
 });
+
+
+// Polls actual cron row execution evidence while View A is visible.
+function startSchedulerRunLogPolling() {
+  window.setInterval(() => {
+    const state = getState();
+    if (state.activeView !== 'A') {
+      return;
+    }
+    runAction('refresh-scheduler-run-log');
+  }, SCHEDULER_RUN_LOG_POLL_MS);
+}
 
 function escapeHtml(value) {
   return String(value)

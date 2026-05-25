@@ -40,6 +40,7 @@ export const SCHEDULER_EMULATOR_ENDPOINTS = {
   stop: { method: 'POST', path: '/api/init/cron/emulator/stop' },
   installCrontab: { method: 'POST', path: '/api/init/cron/emulator/crontab' },
   activeCrontab: { method: 'GET', path: '/api/init/cron/emulator/crontab' },
+  runLog: { method: 'GET', path: '/api/init/cron/run-log' },
 } as const;
 
 export const INIT_ENDPOINTS = {
@@ -130,6 +131,11 @@ export function installEmulatorCrontab(options: { target?: SchedulerTarget; cron
 // Reads the active CronEmulator crontab text.
 export function getActiveEmulatorCrontab(options: { target?: SchedulerTarget } = {}): Promise<InitEndpointResponse> {
   return callSchedulerEmulatorEndpoint(SCHEDULER_EMULATOR_ENDPOINTS.activeCrontab, options);
+}
+
+// Reads actual scheduler row execution evidence without changing scheduler state.
+export function getSchedulerRunLog(options: { target?: SchedulerTarget } = {}): Promise<InitEndpointResponse> {
+  return callSchedulerEmulatorEndpoint(SCHEDULER_EMULATOR_ENDPOINTS.runLog, options);
 }
 
 // Calls a scheduler emulator endpoint while preserving the selected target payload.

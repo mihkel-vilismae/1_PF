@@ -16,6 +16,7 @@ export interface SchedulerRouteHandlers {
   stopEmulatorHandler: RouteHandler;
   installEmulatorCrontabHandler: RouteHandler;
   activeEmulatorCrontabHandler: RouteHandler;
+  schedulerRunLogHandler: RouteHandler;
 }
 
 // Builds the route-key map for View A scheduler and cron emulator endpoints.
@@ -31,5 +32,6 @@ export function createSchedulerRoutes(handlers: SchedulerRouteHandlers): Record<
     'POST /api/init/cron/emulator/stop': handlers.stopEmulatorHandler,
     'POST /api/init/cron/emulator/crontab': handlers.installEmulatorCrontabHandler,
     'GET /api/init/cron/emulator/crontab': handlers.activeEmulatorCrontabHandler,
+    'GET /api/init/cron/run-log': handlers.schedulerRunLogHandler,
   };
 }

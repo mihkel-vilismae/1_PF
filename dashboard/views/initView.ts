@@ -154,7 +154,7 @@ function renderSchedulerEndpointTerminal(entries = []) {
   return `
     <section class="scheduler-endpoint-terminal" aria-label="Live cron endpoint call log">
       <div class="scheduler-endpoint-terminal__header">
-        <h4>cron endpoint live log</h4>
+        <h4>cron endpoint / row live log</h4>
         <span>${escapeHtml(String(entries.length))} entries</span>
       </div>
       <div class="scheduler-endpoint-terminal__body" role="log" aria-live="polite">
@@ -164,11 +164,15 @@ function renderSchedulerEndpointTerminal(entries = []) {
   `;
 }
 
-// Renders one compact terminal row for a cron endpoint request/response/error event.
+// Renders one compact terminal row for endpoint traffic or actual cron row execution.
 function renderSchedulerEndpointTerminalRow(entry) {
-  const statusText = typeof entry.status === 'number' ? `HTTP ${entry.status}` : entry.type.toUpperCase();
+  const isCronRowCall = entry.actualCronRowCall === true || String(entry.type ?? '').startsWith('cron-run');
+  const statusText = isCronRowCall
+    ? (entry.type === 'cron-run-failed' ? 'ROW FAIL' : 'ROW OK')
+    : (typeof entry.status === 'number' ? `HTTP ${entry.status}` : entry.type.toUpperCase());
+  const title = isCronRowCall && entry.rawCronRow ? ` title="${escapeAttribute(entry.rawCronRow)}"` : '';
   return `
-    <div class="scheduler-endpoint-terminal__row scheduler-endpoint-terminal__row--${escapeAttribute(entry.type ?? 'request')}">
+    <div class="scheduler-endpoint-terminal__row scheduler-endpoint-terminal__row--${escapeAttribute(entry.type ?? 'request')}"${title}>
       <span class="scheduler-endpoint-terminal__time">${escapeHtml(entry.at ?? '')}</span>
       <span class="scheduler-endpoint-terminal__status">${escapeHtml(statusText)}</span>
       <span class="scheduler-endpoint-terminal__method">${escapeHtml(entry.method ?? '')}</span>

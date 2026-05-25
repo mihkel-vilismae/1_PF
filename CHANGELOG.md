@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.5.29 - 2026-05-26 02:03 EEST
+
+- Added actual scheduler row execution evidence polling through `GET /api/init/cron/run-log`, so the View A scheduler terminal can show when CronEmulator or Raspberry crontab rows really run.
+- Highlighted successful cron row calls in green and failed/unsupported row calls in red, while preserving the existing scheduler endpoint request/response log rows.
+- Added backend run-log projection for Windows CronEmulator API logs and Raspberry project `full_log.log` scheduler-worker entries without exposing unrelated log contents.
+- Added scheduler worker invocation logging for crontab-launched backend worker mode so Raspberry cron calls can be detected from project logs.
+- Bumped version metadata from v0.5.28 to v0.5.29 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.5.28 - 2026-05-26 01:49 EEST
 
 - Added the terminal-style cron endpoint live log below the scheduler target cards and above `Latest backend result`, matching the requested placement for the Windows CronEmulator controls area.

@@ -185,6 +185,7 @@ export function createRuntimeTruthBehavior({
       'stop-emulator': () => void schedulerActions.stopEmulatorAction(),
       'install-crontab': () => void schedulerActions.installCrontabAction(),
       'get-active-crontab': () => void schedulerActions.getActiveCrontabAction(),
+      'refresh-scheduler-run-log': () => void schedulerActions.refreshSchedulerRunLogAction(),
       'verify-db-viewer': () => void databaseActions.runDatabaseViewerVerifyAction(),
       'connect-db-viewer': () => void databaseActions.runDatabaseViewerConnectAction(),
       'show-db-tables': () => void databaseActions.runDatabaseViewerTablesAction(),

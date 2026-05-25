@@ -437,6 +437,7 @@ const routes: Record<string, RouteHandler> = {
     stopEmulatorHandler,
     installEmulatorCrontabHandler,
     activeEmulatorCrontabHandler,
+    schedulerRunLogHandler,
   }),
   'POST /api/database-viewer/verify': databaseViewerVerifyHandler,
   'POST /api/database-viewer/connect': databaseViewerConnectHandler,
@@ -554,8 +555,20 @@ if (schedulerWorkerName) {
 async function runSchedulerWorker(workerName: SchedulerWorkerName): Promise<void> {
   // Runs the supported scheduler worker entrypoint without starting the HTTP server.
   const context = await buildRequestContext();
+  await logger.info('Scheduler worker invoked by cron/crontab.', {
+    worker: workerName,
+    invokedAt: new Date().toISOString(),
+    command: process.argv.join(' '),
+    source: 'scheduler-worker-cli',
+  });
   if (workerName !== SCHEDULER_WORKER_NAMES.playback) {
-    console.error(`Scheduler worker ${workerName} is not implemented in this slice.`);
+    const message = `Scheduler worker ${workerName} is not implemented in this slice.`;
+    console.error(message);
+    await logger.error('Scheduler worker invocation failed.', {
+      worker: workerName,
+      failureReason: message,
+      source: 'scheduler-worker-cli',
+    });
     process.exitCode = 2;
     return;
   }
@@ -893,6 +906,28 @@ async function activeEmulatorCrontabHandler({ context, body, url }) {
   return buildSchedulerRouteResponse(context, schedulerEmulatorOperations.activeCrontab, {
     requestedTarget: getRequestedSchedulerTarget(url, body),
   });
+}
+
+
+// Returns actual cron row execution evidence from the selected scheduler target.
+async function schedulerRunLogHandler({ context, body, url }) {
+  const selection = await readSchedulerTargetSelection(context);
+  const requestedTarget = getRequestedSchedulerTarget(url, body);
+  const selectedTarget = requestedTarget && isSchedulerTarget(requestedTarget) ? requestedTarget : selection.selectedTarget;
+  const runLog = selectedTarget === SCHEDULER_TARGETS.windowsCronEmulator
+    ? await buildWindowsCronRunLog()
+    : await buildRaspberryCronRunLog(context);
+
+  return {
+    statusCode: 200,
+    payload: {
+      status: 'ok',
+      messages: [runLog.message],
+      schedulerTarget: selectedTarget,
+      runLog,
+      schemaVersion: 1,
+    },
+  };
 }
 
 async function databaseViewerVerifyHandler({ context }) {
@@ -2576,6 +2611,167 @@ async function resolveRaspberryCrontabOperation({
       'Only the project-owned crontab block is managed; unrelated user crontab entries are preserved.',
     ],
   });
+}
+
+
+// Builds actual Windows CronEmulator run evidence from its in-memory state API.
+async function buildWindowsCronRunLog() {
+  const emulatorState = await fetchCronEmulatorState();
+  const state = isJsonObject(emulatorState) ? emulatorState : null;
+  const logs = Array.isArray(state?.logs) ? state.logs : [];
+  const entries = logs
+    .map((entry) => buildCronEmulatorRunLogEntry(entry))
+    .filter((entry): entry is JsonObject => entry !== null)
+    .slice(0, 80);
+
+  return {
+    source: 'windows-cron-emulator-api-state',
+    observed: state !== null,
+    running: state?.scheduler_running === true,
+    message: state
+      ? `Read ${entries.length} actual CronEmulator row execution log entr${entries.length === 1 ? 'y' : 'ies'}.`
+      : 'CronEmulator API is not reachable, so actual row execution logs cannot be read yet.',
+    entries,
+    generatedAt: new Date().toISOString(),
+  };
+}
+
+// Converts one CronEmulator API log record into the dashboard terminal row schema.
+function buildCronEmulatorRunLogEntry(value: unknown): JsonObject | null {
+  if (!isJsonObject(value)) {
+    return null;
+  }
+  const timestamp = typeof value.timestamp === 'string' ? value.timestamp : new Date().toISOString();
+  const jobId = typeof value.job_id === 'string' ? value.job_id : 'unknown-job';
+  const jobName = typeof value.job_name === 'string' ? value.job_name : jobId;
+  const status = typeof value.status === 'string' ? value.status : 'unknown';
+  const returnCode = typeof value.return_code === 'number' ? value.return_code : null;
+  const rawCronRow = typeof value.raw_cron_row === 'string' ? value.raw_cron_row : '';
+  const command = typeof value.command === 'string' ? value.command : '';
+  const stdoutSummary = typeof value.stdout_summary === 'string' ? value.stdout_summary : '';
+  const stderrSummary = typeof value.stderr_summary === 'string' ? value.stderr_summary : '';
+  const ok = status === 'success' && (returnCode === 0 || returnCode === null);
+
+  return {
+    id: `cron-run:${jobId}:${timestamp}:${returnCode ?? 'none'}:${status}`,
+    at: formatLocalTime(timestamp),
+    atIso: timestamp,
+    type: ok ? 'cron-run-success' : 'cron-run-failed',
+    operation: 'Cron row executed',
+    method: 'CRON',
+    endpoint: jobName,
+    message: buildCronRunLogMessage({ jobName, status, returnCode, stdoutSummary, stderrSummary }),
+    status: returnCode,
+    jobId,
+    jobName,
+    rawCronRow,
+    command,
+    stdoutSummary,
+    stderrSummary,
+    actualCronRowCall: true,
+    source: 'CronEmulator',
+  };
+}
+
+// Builds actual Raspberry cron worker evidence from project JSONL logs.
+async function buildRaspberryCronRunLog(context: RequestContext) {
+  const logDirectory = resolveRepoPath(context.envValues.LOG_DIR || DEFAULT_LOG_DIR);
+  const fullLogPath = path.join(logDirectory, 'full_log.log');
+  const lines = await readRecentLines(fullLogPath, 1200);
+  const entries = lines
+    .map((line) => parseJsonLine(line))
+    .filter((entry): entry is JsonObject => entry !== null)
+    .map((entry) => buildRaspberryRunLogEntry(entry))
+    .filter((entry): entry is JsonObject => entry !== null)
+    .slice(0, 80);
+
+  return {
+    source: 'project-full-log-scheduler-worker-entries',
+    observed: entries.length > 0,
+    running: null,
+    message: entries.length
+      ? `Read ${entries.length} Raspberry cron worker invocation entr${entries.length === 1 ? 'y' : 'ies'} from full_log.log.`
+      : 'No Raspberry cron worker invocation entries were found in full_log.log yet.',
+    logFilePath: fullLogPath,
+    entries,
+    generatedAt: new Date().toISOString(),
+  };
+}
+
+// Converts one project logger entry into the dashboard terminal row schema when it is cron-related.
+function buildRaspberryRunLogEntry(entry: JsonObject): JsonObject | null {
+  const message = typeof entry.message === 'string' ? entry.message : '';
+  if (!['Scheduler worker invoked by cron/crontab.', 'Scheduler worker invocation failed.', 'playback_worker completed.'].includes(message)) {
+    return null;
+  }
+  const details: JsonObject = isJsonObject(entry.details) ? entry.details : {};
+  const worker = typeof details.worker === 'string' ? details.worker : 'scheduler-worker';
+  const atIso = typeof entry.at === 'string' ? entry.at : new Date().toISOString();
+  const failed = message.includes('failed') || entry.level === 'error' || details.status === 'failed';
+
+  return {
+    id: `raspberry-cron:${worker}:${atIso}:${message}`,
+    at: formatLocalTime(atIso),
+    atIso,
+    type: failed ? 'cron-run-failed' : 'cron-run-success',
+    operation: 'Raspberry cron worker observed',
+    method: 'CRON',
+    endpoint: worker,
+    message: failed ? `${worker} cron row failed or reached an unsupported worker.` : `${worker} cron row was invoked by crontab.`,
+    status: failed ? 1 : 0,
+    jobName: worker,
+    rawCronRow: null,
+    command: typeof details.command === 'string' ? details.command : '',
+    actualCronRowCall: true,
+    source: 'Raspberry crontab',
+  };
+}
+
+// Formats cron run evidence timestamps into compact local terminal time.
+function formatLocalTime(value: string): string {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return value;
+  }
+  return parsed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
+// Builds a compact human-readable result message for one cron row execution.
+function buildCronRunLogMessage({
+  jobName,
+  status,
+  returnCode,
+  stdoutSummary,
+  stderrSummary,
+}: {
+  jobName: string;
+  status: string;
+  returnCode: number | null;
+  stdoutSummary: string;
+  stderrSummary: string;
+}): string {
+  const result = returnCode === null ? status : `${status} rc=${returnCode}`;
+  const summary = stderrSummary || stdoutSummary;
+  return summary ? `${jobName} executed: ${result}; ${summary}` : `${jobName} executed: ${result}.`;
+}
+
+// Reads the tail of a UTF-8 text file without throwing when the file is missing.
+async function readRecentLines(filePath: string, maxLines: number): Promise<string[]> {
+  const text = await readTextIfExists(filePath);
+  if (!text) {
+    return [];
+  }
+  return text.split(/\r?\n/).filter(Boolean).slice(-maxLines).reverse();
+}
+
+// Parses one JSONL line and returns null when it is malformed.
+function parseJsonLine(line: string): JsonObject | null {
+  try {
+    const parsed = JSON.parse(line);
+    return isJsonObject(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
 }
 
 // Builds the task payload describing the Windows CronEmulator runner.

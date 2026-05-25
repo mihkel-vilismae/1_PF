@@ -6,6 +6,7 @@ import {
   SCHEDULER_EMULATOR_ENDPOINTS,
   checkEmulatorScheduler,
   getActiveEmulatorCrontab,
+  getSchedulerRunLog,
   installEmulatorCrontab,
   runEmulator,
   stopEmulator,
@@ -32,7 +33,7 @@ type SchedulerButtonState = {
   endpoint: string | null;
 };
 
-type SchedulerEndpointLogType = 'request' | 'response' | 'error';
+type SchedulerEndpointLogType = 'request' | 'response' | 'error' | 'cron-run-success' | 'cron-run-failed';
 
 type SchedulerActionInput = {
   buttonKey: SchedulerEmulatorButtonKey;
@@ -232,13 +233,67 @@ export function createRuntimeTruthSchedulerActions({
     }
   }
 
+  // Refreshes actual cron row execution evidence without pushing noisy history entries.
+  async function refreshSchedulerRunLogAction() {
+    try {
+      const responseEnvelope = normalizeActionResult(await getSchedulerRunLog({ target: getState().selectedSchedulerTarget }));
+      const responsePayload = responseEnvelope.payload as Record<string, unknown>;
+      patchState((draft) => {
+        mergeSchedulerRunLogEntries(draft, responsePayload);
+      });
+      return responsePayload;
+    } catch {
+      return null;
+    }
+  }
+
   return {
     checkEmulatorSchedulerAction,
     runEmulatorAction,
     stopEmulatorAction,
     installCrontabAction,
     getActiveCrontabAction,
+    refreshSchedulerRunLogAction,
   };
+}
+
+
+// Merges backend-observed cron row calls into the terminal log without duplicates.
+function mergeSchedulerRunLogEntries(draft: Record<string, unknown>, responsePayload: Record<string, unknown>) {
+  const schedulerState = ensureSchedulerEmulatorState(draft);
+  const runLog = readRecord(responsePayload?.runLog);
+  const entries = Array.isArray(runLog?.entries) ? runLog.entries : [];
+  if (!entries.length) {
+    return;
+  }
+
+  const existingIds = new Set(schedulerState.endpointLog.map((entry) => String(entry.id ?? '')));
+  const normalizedEntries = entries
+    .filter((entry): entry is Record<string, unknown> => Boolean(readRecord(entry)))
+    .filter((entry) => !existingIds.has(String(entry.id ?? '')))
+    .map((entry) => ({
+      id: String(entry.id ?? createSchedulerEndpointLogId()),
+      at: String(entry.at ?? ''),
+      atIso: String(entry.atIso ?? new Date().toISOString()),
+      type: normalizeSchedulerRunLogType(entry.type),
+      operation: String(entry.operation ?? 'Cron row executed'),
+      method: String(entry.method ?? 'CRON'),
+      endpoint: String(entry.endpoint ?? entry.jobName ?? 'cron-row'),
+      message: String(entry.message ?? 'Cron row was executed.'),
+      status: typeof entry.status === 'number' ? entry.status : null,
+      jobName: typeof entry.jobName === 'string' ? entry.jobName : null,
+      rawCronRow: typeof entry.rawCronRow === 'string' ? entry.rawCronRow : null,
+      command: typeof entry.command === 'string' ? entry.command : null,
+      actualCronRowCall: entry.actualCronRowCall === true,
+      source: typeof entry.source === 'string' ? entry.source : 'scheduler',
+    }));
+
+  schedulerState.endpointLog = [...normalizedEntries, ...schedulerState.endpointLog].slice(0, 80);
+}
+
+// Normalizes backend run evidence type values for safe CSS class use.
+function normalizeSchedulerRunLogType(value: unknown): SchedulerEndpointLogType {
+  return value === 'cron-run-failed' ? 'cron-run-failed' : 'cron-run-success';
 }
 
 // Appends a compact live terminal row for scheduler endpoint traffic.
