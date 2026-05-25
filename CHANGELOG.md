@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.5.33 - 2026-05-26 03:04 EEST
+
+- Added Slice 3 runtime-download provider diagnostic normalization so B2 real-download responses identify the iCloudPD boundary as `icloudpd` instead of leaking the legacy `icloud` registry label when the evidence is iCloudPD-specific.
+- Preserved unrelated provider labels by only normalizing when the B2 runtime-download evidence contains iCloudPD codes, actions, messages, or provider metadata.
+- Added regression coverage for normalized iCloudPD diagnostics and for preserving unrelated provider names.
+- Bumped version metadata from v0.5.32 to v0.5.33 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.5.32 - 2026-05-26 02:58 EEST
 
 - Added the Slice 2 B2 real-download auth bridge so ambiguous started iCloudPD download output is accepted only when active NEW AUTH provider proof verifies the saved session.

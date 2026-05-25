@@ -19,6 +19,37 @@ export interface RuntimeDownloadAuthBridgeResult {
   bridgeReason: string | null;
 }
 
+
+// Returns true when the runtime download evidence clearly came from iCloudPD.
+export function isIcloudpdRuntimeDownloadEvidence(singleFileResult: SingleFileAuthTestResult): boolean {
+  const provider = singleFileResult.auth?.provider;
+  const code = singleFileResult.testDownload?.code || singleFileResult.auth?.error?.code;
+  const nextAction = singleFileResult.testDownload?.next_action || singleFileResult.auth?.next_action;
+  const message = `${singleFileResult.testDownload?.message || ''} ${singleFileResult.auth?.error?.message || ''}`.toLowerCase();
+
+  return provider === 'icloudpd'
+    || String(code || '').startsWith('icloudpd_')
+    || String(nextAction || '').includes('icloudpd')
+    || message.includes('icloudpd');
+}
+
+// Normalizes legacy provider labels only inside the B2 runtime-download boundary.
+export function normalizeRuntimeDownloadProviderDiagnostics(singleFileResult: SingleFileAuthTestResult): SingleFileAuthTestResult {
+  if (!isIcloudpdRuntimeDownloadEvidence(singleFileResult) || singleFileResult.auth?.provider === 'icloudpd') {
+    return singleFileResult;
+  }
+
+  return {
+    ...singleFileResult,
+    auth: {
+      ...singleFileResult.auth,
+      provider: 'icloudpd',
+      providerAlias: singleFileResult.auth.provider,
+      providerBoundary: 'icloudpd',
+    },
+  };
+}
+
 // Returns true only when NEW AUTH actively verified provider proof for icloudpd.
 export function hasVerifiedNewAuthProviderProof(newAuth: Record<string, unknown> | null | undefined): boolean {
   if (!newAuth || typeof newAuth !== 'object') {
@@ -54,21 +85,23 @@ export function reconcileRuntimeDownloadAuth({
   singleFileResult,
   now = new Date(),
 }: RuntimeDownloadAuthBridgeInput): RuntimeDownloadAuthBridgeResult {
-  if (singleFileResult.auth.status === 'authenticated') {
+  const normalizedSingleFileResult = normalizeRuntimeDownloadProviderDiagnostics(singleFileResult);
+
+  if (normalizedSingleFileResult.auth.status === 'authenticated') {
     return {
       accepted: true,
-      auth: singleFileResult.auth,
-      testDownload: singleFileResult.testDownload,
+      auth: normalizedSingleFileResult.auth,
+      testDownload: normalizedSingleFileResult.testDownload,
       bridgeApplied: false,
       bridgeReason: null,
     };
   }
 
-  if (!hasVerifiedNewAuthProviderProof(newAuth) || !isAmbiguousStartedIcloudpdDownload(singleFileResult)) {
+  if (!hasVerifiedNewAuthProviderProof(newAuth) || !isAmbiguousStartedIcloudpdDownload(normalizedSingleFileResult)) {
     return {
       accepted: false,
-      auth: singleFileResult.auth,
-      testDownload: singleFileResult.testDownload,
+      auth: normalizedSingleFileResult.auth,
+      testDownload: normalizedSingleFileResult.testDownload,
       bridgeApplied: false,
       bridgeReason: null,
     };
@@ -77,7 +110,7 @@ export function reconcileRuntimeDownloadAuth({
   return {
     accepted: true,
     auth: {
-      ...singleFileResult.auth,
+      ...normalizedSingleFileResult.auth,
       status: 'authenticated',
       has_required_files: true,
       requires_2fa: false,
@@ -90,7 +123,7 @@ export function reconcileRuntimeDownloadAuth({
       bridge: 'new_auth_provider_proof',
     },
     testDownload: {
-      ...singleFileResult.testDownload,
+      ...normalizedSingleFileResult.testDownload,
       status: 'started_verified_by_new_auth',
       code: 'icloudpd_started_verified_by_new_auth',
       message: 'iCloudPD download command started and active NEW AUTH provider proof verified the saved session.',

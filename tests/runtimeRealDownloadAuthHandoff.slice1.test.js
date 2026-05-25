@@ -13,7 +13,7 @@ import test from 'node:test';
 import { resetAuthState, testAuthLoginByDownloadingSingleFile } from '../server/auth/authService.ts';
 import { PROVIDER_OUTCOMES, createProviderRegistry } from '../server/auth/providers/providerRegistry.ts';
 import { verifyNewAuthSessionForRuntimeDownload } from '../server/auth/newAuthService.ts';
-import { reconcileRuntimeDownloadAuth } from '../server/runtimeRealDownloadAuthBridge.ts';
+import { normalizeRuntimeDownloadProviderDiagnostics, reconcileRuntimeDownloadAuth } from '../server/runtimeRealDownloadAuthBridge.ts';
 
 // Builds a valid auth-readiness check while keeping test setup compact.
 function check(key, overrides = {}) {
@@ -204,5 +204,68 @@ test('B2 handoff bridge: passive or unverified NEW AUTH proof does not accept am
   assert.equal(bridged.accepted, false);
   assert.equal(bridged.bridgeApplied, false);
   assert.equal(bridged.auth.status, 'blocked');
-  assert.equal(bridged.auth.provider, 'icloud');
+  assert.equal(bridged.auth.provider, 'icloudpd');
+  assert.equal(bridged.auth.providerAlias, 'icloud');
+  assert.equal(bridged.auth.providerBoundary, 'icloudpd');
+});
+
+
+test('B2 handoff diagnostics: runtime bridge normalizes legacy icloud provider label for icloudpd evidence', () => {
+  const normalized = normalizeRuntimeDownloadProviderDiagnostics({
+    auth: {
+      status: 'blocked',
+      has_required_files: true,
+      requires_2fa: 'unknown',
+      two_factor_status: 'unknown',
+      two_factor_method: null,
+      next_action: 'inspect_icloudpd_auth_output',
+      attemptId: 'attempt-b2-provider-name',
+      updatedAt: '2026-05-26T00:00:03.000Z',
+      error: null,
+      authenticatedUser: null,
+      provider: 'icloud',
+    },
+    testDownload: {
+      downloadDirectory: 'runtime_data/downloads',
+      requestedRecentCount: 1,
+      status: 'started',
+      code: 'icloudpd_started_unverified',
+      message: 'icloudpd command completed, but output stayed inconclusive.',
+      next_action: 'inspect_icloudpd_auth_output',
+    },
+  });
+
+  assert.equal(normalized.auth.provider, 'icloudpd');
+  assert.equal(normalized.auth.providerAlias, 'icloud');
+  assert.equal(normalized.auth.providerBoundary, 'icloudpd');
+});
+
+test('B2 handoff diagnostics: runtime bridge does not rename unrelated providers', () => {
+  const normalized = normalizeRuntimeDownloadProviderDiagnostics({
+    auth: {
+      status: 'blocked',
+      has_required_files: true,
+      requires_2fa: 'unknown',
+      two_factor_status: 'unknown',
+      two_factor_method: null,
+      next_action: 'inspect_provider_output',
+      attemptId: 'attempt-b2-provider-name-other',
+      updatedAt: '2026-05-26T00:00:04.000Z',
+      error: null,
+      authenticatedUser: null,
+      provider: 'other-cloud',
+    },
+    testDownload: {
+      downloadDirectory: 'runtime_data/downloads',
+      requestedRecentCount: 1,
+      status: 'started',
+      code: 'provider_started_unverified',
+      message: 'provider command completed, but output stayed inconclusive.',
+      next_action: 'inspect_provider_output',
+    },
+  });
+
+  assert.equal(normalized.auth.provider, 'other-cloud');
+  assert.equal(normalized.auth.providerAlias, undefined);
+  assert.equal(normalized.auth.providerBoundary, undefined);
 });
