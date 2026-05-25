@@ -9,6 +9,11 @@ This category index is preserved for local and historical organization. For curr
 - [`docs/DOC_REORGANIZATION_PLAN.md`](../../DOC_REORGANIZATION_PLAN.md) — the required plan to check before moving documentation files.
 
 Docs in this category may include snapshots, specs, backlog, or reference material. Do not treat them as current implementation truth unless code, tests, or generated evidence confirm the claim.
+## Final reference/index handling decision
+
+As of 2026-05-25 01:47 EEST, this category index remains in place as a compatibility pointer for older links and local reference orientation. The canonical operator runbook now lives under [`../../10_runbooks/`](../../10_runbooks/), current organization guidance lives in [`../../DOC_INDEX.md`](../../DOC_INDEX.md), and old reference material should not be promoted to current truth without verification.
+
+Keep this file until a later old-index replacement slice performs a full link audit. Do not add new operator runbooks here; add them under `docs/10_runbooks/` and update `docs/DOC_INDEX.md`.
 
 ## Purpose
 

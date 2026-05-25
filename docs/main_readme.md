@@ -11,6 +11,11 @@ Use these current navigation files before using older categorized docs as author
 - [`docs/AUTH_EVIDENCE_PACK.md`](AUTH_EVIDENCE_PACK.md) is the starting point for login/auth artifact debugging.
 
 Old TODO docs, `task_docs/`, backlog docs, and vision/spec docs remain useful context. They must not be treated as current implementation truth without code, test, or generated-evidence verification.
+## Final reference/index handling decision
+
+As of 2026-05-25 01:47 EEST, this categorized documentation index remains in place as a compatibility navigation entry point. The canonical organization map is still [`docs/DOC_INDEX.md`](DOC_INDEX.md), freshness/trust decisions are in [`docs/DOC_FRESHNESS_MATRIX.md`](DOC_FRESHNESS_MATRIX.md), and future move decisions must follow [`docs/DOC_REORGANIZATION_PLAN.md`](DOC_REORGANIZATION_PLAN.md).
+
+Do not treat this legacy categorized index as the newest implementation truth. Use it to find preserved historical category entry points, then verify claims against code, tests, generated evidence packs, or the canonical target folders.
 
 ## 2026-05-10 playback boundary update
 

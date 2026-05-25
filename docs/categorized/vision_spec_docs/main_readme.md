@@ -9,6 +9,11 @@ This category index is preserved for local and historical organization. For curr
 - [`docs/DOC_REORGANIZATION_PLAN.md`](../../DOC_REORGANIZATION_PLAN.md) — the required plan to check before moving documentation files.
 
 Docs in this category may include snapshots, specs, backlog, or reference material. Do not treat them as current implementation truth unless code, tests, or generated evidence confirm the claim.
+## Final reference/index handling decision
+
+As of 2026-05-25 01:47 EEST, this category index remains in place as a compatibility pointer for older links and vision/spec orientation. The canonical vision/spec documents now live under [`../../20_architecture_and_specs/`](../../20_architecture_and_specs/).
+
+Keep this file until a later old-index replacement slice performs a full link audit. Do not add new architecture/spec content here; add it under `docs/20_architecture_and_specs/` and update `docs/DOC_INDEX.md`.
 
 ## Purpose
 

@@ -128,3 +128,9 @@ The operator setup/auth notes moved to `docs/10_runbooks/operator_setup_and_auth
 ## Slice 9 backlog/TODO move
 
 The moved non-ignored TODO docs are now canonical under `docs/40_backlog_and_tasks/todo_2026-05-13/`. Old paths are compatibility pointers. `_TODO_13_05_26/F_page.txt` remains untouched due to the ignored dirty-file rule.
+
+## Slice 16 compatibility-index freshness decision
+
+As of 2026-05-25 01:47 EEST, old category index files remain medium-trust navigation aids only. They are not current implementation truth and should not receive new canonical content. Use them to resolve older links, then follow their notices to `DOC_INDEX.md`, `DOC_FRESHNESS_MATRIX.md`, `DOC_REORGANIZATION_PLAN.md`, and the canonical target folders.
+
+Freshness classification for retained old indexes: `compatibility_navigation_only`.

@@ -129,3 +129,17 @@ The following historical task docs have been moved. Old paths remain as compatib
 ## Slice 9 completed backlog move
 
 The non-ignored `_TODO_13_05_26` backlog docs were moved to `docs/40_backlog_and_tasks/todo_2026-05-13/` with compatibility pointers at the old paths. `_TODO_13_05_26/F_page.txt` remains untouched because it is explicitly ignored as dirty/unrelated for the current workflow.
+
+## Slice 16 final reference/index handling decision
+
+As of 2026-05-25 01:47 EEST, old category indexes are retained in place as compatibility navigation. They must not be used as canonical destinations for new content.
+
+Retain in place until a later link-audit/replacement slice:
+
+- `docs/main_readme.md`
+- `docs/categorized/current_implementation_status_docs/main_readme.md`
+- `docs/categorized/other_documentation/main_readme.md`
+- `docs/categorized/task_documentation_still_to_implement/main_readme.md`
+- `docs/categorized/vision_spec_docs/main_readme.md`
+
+Do not move tool-local docs as part of this decision. Do not touch the known ignored dirty files. The next safe physical move slice should handle remaining reference material only if it has a clear canonical target and compatibility pointer plan.

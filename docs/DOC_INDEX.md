@@ -143,3 +143,17 @@ These old paths remain only to keep earlier links working. Use the canonical arc
 ## Slice 9 backlog/TODO move
 
 The canonical non-ignored `_TODO_13_05_26` backlog docs now live under `docs/40_backlog_and_tasks/todo_2026-05-13/`. The old moved paths remain as compatibility pointers. `_TODO_13_05_26/F_page.txt` remains untouched because it is an ignored dirty/unrelated file for the current workflow.
+
+## Slice 16 reference/index handling decision
+
+As of 2026-05-25 01:47 EEST, the remaining old category index files are intentionally retained as compatibility navigation rather than moved. The canonical documentation organization remains the target-folder structure plus this index. New content should go to the canonical folders, not the old `docs/categorized/*` index areas.
+
+Retained compatibility indexes:
+
+- `docs/main_readme.md`
+- `docs/categorized/current_implementation_status_docs/main_readme.md`
+- `docs/categorized/other_documentation/main_readme.md`
+- `docs/categorized/task_documentation_still_to_implement/main_readme.md`
+- `docs/categorized/vision_spec_docs/main_readme.md`
+
+Decision: keep these files until a later full link-audit slice can either replace them with redirect-only pointers or archive them without breaking older prompts and references.
