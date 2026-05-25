@@ -1,0 +1,4 @@
+interface:
+  display_name: "PF Doc Governance Writer"
+  short_description: "Generate PF docs with canonical governance"
+  default_prompt: "Use $pf-doc-governance-writer to create or update S:\\PF_login documentation with canonical placement, truth labeling, pointer preservation, index/freshness maintenance, and link verification."
