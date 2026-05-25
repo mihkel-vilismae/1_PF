@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.5.25 - 2026-05-25 18:17 EEST
+
+- Enabled local-only raw iCloudPD stdout/stderr capture for Windows `start_win.cmd` launches by default while preserving existing environment overrides.
+- Updated `example.env` so new copied repo env files opt into `ICLOUDPD_RAW_STDIO_LOG=1` with the existing private `runtime_data/private_logs/icloudpd_raw_stdio.log` path.
+- Preserved sanitized API/UI/Event history behavior; raw provider output remains local private runtime evidence and is not exposed through normal auth routes.
+- Bumped version metadata from v0.5.24 to v0.5.25 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.5.24 - 2026-05-25 17:56 EEST
 
 - Added project-local skills `.codex/skills/icloudpd-login` and `.codex/skills/new-auth-login-monitor` for iCloudPD authentication guidance and NEW AUTH login monitoring workflows.

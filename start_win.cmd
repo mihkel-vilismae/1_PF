@@ -48,6 +48,17 @@ if not exist "node_modules" (
   )
 )
 
+REM Enable local-only raw iCloudPD stdout/stderr capture for login debugging.
+REM The raw log is private runtime evidence and must not be exposed through API/UI.
+if not defined ICLOUDPD_RAW_STDIO_LOG (
+  set "ICLOUDPD_RAW_STDIO_LOG=1"
+)
+if not defined ICLOUDPD_RAW_STDIO_LOG_PATH (
+  set "ICLOUDPD_RAW_STDIO_LOG_PATH=runtime_data\private_logs\icloudpd_raw_stdio.log"
+)
+echo [INFO] Raw iCloudPD stdout/stderr capture: ICLOUDPD_RAW_STDIO_LOG=%ICLOUDPD_RAW_STDIO_LOG%
+echo [INFO] Raw iCloudPD stdout/stderr log: %ICLOUDPD_RAW_STDIO_LOG_PATH%
+
 echo [INFO] Building 12_PF dashboard before starting the API server...
 call npm run build
 if errorlevel 1 (
