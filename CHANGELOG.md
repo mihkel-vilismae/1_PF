@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.5.27 - 2026-05-25 21:03 EEST
+
+- Added `docs/30_status_snapshots/2026-05-25/MAIN_GOAL_IMPLEMENTATION_STATUS_20260525.md`, a code-checked main-goal implementation status table for the autonomous picture-frame goal across login, download, parsing, queueing, playback, Windows fullscreen development rendering, Raspberry production rendering, scheduler automation, monitoring, and recovery.
+- Updated the status snapshot README and documentation freshness matrix so the new snapshot is discoverable as the latest v0.5.26-based implementation-status reference.
+- Preserved runtime behavior, backend routes, frontend UI behavior, authentication, download, parsing, playback, scheduler behavior, and Raspberry display behavior unchanged.
+- Bumped version metadata from v0.5.26 to v0.5.27 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.5.26 - 2026-05-25 20:39 EEST
 
 - Added safe NEW AUTH login artifact pack generation through `POST /api/auth/new/artifacts/generate`, writing sanitized evidence under `debug_artifacts/auth/auth_attempt_<estonian_timestamp>/`.

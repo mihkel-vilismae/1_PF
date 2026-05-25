@@ -55,3 +55,10 @@ The following categorized current-status snapshots now have canonical copies und
 - [Known Gaps and Unresolved Questions](2026-05-12/known_gaps_and_unresolved_questions.md)
 
 The old `docs/categorized/current_implementation_status_docs/*.md` paths are retained as compatibility pointers only. The category `main_readme.md` remains in place until the old-index replacement slice.
+
+## 2026-05-25 main-goal implementation snapshot
+
+Estonian timestamp: 2026-05-25 20:55 EEST
+
+The latest main-goal status snapshot is [Main Goal Implementation Status — Autonomous Picture Frame](2026-05-25/MAIN_GOAL_IMPLEMENTATION_STATUS_20260525.md). It separates implemented, partial, mock/demo, planned, and decision-gated areas for the autonomous picture-frame goal across login, download, parsing, queueing, playback, Windows fullscreen development rendering, and Raspberry production rendering.
+
