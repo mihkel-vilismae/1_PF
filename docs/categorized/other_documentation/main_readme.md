@@ -14,6 +14,12 @@ Docs in this category may include snapshots, specs, backlog, or reference materi
 As of 2026-05-25 01:47 EEST, this category index remains in place as a compatibility pointer for older links and local reference orientation. The canonical operator runbook now lives under [`../../10_runbooks/`](../../10_runbooks/), current organization guidance lives in [`../../DOC_INDEX.md`](../../DOC_INDEX.md), and old reference material should not be promoted to current truth without verification.
 
 Keep this file until a later old-index replacement slice performs a full link audit. Do not add new operator runbooks here; add them under `docs/10_runbooks/` and update `docs/DOC_INDEX.md`.
+## Slice 18 link audit status
+
+As of 2026-05-25 02:06 EEST, this other-documentation category compatibility index was retained in place after the full documentation link audit. Use [../../DOC_LINK_AUDIT.md](../../DOC_LINK_AUDIT.md) for the audit result and [../../OLD_INDEX_REPLACEMENT_DECISION.md](../../OLD_INDEX_REPLACEMENT_DECISION.md) for the old-index replacement decision.
+
+This file remains compatibility navigation only. New canonical documentation should go to the numbered target folders documented in `DOC_INDEX.md` and `DOC_REORGANIZATION_PLAN.md`.
+
 ## Slice 17 remaining reference move note
 
 As of 2026-05-25 01:56 EEST, the remaining reference/workflow documents from this category have canonical homes outside `docs/categorized/other_documentation/`:

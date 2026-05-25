@@ -138,3 +138,9 @@ The moved non-ignored TODO docs are now canonical under `docs/40_backlog_and_tas
 As of 2026-05-25 01:47 EEST, old category index files remain medium-trust navigation aids only. They are not current implementation truth and should not receive new canonical content. Use them to resolve older links, then follow their notices to `DOC_INDEX.md`, `DOC_FRESHNESS_MATRIX.md`, `DOC_REORGANIZATION_PLAN.md`, and the canonical target folders.
 
 Freshness classification for retained old indexes: `compatibility_navigation_only`.
+
+## Slice 18 link-audit freshness update
+
+As of 2026-05-25 02:06 EEST, [`DOC_LINK_AUDIT.md`](DOC_LINK_AUDIT.md) and [`OLD_INDEX_REPLACEMENT_DECISION.md`](OLD_INDEX_REPLACEMENT_DECISION.md) are current latest-baseline documentation-governance docs.
+
+The retained old category indexes are navigation compatibility files. They are useful for orientation, but they are not current implementation truth. Use the canonical numbered folders and generated evidence/code/tests for stronger authority.

@@ -15,6 +15,12 @@ As of 2026-05-25 01:47 EEST, this category index remains in place as a compatibi
 
 Keep this file until a later old-index replacement slice performs a full link audit. Do not add new architecture/spec content here; add it under `docs/20_architecture_and_specs/` and update `docs/DOC_INDEX.md`.
 
+## Slice 18 link audit status
+
+As of 2026-05-25 02:06 EEST, this vision/spec category compatibility index was retained in place after the full documentation link audit. Use [../../DOC_LINK_AUDIT.md](../../DOC_LINK_AUDIT.md) for the audit result and [../../OLD_INDEX_REPLACEMENT_DECISION.md](../../OLD_INDEX_REPLACEMENT_DECISION.md) for the old-index replacement decision.
+
+This file remains compatibility navigation only. New canonical documentation should go to the numbered target folders documented in `DOC_INDEX.md` and `DOC_REORGANIZATION_PLAN.md`.
+
 ## Purpose
 
 This folder consolidates vision/spec documentation into a small active set for product direction, architecture/runtime rules, and dashboard/auth/pipeline contracts.

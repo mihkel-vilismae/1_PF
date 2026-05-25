@@ -158,3 +158,17 @@ Slice 17 moved selected remaining reference/workflow documents to clear canonica
 | `docs/active_workflow_docs/slice_8_9_route_selection.md` | `docs/40_backlog_and_tasks/active_workflow/slice_8_9_route_selection.md` | planning/workflow context |
 
 Do not move tool-local docs or ignored dirty/unrelated files as part of this workflow.
+
+## Slice 18 full link audit and old-index replacement decision
+
+As of 2026-05-25 02:06 EEST, the reorganization has enough compatibility pointers that a full link audit was run before replacing old indexes.
+
+Decision:
+
+- Keep `docs/main_readme.md` and the four `docs/categorized/*/main_readme.md` files as compatibility navigation.
+- Do not convert them to redirect-only pointers yet.
+- Record the audit in [`DOC_LINK_AUDIT.md`](DOC_LINK_AUDIT.md).
+- Record the retained-index decision in [`OLD_INDEX_REPLACEMENT_DECISION.md`](OLD_INDEX_REPLACEMENT_DECISION.md).
+- Fix the one detected broken local documentation link in `tools/CronEmulator/TABLE_OF_CONTENTS.md`.
+
+Next safe slice: run a final documentation summary/consolidation pass or begin targeted runbook additions only if a specific missing runbook is identified.

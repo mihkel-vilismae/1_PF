@@ -161,3 +161,12 @@ Retained compatibility indexes:
 - `docs/categorized/vision_spec_docs/main_readme.md`
 
 Decision: keep these files until a later full link-audit slice can either replace them with redirect-only pointers or archive them without breaking older prompts and references.
+
+## Slice 18 link audit and old-index decision
+
+As of 2026-05-25 02:06 EEST, the full documentation link audit is recorded in [`DOC_LINK_AUDIT.md`](DOC_LINK_AUDIT.md), and the retained old-index decision is recorded in [`OLD_INDEX_REPLACEMENT_DECISION.md`](OLD_INDEX_REPLACEMENT_DECISION.md).
+
+- Local Markdown links checked: 125.
+- Broken local Markdown links after this slice: 10.
+- Old category indexes remain compatibility navigation, not canonical truth.
+- New canonical docs should continue to use numbered target folders.

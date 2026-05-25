@@ -17,6 +17,12 @@ As of 2026-05-25 01:47 EEST, this categorized documentation index remains in pla
 
 Do not treat this legacy categorized index as the newest implementation truth. Use it to find preserved historical category entry points, then verify claims against code, tests, generated evidence packs, or the canonical target folders.
 
+## Slice 18 link audit status
+
+As of 2026-05-25 02:06 EEST, this doc root compatibility index was retained in place after the full documentation link audit. Use [DOC_LINK_AUDIT.md](DOC_LINK_AUDIT.md) for the audit result and [OLD_INDEX_REPLACEMENT_DECISION.md](OLD_INDEX_REPLACEMENT_DECISION.md) for the old-index replacement decision.
+
+This file remains compatibility navigation only. New canonical documentation should go to the numbered target folders documented in `DOC_INDEX.md` and `DOC_REORGANIZATION_PLAN.md`.
+
 ## 2026-05-10 playback boundary update
 
 B3.5 owns playback queue preparation/building. B4 and `playback_worker` select the current playable item from already prepared queue/state as the final worker-stage action before the loop can begin again. Preview/fullscreen rendering remain non-real media display, Raspberry OS rendering remains disabled/planned, and Windows CronEmulator playback-worker command wiring remains partial because it depends on the expected `tools/CronEmulator` launch context.
