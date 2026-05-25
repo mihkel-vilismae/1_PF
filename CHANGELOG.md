@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.5.26 - 2026-05-25 20:39 EEST
+
+- Added safe NEW AUTH login artifact pack generation through `POST /api/auth/new/artifacts/generate`, writing sanitized evidence under `debug_artifacts/auth/auth_attempt_<estonian_timestamp>/`.
+- Added `GET /api/auth/new/artifacts` plus frontend endpoint wrappers for listing generated NEW AUTH evidence packs.
+- Captured passive status, session/path metadata, raw iCloudPD stdio private-log metadata, timeline, status matrix, evidence summary, hypotheses, and redaction checks without copying raw provider output or session contents.
+- Updated the canonical NEW AUTH Evidence Pack guide to describe the implemented generator endpoints and safety boundaries.
+- Bumped version metadata from v0.5.25 to v0.5.26 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.5.25 - 2026-05-25 18:17 EEST
 
 - Enabled local-only raw iCloudPD stdout/stderr capture for Windows `start_win.cmd` launches by default while preserving existing environment overrides.
