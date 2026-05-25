@@ -1,5 +1,25 @@
 # Repository Instructions
 
+## Documentation Navigation Rule
+
+- Before making documentation claims, reorganizing docs, or treating repository documentation as source of truth, read these files first:
+  - `docs/DOC_REFACTOR_CLOSURE_REPORT_20260525.md`
+  - `docs/DOC_INDEX.md`
+  - `docs/DOC_FRESHNESS_MATRIX.md`
+  - `docs/DOC_REORGANIZATION_PLAN.md`
+  - `docs/DOC_LINK_AUDIT.md`
+- Use canonical numbered documentation folders for new documentation:
+  - `docs/00_current_truth/` for verified or evidence-backed current truth only.
+  - `docs/10_runbooks/` for operator/how-to procedures.
+  - `docs/20_architecture_and_specs/` for architecture, contracts, target behavior, and specs.
+  - `docs/30_status_snapshots/` for dated implementation/status snapshots.
+  - `docs/40_backlog_and_tasks/` for backlog, TODOs, task prompts, and future-work notes.
+  - `docs/50_audits_and_migrations/` for audits, migration plans, and refactor reports.
+  - `docs/90_archive/` for historical/provenance material.
+- Do not treat old categorized docs, compatibility pointers, TODOs, task docs, backlog docs, vision/spec docs, or archived docs as current implementation truth unless code, tests, generated evidence, or runtime checks verify the claim.
+- Keep old category indexes and compatibility pointers intact unless a later link-retirement audit explicitly proves they can be changed.
+
+
 ## Source File Comment Discipline
 
 - Every source file edited from now on must start with a short comment block, about five lines maximum, describing what the file does.

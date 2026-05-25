@@ -4,6 +4,11 @@ Estonian timestamp: 2026-05-25 02:18 EEST
 
 ## Status
 
+
+## AI-first documentation entrypoint
+
+Future AI agents should start from [`AGENTS.md`](../AGENTS.md). The repository instruction file now points agents to this closure report, the documentation index, the freshness matrix, the reorganization plan, and the link audit before they rely on repository documentation as source of truth.
+
 The documentation refactor is closed as a navigation and organization pass. Canonical target folders exist, selected docs have been moved into those folders with compatibility pointers, local Markdown links have been audited, and old category indexes are intentionally retained as compatibility navigation.
 
 This report does not claim runtime behavior is correct. Code, tests, generated evidence packs, and direct runtime checks remain stronger than documentation.

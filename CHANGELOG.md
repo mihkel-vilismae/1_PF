@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.5.23 - 2026-05-25 02:36 EEST
+
+- Added an AI-first documentation navigation rule to `AGENTS.md` so agents read the closure report, documentation index, freshness matrix, reorganization plan, and link audit before trusting or changing docs.
+- Documented the canonical numbered documentation folders and the rule that old categorized docs, compatibility pointers, TODOs, specs, backlog, and archive material are not current implementation truth without code/test/evidence verification.
+- Bumped version metadata from v0.5.22 to v0.5.23 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.5.22 - 2026-05-14 04:10 Tallinn
 
 - Added an opt-in raw-sensitive iCloudPD stdout/stderr capture sink gated by `ICLOUDPD_RAW_STDIO_LOG=1`.
