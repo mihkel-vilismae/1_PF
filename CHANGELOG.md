@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.5.28 - 2026-05-26 01:49 EEST
+
+- Added the terminal-style cron endpoint live log below the scheduler target cards and above `Latest backend result`, matching the requested placement for the Windows CronEmulator controls area.
+- Recorded frontend-triggered scheduler endpoint request, response, and error events for the CronEmulator controls without changing `/api/init/cron/*` backend route compatibility or scheduler semantics.
+- Preserved existing scheduler buttons, target selection behavior, crontab textareas, and `Latest backend result` rendering while adding the new diagnostic log panel.
+- Bumped version metadata from v0.5.27 to v0.5.28 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.5.27 - 2026-05-25 21:03 EEST
 
 - Added `docs/30_status_snapshots/2026-05-25/MAIN_GOAL_IMPLEMENTATION_STATUS_20260525.md`, a code-checked main-goal implementation status table for the autonomous picture-frame goal across login, download, parsing, queueing, playback, Windows fullscreen development rendering, Raspberry production rendering, scheduler automation, monitoring, and recovery.
