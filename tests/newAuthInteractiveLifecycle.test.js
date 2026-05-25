@@ -101,6 +101,84 @@ test('new auth keeps one live icloudpd process across device index and SMS code 
   }
 });
 
+/*
+ * Replays iCloudPD's success transcript containing 2FA-expiry wording so the
+ * mapper does not mistake completed auth for another pending prompt.
+ */
+test('new auth treats icloudpd success output as authenticated despite stale 2FA expiry wording', async () => {
+  const cookieDir = mkdtempSync(path.join(tmpdir(), 'new-auth-interactive-success-'));
+  const spawned = [];
+
+  // Simulates the two-step SMS flow and then emits the real success wording.
+  const commandSpawner = () => {
+    const child = new EventEmitter();
+    child.stdin = new PassThrough();
+    child.stdout = new PassThrough();
+    child.stderr = new PassThrough();
+    child.kill = () => {
+      child.emit('close', null, 'SIGTERM');
+      return true;
+    };
+    child.unref = () => {};
+    spawned.push(child);
+
+    setImmediate(() => {
+      child.stdout.write('Please enter two-factor authentication code or device index (a) to send SMS with a code:');
+    });
+
+    child.stdin.on('data', (chunk) => {
+      const value = String(chunk).trim();
+      if (value === 'a') {
+        child.stdout.write('\nPlease enter two-factor authentication code that you received over SMS:');
+        return;
+      }
+      if (value === '218228') {
+        child.stdout.write([
+          "\nGreat, you're all set up. The script can now be run without user interaction until 2FA expires.",
+          'You can set up email notifications for when the two-factor authentication expires.',
+          'Authentication completed successfully',
+        ].join('\n'));
+      }
+    });
+
+    return child;
+  };
+
+  const context = {
+    executablePath: 'fake-icloudpd',
+    commandSpawner,
+    envValues: {
+      user: 'person@example.com',
+      pw: 'DO_NOT_EXPOSE_PASSWORD',
+      ICLOUDPD_COOKIE_DIR: cookieDir,
+      ICLOUDPD_AUTH_TIMEOUT_MS: '2000',
+    },
+  };
+
+  try {
+    const login = await startNewAuthLogin(context);
+    assert.equal(login.state, 'pending_2fa');
+
+    const deviceIndex = await submitNewAuthTwoFactor(context, { code: 'a' });
+    assert.equal(deviceIndex.state, 'pending_2fa');
+
+    const smsCode = await submitNewAuthTwoFactor(context, { code: '218228' });
+    assert.equal(smsCode.ok, true);
+    assert.equal(smsCode.state, 'authenticated');
+    assert.equal(smsCode.details.events.some((event) => event.stateAfter === 'authenticated'), true);
+    assert.equal(spawned.length, 1);
+
+    const serialized = JSON.stringify([login, deviceIndex, smsCode]);
+    assert.equal(serialized.includes('218228'), false);
+    assert.equal(serialized.includes('DO_NOT_EXPOSE_PASSWORD'), false);
+    assert.equal(serialized.includes('person@example.com'), false);
+    assert.equal(serialized.includes(cookieDir), false);
+  } finally {
+    await logoutNewAuthSession(context);
+    await rm(cookieDir, { recursive: true, force: true });
+  }
+});
+
 // Verifies generic 2FA text waits briefly for the concrete code prompt.
 test('new auth waits for delayed verification-code prompt before rendering modal input metadata', async () => {
   const cookieDir = mkdtempSync(path.join(tmpdir(), 'new-auth-delayed-prompt-'));

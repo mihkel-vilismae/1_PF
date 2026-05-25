@@ -858,6 +858,11 @@ function buildNewAuthProviderUnavailablePayload(errorCode: string, message: stri
   };
 }
 
+/*
+ * Maps sanitized iCloudPD command output to the public NEW AUTH state.
+ * Explicit authenticated output wins over stale 2FA wording from the same
+ * provider transcript, such as "two-factor authentication expires."
+ */
 export function mapNewAuthCommandResult(
   result: CommandResult,
   config: NewAuthIcloudpdConfig,
@@ -866,6 +871,32 @@ export function mapNewAuthCommandResult(
 ): Record<string, unknown> {
   const combined = sanitizeCommandOutput(`${result.stdout}\n${result.stderr}`, config);
   const lower = combined.toLowerCase();
+
+  if (result.ok && indicatesNewAuthAuthenticated(lower)) {
+    return appendStructuredEvents({
+      ok: true,
+      state: 'authenticated',
+      message: messages.successMessage,
+      details: {
+        provider: 'icloudpd',
+        authenticatedUser: redactEmail(config.username),
+        providerSessionRef: 'icloudpd_cookie_directory_internal',
+        providerOutputPreview: sanitizePreview(combined),
+      },
+    }, [
+      buildStructuredEvent({
+        operation: 'map_command_result',
+        phase: 'process_close',
+        stateBefore: 'logging_in',
+        stateAfter: 'authenticated',
+        responseType: 'none',
+        exitCode: result.exitCode,
+        signal: result.signal,
+        message: 'Provider output indicates authenticated state.',
+        providerOutputShown: 'sanitized_preview',
+      }),
+    ]);
+  }
 
   if (indicatesNewAuthTwoFactorRequired(lower)) {
     const promptInfo = buildNewAuthTwoFactorPromptInfo(lower);
@@ -941,32 +972,6 @@ export function mapNewAuthCommandResult(
         exitCode: result.exitCode,
         signal: result.signal,
         message: 'Provider output indicates invalid credentials.',
-        providerOutputShown: 'sanitized_preview',
-      }),
-    ]);
-  }
-
-  if (result.ok && indicatesNewAuthAuthenticated(lower)) {
-    return appendStructuredEvents({
-      ok: true,
-      state: 'authenticated',
-      message: messages.successMessage,
-      details: {
-        provider: 'icloudpd',
-        authenticatedUser: redactEmail(config.username),
-        providerSessionRef: 'icloudpd_cookie_directory_internal',
-        providerOutputPreview: sanitizePreview(combined),
-      },
-    }, [
-      buildStructuredEvent({
-        operation: 'map_command_result',
-        phase: 'process_close',
-        stateBefore: 'logging_in',
-        stateAfter: 'authenticated',
-        responseType: 'none',
-        exitCode: result.exitCode,
-        signal: result.signal,
-        message: 'Provider output indicates authenticated state.',
         providerOutputShown: 'sanitized_preview',
       }),
     ]);

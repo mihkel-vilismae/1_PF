@@ -52,6 +52,24 @@ Classify each observed button/action with the available evidence:
 - Local logout: `POST /api/auth/new/logout`; report removed/skipped file counts and whether remote logout was claimed.
 - Session file inspection: `GET /api/auth/new/session-files`; report metadata only.
 
+## Learned Patterns
+
+- After a successful interactive iCloudPD 2FA flow, the immediate `POST /api/auth/new/submit-2fa` response can still report `state: pending_2fa` and `twoFactorPromptKind: unknown` if the mapper preserves the prior prompt classification while the sanitized provider output already contains the success text.
+- Treat sanitized provider output containing iCloudPD's successful auth messages plus fresh cookie/session file timestamps as strong completion evidence, but still label it as log/file evidence until active provider proof runs.
+- Confirm completion with `GET /api/auth/new/status` without `mode=passive`; a verified run should report `state: authenticated`, `providerProof.attempted=true`, `providerProof.verified=true`, and `reasonCode: NEW_AUTH_PROVIDER_VERIFIED`.
+- `GET /api/auth/new/status?mode=passive` after cookies exist may report `state: unverified` and `NEW_AUTH_PROVIDER_PROOF_SKIPPED`; this means provider proof was intentionally skipped, not that login failed.
+- When `session-files` or passive status reports fewer session-like files than the directory listing, preserve both facts: the endpoint's session count follows backend classification, while directory metadata may include both cookie and `.session` files.
+- For strongest conclusions, correlate the timeline across `login`, `submit-2fa`, the provider auth-completed marker, cookie/session timestamp updates, and any later active provider-proof status.
+- If request counts differ between `full_log.log`, `logindebug.log`, and `full_log_verbose.log`, treat that as log granularity or retention variance until a request-id-correlated failure proves otherwise.
+- If a `submit-2fa` response stays `pending_2fa` while `providerOutputPreview` contains explicit iCloudPD success text, inspect `server/auth/newAuthService.ts` before changing the UI; the mapper should classify authenticated markers before generic 2FA wording such as "two-factor authentication expires."
+- Preserve a regression test in `tests/newAuthInteractiveLifecycle.test.js` for successful iCloudPD output that still mentions 2FA expiry, because that phrase can otherwise be mistaken for a fresh prompt.
+
+## Confidence Rubric
+
+- High: auth-completed provider marker, fresh cookie/session metadata, and active provider proof all agree.
+- Medium: auth-completed provider marker and fresh cookie/session metadata agree, but active provider proof has not run or is ambiguous.
+- Low: evidence stops at pending 2FA, provider-proof skipped, or cookie/session metadata is missing or unchanged.
+
 ## Report Format
 
 When new evidence appears, report briefly:
