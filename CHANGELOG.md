@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.5.30 - 2026-05-26 02:21 EEST
+
+- Fixed the dashboard shell CSS so the sidebar/main layout can shrink without forcing the main panel off-screen on narrower browser widths.
+- Added min-width/max-width guards around cards, result panels, scheduler panels, terminal surfaces, and JSON blocks so long diagnostic content scrolls inside its own surface instead of widening the whole page.
+- Made scheduler target cards, CronEmulator buttons, crontab textareas, and cron endpoint/row log rows use responsive grid behavior while preserving the existing labels, endpoint log content, and row execution highlight colors.
+- Bumped version metadata from v0.5.29 to v0.5.30 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.5.29 - 2026-05-26 02:03 EEST
 
 - Added actual scheduler row execution evidence polling through `GET /api/init/cron/run-log`, so the View A scheduler terminal can show when CronEmulator or Raspberry crontab rows really run.
