@@ -11,14 +11,108 @@ export interface RuntimeDownloadAuthBridgeInput {
   now?: Date;
 }
 
+export interface RuntimeDownloadAuthDiagnostics {
+  blockReason: string | null;
+  action: string;
+  safeMessage: string;
+  newAuthState: string | null;
+  newAuthProvider: string | null;
+  providerProofAttempted: boolean | null;
+  providerProofVerified: boolean | null;
+  providerProofReasonCode: string | null;
+  runtimeAuthStatus: string | null;
+  runtimeDownloadStatus: string | null;
+  runtimeDownloadCode: string | null;
+  runtimeNextAction: string | null;
+  secretsShown: false;
+}
+
 export interface RuntimeDownloadAuthBridgeResult {
   accepted: boolean;
   auth: PublicAuthState;
   testDownload: SingleFileAuthTestSummary;
   bridgeApplied: boolean;
   bridgeReason: string | null;
+  diagnostics: RuntimeDownloadAuthDiagnostics;
 }
 
+// Reads active NEW AUTH provider proof data without exposing command output or credentials.
+function summarizeNewAuthProof(newAuth: Record<string, unknown> | null | undefined) {
+  const details = newAuth && typeof newAuth === 'object' && newAuth.details && typeof newAuth.details === 'object'
+    ? newAuth.details as Record<string, unknown>
+    : null;
+  const providerProof = details?.providerProof && typeof details.providerProof === 'object'
+    ? details.providerProof as Record<string, unknown>
+    : null;
+
+  return {
+    state: typeof newAuth?.state === 'string' ? newAuth.state : null,
+    provider: typeof details?.provider === 'string' ? details.provider : null,
+    attempted: typeof providerProof?.attempted === 'boolean' ? providerProof.attempted : null,
+    verified: typeof providerProof?.verified === 'boolean' ? providerProof.verified : null,
+    reasonCode: typeof providerProof?.reasonCode === 'string' ? providerProof.reasonCode : null,
+  };
+}
+
+// Classifies why B2 real download is still blocked using only safe status fields.
+export function buildRuntimeDownloadAuthDiagnostics(
+  newAuth: Record<string, unknown> | null | undefined,
+  singleFileResult: SingleFileAuthTestResult,
+  accepted: boolean,
+): RuntimeDownloadAuthDiagnostics {
+  const proof = summarizeNewAuthProof(newAuth);
+  const auth = singleFileResult.auth;
+  const testDownload = singleFileResult.testDownload;
+  const runtimeNextAction = testDownload.next_action || auth.next_action || null;
+  const runtimeCode = testDownload.code || auth.error?.code || null;
+  let blockReason: string | null = null;
+  let action = 'continue_runtime_download_pipeline';
+  let safeMessage = 'B2 real download auth gate accepted this request.';
+
+  if (!accepted) {
+    if (!auth.has_required_files) {
+      blockReason = 'missing_required_auth_files';
+      action = 'verify_auth_files_and_env';
+      safeMessage = 'B2 real download is blocked because required auth files or config are missing.';
+    } else if (proof.state === 'unverified' || proof.reasonCode === 'NEW_AUTH_PROVIDER_PROOF_SKIPPED') {
+      blockReason = 'provider_proof_skipped';
+      action = 'run_active_provider_proof';
+      safeMessage = 'B2 real download is blocked because only passive/session-file evidence was available; run active NEW AUTH provider verification.';
+    } else if (proof.verified === false || proof.state === 'failed') {
+      blockReason = 'provider_proof_failed';
+      action = 'inspect_new_auth_provider_status';
+      safeMessage = 'B2 real download is blocked because NEW AUTH provider proof did not verify the saved session.';
+    } else if (auth.status === 'provider_unavailable' || runtimeCode === 'provider_unavailable') {
+      blockReason = 'provider_unavailable';
+      action = 'verify_icloudpd_executable';
+      safeMessage = 'B2 real download is blocked because the provider executable is unavailable.';
+    } else if (isAmbiguousStartedIcloudpdDownload(singleFileResult)) {
+      blockReason = 'download_output_ambiguous_without_verified_new_auth';
+      action = 'verify_new_auth_then_retry_real_download';
+      safeMessage = 'B2 real download started iCloudPD, but output stayed ambiguous and active NEW AUTH proof was not verified.';
+    } else {
+      blockReason = 'runtime_download_auth_blocked';
+      action = runtimeNextAction || 'inspect_runtime_download_auth_output';
+      safeMessage = 'B2 real download is blocked by the runtime auth gate.';
+    }
+  }
+
+  return {
+    blockReason,
+    action,
+    safeMessage,
+    newAuthState: proof.state,
+    newAuthProvider: proof.provider,
+    providerProofAttempted: proof.attempted,
+    providerProofVerified: proof.verified,
+    providerProofReasonCode: proof.reasonCode,
+    runtimeAuthStatus: auth.status || null,
+    runtimeDownloadStatus: testDownload.status || null,
+    runtimeDownloadCode: runtimeCode,
+    runtimeNextAction,
+    secretsShown: false,
+  };
+}
 
 // Returns true when the runtime download evidence clearly came from iCloudPD.
 export function isIcloudpdRuntimeDownloadEvidence(singleFileResult: SingleFileAuthTestResult): boolean {
@@ -94,6 +188,7 @@ export function reconcileRuntimeDownloadAuth({
       testDownload: normalizedSingleFileResult.testDownload,
       bridgeApplied: false,
       bridgeReason: null,
+      diagnostics: buildRuntimeDownloadAuthDiagnostics(newAuth, normalizedSingleFileResult, true),
     };
   }
 
@@ -104,6 +199,7 @@ export function reconcileRuntimeDownloadAuth({
       testDownload: normalizedSingleFileResult.testDownload,
       bridgeApplied: false,
       bridgeReason: null,
+      diagnostics: buildRuntimeDownloadAuthDiagnostics(newAuth, normalizedSingleFileResult, false),
     };
   }
 
@@ -131,5 +227,6 @@ export function reconcileRuntimeDownloadAuth({
     },
     bridgeApplied: true,
     bridgeReason: 'new_auth_provider_proof_verified_ambiguous_download_output',
+    diagnostics: buildRuntimeDownloadAuthDiagnostics(newAuth, normalizedSingleFileResult, true),
   };
 }

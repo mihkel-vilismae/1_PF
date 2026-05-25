@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.5.34 - 2026-05-26 03:12 EEST
+
+- Added Slice 4 safe B2 real-download diagnostics that classify blocked requests as missing auth files, skipped provider proof, failed provider proof, provider unavailable, or ambiguous download output without exposing secrets.
+- Included the diagnostics in both failed and successful `/api/runtime/download/real-run` responses so the dashboard can explain the current auth/download boundary more clearly.
+- Added regression coverage for passive provider-proof blocks, provider-proof failures, and accepted bridge diagnostics.
+- Bumped version metadata from v0.5.33 to v0.5.34 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.5.33 - 2026-05-26 03:04 EEST
 
 - Added Slice 3 runtime-download provider diagnostic normalization so B2 real-download responses identify the iCloudPD boundary as `icloudpd` instead of leaking the legacy `icloud` registry label when the evidence is iCloudPD-specific.

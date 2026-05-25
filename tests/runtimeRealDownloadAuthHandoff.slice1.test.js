@@ -13,7 +13,7 @@ import test from 'node:test';
 import { resetAuthState, testAuthLoginByDownloadingSingleFile } from '../server/auth/authService.ts';
 import { PROVIDER_OUTCOMES, createProviderRegistry } from '../server/auth/providers/providerRegistry.ts';
 import { verifyNewAuthSessionForRuntimeDownload } from '../server/auth/newAuthService.ts';
-import { normalizeRuntimeDownloadProviderDiagnostics, reconcileRuntimeDownloadAuth } from '../server/runtimeRealDownloadAuthBridge.ts';
+import { buildRuntimeDownloadAuthDiagnostics, normalizeRuntimeDownloadProviderDiagnostics, reconcileRuntimeDownloadAuth } from '../server/runtimeRealDownloadAuthBridge.ts';
 
 // Builds a valid auth-readiness check while keeping test setup compact.
 function check(key, overrides = {}) {
@@ -268,4 +268,135 @@ test('B2 handoff diagnostics: runtime bridge does not rename unrelated providers
   assert.equal(normalized.auth.provider, 'other-cloud');
   assert.equal(normalized.auth.providerAlias, undefined);
   assert.equal(normalized.auth.providerBoundary, undefined);
+});
+
+
+test('B2 handoff diagnostics: passive provider proof exposes a safe blocked reason', () => {
+  const diagnostics = buildRuntimeDownloadAuthDiagnostics(
+    {
+      ok: false,
+      state: 'unverified',
+      details: {
+        provider: 'icloudpd',
+        providerProof: {
+          attempted: false,
+          verified: false,
+          reasonCode: 'NEW_AUTH_PROVIDER_PROOF_SKIPPED',
+        },
+      },
+    },
+    {
+      auth: {
+        status: 'blocked',
+        has_required_files: true,
+        requires_2fa: 'unknown',
+        two_factor_status: 'unknown',
+        two_factor_method: null,
+        next_action: 'inspect_icloudpd_auth_output',
+        attemptId: 'attempt-b2-diagnostics-passive',
+        updatedAt: '2026-05-26T00:00:05.000Z',
+        error: null,
+        authenticatedUser: null,
+        provider: 'icloudpd',
+      },
+      testDownload: {
+        downloadDirectory: 'runtime_data/downloads',
+        requestedRecentCount: 1,
+        status: 'started',
+        code: 'icloudpd_started_unverified',
+        message: 'icloudpd command completed, but output stayed inconclusive.',
+        next_action: 'inspect_icloudpd_auth_output',
+      },
+    },
+    false,
+  );
+
+  assert.equal(diagnostics.blockReason, 'provider_proof_skipped');
+  assert.equal(diagnostics.action, 'run_active_provider_proof');
+  assert.equal(diagnostics.providerProofReasonCode, 'NEW_AUTH_PROVIDER_PROOF_SKIPPED');
+  assert.equal(diagnostics.secretsShown, false);
+  assert.equal(JSON.stringify(diagnostics).includes('DO_NOT_EXPOSE'), false);
+});
+
+test('B2 handoff diagnostics: provider failure is classified without raw provider output', () => {
+  const diagnostics = buildRuntimeDownloadAuthDiagnostics(
+    {
+      ok: false,
+      state: 'failed',
+      details: {
+        provider: 'icloudpd',
+        providerProof: {
+          attempted: true,
+          verified: false,
+          reasonCode: 'NEW_AUTH_PROVIDER_FAILED',
+        },
+      },
+    },
+    {
+      auth: {
+        status: 'blocked',
+        has_required_files: true,
+        requires_2fa: 'unknown',
+        two_factor_status: 'unknown',
+        two_factor_method: null,
+        next_action: 'inspect_icloudpd_auth_output',
+        attemptId: 'attempt-b2-diagnostics-failed',
+        updatedAt: '2026-05-26T00:00:06.000Z',
+        error: { code: 'provider_failed', message: 'Provider proof failed.' },
+        authenticatedUser: null,
+        provider: 'icloudpd',
+      },
+      testDownload: {
+        downloadDirectory: 'runtime_data/downloads',
+        requestedRecentCount: 1,
+        status: 'blocked',
+        code: 'provider_failed',
+        message: 'Provider proof failed.',
+        next_action: 'inspect_icloudpd_auth_output',
+      },
+    },
+    false,
+  );
+
+  assert.equal(diagnostics.blockReason, 'provider_proof_failed');
+  assert.equal(diagnostics.action, 'inspect_new_auth_provider_status');
+  assert.equal(diagnostics.providerProofVerified, false);
+  assert.equal(diagnostics.runtimeDownloadCode, 'provider_failed');
+  assert.equal(diagnostics.secretsShown, false);
+});
+
+test('B2 handoff diagnostics: accepted bridge reports continue action', () => {
+  const bridged = reconcileRuntimeDownloadAuth({
+    newAuth: verifiedNewAuthPayload(),
+    now: new Date('2026-05-26T00:00:07.000Z'),
+    singleFileResult: {
+      auth: {
+        status: 'blocked',
+        has_required_files: true,
+        requires_2fa: 'unknown',
+        two_factor_status: 'unknown',
+        two_factor_method: null,
+        next_action: 'inspect_icloudpd_auth_output',
+        attemptId: 'attempt-b2-diagnostics-accepted',
+        updatedAt: '2026-05-26T00:00:07.000Z',
+        error: null,
+        authenticatedUser: null,
+        provider: 'icloud',
+      },
+      testDownload: {
+        downloadDirectory: 'runtime_data/downloads',
+        requestedRecentCount: 1,
+        status: 'started',
+        code: 'icloudpd_started_unverified',
+        message: 'icloudpd command completed, but output stayed inconclusive.',
+        next_action: 'inspect_icloudpd_auth_output',
+      },
+    },
+  });
+
+  assert.equal(bridged.accepted, true);
+  assert.equal(bridged.diagnostics.blockReason, null);
+  assert.equal(bridged.diagnostics.action, 'continue_runtime_download_pipeline');
+  assert.equal(bridged.diagnostics.providerProofVerified, true);
+  assert.equal(bridged.diagnostics.secretsShown, false);
 });

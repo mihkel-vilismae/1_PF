@@ -1311,6 +1311,7 @@ async function runtimeRealDownloadRunHandler({ body, context }: Pick<HandlerArgs
         applied: bridgedAuth.bridgeApplied,
         reason: bridgedAuth.bridgeReason,
       },
+      diagnostics: bridgedAuth.diagnostics,
       requestedRecentCount,
       downloadDirectory,
     });
@@ -1336,6 +1337,7 @@ async function runtimeRealDownloadRunHandler({ body, context }: Pick<HandlerArgs
         applied: bridgedAuth.bridgeApplied,
         reason: bridgedAuth.bridgeReason,
       },
+      diagnostics: bridgedAuth.diagnostics,
       schemaVersion: 1,
       executedAt,
     },
