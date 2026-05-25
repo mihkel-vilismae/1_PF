@@ -144,3 +144,11 @@ Freshness classification for retained old indexes: `compatibility_navigation_onl
 As of 2026-05-25 02:06 EEST, [`DOC_LINK_AUDIT.md`](DOC_LINK_AUDIT.md) and [`OLD_INDEX_REPLACEMENT_DECISION.md`](OLD_INDEX_REPLACEMENT_DECISION.md) are current latest-baseline documentation-governance docs.
 
 The retained old category indexes are navigation compatibility files. They are useful for orientation, but they are not current implementation truth. Use the canonical numbered folders and generated evidence/code/tests for stronger authority.
+
+## Slice 19 closure status
+
+Estonian timestamp: 2026-05-25 02:18 EEST
+
+The documentation refactor is closed as an organization pass. [`DOC_REFACTOR_CLOSURE_REPORT_20260525.md`](DOC_REFACTOR_CLOSURE_REPORT_20260525.md) summarizes canonical folders, pointer policy, and where future docs should be added.
+
+Freshness rules remain unchanged: code, tests, generated evidence packs, and direct runtime checks are stronger than documentation. Compatibility pointers and old category indexes are navigation only.

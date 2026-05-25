@@ -172,3 +172,11 @@ Decision:
 - Fix the one detected broken local documentation link in `tools/CronEmulator/TABLE_OF_CONTENTS.md`.
 
 Next safe slice: run a final documentation summary/consolidation pass or begin targeted runbook additions only if a specific missing runbook is identified.
+
+## Slice 19 closure status
+
+Estonian timestamp: 2026-05-25 02:18 EEST
+
+The planned documentation reorganization is complete enough to close the broad refactor phase. Selected docs have been moved to canonical numbered folders with compatibility pointers. Old category indexes are retained as compatibility navigation.
+
+Use [`DOC_REFACTOR_CLOSURE_REPORT_20260525.md`](DOC_REFACTOR_CLOSURE_REPORT_20260525.md) for final folder placement rules. Future work should be limited to feature-specific documentation updates or a separately scoped compatibility-pointer retirement slice after a new full link audit.

@@ -241,3 +241,6 @@ Every source document from `docs_to_parse/` is mapped below. Status values are `
 | `VISION_SPEC/reconciliation/19-slice1-source-inventory-report.md` | other_documentation | reduced to reference | Lower-authority slice report retained as historical reference. |
 | `VOICE_AI_AUTHORITATIVE_SPEC_MERGED_2026-04-22.md` | vision_spec_docs | reduced to reference | Foundational authority preserved, but active authority-map tiering controls conflicts unless explicitly re-promoted. |
 
+## Documentation refactor closure
+
+As of 2026-05-25 02:18 EEST, the broad documentation refactor is closed as an organization pass. See [`DOC_REFACTOR_CLOSURE_REPORT_20260525.md`](DOC_REFACTOR_CLOSURE_REPORT_20260525.md) for the final canonical folder structure, compatibility pointer policy, link-audit status, and rules for where future docs should be added.

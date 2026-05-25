@@ -170,3 +170,11 @@ As of 2026-05-25 02:06 EEST, the full documentation link audit is recorded in [`
 - Broken local Markdown links after this slice: 10.
 - Old category indexes remain compatibility navigation, not canonical truth.
 - New canonical docs should continue to use numbered target folders.
+
+## Slice 19 closure status
+
+Estonian timestamp: 2026-05-25 02:18 EEST
+
+The documentation refactor closure report is now available at [`docs/DOC_REFACTOR_CLOSURE_REPORT_20260525.md`](DOC_REFACTOR_CLOSURE_REPORT_20260525.md). Use it with this index as the final map for canonical folders, compatibility pointers, and future documentation placement.
+
+For new documentation, prefer the numbered canonical folders and update this index plus [`DOC_FRESHNESS_MATRIX.md`](DOC_FRESHNESS_MATRIX.md).

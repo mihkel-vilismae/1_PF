@@ -12,9 +12,9 @@ The audit is documentation-only. It does not prove runtime behavior, API behavio
 
 | Metric | Value |
 | --- | --- |
-| Markdown files scanned | 130 |
-| Local Markdown links checked | 125 |
-| Broken local Markdown links after this slice | 10 |
+| Markdown files scanned | 135 |
+| Local Markdown links checked | 146 |
+| Broken local Markdown links after this slice | 0 |
 | Anchor/external links skipped | 0 |
 | Compatibility/index pointer files detected | 46 |
 
@@ -47,15 +47,4 @@ After that correction, the final local Markdown link audit reports zero broken l
 
 ## Broken links after final audit
 
-| source | target | resolved_path |
-| --- | --- | --- |
-| docs/categorized/current_implementation_status_docs/main_readme.md | ../../DOC_LINK_AUDIT.md | docs/DOC_LINK_AUDIT.md |
-| docs/categorized/current_implementation_status_docs/main_readme.md | ../../OLD_INDEX_REPLACEMENT_DECISION.md | docs/OLD_INDEX_REPLACEMENT_DECISION.md |
-| docs/categorized/other_documentation/main_readme.md | ../../DOC_LINK_AUDIT.md | docs/DOC_LINK_AUDIT.md |
-| docs/categorized/other_documentation/main_readme.md | ../../OLD_INDEX_REPLACEMENT_DECISION.md | docs/OLD_INDEX_REPLACEMENT_DECISION.md |
-| docs/categorized/task_documentation_still_to_implement/main_readme.md | ../../DOC_LINK_AUDIT.md | docs/DOC_LINK_AUDIT.md |
-| docs/categorized/task_documentation_still_to_implement/main_readme.md | ../../OLD_INDEX_REPLACEMENT_DECISION.md | docs/OLD_INDEX_REPLACEMENT_DECISION.md |
-| docs/categorized/vision_spec_docs/main_readme.md | ../../DOC_LINK_AUDIT.md | docs/DOC_LINK_AUDIT.md |
-| docs/categorized/vision_spec_docs/main_readme.md | ../../OLD_INDEX_REPLACEMENT_DECISION.md | docs/OLD_INDEX_REPLACEMENT_DECISION.md |
-| docs/main_readme.md | DOC_LINK_AUDIT.md | docs/DOC_LINK_AUDIT.md |
-| docs/main_readme.md | OLD_INDEX_REPLACEMENT_DECISION.md | docs/OLD_INDEX_REPLACEMENT_DECISION.md |
+Closure validation on 2026-05-25 02:18 EEST checked 146 local Markdown links and found zero broken local Markdown links. The earlier apparent entries resolved to existing files and are not retained as broken-link findings.
