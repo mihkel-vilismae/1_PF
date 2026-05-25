@@ -89,6 +89,18 @@ docs/
       archive_and_reference_material.md
 ```
 
+
+## Slice 17 canonical reference locations
+
+As of 2026-05-25 01:56 EEST, selected remaining reference/workflow docs have canonical target-folder locations:
+
+| Canonical document | Previous compatibility pointer | Use rule |
+|---|---|---|
+| `docs/90_archive/reference_material_2026-05-10/archive_and_reference_material.md` | `docs/categorized/other_documentation/archive_and_reference_material.md` | Reference/provenance only. |
+| `docs/10_runbooks/documentation_workflow_and_inventory.md` | `docs/categorized/other_documentation/documentation_workflow_and_inventory.md` | Documentation workflow/runbook guidance. |
+| `docs/20_architecture_and_specs/reference/default_project_settings_and_elements_checklist.md` | `docs/categorized/other_documentation/default_project_settings_and_elements_checklist.md` | Reusable reference/spec checklist, not proof of implementation. |
+| `docs/40_backlog_and_tasks/active_workflow/slice_8_9_route_selection.md` | `docs/active_workflow_docs/slice_8_9_route_selection.md` | Planning/workflow context only. |
+
 ## Additional repo-local reference docs
 
 | Document | Scope | Authority limit |

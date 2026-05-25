@@ -42,3 +42,19 @@ docs/90_archive/task_docs_2026-04-20/
 ```
 
 The old `task_docs/` paths remain as compatibility pointers only. Use the canonical archive folder for new references, and do not treat archived task prompts as current implementation truth unless current code, tests, or generated evidence confirm the claim.
+
+## Archived reference material — 2026-05-10
+
+Estonian timestamp: 2026-05-25 01:56 EEST
+
+Slice 17 moved the archive/reference orientation document into:
+
+```text
+docs/90_archive/reference_material_2026-05-10/
+```
+
+Canonical file:
+
+- [Archive and Reference Material](reference_material_2026-05-10/archive_and_reference_material.md)
+
+The old `docs/categorized/other_documentation/archive_and_reference_material.md` path remains a compatibility pointer only. Treat this material as reference/provenance, not current implementation truth.

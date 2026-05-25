@@ -14,6 +14,16 @@ Docs in this category may include snapshots, specs, backlog, or reference materi
 As of 2026-05-25 01:47 EEST, this category index remains in place as a compatibility pointer for older links and local reference orientation. The canonical operator runbook now lives under [`../../10_runbooks/`](../../10_runbooks/), current organization guidance lives in [`../../DOC_INDEX.md`](../../DOC_INDEX.md), and old reference material should not be promoted to current truth without verification.
 
 Keep this file until a later old-index replacement slice performs a full link audit. Do not add new operator runbooks here; add them under `docs/10_runbooks/` and update `docs/DOC_INDEX.md`.
+## Slice 17 remaining reference move note
+
+As of 2026-05-25 01:56 EEST, the remaining reference/workflow documents from this category have canonical homes outside `docs/categorized/other_documentation/`:
+
+- `archive_and_reference_material.md` → `../../90_archive/reference_material_2026-05-10/archive_and_reference_material.md`
+- `documentation_workflow_and_inventory.md` → `../../10_runbooks/documentation_workflow_and_inventory.md`
+- `default_project_settings_and_elements_checklist.md` → `../../20_architecture_and_specs/reference/default_project_settings_and_elements_checklist.md`
+
+The old paths remain compatibility pointers only. Do not add new canonical docs to this category folder.
+
 
 ## Purpose
 
@@ -47,9 +57,9 @@ Canonical files in this category:
 |---|---|---|
 | `main_readme.md` | category index and migration map | index-only |
 | `operator_setup_and_auth_notes.md` | run/setup/auth practical notes | operator support only |
-| `documentation_workflow_and_inventory.md` | workflow, inventory, consolidation tracking | process governance only |
-| `default_project_settings_and_elements_checklist.md` | ideal default project settings, files, workflows, and quality gates | aspirational/reference only; not current implementation status or active backlog by itself |
-| `archive_and_reference_material.md` | reduced archive/reference orientation | explicitly non-authoritative |
+| `documentation_workflow_and_inventory.md` | compatibility pointer to `../../10_runbooks/documentation_workflow_and_inventory.md` | process governance only |
+| `default_project_settings_and_elements_checklist.md` | compatibility pointer to `../../20_architecture_and_specs/reference/default_project_settings_and_elements_checklist.md` | aspirational/reference only; not current implementation status or active backlog by itself |
+| `archive_and_reference_material.md` | compatibility pointer to `../../90_archive/reference_material_2026-05-10/archive_and_reference_material.md` | explicitly non-authoritative |
 
 Authority limits for this category:
 

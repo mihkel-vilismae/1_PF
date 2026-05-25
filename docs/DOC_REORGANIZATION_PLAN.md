@@ -55,7 +55,7 @@ This is a plan only. No existing documentation files were moved, renamed, or del
 | _TODO_13_05_26/D_monitoring_view.txt | completed: canonical content moved to docs/40_backlog_and_tasks/todo_2026-05-13/D_monitoring_view.txt; old path is compatibility pointer | 06_backlog_and_active_task_prompts | resolved for old links | Backlog/TODO prompt moved in Slice 9 with link preservation. |
 | _TODO_13_05_26/F_page.txt | not moved: ignored dirty/unrelated file for current workflow | 06_backlog_and_active_task_prompts | unchanged | Do not move unless user explicitly scopes this file later. |
 | _TODO_13_05_26/marked_for_removal.md | completed: canonical content moved to docs/40_backlog_and_tasks/todo_2026-05-13/marked_for_removal.md; old path is compatibility pointer | 06_backlog_and_active_task_prompts | resolved for old links | Backlog/TODO prompt moved in Slice 9 with link preservation. |
-| docs/active_workflow_docs/slice_8_9_route_selection.md | docs/40_backlog_and_tasks/docs__active_workflow_docs__slice_8_9_route_selection.md | 06_backlog_and_active_task_prompts | medium | Backlog/task prompt; not current truth. |
+| docs/active_workflow_docs/slice_8_9_route_selection.md | docs/40_backlog_and_tasks/active_workflow/slice_8_9_route_selection.md | 06_backlog_and_active_task_prompts | done; compatibility pointer retained | Moved in Slice 17. |
 | docs/40_backlog_and_tasks/task_documentation_still_to_implement/active_implementation_backlog.md | completed canonical backlog path; old path remains compatibility pointer at docs/categorized/task_documentation_still_to_implement/active_implementation_backlog.md | 06_backlog_and_active_task_prompts | resolved for old links | Backlog category doc moved in Slice 10 with link preservation. |
 | docs/categorized/task_documentation_still_to_implement/active_implementation_backlog.md | completed: canonical content moved to docs/40_backlog_and_tasks/task_documentation_still_to_implement/active_implementation_backlog.md; old path is compatibility pointer | 06_backlog_and_active_task_prompts | resolved for old links | Compatibility pointer retained for old category links. |
 | docs/categorized/task_documentation_still_to_implement/main_readme.md | docs/40_backlog_and_tasks/docs__categorized__task_documentation_still_to_implement__main_readme.md | 06_backlog_and_active_task_prompts | medium | Backlog/task prompt; not current truth. |
@@ -75,9 +75,9 @@ This is a plan only. No existing documentation files were moved, renamed, or del
 | docs/TYPE_FUNCTION_AUDIT_AND_MIGRATION_PLAN.md | completed: canonical content moved to docs/50_audits_and_migrations/TYPE_FUNCTION_AUDIT_AND_MIGRATION_PLAN.md; old path is compatibility pointer | 08_audits_and_migration_reports | resolved for old links | Audit/migration doc moved in Slice 15 with link preservation. |
 | docs/TYPE_FUNCTION_MIGRATION_CLOSURE_AUDIT.md | completed: canonical content moved to docs/50_audits_and_migrations/TYPE_FUNCTION_MIGRATION_CLOSURE_AUDIT.md; old path is compatibility pointer | 08_audits_and_migration_reports | resolved for old links | Audit/migration doc moved in Slice 15 with link preservation. |
 | placeholder_implementations.md | completed: canonical content moved to docs/50_audits_and_migrations/placeholder_implementations.md; old path is compatibility pointer | 08_audits_and_migration_reports | resolved for old links | Audit/migration doc moved in Slice 15 with link preservation. |
-| docs/categorized/other_documentation/archive_and_reference_material.md | docs/90_archive/old_indexes/archive_and_reference_material.md | 09_documentation_indexes_and_reference | medium | Index/reference material; new DOC_INDEX supersedes old navigation. |
-| docs/categorized/other_documentation/default_project_settings_and_elements_checklist.md | docs/90_archive/old_indexes/default_project_settings_and_elements_checklist.md | 09_documentation_indexes_and_reference | medium | Index/reference material; new DOC_INDEX supersedes old navigation. |
-| docs/categorized/other_documentation/documentation_workflow_and_inventory.md | docs/90_archive/old_indexes/documentation_workflow_and_inventory.md | 09_documentation_indexes_and_reference | medium | Index/reference material; new DOC_INDEX supersedes old navigation. |
+| docs/categorized/other_documentation/archive_and_reference_material.md | docs/90_archive/reference_material_2026-05-10/archive_and_reference_material.md | 07_historical_task_docs_archive | done; compatibility pointer retained | Moved in Slice 17 as reference/provenance material. |
+| docs/categorized/other_documentation/default_project_settings_and_elements_checklist.md | docs/20_architecture_and_specs/reference/default_project_settings_and_elements_checklist.md | 05_vision_and_target_specs | done; compatibility pointer retained | Moved in Slice 17 as reusable reference/spec material. |
+| docs/categorized/other_documentation/documentation_workflow_and_inventory.md | docs/10_runbooks/documentation_workflow_and_inventory.md | 10_runbooks | done; compatibility pointer retained | Moved in Slice 17 as documentation workflow runbook. |
 | docs/categorized/other_documentation/main_readme.md | docs/90_archive/old_indexes/main_readme.md | 09_documentation_indexes_and_reference | medium | Index/reference material; new DOC_INDEX supersedes old navigation. |
 | docs/categorized/other_documentation/operator_setup_and_auth_notes.md | completed: canonical content moved to docs/10_runbooks/operator_setup_and_auth_notes.md; old path is compatibility pointer | 13_operator_runbooks | resolved for old links | Operator setup/auth runbook moved in Slice 7 with link preservation. |
 | docs/main_readme.md | docs/90_archive/old_indexes/main_readme.md | 09_documentation_indexes_and_reference | medium | Index/reference material; new DOC_INDEX supersedes old navigation. |
@@ -143,3 +143,18 @@ Retain in place until a later link-audit/replacement slice:
 - `docs/categorized/vision_spec_docs/main_readme.md`
 
 Do not move tool-local docs as part of this decision. Do not touch the known ignored dirty files. The next safe physical move slice should handle remaining reference material only if it has a clear canonical target and compatibility pointer plan.
+
+## Slice 17 remaining reference/workflow moves
+
+Estonian timestamp: 2026-05-25 01:56 EEST
+
+Slice 17 moved selected remaining reference/workflow documents to clear canonical target folders while retaining compatibility pointers at the old paths:
+
+| Old path | Canonical path | Authority |
+|---|---|---|
+| `docs/categorized/other_documentation/archive_and_reference_material.md` | `docs/90_archive/reference_material_2026-05-10/archive_and_reference_material.md` | historical/reference only |
+| `docs/categorized/other_documentation/documentation_workflow_and_inventory.md` | `docs/10_runbooks/documentation_workflow_and_inventory.md` | runbook/process guidance |
+| `docs/categorized/other_documentation/default_project_settings_and_elements_checklist.md` | `docs/20_architecture_and_specs/reference/default_project_settings_and_elements_checklist.md` | reusable reference/spec checklist |
+| `docs/active_workflow_docs/slice_8_9_route_selection.md` | `docs/40_backlog_and_tasks/active_workflow/slice_8_9_route_selection.md` | planning/workflow context |
+
+Do not move tool-local docs or ignored dirty/unrelated files as part of this workflow.

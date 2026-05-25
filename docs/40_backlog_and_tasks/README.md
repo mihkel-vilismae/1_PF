@@ -46,3 +46,13 @@ Use these repository-level documentation guides before adding or moving files:
 - [Documentation Reorganization Plan](../DOC_REORGANIZATION_PLAN.md)
 
 Do not physically move files into this folder until the move is covered by a link-aware documentation slice.
+
+## Active workflow route-selection note moved in Slice 17
+
+Estonian timestamp: 2026-05-25 01:56 EEST
+
+Slice 17 moved this active workflow planning note into the canonical backlog/task area:
+
+- [Slice 8 and Slice 9 Route Selection](active_workflow/slice_8_9_route_selection.md)
+
+The old `docs/active_workflow_docs/slice_8_9_route_selection.md` path remains a compatibility pointer only. Treat this as planning/workflow context, not current implementation proof.

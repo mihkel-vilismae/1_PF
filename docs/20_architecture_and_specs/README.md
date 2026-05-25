@@ -56,3 +56,12 @@ The first controlled auth flow reference move placed this canonical file here:
 
 The old `docs/NEW_AUTH_PROVIDER_VERIFICATION_FLOW.md` path remains a compatibility pointer. Treat this document as an architecture/reference guide, not proof that the current runtime is authenticated. Generated evidence packs, code, and tests remain stronger than this reference when they conflict.
 
+## Reusable project reference/spec material moved in Slice 17
+
+Estonian timestamp: 2026-05-25 01:56 EEST
+
+Slice 17 moved this reusable project reference/spec checklist into the canonical architecture/spec area:
+
+- [Default Project Settings and Elements Checklist](reference/default_project_settings_and_elements_checklist.md)
+
+The old `docs/categorized/other_documentation/default_project_settings_and_elements_checklist.md` path remains a compatibility pointer only. Treat this as reusable reference/spec material, not proof that every item is implemented in this repository.

@@ -36,3 +36,13 @@ Do not physically move files into this folder until the move is covered by a lin
 ## Current runbooks
 
 - [Operator Setup and Auth Notes](operator_setup_and_auth_notes.md) — operator-facing setup, auth, iCloudPD, session, and NEW AUTH usage notes.
+
+## Documentation workflow runbook moved in Slice 17
+
+Estonian timestamp: 2026-05-25 01:56 EEST
+
+Slice 17 moved this documentation-governance runbook into the canonical runbook area:
+
+- [Documentation Workflow and Inventory](documentation_workflow_and_inventory.md)
+
+The old `docs/categorized/other_documentation/documentation_workflow_and_inventory.md` path remains a compatibility pointer only. Use the canonical runbook path for new references.
