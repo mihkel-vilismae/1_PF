@@ -54,6 +54,18 @@ export const SCHEDULER_EMULATOR_DEFAULT_INSERT_CRONTAB = [
   WINDOWS_CRON_EMULATOR_SCREEN_ON_OFF_WORKER_CRON_ROW,
 ].join('\n');
 
+export type SchedulerEndpointLogEntry = {
+  id: string;
+  at: string;
+  atIso: string;
+  type: 'request' | 'response' | 'error';
+  operation: string;
+  method: string;
+  endpoint: string;
+  message: string;
+  status: number | null;
+};
+
 export type DatabaseViewerState = {
   verification: unknown;
   connection: unknown;
@@ -340,6 +352,7 @@ export function createInitialState() {
     schedulerEmulator: {
       editableCrontab: SCHEDULER_EMULATOR_DEFAULT_INSERT_CRONTAB,
       activeCrontab: SCHEDULER_EMULATOR_DEFAULT_ACTIVE_CRONTAB,
+      endpointLog: [],
       buttonStates: buildInitialSchedulerEmulatorButtonStates(),
     },
     initCapabilities: {

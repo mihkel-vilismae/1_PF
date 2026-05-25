@@ -226,6 +226,19 @@ test('3A CronEmulator actions call emulator endpoints and only get-active update
         { path: '/api/init/cron/emulator/crontab', method: 'GET', queryTarget: SCHEDULER_TARGETS.windowsCronEmulator, body: null },
       ],
     );
+    assert.equal(harness.state.schedulerEmulator.endpointLog.length, 10);
+    assert.deepEqual(
+      harness.state.schedulerEmulator.endpointLog.map((entry) => ({ type: entry.type, method: entry.method, endpoint: entry.endpoint, status: entry.status })).slice(0, 2),
+      [
+        { type: 'response', method: 'GET', endpoint: '/api/init/cron/emulator/crontab', status: 200 },
+        { type: 'request', method: 'GET', endpoint: '/api/init/cron/emulator/crontab', status: null },
+      ],
+    );
+
+    const html = renderInitView(harness.state);
+    assert.match(html, /cron endpoint live log/);
+    assert.match(html, /scheduler-endpoint-terminal__row--response/);
+    assert.match(html, /\/api\/init\/cron\/emulator\/crontab/);
   } finally {
     global.fetch = originalFetch;
   }

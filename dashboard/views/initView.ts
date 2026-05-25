@@ -133,6 +133,7 @@ function renderSchedulerCard(state, schedulerCapability, supportLevels) {
           copy: 'Uses the current user crontab on Raspberry Pi OS/Linux and manages only the project-owned marked block.',
         })}
       </div>
+      ${renderSchedulerEndpointTerminal(state.schedulerEmulator?.endpointLog ?? [])}
       ${renderResultSurface(state.initResults['3A'])}
       <div class="log-surface">${renderLogEntries(state.logs['3A'], { sourceKey: '3A' })}</div>
     </article>
@@ -143,6 +144,38 @@ function renderSchedulerCard(state, schedulerCapability, supportLevels) {
 function renderSchedulerTabButton(label, target, selectedTarget, action) {
   const selected = target === selectedTarget;
   return `<button class="scheduler-tab ${selected ? 'scheduler-tab--active' : ''}" type="button" role="tab" aria-selected="${selected ? 'true' : 'false'}" data-action="${escapeAttribute(action)}">${escapeHtml(label)}</button>`;
+}
+
+// Renders a terminal-style live endpoint log for Windows CronEmulator calls.
+function renderSchedulerEndpointTerminal(entries = []) {
+  const rows = entries.length
+    ? entries.map((entry) => renderSchedulerEndpointTerminalRow(entry)).join('')
+    : '<div class="scheduler-endpoint-terminal__empty">No cron endpoint calls yet.</div>';
+  return `
+    <section class="scheduler-endpoint-terminal" aria-label="Live cron endpoint call log">
+      <div class="scheduler-endpoint-terminal__header">
+        <h4>cron endpoint live log</h4>
+        <span>${escapeHtml(String(entries.length))} entries</span>
+      </div>
+      <div class="scheduler-endpoint-terminal__body" role="log" aria-live="polite">
+        ${rows}
+      </div>
+    </section>
+  `;
+}
+
+// Renders one compact terminal row for a cron endpoint request/response/error event.
+function renderSchedulerEndpointTerminalRow(entry) {
+  const statusText = typeof entry.status === 'number' ? `HTTP ${entry.status}` : entry.type.toUpperCase();
+  return `
+    <div class="scheduler-endpoint-terminal__row scheduler-endpoint-terminal__row--${escapeAttribute(entry.type ?? 'request')}">
+      <span class="scheduler-endpoint-terminal__time">${escapeHtml(entry.at ?? '')}</span>
+      <span class="scheduler-endpoint-terminal__status">${escapeHtml(statusText)}</span>
+      <span class="scheduler-endpoint-terminal__method">${escapeHtml(entry.method ?? '')}</span>
+      <span class="scheduler-endpoint-terminal__endpoint">${escapeHtml(entry.endpoint ?? '')}</span>
+      <span class="scheduler-endpoint-terminal__message">${escapeHtml(entry.message ?? '')}</span>
+    </div>
+  `;
 }
 
 // Renders one scheduler target panel, using CronEmulator controls for Windows.

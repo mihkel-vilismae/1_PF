@@ -32,6 +32,8 @@ type SchedulerButtonState = {
   endpoint: string | null;
 };
 
+type SchedulerEndpointLogType = 'request' | 'response' | 'error';
+
 type SchedulerActionInput = {
   buttonKey: SchedulerEmulatorButtonKey;
   operation: string;
@@ -132,6 +134,13 @@ export function createRuntimeTruthSchedulerActions({
         request: { body: payload ?? null },
         response: null,
       };
+      appendSchedulerEndpointLog(draft, {
+        type: 'request',
+        operation,
+        endpoint,
+        status: null,
+        message: runningMessage,
+      });
     });
     pushLog(SCHEDULER_CARD_KEY, 'info', runningMessage, buildInitLogDetails({ operation, endpoint, requestBody: payload, outcome: 'running' }));
 
@@ -141,6 +150,7 @@ export function createRuntimeTruthSchedulerActions({
       const responseMeta = responseEnvelope.meta;
       const message = summarizeInitPayload(operation, responsePayload);
       const status = classifySchedulerButtonStatus(buttonKey, responsePayload, 'success');
+      const httpStatus = typeof responseMeta?.response?.status === 'number' ? responseMeta.response.status : null;
       const details = buildInitLogDetails({
         operation,
         endpoint,
@@ -163,6 +173,13 @@ export function createRuntimeTruthSchedulerActions({
           request: details.request,
           response: details.response,
         };
+        appendSchedulerEndpointLog(draft, {
+          type: 'response',
+          operation,
+          endpoint,
+          status: httpStatus,
+          message,
+        });
         if (typeof onSuccess === 'function') {
           onSuccess(draft, responsePayload);
         }
@@ -198,6 +215,13 @@ export function createRuntimeTruthSchedulerActions({
           request: details.request,
           response: details.response,
         };
+        appendSchedulerEndpointLog(draft, {
+          type: 'error',
+          operation,
+          endpoint,
+          status: typeof error?.status === 'number' ? error.status : null,
+          message,
+        });
       });
       setStatus(SCHEDULER_CARD_KEY, 'error');
       pushLog(SCHEDULER_CARD_KEY, 'error', message, details);
@@ -215,6 +239,41 @@ export function createRuntimeTruthSchedulerActions({
     installCrontabAction,
     getActiveCrontabAction,
   };
+}
+
+// Appends a compact live terminal row for scheduler endpoint traffic.
+function appendSchedulerEndpointLog(
+  draft: Record<string, unknown>,
+  entry: {
+    type: SchedulerEndpointLogType;
+    operation: string;
+    endpoint: SchedulerEndpoint;
+    status: number | null;
+    message: string;
+  },
+) {
+  const schedulerState = ensureSchedulerEmulatorState(draft);
+  const now = new Date();
+  schedulerState.endpointLog.unshift({
+    id: createSchedulerEndpointLogId(),
+    at: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+    atIso: now.toISOString(),
+    type: entry.type,
+    operation: entry.operation,
+    method: entry.endpoint.method,
+    endpoint: entry.endpoint.path,
+    message: entry.message,
+    status: entry.status,
+  });
+  schedulerState.endpointLog = schedulerState.endpointLog.slice(0, 50);
+}
+
+// Creates a stable-enough local id for scheduler terminal rows without backend coupling.
+function createSchedulerEndpointLogId(): string {
+  if (globalThis.crypto?.randomUUID) {
+    return globalThis.crypto.randomUUID();
+  }
+  return `scheduler-endpoint-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
 // Classifies scheduler backend payloads into auth-style circle statuses.
@@ -261,13 +320,16 @@ function ensureSchedulerEmulatorState(draft: Record<string, unknown>) {
   draft.schedulerEmulator ??= {
     editableCrontab: '',
     activeCrontab: "not checked, press 'Get active crontab'",
+    endpointLog: [],
     buttonStates: buildInitialSchedulerEmulatorButtonStates(),
   };
   const schedulerState = draft.schedulerEmulator as {
     editableCrontab: string;
     activeCrontab: string;
+    endpointLog: Array<Record<string, unknown>>;
     buttonStates: Record<SchedulerEmulatorButtonKey, SchedulerButtonState>;
   };
+  schedulerState.endpointLog ??= [];
   schedulerState.buttonStates ??= buildInitialSchedulerEmulatorButtonStates();
   for (const key of SCHEDULER_EMULATOR_BUTTON_KEYS) {
     schedulerState.buttonStates[key] ??= buildSchedulerButtonState('neutral', 'Not checked yet.', null);
