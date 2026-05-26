@@ -24,6 +24,7 @@ test('scheduler route extraction preserves cron and emulator route keys', () => 
     stopEmulatorHandler: makeHandler('stopEmulatorHandler'),
     installEmulatorCrontabHandler: makeHandler('installEmulatorCrontabHandler'),
     activeEmulatorCrontabHandler: makeHandler('activeEmulatorCrontabHandler'),
+    schedulerRunLogHandler: makeHandler('schedulerRunLogHandler'),
   };
 
   const routes = createSchedulerRoutes(handlers);
@@ -39,6 +40,7 @@ test('scheduler route extraction preserves cron and emulator route keys', () => 
     'POST /api/init/cron/emulator/stop',
     'POST /api/init/cron/emulator/crontab',
     'GET /api/init/cron/emulator/crontab',
+    'GET /api/init/cron/run-log',
   ]);
   assert.equal(routes['GET /api/init/cron/target'], handlers.cronTargetStatusHandler);
   assert.equal(routes['POST /api/init/cron/target'], handlers.selectCronTargetHandler);
@@ -50,4 +52,5 @@ test('scheduler route extraction preserves cron and emulator route keys', () => 
   assert.equal(routes['POST /api/init/cron/emulator/stop'], handlers.stopEmulatorHandler);
   assert.equal(routes['POST /api/init/cron/emulator/crontab'], handlers.installEmulatorCrontabHandler);
   assert.equal(routes['GET /api/init/cron/emulator/crontab'], handlers.activeEmulatorCrontabHandler);
+  assert.equal(routes['GET /api/init/cron/run-log'], handlers.schedulerRunLogHandler);
 });
