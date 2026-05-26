@@ -67,3 +67,9 @@ The latest main-goal status snapshot is [Main Goal Implementation Status — Aut
 Estonian timestamp: 2026-05-26 03:18 EEST
 
 The latest B2 real-download handoff snapshot is [B2 Real Download Auth Handoff Status](2026-05-26/B2_REAL_DOWNLOAD_AUTH_HANDOFF_STATUS_20260526.md). It records the Slice 1–4 bridge between active NEW AUTH provider proof and `POST /api/runtime/download/real-run`, including the preserved rule that passive session files alone do not authenticate real downloads.
+
+## 2026-05-26 user-observed card status snapshot
+
+Estonian timestamp: 2026-05-26 21:31 EEST
+
+The latest user-observed View A/B/D card/button status snapshot is [User-observed card status and issues](2026-05-26/USER_OBSERVED_CARD_STATUS_AND_ISSUES_20260526_1457_EEST.md). It preserves the subjective assessment column and follow-up issue list from manual/user observations. Treat it as practical validation input, not stronger evidence than code, tests, generated artifacts, or runtime logs.

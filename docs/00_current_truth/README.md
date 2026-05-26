@@ -30,6 +30,7 @@ Use these repository-level documentation guides before adding or moving files:
 - [Documentation Freshness Matrix](../DOC_FRESHNESS_MATRIX.md)
 - [Documentation Reorganization Plan](../DOC_REORGANIZATION_PLAN.md)
 - [Card/button implementation status audit](../CARD_BUTTON_IMPLEMENTATION_STATUS.md) — A/B/D `.card` button/control inventory, status snapshot, user-observed subjective assessment, and follow-up issue list; verify against code/tests before runtime claims.
+- [User-observed card status and issues snapshot](../30_status_snapshots/2026-05-26/USER_OBSERVED_CARD_STATUS_AND_ISSUES_20260526_1457_EEST.md) — dated user-observed A/B/D card/button status and follow-up issue list; less authoritative than code/tests/runtime evidence.
 
 Do not physically move files into this folder until the move is covered by a link-aware documentation slice.
 
