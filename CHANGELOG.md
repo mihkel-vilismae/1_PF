@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.5.39 - 2026-05-26 15:09 EEST
+
+- Integrated the user-observed subjective assessment column into `docs/CARD_BUTTON_IMPLEMENTATION_STATUS.md` for the View A/B/D card/button audit.
+- Added the user-observed follow-up issue list covering real-download batching, B3 provider uncertainty, B4 address/fullscreen issues, B5 screen simulation controls, View D worker telemetry, and scheduler verification.
+- Updated documentation navigation pointers so future AI/documentation passes know the audit now includes subjective observations and follow-up issues.
+- Preserved source/UI/runtime behavior unchanged; this release is documentation and release metadata only.
+- Bumped version metadata from v0.5.38 to v0.5.39 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.5.38 - 2026-05-26 14:35 EEST
 
 - Added a regression test for the View A/B/D card-button implementation audit.
