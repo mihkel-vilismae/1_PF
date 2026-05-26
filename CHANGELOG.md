@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.5.38 - 2026-05-26 14:35 EEST
+
+- Added a regression test for the View A/B/D card-button implementation audit.
+- Corrected the B4 playback rendering button labels and data attributes in `docs/CARD_BUTTON_IMPLEMENTATION_STATUS.md` to match rendered source truth.
+- Preserved source/UI/runtime behavior; this release only adds test coverage and documentation correction.
+- Bumped version metadata from v0.5.37 to v0.5.38 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.5.37 - 2026-05-26 14:27 EEST
 
 - Added `docs/CARD_BUTTON_IMPLEMENTATION_STATUS.md` with baseline-specific View A/B/D `.card` button inventory tables, implementation status according to tests/code, implementation status according to docs, and reconciliation notes.
