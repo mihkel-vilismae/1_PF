@@ -29,6 +29,7 @@ Use these repository-level documentation guides before adding or moving files:
 - [Documentation Index](../DOC_INDEX.md)
 - [Documentation Freshness Matrix](../DOC_FRESHNESS_MATRIX.md)
 - [Documentation Reorganization Plan](../DOC_REORGANIZATION_PLAN.md)
+- [Card/button implementation status audit](../CARD_BUTTON_IMPLEMENTATION_STATUS.md) — A/B/D `.card` button inventory/status snapshot; verify against code/tests before runtime claims.
 
 Do not physically move files into this folder until the move is covered by a link-aware documentation slice.
 

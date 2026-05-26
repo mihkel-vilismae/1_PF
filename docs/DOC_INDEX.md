@@ -4,8 +4,8 @@ Estonian timestamp: 2026-05-24 22:58 EEST
 
 This index classifies non-skill documentation files and separates current truth candidates from status snapshots, specs, backlog, archive material, and tool-local docs. No files were moved by this analysis.
 
-- Included documentation files: 59
-- Included documentation LOC: 7717
+- Included documentation files: 60
+- Included documentation LOC: 7892+
 
 ## Group summary
 
@@ -19,7 +19,7 @@ This index classifies non-skill documentation files and separates current truth 
 | 06_backlog_and_active_task_prompts | 15 | 758 | TODOs, backlog, active task prompts, including Slice 9 TODO docs and Slice 10 category backlog docs with compatibility pointers. |
 | 07_historical_task_docs_archive | 18 | 2076 | Historical task archive plus compatibility pointers. |
 | 08_audits_and_migration_reports | 3 | 753 | Audits and migration snapshots. |
-| 09_documentation_indexes_and_reference | 8 | 918 | Legacy indexes/reference docs, including compatibility pointers. |
+| 09_documentation_indexes_and_reference | 9 | 918+ | Legacy indexes/reference docs, including compatibility pointers and the A/B/D card-button audit pointer. |
 | 13_operator_runbooks | 1 | 115 | Operator-facing runbooks moved into docs/10_runbooks. |
 | 10_tool_docs_cronemulator | 5 | 319 | CronEmulator tool docs. |
 | 11_tool_docs_network_scan_dirty | 4 | 173 | Network-scan submodule/tool docs; audit separately. |
@@ -29,7 +29,8 @@ This index classifies non-skill documentation files and separates current truth 
 
 | path | loc | title | kind | authority | freshness | group | topics | note |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| AGENTS.md | 17 | Repository Instructions | root_core | source_of_truth_candidate | recent_verify_against_code | 01_root_core | general | Root entry point; keep discoverable and link to doc index/freshness matrix. |
+| AGENTS.md | 38 | Repository Instructions | root_core | source_of_truth_candidate | recent_verify_against_code | 01_root_core | general | Root entry point; keep discoverable and link to doc index/freshness matrix. |
+| docs/CARD_BUTTON_IMPLEMENTATION_STATUS.md | 175 | Card/button implementation status audit | implementation_status_snapshot | static_source_and_doc_inspection_snapshot | current_latest_baseline | 09_documentation_indexes_and_reference | view_a, view_b, view_d, card_buttons, implementation_status | Baseline-specific A/B/D `.card` button inventory and status reconciliation; use for card/button work, but verify against code/tests before runtime claims. |
 | CHANGELOG.md | 1223 | CHANGELOG | root_core | source_of_truth_candidate | recent_verify_against_code | 01_root_core | auth, new_auth, icloudpd, provider, runtime_truth, cron, view_a, view_d, real_vs_mock, download | Root entry point; keep discoverable and link to doc index/freshness matrix. |
 | HOW_TO_RUN.md | 28 | How to Run | root_core | runtime_runbook | recent_verify_against_code | 01_root_core | auth, new_auth, icloudpd, provider, view_a | Root entry point; keep discoverable and link to doc index/freshness matrix. |
 | README.md | 123 | Photo Frame Dashboard System | root_core | runtime_runbook | recent_verify_against_code | 01_root_core | auth, new_auth, icloudpd, provider, cron, monitoring, view_a, view_d, download | Root entry point; keep discoverable and link to doc index/freshness matrix. |
@@ -178,3 +179,9 @@ Estonian timestamp: 2026-05-25 02:18 EEST
 The documentation refactor closure report is now available at [`docs/DOC_REFACTOR_CLOSURE_REPORT_20260525.md`](DOC_REFACTOR_CLOSURE_REPORT_20260525.md). Use it with this index as the final map for canonical folders, compatibility pointers, and future documentation placement.
 
 For new documentation, prefer the numbered canonical folders and update this index plus [`DOC_FRESHNESS_MATRIX.md`](DOC_FRESHNESS_MATRIX.md).
+
+## Card/button implementation status audit pointer
+
+Estonian timestamp: 2026-05-26 14:25 EEST
+
+Use [`docs/CARD_BUTTON_IMPLEMENTATION_STATUS.md`](CARD_BUTTON_IMPLEMENTATION_STATUS.md) when working on View A/B/D `.card` button inventories, labels, actions, or card/button implementation-status comparisons. It is a baseline-specific static inspection snapshot, not live runtime proof. Code, tests, generated evidence packs, and runtime artifacts still override this document when they conflict.
