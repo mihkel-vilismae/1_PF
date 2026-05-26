@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.5.35 - 2026-05-26 03:18 EEST
+
+- Added the Slice 5 B2 real-download auth handoff status snapshot under `docs/30_status_snapshots/2026-05-26/`, summarizing the implemented characterization, bridge, provider diagnostic normalization, and safe blocked diagnostics.
+- Updated the status snapshot navigation so future AI/operator reviews can find the current B2 real-download handoff evidence before changing the authentication boundary.
+- Preserved runtime behavior unchanged; this slice is documentation and release metadata only.
+- Bumped version metadata from v0.5.34 to v0.5.35 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.5.34 - 2026-05-26 03:12 EEST
 
 - Added Slice 4 safe B2 real-download diagnostics that classify blocked requests as missing auth files, skipped provider proof, failed provider proof, provider unavailable, or ambiguous download output without exposing secrets.

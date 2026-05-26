@@ -62,3 +62,8 @@ Estonian timestamp: 2026-05-25 20:55 EEST
 
 The latest main-goal status snapshot is [Main Goal Implementation Status — Autonomous Picture Frame](2026-05-25/MAIN_GOAL_IMPLEMENTATION_STATUS_20260525.md). It separates implemented, partial, mock/demo, planned, and decision-gated areas for the autonomous picture-frame goal across login, download, parsing, queueing, playback, Windows fullscreen development rendering, and Raspberry production rendering.
 
+## 2026-05-26 B2 real-download auth handoff snapshot
+
+Estonian timestamp: 2026-05-26 03:18 EEST
+
+The latest B2 real-download handoff snapshot is [B2 Real Download Auth Handoff Status](2026-05-26/B2_REAL_DOWNLOAD_AUTH_HANDOFF_STATUS_20260526.md). It records the Slice 1–4 bridge between active NEW AUTH provider proof and `POST /api/runtime/download/real-run`, including the preserved rule that passive session files alone do not authenticate real downloads.
