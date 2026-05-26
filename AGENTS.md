@@ -8,7 +8,7 @@
   - `docs/DOC_FRESHNESS_MATRIX.md`
   - `docs/DOC_REORGANIZATION_PLAN.md`
   - `docs/DOC_LINK_AUDIT.md`
-  - `docs/CARD_BUTTON_IMPLEMENTATION_STATUS.md` when working on View A/B/D cards, card buttons, button labels/actions, or card/button implementation status.
+  - `docs/CARD_BUTTON_IMPLEMENTATION_STATUS.md` when working on View A/B/D cards, card buttons, button labels/actions, card/button implementation status, user-observed subjective assessments, or the related follow-up issue list.
 - Use canonical numbered documentation folders for new documentation:
   - `docs/00_current_truth/` for verified or evidence-backed current truth only.
   - `docs/10_runbooks/` for operator/how-to procedures.
