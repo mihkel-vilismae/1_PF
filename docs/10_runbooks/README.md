@@ -46,3 +46,4 @@ Slice 17 moved this documentation-governance runbook into the canonical runbook 
 - [Documentation Workflow and Inventory](documentation_workflow_and_inventory.md)
 
 The old `docs/categorized/other_documentation/documentation_workflow_and_inventory.md` path remains a compatibility pointer only. Use the canonical runbook path for new references.
+- [Windows Full Launcher Runbook](windows_full_launcher.md) — full Windows startup script with dependency install, tests, dual API/frontend tabs, and browser opening.

@@ -185,3 +185,7 @@ For new documentation, prefer the numbered canonical folders and update this ind
 Estonian timestamp: 2026-05-26 14:25 EEST
 
 Use [`docs/CARD_BUTTON_IMPLEMENTATION_STATUS.md`](CARD_BUTTON_IMPLEMENTATION_STATUS.md) when working on View A/B/D `.card` button inventories, labels, actions, card/button implementation-status comparisons, user-observed subjective assessments, or the related follow-up issue list. It is a baseline-specific static/source/docs/user-observation snapshot, not live runtime proof. Code, tests, generated evidence packs, and runtime artifacts still override this document when they conflict.
+
+## Runbooks
+
+- `docs/10_runbooks/windows_full_launcher.md` — Windows full startup launcher: install dependencies, run tests/build, open API/frontend tabs, and open the browser.

@@ -4,6 +4,12 @@ This repository contains a dashboard-driven system for managing a staged photo-p
 
 The system documentation has been consolidated into categorized canonical docs under `docs/categorized/`. Implementation status in those docs is documentation-derived only unless a document explicitly states that a code path was verified.
 
+## Windows full launcher
+
+Run `start_win_full.cmd` from the repository root for the full Windows startup workflow. It installs dependencies, runs tests, builds the frontend, opens API and frontend in Windows Terminal tabs when available, and opens `http://localhost:5173` in the default browser.
+
+Use `start_win.cmd` for the older lighter startup path.
+
 ## Documentation entry points
 
 

@@ -21,6 +21,8 @@ npm run dev
 
 On Windows, you can also run `start_win.cmd` from the repository root. It checks Node/npm, installs dependencies when needed, runs `npm run build`, then starts the API server and Vite frontend in separate terminals.
 
+For a fuller Windows startup pass, run `start_win_full.cmd` from the repository root. It installs dependencies with verbose npm output, runs `npm test`, runs `npm run build`, opens API and frontend in Windows Terminal tabs when available, falls back to separate `cmd.exe` windows, and opens the frontend in the default browser. See [`docs/10_runbooks/windows_full_launcher.md`](docs/10_runbooks/windows_full_launcher.md).
+
 Open the local Vite URL in your browser.
 
 Use `example.env` as the local environment template. Keep `DB_PATH` for the runtime SQLite database and `TEST_DB_PATH` for test-only database work; those paths must not overlap.
