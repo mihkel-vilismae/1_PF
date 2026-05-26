@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.5.41 - 2026-05-26 21:31 EEST
+
+- Added the dated user-observed View A/B/D card/button status snapshot under `docs/30_status_snapshots/2026-05-26/USER_OBSERVED_CARD_STATUS_AND_ISSUES_20260526_1457_EEST.md`.
+- Added read-first/navigation pointers from `AGENTS.md`, `docs/DOC_INDEX.md`, `docs/00_current_truth/README.md`, and `docs/30_status_snapshots/README.md` so the snapshot is discoverable.
+- Added `tests/userObservedCardStatusDocs.test.js` to guard the snapshot content and read-first discoverability pointer.
+- Preserved source/UI/runtime behavior unchanged; this release fixes documentation discoverability and test coverage only.
+- Bumped version metadata from v0.5.40 to v0.5.41 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.5.40 - 2026-05-26 15:12 EEST
 
 - Added `start_win_full.cmd` and `start_scripts/start_win_full.ps1` for full Windows startup: dependency install, tests, build, API/frontend tabs, and browser launch.
