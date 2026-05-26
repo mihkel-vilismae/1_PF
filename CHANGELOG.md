@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.5.40 - 2026-05-26 15:12 EEST
+
+- Added `start_win_full.cmd` and `start_scripts/start_win_full.ps1` for full Windows startup: dependency install, tests, build, API/frontend tabs, and browser launch.
+- Added `.codex/skills/windows-project-launcher/SKILL.md` to document the launcher workflow rules for future changes.
+- Added `docs/10_runbooks/windows_full_launcher.md` and linked it from run/documentation entry points.
+- Preserved existing `start_win.cmd` behavior and source/UI/runtime logic unchanged.
+- Bumped version metadata from v0.5.39 to v0.5.40 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.5.39 - 2026-05-26 15:09 EEST
 
 - Integrated the user-observed subjective assessment column into `docs/CARD_BUTTON_IMPLEMENTATION_STATUS.md` for the View A/B/D card/button audit.
