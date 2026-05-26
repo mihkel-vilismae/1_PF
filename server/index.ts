@@ -101,6 +101,7 @@ const schedulerTickSeconds = Object.freeze({
   recoveryReconciliation: 15,
 });
 const schedulerWorkerName = normalizeSchedulerWorkerName(process.argv);
+let databaseService: DatabaseService | null = null;
 const supportedMediaExtensions = new Set([
   '.jpg',
   '.jpeg',
@@ -1998,8 +1999,6 @@ function validateEnvValue(entry: EnvSchemaEntry, rawValue: string | undefined): 
 
   return { valid: true, message: 'Value is present and structurally valid.' };
 }
-
-let databaseService: DatabaseService | null = null;
 
 function getDatabaseService(): DatabaseService {
   if (!databaseService) {
