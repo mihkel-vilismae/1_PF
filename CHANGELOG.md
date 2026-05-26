@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.5.37 - 2026-05-26 14:27 EEST
+
+- Added `docs/CARD_BUTTON_IMPLEMENTATION_STATUS.md` with baseline-specific View A/B/D `.card` button inventory tables, implementation status according to tests/code, implementation status according to docs, and reconciliation notes.
+- Added read-first/navigation pointers from `AGENTS.md`, `docs/DOC_INDEX.md`, and `docs/00_current_truth/README.md` so future AI runs can find the card/button audit without duplicating the full table.
+- Preserved runtime behavior, frontend UI behavior, backend routes, tests, authentication, scheduler behavior, pipeline behavior, and monitoring behavior unchanged; this release is documentation and discoverability only.
+- Bumped version metadata from v0.5.36 to v0.5.37 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.5.36 - 2026-05-26 03:33 EEST
 
 - Added `copy all`, `clear`, and per-row `expand row` controls to the View A `cron endpoint / row live log` terminal.
