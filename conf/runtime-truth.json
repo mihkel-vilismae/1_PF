@@ -11,9 +11,25 @@
   "pipelineActiveKey": null,
   "pipelineLockAcquiredAt": null,
   "playbackActive": false,
-  "realRunActive": false,
+  "realRunActive": true,
   "realRunStartCount": 0,
   "stageLock": "Pipeline lock available",
   "playbackLock": "Playback worker lock available",
-  "screenLock": "Screen worker lock available"
+  "screenLock": "Screen worker lock available",
+  "auth": {
+    "source": "server/auth/projectPublicAuthState",
+    "publicState": {
+      "status": "blocked",
+      "has_required_files": true,
+      "requires_2fa": "unknown",
+      "two_factor_status": "unknown",
+      "two_factor_method": null,
+      "next_action": "inspect_icloudpd_auth_output",
+      "attemptId": "16ae66f5-4e52-4d22-8944-f68a387dc357",
+      "updatedAt": "2026-05-26T09:04:36.762Z",
+      "error": null,
+      "authenticatedUser": null,
+      "provider": "icloud"
+    }
+  }
 }
