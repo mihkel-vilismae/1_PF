@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.5.36 - 2026-05-26 03:33 EEST
+
+- Added `copy all`, `clear`, and per-row `expand row` controls to the View A `cron endpoint / row live log` terminal.
+- The per-row expand control opens the shared modal with full untruncated scheduler endpoint or cron row evidence JSON.
+- Copy exports the full scheduler endpoint/row log as readable JSON and clear removes only this terminal log, preserving scheduler backend behavior and cron row highlight colors.
+- Bumped version metadata from v0.5.35 to v0.5.36 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.5.35 - 2026-05-26 03:18 EEST
 
 - Added the Slice 5 B2 real-download auth handoff status snapshot under `docs/30_status_snapshots/2026-05-26/`, summarizing the implemented characterization, bridge, provider diagnostic normalization, and safe blocked diagnostics.

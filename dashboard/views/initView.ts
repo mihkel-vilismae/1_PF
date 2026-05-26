@@ -155,7 +155,11 @@ function renderSchedulerEndpointTerminal(entries = []) {
     <section class="scheduler-endpoint-terminal" aria-label="Live cron endpoint call log">
       <div class="scheduler-endpoint-terminal__header">
         <h4>cron endpoint / row live log</h4>
-        <span>${escapeHtml(String(entries.length))} entries</span>
+        <div class="scheduler-endpoint-terminal__header-actions">
+          <span>${escapeHtml(String(entries.length))} entries</span>
+          <button class="button button--ghost scheduler-endpoint-terminal__control" type="button" data-scheduler-endpoint-copy-all>copy all</button>
+          <button class="button button--ghost scheduler-endpoint-terminal__control" type="button" data-scheduler-endpoint-clear-all>clear</button>
+        </div>
       </div>
       <div class="scheduler-endpoint-terminal__body" role="log" aria-live="polite">
         ${rows}
@@ -166,6 +170,7 @@ function renderSchedulerEndpointTerminal(entries = []) {
 
 // Renders one compact terminal row for endpoint traffic or actual cron row execution.
 function renderSchedulerEndpointTerminalRow(entry) {
+  const rowId = String(entry.id ?? '');
   const isCronRowCall = entry.actualCronRowCall === true || String(entry.type ?? '').startsWith('cron-run');
   const statusText = isCronRowCall
     ? (entry.type === 'cron-run-failed' ? 'ROW FAIL' : 'ROW OK')
@@ -178,6 +183,7 @@ function renderSchedulerEndpointTerminalRow(entry) {
       <span class="scheduler-endpoint-terminal__method">${escapeHtml(entry.method ?? '')}</span>
       <span class="scheduler-endpoint-terminal__endpoint">${escapeHtml(entry.endpoint ?? '')}</span>
       <span class="scheduler-endpoint-terminal__message">${escapeHtml(entry.message ?? '')}</span>
+      <button class="button button--ghost scheduler-endpoint-terminal__expand" type="button" data-scheduler-endpoint-row-expand="${escapeAttribute(rowId)}">expand row</button>
     </div>
   `;
 }

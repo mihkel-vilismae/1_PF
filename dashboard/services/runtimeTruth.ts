@@ -325,6 +325,33 @@ export function setSimulationValue(key: string, value: boolean | number | string
   });
 }
 
+
+// Clears the View A scheduler endpoint/row live terminal log.
+export function clearSchedulerEndpointLog(): void {
+  patchState((draft) => {
+    draft.schedulerEmulator ??= {};
+    draft.schedulerEmulator.endpointLog = [];
+  });
+}
+
+// Opens one scheduler endpoint/row live log entry in the shared large modal.
+export function openSchedulerEndpointLogRow(rowId: string | null | undefined): void {
+  if (!rowId) {
+    return;
+  }
+  const entries = Array.isArray(state.schedulerEmulator?.endpointLog) ? state.schedulerEmulator.endpointLog : [];
+  const entry = entries.find((candidate) => String(candidate?.id ?? '') === String(rowId));
+  if (!entry) {
+    return;
+  }
+  openModal({
+    kind: 'scheduler-endpoint-row',
+    title: 'Cron endpoint / row live log entry',
+    subtitle: 'Full untruncated scheduler endpoint or cron row evidence.',
+    entry: structuredClone(entry),
+  });
+}
+
 // Stores the editable View A CronEmulator crontab textarea value.
 export function setSchedulerEditableCrontab(value: string): void {
   patchState((draft) => {

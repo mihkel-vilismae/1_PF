@@ -16,6 +16,8 @@ import {
   seedDemoState,
   selectDatabaseViewerTable,
   setActiveView,
+  clearSchedulerEndpointLog,
+  openSchedulerEndpointLogRow,
   toggleBackendStatusInspectMode,
   toggleInspectMode,
   toggleMarkedForRemoval,
@@ -253,6 +255,31 @@ function render() {
   });
 }
 
+// Copies the scheduler endpoint/row live log as readable JSON for debugging.
+async function copySchedulerEndpointLogToClipboard(): Promise<void> {
+  const entries = Array.isArray(getState().schedulerEmulator?.endpointLog) ? getState().schedulerEmulator.endpointLog : [];
+  const payload = JSON.stringify({
+    exportedAt: new Date().toISOString(),
+    source: 'cron endpoint / row live log',
+    count: entries.length,
+    entries,
+  }, null, 2);
+
+  try {
+    await navigator.clipboard.writeText(payload);
+    pushHistory('SCHEDULER', 'success', 'Cron endpoint / row live log copied to clipboard.', {
+      action: 'copy-scheduler-endpoint-log',
+      entryCount: entries.length,
+    });
+  } catch (error) {
+    pushHistory('SCHEDULER', 'error', 'Cron endpoint / row live log copy failed.', {
+      action: 'copy-scheduler-endpoint-log',
+      entryCount: entries.length,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+
 // Builds the fixed top-right frontend/backend version display.
 function renderVersionBadge(frontendVersion: string, backendState: BackendVersionState): string {
   const backendText = getBackendVersionText(backendState);
@@ -365,6 +392,25 @@ function bindEvents() {
       if (event.target === backdrop) {
         closeModal();
       }
+    });
+  });
+
+  app.querySelectorAll<HTMLButtonElement>('[data-scheduler-endpoint-copy-all]').forEach((button) => {
+    button.addEventListener('click', () => {
+      copySchedulerEndpointLogToClipboard();
+    });
+  });
+
+  app.querySelectorAll<HTMLButtonElement>('[data-scheduler-endpoint-clear-all]').forEach((button) => {
+    button.addEventListener('click', () => {
+      clearSchedulerEndpointLog();
+      pushHistory('SCHEDULER', 'info', 'Cron endpoint / row live log cleared.', { action: 'clear-scheduler-endpoint-log' });
+    });
+  });
+
+  app.querySelectorAll<HTMLButtonElement>('[data-scheduler-endpoint-row-expand]').forEach((button) => {
+    button.addEventListener('click', () => {
+      openSchedulerEndpointLogRow(button.dataset.schedulerEndpointRowExpand);
     });
   });
 

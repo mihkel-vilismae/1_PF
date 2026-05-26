@@ -238,6 +238,9 @@ test('3A CronEmulator actions call emulator endpoints and only get-active update
     const html = renderInitView(harness.state);
     assert.match(html, /cron endpoint \/ row live log/);
     assert.match(html, /scheduler-endpoint-terminal__row--response/);
+    assert.match(html, /data-scheduler-endpoint-copy-all/);
+    assert.match(html, /data-scheduler-endpoint-clear-all/);
+    assert.match(html, /data-scheduler-endpoint-row-expand=/);
     assert.match(html, /\/api\/init\/cron\/emulator\/crontab/);
   } finally {
     global.fetch = originalFetch;
@@ -263,6 +266,7 @@ test('3A scheduler terminal renders actual cron row call evidence with highlight
   const html = renderInitView(state);
   assert.match(html, /ROW OK/);
   assert.match(html, /scheduler-endpoint-terminal__row--cron-run-success/);
+  assert.match(html, /data-scheduler-endpoint-row-expand="cron-run:line-2:2026-05-26T02:01:00:0:success"/);
   assert.match(html, /playback_worker executed/);
 });
 

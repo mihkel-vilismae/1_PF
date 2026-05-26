@@ -66,12 +66,21 @@ export function renderModal(modal: ModalData | null | undefined): string {
   const title = modal.title ?? 'Details';
   const subtitle = modal.subtitle ?? '';
   const isNewAuthLogin = isNewAuthLoginModalKind(modal.kind);
-  const kindLabel = modal.kind === 'log' ? 'Log entry' : isNewAuthLogin ? 'New auth login' : 'Event history';
+  const isSchedulerEndpointRow = modal.kind === 'scheduler-endpoint-row';
+  const kindLabel = modal.kind === 'log'
+    ? 'Log entry'
+    : isNewAuthLogin
+      ? 'New auth login'
+      : isSchedulerEndpointRow
+        ? 'Scheduler terminal row'
+        : 'Event history';
   const content = modal.kind === 'log'
     ? renderLogModalContent(modal.entry ?? {})
     : isNewAuthLogin
       ? renderNewAuthLoginModalContent(modal, modal.kind === 'new-auth-login-v2' ? 'v2' : 'v1')
-      : renderHistoryModalContent(modal.entry ?? {});
+      : isSchedulerEndpointRow
+        ? renderSchedulerEndpointRowModalContent(modal.entry ?? {})
+        : renderHistoryModalContent(modal.entry ?? {});
   const describedBy = subtitle ? ' aria-describedby="modal-subtitle"' : '';
   const versionAttribute = modal.kind === 'new-auth-login-v2' ? ' data-new-auth-modal-version="2"' : '';
   const panel = `
@@ -291,6 +300,14 @@ function requestedInputLabelForPromptKind(kind: string | null | undefined): stri
     default:
       return null;
   }
+}
+
+// Renders a scheduler terminal row as complete JSON with no compact-row truncation.
+function renderSchedulerEndpointRowModalContent(entry: LogEntry | Record<string, unknown>): string {
+  return renderModalSection(
+    'Full row data',
+    `<pre class="modal-panel__json modal-panel__json--untruncated">${escapeHtml(formatPayload(entry))}</pre>`,
+  );
 }
 
 // Renders detailed request and response context for a log-entry modal.

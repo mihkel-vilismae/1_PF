@@ -669,6 +669,23 @@ code {
   text-transform: uppercase;
 }
 
+.scheduler-endpoint-terminal__header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.45rem;
+}
+
+.scheduler-endpoint-terminal__control,
+.scheduler-endpoint-terminal__expand {
+  min-height: 1.75rem;
+  padding: 0.28rem 0.55rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
 .scheduler-endpoint-terminal__header h4 {
   margin: 0;
   color: var(--text);
@@ -694,7 +711,7 @@ code {
 
 .scheduler-endpoint-terminal__row {
   display: grid;
-  grid-template-columns: minmax(4.8rem, max-content) minmax(4.6rem, max-content) minmax(3.2rem, max-content) minmax(10rem, 0.7fr) minmax(14rem, 1fr);
+  grid-template-columns: minmax(4.8rem, max-content) minmax(4.6rem, max-content) minmax(3.2rem, max-content) minmax(10rem, 0.7fr) minmax(14rem, 1fr) minmax(6.8rem, max-content);
   gap: 0.55rem;
   align-items: start;
   min-width: 0;
@@ -742,6 +759,18 @@ code {
 
 .scheduler-endpoint-terminal__endpoint,
 .scheduler-endpoint-terminal__message {
+  overflow-wrap: anywhere;
+}
+
+.scheduler-endpoint-terminal__expand {
+  align-self: center;
+  justify-self: end;
+  white-space: nowrap;
+}
+
+.modal-panel__json--untruncated {
+  max-height: 70vh;
+  white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 
@@ -1706,12 +1735,23 @@ body.modal-open {
 
 @media (max-width: 760px) {
   .shell { padding: 0.7rem; }
+  .scheduler-endpoint-terminal__header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .scheduler-endpoint-terminal__header-actions {
+    justify-content: flex-start;
+  }
   .scheduler-endpoint-terminal__row {
     grid-template-columns: minmax(4.6rem, max-content) minmax(4.5rem, max-content) minmax(3rem, max-content);
   }
   .scheduler-endpoint-terminal__endpoint,
-  .scheduler-endpoint-terminal__message {
+  .scheduler-endpoint-terminal__message,
+  .scheduler-endpoint-terminal__expand {
     grid-column: 1 / -1;
+  }
+  .scheduler-endpoint-terminal__expand {
+    justify-self: start;
   }
 }
 
