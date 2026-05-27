@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.6.5 - 2026-05-27 20:07 EEST
+
+- Added `test.example.env` with redacted credentials and isolated test-mode runtime paths under `test_runtime_data/`, including downloads, logs, iCloudPD cookie storage, private raw-stdio log storage, and `test_photo_frame.sqlite`.
+- Updated `example.env` log paths so real/example logs live under `runtime_data/logs` instead of the root `logs` folder.
+- Preserved backend routes, dashboard cards, Test/Real Mode visibility behavior, auth/iCloudPD execution behavior, scheduler/cron behavior, pipeline behavior, playback behavior, and database runtime logic.
+
 ## 0.6.4 - 2026-05-27 18:39 EEST
 
 - Split View B B2 rendering by selected dashboard mode: Test Mode shows only the mock/generated `B2` download action, while Real Mode shows only `B2-REAL_DOWNLOAD`.
