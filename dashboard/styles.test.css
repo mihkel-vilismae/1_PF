@@ -1,18 +1,30 @@
 /*
  * Test Mode-specific dashboard styling for PF_login.
  * Contains overrides and theme rules applied only when the dashboard visual mode is "test".
- * It provides the yellowish background and amber accents distinct to Test Mode.
+ * It makes Test Mode read as a warm amber/yellow operator environment.
  */
 
-/* Test Mode background gradients */
+/* Test Mode amber design tokens */
 body[data-dashboard-visual-mode="test"] {
+  --bg: #181004;
+  --bg-elevated: rgba(53, 35, 10, 0.94);
+  --bg-soft: rgba(74, 46, 11, 0.72);
+  --line: rgba(251, 191, 36, 0.34);
+  --line-strong: rgba(251, 191, 36, 0.56);
+  --text: #fff7ed;
+  --muted: #f6d49b;
+  --heading: #fffbeb;
+  --accent: #facc15;
+  --accent-strong: #f59e0b;
+  --accent-soft: rgba(250, 204, 21, 0.24);
   background:
-    radial-gradient(circle at top left, rgba(251, 191, 36, 0.22), transparent 24%),
-    radial-gradient(circle at top right, rgba(245, 158, 11, 0.18), transparent 20%),
-    linear-gradient(180deg, #16100a 0%, #090704 100%);
+    radial-gradient(circle at 12% 4%, rgba(254, 240, 138, 0.26), transparent 24%),
+    radial-gradient(circle at 78% 0%, rgba(245, 158, 11, 0.32), transparent 26%),
+    radial-gradient(circle at 52% 55%, rgba(180, 83, 9, 0.2), transparent 34%),
+    linear-gradient(180deg, #332006 0%, #1c1204 44%, #090704 100%);
 }
 
-/* Test Mode border accents for common dashboard surfaces */
+/* Test Mode shell-wide amber surfaces */
 body[data-dashboard-visual-mode="test"] .brand-card,
 body[data-dashboard-visual-mode="test"] .nav-card,
 body[data-dashboard-visual-mode="test"] .side-panel,
@@ -23,11 +35,132 @@ body[data-dashboard-visual-mode="test"] .selector-card,
 body[data-dashboard-visual-mode="test"] .notice,
 body[data-dashboard-visual-mode="test"] .worker-row,
 body[data-dashboard-visual-mode="test"] .toggle-card {
-  border-color: rgba(251, 191, 36, 0.28);
+  border-color: rgba(251, 191, 36, 0.42);
+  background:
+    linear-gradient(135deg, rgba(74, 46, 11, 0.9), rgba(24, 16, 4, 0.92));
+  box-shadow:
+    0 0 0 1px rgba(251, 191, 36, 0.1),
+    0 24px 60px rgba(25, 12, 2, 0.48);
 }
 
-/* Test Mode amber accent for eyebrows and code blocks */
+/* Test Mode navigation and header identity */
+body[data-dashboard-visual-mode="test"] .topbar,
+body[data-dashboard-visual-mode="test"] .brand-card,
+body[data-dashboard-visual-mode="test"] .nav-card {
+  background:
+    linear-gradient(135deg, rgba(92, 56, 10, 0.96), rgba(38, 25, 7, 0.96));
+}
+
+body[data-dashboard-visual-mode="test"] .nav-link:hover,
+body[data-dashboard-visual-mode="test"] .nav-link--active {
+  border-color: rgba(250, 204, 21, 0.52);
+  background: linear-gradient(135deg, rgba(250, 204, 21, 0.24), rgba(146, 64, 14, 0.24));
+}
+
+body[data-dashboard-visual-mode="test"] .nav-link__code {
+  color: #241200;
+  background: linear-gradient(135deg, #fde047, #f59e0b);
+}
+
+/* Test Mode text accents */
 body[data-dashboard-visual-mode="test"] .eyebrow,
-body[data-dashboard-visual-mode="test"] .card__code {
-  color: var(--amber);
+body[data-dashboard-visual-mode="test"] .card__code,
+body[data-dashboard-visual-mode="test"] .history-item__meta,
+body[data-dashboard-visual-mode="test"] .log-entry__meta {
+  color: #fde68a;
+}
+
+body[data-dashboard-visual-mode="test"] code,
+body[data-dashboard-visual-mode="test"] .result-json {
+  color: #fef3c7;
+  border-color: rgba(251, 191, 36, 0.28);
+  background: rgba(36, 20, 4, 0.66);
+}
+
+/* Test Mode panels, logs, and definition rows */
+body[data-dashboard-visual-mode="test"] .definition-row,
+body[data-dashboard-visual-mode="test"] .log-surface,
+body[data-dashboard-visual-mode="test"] .result-surface,
+body[data-dashboard-visual-mode="test"] .result-json-block,
+body[data-dashboard-visual-mode="test"] .history-item,
+body[data-dashboard-visual-mode="test"] .log-entry,
+body[data-dashboard-visual-mode="test"] .button-row,
+body[data-dashboard-visual-mode="test"] .inline-field,
+body[data-dashboard-visual-mode="test"] .preview-frame {
+  border-color: rgba(251, 191, 36, 0.3);
+  background: rgba(36, 20, 4, 0.6);
+}
+
+body[data-dashboard-visual-mode="test"] .view-hero {
+  border-color: rgba(251, 191, 36, 0.48);
+  background:
+    radial-gradient(circle at top right, rgba(250, 204, 21, 0.2), transparent 30%),
+    linear-gradient(135deg, rgba(92, 56, 10, 0.94), rgba(24, 16, 4, 0.94));
+}
+
+body[data-dashboard-visual-mode="test"] .preview-frame__content {
+  background: radial-gradient(circle at top center, rgba(245, 158, 11, 0.18), transparent 40%), #0f0701;
+}
+
+/* Test Mode buttons and compact badges */
+body[data-dashboard-visual-mode="test"] .button--primary {
+  color: #241200;
+  background: linear-gradient(135deg, #fef08a, #f59e0b);
+}
+
+body[data-dashboard-visual-mode="test"] .button--secondary,
+body[data-dashboard-visual-mode="test"] .button--ghost,
+body[data-dashboard-visual-mode="test"] .hero-pill,
+body[data-dashboard-visual-mode="test"] .pill,
+body[data-dashboard-visual-mode="test"] .mini-badge,
+body[data-dashboard-visual-mode="test"] .screen-indicator,
+body[data-dashboard-visual-mode="test"] .history-item__status-chip,
+body[data-dashboard-visual-mode="test"] .log-entry__status-chip {
+  color: #fffbeb;
+  border-color: rgba(251, 191, 36, 0.32);
+  background: rgba(74, 46, 11, 0.72);
+}
+
+body[data-dashboard-visual-mode="test"] .button:hover:not(:disabled) {
+  border-color: rgba(254, 240, 138, 0.66);
+}
+
+/* Test Mode keeps pending markers prominent over amber surfaces */
+body[data-dashboard-visual-mode="test"] .card--pending {
+  box-shadow:
+    0 0 0 2px rgba(253, 224, 71, 0.95),
+    0 0 28px rgba(245, 158, 11, 0.2),
+    0 24px 60px rgba(25, 12, 2, 0.48);
+}
+
+/* Test Mode version badge and modal surfaces */
+body[data-dashboard-visual-mode="test"] .version-badge,
+body[data-dashboard-visual-mode="test"] .modal-card {
+  color: rgba(255, 251, 235, 0.86);
+  border-color: rgba(251, 191, 36, 0.28);
+  background: rgba(36, 20, 4, 0.7);
+}
+
+/* Test Mode keeps success/error semantics readable without returning to blue */
+body[data-dashboard-visual-mode="test"] .status-badge--info {
+  color: #fef3c7;
+  border-color: rgba(251, 191, 36, 0.28);
+  background: rgba(146, 64, 14, 0.26);
+}
+
+body[data-dashboard-visual-mode="test"] .result-surface--success,
+body[data-dashboard-visual-mode="test"] .status-badge--success,
+body[data-dashboard-visual-mode="test"] .history-item--success .history-item__status-chip,
+body[data-dashboard-visual-mode="test"] .log-entry--success .log-entry__status-chip {
+  color: #dcfce7;
+  border-color: rgba(74, 222, 128, 0.42);
+  background: rgba(20, 83, 45, 0.38);
+}
+
+body[data-dashboard-visual-mode="test"] .status-badge--running,
+body[data-dashboard-visual-mode="test"] .history-item--warning .history-item__status-chip,
+body[data-dashboard-visual-mode="test"] .log-entry--warning .log-entry__status-chip {
+  color: #fef3c7;
+  border-color: rgba(251, 191, 36, 0.58);
+  background: rgba(113, 63, 18, 0.48);
 }

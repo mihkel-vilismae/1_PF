@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.6.1 - 2026-05-27 13:58 EEST
+
+- Strengthened Test Mode styling so the whole dashboard reads as a warm amber/yellow test environment instead of the Real Mode blue/dark theme with small yellow accents.
+- Updated `dashboard/styles.test.css` with Test Mode design tokens, amber body gradients, warm sidebar/topbar/card/log surfaces, amber navigation accents, yellow primary buttons, and readable Test Mode badges.
+- Kept Real Mode styling unchanged and preserved dashboard layout, button labels, data-action values, backend routes, authentication/iCloudPD behavior, download behavior, scheduler/cron behavior, pipeline behavior, playback behavior, database actions, and runtime behavior.
+
 ## 0.6.0 - 2026-05-27 12:50 EEST
 
 - Organized mode-specific styling: moved Test Mode overrides into `dashboard/styles.test.css` and created `dashboard/styles.real.css` to isolate real-mode adjustments, importing both from the base `styles.css` after shared rules. Removed embedded test-mode overrides from the shared stylesheet to prevent accidental drift.
