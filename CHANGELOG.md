@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.6.0 - 2026-05-27 12:50 EEST
+
+- Organized mode-specific styling: moved Test Mode overrides into `dashboard/styles.test.css` and created `dashboard/styles.real.css` to isolate real-mode adjustments, importing both from the base `styles.css` after shared rules. Removed embedded test-mode overrides from the shared stylesheet to prevent accidental drift.
+- Added visual pending-marker borders on incomplete or unverified cards (B3, B4, B5, D1–D4). The new `card--pending` class applies a warning‑colored outline without affecting layout or click behavior. These markers help operators see which areas require further implementation or verification.
+- Added a concise visual mode banner in the dashboard top bar. When a visual mode is selected, the banner displays “Test Mode” or “Real Mode” instead of the default hybrid description, ensuring the current visual mode is visible in text and not only through background color.
+- Documented the pending-marker rationale in `docs/CARD_BUTTON_IMPLEMENTATION_STATUS.md`, listing which cards have pending borders and why.
+- Preserved backend routes, API payloads, authentication/iCloudPD behavior, download logic (both mock and real), scheduler/cron behavior, pipeline stages, playback behavior, database actions, and the shared dashboard structure unchanged.
+
 ## 0.5.44 - 2026-05-27 12:38 EEST
 
 - Added the first frontend-only Test Mode / Real Mode startup gate so operators must choose a visual mode before the shared dashboard becomes visible.
