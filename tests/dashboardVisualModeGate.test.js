@@ -8,7 +8,10 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 const appSource = readFileSync('dashboard/app.ts', 'utf8');
+const indexSource = readFileSync('dashboard/index.html', 'utf8');
 const stylesSource = readFileSync('dashboard/styles.css', 'utf8');
+const testModeStylesSource = readFileSync('dashboard/styles.test.css', 'utf8');
+const realModeStylesSource = readFileSync('dashboard/styles.real.css', 'utf8');
 
 test('dashboard startup gate exposes Test Mode and Real Mode as frontend-only choices', () => {
   assert.match(appSource, /type DashboardVisualMode = 'test' \| 'real'/);
@@ -29,7 +32,11 @@ test('dashboard startup gate uses shared dashboard markup instead of duplicated 
 });
 
 test('dashboard visual mode CSS keeps mode styling presentation-only', () => {
-  assert.match(stylesSource, /body\[data-dashboard-visual-mode="test"\]/);
+  assert.match(indexSource, /href="\.\/styles\.css"/);
+  assert.match(indexSource, /href="\.\/styles\.test\.css"/);
+  assert.match(indexSource, /href="\.\/styles\.real\.css"/);
+  assert.match(testModeStylesSource, /body\[data-dashboard-visual-mode="test"\]/);
+  assert.match(realModeStylesSource, /Real Mode intentionally has no overrides at this time/);
   assert.match(stylesSource, /\.shell--mode-gated/);
   assert.match(stylesSource, /\.mode-gate/);
   assert.match(stylesSource, /Mode styles do not change backend calls, runtime actions, or dashboard behavior/);

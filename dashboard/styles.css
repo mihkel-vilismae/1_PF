@@ -2130,11 +2130,8 @@ body[data-dashboard-visual-mode="unselected"] {
 }
 
 /* ============================================================
- * Mode-specific theme imports
- * The Test Mode and Real Mode styles are loaded separately to
- * isolate yellow test theme overrides and any future real-mode
- * adjustments. These imports must appear after all base styles
- * so that mode-specific rules can override as needed.
+ * Mode-specific theme load path
+ * Mode styles do not change backend calls, runtime actions, or dashboard behavior.
+ * dashboard/index.html links styles.test.css and styles.real.css after this shared
+ * stylesheet so visual overrides load in the intended presentation-only order.
  */
-@import url("./styles.test.css");
-@import url("./styles.real.css");

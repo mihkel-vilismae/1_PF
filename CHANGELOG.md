@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.6.2 - 2026-05-27 15:49 EEST
+
+- Fixed the Test Mode / Real Mode stylesheet load path by linking `dashboard/styles.test.css` and `dashboard/styles.real.css` from `dashboard/index.html` after the shared stylesheet instead of relying on trailing CSS `@import` statements.
+- Updated the visual-mode static test to verify the explicit HTML link graph and the mode-specific CSS files directly.
+- Preserved backend routes, authentication/iCloudPD behavior, downloads, scheduler/cron behavior, pipeline behavior, playback behavior, database actions, runtime truth behavior, and the shared dashboard mode-selection logic.
+
 ## 0.6.1 - 2026-05-27 13:58 EEST
 
 - Strengthened Test Mode styling so the whole dashboard reads as a warm amber/yellow test environment instead of the Real Mode blue/dark theme with small yellow accents.
