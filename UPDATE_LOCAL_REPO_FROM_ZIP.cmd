@@ -1,8 +1,10 @@
+REM Drag-and-drop launcher for replacing this repo from a ZIP.
+REM Delegates copy, backup, extraction, and safety checks to PowerShell.
+REM Keeps the terminal open after completion so operators can read results.
+REM Intended for Windows operator use from the target repo folder.
 @echo off
-setlocal EnableExtensions
 
-REM Drag a repo ZIP onto this file.
-REM This launcher intentionally keeps the terminal open after the script finishes.
+setlocal EnableExtensions
 
 set "SCRIPT_DIR=%~dp0"
 set "SCRIPT_DIR=%SCRIPT_DIR:~0,-1%"
