@@ -2002,3 +2002,139 @@ body.modal-open {
   padding: 0.35rem 0.7rem;
   letter-spacing: 0.04em;
 }
+
+/*
+ * Styles the frontend-only dashboard mode gate and mode-specific shell markers.
+ * The gate hides the shared dashboard visually until an operator selects Test or Real Mode.
+ * Mode styles do not change backend calls, runtime actions, or dashboard behavior.
+ */
+body[data-dashboard-visual-mode="unselected"] {
+  overflow: hidden;
+}
+
+body[data-dashboard-visual-mode="test"] {
+  background:
+    radial-gradient(circle at top left, rgba(251, 191, 36, 0.22), transparent 24%),
+    radial-gradient(circle at top right, rgba(245, 158, 11, 0.18), transparent 20%),
+    linear-gradient(180deg, #16100a 0%, #090704 100%);
+}
+
+body[data-dashboard-visual-mode="test"] .brand-card,
+body[data-dashboard-visual-mode="test"] .nav-card,
+body[data-dashboard-visual-mode="test"] .side-panel,
+body[data-dashboard-visual-mode="test"] .topbar,
+body[data-dashboard-visual-mode="test"] .card,
+body[data-dashboard-visual-mode="test"] .stage-card,
+body[data-dashboard-visual-mode="test"] .selector-card,
+body[data-dashboard-visual-mode="test"] .notice,
+body[data-dashboard-visual-mode="test"] .worker-row,
+body[data-dashboard-visual-mode="test"] .toggle-card {
+  border-color: rgba(251, 191, 36, 0.28);
+}
+
+body[data-dashboard-visual-mode="test"] .eyebrow,
+body[data-dashboard-visual-mode="test"] .card__code {
+  color: var(--amber);
+}
+
+.shell--mode-gated {
+  pointer-events: none;
+  user-select: none;
+  filter: blur(10px) saturate(0.72);
+  transform: scale(0.985);
+  opacity: 0.24;
+}
+
+.mode-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: clamp(1rem, 4vw, 3rem);
+  background:
+    radial-gradient(circle at 20% 20%, rgba(94, 234, 212, 0.16), transparent 28%),
+    radial-gradient(circle at 80% 10%, rgba(251, 191, 36, 0.16), transparent 22%),
+    rgba(2, 8, 23, 0.72);
+  backdrop-filter: blur(20px);
+}
+
+.mode-gate__panel {
+  width: min(760px, 100%);
+  padding: clamp(1.3rem, 3vw, 2rem);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: var(--radius-xl);
+  background: rgba(15, 23, 42, 0.94);
+  box-shadow: var(--surface-shadow);
+}
+
+.mode-gate__panel h1 {
+  margin: 0;
+  color: var(--heading);
+  font-size: clamp(1.8rem, 4vw, 3rem);
+}
+
+.mode-gate__copy {
+  margin: 0.85rem 0 1.35rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.mode-gate__actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.mode-choice {
+  display: grid;
+  gap: 0.45rem;
+  min-height: 9rem;
+  padding: 1.15rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: var(--radius-lg);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  background: rgba(15, 23, 42, 0.82);
+  transition: 180ms ease;
+}
+
+.mode-choice:hover,
+.mode-choice:focus-visible {
+  transform: translateY(-2px);
+  outline: none;
+  border-color: rgba(94, 234, 212, 0.52);
+  box-shadow: 0 18px 44px rgba(2, 8, 23, 0.38);
+}
+
+.mode-choice span {
+  color: var(--heading);
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.mode-choice small {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.mode-choice--test {
+  border-color: rgba(251, 191, 36, 0.42);
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(15, 23, 42, 0.88));
+}
+
+.mode-choice--real {
+  border-color: rgba(94, 234, 212, 0.38);
+  background: linear-gradient(135deg, rgba(94, 234, 212, 0.16), rgba(15, 23, 42, 0.88));
+}
+
+@media (max-width: 720px) {
+  .mode-gate__actions {
+    grid-template-columns: 1fr;
+  }
+
+  .mode-choice {
+    min-height: 0;
+  }
+}

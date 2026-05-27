@@ -2,6 +2,7 @@
  * Renders the dashboard shell and binds browser-side UI interactions.
  * The frontend owns presentation state while backend routes provide runtime truth.
  * This file also displays component versions visible to operators.
+ * The startup visual mode gate is frontend-only and does not alter runtime behavior.
  */
 import { VIEW_ORDER } from './shared/constants.ts';
 import {
@@ -53,9 +54,11 @@ import { requestJson } from './services/apiClient.ts';
 
 const app = document.getElementById('app');
 declare const __APP_VERSION__: string;
+type DashboardVisualMode = 'test' | 'real';
 const TRANSIT_EVENT_NAME = 'dashboard:transit';
 const COPY_HISTORY_LABEL = 'copy all log';
 const SCHEDULER_RUN_LOG_POLL_MS = 5000;
+let dashboardVisualMode: DashboardVisualMode | null = null;
 type BackendVersionState = {
   status: 'checking' | 'ready' | 'unavailable';
   version: string | null;
@@ -99,12 +102,14 @@ function render() {
     E: renderDatabaseViewerView(state),
   }[state.activeView];
 
-  document.body.classList.toggle('modal-open', Boolean(state.modal));
+  document.body.classList.toggle('modal-open', Boolean(state.modal) || dashboardVisualMode === null);
   document.body.classList.toggle('show-marked-for-removal', Boolean(state.showMarkedForRemoval));
+  applyDashboardVisualModeClass(dashboardVisualMode);
 
   app.innerHTML = `
     ${renderVersionBadge(__APP_VERSION__, backendVersionState)}
-    <div class="shell">
+    ${dashboardVisualMode === null ? renderModeSelectionGate() : ''}
+    <div class="shell ${dashboardVisualMode === null ? 'shell--mode-gated' : ''}" ${dashboardVisualMode === null ? 'aria-hidden="true" inert' : ''}>
       <aside class="sidebar">
         <div class="brand-card">
           <p class="eyebrow">Photo frame operator workspace</p>
@@ -255,6 +260,36 @@ function render() {
   });
 }
 
+// Applies the frontend-only visual mode marker used by mode-specific CSS.
+function applyDashboardVisualModeClass(mode: DashboardVisualMode | null): void {
+  document.body.dataset.dashboardVisualMode = mode ?? 'unselected';
+}
+
+// Renders the startup mode chooser without changing backend/runtime execution.
+function renderModeSelectionGate(): string {
+  return `
+    <section class="mode-gate" role="dialog" aria-modal="true" aria-labelledby="modeGateTitle" aria-describedby="modeGateDescription">
+      <div class="mode-gate__panel">
+        <p class="eyebrow">Startup choice</p>
+        <h1 id="modeGateTitle">Choose dashboard mode</h1>
+        <p id="modeGateDescription" class="mode-gate__copy">
+          Select a visual operating mode before entering the shared dashboard. This choice does not trigger real auth, downloads, scheduler actions, playback, or backend behavior changes.
+        </p>
+        <div class="mode-gate__actions" aria-label="Dashboard mode choices">
+          <button class="mode-choice mode-choice--test" type="button" data-dashboard-visual-mode="test">
+            <span>Test Mode</span>
+            <small>Use the review/test visual theme. Runtime behavior stays unchanged.</small>
+          </button>
+          <button class="mode-choice mode-choice--real" type="button" data-dashboard-visual-mode="real">
+            <span>Real Mode</span>
+            <small>Use the production visual theme. Real actions still require their existing explicit controls.</small>
+          </button>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
 // Copies the scheduler endpoint/row live log as readable JSON for debugging.
 async function copySchedulerEndpointLogToClipboard(): Promise<void> {
   const entries = Array.isArray(getState().schedulerEmulator?.endpointLog) ? getState().schedulerEmulator.endpointLog : [];
@@ -338,6 +373,14 @@ async function loadBackendVersion(): Promise<void> {
 
 // Binds rendered controls to runtime-truth actions and local state updates.
 function bindEvents() {
+  app.querySelectorAll<HTMLButtonElement>('[data-dashboard-visual-mode]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const selectedMode = button.dataset.dashboardVisualMode === 'real' ? 'real' : 'test';
+      dashboardVisualMode = selectedMode;
+      render();
+    });
+  });
+
   app.querySelectorAll<HTMLElement>('[data-view]').forEach((button) => {
     button.addEventListener('click', () => {
       const id = button.dataset.view;

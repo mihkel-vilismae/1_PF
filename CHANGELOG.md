@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.5.44 - 2026-05-27 12:38 EEST
+
+- Added the first frontend-only Test Mode / Real Mode startup gate so operators must choose a visual mode before the shared dashboard becomes visible.
+- Added mode-specific frontend styling markers, including a Test Mode visual theme and an explicit unselected startup overlay.
+- Preserved backend routes, auth/iCloudPD behavior, download behavior, scheduler behavior, pipeline behavior, playback behavior, database behavior, and existing dashboard controls.
+- Bumped version metadata from v0.5.43 to v0.5.44 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.5.43 - 2026-05-27 12:25 EEST
 
 - Added `.codex/skills/mock-test-real-implementation-boundary/SKILL.md` as a reusable skill for safely separating visual mode, data source mode, behavior/execution mode, and safety/permission mode across mock/test versus real implementations.
