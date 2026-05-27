@@ -1,0 +1,4 @@
+interface:
+  display_name: "Test/Real Visual Mode Split"
+  short_description: "Add or audit the Test Mode / Real Mode startup visual split without behavior drift."
+  default_prompt: "Use $test-real-visual-mode-split for this PF_login Test Mode / Real Mode task and preserve the active immutable baseline boundaries."

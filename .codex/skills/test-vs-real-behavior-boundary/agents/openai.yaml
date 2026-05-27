@@ -1,0 +1,4 @@
+interface:
+  display_name: "Test-vs-Real Behavior Boundary"
+  short_description: "Plan future separation of test/mock behavior from real iCloudPD/auth/download behavior with evidence gates."
+  default_prompt: "Use $test-vs-real-behavior-boundary for this PF_login Test Mode / Real Mode task and preserve the active immutable baseline boundaries."

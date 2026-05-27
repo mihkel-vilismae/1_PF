@@ -1,0 +1,4 @@
+interface:
+  display_name: "Pending Card/Button Border Audit"
+  short_description: "Use View A/B/D status evidence to add and later retire pending visual borders per card/control."
+  default_prompt: "Use $pending-card-button-border-audit for this PF_login Test Mode / Real Mode task and preserve the active immutable baseline boundaries."

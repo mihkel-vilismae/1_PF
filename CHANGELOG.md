@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.5.42 - 2026-05-27 09:45 EEST
+
+- Added four `.codex/skills/` drafts for the upcoming Test Mode / Real Mode split: visual mode modal/state, mode-specific CSS architecture, pending card/button border audit, and future test-vs-real behavior boundaries.
+- Added `agents/openai.yaml` descriptors for each new skill so Codex/agent workflows can discover and invoke them consistently.
+- Updated `AGENTS.md` read-first guidance so future Test Mode / Real Mode work reads the new skills before changing UI, CSS, card/button markers, or behavior boundaries.
+- Preserved source/UI/runtime/backend behavior unchanged; this release is skill documentation and release metadata only.
+- Bumped version metadata from v0.5.41 to v0.5.42 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.5.41 - 2026-05-26 21:31 EEST
 
 - Added the dated user-observed View A/B/D card/button status snapshot under `docs/30_status_snapshots/2026-05-26/USER_OBSERVED_CARD_STATUS_AND_ISSUES_20260526_1457_EEST.md`.

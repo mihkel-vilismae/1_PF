@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mode-Specific CSS Architecture"
+  short_description: "Organize shared, Real Mode, and Test Mode CSS without duplicating dashboards."
+  default_prompt: "Use $mode-specific-css-architecture for this PF_login Test Mode / Real Mode task and preserve the active immutable baseline boundaries."
