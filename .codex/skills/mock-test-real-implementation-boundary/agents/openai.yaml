@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mock/Test vs Real Implementation Boundary"
+  short_description: "Keep mock/test/demo/simulation behavior safely separated from real backend, production, hardware, auth, download, scheduler, and side-effect behavior."
+  default_prompt: "Use $mock-test-real-implementation-boundary when adding or reviewing mock/test versus real behavior, and preserve explicit contracts, adapter boundaries, labels, and real-side-effect gates."

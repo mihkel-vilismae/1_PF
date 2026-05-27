@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.5.43 - 2026-05-27 12:25 EEST
+
+- Added `.codex/skills/mock-test-real-implementation-boundary/SKILL.md` as a reusable skill for safely separating visual mode, data source mode, behavior/execution mode, and safety/permission mode across mock/test versus real implementations.
+- Added the matching `agents/openai.yaml` descriptor so agent workflows can discover and invoke the new reusable skill.
+- Updated `AGENTS.md` read-first guidance so future Test/Real and mock/test-versus-real architecture work reads the reusable boundary skill alongside the PF_login-specific mode skills.
+- Preserved app source, UI runtime behavior, backend routes, auth, downloads, scheduler, pipeline, playback, and database behavior unchanged; this release is skill documentation and release metadata only.
+- Bumped version metadata from v0.5.42 to v0.5.43 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.5.42 - 2026-05-27 09:45 EEST
 
 - Added four `.codex/skills/` drafts for the upcoming Test Mode / Real Mode split: visual mode modal/state, mode-specific CSS architecture, pending card/button border audit, and future test-vs-real behavior boundaries.

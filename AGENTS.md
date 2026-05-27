@@ -10,7 +10,7 @@
   - `docs/DOC_LINK_AUDIT.md`
   - `docs/CARD_BUTTON_IMPLEMENTATION_STATUS.md` when working on View A/B/D cards, card buttons, button labels/actions, card/button implementation status, user-observed subjective assessments, or the related follow-up issue list.
   - `docs/30_status_snapshots/2026-05-26/USER_OBSERVED_CARD_STATUS_AND_ISSUES_20260526_1457_EEST.md` when working on user-observed View A/B/D subjective status snapshots, follow-up issue lists, or validation notes captured from manual/user testing. Treat it as less authoritative than code/tests/runtime evidence.
-  - `.codex/skills/test-real-visual-mode-split/SKILL.md`, `.codex/skills/mode-specific-css-architecture/SKILL.md`, `.codex/skills/pending-card-button-border-audit/SKILL.md`, and `.codex/skills/test-vs-real-behavior-boundary/SKILL.md` when working on the Test Mode / Real Mode visual split, mode CSS organization, pending card/button borders, or future test-vs-real behavior boundaries.
+  - `.codex/skills/test-real-visual-mode-split/SKILL.md`, `.codex/skills/mode-specific-css-architecture/SKILL.md`, `.codex/skills/pending-card-button-border-audit/SKILL.md`, `.codex/skills/test-vs-real-behavior-boundary/SKILL.md`, and `.codex/skills/mock-test-real-implementation-boundary/SKILL.md` when working on the Test Mode / Real Mode visual split, mode CSS organization, pending card/button borders, future test-vs-real behavior boundaries, or reusable mock/test versus real implementation architecture.
 - Use canonical numbered documentation folders for new documentation:
   - `docs/00_current_truth/` for verified or evidence-backed current truth only.
   - `docs/10_runbooks/` for operator/how-to procedures.
