@@ -1,6 +1,7 @@
 /*
- * Defines the dashboard visual system, layout, and component-level styling.
+ * Defines the shared and Real Mode dashboard visual system, layout, and component-level styling.
  * The stylesheet keeps operator surfaces dense, readable, and responsive.
+ * Test Mode and Real Mode specific overrides are imported at the end of this file.
  * It includes the fixed component version display used for build/runtime checks.
  */
 :root {
@@ -2012,30 +2013,6 @@ body[data-dashboard-visual-mode="unselected"] {
   overflow: hidden;
 }
 
-body[data-dashboard-visual-mode="test"] {
-  background:
-    radial-gradient(circle at top left, rgba(251, 191, 36, 0.22), transparent 24%),
-    radial-gradient(circle at top right, rgba(245, 158, 11, 0.18), transparent 20%),
-    linear-gradient(180deg, #16100a 0%, #090704 100%);
-}
-
-body[data-dashboard-visual-mode="test"] .brand-card,
-body[data-dashboard-visual-mode="test"] .nav-card,
-body[data-dashboard-visual-mode="test"] .side-panel,
-body[data-dashboard-visual-mode="test"] .topbar,
-body[data-dashboard-visual-mode="test"] .card,
-body[data-dashboard-visual-mode="test"] .stage-card,
-body[data-dashboard-visual-mode="test"] .selector-card,
-body[data-dashboard-visual-mode="test"] .notice,
-body[data-dashboard-visual-mode="test"] .worker-row,
-body[data-dashboard-visual-mode="test"] .toggle-card {
-  border-color: rgba(251, 191, 36, 0.28);
-}
-
-body[data-dashboard-visual-mode="test"] .eyebrow,
-body[data-dashboard-visual-mode="test"] .card__code {
-  color: var(--amber);
-}
 
 .shell--mode-gated {
   pointer-events: none;
@@ -2138,3 +2115,13 @@ body[data-dashboard-visual-mode="test"] .card__code {
     min-height: 0;
   }
 }
+
+/* ============================================================
+ * Mode-specific theme imports
+ * The Test Mode and Real Mode styles are loaded separately to
+ * isolate yellow test theme overrides and any future real-mode
+ * adjustments. These imports must appear after all base styles
+ * so that mode-specific rules can override as needed.
+ */
+@import url("./styles.test.css");
+@import url("./styles.real.css");

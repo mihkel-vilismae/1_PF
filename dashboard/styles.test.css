@@ -1,0 +1,33 @@
+/*
+ * Test Mode-specific dashboard styling for PF_login.
+ * Contains overrides and theme rules applied only when the dashboard visual mode is "test".
+ * It provides the yellowish background and amber accents distinct to Test Mode.
+ */
+
+/* Test Mode background gradients */
+body[data-dashboard-visual-mode="test"] {
+  background:
+    radial-gradient(circle at top left, rgba(251, 191, 36, 0.22), transparent 24%),
+    radial-gradient(circle at top right, rgba(245, 158, 11, 0.18), transparent 20%),
+    linear-gradient(180deg, #16100a 0%, #090704 100%);
+}
+
+/* Test Mode border accents for common dashboard surfaces */
+body[data-dashboard-visual-mode="test"] .brand-card,
+body[data-dashboard-visual-mode="test"] .nav-card,
+body[data-dashboard-visual-mode="test"] .side-panel,
+body[data-dashboard-visual-mode="test"] .topbar,
+body[data-dashboard-visual-mode="test"] .card,
+body[data-dashboard-visual-mode="test"] .stage-card,
+body[data-dashboard-visual-mode="test"] .selector-card,
+body[data-dashboard-visual-mode="test"] .notice,
+body[data-dashboard-visual-mode="test"] .worker-row,
+body[data-dashboard-visual-mode="test"] .toggle-card {
+  border-color: rgba(251, 191, 36, 0.28);
+}
+
+/* Test Mode amber accent for eyebrows and code blocks */
+body[data-dashboard-visual-mode="test"] .eyebrow,
+body[data-dashboard-visual-mode="test"] .card__code {
+  color: var(--amber);
+}
