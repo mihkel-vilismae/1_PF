@@ -1,7 +1,31 @@
 import assert from 'node:assert/strict';
-import test from 'node:test';
-import { getRawAuthState, resetAuthState, runAuthPreflight, selectAuthReadinessChecks, testAuthLoginByDownloadingSingleFile } from '../server/auth/authService.ts';
+import test, { beforeEach } from 'node:test';
+import { configureAuthServiceForTests, getRawAuthState, resetAuthState, runAuthPreflight, selectAuthReadinessChecks, testAuthLoginByDownloadingSingleFile } from '../server/auth/authService.ts';
 import { PROVIDER_OUTCOMES, createProviderRegistry } from '../server/auth/providers/providerRegistry.ts';
+
+/**
+ * Builds an in-memory auth persistence double so auth service unit tests stay
+ * isolated from platform-specific filesystem permissions and locks.
+ */
+function createMemoryAuthPersistence() {
+  let savedState = null;
+  return {
+    async load() {
+      return savedState;
+    },
+    async save(state) {
+      savedState = { ...state };
+      return savedState;
+    },
+    async clear() {
+      savedState = null;
+    },
+  };
+}
+
+beforeEach(() => {
+  configureAuthServiceForTests({ persistence: createMemoryAuthPersistence() });
+});
 
 function check(key, overrides = {}) {
   return {

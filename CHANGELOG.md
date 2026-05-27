@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.6.3 - 2026-05-27 17:22 EEST
+
+- Isolated `tests/authService.test.js` from platform-specific filesystem persistence by adding an in-memory auth persistence test double.
+- Fixed the mocked provider-failure regression where Windows `EPERM` could leak into the expected `icloud_login_failed` auth failure assertion.
+- Preserved backend auth behavior, provider-boundary honesty, secret redaction, frontend behavior, visual-mode CSS load paths, routes, action IDs, downloads, scheduler/cron behavior, pipeline behavior, playback behavior, database actions, and runtime truth behavior.
+- Bumped version metadata from v0.6.2 to v0.6.3 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.6.2 - 2026-05-27 15:49 EEST
 
 - Fixed the Test Mode / Real Mode stylesheet load path by linking `dashboard/styles.test.css` and `dashboard/styles.real.css` from `dashboard/index.html` after the shared stylesheet instead of relying on trailing CSS `@import` statements.
