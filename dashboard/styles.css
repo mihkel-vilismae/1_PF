@@ -519,6 +519,19 @@ code {
   background: rgba(248, 113, 113, 0.15);
   border-color: rgba(248, 113, 113, 0.35);
 }
+
+/*
+ * Pending card markers
+ *
+ * Cards annotated with `card--pending` represent areas of the dashboard that are unfinished,
+ * unverified, or slated for further review. These markers are purely visual cues and
+ * must not affect interaction. The border color uses the warning palette to stand out
+ * against both Real Mode and Test Mode backgrounds. A box-shadow is used instead of
+ * a border to avoid layout shifts and maintain consistent sizing.
+ */
+.card--pending {
+  box-shadow: 0 0 0 2px var(--warning), var(--surface-shadow);
+}
 .button--ghost {
   color: var(--muted);
   background: transparent;

@@ -37,7 +37,7 @@ export function renderRunningProcessView(state) {
       }
 
       <div class="section-grid ${disabled ? 'section-grid--muted' : ''}">
-        <article class="card ${mode === 'real' ? 'card--feature' : 'card--mock card--feature'}">
+        <article class="card ${mode === 'real' ? 'card--feature' : 'card--mock card--feature'} card--pending">
           <header class="card__header"><div><p class="card__code">D1</p><h3>Pipeline worker</h3></div><div class="card__header-tags">${renderSourceBadge(mode, mode.toUpperCase())}</div>${statusBadge(state.statusByKey.D1)}</header>
           <p class="card__copy">Sources: stage status & summary are computed; last run times come from the database.</p>
           <div class="worker-list">
@@ -61,7 +61,7 @@ export function renderRunningProcessView(state) {
         </article>
 
         <div class="section-grid section-grid--two">
-          <article class="card ${mode === 'real' ? '' : 'card--mock'}">
+          <article class="card ${mode === 'real' ? '' : 'card--mock'} card--pending">
             <header class="card__header"><div><p class="card__code">D2</p><h3>Playback worker</h3></div><div class="card__header-tags">${renderSourceBadge(mode, mode.toUpperCase())}</div>${statusBadge(state.statusByKey.D2)}</header>
             ${renderDefinitionList({
               Status: state.runningProcess.playbackWorker.status,
@@ -71,7 +71,7 @@ export function renderRunningProcessView(state) {
             })}
             <p class="card__copy">Sources: Status & summary are computed; Heartbeat comes from the worker heartbeat file; Current media comes from the database.</p>
           </article>
-          <article class="card ${mode === 'real' ? '' : 'card--mock'}">
+          <article class="card ${mode === 'real' ? '' : 'card--mock'} card--pending">
             <header class="card__header"><div><p class="card__code">D3</p><h3>Screen on-off worker</h3></div><div class="card__header-tags">${renderSourceBadge(mode, mode.toUpperCase())}</div>${statusBadge(state.statusByKey.D3)}</header>
             ${renderDefinitionList({
               Status: state.runningProcess.screenWorker.status,
@@ -86,7 +86,7 @@ export function renderRunningProcessView(state) {
         </div>
       </div>
 
-      <article class="card ${mode === 'real' ? '' : 'card--mock'}">
+      <article class="card ${mode === 'real' ? '' : 'card--mock'} card--pending">
         <header class="card__header"><div><p class="card__code">D4</p><h3>${mode === 'real' ? 'Monitor log' : 'Preview log'}</h3></div><div class="card__header-tags">${renderSourceBadge(mode, mode.toUpperCase())}</div></header>
         <p class="card__copy">Sources: Log entries are taken from the application log tail${mode === 'real' ? '' : '; in preview mode the log lines are simulated'}.</p>
         <div class="log-surface">${renderLogEntries(state.logs.D, { sourceKey: 'D' })}</div>

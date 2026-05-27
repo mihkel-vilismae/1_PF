@@ -69,7 +69,7 @@ export function renderTestView(state) {
         </article>
       </div>
 
-      <article class="card card--feature card--hybrid">
+      <article class="card card--feature card--hybrid card--pending">
         <header class="card__header card__header--tight">
           <div><p class="card__code">B3</p><h3>Pipeline stages</h3></div>
           <div class="card__header-tags">${renderSourceBadge('hybrid', 'HYBRID')}</div>
@@ -112,7 +112,7 @@ export function renderTestView(state) {
       </article>
 
       <div class="section-grid section-grid--two-uneven">
-        <article class="card card--real card--feature">
+        <article class="card card--real card--feature card--pending">
           <header class="card__header">
             <div><p class="card__code">B4</p><h3>Playback selection</h3></div>
             <div class="card__header-tags">${renderSourceBadge('real', 'REAL')}</div>
@@ -157,7 +157,7 @@ export function renderTestView(state) {
           <div class="log-surface">${renderLogEntries(state.logs.B4, { sourceKey: 'B4' })}</div>
         </article>
 
-        <article class="card card--hybrid card--feature">
+        <article class="card card--hybrid card--feature card--pending">
           <header class="card__header">
             <div><p class="card__code">B5</p><h3>Screen on-off simulation</h3></div>
             <div class="card__header-tags">${renderSourceBadge('hybrid', 'BACKEND SIMULATION')}</div>
