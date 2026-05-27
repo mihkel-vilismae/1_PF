@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.6.7 - 2026-05-27 22:20 EEST
+
+- Added additive Windows Playback and Raspberry Playback view shells after existing Views A-E.
+- Added queue-oriented playback preview surfaces with resolved-address text, fullscreen entry buttons, compact Download/Index/GPS/Geocode/Queue stage rows, three worker status cards, scheduler terminal placeholders, error-only terminal placeholders, and main runtime terminal placeholders.
+- Added `docs/OS_PLAYBACK_VIEWS_SLICE_1.md` and regression tests guarding the new view shell contract.
+- Preserved backend routes, Test/Real runtime path separation, existing A-E views, B4 rendering controls, scheduler/cron behavior, database behavior, auth/iCloudPD behavior, and playback selection behavior.
+
 ## 0.6.6 - 2026-05-27 20:18 EEST
 
 - Added runtime mode env routing so Test Mode database/download/log calls resolve into `test_runtime_data/`.

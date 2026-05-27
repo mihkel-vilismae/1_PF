@@ -50,6 +50,8 @@ import { renderTestView } from './views/testView.ts';
 import { renderLastRunView } from './views/lastRunView.ts';
 import { renderRunningProcessView } from './views/runningProcessView.ts';
 import { renderDatabaseViewerView } from './views/databaseViewerView.ts';
+import { renderOsPlaybackView } from './views/osPlaybackView.ts';
+import { OS_PLAYBACK_PLATFORMS, type OsPlaybackPlatform } from './services/osPlaybackViewModel.ts';
 import { requestJson, setDashboardRuntimeMode } from './services/apiClient.ts';
 
 const app = document.getElementById('app');
@@ -100,7 +102,9 @@ function render() {
     C: renderLastRunView(state),
     D: renderRunningProcessView(state),
     E: renderDatabaseViewerView(state),
-  }[state.activeView];
+    WIN: renderOsPlaybackView(state, OS_PLAYBACK_PLATFORMS.windows),
+    RPI: renderOsPlaybackView(state, OS_PLAYBACK_PLATFORMS.raspberry),
+  }[state.activeView] ?? renderInitView(state);
 
   document.body.classList.toggle('modal-open', Boolean(state.modal) || dashboardVisualMode === null);
   document.body.classList.toggle('show-marked-for-removal', Boolean(state.showMarkedForRemoval));
@@ -277,6 +281,7 @@ function applyDashboardVisualModeClass(mode: DashboardVisualMode | null): void {
 }
 
 // Renders the startup mode chooser without changing backend/runtime execution.
+// Choosing a visual mode does not trigger real auth, downloads, scheduler actions, playback, or backend behavior changes.
 function renderModeSelectionGate(): string {
   return `
     <section class="mode-gate" role="dialog" aria-modal="true" aria-labelledby="modeGateTitle" aria-describedby="modeGateDescription">
@@ -598,6 +603,14 @@ function bindEvents() {
     select.addEventListener('change', () => setSimulationValue('realDownloadRecentCount', Number(select.value || 1)));
   });
 
+
+  app.querySelectorAll<HTMLButtonElement>('[data-playback-view-fullscreen-platform]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const platform = button.dataset.playbackViewFullscreenPlatform as OsPlaybackPlatform | undefined;
+      requestOsPlaybackFullscreen(platform);
+    });
+  });
+
   app.querySelectorAll<HTMLButtonElement>('[data-playback-rendering-mode]').forEach((button) => {
     button.addEventListener('click', () => {
       const mode = button.dataset.playbackRenderingMode;
@@ -727,6 +740,29 @@ function setHistoryCopyStatus(status: 'idle' | 'copied' | 'failed'): void {
       render();
     }, 1600);
   }
+}
+
+
+// Requests browser fullscreen for the selected OS-specific playback stage.
+function requestOsPlaybackFullscreen(platform: OsPlaybackPlatform | undefined): void {
+  const normalizedPlatform = platform === OS_PLAYBACK_PLATFORMS.raspberry ? OS_PLAYBACK_PLATFORMS.raspberry : OS_PLAYBACK_PLATFORMS.windows;
+  window.setTimeout(() => {
+    const target = app.querySelector<HTMLElement>(`[data-os-playback-stage="${normalizedPlatform}"]`);
+    if (!target || typeof target.requestFullscreen !== 'function') {
+      pushHistory('PLAYBACK', 'warning', 'OS playback fullscreen was requested, but the browser did not expose a fullscreen target.', {
+        action: 'switch-os-playback-fullscreen',
+        platform: normalizedPlatform,
+      });
+      return;
+    }
+    void target.requestFullscreen().catch((error) => {
+      pushHistory('PLAYBACK', 'warning', 'OS playback fullscreen request was rejected by the browser.', {
+        action: 'switch-os-playback-fullscreen',
+        platform: normalizedPlatform,
+        message: error instanceof Error ? error.message : String(error),
+      });
+    });
+  }, 0);
 }
 
 // Requests browser fullscreen for the Windows playback preview stage after rendering updates.

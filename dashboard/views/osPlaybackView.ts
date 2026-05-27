@@ -1,0 +1,165 @@
+/*
+ * Renders the Windows and Raspberry OS playback view shells.
+ * This slice is additive: it presents the final playback layout contract without
+ * changing backend playback selection, scheduler execution, or existing A-E views.
+ */
+import { renderSourceBadge } from '../services/renderers.ts';
+import { escapeHtml } from '../services/renderers/sharedRendererUtils.ts';
+import {
+  buildOsPlaybackViewModel,
+  OS_PLAYBACK_PLATFORMS,
+  type OsPlaybackPlatform,
+  type PlaybackLogEntryViewModel,
+  type PlaybackStageViewModel,
+  type PlaybackWorkerViewModel,
+} from '../services/osPlaybackViewModel.ts';
+
+type RuntimeState = Parameters<typeof buildOsPlaybackViewModel>[0];
+
+/**
+ * Renders one OS-specific playback view from the shared playback view model.
+ */
+export function renderOsPlaybackView(state: RuntimeState, platform: OsPlaybackPlatform): string {
+  const view = buildOsPlaybackViewModel(state, platform);
+  return `
+    <section class="view-page os-playback-view os-playback-view--${escapeHtml(view.platform)}">
+      <div class="view-hero view-hero--${view.platform === OS_PLAYBACK_PLATFORMS.windows ? 'hybrid' : 'real'}">
+        <div>
+          <p class="eyebrow">${escapeHtml(view.eyebrow)}</p>
+          <h2>${escapeHtml(view.title)}</h2>
+          <p class="hero-copy">${escapeHtml(view.description)}</p>
+        </div>
+        <div class="hero-pill-group">
+          ${renderSourceBadge(view.sourceBadge, view.sourceLabel)}
+          <span class="hero-pill">${escapeHtml(view.modeLabel)}</span>
+        </div>
+      </div>
+
+      <article class="card card--feature os-playback-stage-card">
+        <header class="card__header">
+          <div>
+            <p class="card__code">${escapeHtml(view.code)}</p>
+            <h3>Playback surface</h3>
+          </div>
+          <div class="card__header-tags">${renderSourceBadge(view.sourceBadge, 'PLAYBACK QUEUE')}</div>
+        </header>
+        <div class="os-playback-stage" data-os-playback-stage="${escapeHtml(view.platform)}">
+          <div class="os-playback-stage__media" aria-label="Playback queue media preview">
+            <span class="os-playback-stage__media-type">${escapeHtml(view.currentMediaType)}</span>
+            <strong>${escapeHtml(view.currentMediaName)}</strong>
+            <small>${escapeHtml(view.queueSummary)}</small>
+          </div>
+          <div class="os-playback-stage__caption">
+            <div>
+              <span class="mini-badge">Resolved address</span>
+              <strong>${escapeHtml(view.resolvedAddress)}</strong>
+            </div>
+            <span>${escapeHtml(view.nextIn)}</span>
+          </div>
+        </div>
+        <div class="os-playback-controls" aria-label="Playback controls">
+          <button class="button button--primary" type="button" data-playback-view-fullscreen-platform="${escapeHtml(view.platform)}">Switch to Full Screen</button>
+          <button class="button button--secondary" type="button" disabled>Previous</button>
+          <button class="button button--secondary" type="button" disabled>Next</button>
+          <button class="button button--secondary" type="button" disabled>Pause rotation</button>
+          <button class="button button--secondary" type="button" disabled>Refresh queue</button>
+        </div>
+        <p class="notice notice--neutral">${escapeHtml(view.playbackStatus)} This first slice provides the playback layout and contract without changing backend selection or OS scheduler behavior.</p>
+      </article>
+
+      <article class="card os-playback-status-card">
+        <header class="card__header card__header--tight">
+          <div><p class="card__code">${escapeHtml(view.code)}-STAGES</p><h3>Media pipeline stage row</h3></div>
+          <div class="card__header-tags">${renderSourceBadge('hybrid', 'Download → Index → GPS → Geocode → Q')}</div>
+        </header>
+        <div class="os-stage-row">
+          ${view.stageItems.map(renderStagePill).join('')}
+        </div>
+      </article>
+
+      <article class="card os-playback-status-card">
+        <header class="card__header card__header--tight">
+          <div><p class="card__code">${escapeHtml(view.code)}-WORKERS</p><h3>Worker call status</h3></div>
+          <div class="card__header-tags">${renderSourceBadge('hybrid', '3 WORKERS')}</div>
+        </header>
+        <div class="os-worker-row">
+          ${view.workers.map(renderWorkerCard).join('')}
+        </div>
+      </article>
+
+      <div class="section-grid section-grid--two os-log-grid">
+        ${renderTerminalPanel(`${view.code}-CRON`, view.schedulerTitle, view.schedulerSummary, view.schedulerLog, 'scheduler')}
+        ${renderTerminalPanel(`${view.code}-ERRORS`, 'Error-only log', 'Strictly error-level entries for playback/runtime work.', view.errorLog, 'error')}
+      </div>
+      ${renderTerminalPanel(`${view.code}-MAIN`, 'Main runtime log', 'General playback, queue, worker, and scheduler information.', view.mainLog, 'main')}
+    </section>
+  `;
+}
+
+/**
+ * Renders a compact pipeline stage pill with status and future action hint.
+ */
+function renderStagePill(stage: PlaybackStageViewModel): string {
+  return `
+    <article class="os-stage-pill os-stage-pill--${escapeHtml(stage.status.toLowerCase())}" title="${escapeHtml(stage.actionHint)}">
+      <strong>${escapeHtml(stage.label)}</strong>
+      <span>${escapeHtml(stage.status)}</span>
+    </article>
+  `;
+}
+
+/**
+ * Renders one worker status card with last-called information.
+ */
+function renderWorkerCard(worker: PlaybackWorkerViewModel): string {
+  return `
+    <article class="os-worker-card os-worker-card--${escapeHtml(worker.status.toLowerCase())}">
+      <div class="os-worker-card__header">
+        <strong>${escapeHtml(worker.label)}</strong>
+        <span class="mini-badge">${escapeHtml(worker.status)}</span>
+      </div>
+      <dl class="definition-list definition-list--compact">
+        <div class="definition-row"><dt>Last called</dt><dd>${escapeHtml(worker.lastCalled)}</dd></div>
+        <div class="definition-row"><dt>Since last call</dt><dd>${escapeHtml(worker.sinceLastCall)}</dd></div>
+      </dl>
+      <p>${escapeHtml(worker.summary)}</p>
+    </article>
+  `;
+}
+
+/**
+ * Renders a terminal-like playback panel with required copy, clear, and expand controls.
+ */
+function renderTerminalPanel(code: string, title: string, summary: string, entries: PlaybackLogEntryViewModel[], logKind: string): string {
+  return `
+    <article class="card os-terminal-card" data-os-terminal-kind="${escapeHtml(logKind)}">
+      <header class="card__header card__header--tight">
+        <div><p class="card__code">${escapeHtml(code)}</p><h3>${escapeHtml(title)}</h3></div>
+        <div class="side-panel__actions">
+          <button class="button button--ghost" type="button" disabled>copy all</button>
+          <button class="button button--ghost" type="button" disabled>clear</button>
+        </div>
+      </header>
+      <p class="card__copy">${escapeHtml(summary)}</p>
+      <div class="log-surface os-terminal-surface">
+        ${entries.map((entry, index) => renderTerminalRow(entry, index)).join('')}
+      </div>
+    </article>
+  `;
+}
+
+/**
+ * Renders one terminal row with an expand-row affordance.
+ */
+function renderTerminalRow(entry: PlaybackLogEntryViewModel, index: number): string {
+  return `
+    <article class="log-entry log-entry--${escapeHtml(entry.type)} os-terminal-row">
+      <div class="log-entry__meta">
+        <span>${escapeHtml(entry.at)}</span>
+        <span class="log-entry__status-chip"><span>${escapeHtml(entry.type.toUpperCase())}</span></span>
+      </div>
+      <div class="log-entry__message">${escapeHtml(entry.message)}</div>
+      <button class="button button--ghost os-terminal-row__expand" type="button" disabled data-os-terminal-row-expand="${index}">expand row</button>
+    </article>
+  `;
+}
