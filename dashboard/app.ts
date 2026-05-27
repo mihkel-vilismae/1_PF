@@ -106,6 +106,17 @@ function render() {
   document.body.classList.toggle('show-marked-for-removal', Boolean(state.showMarkedForRemoval));
   applyDashboardVisualModeClass(dashboardVisualMode);
 
+  // Compute a visible banner for the current visual mode. When a visual mode has
+  // been selected, override the lengthy default mode banner with a concise
+  // indicator so operators can immediately see whether they are in Test Mode or
+  // Real Mode. Fall back to the default dashboard banner when the mode is
+  // unselected.
+  const visualModeBanner = dashboardVisualMode === null
+    ? state.modeBanner
+    : dashboardVisualMode === 'test'
+      ? 'Test Mode'
+      : 'Real Mode';
+
   app.innerHTML = `
     ${renderVersionBadge(__APP_VERSION__, backendVersionState)}
     ${dashboardVisualMode === null ? renderModeSelectionGate() : ''}
@@ -164,7 +175,7 @@ function render() {
       <main class="main-panel">
         <header class="topbar">
           <div>
-            <p class="eyebrow">${state.modeBanner}</p>
+            <p class="eyebrow">${visualModeBanner}</p>
             <h1>${state.currentViewTitle}</h1>
           </div>
           <div class="topbar__actions">
