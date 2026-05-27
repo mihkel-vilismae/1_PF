@@ -15,13 +15,18 @@ import {
 } from '../services/playbackRenderer.ts';
 
 // Renders the full View B page from runtime-truth state.
-export function renderTestView(state) {
+type DashboardVisualMode = 'test' | 'real' | null | undefined;
+
+// Renders the full View B page from runtime-truth state and selected dashboard mode.
+export function renderTestView(state, dashboardVisualMode: DashboardVisualMode = undefined) {
   const queueReady = !!state.truth.currentMedia;
   const realDownloadAuthenticated = isRealDownloadAuthenticated(state);
   const realDownloadRecentCount = Number(state.simulation?.realDownloadRecentCount || 1);
   const playbackRenderingState = normalizePlaybackRenderingState(state.playbackRendering);
   const playbackRenderingReady = state.truth.playbackActive || state.statusByKey.B4 === 'success';
   const renderingOptions = buildPlaybackRenderingOptions(playbackRenderingReady);
+  const showTestDownloadCard = dashboardVisualMode !== 'real';
+  const showRealDownloadCard = dashboardVisualMode !== 'test';
   return `
     <section class="view-page">
       <div class="view-hero view-hero--hybrid">
@@ -39,34 +44,8 @@ export function renderTestView(state) {
 
       <div class="section-grid section-grid--two">
         <!-- Removed B1 login card as authentication preflight now lives in View A (Init) -->
-        <article class="card card--real">
-          <header class="card__header">
-            <div><p class="card__code">B2</p><h3>Download test action</h3></div>
-            <div class="card__header-tags">${renderSourceBadge('real', 'REAL')}</div>
-            ${statusBadge(state.statusByKey.B2)}
-          </header>
-          <p class="card__copy">This quick action now calls <code>POST /api/runtime/download/run</code> instead of simulating a batch in the browser.</p>
-          <div class="button-row"><button class="button button--primary" data-action="run-b2">Run</button></div>
-          <div class="log-surface">${renderLogEntries(state.logs.B2, { sourceKey: 'B2' })}</div>
-        </article>
-
-        <article class="card card--real">
-          <header class="card__header">
-            <div><p class="card__code">B2-REAL_DOWNLOAD</p><h3>Authenticated real download</h3></div>
-            <div class="card__header-tags">${renderSourceBadge('real', 'REAL ICLOUDPD')}</div>
-            ${statusBadge(state.statusByKey['B2-REAL_DOWNLOAD'])}
-          </header>
-          <p class="card__copy">This companion action calls <code>POST /api/runtime/download/real-run</code> and requires a verified iCloudPD session before downloading real media.</p>
-          <label class="field-label">
-            <span>Files to download in this batch</span>
-            <select class="select-input" name="realDownloadRecentCount" aria-label="Real download batch size">
-              ${renderRealDownloadBatchOptions(realDownloadRecentCount)}
-            </select>
-          </label>
-          <p class="notice">${realDownloadAuthenticated ? 'Authenticated session detected from dashboard state. Backend verifies again before starting.' : 'Real download requires an authenticated iCloudPD session. Verify/login in View A first.'}</p>
-          <div class="button-row"><button class="button button--primary" data-action="run-b2-real-download" ${realDownloadAuthenticated ? '' : 'disabled'}>Run real download</button></div>
-          <div class="log-surface">${renderLogEntries(state.logs['B2-REAL_DOWNLOAD'], { sourceKey: 'B2-REAL_DOWNLOAD' })}</div>
-        </article>
+        ${showTestDownloadCard ? renderB2TestDownloadCard(state) : ''}
+        ${showRealDownloadCard ? renderB2RealDownloadCard(state, realDownloadAuthenticated, realDownloadRecentCount) : ''}
       </div>
 
       <article class="card card--feature card--hybrid card--pending">
@@ -200,6 +179,45 @@ function isRealDownloadAuthenticated(state) {
 // Renders the fixed safe batch-size selector for real iCloudPD downloads.
 function renderRealDownloadBatchOptions(selectedValue) {
   return [1, 5, 10, 25, 50].map((value) => `<option value="${value}" ${Number(selectedValue) === value ? 'selected' : ''}>${value} file${value === 1 ? '' : 's'}</option>`).join('');
+}
+
+// Renders the Test Mode-only B2 mock/generated download card.
+function renderB2TestDownloadCard(state): string {
+  return `
+        <article class="card card--mock">
+          <header class="card__header">
+            <div><p class="card__code">B2</p><h3>Download test action</h3></div>
+            <div class="card__header-tags">${renderSourceBadge('mock', 'TEST MOCK')}</div>
+            ${statusBadge(state.statusByKey.B2)}
+          </header>
+          <p class="card__copy">Test Mode only: calls <code>POST /api/runtime/download/run</code> for the mock/generated download path. The real iCloudPD download control is hidden in Test Mode.</p>
+          <div class="button-row"><button class="button button--primary" data-action="run-b2">Run</button></div>
+          <div class="log-surface">${renderLogEntries(state.logs.B2, { sourceKey: 'B2' })}</div>
+        </article>
+  `;
+}
+
+// Renders the Real Mode-only B2 authenticated iCloudPD download card.
+function renderB2RealDownloadCard(state, realDownloadAuthenticated: boolean, realDownloadRecentCount: number): string {
+  return `
+        <article class="card card--real">
+          <header class="card__header">
+            <div><p class="card__code">B2-REAL_DOWNLOAD</p><h3>Authenticated real download</h3></div>
+            <div class="card__header-tags">${renderSourceBadge('real', 'REAL ICLOUDPD')}</div>
+            ${statusBadge(state.statusByKey['B2-REAL_DOWNLOAD'])}
+          </header>
+          <p class="card__copy">Real Mode only: calls <code>POST /api/runtime/download/real-run</code> and requires a verified iCloudPD session before downloading real media. The mock/generated B2 control is hidden in Real Mode.</p>
+          <label class="field-label">
+            <span>Files to download in this batch</span>
+            <select class="select-input" name="realDownloadRecentCount" aria-label="Real download batch size">
+              ${renderRealDownloadBatchOptions(realDownloadRecentCount)}
+            </select>
+          </label>
+          <p class="notice">${realDownloadAuthenticated ? 'Authenticated session detected from dashboard state. Backend verifies again before starting.' : 'Real download requires an authenticated iCloudPD session. Verify/login in View A first.'}</p>
+          <div class="button-row"><button class="button button--primary" data-action="run-b2-real-download" ${realDownloadAuthenticated ? '' : 'disabled'}>Run real download</button></div>
+          <div class="log-surface">${renderLogEntries(state.logs['B2-REAL_DOWNLOAD'], { sourceKey: 'B2-REAL_DOWNLOAD' })}</div>
+        </article>
+  `;
 }
 
 function renderStageCard(code, title, subtitle, state, sourceMode = 'hybrid') {

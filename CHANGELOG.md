@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.6.4 - 2026-05-27 18:39 EEST
+
+- Split View B B2 rendering by selected dashboard mode: Test Mode shows only the mock/generated `B2` download action, while Real Mode shows only `B2-REAL_DOWNLOAD`.
+- Added `docs/VIEW_CARD_MODE_CLASSIFICATION.md` with a per-view card classification table showing Universal, Test-only, Real-only, and Runtime-dependent cards.
+- Added a regression test for the View B mode separation and updated the existing visual-mode gate static guard to reflect the explicit mode parameter.
+- Preserved existing backend routes, action IDs, auth/iCloudPD behavior, scheduler/cron behavior, pipeline behavior, playback behavior, database actions, runtime truth state, and the startup mode gate.
+- Bumped version metadata from v0.6.3 to v0.6.4 in `VERSION`, `package.json`, and `package-lock.json`.
+
 ## 0.6.3 - 2026-05-27 17:22 EEST
 
 - Isolated `tests/authService.test.js` from platform-specific filesystem persistence by adding an in-memory auth persistence test double.

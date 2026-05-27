@@ -96,7 +96,7 @@ function render() {
   const hasLiveTraffic = transitTerminal.hasLiveTraffic();
   const viewMarkup = {
     A: renderInitView(state),
-    B: renderTestView(state),
+    B: renderTestView(state, dashboardVisualMode),
     C: renderLastRunView(state),
     D: renderRunningProcessView(state),
     E: renderDatabaseViewerView(state),

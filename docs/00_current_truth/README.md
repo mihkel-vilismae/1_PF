@@ -29,6 +29,7 @@ Use these repository-level documentation guides before adding or moving files:
 - [Documentation Index](../DOC_INDEX.md)
 - [Documentation Freshness Matrix](../DOC_FRESHNESS_MATRIX.md)
 - [Documentation Reorganization Plan](../DOC_REORGANIZATION_PLAN.md)
+- [View/card Test Mode vs Real Mode classification](../VIEW_CARD_MODE_CLASSIFICATION.md) — all-view Universal/Test-only/Real-only card classification, including the B2 mock/generated versus B2 real iCloudPD split.
 - [Card/button implementation status audit](../CARD_BUTTON_IMPLEMENTATION_STATUS.md) — A/B/D `.card` button/control inventory, status snapshot, user-observed subjective assessment, and follow-up issue list; verify against code/tests before runtime claims.
 - [User-observed card status and issues snapshot](../30_status_snapshots/2026-05-26/USER_OBSERVED_CARD_STATUS_AND_ISSUES_20260526_1457_EEST.md) — dated user-observed A/B/D card/button status and follow-up issue list; less authoritative than code/tests/runtime evidence.
 
