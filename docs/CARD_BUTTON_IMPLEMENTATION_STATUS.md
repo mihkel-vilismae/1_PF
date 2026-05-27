@@ -169,3 +169,28 @@ Method and authority:
 - View D cards remain mostly monitoring/projection shells. They should not be treated as authoritative live worker telemetry until backend heartbeat/status contracts are verified.
 - The user-observed assessment confirms several flows appear to work in practice, but it also identifies high-priority follow-ups: repeated real-download batches, address display, fullscreen lifecycle, screen simulation controls, and View D worker telemetry.
 - Do not use this document alone to claim production readiness. Code, tests, generated evidence packs, and runtime artifacts override this audit when they conflict.
+
+### Pending border markers added in visual slice
+
+Beginning with PF_login v0.5.44 (Slice 3 of the Test/Real mode split), the dashboard
+includes a visual pending‑marker border on cards whose functionality remains
+unfinished, partially verified, or otherwise subject to further review.
+These markers are purely visual cues; they do not change the underlying
+implementation status listed above, nor do they disable interaction.
+
+The following cards currently display the pending border:
+
+| Card code | Reason for pending marker |
+|---|---|
+| **B3** | Pipeline stage card is hybrid: some stages are wired to backend endpoints while others use placeholder geocoder or are not production‑ready. |
+| **B4** | Playback selection card still relies on placeholder rendering; fullscreen lifecycle and Raspberry rendering remain incomplete. |
+| **B5** | Screen on‑off simulation card controls backend simulation state only; real sensor and hardware triggers are not implemented. |
+| **D1** | Pipeline worker card monitors computed summaries rather than authoritative worker heartbeat telemetry. |
+| **D2** | Playback worker card monitors computed statuses and summary; real playback worker heartbeat is not yet wired. |
+| **D3** | Screen on‑off worker card monitors placeholder data; real screen worker contract is not implemented. |
+| **D4** | Monitor/preview log card displays simulated log lines in preview mode; live log tailing remains a future enhancement. |
+
+When a card’s underlying functionality is completed and reviewed, the pending
+border can be removed by modifying the relevant `card--pending` class in
+the dashboard views. Only remove a pending marker when there is clear code,
+test, runtime, or documentation evidence that the feature is complete.
