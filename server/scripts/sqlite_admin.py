@@ -999,6 +999,171 @@ def resolve_canonical_path(raw_path: str | None, repo_root: str) -> str | None:
     return os.path.abspath(os.path.join(repo_root, normalized))
 
 
+
+
+def resolve_playback_contract_item(row: sqlite3.Row, current_media_asset_id: str | None) -> dict:
+    media_asset_id = row["media_asset_id"]
+    media_asset_id_text = str(media_asset_id)
+    display_name = (row["original_filename"] or row["asset_key"] or f"media-{media_asset_id}").strip()
+    address_text = (row["address_text"] or "").strip()
+    media_type = (row["media_type"] or "media").strip().lower()
+    return {
+        "mediaAssetId": media_asset_id,
+        "slideshowQueueId": row["slideshow_queue_id"],
+        "displayName": display_name,
+        "mediaType": media_type,
+        "queueStatus": row["queue_status"],
+        "resolvedAddress": address_text or "Address pending until GPS/geocode stages produce a resolved address.",
+        "hasResolvedAddress": bool(address_text),
+        "capturedAt": row["captured_at"],
+        "lastShownAt": row["last_shown_datetime"],
+        "viewCount": row["view_count"],
+        "fileExtension": row["file_extension"],
+        "gpsStatus": row["gps_status"],
+        "geocodeStatus": row["geocode_status"],
+        "isCurrent": current_media_asset_id == media_asset_id_text,
+        "displayUrl": f"/api/runtime/playback/media?assetId={media_asset_id}",
+    }
+
+
+def fetch_current_media_asset_id(connection: sqlite3.Connection) -> str | None:
+    try:
+        row = connection.execute(
+            "SELECT state_value FROM runtime_state WHERE state_key = 'current_media_asset_id' LIMIT 1"
+        ).fetchone()
+    except sqlite3.OperationalError as e:
+        if "no such table" in str(e).lower():
+            return None
+        raise
+    if row is None or row["state_value"] is None:
+        return None
+    value = str(row["state_value"]).strip()
+    return value or None
+
+
+def playback_queue_counts(connection: sqlite3.Connection) -> dict:
+    try:
+        rows = connection.execute(
+            "SELECT status, COUNT(*) AS row_count FROM slideshow_queue GROUP BY status"
+        ).fetchall()
+    except sqlite3.OperationalError as e:
+        if "no such table" in str(e).lower():
+            return {"totalCount": 0, "readyCount": 0, "failedCount": 0}
+        raise
+
+    counts = {"totalCount": 0, "readyCount": 0, "failedCount": 0}
+    for row in rows:
+        count = int(row["row_count"] or 0)
+        counts["totalCount"] += count
+        if row["status"] == "READY":
+            counts["readyCount"] += count
+        elif row["status"] == "FAILED":
+            counts["failedCount"] += count
+    return counts
+
+
+def fetch_playback_queue_items(connection: sqlite3.Connection, limit: int) -> list[sqlite3.Row]:
+    try:
+        return connection.execute(
+            """
+            SELECT
+                q.slideshow_queue_id,
+                q.media_asset_id,
+                q.status AS queue_status,
+                q.failure_reason,
+                q.last_shown_datetime,
+                q.view_count,
+                q.eligible_since,
+                c.asset_key,
+                c.original_filename,
+                c.canonical_path,
+                c.media_type,
+                c.file_extension,
+                c.captured_at,
+                c.address_text,
+                c.gps_status,
+                c.geocode_status
+            FROM slideshow_queue q
+            JOIN canonical_media_assets c
+                ON c.media_asset_id = q.media_asset_id
+            ORDER BY
+                CASE WHEN q.status = 'READY' THEN 0 ELSE 1 END ASC,
+                CASE WHEN q.last_shown_datetime IS NULL THEN 0 ELSE 1 END ASC,
+                q.last_shown_datetime ASC,
+                q.view_count ASC,
+                q.slideshow_queue_id ASC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+    except sqlite3.OperationalError as e:
+        if "no such table" in str(e).lower():
+            return []
+        raise
+
+
+def playback_contract(path: str, repo_root: str, limit: int = 25) -> dict:
+    connection = connect_read_only(path)
+    try:
+        current_media_asset_id = fetch_current_media_asset_id(connection)
+        rows = fetch_playback_queue_items(connection, limit)
+        items = [resolve_playback_contract_item(row, current_media_asset_id) for row in rows]
+        current_item = next((item for item in items if item["isCurrent"]), None)
+        next_item = next((item for item in items if item["queueStatus"] == "READY"), None)
+        return {
+            "currentMediaAssetId": current_media_asset_id,
+            "currentItem": current_item,
+            "nextItem": next_item,
+            "items": items,
+            "queue": {
+                **playback_queue_counts(connection),
+                "returnedCount": len(items),
+                "limit": limit,
+            },
+        }
+    finally:
+        connection.close()
+
+
+def playback_asset_media_path(path: str, media_asset_id: str, repo_root: str) -> dict:
+    normalized_asset_id = str(media_asset_id or "").strip()
+    if not normalized_asset_id.isdigit():
+        raise ValueError("media_asset_id must be numeric")
+
+    connection = connect_read_only(path)
+    try:
+        row = connection.execute(
+            """
+            SELECT
+                c.media_asset_id,
+                c.canonical_path,
+                c.media_type,
+                c.file_extension,
+                v.file_path AS variant_path
+            FROM canonical_media_assets c
+            LEFT JOIN media_asset_variants v
+                ON v.media_asset_id = c.media_asset_id
+               AND v.variant_kind = 'original'
+            WHERE c.media_asset_id = ?
+            ORDER BY v.variant_id ASC
+            LIMIT 1
+            """,
+            (int(normalized_asset_id),),
+        ).fetchone()
+        if row is None:
+            return {"found": False, "mediaAssetId": int(normalized_asset_id)}
+
+        raw_path = row["variant_path"] or row["canonical_path"]
+        resolved_path = resolve_canonical_path(raw_path, repo_root)
+        return {
+            "found": True,
+            "mediaAssetId": row["media_asset_id"],
+            "mediaType": row["media_type"],
+            "fileExtension": row["file_extension"],
+            "resolvedPath": resolved_path,
+        }
+    finally:
+        connection.close()
 def select_current_item(path: str, executed_at: str, repo_root: str) -> dict:
     connection = connect_read_write(path)
     try:
@@ -1210,7 +1375,7 @@ def runtime_state_set(
 def main() -> int:
     if len(sys.argv) < 3:
         raise ValueError(
-            "Expected usage: sqlite_admin.py <inspect|recreate|rows|stage2_index_register|stage3_process_gps_queue|stage4_process_geocode_queue|stage5_prepare_queue|stage6_select_current|runtime_state_get|runtime_state_set> <path> [args]"
+            "Expected usage: sqlite_admin.py <inspect|recreate|rows|stage2_index_register|stage3_process_gps_queue|stage4_process_geocode_queue|stage5_prepare_queue|stage6_select_current|playback_contract|playback_asset_media_path|runtime_state_get|runtime_state_set> <path> [args]"
         )
 
     operation = sys.argv[1]
@@ -1251,6 +1416,21 @@ def main() -> int:
                 "stage6_select_current expects: sqlite_admin.py stage6_select_current <path> <executed_at> <repo_root>"
             )
         result = select_current_item(path, sys.argv[3], os.path.abspath(sys.argv[4]))
+    elif operation == "playback_contract":
+        # Usage: sqlite_admin.py playback_contract <path> <repo_root> [limit]
+        if len(sys.argv) < 4:
+            raise ValueError(
+                "playback_contract expects: sqlite_admin.py playback_contract <path> <repo_root> [limit]"
+            )
+        limit = int(sys.argv[4]) if len(sys.argv) > 4 else 25
+        result = playback_contract(path, os.path.abspath(sys.argv[3]), limit)
+    elif operation == "playback_asset_media_path":
+        # Usage: sqlite_admin.py playback_asset_media_path <path> <media_asset_id> <repo_root>
+        if len(sys.argv) < 5:
+            raise ValueError(
+                "playback_asset_media_path expects: sqlite_admin.py playback_asset_media_path <path> <media_asset_id> <repo_root>"
+            )
+        result = playback_asset_media_path(path, sys.argv[3], os.path.abspath(sys.argv[4]))
     elif operation == "runtime_state_get":
         # Usage: sqlite_admin.py runtime_state_get <path> <state_key>
         if len(sys.argv) != 4:

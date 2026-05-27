@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.6.8 - 2026-05-27 23:25 EEST
+
+- Added read-only playback API contract endpoints for OS playback views: `GET /api/runtime/playback/current` and `GET /api/runtime/playback/queue`.
+- Added backend-owned media serving by playback asset id through `/api/runtime/playback/media?assetId=...`, avoiding direct frontend filesystem access while preserving the existing path-based media route for compatibility.
+- Wired Windows/Raspberry playback views to refresh from the playback contract and render backend-served image/video URLs with safe empty/error states.
+- Added `docs/OS_PLAYBACK_VIEWS_SLICE_2.md` and regression tests for Test/Real playback database separation, queue contract shape, media URL safety, and asset-id media streaming.
+- Preserved existing Views A-E, B2 Test/Real split, auth/iCloudPD behavior, database mutation endpoints, scheduler behavior, Stage 6 selection behavior, and v0.6.6 Test/Real runtime path isolation.
+
 ## 0.6.7 - 2026-05-27 22:20 EEST
 
 - Added additive Windows Playback and Raspberry Playback view shells after existing Views A-E.

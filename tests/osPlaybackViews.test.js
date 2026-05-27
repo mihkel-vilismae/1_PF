@@ -53,9 +53,42 @@ test('Raspberry playback view renders required deployment shell sections', () =>
   assert.match(markup, /expand row/);
 });
 
+test('playback view renders backend contract media without local filesystem paths', () => {
+  const state = createInitialState();
+  state.osPlayback = {
+    windows: {
+      status: 'ready',
+      contract: {
+        messages: ['Current playback item is contract-image.jpg.'],
+        playback: {
+          currentItem: {
+            mediaAssetId: 7,
+            displayName: 'contract-image.jpg',
+            mediaType: 'image',
+            queueStatus: 'READY',
+            resolvedAddress: 'Contract Address 7, Tallinn, Estonia',
+            displayUrl: '/api/runtime/playback/media?assetId=7',
+          },
+          queue: { totalCount: 2, readyCount: 1, failedCount: 1, returnedCount: 2 },
+        },
+      },
+    },
+  };
+
+  const markup = renderOsPlaybackView(state, OS_PLAYBACK_PLATFORMS.windows);
+
+  assert.match(markup, /contract-image\.jpg/);
+  assert.match(markup, /Contract Address 7, Tallinn, Estonia/);
+  assert.match(markup, /Queue rows: 2 total • 1 READY • 1 FAILED/);
+  assert.match(markup, /src="\/api\/runtime\/playback\/media\?assetId=7"/);
+  assert.doesNotMatch(markup, /runtime_data\/downloads|test_runtime_data\/downloads|canonicalPath/);
+});
+
 test('app shell wires new playback views without removing existing render calls', () => {
   assert.match(appSource, /WIN: renderOsPlaybackView\(state, OS_PLAYBACK_PLATFORMS\.windows\)/);
   assert.match(appSource, /RPI: renderOsPlaybackView\(state, OS_PLAYBACK_PLATFORMS\.raspberry\)/);
+  assert.match(appSource, /api\/runtime\/playback\/current\?limit=25/);
+  assert.match(appSource, /data-os-playback-refresh-platform/);
   assert.match(appSource, /renderInitView\(state\)/);
   assert.match(appSource, /renderTestView\(state, dashboardVisualMode\)/);
   assert.match(appSource, /renderLastRunView\(state\)/);

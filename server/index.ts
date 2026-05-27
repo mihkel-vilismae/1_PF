@@ -42,6 +42,7 @@ import {
   SCHEDULER_WORKER_NAMES,
 } from '../shared/schedulerWorkerCommands.ts';
 import { selectCurrentPlayableItem } from './playback/playbackSelectionService.ts';
+import { buildPlaybackContract, normalizePlaybackContractLimit, resolvePlaybackAssetMediaPath } from './playback/playbackContractService.ts';
 import { runPlaybackWorker } from './workers/playbackWorker.ts';
 import { createSchedulerRoutes } from './routes/schedulerRoutes.ts';
 import { createScreenSimulationRoutes } from './routes/screenSimulationRoutes.ts';
@@ -461,6 +462,8 @@ const routes: Record<string, RouteHandler> = {
   'POST /api/runtime/geocode/run': runtimeGeocodeRunHandler,
   'POST /api/runtime/queue/prepare': runtimeQueuePrepareHandler,
   'POST /api/runtime/playback/select-current': runtimePlaybackSelectCurrentHandler,
+  'GET /api/runtime/playback/current': runtimePlaybackCurrentHandler,
+  'GET /api/runtime/playback/queue': runtimePlaybackQueueHandler,
   // Live runtime projection: returns a combined runtime projection for the live monitor (View D).
   // This read‑only endpoint provides run state, worker health, playback and screen status,
   // along with field provenance.  It should never mutate runtime truth or lock state.
@@ -1451,6 +1454,44 @@ async function runtimeQueuePrepareHandler({ context }: Pick<HandlerArgs, 'contex
   };
 }
 
+
+async function runtimePlaybackCurrentHandler({ context, url }: Pick<HandlerArgs, 'context' | 'url'>): Promise<HandlerResult> {
+  const contract = await buildPlaybackContract({
+    context,
+    databaseService: getDatabaseService(),
+    repoRoot,
+    limit: normalizePlaybackContractLimit(url.searchParams.get('limit')),
+  });
+
+  return {
+    statusCode: 200,
+    payload: contract,
+  };
+}
+
+async function runtimePlaybackQueueHandler({ context, url }: Pick<HandlerArgs, 'context' | 'url'>): Promise<HandlerResult> {
+  const contract = await buildPlaybackContract({
+    context,
+    databaseService: getDatabaseService(),
+    repoRoot,
+    limit: normalizePlaybackContractLimit(url.searchParams.get('limit')),
+  });
+
+  return {
+    statusCode: 200,
+    payload: {
+      status: contract.status,
+      messages: contract.messages,
+      queue: contract.playback.queue,
+      items: contract.playback.items,
+      database: contract.database,
+      runtimeMode: contract.runtimeMode,
+      schemaVersion: contract.schemaVersion,
+      mediaBasePath: contract.mediaBasePath,
+    },
+  };
+}
+
 async function runtimePlaybackSelectCurrentHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
   const selection = await selectCurrentPlayableItem({
     context,
@@ -1489,12 +1530,30 @@ async function runtimePlaybackSelectCurrentHandler({ context }: Pick<HandlerArgs
 
 // Streams the selected Windows playback media through the backend so the browser can render it safely.
 async function runtimePlaybackMediaHandler({ response, url, context }: Pick<HandlerArgs, 'response' | 'url' | 'context'>): Promise<number> {
+  const requestedAssetId = url.searchParams.get('assetId');
   const requestedPath = url.searchParams.get('path');
-  if (!requestedPath) {
-    throw new HttpError(400, 'missing_media_path', 'Playback media path is required.');
+  let mediaPath: string;
+
+  if (requestedAssetId) {
+    const resolvedMedia = await resolvePlaybackAssetMediaPath({
+      context,
+      databaseService: getDatabaseService(),
+      repoRoot,
+      mediaAssetId: requestedAssetId,
+    });
+    if (!resolvedMedia.media.found || !resolvedMedia.media.resolvedPath) {
+      throw new HttpError(404, 'media_asset_missing', 'Playback media asset does not exist in the selected runtime database.', {
+        mediaAssetId: requestedAssetId,
+        database: resolvedMedia.database,
+      });
+    }
+    mediaPath = path.resolve(resolvedMedia.media.resolvedPath);
+  } else if (requestedPath) {
+    mediaPath = path.resolve(requestedPath);
+  } else {
+    throw new HttpError(400, 'missing_media_reference', 'Playback media path or assetId is required.');
   }
 
-  const mediaPath = path.resolve(requestedPath);
   const extension = path.extname(mediaPath).toLowerCase();
   if (!supportedMediaExtensions.has(extension)) {
     throw new HttpError(415, 'unsupported_media_type', 'Playback media type is not supported by this dashboard renderer.', {

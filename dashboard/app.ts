@@ -387,6 +387,75 @@ async function loadBackendVersion(): Promise<void> {
   render();
 }
 
+// Loads the read-only playback queue/current-item contract for the OS playback views.
+async function loadOsPlaybackContract(platform: OsPlaybackPlatform): Promise<void> {
+  patchState((draft) => {
+    const osPlayback = ensureMutableOsPlaybackState(draft);
+    osPlayback[platform] = {
+      status: 'loading',
+      loadedAt: new Date().toISOString(),
+    };
+  });
+
+  try {
+    const payload = await requestJson<Record<string, unknown>>('/api/runtime/playback/current?limit=25', {
+      headers: { Accept: 'application/json' },
+      operation: `Load ${platform} playback contract`,
+    });
+    patchState((draft) => {
+      const osPlayback = ensureMutableOsPlaybackState(draft);
+      osPlayback[platform] = {
+        status: 'ready',
+        loadedAt: new Date().toISOString(),
+        contract: payload,
+      };
+    });
+    pushHistory('PLAYBACK', 'success', `${getOsPlaybackLabel(platform)} playback contract refreshed.`, {
+      platform,
+      endpoint: '/api/runtime/playback/current',
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    patchState((draft) => {
+      const osPlayback = ensureMutableOsPlaybackState(draft);
+      osPlayback[platform] = {
+        status: 'error',
+        loadedAt: new Date().toISOString(),
+        error: message,
+      };
+    });
+    pushHistory('PLAYBACK', 'error', `${getOsPlaybackLabel(platform)} playback contract refresh failed.`, {
+      platform,
+      endpoint: '/api/runtime/playback/current',
+      error: message,
+    });
+  }
+}
+
+// Ensures the dynamic runtime-truth state has a mutable OS playback bucket.
+function ensureMutableOsPlaybackState(draft: Record<string, unknown>): Record<string, unknown> {
+  if (!draft.osPlayback || typeof draft.osPlayback !== 'object' || Array.isArray(draft.osPlayback)) {
+    draft.osPlayback = {};
+  }
+  return draft.osPlayback as Record<string, unknown>;
+}
+
+// Maps playback platform ids to operator labels for history entries.
+function getOsPlaybackLabel(platform: OsPlaybackPlatform): string {
+  return platform === OS_PLAYBACK_PLATFORMS.windows ? 'Windows' : 'Raspberry OS';
+}
+
+// Converts a new view id into the corresponding playback platform, when applicable.
+function getOsPlaybackPlatformForView(viewId: string | null | undefined): OsPlaybackPlatform | null {
+  if (viewId === 'WIN') {
+    return OS_PLAYBACK_PLATFORMS.windows;
+  }
+  if (viewId === 'RPI') {
+    return OS_PLAYBACK_PLATFORMS.raspberry;
+  }
+  return null;
+}
+
 // Binds rendered controls to runtime-truth actions and local state updates.
 function bindEvents() {
   app.querySelectorAll<HTMLButtonElement>('[data-dashboard-visual-mode]').forEach((button) => {
@@ -414,6 +483,20 @@ function bindEvents() {
       } else if (id === 'D') {
         runAction('refresh-running-process');
       }
+      const osPlaybackPlatform = getOsPlaybackPlatformForView(id);
+      if (osPlaybackPlatform) {
+        void loadOsPlaybackContract(osPlaybackPlatform);
+      }
+    });
+  });
+
+  app.querySelectorAll<HTMLButtonElement>('[data-os-playback-refresh-platform]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const platform = button.dataset.osPlaybackRefreshPlatform;
+      const osPlaybackPlatform = platform === OS_PLAYBACK_PLATFORMS.raspberry
+        ? OS_PLAYBACK_PLATFORMS.raspberry
+        : OS_PLAYBACK_PLATFORMS.windows;
+      void loadOsPlaybackContract(osPlaybackPlatform);
     });
   });
 

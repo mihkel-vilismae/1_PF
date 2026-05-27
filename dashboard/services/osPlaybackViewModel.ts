@@ -48,6 +48,7 @@ export type OsPlaybackViewModel = {
   queueSummary: string;
   currentMediaName: string;
   currentMediaType: string;
+  currentMediaUrl: string | null;
   resolvedAddress: string;
   nextIn: string;
   stageItems: PlaybackStageViewModel[];
@@ -55,6 +56,41 @@ export type OsPlaybackViewModel = {
   schedulerLog: PlaybackLogEntryViewModel[];
   errorLog: PlaybackLogEntryViewModel[];
   mainLog: PlaybackLogEntryViewModel[];
+};
+
+type PlaybackContractItemLike = {
+  mediaAssetId?: unknown;
+  displayName?: unknown;
+  mediaType?: unknown;
+  resolvedAddress?: unknown;
+  hasResolvedAddress?: unknown;
+  queueStatus?: unknown;
+  displayUrl?: unknown;
+};
+
+type PlaybackContractLike = {
+  status?: unknown;
+  messages?: unknown;
+  runtimeMode?: unknown;
+  mediaBasePath?: unknown;
+  playback?: {
+    currentItem?: PlaybackContractItemLike | null;
+    nextItem?: PlaybackContractItemLike | null;
+    items?: PlaybackContractItemLike[];
+    queue?: {
+      totalCount?: unknown;
+      readyCount?: unknown;
+      failedCount?: unknown;
+      returnedCount?: unknown;
+    };
+  };
+};
+
+type OsPlaybackContractStateLike = {
+  status: 'idle' | 'loading' | 'ready' | 'error';
+  loadedAt?: string;
+  error?: string;
+  contract?: PlaybackContractLike;
 };
 
 type RuntimeStateLike = {
@@ -65,6 +101,7 @@ type RuntimeStateLike = {
     screenWorker?: Record<string, unknown>;
   };
   logs?: Record<string, Array<Record<string, unknown>>>;
+  osPlayback?: Partial<Record<OsPlaybackPlatform, OsPlaybackContractStateLike>>;
 };
 
 const PLATFORM_COPY = Object.freeze({
@@ -102,13 +139,17 @@ const PIPELINE_STAGE_ORDER = Object.freeze([
 
 /**
  * Builds a platform-specific playback view model from the dashboard state.
- * This is UI-only in the first slice and avoids inventing new backend calls.
+ * Slice 2 prefers the read-only playback API contract and keeps old state fallback.
  */
 export function buildOsPlaybackViewModel(state: RuntimeStateLike, platform: OsPlaybackPlatform): OsPlaybackViewModel {
   const copy = PLATFORM_COPY[platform];
-  const currentMedia = normalizeCurrentMedia(state.truth?.currentMedia);
-  const queueLength = readNumber(state.truth?.queueLength, 0);
-  const playbackStatus = readText(state.truth?.playbackStatus, 'Waiting for queued media');
+  const contractState = state.osPlayback?.[platform];
+  const playbackContract = contractState?.contract;
+  const contractMedia = normalizeContractMedia(playbackContract);
+  const fallbackMedia = normalizeCurrentMedia(state.truth?.currentMedia);
+  const media = contractMedia ?? fallbackMedia;
+  const queueSummary = buildQueueSummary(playbackContract, readNumber(state.truth?.queueLength, 0));
+  const playbackStatus = buildPlaybackStatus(contractState, playbackContract, readText(state.truth?.playbackStatus, 'Waiting for queued media'));
 
   return {
     platform,
@@ -122,11 +163,12 @@ export function buildOsPlaybackViewModel(state: RuntimeStateLike, platform: OsPl
     schedulerTitle: copy.schedulerTitle,
     schedulerSummary: copy.schedulerSummary,
     playbackStatus,
-    queueSummary: queueLength > 0 ? `Queue contains ${queueLength} item${queueLength === 1 ? '' : 's'}.` : 'No playback queue rows ready yet.',
-    currentMediaName: currentMedia.name,
-    currentMediaType: currentMedia.type,
-    resolvedAddress: currentMedia.resolvedAddress,
-    nextIn: currentMedia.nextIn,
+    queueSummary,
+    currentMediaName: media.name,
+    currentMediaType: media.type,
+    currentMediaUrl: media.displayUrl,
+    resolvedAddress: media.resolvedAddress,
+    nextIn: media.nextIn,
     stageItems: buildStageItems(state),
     workers: buildWorkerItems(state),
     schedulerLog: buildSchedulerLog(platform),
@@ -247,15 +289,39 @@ function toPlaybackLogEntry(entry: Record<string, unknown>): PlaybackLogEntryVie
 }
 
 /**
+ * Normalizes API contract media into the playback surface display shape.
+ */
+function normalizeContractMedia(contract: PlaybackContractLike | null | undefined): { name: string; type: string; resolvedAddress: string; nextIn: string; displayUrl: string | null } | null {
+  const item = contract?.playback?.currentItem ?? contract?.playback?.nextItem ?? null;
+  if (!item) {
+    return null;
+  }
+
+  const displayName = readText(item.displayName, `Media asset ${readText(item.mediaAssetId, 'unknown')}`);
+  const mediaType = readText(item.mediaType, 'media');
+  const queueStatus = readText(item.queueStatus, 'queued');
+  return {
+    name: displayName,
+    type: mediaType,
+    resolvedAddress: readText(item.resolvedAddress, 'Address pending until GPS/geocode stages produce a resolved address.'),
+    nextIn: item === contract?.playback?.currentItem
+      ? `Current ${queueStatus} item from playback contract`
+      : `Next ${queueStatus} item from playback contract`,
+    displayUrl: readText(item.displayUrl, '') || null,
+  };
+}
+
+/**
  * Normalizes the selected media summary without requiring a queue API in this slice.
  */
-function normalizeCurrentMedia(rawMedia: unknown): { name: string; type: string; resolvedAddress: string; nextIn: string } {
+function normalizeCurrentMedia(rawMedia: unknown): { name: string; type: string; resolvedAddress: string; nextIn: string; displayUrl: string | null } {
   if (!rawMedia || typeof rawMedia !== 'object') {
     return {
       name: 'No playback queue item selected',
       type: 'waiting',
       resolvedAddress: 'Address pending until GPS/geocode stages produce a resolved address.',
       nextIn: 'Rotation waits for queue item',
+      displayUrl: null,
     };
   }
 
@@ -265,7 +331,42 @@ function normalizeCurrentMedia(rawMedia: unknown): { name: string; type: string;
     type: readText(media.type, 'media'),
     resolvedAddress: readText(media.address, readText(media.resolvedAddress, readText(media.overlay, 'Resolved address pending.'))),
     nextIn: readText(media.nextIn, 'Next rotation interval pending'),
+    displayUrl: readText(media.displayUrl, '') || null,
   };
+}
+
+/**
+ * Builds a queue summary from the API contract, with fallback to older truth state.
+ */
+function buildQueueSummary(contract: PlaybackContractLike | null | undefined, fallbackQueueLength: number): string {
+  const queue = contract?.playback?.queue;
+  if (queue) {
+    const ready = readNumber(queue.readyCount, 0);
+    const total = readNumber(queue.totalCount, 0);
+    const failed = readNumber(queue.failedCount, 0);
+    return `Queue rows: ${total} total • ${ready} READY • ${failed} FAILED.`;
+  }
+  return fallbackQueueLength > 0 ? `Queue contains ${fallbackQueueLength} item${fallbackQueueLength === 1 ? '' : 's'}.` : 'No playback queue rows ready yet.';
+}
+
+/**
+ * Builds the playback status line from loaded API state or the original fallback state.
+ */
+function buildPlaybackStatus(
+  contractState: OsPlaybackContractStateLike | undefined,
+  contract: PlaybackContractLike | null | undefined,
+  fallbackStatus: string,
+): string {
+  if (contractState?.status === 'loading') {
+    return 'Loading playback contract from backend.';
+  }
+  if (contractState?.status === 'error') {
+    return `Playback contract load failed: ${readText(contractState.error, 'unknown error')}.`;
+  }
+  if (contract?.messages && Array.isArray(contract.messages) && contract.messages.length > 0) {
+    return readText(contract.messages[0], fallbackStatus);
+  }
+  return fallbackStatus;
 }
 
 /**
@@ -301,7 +402,7 @@ function platformLabel(platform: OsPlaybackPlatform): string {
 /**
  * Reads a number with a safe fallback.
  */
-function readNumber(value: unknown, fallback: number): number {
+function readNumber(value: unknown, fallback = 0): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
 }
 

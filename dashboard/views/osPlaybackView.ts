@@ -45,6 +45,7 @@ export function renderOsPlaybackView(state: RuntimeState, platform: OsPlaybackPl
         </header>
         <div class="os-playback-stage" data-os-playback-stage="${escapeHtml(view.platform)}">
           <div class="os-playback-stage__media" aria-label="Playback queue media preview">
+            ${renderPlaybackMediaSurface(view.currentMediaUrl, view.currentMediaType, view.currentMediaName)}
             <span class="os-playback-stage__media-type">${escapeHtml(view.currentMediaType)}</span>
             <strong>${escapeHtml(view.currentMediaName)}</strong>
             <small>${escapeHtml(view.queueSummary)}</small>
@@ -62,7 +63,7 @@ export function renderOsPlaybackView(state: RuntimeState, platform: OsPlaybackPl
           <button class="button button--secondary" type="button" disabled>Previous</button>
           <button class="button button--secondary" type="button" disabled>Next</button>
           <button class="button button--secondary" type="button" disabled>Pause rotation</button>
-          <button class="button button--secondary" type="button" disabled>Refresh queue</button>
+          <button class="button button--secondary" type="button" data-os-playback-refresh-platform="${escapeHtml(view.platform)}">Refresh queue</button>
         </div>
         <p class="notice notice--neutral">${escapeHtml(view.playbackStatus)} This first slice provides the playback layout and contract without changing backend selection or OS scheduler behavior.</p>
       </article>
@@ -94,6 +95,23 @@ export function renderOsPlaybackView(state: RuntimeState, platform: OsPlaybackPl
       ${renderTerminalPanel(`${view.code}-MAIN`, 'Main runtime log', 'General playback, queue, worker, and scheduler information.', view.mainLog, 'main')}
     </section>
   `;
+}
+
+/**
+ * Renders backend-served playback media when the API contract has a safe URL.
+ */
+function renderPlaybackMediaSurface(mediaUrl: string | null, mediaType: string, mediaName: string): string {
+  if (!mediaUrl) {
+    return '<div class="os-playback-stage__placeholder">Playback API has no media URL yet.</div>';
+  }
+
+  const safeUrl = escapeHtml(mediaUrl);
+  const safeName = escapeHtml(mediaName);
+  if (mediaType.toLowerCase() === 'video') {
+    return `<video class="os-playback-stage__media-element" src="${safeUrl}" muted playsinline controls aria-label="${safeName}"></video>`;
+  }
+
+  return `<img class="os-playback-stage__media-element" src="${safeUrl}" alt="${safeName}" loading="lazy" />`;
 }
 
 /**
