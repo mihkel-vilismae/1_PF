@@ -266,6 +266,61 @@ test('POST /api/init/database/* follows the recreate/status/inspect/delete flow 
   });
 });
 
+
+test('database init endpoints honor Test Mode database isolation header', async () => {
+  await withInitServer(async ({ port, dbPath, testDbPath }) => {
+    /**
+     * Exercises the actual API boundary used by the dashboard. Test Mode
+     * status/recreate/inspect/delete must resolve to test_runtime_data while
+     * Real Mode keeps the env-provided DB_PATH untouched.
+     */
+    await rm(testDbPath, { force: true });
+    await rm(`${testDbPath}-wal`, { force: true });
+    await rm(`${testDbPath}-shm`, { force: true });
+
+    try {
+      const testStatus = await requestJson(port, '/api/init/database/status', {
+        method: 'GET',
+        headers: { 'X-Dashboard-Runtime-Mode': 'test' },
+      });
+      assert.equal(testStatus.status, 200);
+      assert.equal(testStatus.json.database.absolutePath, testDbPath);
+      assert.equal(testStatus.json.database.runtimeMode, 'test');
+
+      const recreateTest = await requestJson(port, '/api/init/database/recreate-empty', {
+        method: 'POST',
+        headers: { 'X-Dashboard-Runtime-Mode': 'test' },
+        body: { confirm: true, action: 'recreate-db' },
+      });
+      assert.equal(recreateTest.status, 200);
+      assert.equal(recreateTest.json.database.absolutePath, testDbPath);
+      await access(testDbPath);
+      await assert.rejects(access(dbPath));
+
+      const inspectTest = await requestJson(port, '/api/init/database/inspect', {
+        method: 'POST',
+        headers: { 'X-Dashboard-Runtime-Mode': 'test' },
+      });
+      assert.equal(inspectTest.status, 200);
+      assert.equal(inspectTest.json.database.absolutePath, testDbPath);
+      assert.ok(inspectTest.json.inspection.tableCount >= 9);
+
+      const realStatus = await requestJson(port, '/api/init/database/status', {
+        method: 'GET',
+        headers: { 'X-Dashboard-Runtime-Mode': 'real' },
+      });
+      assert.equal(realStatus.status, 200);
+      assert.equal(realStatus.json.database.absolutePath, dbPath);
+      assert.equal(realStatus.json.database.runtimeMode, 'real');
+      assert.equal(realStatus.json.database.exists, false);
+    } finally {
+      await rm(testDbPath, { force: true });
+      await rm(`${testDbPath}-wal`, { force: true });
+      await rm(`${testDbPath}-shm`, { force: true });
+    }
+  });
+});
+
 test('GET /api/init/cron/status and /api/init/cron/print expose scheduler capability payloads', async () => {
   await withInitServer(async ({ port }) => {
     const statusResponse = await requestJson(port, '/api/init/cron/status', { method: 'GET' });
@@ -370,6 +425,8 @@ async function withInitServer(run, options = {}) {
   const cookieDir = path.join(workspaceRoot, 'cookies');
   const cronEmulatorDirectory = path.join(workspaceRoot, 'cronemulator');
   const cronEmulatorCrontabPath = path.join(cronEmulatorDirectory, 'crontab_emulated.txt');
+  const testDbRelativePath = path.join('test_runtime_data', `test_${path.basename(workspaceRoot)}.sqlite`);
+  const testDbPath = path.join(repoRoot, testDbRelativePath);
 
   await mkdir(cronEmulatorDirectory, { recursive: true });
   await writeFile(cronEmulatorCrontabPath, '* * * * * /tmp/test-worker\n', 'utf8');
@@ -382,6 +439,7 @@ async function withInitServer(run, options = {}) {
       logDir,
       cookieDir,
       fullLogVerbose: options.fullLogVerbose,
+      testDbRelativePath,
     }),
     'utf8',
   );
@@ -427,7 +485,7 @@ async function withInitServer(run, options = {}) {
 
   try {
     await ready;
-    await run({ port, dbPath, logDir, envFilePath, workspaceRoot, cronEmulatorCrontabPath });
+    await run({ port, dbPath, testDbPath, logDir, envFilePath, workspaceRoot, cronEmulatorCrontabPath });
   } finally {
     child.kill();
     await onceExit(child);
@@ -517,12 +575,16 @@ async function onceExit(child) {
 }
 
 // Builds the isolated env file content used by init API integration tests.
-function buildEnvFile({ downloadDir, dbPath, logDir, cookieDir, fullLogVerbose = false }) {
+function buildEnvFile({ downloadDir, dbPath, logDir, cookieDir, fullLogVerbose = false, testDbRelativePath = 'test_runtime_data/test_photo_frame.sqlite' }) {
   const lines = [
     'user=test@example.com',
     'pw=super-secret-password',
     `DOWNLOAD_DIR=${downloadDir}`,
     `DB_PATH=${dbPath}`,
+    `TEST_DB_PATH=${testDbRelativePath}`,
+    'TEST_DOWNLOAD_DIR=test_runtime_data/downloads',
+    'TEST_LOG_DIR=test_runtime_data/logs',
+    'TEST_FULL_LOG=test_runtime_data/logs/full_log.log',
     `LOG_DIR=${logDir}`,
     `ICLOUDPD_COOKIE_DIR=${cookieDir}`,
     'DOWNLOAD_RECENT=7',

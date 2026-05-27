@@ -2,7 +2,7 @@
  * Renders the dashboard shell and binds browser-side UI interactions.
  * The frontend owns presentation state while backend routes provide runtime truth.
  * This file also displays component versions visible to operators.
- * The startup visual mode gate is frontend-only and does not alter runtime behavior.
+ * The startup mode gate also tags backend calls so Test Mode uses test storage.
  */
 import { VIEW_ORDER } from './shared/constants.ts';
 import {
@@ -50,7 +50,7 @@ import { renderTestView } from './views/testView.ts';
 import { renderLastRunView } from './views/lastRunView.ts';
 import { renderRunningProcessView } from './views/runningProcessView.ts';
 import { renderDatabaseViewerView } from './views/databaseViewerView.ts';
-import { requestJson } from './services/apiClient.ts';
+import { requestJson, setDashboardRuntimeMode } from './services/apiClient.ts';
 
 const app = document.getElementById('app');
 declare const __APP_VERSION__: string;
@@ -284,16 +284,16 @@ function renderModeSelectionGate(): string {
         <p class="eyebrow">Startup choice</p>
         <h1 id="modeGateTitle">Choose dashboard mode</h1>
         <p id="modeGateDescription" class="mode-gate__copy">
-          Select a visual operating mode before entering the shared dashboard. This choice does not trigger real auth, downloads, scheduler actions, playback, or backend behavior changes.
+          Select an operating mode before entering the dashboard. Test Mode routes runtime/database/log actions to isolated test storage; Real Mode uses the real configured runtime storage.
         </p>
         <div class="mode-gate__actions" aria-label="Dashboard mode choices">
           <button class="mode-choice mode-choice--test" type="button" data-dashboard-visual-mode="test">
             <span>Test Mode</span>
-            <small>Use the review/test visual theme. Runtime behavior stays unchanged.</small>
+            <small>Use isolated test runtime data, logs, downloads, and database paths.</small>
           </button>
           <button class="mode-choice mode-choice--real" type="button" data-dashboard-visual-mode="real">
             <span>Real Mode</span>
-            <small>Use the production visual theme. Real actions still require their existing explicit controls.</small>
+            <small>Use the real configured runtime data, logs, downloads, and database paths.</small>
           </button>
         </div>
       </div>
@@ -388,6 +388,7 @@ function bindEvents() {
     button.addEventListener('click', () => {
       const selectedMode = button.dataset.dashboardVisualMode === 'real' ? 'real' : 'test';
       dashboardVisualMode = selectedMode;
+      setDashboardRuntimeMode(selectedMode);
       render();
     });
   });

@@ -48,6 +48,12 @@ import { createScreenSimulationRoutes } from './routes/screenSimulationRoutes.ts
 import { createRuntimeTruthRoutes } from './routes/runtimeTruthRoutes.ts';
 import { createInspectionRoutes } from './routes/inspectionRoutes.ts';
 import { createRuntimeStatusRoutes } from './routes/runtimeStatusRoutes.ts';
+import {
+  DASHBOARD_RUNTIME_MODE_HEADER,
+  applyDashboardRuntimeModeToEnvValues,
+  normalizeDashboardRuntimeMode,
+  type DashboardRuntimeMode,
+} from './runtimeModeEnv.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -138,6 +144,7 @@ interface EnvValues {
 
 interface RequestContext {
   envValues: EnvValues;
+  runtimeMode?: DashboardRuntimeMode;
   platform: NodeJS.Platform;
   nodePath: string;
   username: string | null;
@@ -498,7 +505,7 @@ const server = createServer(async (request: IncomingMessage, response: ServerRes
     routeKey = `${request.method || 'GET'} ${url.pathname}`;
 
     if (routeKey === 'GET /api/runtime/playback/media') {
-      const context = await buildRequestContext();
+      const context = await buildRequestContext({ request, url, body: null });
       const statusCode = await runtimePlaybackMediaHandler({ response, url, context });
       void logRequest({ request, requestId: dashboardRequestId, url, routeKey, statusCode, startedAt });
       return;
@@ -515,7 +522,7 @@ const server = createServer(async (request: IncomingMessage, response: ServerRes
     requestBody = await readJsonBody(request);
     void logVerboseRequestStarted({ request, requestId: verboseRequestId, url, routeKey, body: requestBody, startedAt });
     void logLoginDebugRequestReceived({ request, url, routeKey, body: requestBody, startedAt });
-    const context = await buildRequestContext();
+    const context = await buildRequestContext({ request, url, body: requestBody });
     const result = await handler({ request, response, url, body: requestBody, context });
     const sentResponse = sendJson(response, result.statusCode, result.payload);
     void logLoginDebugRequestCompleted({ request, url, routeKey, statusCode: result.statusCode, startedAt, payload: result.payload });
@@ -1823,14 +1830,34 @@ async function buildSchedulerRouteResponse(
   };
 }
 
-async function buildRequestContext(): Promise<RequestContext> {
-  const envValues = await loadEnvValues();
+async function buildRequestContext(input: { request?: IncomingMessage; url?: URL | null; body?: JsonObject | null } = {}): Promise<RequestContext> {
+  // Builds a request context with mode-specific env path isolation.
+  // Real Mode keeps the configured .env untouched, while Test Mode maps
+  // DB/download/log paths into test_runtime_data.
+  const baseEnvValues = await loadEnvValues();
+  const runtimeMode = resolveDashboardRuntimeMode(input);
+  const envValues = applyDashboardRuntimeModeToEnvValues(baseEnvValues, runtimeMode);
   return {
     envValues,
+    runtimeMode,
     platform: process.platform,
     nodePath: process.execPath,
     username: process.env.USERNAME || process.env.USER || null,
   };
+}
+
+function resolveDashboardRuntimeMode(input: { request?: IncomingMessage; url?: URL | null; body?: JsonObject | null }): DashboardRuntimeMode {
+  // Reads the dashboard-selected mode from request headers, query strings,
+  // or explicit JSON bodies. Missing/unknown values intentionally default
+  // to Real Mode to preserve existing backend behavior.
+  const headerValue = input.request?.headers[DASHBOARD_RUNTIME_MODE_HEADER.toLowerCase()];
+  const headerText = Array.isArray(headerValue) ? headerValue[0] : headerValue;
+  const queryMode = input.url?.searchParams.get('runtimeMode') ?? input.url?.searchParams.get('mode');
+  const bodyMode = isJsonObject(input.body)
+    ? input.body.runtimeMode ?? input.body.mode ?? null
+    : null;
+
+  return normalizeDashboardRuntimeMode(headerText ?? queryMode ?? bodyMode);
 }
 
 async function loadEnvValues(): Promise<EnvValues> {

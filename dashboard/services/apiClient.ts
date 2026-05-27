@@ -80,7 +80,15 @@ export class ApiRequestError extends Error {
 
 const transitSubscribers = new Set<TransitListener>();
 const REQUEST_ID_HEADER = 'X-Dashboard-Request-Id';
+const RUNTIME_MODE_HEADER = 'X-Dashboard-Runtime-Mode';
+type DashboardRuntimeMode = 'test' | 'real';
+let dashboardRuntimeMode: DashboardRuntimeMode | null = null;
 let nextTransitId = 1;
+
+// Stores the selected dashboard runtime mode for subsequent API calls.
+export function setDashboardRuntimeMode(mode: DashboardRuntimeMode | null): void {
+  dashboardRuntimeMode = mode === 'test' || mode === 'real' ? mode : null;
+}
 
 // Registers a listener for live request/response transit records.
 export function subscribeTransit(listener: TransitListener): () => boolean {
@@ -135,6 +143,10 @@ export async function requestJson<TPayload = unknown>(
     ...headers,
     [REQUEST_ID_HEADER]: String(transitId),
   };
+
+  if (dashboardRuntimeMode) {
+    requestHeaders[RUNTIME_MODE_HEADER] = dashboardRuntimeMode;
+  }
 
   const init: RequestInit = {
     method,

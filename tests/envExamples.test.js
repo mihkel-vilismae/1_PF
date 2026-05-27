@@ -33,8 +33,11 @@ function parseEnvFile(filePath) {
   return env;
 }
 
-test('test.example.env keeps credentials empty and test paths isolated', () => {
-  const env = parseEnvFile('test.example.env');
+function assertTestEnvValues(env) {
+  /**
+   * Verifies the reusable test env shape without duplicating assertions for
+   * the checked-in test.env and redacted test.example.env files.
+   */
 
   assert.equal(env.get('user'), '');
   assert.equal(env.get('pw'), '');
@@ -45,6 +48,14 @@ test('test.example.env keeps credentials empty and test paths isolated', () => {
   assert.equal(env.get('FULL_LOG'), 'test_runtime_data/logs/full_log.log');
   assert.equal(env.get('ICLOUDPD_COOKIE_DIR'), 'test_runtime_data/icloudpd_cookies');
   assert.equal(env.get('ICLOUDPD_RAW_STDIO_LOG_PATH'), 'test_runtime_data/private_logs/icloudpd_raw_stdio.log');
+}
+
+test('test.example.env keeps credentials empty and test paths isolated', () => {
+  assertTestEnvValues(parseEnvFile('test.example.env'));
+});
+
+test('test.env is a runnable redacted copy of the isolated test environment', () => {
+  assertTestEnvValues(parseEnvFile('test.env'));
 });
 
 test('example.env keeps real log paths inside runtime_data logs', () => {
@@ -54,4 +65,8 @@ test('example.env keeps real log paths inside runtime_data logs', () => {
   assert.equal(env.get('DB_PATH'), 'runtime_data/photo_frame.sqlite');
   assert.equal(env.get('LOG_DIR'), 'runtime_data/logs');
   assert.equal(env.get('FULL_LOG'), 'runtime_data/logs/full_log.log');
+  assert.equal(env.get('TEST_DB_PATH'), 'test_runtime_data/test_photo_frame.sqlite');
+  assert.equal(env.get('TEST_DOWNLOAD_DIR'), 'test_runtime_data/downloads');
+  assert.equal(env.get('TEST_LOG_DIR'), 'test_runtime_data/logs');
+  assert.equal(env.get('TEST_FULL_LOG'), 'test_runtime_data/logs/full_log.log');
 });

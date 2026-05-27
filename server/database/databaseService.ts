@@ -21,6 +21,7 @@ interface EnvValues {
 
 interface DatabaseActionContext {
   envValues: EnvValues;
+  runtimeMode?: 'real' | 'test';
 }
 
 interface DatabaseStatus {
@@ -32,6 +33,7 @@ interface DatabaseStatus {
   parentDirectory: string;
   parentDirectoryExists: boolean;
   inspectRuntime: 'python sqlite3 bridge';
+  runtimeMode?: 'real' | 'test';
 }
 
 interface DatabaseArtifactSource {
@@ -264,6 +266,7 @@ export function createDatabaseService({ repoRoot, createHttpError }: DatabaseSer
       parentDirectory,
       parentDirectoryExists: await fileExists(parentDirectory),
       inspectRuntime: 'python sqlite3 bridge',
+      runtimeMode: context.runtimeMode,
     };
   }
 

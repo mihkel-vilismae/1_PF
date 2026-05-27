@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.6.6 - 2026-05-27 20:18 EEST
+
+- Added runtime mode env routing so Test Mode database/download/log calls resolve into `test_runtime_data/`.
+- Added `test.env` as a redacted runnable copy of `test.example.env`.
+- Added `docs/TEST_REAL_RUNTIME_BOUNDARY_SKILL.md` to document the reusable Test/Real boundary skill.
+- Added regression tests for mode env isolation and frontend runtime mode header propagation.
+
 ## 0.6.5 - 2026-05-27 20:07 EEST
 
 - Added `test.example.env` with redacted credentials and isolated test-mode runtime paths under `test_runtime_data/`, including downloads, logs, iCloudPD cookie storage, private raw-stdio log storage, and `test_photo_frame.sqlite`.
