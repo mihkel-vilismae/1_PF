@@ -157,6 +157,7 @@ export function renderTestView(state, dashboardVisualMode: DashboardVisualMode =
           </div>
           ${renderB5ActivitySourceSelector(b5ActivityDetection)}
           ${renderB5ActivityTestRunner(b5ActivityDetection)}
+          ${renderB5ActivityResults(b5ActivityDetection)}
           <label class="field-label">
             <span>Inactivity timeout</span>
             <div class="inline-field">
@@ -286,6 +287,28 @@ function renderB5ActivityTestRunner(activityDetection) {
         <button class="button button--primary" data-action="start-b5-activity-test" ${running ? 'disabled' : ''}>Start Test</button>
       </div>
       <p class="notice notice--neutral b5-activity-phase">${phaseLabel}</p>
+    </section>
+  `;
+}
+
+function renderB5ActivityResults(activityDetection) {
+  const rows = B5_ACTIVITY_SOURCES.map((source) => {
+    const result = activityDetection.results[source];
+    const status = result?.status ?? 'pending';
+    const message = result?.message ?? 'Waiting for test run.';
+    return `
+      <div class="b5-activity-result b5-activity-result--${status}" data-b5-activity-result="${source}">
+        <strong>${getB5ActivitySourceLabel(source)}</strong>
+        <span>${status.replace('_', ' ')}</span>
+        <small>${message}</small>
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <section class="selector-card selector-card--hybrid b5-activity-results" aria-label="B5 activity detection results">
+      <p class="selector-card__label">Activity detection results</p>
+      <div class="b5-activity-results__grid">${rows}</div>
     </section>
   `;
 }

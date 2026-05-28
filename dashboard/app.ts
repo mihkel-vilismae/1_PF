@@ -35,6 +35,7 @@ import {
   setB5ActivityTestCountdownValue,
   startB5ActivityDetectionWindow,
   completeB5ActivityDetectionWindow,
+  markB5ActivityDetected,
   subscribe,
 } from './services/runtimeTruth.ts';
 import { renderDefinitionList, renderHistory, renderModal } from './services/renderers.ts';
@@ -102,6 +103,23 @@ const {
   handleInspectLeave,
   hideInspectTooltip,
 } = createGuideTooltipController({ getState });
+
+
+// Records mouse movement only while the View B/B5 activity test window is active.
+function handleB5ActivityMouseMove(): void {
+  const activityState = getState().simulation?.b5ActivityDetection;
+  if (activityState?.phase === 'detecting' && activityState?.selectedSources?.mouse) {
+    markB5ActivityDetected('mouse');
+  }
+}
+
+// Records keyboard input only while the View B/B5 activity test window is active.
+function handleB5ActivityKeyDown(): void {
+  const activityState = getState().simulation?.b5ActivityDetection;
+  if (activityState?.phase === 'detecting' && activityState?.selectedSources?.keyboard) {
+    markB5ActivityDetected('keyboard');
+  }
+}
 
 // Renders the current dashboard state and the component version badge.
 function render() {
@@ -1381,6 +1399,8 @@ startSchedulerRunLogPolling();
 startOsPlaybackObservabilityPolling();
 void loadBackendVersion();
 
+document.addEventListener('mousemove', handleB5ActivityMouseMove);
+document.addEventListener('keydown', handleB5ActivityKeyDown);
 document.addEventListener('fullscreenchange', syncOsPlaybackFullscreenStateFromBrowser);
 
 window.addEventListener('keydown', (event) => {

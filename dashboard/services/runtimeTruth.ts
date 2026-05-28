@@ -13,8 +13,10 @@ import {
 import { normalizePlaybackRenderingState, type PlaybackRenderingMode, type PlaybackRenderingPlatform } from './playbackRenderer.ts';
 import {
   buildB5ActivityResult,
+  completeB5ActivityResults,
   isB5ActivitySource,
   normalizeB5ActivityDetectionState,
+  prepareB5ActivityResults,
   type B5ActivitySource,
 } from './viewBActivityDetection.ts';
 

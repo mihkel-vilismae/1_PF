@@ -14,6 +14,11 @@ export type B5ActivityResult = {
   message: string;
 };
 
+export type B5ActivityCompletionOptions = {
+  detectedSources: Partial<Record<B5ActivitySource, boolean>>;
+  pirAvailable: boolean;
+};
+
 export type B5ActivityDetectionState = {
   selectedSources: Record<B5ActivitySource, boolean>;
   phase: B5ActivityPhase;
@@ -58,6 +63,35 @@ export function buildB5ActivityResult(status: B5ActivityResultStatus): B5Activit
   };
 
   return { status, message: messages[status] };
+}
+
+// Prepares per-source results when a View B/B5 activity test run begins.
+export function prepareB5ActivityResults(state: B5ActivityDetectionState): Record<B5ActivitySource, B5ActivityResult> {
+  return Object.fromEntries(B5_ACTIVITY_SOURCES.map((source) => {
+    if (!state.selectedSources[source]) {
+      return [source, buildB5ActivityResult('skipped')];
+    }
+    if (source === 'pir' && state.pirAvailability !== 'available') {
+      return [source, buildB5ActivityResult('unavailable')];
+    }
+    return [source, buildB5ActivityResult('pending')];
+  })) as Record<B5ActivitySource, B5ActivityResult>;
+}
+
+// Finalizes per-source results when a View B/B5 activity detection window closes.
+export function completeB5ActivityResults(
+  state: B5ActivityDetectionState,
+  options: B5ActivityCompletionOptions,
+): Record<B5ActivitySource, B5ActivityResult> {
+  return Object.fromEntries(B5_ACTIVITY_SOURCES.map((source) => {
+    if (!state.selectedSources[source]) {
+      return [source, buildB5ActivityResult('skipped')];
+    }
+    if (source === 'pir' && !options.pirAvailable) {
+      return [source, buildB5ActivityResult('unavailable')];
+    }
+    return [source, buildB5ActivityResult(options.detectedSources[source] ? 'detected' : 'not_detected')];
+  })) as Record<B5ActivitySource, B5ActivityResult>;
 }
 
 // Returns a human-readable source label for View B/B5 rendering and history logs.
