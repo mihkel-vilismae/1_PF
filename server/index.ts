@@ -464,6 +464,7 @@ const routes: Record<string, RouteHandler> = {
   'POST /api/runtime/playback/select-current': runtimePlaybackSelectCurrentHandler,
   'GET /api/runtime/playback/current': runtimePlaybackCurrentHandler,
   'GET /api/runtime/playback/queue': runtimePlaybackQueueHandler,
+  'GET /api/runtime/playback/observability': runtimePlaybackObservabilityHandler,
   // Live runtime projection: returns a combined runtime projection for the live monitor (View D).
   // This read‑only endpoint provides run state, worker health, playback and screen status,
   // along with field provenance.  It should never mutate runtime truth or lock state.
@@ -1490,6 +1491,244 @@ async function runtimePlaybackQueueHandler({ context, url }: Pick<HandlerArgs, '
       mediaBasePath: contract.mediaBasePath,
     },
   };
+}
+
+
+async function runtimePlaybackObservabilityHandler({ context, url }: Pick<HandlerArgs, 'context' | 'url'>): Promise<HandlerResult> {
+  const platform = normalizePlaybackObservabilityPlatform(url.searchParams.get('platform'));
+  const limit = normalizePlaybackObservabilityLimit(url.searchParams.get('limit'));
+  const schedulerRunLog = platform === 'windows'
+    ? await buildWindowsCronRunLog()
+    : await buildRaspberryCronRunLog(context);
+  const logs = await buildPlaybackObservabilityLogs(context, limit);
+  const workers = buildPlaybackObservabilityWorkers(platform, schedulerRunLog);
+
+  return {
+    statusCode: 200,
+    payload: {
+      status: 'ok',
+      messages: [
+        `${platform === 'windows' ? 'Windows CronEmulator' : 'Raspberry crontab'} observability was read without mutating playback state.`,
+        logs.message,
+      ],
+      platform,
+      schedulerTarget: platform === 'windows'
+        ? SCHEDULER_TARGETS.windowsCronEmulator
+        : SCHEDULER_TARGETS.raspberryRealCrontab,
+      runtimeMode: context.runtimeMode,
+      workers,
+      scheduler: schedulerRunLog,
+      logs,
+      schemaVersion: 1,
+      generatedAt: new Date().toISOString(),
+    },
+  };
+}
+
+
+function normalizePlaybackObservabilityPlatform(value: unknown): 'windows' | 'raspberry' {
+  return value === 'raspberry' ? 'raspberry' : 'windows';
+}
+
+function normalizePlaybackObservabilityLimit(value: unknown): number {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) {
+    return 40;
+  }
+  return Math.max(5, Math.min(100, Math.trunc(parsed)));
+}
+
+async function buildPlaybackObservabilityLogs(context: RequestContext, limit: number) {
+  const logDirectory = resolveRepoPath(context.envValues.LOG_DIR || DEFAULT_LOG_DIR);
+  const errorLogPath = path.join(logDirectory, 'error.log');
+  const fullLogPath = path.join(logDirectory, 'full_log.log');
+  const errorEntries = (await readProjectLogEntries(errorLogPath, limit, 'error-log'))
+    .filter((entry) => entry.type === 'error')
+    .slice(0, limit);
+  const mainEntries = (await readProjectLogEntries(fullLogPath, limit, 'full-log')).slice(0, limit);
+
+  return {
+    source: 'project-jsonl-log-files',
+    observed: errorEntries.length > 0 || mainEntries.length > 0,
+    message: `Read ${errorEntries.length} error entr${errorEntries.length === 1 ? 'y' : 'ies'} and ${mainEntries.length} main log entr${mainEntries.length === 1 ? 'y' : 'ies'} from ${logDirectory}.`,
+    logDirectory,
+    error: {
+      source: 'error.log',
+      logFilePath: errorLogPath,
+      entries: errorEntries,
+    },
+    main: {
+      source: 'full_log.log',
+      logFilePath: fullLogPath,
+      entries: mainEntries,
+    },
+  };
+}
+
+async function readProjectLogEntries(filePath: string, limit: number, logKind: string): Promise<JsonObject[]> {
+  const lines = await readRecentLines(filePath, Math.max(limit * 4, limit));
+  return lines
+    .map((line) => parseJsonLine(line))
+    .filter((entry): entry is JsonObject => entry !== null)
+    .map((entry, index) => buildProjectLogTerminalEntry(entry, index, logKind))
+    .filter((entry): entry is JsonObject => entry !== null)
+    .slice(0, limit);
+}
+
+function buildProjectLogTerminalEntry(entry: JsonObject, index: number, logKind: string): JsonObject | null {
+  const atIso = typeof entry.at === 'string' ? entry.at : new Date().toISOString();
+  const level = typeof entry.level === 'string' ? entry.level.toLowerCase() : 'info';
+  const message = typeof entry.message === 'string' ? entry.message : '';
+  if (!message) {
+    return null;
+  }
+
+  return {
+    id: `${logKind}:${atIso}:${index}:${message.slice(0, 40)}`,
+    at: formatLocalTime(atIso),
+    atIso,
+    type: normalizePlaybackObservabilityLogType(level),
+    message,
+    source: typeof entry.source === 'string' ? entry.source : logKind,
+    details: isJsonObject(entry.details) ? entry.details : null,
+  };
+}
+
+function normalizePlaybackObservabilityLogType(value: string): 'info' | 'error' | 'warning' | 'success' {
+  if (value === 'error') {
+    return 'error';
+  }
+  if (value === 'warning' || value === 'warn') {
+    return 'warning';
+  }
+  if (value === 'success') {
+    return 'success';
+  }
+  return 'info';
+}
+
+function buildPlaybackObservabilityWorkers(platform: 'windows' | 'raspberry', schedulerRunLog: JsonObject): JsonObject[] {
+  const entries = Array.isArray(schedulerRunLog.entries)
+    ? schedulerRunLog.entries.filter((entry): entry is JsonObject => isJsonObject(entry))
+    : [];
+
+  return [
+    buildPlaybackObservabilityWorker({
+      key: 'regular-state-worker',
+      label: 'Regular state worker',
+      summary: 'Owns regular Download → Index → GPS parser → Geocode → Queue checks.',
+      source: schedulerRunLog.source,
+      platform,
+      latest: findLatestWorkerEntry(entries, 'regular'),
+    }),
+    buildPlaybackObservabilityWorker({
+      key: 'playback-worker',
+      label: 'Playback worker',
+      summary: 'Selects current playable queue items while UI/fullscreen owns rendering.',
+      source: schedulerRunLog.source,
+      platform,
+      latest: findLatestWorkerEntry(entries, 'playback'),
+    }),
+    buildPlaybackObservabilityWorker({
+      key: 'on-off-worker',
+      label: 'On-off worker',
+      summary: 'Tracks screen wake/keep-on state before PIR/mouse/keyboard reuse.',
+      source: schedulerRunLog.source,
+      platform,
+      latest: findLatestWorkerEntry(entries, 'screen'),
+    }),
+  ];
+}
+
+function buildPlaybackObservabilityWorker({
+  key,
+  label,
+  summary,
+  source,
+  platform,
+  latest,
+}: {
+  key: string;
+  label: string;
+  summary: string;
+  source: unknown;
+  platform: 'windows' | 'raspberry';
+  latest: JsonObject | null;
+}): JsonObject {
+  if (!latest) {
+    return {
+      key,
+      label,
+      status: 'Waiting',
+      lastCalled: 'Never',
+      sinceLastCall: 'No worker call observed yet',
+      summary: `${summary} Waiting for ${platform === 'windows' ? 'CronEmulator' : 'crontab'} evidence.`,
+      source: typeof source === 'string' ? source : 'scheduler-observability',
+      highlight: false,
+    };
+  }
+
+  const atIso = typeof latest.atIso === 'string' ? latest.atIso : new Date().toISOString();
+  const failed = latest.type === 'cron-run-failed' || latest.type === 'error' || Number(latest.status) > 0;
+  const ageMs = Date.now() - Date.parse(atIso);
+  const recent = Number.isFinite(ageMs) && ageMs >= 0 && ageMs <= 15000;
+  return {
+    key,
+    label,
+    status: failed ? 'Error' : recent ? 'Recent' : 'Observed',
+    lastCalled: formatLocalTime(atIso),
+    sinceLastCall: formatRelativeDuration(atIso),
+    summary: `${summary} Latest evidence: ${typeof latest.message === 'string' ? latest.message : 'worker row observed'}`,
+    source: typeof source === 'string' ? source : 'scheduler-observability',
+    highlight: recent,
+  };
+}
+
+function findLatestWorkerEntry(entries: JsonObject[], worker: 'regular' | 'playback' | 'screen'): JsonObject | null {
+  const matches = entries.filter((entry) => playbackWorkerEntryMatches(entry, worker));
+  if (!matches.length) {
+    return null;
+  }
+  return matches.sort((a, b) => Date.parse(String(b.atIso ?? '')) - Date.parse(String(a.atIso ?? '')))[0] ?? null;
+}
+
+function playbackWorkerEntryMatches(entry: JsonObject, worker: 'regular' | 'playback' | 'screen'): boolean {
+  const haystack = [
+    entry.jobName,
+    entry.endpoint,
+    entry.rawCronRow,
+    entry.command,
+    entry.message,
+  ].map((value) => typeof value === 'string' ? value.toLowerCase() : '').join(' ');
+
+  if (worker === 'playback') {
+    return haystack.includes(SCHEDULER_WORKER_NAMES.playback) || haystack.includes('playback');
+  }
+  if (worker === 'screen') {
+    return haystack.includes(SCHEDULER_WORKER_NAMES.screenOnOff) || haystack.includes('screen') || haystack.includes('on-off') || haystack.includes('on_off');
+  }
+  return haystack.includes(SCHEDULER_WORKER_NAMES.regularStage) || haystack.includes('regular') || haystack.includes('stage_worker') || haystack.includes('regular_stage');
+}
+
+function formatRelativeDuration(atIso: string): string {
+  const parsed = Date.parse(atIso);
+  if (!Number.isFinite(parsed)) {
+    return 'Unknown';
+  }
+  const seconds = Math.max(0, Math.floor((Date.now() - parsed) / 1000));
+  if (seconds < 60) {
+    return `${seconds}s ago`;
+  }
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) {
+    return `${minutes}m ago`;
+  }
+  const hours = Math.floor(minutes / 60);
+  if (hours < 48) {
+    return `${hours}h ago`;
+  }
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
 }
 
 async function runtimePlaybackSelectCurrentHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {

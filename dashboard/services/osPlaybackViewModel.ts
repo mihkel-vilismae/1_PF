@@ -117,6 +117,27 @@ type OsPlaybackContractStateLike = {
   contract?: PlaybackContractLike;
 };
 
+type PlaybackObservabilityLike = {
+  status?: unknown;
+  messages?: unknown;
+  workers?: unknown[];
+  scheduler?: {
+    entries?: unknown[];
+    message?: unknown;
+  };
+  logs?: {
+    error?: { entries?: unknown[]; message?: unknown };
+    main?: { entries?: unknown[]; message?: unknown };
+  };
+};
+
+type OsPlaybackObservabilityStateLike = {
+  status?: 'idle' | 'loading' | 'ready' | 'error';
+  loadedAt?: string;
+  error?: string;
+  payload?: PlaybackObservabilityLike;
+};
+
 type OsPlaybackRotationStateLike = {
   activeIndex?: unknown;
   paused?: unknown;
@@ -134,6 +155,7 @@ type RuntimeStateLike = {
   };
   logs?: Record<string, Array<Record<string, unknown>>>;
   osPlayback?: Partial<Record<OsPlaybackPlatform, OsPlaybackContractStateLike>>;
+  osPlaybackObservability?: Partial<Record<OsPlaybackPlatform, OsPlaybackObservabilityStateLike>>;
   osPlaybackRotation?: Partial<Record<OsPlaybackPlatform, OsPlaybackRotationStateLike>>;
 };
 
@@ -178,6 +200,8 @@ export function buildOsPlaybackViewModel(state: RuntimeStateLike, platform: OsPl
   const copy = PLATFORM_COPY[platform];
   const contractState = state.osPlayback?.[platform];
   const playbackContract = contractState?.contract;
+  const observabilityState = state.osPlaybackObservability?.[platform];
+  const observabilityPayload = observabilityState?.payload;
   const fallbackMedia = normalizeCurrentMedia(state.truth?.currentMedia);
   const playbackItems = normalizePlaybackItems(playbackContract, fallbackMedia);
   const defaultActiveIndex = inferDefaultActiveIndex(playbackItems, playbackContract);
@@ -207,10 +231,10 @@ export function buildOsPlaybackViewModel(state: RuntimeStateLike, platform: OsPl
     playbackItems,
     rotation,
     stageItems: buildStageItems(state),
-    workers: buildWorkerItems(state),
-    schedulerLog: buildSchedulerLog(platform),
-    errorLog: buildErrorLog(state, platform),
-    mainLog: buildMainLog(state, platform),
+    workers: buildWorkerItems(state, observabilityPayload),
+    schedulerLog: buildSchedulerLog(platform, observabilityPayload, observabilityState),
+    errorLog: buildErrorLog(state, platform, observabilityPayload, observabilityState),
+    mainLog: buildMainLog(state, platform, observabilityPayload, observabilityState),
   };
 }
 
@@ -230,9 +254,18 @@ function buildStageItems(state: RuntimeStateLike): PlaybackStageViewModel[] {
 }
 
 /**
- * Builds the regular/playback/on-off worker status row from available dashboard state.
+ * Builds the regular/playback/on-off worker status row from backend observability when present.
  */
-function buildWorkerItems(state: RuntimeStateLike): PlaybackWorkerViewModel[] {
+function buildWorkerItems(state: RuntimeStateLike, observability: PlaybackObservabilityLike | null | undefined): PlaybackWorkerViewModel[] {
+  const backendWorkers = Array.isArray(observability?.workers) ? observability?.workers ?? [] : [];
+  const normalizedBackendWorkers = backendWorkers
+    .map(normalizeObservabilityWorker)
+    .filter((worker): worker is PlaybackWorkerViewModel => worker !== null);
+
+  if (normalizedBackendWorkers.length > 0) {
+    return normalizedBackendWorkers;
+  }
+
   const playbackWorker = state.runningProcess?.playbackWorker ?? {};
   const screenWorker = state.runningProcess?.screenWorker ?? {};
 
@@ -265,9 +298,21 @@ function buildWorkerItems(state: RuntimeStateLike): PlaybackWorkerViewModel[] {
 }
 
 /**
- * Creates placeholder scheduler evidence without claiming live cron/crontab integration.
+ * Creates scheduler evidence from backend observability instead of placeholders when available.
  */
-function buildSchedulerLog(platform: OsPlaybackPlatform): PlaybackLogEntryViewModel[] {
+function buildSchedulerLog(
+  platform: OsPlaybackPlatform,
+  observability: PlaybackObservabilityLike | null | undefined,
+  observabilityState: OsPlaybackObservabilityStateLike | null | undefined,
+): PlaybackLogEntryViewModel[] {
+  const entries = normalizeObservabilityLogEntries(observability?.scheduler?.entries);
+  if (entries.length > 0) {
+    return entries;
+  }
+  if (observabilityState?.status === 'error') {
+    return [{ at: 'error', type: 'error', message: `Scheduler observability failed: ${readText(observabilityState.error, 'unknown error')}` }];
+  }
+
   const schedulerName = platform === OS_PLAYBACK_PLATFORMS.windows ? 'CronEmulator' : 'crontab';
   return [
     { at: 'pending', type: 'info', message: `${schedulerName} regular state worker evidence will appear here.` },
@@ -277,52 +322,125 @@ function buildSchedulerLog(platform: OsPlaybackPlatform): PlaybackLogEntryViewMo
 }
 
 /**
- * Builds the error-only log board from existing dashboard log state.
+ * Builds the error-only log board from backend error.log observability when available.
  */
-function buildErrorLog(state: RuntimeStateLike, platform: OsPlaybackPlatform): PlaybackLogEntryViewModel[] {
-  const entries = Object.values(state.logs ?? {})
+function buildErrorLog(
+  state: RuntimeStateLike,
+  platform: OsPlaybackPlatform,
+  observability: PlaybackObservabilityLike | null | undefined,
+  observabilityState: OsPlaybackObservabilityStateLike | null | undefined,
+): PlaybackLogEntryViewModel[] {
+  const entries = normalizeObservabilityLogEntries(observability?.logs?.error?.entries);
+  if (entries.length > 0) {
+    return entries.filter((entry) => entry.type === 'error').slice(0, 8);
+  }
+  if (observabilityState?.status === 'error') {
+    return [{ at: 'error', type: 'error', message: `Error-log observability failed: ${readText(observabilityState.error, 'unknown error')}` }];
+  }
+
+  const localEntries = Object.values(state.logs ?? {})
     .flat()
     .filter((entry) => readText(entry.type, '').toLowerCase() === 'error')
     .slice(0, 5)
     .map(toPlaybackLogEntry);
 
-  if (entries.length > 0) {
-    return entries;
+  if (localEntries.length > 0) {
+    return localEntries;
   }
 
   return [{ at: 'pending', type: 'info', message: `${platformLabel(platform)} error-only log has no errors yet.` }];
 }
 
 /**
- * Builds the main runtime log board from available dashboard logs.
+ * Builds the main runtime log board from backend full_log.log observability when available.
  */
-function buildMainLog(state: RuntimeStateLike, platform: OsPlaybackPlatform): PlaybackLogEntryViewModel[] {
+function buildMainLog(
+  state: RuntimeStateLike,
+  platform: OsPlaybackPlatform,
+  observability: PlaybackObservabilityLike | null | undefined,
+  observabilityState: OsPlaybackObservabilityStateLike | null | undefined,
+): PlaybackLogEntryViewModel[] {
+  const entries = normalizeObservabilityLogEntries(observability?.logs?.main?.entries);
+  if (entries.length > 0) {
+    return entries.slice(0, 8);
+  }
+  if (observabilityState?.status === 'error') {
+    return [{ at: 'error', type: 'error', message: `Main-log observability failed: ${readText(observabilityState.error, 'unknown error')}` }];
+  }
+
   const sourceKeys = platform === OS_PLAYBACK_PLATFORMS.windows ? ['D', 'B4', 'B3.5'] : ['D', 'B4', 'B3.5'];
-  const entries = sourceKeys
+  const localEntries = sourceKeys
     .flatMap((key) => state.logs?.[key] ?? [])
     .slice(0, 5)
     .map(toPlaybackLogEntry);
 
-  if (entries.length > 0) {
-    return entries;
+  if (localEntries.length > 0) {
+    return localEntries;
   }
 
   return [{ at: 'pending', type: 'info', message: `${platformLabel(platform)} main runtime log is waiting for playback activity.` }];
 }
 
 /**
+ * Normalizes a backend worker row into the playback worker view model.
+ */
+function normalizeObservabilityWorker(value: unknown): PlaybackWorkerViewModel | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return null;
+  }
+  const worker = value as Record<string, unknown>;
+  return {
+    key: readText(worker.key, 'worker'),
+    label: readText(worker.label, 'Worker'),
+    status: readText(worker.status, 'Waiting'),
+    lastCalled: readText(worker.lastCalled, 'Never'),
+    sinceLastCall: readText(worker.sinceLastCall, 'No worker call observed yet'),
+    summary: readText(worker.summary, 'Waiting for worker observability evidence.'),
+  };
+}
+
+/**
+ * Normalizes backend terminal entries into the renderer's log row shape.
+ */
+function normalizeObservabilityLogEntries(value: unknown): PlaybackLogEntryViewModel[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value
+    .filter((entry): entry is Record<string, unknown> => Boolean(entry && typeof entry === 'object' && !Array.isArray(entry)))
+    .map((entry) => ({
+      at: readText(entry.at, readText(entry.atIso, 'unknown')),
+      type: normalizeLogEntryType(entry.type),
+      message: readText(entry.message, 'No message'),
+    }));
+}
+
+/**
  * Normalizes a dashboard log entry into the playback terminal row shape.
  */
 function toPlaybackLogEntry(entry: Record<string, unknown>): PlaybackLogEntryViewModel {
-  const normalizedType = readText(entry.type, 'info').toLowerCase();
-  const type = ['info', 'error', 'warning', 'success'].includes(normalizedType)
-    ? normalizedType as PlaybackLogEntryViewModel['type']
-    : 'info';
   return {
     at: readText(entry.atTallinn, readText(entry.at, 'unknown')),
-    type,
+    type: normalizeLogEntryType(entry.type),
     message: readText(entry.message, 'No message'),
   };
+}
+
+/**
+ * Narrows arbitrary terminal row types to the four CSS-supported severities.
+ */
+function normalizeLogEntryType(value: unknown): PlaybackLogEntryViewModel['type'] {
+  const normalizedType = readText(value, 'info').toLowerCase();
+  if (normalizedType === 'error' || normalizedType === 'cron-run-failed') {
+    return 'error';
+  }
+  if (normalizedType === 'warning' || normalizedType === 'warn') {
+    return 'warning';
+  }
+  if (normalizedType === 'success' || normalizedType === 'cron-run-success') {
+    return 'success';
+  }
+  return 'info';
 }
 
 /**

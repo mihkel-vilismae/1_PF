@@ -52,7 +52,7 @@ import { renderLastRunView } from './views/lastRunView.ts';
 import { renderRunningProcessView } from './views/runningProcessView.ts';
 import { renderDatabaseViewerView } from './views/databaseViewerView.ts';
 import { renderOsPlaybackFullscreenOverlay, renderOsPlaybackView } from './views/osPlaybackView.ts';
-import { OS_PLAYBACK_PLATFORMS, type OsPlaybackPlatform } from './services/osPlaybackViewModel.ts';
+import { buildOsPlaybackViewModel, OS_PLAYBACK_PLATFORMS, type OsPlaybackPlatform, type PlaybackLogEntryViewModel } from './services/osPlaybackViewModel.ts';
 import { requestJson, setDashboardRuntimeMode } from './services/apiClient.ts';
 
 const app = document.getElementById('app');
@@ -61,6 +61,7 @@ type DashboardVisualMode = 'test' | 'real';
 const TRANSIT_EVENT_NAME = 'dashboard:transit';
 const COPY_HISTORY_LABEL = 'copy all log';
 const SCHEDULER_RUN_LOG_POLL_MS = 5000;
+const OS_PLAYBACK_OBSERVABILITY_POLL_MS = 5000;
 const OS_PLAYBACK_ROTATION_INTERVAL_SECONDS = 12;
 let dashboardVisualMode: DashboardVisualMode | null = null;
 type BackendVersionState = {
@@ -437,12 +438,64 @@ async function loadOsPlaybackContract(platform: OsPlaybackPlatform): Promise<voi
   }
 }
 
+
+// Loads backend scheduler/log/worker observability for the OS playback views.
+async function loadOsPlaybackObservability(platform: OsPlaybackPlatform): Promise<void> {
+  patchState((draft) => {
+    const observability = ensureMutableOsPlaybackObservabilityState(draft);
+    const existing = observability[platform] as Record<string, unknown> | undefined;
+    observability[platform] = {
+      ...(existing ?? {}),
+      status: existing?.payload ? 'ready' : 'loading',
+      loadedAt: new Date().toISOString(),
+    };
+  });
+
+  try {
+    const payload = await requestJson<Record<string, unknown>>(`/api/runtime/playback/observability?platform=${platform}&limit=40`, {
+      headers: { Accept: 'application/json' },
+      operation: `Load ${platform} playback observability`,
+    });
+    patchState((draft) => {
+      const observability = ensureMutableOsPlaybackObservabilityState(draft);
+      observability[platform] = {
+        status: 'ready',
+        loadedAt: new Date().toISOString(),
+        payload,
+      };
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    patchState((draft) => {
+      const observability = ensureMutableOsPlaybackObservabilityState(draft);
+      observability[platform] = {
+        status: 'error',
+        loadedAt: new Date().toISOString(),
+        error: message,
+      };
+    });
+    pushHistory('PLAYBACK', 'error', `${getOsPlaybackLabel(platform)} playback observability refresh failed.`, {
+      platform,
+      endpoint: '/api/runtime/playback/observability',
+      error: message,
+    });
+  }
+}
+
 // Ensures the dynamic runtime-truth state has a mutable OS playback bucket.
 function ensureMutableOsPlaybackState(draft: Record<string, unknown>): Record<string, unknown> {
   if (!draft.osPlayback || typeof draft.osPlayback !== 'object' || Array.isArray(draft.osPlayback)) {
     draft.osPlayback = {};
   }
   return draft.osPlayback as Record<string, unknown>;
+}
+
+// Ensures the dynamic runtime-truth state has a mutable OS playback observability bucket.
+function ensureMutableOsPlaybackObservabilityState(draft: Record<string, unknown>): Record<string, unknown> {
+  if (!draft.osPlaybackObservability || typeof draft.osPlaybackObservability !== 'object' || Array.isArray(draft.osPlaybackObservability)) {
+    draft.osPlaybackObservability = {};
+  }
+  return draft.osPlaybackObservability as Record<string, unknown>;
 }
 
 
@@ -689,6 +742,7 @@ function bindEvents() {
       const osPlaybackPlatform = getOsPlaybackPlatformForView(id);
       if (osPlaybackPlatform) {
         void loadOsPlaybackContract(osPlaybackPlatform);
+        void loadOsPlaybackObservability(osPlaybackPlatform);
       }
     });
   });
@@ -700,6 +754,7 @@ function bindEvents() {
         ? OS_PLAYBACK_PLATFORMS.raspberry
         : OS_PLAYBACK_PLATFORMS.windows;
       void loadOsPlaybackContract(osPlaybackPlatform);
+      void loadOsPlaybackObservability(osPlaybackPlatform);
     });
   });
 
@@ -786,6 +841,35 @@ function bindEvents() {
   app.querySelectorAll<HTMLButtonElement>('[data-scheduler-endpoint-row-expand]').forEach((button) => {
     button.addEventListener('click', () => {
       openSchedulerEndpointLogRow(button.dataset.schedulerEndpointRowExpand);
+    });
+  });
+
+
+  app.querySelectorAll<HTMLButtonElement>('[data-os-terminal-copy-all-platform]').forEach((button) => {
+    button.addEventListener('click', () => {
+      copyOsPlaybackTerminalToClipboard(
+        normalizeOsPlaybackPlatform(button.dataset.osTerminalCopyAllPlatform),
+        normalizeOsTerminalKind(button.dataset.osTerminalCopyAllKind),
+      );
+    });
+  });
+
+  app.querySelectorAll<HTMLButtonElement>('[data-os-terminal-clear-platform]').forEach((button) => {
+    button.addEventListener('click', () => {
+      clearOsPlaybackTerminal(
+        normalizeOsPlaybackPlatform(button.dataset.osTerminalClearPlatform),
+        normalizeOsTerminalKind(button.dataset.osTerminalClearKind),
+      );
+    });
+  });
+
+  app.querySelectorAll<HTMLButtonElement>('[data-os-terminal-row-expand-platform]').forEach((button) => {
+    button.addEventListener('click', () => {
+      openOsPlaybackTerminalRow(
+        normalizeOsPlaybackPlatform(button.dataset.osTerminalRowExpandPlatform),
+        normalizeOsTerminalKind(button.dataset.osTerminalRowExpandKind),
+        Number(button.dataset.osTerminalRowExpandIndex),
+      );
     });
   });
 
@@ -995,6 +1079,98 @@ function bindEvents() {
   });
 }
 
+
+// Copies one OS playback terminal panel as readable JSON for debugging.
+async function copyOsPlaybackTerminalToClipboard(platform: OsPlaybackPlatform, kind: string): Promise<void> {
+  const entries = getOsPlaybackTerminalEntries(platform, kind);
+  const payload = JSON.stringify({
+    exportedAt: new Date().toISOString(),
+    source: `${getOsPlaybackLabel(platform)} ${kind} terminal`,
+    platform,
+    kind,
+    count: entries.length,
+    entries,
+  }, null, 2);
+
+  try {
+    await navigator.clipboard.writeText(payload);
+    pushHistory('PLAYBACK', 'success', `${getOsPlaybackLabel(platform)} ${kind} terminal copied to clipboard.`, {
+      action: 'copy-os-playback-terminal',
+      platform,
+      kind,
+      entryCount: entries.length,
+    });
+  } catch (error) {
+    pushHistory('PLAYBACK', 'error', `${getOsPlaybackLabel(platform)} ${kind} terminal copy failed.`, {
+      action: 'copy-os-playback-terminal',
+      platform,
+      kind,
+      entryCount: entries.length,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+
+// Clears one OS playback terminal panel locally until the next backend refresh.
+function clearOsPlaybackTerminal(platform: OsPlaybackPlatform, kind: string): void {
+  patchState((draft) => {
+    const observability = (draft.osPlaybackObservability as Record<string, Record<string, unknown>> | undefined)?.[platform];
+    const payload = observability?.payload as Record<string, unknown> | undefined;
+    if (!payload) {
+      return;
+    }
+    if (kind === 'scheduler') {
+      const scheduler = payload.scheduler as Record<string, unknown> | undefined;
+      if (scheduler) scheduler.entries = [];
+    } else {
+      const logs = payload.logs as Record<string, Record<string, unknown>> | undefined;
+      const targetLog = logs?.[kind];
+      if (targetLog) targetLog.entries = [];
+    }
+  });
+  pushHistory('PLAYBACK', 'info', `${getOsPlaybackLabel(platform)} ${kind} terminal cleared locally.`, {
+    action: 'clear-os-playback-terminal',
+    platform,
+    kind,
+  });
+}
+
+// Opens a large modal with the selected OS playback terminal row details.
+function openOsPlaybackTerminalRow(platform: OsPlaybackPlatform, kind: string, index: number): void {
+  const entries = getOsPlaybackTerminalEntries(platform, kind);
+  const entry = entries[index];
+  if (!entry) {
+    return;
+  }
+  openModal({
+    kind: 'log',
+    title: `${getOsPlaybackLabel(platform)} ${kind} terminal • ${entry.type.toUpperCase()}`,
+    subtitle: entry.message,
+    entry: {
+      ...entry,
+      platform,
+      terminalKind: kind,
+    },
+  });
+}
+
+// Reads terminal rows from the same view model used by the playback renderer.
+function getOsPlaybackTerminalEntries(platform: OsPlaybackPlatform, kind: string): PlaybackLogEntryViewModel[] {
+  const viewModel = buildOsPlaybackViewModel(getState(), platform);
+  if (kind === 'scheduler') {
+    return viewModel.schedulerLog;
+  }
+  if (kind === 'error') {
+    return viewModel.errorLog;
+  }
+  return viewModel.mainLog;
+}
+
+// Narrows terminal kind values to supported OS playback panels.
+function normalizeOsTerminalKind(value: unknown): string {
+  return value === 'scheduler' || value === 'error' ? value : 'main';
+}
+
 // Confirms destructive NEW AUTH session-file removal before dispatching logout.
 function confirmNewAuthLogout(): boolean {
   return window.confirm('Remove local iCloudPD session files and log out locally? Only continue if you do not need the current authenticated session.');
@@ -1135,6 +1311,7 @@ const tryInitPreload = () => {
 };
 tryInitPreload();
 startSchedulerRunLogPolling();
+startOsPlaybackObservabilityPolling();
 void loadBackendVersion();
 
 document.addEventListener('fullscreenchange', syncOsPlaybackFullscreenStateFromBrowser);
@@ -1174,6 +1351,18 @@ function startSchedulerRunLogPolling() {
     }
     runAction('refresh-scheduler-run-log');
   }, SCHEDULER_RUN_LOG_POLL_MS);
+}
+
+
+// Polls playback observability while an OS playback view is visible.
+function startOsPlaybackObservabilityPolling() {
+  window.setInterval(() => {
+    const platform = getOsPlaybackPlatformForView(getState().activeView);
+    if (!platform) {
+      return;
+    }
+    void loadOsPlaybackObservability(platform);
+  }, OS_PLAYBACK_OBSERVABILITY_POLL_MS);
 }
 
 function escapeHtml(value) {

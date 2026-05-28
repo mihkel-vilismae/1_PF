@@ -2365,3 +2365,18 @@ body[data-dashboard-visual-mode="unselected"] {
   justify-content: flex-end;
   gap: 0.55rem;
 }
+
+/* Slice 4: backend-observed worker states light up when scheduler evidence is recent. */
+.os-worker-card--recent,
+.os-worker-card--observed,
+.os-worker-card--success {
+  box-shadow: 0 0 0 1px rgba(93, 214, 146, 0.40), 0 0 28px rgba(93, 214, 146, 0.12);
+}
+
+.os-worker-card--waiting {
+  opacity: 0.82;
+}
+
+.os-worker-card--error {
+  box-shadow: 0 0 0 1px rgba(255, 96, 96, 0.42), 0 0 28px rgba(255, 96, 96, 0.12);
+}

@@ -89,10 +89,10 @@ export function renderOsPlaybackView(state: RuntimeState, platform: OsPlaybackPl
       </article>
 
       <div class="section-grid section-grid--two os-log-grid">
-        ${renderTerminalPanel(`${view.code}-CRON`, view.schedulerTitle, view.schedulerSummary, view.schedulerLog, 'scheduler')}
-        ${renderTerminalPanel(`${view.code}-ERRORS`, 'Error-only log', 'Strictly error-level entries for playback/runtime work.', view.errorLog, 'error')}
+        ${renderTerminalPanel(view.platform, `${view.code}-CRON`, view.schedulerTitle, view.schedulerSummary, view.schedulerLog, 'scheduler')}
+        ${renderTerminalPanel(view.platform, `${view.code}-ERRORS`, 'Error-only log', 'Strictly error-level entries for playback/runtime work.', view.errorLog, 'error')}
       </div>
-      ${renderTerminalPanel(`${view.code}-MAIN`, 'Main runtime log', 'General playback, queue, worker, and scheduler information.', view.mainLog, 'main')}
+      ${renderTerminalPanel(view.platform, `${view.code}-MAIN`, 'Main runtime log', 'General playback, queue, worker, and scheduler information.', view.mainLog, 'main')}
     </section>
   `;
 }
@@ -196,19 +196,19 @@ function renderWorkerCard(worker: PlaybackWorkerViewModel): string {
 /**
  * Renders a terminal-like playback panel with required copy, clear, and expand controls.
  */
-function renderTerminalPanel(code: string, title: string, summary: string, entries: PlaybackLogEntryViewModel[], logKind: string): string {
+function renderTerminalPanel(platform: OsPlaybackPlatform, code: string, title: string, summary: string, entries: PlaybackLogEntryViewModel[], logKind: string): string {
   return `
     <article class="card os-terminal-card" data-os-terminal-kind="${escapeHtml(logKind)}">
       <header class="card__header card__header--tight">
         <div><p class="card__code">${escapeHtml(code)}</p><h3>${escapeHtml(title)}</h3></div>
         <div class="side-panel__actions">
-          <button class="button button--ghost" type="button" disabled>copy all</button>
-          <button class="button button--ghost" type="button" disabled>clear</button>
+          <button class="button button--ghost" type="button" data-os-terminal-copy-all-platform="${escapeHtml(platform)}" data-os-terminal-copy-all-kind="${escapeHtml(logKind)}">copy all</button>
+          <button class="button button--ghost" type="button" data-os-terminal-clear-platform="${escapeHtml(platform)}" data-os-terminal-clear-kind="${escapeHtml(logKind)}">clear</button>
         </div>
       </header>
       <p class="card__copy">${escapeHtml(summary)}</p>
       <div class="log-surface os-terminal-surface">
-        ${entries.map((entry, index) => renderTerminalRow(entry, index)).join('')}
+        ${entries.map((entry, index) => renderTerminalRow(platform, logKind, entry, index)).join('')}
       </div>
     </article>
   `;
@@ -217,7 +217,7 @@ function renderTerminalPanel(code: string, title: string, summary: string, entri
 /**
  * Renders one terminal row with an expand-row affordance.
  */
-function renderTerminalRow(entry: PlaybackLogEntryViewModel, index: number): string {
+function renderTerminalRow(platform: OsPlaybackPlatform, logKind: string, entry: PlaybackLogEntryViewModel, index: number): string {
   return `
     <article class="log-entry log-entry--${escapeHtml(entry.type)} os-terminal-row">
       <div class="log-entry__meta">
@@ -225,7 +225,7 @@ function renderTerminalRow(entry: PlaybackLogEntryViewModel, index: number): str
         <span class="log-entry__status-chip"><span>${escapeHtml(entry.type.toUpperCase())}</span></span>
       </div>
       <div class="log-entry__message">${escapeHtml(entry.message)}</div>
-      <button class="button button--ghost os-terminal-row__expand" type="button" disabled data-os-terminal-row-expand="${index}">expand row</button>
+      <button class="button button--ghost os-terminal-row__expand" type="button" data-os-terminal-row-expand-platform="${escapeHtml(platform)}" data-os-terminal-row-expand-kind="${escapeHtml(logKind)}" data-os-terminal-row-expand-index="${index}">expand row</button>
     </article>
   `;
 }

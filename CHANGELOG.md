@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## 0.6.10 - 2026-05-28 07:18 EEST
+
+- Added a read-only OS playback observability contract at `GET /api/runtime/playback/observability` for Windows/Raspberry playback views.
+- Wired the three worker cards to backend observability for regular state worker, playback worker, and on-off worker status, including last-called and time-since-last-call text.
+- Wired scheduler, error-only, and main runtime terminal panels to mode-aware observability/log sources while preserving `copy all`, `clear`, and per-row `expand row` controls.
+- Kept Windows playback tied to CronEmulator evidence and Raspberry playback tied to crontab/project-log style evidence, with Test/Real log path separation preserved through runtime mode env routing.
+- Added `docs/OS_PLAYBACK_VIEWS_SLICE_4.md` and regression tests for observability view-model wiring, terminal controls, frontend polling, backend route shape, and documented boundaries.
+- Preserved existing Views A-E, B2 Test/Real split, auth/iCloudPD behavior, database mutation endpoints, playback queue contract, media serving, browser rotation, fullscreen overlay, and deferred View B input detection reuse.
+
 ## 0.6.9 - 2026-05-28 01:15 EEST
 
 - Added browser-side queue rotation for Windows/Raspberry playback views using the read-only playback contract items.
