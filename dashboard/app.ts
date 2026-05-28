@@ -107,7 +107,7 @@ const {
 
 // Records mouse movement only while the View B/B5 activity test window is active.
 function handleB5ActivityMouseMove(): void {
-  const activityState = getState().simulation?.b5ActivityDetection;
+  const activityState = getState().simulation?.b5ActivityDetection as { phase?: string; selectedSources?: Record<string, boolean> } | undefined;
   if (activityState?.phase === 'detecting' && activityState?.selectedSources?.mouse) {
     markB5ActivityDetected('mouse');
   }
@@ -115,7 +115,7 @@ function handleB5ActivityMouseMove(): void {
 
 // Records keyboard input only while the View B/B5 activity test window is active.
 function handleB5ActivityKeyDown(): void {
-  const activityState = getState().simulation?.b5ActivityDetection;
+  const activityState = getState().simulation?.b5ActivityDetection as { phase?: string; selectedSources?: Record<string, boolean> } | undefined;
   if (activityState?.phase === 'detecting' && activityState?.selectedSources?.keyboard) {
     markB5ActivityDetected('keyboard');
   }
@@ -365,7 +365,8 @@ function startB5ActivityTest(): void {
     }
 
     startB5ActivityDetectionWindow();
-    const windowSeconds = Number(getState().simulation?.b5ActivityDetection?.detectionWindowSeconds ?? 5);
+    const activityState = getState().simulation?.b5ActivityDetection as { detectionWindowSeconds?: number } | undefined;
+    const windowSeconds = Number(activityState?.detectionWindowSeconds ?? 5);
     pushHistory('SCREEN', 'info', `B5 activity detection window opened for ${windowSeconds} seconds.`, {
       action: 'b5-activity-detecting',
       windowSeconds,

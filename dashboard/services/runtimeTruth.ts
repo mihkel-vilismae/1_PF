@@ -33,7 +33,7 @@ type RuntimeTruthState = {
   logs: Record<string, Array<Record<string, unknown>>>;
   statusByKey: Record<string, string>;
   modal: unknown;
-  simulation: Record<string, boolean | number | string>;
+  simulation: Record<string, unknown>;
   databaseViewer: {
     selectedTableName?: string | null;
     rows?: { page?: number } | null;
@@ -364,13 +364,40 @@ export function startB5ActivityDetectionWindow(): void {
   });
 }
 
-export function completeB5ActivityDetectionWindow(): void {
-  // Marks the bounded View B/B5 activity test as complete; result evaluation is refined separately.
+export function markB5ActivityDetected(source: B5ActivitySource | string): void {
+  // Marks browser-observed activity for the current View B/B5 test window only.
+  if (!isB5ActivitySource(source)) {
+    return;
+  }
+
   patchState((draft) => {
     const next = normalizeB5ActivityDetectionState(draft.simulation.b5ActivityDetection);
+    if (next.phase !== 'detecting' || !next.selectedSources[source]) {
+      return;
+    }
+    if (source === 'pir' && next.pirAvailability !== 'available') {
+      next.results[source] = buildB5ActivityResult('unavailable');
+    } else {
+      next.results[source] = buildB5ActivityResult('detected');
+    }
+    draft.simulation.b5ActivityDetection = next;
+  });
+}
+
+export function completeB5ActivityDetectionWindow(): void {
+  // Completes the View B/B5 activity test and finalizes honest per-source results.
+  patchState((draft) => {
+    const next = normalizeB5ActivityDetectionState(draft.simulation.b5ActivityDetection);
+    const detectedSources = Object.fromEntries(
+      Object.entries(next.results).map(([source, result]) => [source, result.status === 'detected']),
+    );
     next.phase = 'complete';
     next.countdownValue = null;
     next.completedAt = new Date().toISOString();
+    next.results = completeB5ActivityResults(next, {
+      detectedSources,
+      pirAvailable: next.pirAvailability === 'available',
+    });
     draft.simulation.b5ActivityDetection = next;
   });
 }
