@@ -31,6 +31,10 @@ import {
   setSchedulerEditableCrontab,
   setSimulationValue,
   setB5ActivitySourceSelection,
+  startB5ActivityTestCountdown,
+  setB5ActivityTestCountdownValue,
+  startB5ActivityDetectionWindow,
+  completeB5ActivityDetectionWindow,
   subscribe,
 } from './services/runtimeTruth.ts';
 import { renderDefinitionList, renderHistory, renderModal } from './services/renderers.ts';
@@ -73,6 +77,8 @@ type BackendVersionState = {
 
 let historyCopyStatus: 'idle' | 'copied' | 'failed' = 'idle';
 let historyCopyResetTimer: ReturnType<typeof setTimeout> | null = null;
+let b5ActivityCountdownTimer: number | null = null;
+let b5ActivityDetectionTimer: number | null = null;
 let backendVersionState: BackendVersionState = {
   status: 'checking',
   version: null,
@@ -310,6 +316,51 @@ function renderModeSelectionGate(): string {
       </div>
     </section>
   `;
+}
+
+
+// Clears pending View B/B5 activity-test timers before starting or resetting a run.
+function clearB5ActivityTestTimers(): void {
+  if (b5ActivityCountdownTimer !== null) {
+    window.clearTimeout(b5ActivityCountdownTimer);
+    b5ActivityCountdownTimer = null;
+  }
+  if (b5ActivityDetectionTimer !== null) {
+    window.clearTimeout(b5ActivityDetectionTimer);
+    b5ActivityDetectionTimer = null;
+  }
+}
+
+// Runs the View B/B5 countdown and then opens a bounded activity-detection window.
+function startB5ActivityTest(): void {
+  clearB5ActivityTestTimers();
+  startB5ActivityTestCountdown(3);
+  pushHistory('SCREEN', 'info', 'B5 activity detection test countdown started.', {
+    action: 'start-b5-activity-test',
+  });
+
+  const tick = (value: number): void => {
+    if (value > 0) {
+      setB5ActivityTestCountdownValue(value);
+      b5ActivityCountdownTimer = window.setTimeout(() => tick(value - 1), 1000);
+      return;
+    }
+
+    startB5ActivityDetectionWindow();
+    const windowSeconds = Number(getState().simulation?.b5ActivityDetection?.detectionWindowSeconds ?? 5);
+    pushHistory('SCREEN', 'info', `B5 activity detection window opened for ${windowSeconds} seconds.`, {
+      action: 'b5-activity-detecting',
+      windowSeconds,
+    });
+    b5ActivityDetectionTimer = window.setTimeout(() => {
+      completeB5ActivityDetectionWindow();
+      pushHistory('SCREEN', 'success', 'B5 activity detection test completed.', {
+        action: 'complete-b5-activity-test',
+      });
+    }, Math.max(1, windowSeconds) * 1000);
+  };
+
+  tick(3);
 }
 
 // Copies the scheduler endpoint/row live log as readable JSON for debugging.
@@ -1044,6 +1095,10 @@ function bindEvents() {
         });
       });
     });
+  });
+
+  app.querySelectorAll<HTMLButtonElement>('[data-action="start-b5-activity-test"]').forEach((button) => {
+    button.addEventListener('click', () => startB5ActivityTest());
   });
 
   app.querySelectorAll<HTMLInputElement>('input[name="b5ActivitySource"]').forEach((input) => {

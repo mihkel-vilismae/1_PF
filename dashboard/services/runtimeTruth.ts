@@ -327,6 +327,52 @@ export function setB5ActivitySourceSelection(source: B5ActivitySource | string, 
   });
 }
 
+
+export function startB5ActivityTestCountdown(countdownValue = 3): void {
+  // Starts the View B/B5 countdown without touching legacy screen simulation state.
+  patchState((draft) => {
+    const next = normalizeB5ActivityDetectionState(draft.simulation.b5ActivityDetection);
+    next.phase = 'countdown';
+    next.countdownValue = countdownValue;
+    next.startedAt = null;
+    next.completedAt = null;
+    draft.simulation.b5ActivityDetection = next;
+  });
+}
+
+export function setB5ActivityTestCountdownValue(countdownValue: number): void {
+  // Updates the visible View B/B5 countdown number during the pre-test countdown.
+  patchState((draft) => {
+    const next = normalizeB5ActivityDetectionState(draft.simulation.b5ActivityDetection);
+    next.phase = 'countdown';
+    next.countdownValue = countdownValue;
+    draft.simulation.b5ActivityDetection = next;
+  });
+}
+
+export function startB5ActivityDetectionWindow(): void {
+  // Opens the bounded View B/B5 activity detection window after countdown completes.
+  patchState((draft) => {
+    const next = normalizeB5ActivityDetectionState(draft.simulation.b5ActivityDetection);
+    next.phase = 'detecting';
+    next.countdownValue = null;
+    next.startedAt = new Date().toISOString();
+    next.completedAt = null;
+    draft.simulation.b5ActivityDetection = next;
+  });
+}
+
+export function completeB5ActivityDetectionWindow(): void {
+  // Marks the bounded View B/B5 activity test as complete; result evaluation is refined separately.
+  patchState((draft) => {
+    const next = normalizeB5ActivityDetectionState(draft.simulation.b5ActivityDetection);
+    next.phase = 'complete';
+    next.countdownValue = null;
+    next.completedAt = new Date().toISOString();
+    draft.simulation.b5ActivityDetection = next;
+  });
+}
+
 export function setSimulationValue(key: string, value: boolean | number | string): void {
   patchState((draft) => {
     draft.simulation[key] = value;

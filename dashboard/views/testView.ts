@@ -156,6 +156,7 @@ export function renderTestView(state, dashboardVisualMode: DashboardVisualMode =
             ${renderToggle('simulateAllEnabled', 'Enable all', state.simulation.simulateAllEnabled)}
           </div>
           ${renderB5ActivitySourceSelector(b5ActivityDetection)}
+          ${renderB5ActivityTestRunner(b5ActivityDetection)}
           <label class="field-label">
             <span>Inactivity timeout</span>
             <div class="inline-field">
@@ -262,6 +263,30 @@ function renderB5ActivitySourceSelector(activityDetection) {
       <p class="stage-card__subtitle">Choose which activity inputs the next test should watch. These checkboxes do not start a test and do not claim real PIR hardware support.</p>
       <div class="toggle-grid">${sourceOptions}</div>
     </fieldset>
+  `;
+}
+
+function renderB5ActivityTestRunner(activityDetection) {
+  const phaseLabel = activityDetection.phase === 'countdown' && activityDetection.countdownValue
+    ? `Countdown: ${activityDetection.countdownValue}`
+    : activityDetection.phase === 'detecting'
+      ? `Detecting for ${activityDetection.detectionWindowSeconds} seconds`
+      : activityDetection.phase === 'complete'
+        ? 'Test complete'
+        : 'Ready to start';
+  const running = activityDetection.phase === 'countdown' || activityDetection.phase === 'detecting';
+
+  return `
+    <section class="selector-card selector-card--hybrid b5-activity-runner" aria-label="B5 activity detection test runner">
+      <div>
+        <p class="selector-card__label">Activity detection test</p>
+        <p class="stage-card__subtitle">Start Test runs a visible 3 → 2 → 1 countdown and then watches the selected sources for a bounded test window.</p>
+      </div>
+      <div class="button-row">
+        <button class="button button--primary" data-action="start-b5-activity-test" ${running ? 'disabled' : ''}>Start Test</button>
+      </div>
+      <p class="notice notice--neutral b5-activity-phase">${phaseLabel}</p>
+    </section>
   `;
 }
 
