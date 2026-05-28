@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.7.5 - 28.05.2026, 10:00:00 EEST
+
+- Added the OS playback activity detection adapter so Goal 3 can reuse the proven View B/B5 PIR/mouse/keyboard source model without coupling fullscreen playback to View B UI state.
+- Preserved the honest PIR boundary: fullscreen playback does not fake PIR activity unless a verified backend source is introduced later.
+
 ## 0.6.10 - 2026-05-28 07:18 EEST
 
 - Added a read-only OS playback observability contract at `GET /api/runtime/playback/observability` for Windows/Raspberry playback views.
