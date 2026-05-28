@@ -203,3 +203,14 @@ Use [`docs/VIEW_CARD_MODE_CLASSIFICATION.md`](VIEW_CARD_MODE_CLASSIFICATION.md) 
 - `docs/10_runbooks/windows_full_launcher.md` — Windows full startup launcher: install dependencies, run tests/build, open API/frontend tabs, and open the browser.
 Use [`docs/30_status_snapshots/2026-05-26/USER_OBSERVED_CARD_STATUS_AND_ISSUES_20260526_1457_EEST.md`](docs/30_status_snapshots/2026-05-26/USER_OBSERVED_CARD_STATUS_AND_ISSUES_20260526_1457_EEST.md) when working specifically from the dated user-observed subjective assessment snapshot or follow-up issue list captured on 2026-05-26 14:57 EEST. It is useful for validation planning, but code, tests, generated evidence packs, and runtime artifacts override it when they conflict.
 
+
+
+## Auth logout EPERM fix notes
+
+Estonian timestamp: 2026-05-28 12:48 EEST
+
+Use these documents when investigating the Windows auth logout `EPERM` unit-test failure or the related test isolation fix:
+
+- [`docs/30_status_snapshots/2026-05-28/AUTH_LOGOUT_EPERM_FAILURE_ANALYSIS_20260528.md`](docs/30_status_snapshots/2026-05-28/AUTH_LOGOUT_EPERM_FAILURE_ANALYSIS_20260528.md)
+- [`docs/30_status_snapshots/2026-05-28/AUTH_LOGOUT_EPERM_FIX_DESIGN_20260528.md`](docs/30_status_snapshots/2026-05-28/AUTH_LOGOUT_EPERM_FIX_DESIGN_20260528.md)
+- [`docs/30_status_snapshots/2026-05-28/AUTH_LOGOUT_EPERM_VERIFICATION_20260528.md`](docs/30_status_snapshots/2026-05-28/AUTH_LOGOUT_EPERM_VERIFICATION_20260528.md)

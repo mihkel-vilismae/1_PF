@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.7.12 - 28.05.2026, 12:48:00 EEST
+
+- Isolated legacy auth logout unit tests from the shared `runtime_data/auth/auth-state.json` file by using an in-memory auth persistence double.
+- Preserved provider logout boundary assertions, local auth state clearing, and auth persistence production behavior.
+- Added repo-backed analysis, fix design, and verification notes for the Windows `EPERM` auth logout failure.
+- Verified targeted auth logout/service/persistence tests and production build; full test suite was attempted in the Linux tool environment but timed out before completion.
+- Bumped version metadata from v0.7.11 to v0.7.12.
+
 ## 0.7.11 - 28.05.2026, 12:28:00 EEST
 
 - Added Goal 4 repo-backed media pipeline documentation covering Download, Index, GPS parser, Geocode, Queue / Q, Playback Select, and orchestration.
