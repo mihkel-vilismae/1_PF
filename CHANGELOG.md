@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.7.10 - 28.05.2026, 12:01:00 EEST
+
+- Added explicit scroll preservation for marked dashboard containers so full-root re-renders no longer force modals, logs, history panels, playback terminal panels, and database scroll areas back to the top while operators are reading them.
+- Added focused scroll preservation helper and marker regression tests while preserving existing backend routes, polling, runtime truth semantics, Test/Real separation, playback boundaries, and terminal controls.
+- Documented the repo-backed root cause in `docs/SCROLL_PRESERVATION_ANALYSIS_2805.md`.
+- Bumped version metadata from v0.7.9 to v0.7.10.
+
 ## 0.7.9 - 28.05.2026, 10:20:00 EEST
 
 - Added Goal 3 documentation for fullscreen playback activity reuse, preserved boundaries, and known Raspberry/PIR follow-up limits.
