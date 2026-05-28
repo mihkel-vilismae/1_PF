@@ -19,6 +19,7 @@ import {
   type SchedulerTarget,
 } from '../../../shared/schedulerPlatformCapabilities.ts';
 import { createDefaultPlaybackRenderingState } from '../playbackRenderer.ts';
+import { createDefaultB5ActivityDetectionState } from '../viewBActivityDetection.ts';
 import {
   WINDOWS_CRON_EMULATOR_PLAYBACK_WORKER_CRON_ROW,
   WINDOWS_CRON_EMULATOR_REGULAR_STAGE_WORKER_CRON_ROW,
@@ -368,6 +369,7 @@ export function createInitialState() {
       keyboardEnabled: true,
       inactivityTimeoutSeconds: 5,
       simulateAllEnabled: true,
+      b5ActivityDetection: createDefaultB5ActivityDetectionState(),
     },
     playbackRendering: createDefaultPlaybackRenderingState(),
     lastRunMode: 'none',

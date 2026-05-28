@@ -393,6 +393,20 @@
 - Preserved `server/index.ts` request parsing, middleware flow, response handling, scheduler behavior, and cron emulator behavior.
 
 
+## 2026-05-28 10:20 EEST — v0.7.0
+
+### Added
+- None
+
+### Changed
+- None
+
+### Fixed
+- None
+
+### Removed
+- None
+
 ## 2026-05-10 18:50 EEST — v0.5.4
 
 ### Added
