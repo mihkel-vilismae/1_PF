@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.7.8 - 28.05.2026, 10:15:00 EEST
+
+- Wired fullscreen playback entry/exit to start and stop OS playback activity monitoring.
+- Reused the Goal 2 browser mouse/keyboard event path to extend fullscreen keep-awake state without adding backend playback mutation endpoints.
+
 ## 0.7.7 - 28.05.2026, 10:10:00 EEST
 
 - Rendered fullscreen playback wake/keep-on monitoring status in OS playback views and the fullscreen HUD.

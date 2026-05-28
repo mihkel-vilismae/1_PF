@@ -36,6 +36,9 @@ import {
   startB5ActivityDetectionWindow,
   completeB5ActivityDetectionWindow,
   markB5ActivityDetected,
+  startOsPlaybackActivityMonitoring,
+  stopOsPlaybackActivityMonitoring,
+  markOsPlaybackActivityDetected,
   subscribe,
 } from './services/runtimeTruth.ts';
 import { renderDefinitionList, renderHistory, renderModal } from './services/renderers.ts';
@@ -111,6 +114,7 @@ function handleB5ActivityMouseMove(): void {
   if (activityState?.phase === 'detecting' && activityState?.selectedSources?.mouse) {
     markB5ActivityDetected('mouse');
   }
+  markOsPlaybackActivityDetected('mouse');
 }
 
 // Records keyboard input only while the View B/B5 activity test window is active.
@@ -119,6 +123,7 @@ function handleB5ActivityKeyDown(): void {
   if (activityState?.phase === 'detecting' && activityState?.selectedSources?.keyboard) {
     markB5ActivityDetected('keyboard');
   }
+  markOsPlaybackActivityDetected('keyboard');
 }
 
 // Renders the current dashboard state and the component version badge.
@@ -680,6 +685,7 @@ function enterOsPlaybackFullscreen(platform: OsPlaybackPlatform): void {
     });
   });
   pushHistory('PLAYBACK', 'success', `${getOsPlaybackLabel(platform)} fullscreen playback opened.`, { platform });
+  startOsPlaybackActivityMonitoring(platform);
   scheduleOsPlaybackRotation(platform);
   requestBrowserFullscreenForOsPlayback(platform);
 }
@@ -694,6 +700,7 @@ function exitOsPlaybackFullscreen(platform: OsPlaybackPlatform): void {
     void document.exitFullscreen().catch(() => undefined);
   }
   pushHistory('PLAYBACK', 'info', `${getOsPlaybackLabel(platform)} fullscreen playback closed.`, { platform });
+  stopOsPlaybackActivityMonitoring(platform);
 }
 
 // Requests browser fullscreen for the rendered overlay after state has re-rendered.
@@ -781,6 +788,8 @@ function syncOsPlaybackFullscreenStateFromBrowser(): void {
       }
     });
   });
+  stopOsPlaybackActivityMonitoring(OS_PLAYBACK_PLATFORMS.windows);
+  stopOsPlaybackActivityMonitoring(OS_PLAYBACK_PLATFORMS.raspberry);
 }
 
 // Binds rendered controls to runtime-truth actions and local state updates.

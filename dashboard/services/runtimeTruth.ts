@@ -19,6 +19,13 @@ import {
   prepareB5ActivityResults,
   type B5ActivitySource,
 } from './viewBActivityDetection.ts';
+import {
+  applyOsPlaybackActivityEvent,
+  normalizeOsPlaybackActivityState,
+  startOsPlaybackActivityMonitoring as startOsPlaybackActivityStateMonitoring,
+  stopOsPlaybackActivityMonitoring as stopOsPlaybackActivityStateMonitoring,
+  type OsPlaybackActivitySource,
+} from './osPlaybackActivityDetection.ts';
 
 type RuntimeTruthState = {
   activeView: string;
@@ -46,6 +53,7 @@ type RuntimeTruthState = {
   };
   lastRunMode: string;
   lastRunData: Record<string, unknown>;
+  osPlaybackActivity?: Record<string, unknown>;
   [key: string]: unknown;
 };
 type RuntimeTruthListener = (state: RuntimeTruthState) => void;
@@ -239,6 +247,94 @@ export function setStatus(key: string, status: string): void {
   patchState((draft) => {
     draft.statusByKey[key] = status;
   });
+}
+
+
+// Starts fullscreen playback activity monitoring for one OS playback platform.
+export function startOsPlaybackActivityMonitoring(platform: string): void {
+  const normalizedPlatform = normalizeOsPlaybackActivityPlatform(platform);
+  if (!normalizedPlatform) {
+    return;
+  }
+
+  patchState((draft) => {
+    draft.osPlaybackActivity ??= {};
+    draft.osPlaybackActivity[normalizedPlatform] = startOsPlaybackActivityStateMonitoring(draft.osPlaybackActivity[normalizedPlatform]);
+    draft.runningProcess.screenWorker = {
+      ...draft.runningProcess.screenWorker,
+      status: 'Active',
+      screenState: 'ON',
+      lastActivity: 'Fullscreen monitoring started',
+      summary: 'Fullscreen playback wake/keep-on monitoring is active.',
+    };
+  });
+  pushHistory('PLAYBACK', 'info', `${normalizedPlatform} fullscreen activity monitoring started.`, { platform: normalizedPlatform });
+  pushLog('B4', 'info', `${normalizedPlatform} fullscreen activity monitoring started.`);
+}
+
+// Stops fullscreen playback activity monitoring for one OS playback platform.
+export function stopOsPlaybackActivityMonitoring(platform: string): void {
+  const normalizedPlatform = normalizeOsPlaybackActivityPlatform(platform);
+  if (!normalizedPlatform) {
+    return;
+  }
+
+  patchState((draft) => {
+    draft.osPlaybackActivity ??= {};
+    draft.osPlaybackActivity[normalizedPlatform] = stopOsPlaybackActivityStateMonitoring(draft.osPlaybackActivity[normalizedPlatform]);
+    draft.runningProcess.screenWorker = {
+      ...draft.runningProcess.screenWorker,
+      status: 'Inactive',
+      lastActivity: 'Fullscreen monitoring stopped',
+      summary: 'Fullscreen playback wake/keep-on monitoring is idle.',
+    };
+  });
+  pushHistory('PLAYBACK', 'info', `${normalizedPlatform} fullscreen activity monitoring stopped.`, { platform: normalizedPlatform });
+}
+
+// Marks a browser activity event for any fullscreen playback platform currently monitoring activity.
+export function markOsPlaybackActivityDetected(source: OsPlaybackActivitySource | string): void {
+  if (!isB5ActivitySource(source)) {
+    return;
+  }
+
+  const nowIso = new Date().toISOString();
+  const touchedPlatforms: string[] = [];
+  patchState((draft) => {
+    const activityState = draft.osPlaybackActivity ?? {};
+    Object.entries(activityState).forEach(([platform, value]) => {
+      const before = normalizeOsPlaybackActivityState(value);
+      if (!before.monitoring) {
+        return;
+      }
+      const after = applyOsPlaybackActivityEvent(before, { nowIso, source });
+      draft.osPlaybackActivity ??= {};
+      draft.osPlaybackActivity[platform] = after;
+      if (after.lastActivityAtIso !== before.lastActivityAtIso) {
+        touchedPlatforms.push(platform);
+        draft.runningProcess.screenWorker = {
+          ...draft.runningProcess.screenWorker,
+          status: 'Active',
+          screenState: 'ON',
+          lastActivity: after.statusMessage,
+          timeout: '30s keep-awake window',
+          summary: 'Fullscreen playback activity extended the keep-awake window.',
+        };
+      }
+    });
+  });
+
+  touchedPlatforms.forEach((platform) => {
+    pushHistory('PLAYBACK', 'success', `${platform} fullscreen activity detected from ${source}.`, { platform, source });
+  });
+}
+
+// Narrows arbitrary strings to supported OS playback activity platform ids.
+function normalizeOsPlaybackActivityPlatform(platform: string): 'windows' | 'raspberry' | null {
+  if (platform === 'windows' || platform === 'raspberry') {
+    return platform;
+  }
+  return null;
 }
 
 // Selects the B4 rendering mode without changing backend playback selection.
