@@ -63,6 +63,7 @@ import { renderDatabaseViewerView } from './views/databaseViewerView.ts';
 import { renderOsPlaybackFullscreenOverlay, renderOsPlaybackView } from './views/osPlaybackView.ts';
 import { buildOsPlaybackViewModel, OS_PLAYBACK_PLATFORMS, type OsPlaybackPlatform, type PlaybackLogEntryViewModel } from './services/osPlaybackViewModel.ts';
 import { requestJson, setDashboardRuntimeMode } from './services/apiClient.ts';
+import { captureScrollSnapshot, restoreScrollSnapshotAfterLayout } from './services/scrollPreservation.ts';
 
 const app = document.getElementById('app');
 declare const __APP_VERSION__: string;
@@ -154,6 +155,7 @@ function render() {
     : dashboardVisualMode === 'test'
       ? 'Test Mode'
       : 'Real Mode';
+  const scrollSnapshot = captureScrollSnapshot(app);
 
   app.innerHTML = `
     ${renderVersionBadge(__APP_VERSION__, backendVersionState)}
@@ -274,6 +276,7 @@ function render() {
     ${renderOsPlaybackFullscreenOverlay(state)}
   `;
 
+  restoreScrollSnapshotAfterLayout(app, scrollSnapshot);
   hideInspectTooltip();
   bindEvents();
   bindInspectMode({
