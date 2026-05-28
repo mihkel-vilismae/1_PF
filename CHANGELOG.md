@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.7.9 - 28.05.2026, 10:20:00 EEST
+
+- Added Goal 3 documentation for fullscreen playback activity reuse, preserved boundaries, and known Raspberry/PIR follow-up limits.
+- Added regression coverage that confirms Goal 3 avoids new playback wake mutation endpoints and keeps View B/B5 activity testing separate.
+
 ## 0.7.8 - 28.05.2026, 10:15:00 EEST
 
 - Wired fullscreen playback entry/exit to start and stop OS playback activity monitoring.
