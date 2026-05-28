@@ -1,6 +1,6 @@
 # Documentation Index
 
-Estonian timestamp: 2026-05-28 13:20 EEST
+Estonian timestamp: 2026-05-28 20:47 EEST
 
 This index classifies non-skill documentation files and separates current truth candidates from status snapshots, specs, backlog, archive material, and tool-local docs. No files were moved by this analysis.
 
@@ -9,6 +9,7 @@ This index classifies non-skill documentation files and separates current truth 
 
 ## Recent additions
 
+- `docs/00_current_truth/PROJECT_ISSUES_AND_IMPROVEMENT_GUIDE_20260528.md` — high-level, evidence-aware guide for recurring project issues, provider gaps, workflow safeguards, and verification strategy.
 - `docs/30_status_snapshots/2026-05-28/LIVE_UPDATES_INSPECT_FAILURE_ANALYSIS_20260528.md` — repo-backed cause analysis for DevTools inspect instability under background re-renders.
 - `docs/30_status_snapshots/2026-05-28/LIVE_UPDATES_INSPECT_FIX_DESIGN_20260528.md` — selected pause-live-updates design and boundaries.
 - `docs/30_status_snapshots/2026-05-28/LIVE_UPDATES_INSPECT_VERIFICATION_20260528.md` — targeted verification and build notes for the live-update pause fix.
@@ -52,6 +53,7 @@ This index classifies non-skill documentation files and separates current truth 
 | CHANGELOG.md | 1223 | CHANGELOG | root_core | source_of_truth_candidate | recent_verify_against_code | 01_root_core | auth, new_auth, icloudpd, provider, runtime_truth, cron, view_a, view_d, real_vs_mock, download | Root entry point; keep discoverable and link to doc index/freshness matrix. |
 | HOW_TO_RUN.md | 28 | How to Run | root_core | runtime_runbook | recent_verify_against_code | 01_root_core | auth, new_auth, icloudpd, provider, view_a | Root entry point; keep discoverable and link to doc index/freshness matrix. |
 | README.md | 123 | Photo Frame Dashboard System | root_core | runtime_runbook | recent_verify_against_code | 01_root_core | auth, new_auth, icloudpd, provider, cron, monitoring, view_a, view_d, download | Root entry point; keep discoverable and link to doc index/freshness matrix. |
+| docs/00_current_truth/PROJECT_ISSUES_AND_IMPROVEMENT_GUIDE_20260528.md | 270+ | PF_login / 1234_PF — Main Issues and Improvement Guide | current_truth | evidence_aware_planning_guide | current_latest_baseline | 02_current_auth_evidence | provider_gaps, test_real_separation, workflow, media_pipeline, ui_stability | High-level guide generated from recent chat context and v0.7.15 baseline evidence; use for planning future slices, but verify against code/tests/runtime evidence before implementation. |
 | docs/00_current_truth/AUTH_EVIDENCE_PACK.md | 87 | NEW AUTH Evidence Pack | current_truth | evidence_pack_current | current_latest_baseline | 02_current_auth_evidence | auth, new_auth, icloudpd, provider, evidence_pack, download | Canonical current-truth auth artifact-debugging guide; verify code endpoints before execution. |
 | docs/AUTH_EVIDENCE_PACK.md | 19 | NEW AUTH Evidence Pack | index_or_table_of_contents | historical_reference | recent_verify_against_code | 02_current_auth_evidence | auth, evidence_pack | Compatibility pointer only; do not add detailed content here. |
 | docs/30_status_snapshots/2026-05-12/IMPLEMENTATION_STATUS_UPDATE_20260512_NEW_AUTH_PROVIDER_VERIFICATION.md | 76 | Implementation Status Update — NEW AUTH Provider Verification UX | implementation_status_snapshot | code_verified_snapshot | recent_verify_against_code | 04_current_status_snapshots | auth, new_auth, icloudpd, provider, view_d, download | Canonical dated status snapshot moved in Slice 11; verify against current routes/tests/evidence before runtime claims. |

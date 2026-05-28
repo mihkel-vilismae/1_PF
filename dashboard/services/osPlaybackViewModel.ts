@@ -216,7 +216,7 @@ const PIPELINE_STAGE_ORDER = Object.freeze([
   { key: 'index', label: 'Index', statusKey: 'B3.2', actionHint: 'Run or inspect media index stage' },
   { key: 'gps', label: 'GPS parser', statusKey: 'B3.3', actionHint: 'Run or inspect GPS parser stage' },
   { key: 'geocode', label: 'Geocode', statusKey: 'B3.4', actionHint: 'Run or inspect address resolving stage' },
-  { key: 'queue', label: 'Queue / Q', statusKey: 'B3.5', actionHint: 'Run or inspect playback queue stage' },
+  { key: 'queue', label: 'Queue', statusKey: 'B3.5', actionHint: 'Run or inspect playback queue stage' },
 ]);
 
 /**

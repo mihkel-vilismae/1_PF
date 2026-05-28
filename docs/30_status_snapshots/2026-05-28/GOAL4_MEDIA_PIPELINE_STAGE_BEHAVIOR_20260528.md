@@ -15,7 +15,7 @@ The stage notes must distinguish mock/test download from real iCloudPD download,
 Do not overclaim production readiness. Do not merge View B, workers, playback views, and orchestration into one behavior. Preserve explicit “does not do” boundaries because these prevent future regressions.
 
 ### Refined prompt run
-Create a stage-by-stage behavior analysis for Download, Index, GPS parser, Geocode, Queue / Q, Playback Select, and Orchestration. For each stage, list inputs, outputs, database effects, success/failure behavior, and non-goals/boundaries using current repo evidence only.
+Create a stage-by-stage behavior analysis for Download, Index, GPS parser, Geocode, Queue, Playback Select, and Orchestration. For each stage, list inputs, outputs, database effects, success/failure behavior, and non-goals/boundaries using current repo evidence only.
 
 ## Stage 1 — Download
 
@@ -68,7 +68,7 @@ Create a stage-by-stage behavior analysis for Download, Index, GPS parser, Geoco
 | Failure behavior | Missing GPS coordinates lead to `GEOCODE_FAILED` and `RETRY_EXHAUSTED`; no pending work is a successful no-op. Missing database is a 404. |
 | Boundary | This is not production reverse geocoding. The repo is explicit that the configured provider is deterministic placeholder-only. |
 
-## Stage 5 — Queue / Q
+## Stage 5 — Queue
 
 | Aspect | Behavior |
 | --- | --- |

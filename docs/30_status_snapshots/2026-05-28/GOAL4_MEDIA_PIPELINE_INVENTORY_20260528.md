@@ -6,7 +6,7 @@
 Run Goal 4 workflow slice 1: create a repo-backed inventory for the media pipeline stages.
 
 ### Draft prompt
-Inspect the current immutable PF_login baseline and list all files, routes, schema tables, tests, and docs involved in Download, Index, GPS parser, Geocode, Queue / Q, and Playback Select.
+Inspect the current immutable PF_login baseline and list all files, routes, schema tables, tests, and docs involved in Download, Index, GPS parser, Geocode, Queue, and Playback Select.
 
 ### Analyze
 The slice must be read-only with respect to runtime behavior. It should map evidence from code/tests/docs and avoid claiming subjective PC-tested status.
@@ -15,7 +15,7 @@ The slice must be read-only with respect to runtime behavior. It should map evid
 Do not rely on memory-only stage names. Do not treat older status snapshots as current truth without code/test verification. Include Stage 6 playback select because queue preparation is only useful when connected to playback selection.
 
 ### Refined prompt run
-Create a repo-backed evidence inventory for Goal 4 covering Download, Index, GPS parser, Geocode, Queue / Q, and Playback Select. Record source files, HTTP routes, Python bridge commands, schema tables, dashboard entry points, tests, docs, and known authority level. Do not change runtime behavior.
+Create a repo-backed evidence inventory for Goal 4 covering Download, Index, GPS parser, Geocode, Queue, and Playback Select. Record source files, HTTP routes, Python bridge commands, schema tables, dashboard entry points, tests, docs, and known authority level. Do not change runtime behavior.
 
 ## Route inventory
 
@@ -26,7 +26,7 @@ Create a repo-backed evidence inventory for Goal 4 covering Download, Index, GPS
 | Index | `POST /api/runtime/index/run` | `server/index.ts` `runtimeIndexRunHandler`; `server/database/databaseService.ts` `runStage2IndexRegister` | `server/scripts/sqlite_admin.py stage2_index_register` |
 | GPS parser | `POST /api/runtime/gps/run` | `server/index.ts` `runtimeGpsRunHandler`; `server/database/databaseService.ts` `runStage3ProcessGpsQueue` | `server/scripts/sqlite_admin.py stage3_process_gps_queue` |
 | Geocode | `POST /api/runtime/geocode/run` | `server/index.ts` `runtimeGeocodeRunHandler`; `server/database/databaseService.ts` `runStage4ProcessGeocodeQueue` | `server/scripts/sqlite_admin.py stage4_process_geocode_queue` |
-| Queue / Q | `POST /api/runtime/queue/prepare` | `server/index.ts` `runtimeQueuePrepareHandler`; `server/database/databaseService.ts` `runStage5PrepareQueue` | `server/scripts/sqlite_admin.py stage5_prepare_queue` / `prepare_slideshow_queue` |
+| Queue | `POST /api/runtime/queue/prepare` | `server/index.ts` `runtimeQueuePrepareHandler`; `server/database/databaseService.ts` `runStage5PrepareQueue` | `server/scripts/sqlite_admin.py stage5_prepare_queue` / `prepare_slideshow_queue` |
 | Playback Select | `POST /api/runtime/playback/select-current` | `server/index.ts` `runtimePlaybackSelectCurrentHandler`; `server/playback/playbackSelectionService.ts`; `server/database/databaseService.ts` `runStage6SelectCurrent` | `server/scripts/sqlite_admin.py stage6_select_current` / `select_current_item` |
 | Orchestration | `POST /api/runtime/orchestration/run` | `server/index.ts` `runtimeOrchestrationRunHandler`; `ORCHESTRATION_STAGE_PIPELINE` | Sequentially invokes Download, Index, GPS, Geocode, Queue, Playback Select. |
 | Orchestration status | `GET /api/runtime/orchestration/current`, `GET /api/runtime/orchestration/last` | `server/routes/runtimeStatusRoutes.ts`; `server/index.ts` | Reads persisted `runtime_state` entries. |

@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.7.16 - 28.05.2026, 20:47:00 EEST
+
+- Added `docs/00_current_truth/PROJECT_ISSUES_AND_IMPROVEMENT_GUIDE_20260528.md` as a high-level, evidence-aware guide for main project issues, improvement directions, workflow safeguards, and verification strategy.
+- Documented the main remaining gaps around provider boundaries, Test Mode vs Real Mode separation, real geocoding, real iCloudPD runtime proof, GPS metadata breadth, Queue policy, UI stability, and baseline safety.
+- Normalized current media-pipeline documentation and OS playback stage-label terminology to use `Queue` only.
+- Preserved runtime behavior, backend routes, database schema, tests, and Test/Real mode behavior; this release changes documentation/status plus one display label only.
+- Bumped version metadata from v0.7.15 to v0.7.16.
+
 ## 0.7.15 - 28.05.2026, 13:36:00 EEST
 
 - Removed committed `test.env` as a supported runtime env source so operators can use only `.env` plus Test Mode `TEST_*` path projection.
@@ -34,7 +42,7 @@
 
 ## 0.7.11 - 28.05.2026, 12:28:00 EEST
 
-- Added Goal 4 repo-backed media pipeline documentation covering Download, Index, GPS parser, Geocode, Queue / Q, Playback Select, and orchestration.
+- Added Goal 4 repo-backed media pipeline documentation covering Download, Index, GPS parser, Geocode, Queue, Playback Select, and orchestration.
 - Added current-truth implementation-status table at `docs/00_current_truth/MEDIA_PIPELINE_IMPLEMENTATION_STATUS_20260528.md`, with the subjective PC-tested assessment column intentionally left pending.
 - Added dated Goal 4 inventory, stage behavior, and verification alignment snapshots under `docs/30_status_snapshots/2026-05-28/`.
 - Preserved runtime code, backend routes, Test/Real boundaries, playback selection behavior, and existing pipeline semantics; this release is documentation/status only.

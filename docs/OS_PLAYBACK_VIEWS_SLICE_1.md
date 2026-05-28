@@ -27,7 +27,7 @@ Each new playback view contains:
 |---|---|
 | Playback surface | Large queue-backed preview area with resolved-address text. |
 | Playback controls | Includes `Switch to Full Screen`, Previous, Next, Pause rotation, and Refresh queue. Only fullscreen is wired to browser fullscreen in this slice. |
-| Stage row | Compact `Download -> Index -> GPS parser -> Geocode -> Queue / Q` status row. |
+| Stage row | Compact `Download -> Index -> GPS parser -> Geocode -> Queue` status row. |
 | Worker row | Regular state worker, playback worker, and on-off worker status cards. |
 | Scheduler terminal | Windows labels CronEmulator activity; Raspberry labels crontab activity. |
 | Error-only terminal | Reserved for error-level rows only. |
