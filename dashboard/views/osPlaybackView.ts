@@ -66,6 +66,7 @@ export function renderOsPlaybackView(state: RuntimeState, platform: OsPlaybackPl
           <button class="button button--secondary" type="button" data-os-playback-refresh-platform="${escapeHtml(view.platform)}">Refresh queue</button>
         </div>
         <p class="notice notice--neutral">${escapeHtml(view.playbackStatus)} Browser-side rotation uses the read-only playback queue contract; backend selection and OS scheduler behavior remain unchanged.</p>
+        ${renderActivityPanel(view)}
       </article>
 
       <article class="card os-playback-status-card">
@@ -98,6 +99,33 @@ export function renderOsPlaybackView(state: RuntimeState, platform: OsPlaybackPl
 }
 
 
+
+/**
+ * Renders fullscreen activity monitoring status without changing playback selection.
+ */
+function renderActivityPanel(view: ReturnType<typeof buildOsPlaybackViewModel>): string {
+  const statusLabel = view.activity.monitoring ? 'Monitoring selected sources' : 'Idle until fullscreen starts';
+  const unavailable = view.activity.unavailableLabels.length > 0
+    ? `<p class="notice notice--warning">Unavailable source: ${escapeHtml(view.activity.unavailableLabels.join(', '))}</p>`
+    : '';
+
+  return `
+    <section class="os-playback-activity-panel" data-os-playback-activity-panel="${escapeHtml(view.platform)}" aria-label="Fullscreen activity monitoring">
+      <div class="os-playback-activity-panel__header">
+        <strong>Wake / keep-on activity</strong>
+        <span class="mini-badge">${escapeHtml(statusLabel)}</span>
+      </div>
+      <dl class="definition-list definition-list--compact">
+        <div class="definition-row"><dt>Sources</dt><dd>${escapeHtml(view.activity.selectedLabels.join(', ') || 'No sources selected')}</dd></div>
+        <div class="definition-row"><dt>Last activity</dt><dd>${escapeHtml(view.activity.lastActivityLabel)}</dd></div>
+        <div class="definition-row"><dt>Keep awake</dt><dd>${escapeHtml(view.activity.keepAwakeLabel)}</dd></div>
+      </dl>
+      <p class="card__copy">${escapeHtml(view.activity.statusMessage)}</p>
+      ${unavailable}
+    </section>
+  `;
+}
+
 /**
  * Renders the active fullscreen playback overlay when an OS playback session requests it.
  */
@@ -119,6 +147,7 @@ export function renderOsPlaybackFullscreenOverlay(state: RuntimeState): string {
           <h2>${escapeHtml(view.currentMediaName)}</h2>
           <p>${escapeHtml(view.resolvedAddress)}</p>
           <small>${escapeHtml(view.rotation.status)} • ${escapeHtml(view.nextIn)}</small>
+          <small>${escapeHtml(view.activity.statusMessage)} • ${escapeHtml(view.activity.keepAwakeLabel)}</small>
         </div>
         <div class="os-playback-fullscreen-overlay__actions">
           <button class="button button--secondary" type="button" data-os-playback-step-platform="${escapeHtml(view.platform)}" data-os-playback-step="-1" ${view.rotation.canRotate ? '' : 'disabled'}>Previous</button>

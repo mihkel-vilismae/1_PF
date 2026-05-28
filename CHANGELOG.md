@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.7.7 - 28.05.2026, 10:10:00 EEST
+
+- Rendered fullscreen playback wake/keep-on monitoring status in OS playback views and the fullscreen HUD.
+- Kept the new UI informational at this slice boundary so playback selection, rotation, backend APIs, and scheduler behavior remain unchanged.
+
 ## 0.7.6 - 28.05.2026, 10:05:00 EEST
 
 - Added OS playback activity state to the initial dashboard state for Windows and Raspberry playback surfaces.
