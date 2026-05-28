@@ -43,3 +43,11 @@ test('view renderers mark log, scheduler, playback, and database scroll containe
   assert.match(combined, /data-scroll-preserve="database-table-shell"/);
   assert.match(combined, /data-scroll-preserve="database-activity-list"/);
 });
+
+test('result surface marks nested JSON payload blocks for scroll preservation', () => {
+  const source = read('dashboard/services/renderers.ts');
+
+  assert.match(source, /function buildResultPayloadScrollKey/);
+  assert.match(source, /class="result-json-block" data-scroll-preserve=/);
+  assert.match(source, /class="result-json" data-scroll-preserve=/);
+});

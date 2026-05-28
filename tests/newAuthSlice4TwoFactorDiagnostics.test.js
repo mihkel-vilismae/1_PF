@@ -121,6 +121,7 @@ test('result surface renders provider-proof user prompts outside raw JSON', () =
   assert.match(markup, /ENTER 6-DIGIT CODE/);
   assert.match(markup, /ENTER DEVICE INDEX \(A\)/);
   assert.match(markup, /result-user-prompt/);
+  assert.match(markup, /class="result-json" data-scroll-preserve="result-payload-check-new-auth-login-status-get-api-auth-new-status-response-payload"/);
 });
 
 

@@ -130,6 +130,7 @@ export function renderResultSurface(result: ResultSurfaceData | null | undefined
         : 'Pending request payload';
 
   const userPrompts = extractUserPrompts(payload);
+  const payloadScrollKey = buildResultPayloadScrollKey(result, payloadLabel);
 
   return `
     <section class="result-surface result-surface--${escapeHtml(result.outcome)}">
@@ -141,13 +142,31 @@ export function renderResultSurface(result: ResultSurfaceData | null | undefined
       ${result.message ? `<p class="result-message">${escapeHtml(result.message)}</p>` : ''}
       ${userPrompts.length ? renderUserPromptList(userPrompts) : ''}
       ${payload !== undefined && payload !== null ? `
-        <div class="result-json-block">
+        <div class="result-json-block" data-scroll-preserve="${escapeHtml(`${payloadScrollKey}-block`)}">
           <p class="result-json-label">${escapeHtml(payloadLabel)}</p>
-          <pre class="result-json">${escapeHtml(formatPayload(payload))}</pre>
+          <pre class="result-json" data-scroll-preserve="${escapeHtml(payloadScrollKey)}">${escapeHtml(formatPayload(payload))}</pre>
         </div>
       ` : ''}
     </section>
   `;
+}
+
+// Builds a stable scroll key for nested result payload surfaces that are rebuilt on state changes.
+function buildResultPayloadScrollKey(result: ResultSurfaceData, payloadLabel: string): string {
+  const rawKey = [
+    'result-payload',
+    result.operation,
+    result.method,
+    result.endpoint,
+    payloadLabel,
+  ]
+    .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+    .join('-');
+
+  return rawKey
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'result-payload-generic';
 }
 
 // Extracts safe user-action prompt text from backend result payload details.
