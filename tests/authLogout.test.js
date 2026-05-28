@@ -1,14 +1,44 @@
+/**
+ * Verifies legacy auth reset/logout service behavior.
+ * Uses in-memory persistence so unit tests never touch shared runtime auth files.
+ * Keeps provider logout assertions focused on service semantics.
+ */
 import assert from 'node:assert/strict';
-import test from 'node:test';
+import test, { beforeEach } from 'node:test';
 import { configureAuthServiceForTests, logoutAuth, resetAuthState, runAuthPreflight } from '../server/auth/authService.ts';
 import { PROVIDER_OUTCOMES, createProviderRegistry } from '../server/auth/providers/providerRegistry.ts';
 
+/**
+ * Builds a positive readiness-check fixture used by auth service tests.
+ */
 function check(key) {
   return { key, label: key, required: true, present: true, valid: true, severity: 'info', message: 'ok', details: {} };
 }
 
+/**
+ * Provides isolated auth persistence so Windows file locks cannot affect logout tests.
+ */
+function createMemoryAuthPersistence() {
+  let savedState = null;
+  return {
+    async load() {
+      return savedState;
+    },
+    async save(state) {
+      savedState = { ...state };
+      return savedState;
+    },
+    async clear() {
+      savedState = null;
+    },
+  };
+}
+
+beforeEach(() => {
+  configureAuthServiceForTests({ persistence: createMemoryAuthPersistence() });
+});
+
 test('reset clears local attempt state without claiming logout', async () => {
-  configureAuthServiceForTests();
   await runAuthPreflight({ attemptId: 'attempt-reset', checks: [check('user'), check('pw'), check('ICLOUDPD_COOKIE_DIR')] });
   const reset = resetAuthState({ now: new Date('2026-04-24T14:20:00.000Z') });
 
@@ -18,7 +48,6 @@ test('reset clears local attempt state without claiming logout', async () => {
 });
 
 test('logout clears auth state and reports provider cleanup outcome honestly', async () => {
-  configureAuthServiceForTests();
   let logoutCalled = false;
   const providerRegistry = createProviderRegistry({ providers: { icloud: {
     async startLogin() { return { outcome: PROVIDER_OUTCOMES.REQUIRES_2FA, two_factor_method: 'trusted_device' }; },
@@ -39,7 +68,6 @@ test('logout clears auth state and reports provider cleanup outcome honestly', a
 });
 
 test('logout clears local state even when provider logout is unavailable', async () => {
-  configureAuthServiceForTests();
   await runAuthPreflight({ attemptId: 'attempt-logout-unavailable', checks: [check('user'), check('pw'), check('ICLOUDPD_COOKIE_DIR')] });
   const result = await logoutAuth({ now: new Date('2026-04-24T14:22:00.000Z') });
 
