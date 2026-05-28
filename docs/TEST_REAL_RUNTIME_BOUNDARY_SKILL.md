@@ -27,4 +27,4 @@ When changing database, runtime, or init endpoints, verify:
 2. Test Mode database viewer verify/connect/tables/rows use only the test database.
 3. Test Mode mock download/index/GPS/geocode/queue/playback use `test_runtime_data` paths.
 4. Real Mode keeps using the real `.env` paths.
-5. No raw credentials are added to `test.env` or `test.example.env`.
+5. No raw credentials are added to `.env`, `example.env`, or `test.example.env`; checked-in `test.env` is not used.

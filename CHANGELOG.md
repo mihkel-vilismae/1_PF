@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.7.15 - 28.05.2026, 13:36:00 EEST
+
+- Removed committed `test.env` as a supported runtime env source so operators can use only `.env` plus Test Mode `TEST_*` path projection.
+- Fixed `verify-env` overlap validation to compare original `.env` real/test paths instead of the active Test Mode projection, preventing false `DB_PATH` / `TEST_DB_PATH` overlap errors.
+- Kept temporary `INIT_ENV_FILE` support for isolated automated test harnesses while ignoring a literal `INIT_ENV_FILE=test.env` runtime override.
+- Added regression coverage for Test Mode `verify-env` overlap checking with separated `.env` paths.
+- Bumped version metadata from v0.7.14 to v0.7.15.
+
 ## 0.7.14 - 28.05.2026, 13:20:00 EEST
 
 - Added a dashboard-shell `Pause live updates` / `Resume live updates` control so operators can temporarily stop background polling and transit-triggered renders while using browser DevTools `Inspect element`.

@@ -575,7 +575,7 @@ async function onceExit(child) {
 }
 
 // Builds the isolated env file content used by init API integration tests.
-function buildEnvFile({ downloadDir, dbPath, logDir, cookieDir, fullLogVerbose = false, testDbRelativePath = 'test_runtime_data/test_photo_frame.sqlite' }) {
+function buildEnvFile({ downloadDir, dbPath, logDir, cookieDir, fullLogVerbose = false, testDbRelativePath = 'test_runtime_data/test_photo_frame.sqlite', extraLines = [] }) {
   const lines = [
     'user=test@example.com',
     'pw=super-secret-password',
@@ -610,6 +610,7 @@ function buildEnvFile({ downloadDir, dbPath, logDir, cookieDir, fullLogVerbose =
   if (fullLogVerbose) {
     lines.push('FULL_LOG_VERBOSE=true');
   }
+  lines.push(...extraLines);
   return lines.join('\n');
 }
 
@@ -695,6 +696,40 @@ async function withCustomEnvServer(envContent, run) {
     await rm(workspaceRoot, { recursive: true, force: true });
   }
 }
+
+
+test('POST /api/init/verify-env uses original .env paths for real/test overlap checks in Test Mode', async () => {
+  // Prevents the Test Mode projection from creating a false overlap by mapping
+  // DB_PATH to TEST_DB_PATH for the active request before verify-env validates
+  // the operator's original .env real/test boundaries.
+  await withCustomEnvServer(
+    buildEnvFile({
+      downloadDir: 'runtime_data/downloads',
+      dbPath: 'runtime_data/photo_frame.sqlite',
+      logDir: 'runtime_data/logs',
+      cookieDir: 'runtime_data/icloudpd_cookies',
+      extraLines: [
+        'TEST_DOWNLOAD_DIR=test_runtime_data/downloads',
+        'TEST_DB_PATH=test_runtime_data/test_photo_frame.sqlite',
+        'TEST_LOG_DIR=test_runtime_data/logs',
+        'TEST_ICLOUDPD_COOKIE_DIR=test_runtime_data/icloudpd_cookies',
+      ],
+    }),
+    async ({ port }) => {
+      const response = await requestJson(port, '/api/init/verify-env', {
+        method: 'POST',
+        headers: { 'X-Dashboard-Runtime-Mode': 'test' },
+      });
+
+      assert.equal(response.status, 200);
+      assert.equal(response.json.status, 'ok');
+      assert.ok(!response.json.messages.some((m) => /overlap/i.test(m)));
+      const dbCheck = response.json.checks.find((check) => check.key === 'DB_PATH');
+      assert.ok(dbCheck);
+      assert.match(dbCheck.details.absolutePath, /test_runtime_data/);
+    },
+  );
+});
 
 test('POST /api/init/verify-env rejects overlapping real and test paths', async () => {
   // Create a custom .env file that intentionally overlaps test and real paths.

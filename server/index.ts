@@ -145,6 +145,7 @@ interface EnvValues {
 
 interface RequestContext {
   envValues: EnvValues;
+  baseEnvValues: EnvValues;
   runtimeMode?: DashboardRuntimeMode;
   platform: NodeJS.Platform;
   nodePath: string;
@@ -651,12 +652,10 @@ async function verifyEnvHandler({ context }) {
   }
 
   // Additional validation: ensure test environment paths do not overlap with real paths.
-  // According to the authoritative spec, the .env must define separate test paths and
-  // `.env` verification must fail if any test path overlaps its corresponding real path.
-  // A test path key is considered to start with the prefix `TEST_` followed by the real key
-  // (e.g. `TEST_DOWNLOAD_DIR` pairs with `DOWNLOAD_DIR`). We compare absolute paths and
-  // reject if one is equal to or contains the other.
-  const envValues = context.envValues;
+  // The comparison must use the original .env values, not the active Test Mode projection.
+  // Test Mode intentionally maps DB_PATH to TEST_DB_PATH for the current request, and
+  // comparing after that projection would falsely report a real/test overlap.
+  const envValues = context.baseEnvValues;
   const overlapPairs = [];
   for (const testKey of Object.keys(envValues)) {
     if (!testKey.startsWith('TEST_')) continue;
@@ -2137,6 +2136,7 @@ async function buildRequestContext(input: { request?: IncomingMessage; url?: URL
   const envValues = applyDashboardRuntimeModeToEnvValues(baseEnvValues, runtimeMode);
   return {
     envValues,
+    baseEnvValues,
     runtimeMode,
     platform: process.platform,
     nodePath: process.execPath,
@@ -2249,14 +2249,23 @@ async function resolveInitialFullLogVerboseEnabled(): Promise<boolean> {
 }
 
 function resolveEnvFilePath(): string {
+  // Uses repo .env for normal operator/runtime startup. Test harnesses may still
+  // provide a temporary env file, but the checked-in test.env file is no longer
+  // a supported alternate runtime configuration source.
   const overridePath = process.env.INIT_ENV_FILE;
   if (!overridePath || overridePath.trim() === '') {
     return defaultEnvFilePath;
   }
-  if (path.isAbsolute(overridePath)) {
-    return overridePath;
+
+  const trimmedOverridePath = overridePath.trim();
+  if (path.basename(trimmedOverridePath).toLowerCase() === 'test.env') {
+    return defaultEnvFilePath;
   }
-  return path.resolve(repoRoot, overridePath);
+
+  if (path.isAbsolute(trimmedOverridePath)) {
+    return trimmedOverridePath;
+  }
+  return path.resolve(repoRoot, trimmedOverridePath);
 }
 
 function getAuthReadinessChecks(context: RequestContext): EnvCheck[] {

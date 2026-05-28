@@ -1,7 +1,8 @@
 /*
  * Guards real and test environment example path separation.
  * The tests prevent example credentials and runtime/log folders from drifting
- * back into shared root-level locations.
+ * back into shared root-level locations. The app now uses .env as the
+ * only checked-in runtime env source; test.example.env remains a template only.
  */
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -36,7 +37,7 @@ function parseEnvFile(filePath) {
 function assertTestEnvValues(env) {
   /**
    * Verifies the reusable test env shape without duplicating assertions for
-   * the checked-in test.env and redacted test.example.env files.
+   * the redacted test.example.env template.
    */
 
   assert.equal(env.get('user'), '');
@@ -54,8 +55,12 @@ test('test.example.env keeps credentials empty and test paths isolated', () => {
   assertTestEnvValues(parseEnvFile('test.example.env'));
 });
 
-test('test.env is a runnable redacted copy of the isolated test environment', () => {
-  assertTestEnvValues(parseEnvFile('test.env'));
+test('test.env is not a checked-in runtime env source', () => {
+  /**
+   * Keeps local operators on a single .env file. Temporary test harness env
+   * files may still be generated outside this committed template set.
+   */
+  assert.throws(() => parseEnvFile('test.env'), /ENOENT/);
 });
 
 test('example.env keeps real log paths inside runtime_data logs', () => {

@@ -43,12 +43,12 @@ Optional:
 - `ICLOUDPD_BIN`
 - `ICLOUDPD_DOMAIN`
 - `ICLOUDPD_AUTH_TIMEOUT_MS`
-- `TEST_DB_PATH` (test-only SQLite database location; keep separate from `DB_PATH`)
+- `TEST_DB_PATH` in `.env` (test-only SQLite database location; keep separate from `DB_PATH`)
 
 ### Database path setup baseline
 
 - `DB_PATH` identifies the runtime SQLite database used by init/database and runtime-backed flows.
-- `TEST_DB_PATH` identifies the test-only SQLite database location when test flows need an explicit database path.
+- `TEST_DB_PATH` in `.env` identifies the test-only SQLite database location when Test Mode needs an explicit database path.
 - Real and test database paths must not overlap; `verify-env` reports an error when a configured `TEST_*` path overlaps the matching real path.
 
 ### Auth behavior boundaries

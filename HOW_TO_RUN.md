@@ -25,7 +25,7 @@ For a fuller Windows startup pass, run `start_win_full.cmd` from the repository 
 
 Open the local Vite URL in your browser.
 
-Use `example.env` as the local environment template. Keep `DB_PATH` for the runtime SQLite database and `TEST_DB_PATH` for test-only database work; those paths must not overlap.
+Use `example.env` as the local environment template and keep one local runtime env file: `.env`. Do not use a checked-in `test.env`; dashboard Test Mode uses the `TEST_*` paths defined in `.env` or safe `test_runtime_data` defaults. Keep `DB_PATH` for the real runtime SQLite database and `TEST_DB_PATH` for test-only database work; those original `.env` paths must not overlap.
 
 ## NEW AUTH provider verification check
 
