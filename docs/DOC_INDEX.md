@@ -1,11 +1,17 @@
 # Documentation Index
 
-Estonian timestamp: 2026-05-24 22:58 EEST
+Estonian timestamp: 2026-05-28 13:20 EEST
 
 This index classifies non-skill documentation files and separates current truth candidates from status snapshots, specs, backlog, archive material, and tool-local docs. No files were moved by this analysis.
 
 - Included documentation files: 60
 - Included documentation LOC: 7892+
+
+## Recent additions
+
+- `docs/30_status_snapshots/2026-05-28/LIVE_UPDATES_INSPECT_FAILURE_ANALYSIS_20260528.md` — repo-backed cause analysis for DevTools inspect instability under background re-renders.
+- `docs/30_status_snapshots/2026-05-28/LIVE_UPDATES_INSPECT_FIX_DESIGN_20260528.md` — selected pause-live-updates design and boundaries.
+- `docs/30_status_snapshots/2026-05-28/LIVE_UPDATES_INSPECT_VERIFICATION_20260528.md` — targeted verification and build notes for the live-update pause fix.
 
 ## Group summary
 

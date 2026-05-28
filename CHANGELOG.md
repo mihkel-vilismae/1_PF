@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.7.14 - 28.05.2026, 13:20:00 EEST
+
+- Added a dashboard-shell `Pause live updates` / `Resume live updates` control so operators can temporarily stop background polling and transit-triggered renders while using browser DevTools `Inspect element`.
+- Guarded `dashboard:transit`, scheduler run-log polling, OS playback observability polling, and backend-version completion with the live-update pause flow while preserving user-triggered controls.
+- Added inspect/reality/backend-status metadata and targeted regression tests for the new pause control.
+- Added repo-backed analysis, fix design, and verification notes for the DevTools inspection instability caused by full-root re-renders.
+- Bumped version metadata from v0.7.13 to v0.7.14.
+
 ## 0.7.13 - 28.05.2026, 13:06:00 EEST
 
 - Fixed the remaining nested scroll reset for backend result `Response payload` / JSON panels by marking `renderResultSurface()` payload blocks and inner `.result-json` surfaces with stable scroll-preservation keys.
