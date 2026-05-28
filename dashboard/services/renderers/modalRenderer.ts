@@ -83,8 +83,9 @@ export function renderModal(modal: ModalData | null | undefined): string {
         : renderHistoryModalContent(modal.entry ?? {});
   const describedBy = subtitle ? ' aria-describedby="modal-subtitle"' : '';
   const versionAttribute = modal.kind === 'new-auth-login-v2' ? ' data-new-auth-modal-version="2"' : '';
+  const modalScrollKey = `modal-${modal.kind ?? 'details'}`;
   const panel = `
-    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title"${describedBy}${versionAttribute}>
+    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title"${describedBy}${versionAttribute} data-scroll-preserve="${escapeHtml(modalScrollKey)}">
       <div class="modal-panel__header">
         <div class="modal-panel__header-copy">
           <p class="modal-panel__eyebrow">${escapeHtml(kindLabel)}</p>
@@ -128,13 +129,13 @@ function renderNewAuthCommunicationPanel(modal: ModalData): string {
     : '<div class="terminal-panel__line terminal-panel__line--muted">Waiting for sanitized iCloudPD communication...</div>';
 
   return `
-    <section class="modal-panel modal-panel--terminal" aria-labelledby="icloudpd-communication-title">
+    <section class="modal-panel modal-panel--terminal" aria-labelledby="icloudpd-communication-title" data-scroll-preserve="new-auth-communication-panel">
       <div class="modal-panel__header modal-panel__header--terminal">
         <div class="modal-panel__header-copy">
           <h3 id="icloudpd-communication-title">icloudpd communication</h3>
         </div>
       </div>
-      <div class="terminal-panel" role="log" aria-live="polite" aria-label="Read-only iCloudPD communication log">${body}</div>
+      <div class="terminal-panel" role="log" aria-live="polite" aria-label="Read-only iCloudPD communication log" data-scroll-preserve="new-auth-communication-log">${body}</div>
     </section>
   `;
 }

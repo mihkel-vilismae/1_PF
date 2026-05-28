@@ -89,7 +89,7 @@ export function renderRunningProcessView(state) {
       <article class="card ${mode === 'real' ? '' : 'card--mock'} card--pending">
         <header class="card__header"><div><p class="card__code">D4</p><h3>${mode === 'real' ? 'Monitor log' : 'Preview log'}</h3></div><div class="card__header-tags">${renderSourceBadge(mode, mode.toUpperCase())}</div></header>
         <p class="card__copy">Sources: Log entries are taken from the application log tail${mode === 'real' ? '' : '; in preview mode the log lines are simulated'}.</p>
-        <div class="log-surface">${renderLogEntries(state.logs.D, { sourceKey: 'D' })}</div>
+        <div class="log-surface" data-scroll-preserve="log-D">${renderLogEntries(state.logs.D, { sourceKey: 'D' })}</div>
       </article>
     </section>
   `;

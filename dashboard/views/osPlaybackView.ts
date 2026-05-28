@@ -236,7 +236,7 @@ function renderTerminalPanel(platform: OsPlaybackPlatform, code: string, title: 
         </div>
       </header>
       <p class="card__copy">${escapeHtml(summary)}</p>
-      <div class="log-surface os-terminal-surface">
+      <div class="log-surface os-terminal-surface" data-scroll-preserve="os-playback-${escapeHtml(platform)}-${escapeHtml(logKind)}-terminal">
         ${entries.map((entry, index) => renderTerminalRow(platform, logKind, entry, index)).join('')}
       </div>
     </article>

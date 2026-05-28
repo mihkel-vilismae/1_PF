@@ -135,7 +135,7 @@ function renderSchedulerCard(state, schedulerCapability, supportLevels) {
       </div>
       ${renderSchedulerEndpointTerminal(state.schedulerEmulator?.endpointLog ?? [])}
       ${renderResultSurface(state.initResults['3A'])}
-      <div class="log-surface">${renderLogEntries(state.logs['3A'], { sourceKey: '3A' })}</div>
+      <div class="log-surface" data-scroll-preserve="log-3A">${renderLogEntries(state.logs['3A'], { sourceKey: '3A' })}</div>
     </article>
   `;
 }
@@ -161,7 +161,7 @@ function renderSchedulerEndpointTerminal(entries = []) {
           <button class="button button--ghost scheduler-endpoint-terminal__control" type="button" data-scheduler-endpoint-clear-all>clear</button>
         </div>
       </div>
-      <div class="scheduler-endpoint-terminal__body" role="log" aria-live="polite">
+      <div class="scheduler-endpoint-terminal__body" role="log" aria-live="polite" data-scroll-preserve="scheduler-endpoint-terminal-body">
         ${rows}
       </div>
     </section>
@@ -280,7 +280,7 @@ function renderNewAuthCard(state) {
       </div>
       ${renderResultSurface(newAuth.latestResult)}
       ${newAuth.sessionFilesResult ? renderResultSurface(newAuth.sessionFilesResult) : ''}
-      <div class="log-surface">${renderLogEntries(state.logs['1A-STASH-OFF'], { sourceKey: '1A-STASH-OFF' })}</div>
+      <div class="log-surface" data-scroll-preserve="log-1A-STASH-OFF">${renderLogEntries(state.logs['1A-STASH-OFF'], { sourceKey: '1A-STASH-OFF' })}</div>
     </article>
   `;
 }
@@ -324,7 +324,7 @@ function renderAuthCard(state) {
       ${renderAuthStateSummary(authState, state.authPreflight?.loaded)}
       ${renderAuthOperatorControls(authState, state.authPreflight?.buttonStates)}
       ${renderResultSurface(latestResult)}
-      <div class="log-surface">${renderLogEntries(state.logs.B1, { sourceKey: 'B1' })}</div>
+      <div class="log-surface" data-scroll-preserve="log-B1">${renderLogEntries(state.logs.B1, { sourceKey: 'B1' })}</div>
     </article>
   `;
 }
@@ -404,7 +404,7 @@ function renderCard(code, title, state, logKey, actions, copy) {
       <p class="card__copy">${copy}</p>
       <div class="button-row">${actions}</div>
       ${renderResultSurface(state.initResults[code])}
-      <div class="log-surface">${renderLogEntries(state.logs[logKey], { sourceKey: logKey })}</div>
+      <div class="log-surface" data-scroll-preserve="log-${escapeAttribute(logKey)}">${renderLogEntries(state.logs[logKey], { sourceKey: logKey })}</div>
     </article>
   `;
 }

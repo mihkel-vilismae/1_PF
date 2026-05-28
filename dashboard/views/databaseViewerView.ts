@@ -35,7 +35,7 @@ export function renderDatabaseViewerView(state) {
             <button class="button button--secondary" data-action="connect-db-viewer" ${verificationPassed && !connected ? '' : 'disabled'}>Connect to Database</button>
           </div>
           ${renderVerificationPanel(databaseViewer)}
-          <div class="log-surface">${renderLogEntries(state.logs.E1, { sourceKey: 'E1' })}</div>
+          <div class="log-surface" data-scroll-preserve="log-E1">${renderLogEntries(state.logs.E1, { sourceKey: 'E1' })}</div>
         </article>
 
         <article class="card">
@@ -48,7 +48,7 @@ export function renderDatabaseViewerView(state) {
             <button class="button button--primary" data-action="show-db-tables" ${connected ? '' : 'disabled'}>Show Tables</button>
           </div>
           ${renderTablesPanel(databaseViewer)}
-          <div class="log-surface">${renderLogEntries(state.logs.E2, { sourceKey: 'E2' })}</div>
+          <div class="log-surface" data-scroll-preserve="log-E2">${renderLogEntries(state.logs.E2, { sourceKey: 'E2' })}</div>
         </article>
       </div>
 
@@ -60,7 +60,7 @@ export function renderDatabaseViewerView(state) {
           </header>
           <p class="card__copy">Rows are requested in backend-owned pages. The current UI asks for 50 rows per page, while the backend also enforces a hard maximum page size to keep requests bounded.</p>
           ${renderRowsPanel(databaseViewer)}
-          <div class="log-surface">${renderLogEntries(state.logs.E3, { sourceKey: 'E3' })}</div>
+          <div class="log-surface" data-scroll-preserve="log-E3">${renderLogEntries(state.logs.E3, { sourceKey: 'E3' })}</div>
         </article>
 
         <article class="card card--feature">
@@ -74,7 +74,7 @@ export function renderDatabaseViewerView(state) {
             <button class="button button--secondary" data-action="stop-db-logging" ${connected && logging.active ? '' : 'disabled'}>Stop DB Logging</button>
           </div>
           ${renderLoggingPanel(databaseViewer)}
-          <div class="log-surface">${renderLogEntries(state.logs.E4, { sourceKey: 'E4' })}</div>
+          <div class="log-surface" data-scroll-preserve="log-E4">${renderLogEntries(state.logs.E4, { sourceKey: 'E4' })}</div>
         </article>
       </div>
     </section>
@@ -142,7 +142,7 @@ function renderTablesPanel(databaseViewer) {
           'SQLite user_version': String(databaseViewer.sqlite?.userVersion ?? 'Unavailable'),
         })}
       </div>
-      <div class="db-object-grid">
+      <div class="db-object-grid" data-scroll-preserve="database-object-grid">
         ${tables.map((table) => `
           <button
             type="button"
@@ -200,7 +200,7 @@ function renderRowsPanel(databaseViewer) {
 function renderRowsTable(rows) {
   const columns = Array.isArray(rows.columns) ? rows.columns : [];
   return `
-    <div class="db-table-shell">
+    <div class="db-table-shell" data-scroll-preserve="database-table-shell">
       <table class="db-table">
         <thead>
           <tr>
@@ -238,7 +238,7 @@ function renderLoggingPanel(databaseViewer) {
         <strong>${escapeHtml(logging.coverage ?? 'No logging coverage summary available.')}</strong>
       </div>
       ${entries.length ? `
-        <div class="db-activity-list">
+        <div class="db-activity-list" data-scroll-preserve="database-activity-list">
           ${entries.map((entry) => `
             <article class="db-activity-entry">
               <div class="db-activity-entry__meta">

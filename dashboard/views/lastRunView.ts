@@ -50,7 +50,7 @@ export function renderLastRunView(state) {
           <button class="button button--secondary" data-action="refresh-last-run">Refresh last run</button>
           <button class="button button--primary" data-action="resume-last-run" ${detailsDisabled ? 'disabled' : ''}>Resume from saved state (placeholder)</button>
         </div>
-        <div class="log-surface">${renderLogEntries(state.logs.C, { sourceKey: 'C' })}</div>
+        <div class="log-surface" data-scroll-preserve="log-C">${renderLogEntries(state.logs.C, { sourceKey: 'C' })}</div>
       </article>
     </section>
   `;

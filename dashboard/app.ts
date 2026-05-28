@@ -198,7 +198,7 @@ function render() {
           })}
         </article>
 
-        <article class="side-panel side-panel--history">
+        <article class="side-panel side-panel--history" data-scroll-preserve="event-history-panel">
           <div class="side-panel__header">
             <h2>Event history</h2>
             <div class="side-panel__actions">
@@ -206,11 +206,11 @@ function render() {
               <button class="button button--ghost" data-action="clear-history">Clear</button>
             </div>
           </div>
-          <div class="history-surface">${renderHistory(state.history)}</div>
+          <div class="history-surface" data-scroll-preserve="event-history-surface">${renderHistory(state.history)}</div>
         </article>
       </aside>
 
-      <main class="main-panel">
+      <main class="main-panel" data-scroll-preserve="main-view-${state.activeView}">
         <header class="topbar">
           <div>
             <p class="eyebrow">${visualModeBanner}</p>
@@ -264,7 +264,7 @@ function render() {
             <span class="pill">${hasLiveTraffic ? 'Live gateway traffic' : 'Placeholder'}</span>
           </header>
           <p class="card__copy">${hasLiveTraffic ? 'All dashboard outbound/inbound API traffic is routed through a single gateway and mirrored here.' : 'PLACEHOLDER: random-looking terminal output. Live gateway traffic will appear after the first request is made.'}</p>
-          <div class="log-surface history-surface">
+          <div class="log-surface history-surface" data-scroll-preserve="transit-terminal-surface">
             <pre class="modal-panel__json">${escapeHtml(transitTerminal.renderLines())}</pre>
           </div>
         </article>

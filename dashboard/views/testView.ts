@@ -139,7 +139,7 @@ export function renderTestView(state, dashboardVisualMode: DashboardVisualMode =
             <p class="notice playback-rendering-panel__notice">${playbackRenderingReady ? getPlaybackRenderingReadyMessage(playbackRenderingState.mode) : 'Run B4 successfully before changing rendering mode or target.'}</p>
           </section>
           <div class="button-row"><button class="button button--primary" data-action="run-b4">Run</button></div>
-          <div class="log-surface">${renderLogEntries(state.logs.B4, { sourceKey: 'B4' })}</div>
+          <div class="log-surface" data-scroll-preserve="log-B4">${renderLogEntries(state.logs.B4, { sourceKey: 'B4' })}</div>
         </article>
 
         <article class="card card--hybrid card--feature card--pending">
@@ -171,7 +171,7 @@ export function renderTestView(state, dashboardVisualMode: DashboardVisualMode =
             'Shared timeout': `${state.truth.inactivityTimeoutSeconds}s`,
             'Playback checkpoint': state.truth.lastCheckpoint,
           })}</div>
-          <div class="log-surface">${renderLogEntries(state.logs.B5, { sourceKey: 'B5' })}</div>
+          <div class="log-surface" data-scroll-preserve="log-B5">${renderLogEntries(state.logs.B5, { sourceKey: 'B5' })}</div>
         </article>
       </div>
     </section>
@@ -201,7 +201,7 @@ function renderB2TestDownloadCard(state): string {
           </header>
           <p class="card__copy">Test Mode only: calls <code>POST /api/runtime/download/run</code> for the mock/generated download path. The real iCloudPD download control is hidden in Test Mode.</p>
           <div class="button-row"><button class="button button--primary" data-action="run-b2">Run</button></div>
-          <div class="log-surface">${renderLogEntries(state.logs.B2, { sourceKey: 'B2' })}</div>
+          <div class="log-surface" data-scroll-preserve="log-B2">${renderLogEntries(state.logs.B2, { sourceKey: 'B2' })}</div>
         </article>
   `;
 }
@@ -224,7 +224,7 @@ function renderB2RealDownloadCard(state, realDownloadAuthenticated: boolean, rea
           </label>
           <p class="notice">${realDownloadAuthenticated ? 'Authenticated session detected from dashboard state. Backend verifies again before starting.' : 'Real download requires an authenticated iCloudPD session. Verify/login in View A first.'}</p>
           <div class="button-row"><button class="button button--primary" data-action="run-b2-real-download" ${realDownloadAuthenticated ? '' : 'disabled'}>Run real download</button></div>
-          <div class="log-surface">${renderLogEntries(state.logs['B2-REAL_DOWNLOAD'], { sourceKey: 'B2-REAL_DOWNLOAD' })}</div>
+          <div class="log-surface" data-scroll-preserve="log-B2-REAL_DOWNLOAD">${renderLogEntries(state.logs['B2-REAL_DOWNLOAD'], { sourceKey: 'B2-REAL_DOWNLOAD' })}</div>
         </article>
   `;
 }
@@ -242,7 +242,7 @@ function renderStageCard(code, title, subtitle, state, sourceMode = 'hybrid') {
         ${statusBadge(state.statusByKey[code])}
       </div>
       <div class="button-row"><button class="button button--secondary" data-action="run-${code.toLowerCase().replace('.', '-')}">Run</button></div>
-      <div class="log-surface">${renderLogEntries(state.logs[code], { sourceKey: code })}</div>
+      <div class="log-surface" data-scroll-preserve="log-${escapeHtml(code)}">${renderLogEntries(state.logs[code], { sourceKey: code })}</div>
     </article>
   `;
 }
