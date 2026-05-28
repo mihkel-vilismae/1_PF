@@ -25,6 +25,16 @@ This index classifies non-skill documentation files and separates current truth 
 | 11_tool_docs_network_scan_dirty | 4 | 173 | Network-scan submodule/tool docs; audit separately. |
 | 12_test_data_docs | 1 | 41 | Test-data docs. |
 
+
+## Goal 4 current media pipeline docs — 2026-05-28 12:28 EEST
+
+| path | kind | authority | topics | note |
+| --- | --- | --- | --- | --- |
+| docs/00_current_truth/MEDIA_PIPELINE_IMPLEMENTATION_STATUS_20260528.md | current_truth | repo_backed_current_truth | media_pipeline, download, index, gps, geocode, queue, playback | Current Goal 4 implementation-status table; subjective assessment column remains pending user PC testing. |
+| docs/30_status_snapshots/2026-05-28/GOAL4_MEDIA_PIPELINE_INVENTORY_20260528.md | implementation_status_snapshot | repo_backed_snapshot | media_pipeline, evidence_inventory | Dated evidence map of routes, handlers, schema tables, tests, UI entry points, and docs. |
+| docs/30_status_snapshots/2026-05-28/GOAL4_MEDIA_PIPELINE_STAGE_BEHAVIOR_20260528.md | implementation_status_snapshot | repo_backed_snapshot | media_pipeline, stage_behavior | Dated stage-by-stage behavior analysis with inputs, outputs, DB effects, boundaries, and non-goals. |
+| docs/30_status_snapshots/2026-05-28/GOAL4_MEDIA_PIPELINE_VERIFICATION_ALIGNMENT_20260528.md | implementation_status_snapshot | repo_backed_snapshot | media_pipeline, verification | Dated mapping from stage claims to Wave D/E and related UI/compatibility tests. |
+
 ## Detailed index
 
 | path | loc | title | kind | authority | freshness | group | topics | note |
