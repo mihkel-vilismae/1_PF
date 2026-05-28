@@ -214,3 +214,14 @@ Use these documents when investigating the Windows auth logout `EPERM` unit-test
 - [`docs/30_status_snapshots/2026-05-28/AUTH_LOGOUT_EPERM_FAILURE_ANALYSIS_20260528.md`](docs/30_status_snapshots/2026-05-28/AUTH_LOGOUT_EPERM_FAILURE_ANALYSIS_20260528.md)
 - [`docs/30_status_snapshots/2026-05-28/AUTH_LOGOUT_EPERM_FIX_DESIGN_20260528.md`](docs/30_status_snapshots/2026-05-28/AUTH_LOGOUT_EPERM_FIX_DESIGN_20260528.md)
 - [`docs/30_status_snapshots/2026-05-28/AUTH_LOGOUT_EPERM_VERIFICATION_20260528.md`](docs/30_status_snapshots/2026-05-28/AUTH_LOGOUT_EPERM_VERIFICATION_20260528.md)
+
+## Nested payload scroll preservation fix notes
+
+Estonian timestamp: 2026-05-28 13:06 EEST
+
+Use these documents when investigating result payload / JSON panel scroll resets during dashboard re-renders:
+
+- [`docs/30_status_snapshots/2026-05-28/NESTED_PAYLOAD_SCROLL_FAILURE_ANALYSIS_20260528.md`](docs/30_status_snapshots/2026-05-28/NESTED_PAYLOAD_SCROLL_FAILURE_ANALYSIS_20260528.md)
+- [`docs/30_status_snapshots/2026-05-28/NESTED_PAYLOAD_SCROLL_FIX_DESIGN_20260528.md`](docs/30_status_snapshots/2026-05-28/NESTED_PAYLOAD_SCROLL_FIX_DESIGN_20260528.md)
+- [`docs/30_status_snapshots/2026-05-28/NESTED_PAYLOAD_SCROLL_VERIFICATION_20260528.md`](docs/30_status_snapshots/2026-05-28/NESTED_PAYLOAD_SCROLL_VERIFICATION_20260528.md)
+

@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.7.13 - 28.05.2026, 13:06:00 EEST
+
+- Fixed the remaining nested scroll reset for backend result `Response payload` / JSON panels by marking `renderResultSurface()` payload blocks and inner `.result-json` surfaces with stable scroll-preservation keys.
+- Added regression coverage proving result payload surfaces are included in scroll preservation while preserving provider-proof prompt rendering outside raw JSON.
+- Added repo-backed failure analysis, fix design, and verification notes for the nested payload scroll reset.
+- Verified targeted scroll/render tests and production build; full test suite was attempted in the Linux tool environment but timed out before completion.
+- Bumped version metadata from v0.7.12 to v0.7.13.
+
 ## 0.7.12 - 28.05.2026, 12:48:00 EEST
 
 - Isolated legacy auth logout unit tests from the shared `runtime_data/auth/auth-state.json` file by using an in-memory auth persistence double.
