@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.7.6 - 28.05.2026, 10:05:00 EEST
+
+- Added OS playback activity state to the initial dashboard state for Windows and Raspberry playback surfaces.
+- Extended the OS playback view model with monitoring, selected-source, unavailable-source, last-activity, and keep-awake labels while keeping rendering behavior unchanged.
+
 ## 0.7.5 - 28.05.2026, 10:00:00 EEST
 
 - Added the OS playback activity detection adapter so Goal 3 can reuse the proven View B/B5 PIR/mouse/keyboard source model without coupling fullscreen playback to View B UI state.

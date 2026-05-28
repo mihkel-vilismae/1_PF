@@ -19,6 +19,7 @@ import {
   type SchedulerTarget,
 } from '../../../shared/schedulerPlatformCapabilities.ts';
 import { createDefaultPlaybackRenderingState } from '../playbackRenderer.ts';
+import { createDefaultOsPlaybackActivityState } from '../osPlaybackActivityDetection.ts';
 import { createDefaultB5ActivityDetectionState } from '../viewBActivityDetection.ts';
 import {
   WINDOWS_CRON_EMULATOR_PLAYBACK_WORKER_CRON_ROW,
@@ -372,6 +373,10 @@ export function createInitialState() {
       b5ActivityDetection: createDefaultB5ActivityDetectionState(),
     },
     playbackRendering: createDefaultPlaybackRenderingState(),
+    osPlaybackActivity: {
+      windows: createDefaultOsPlaybackActivityState(),
+      raspberry: createDefaultOsPlaybackActivityState(),
+    },
     lastRunMode: 'none',
     lastRunData: {
       media: {},

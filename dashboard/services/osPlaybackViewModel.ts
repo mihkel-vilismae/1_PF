@@ -1,8 +1,14 @@
 /*
  * Builds view models for the OS-specific playback views.
- * The model keeps Windows/Raspberry labels, stages, workers, and logs centralized
- * so the view renderer stays additive and does not reach into backend internals.
+ * The model keeps Windows/Raspberry labels, stages, workers, logs, and activity
+ * monitoring centralized so renderers stay additive and backend boundaries hold.
  */
+import {
+  getOsPlaybackActivitySourceLabel,
+  normalizeOsPlaybackActivityState,
+  OS_PLAYBACK_ACTIVITY_SOURCES,
+  type OsPlaybackActivitySource,
+} from './osPlaybackActivityDetection.ts';
 
 export const OS_PLAYBACK_PLATFORMS = Object.freeze({
   windows: 'windows',
@@ -43,6 +49,15 @@ export type PlaybackQueueItemViewModel = {
   position: string;
 };
 
+export type PlaybackActivityViewModel = {
+  monitoring: boolean;
+  selectedLabels: string[];
+  unavailableLabels: string[];
+  lastActivityLabel: string;
+  keepAwakeLabel: string;
+  statusMessage: string;
+};
+
 export type PlaybackRotationViewModel = {
   activeIndex: number;
   itemCount: number;
@@ -75,6 +90,7 @@ export type OsPlaybackViewModel = {
   nextIn: string;
   playbackItems: PlaybackQueueItemViewModel[];
   rotation: PlaybackRotationViewModel;
+  activity: PlaybackActivityViewModel;
   stageItems: PlaybackStageViewModel[];
   workers: PlaybackWorkerViewModel[];
   schedulerLog: PlaybackLogEntryViewModel[];
@@ -138,6 +154,16 @@ type OsPlaybackObservabilityStateLike = {
   payload?: PlaybackObservabilityLike;
 };
 
+type OsPlaybackActivityStateLike = {
+  selectedSources?: Record<string, unknown>;
+  monitoring?: unknown;
+  lastActivityAtIso?: unknown;
+  lastActivitySource?: unknown;
+  keepAwakeUntilIso?: unknown;
+  pirAvailability?: unknown;
+  statusMessage?: unknown;
+};
+
 type OsPlaybackRotationStateLike = {
   activeIndex?: unknown;
   paused?: unknown;
@@ -157,6 +183,7 @@ type RuntimeStateLike = {
   osPlayback?: Partial<Record<OsPlaybackPlatform, OsPlaybackContractStateLike>>;
   osPlaybackObservability?: Partial<Record<OsPlaybackPlatform, OsPlaybackObservabilityStateLike>>;
   osPlaybackRotation?: Partial<Record<OsPlaybackPlatform, OsPlaybackRotationStateLike>>;
+  osPlaybackActivity?: Partial<Record<OsPlaybackPlatform, OsPlaybackActivityStateLike>>;
 };
 
 const PLATFORM_COPY = Object.freeze({
@@ -206,6 +233,7 @@ export function buildOsPlaybackViewModel(state: RuntimeStateLike, platform: OsPl
   const playbackItems = normalizePlaybackItems(playbackContract, fallbackMedia);
   const defaultActiveIndex = inferDefaultActiveIndex(playbackItems, playbackContract);
   const rotation = buildRotationViewModel(state.osPlaybackRotation?.[platform], playbackItems.length, defaultActiveIndex);
+  const activity = buildActivityViewModel(state.osPlaybackActivity?.[platform]);
   const media = playbackItems[rotation.activeIndex] ?? fallbackMedia;
   const queueSummary = buildQueueSummary(playbackContract, readNumber(state.truth?.queueLength, 0), playbackItems.length);
   const playbackStatus = buildPlaybackStatus(contractState, playbackContract, readText(state.truth?.playbackStatus, 'Waiting for queued media'));
@@ -230,11 +258,41 @@ export function buildOsPlaybackViewModel(state: RuntimeStateLike, platform: OsPl
     nextIn: rotation.nextIn,
     playbackItems,
     rotation,
+    activity,
     stageItems: buildStageItems(state),
     workers: buildWorkerItems(state, observabilityPayload),
     schedulerLog: buildSchedulerLog(platform, observabilityPayload, observabilityState),
     errorLog: buildErrorLog(state, platform, observabilityPayload, observabilityState),
     mainLog: buildMainLog(state, platform, observabilityPayload, observabilityState),
+  };
+}
+
+
+/**
+ * Builds the fullscreen playback activity-monitoring view model from reusable activity state.
+ */
+function buildActivityViewModel(activityState: OsPlaybackActivityStateLike | null | undefined): PlaybackActivityViewModel {
+  const activity = normalizeOsPlaybackActivityState(activityState);
+  const selectedLabels = OS_PLAYBACK_ACTIVITY_SOURCES
+    .filter((source) => activity.selectedSources[source])
+    .map((source) => getOsPlaybackActivitySourceLabel(source));
+  const unavailableLabels = OS_PLAYBACK_ACTIVITY_SOURCES
+    .filter((source) => source === 'pir' && activity.selectedSources[source] && activity.pirAvailability !== 'available')
+    .map((source) => getOsPlaybackActivitySourceLabel(source));
+  const lastActivityLabel = activity.lastActivitySource
+    ? `${getOsPlaybackActivitySourceLabel(activity.lastActivitySource as OsPlaybackActivitySource)} at ${formatIsoTime(activity.lastActivityAtIso)}`
+    : 'No fullscreen activity captured yet';
+  const keepAwakeLabel = activity.keepAwakeUntilIso
+    ? `Keep-awake window until ${formatIsoTime(activity.keepAwakeUntilIso)}`
+    : 'Keep-awake window is inactive';
+
+  return {
+    monitoring: activity.monitoring,
+    selectedLabels,
+    unavailableLabels,
+    lastActivityLabel,
+    keepAwakeLabel,
+    statusMessage: activity.statusMessage,
   };
 }
 
@@ -669,6 +727,17 @@ function readNumber(value: unknown, fallback = 0): number {
 /**
  * Reads a trimmed string with a fallback for missing values.
  */
+function formatIsoTime(value: unknown): string {
+  if (typeof value !== 'string' || !value) {
+    return 'unknown time';
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return 'unknown time';
+  }
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
 function readText(value: unknown, fallback: string): string {
   return typeof value === 'string' && value.trim().length > 0 ? value : fallback;
 }
