@@ -161,6 +161,10 @@ export const ACTION_INSPECT_COPY = {
     "label": "Refresh last run",
     "description": "Calls the backend orchestration last-run endpoint and updates the read-only View C summary."
   },
+  "start-b5-activity-test": {
+    "label": "Start B5 activity detection test",
+    "description": "Starts the View B activity-source countdown and records whether the selected PIR, mouse, and keyboard sources were detected without claiming unavailable hardware input."
+  },
   "start-real-run": {
     "label": "Start simulated runtime preview",
     "description": "Activates the D-view worker preview so the pipeline, playback, and screen monitor cards begin updating."

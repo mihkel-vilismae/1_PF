@@ -62,6 +62,14 @@ type RuntimeTruthUnsubscribe = () => void;
 type RuntimeActionPayload = Record<string, unknown>;
 
 const stamp = (): string => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+const createHistoryId = (): string => {
+  if (globalThis.crypto?.randomUUID) {
+    return globalThis.crypto.randomUUID();
+  }
+
+  return `history-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+};
+
 const formatTallinnTimestamp = (): string =>
   new Intl.DateTimeFormat('et-EE', {
     timeZone: 'Europe/Tallinn',
@@ -197,14 +205,14 @@ export function toggleMarkedForRemoval(): void {
 
 export function resetHistory(): void {
   patchState((draft) => {
-    draft.history = [{ id: crypto.randomUUID(), at: stamp(), source: 'USER', type: 'info', message: 'History cleared.' }];
+    draft.history = [{ id: createHistoryId(), at: stamp(), source: 'USER', type: 'info', message: 'History cleared.' }];
   });
 }
 
 export function pushHistory(source: string, type: string, message: string, details: unknown = null): void {
   patchState((draft) => {
     draft.history.unshift({
-      id: crypto.randomUUID(),
+      id: createHistoryId(),
       at: stamp(),
       atIso: new Date().toISOString(),
       atTallinn: formatTallinnTimestamp(),

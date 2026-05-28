@@ -151,6 +151,10 @@ export const ACTION_REALITY_COPY = {
     "state": "real",
     "reason": "Reads the live `/api/runtime/orchestration/last` endpoint for a backend orchestration summary."
   },
+  "start-b5-activity-test": {
+    "state": "mock",
+    "reason": "Runs the frontend-owned View B activity detection test against selected browser/PIR simulation sources and does not prove real PIR hardware availability."
+  },
   "start-real-run": {
     "state": "mock",
     "reason": "Starts a simulated runtime preview; it does not launch the real runtime workers."

@@ -119,6 +119,10 @@ export const ACTION_BACKEND_STATUS_COPY = {
     "state": "real",
     "reason": "This action calls GET /api/runtime/orchestration/last for read-only backend last-run data."
   },
+  "start-b5-activity-test": {
+    "state": "mock",
+    "reason": "This button runs a local View B activity-detection countdown. It does not call a backend endpoint and does not represent real PIR hardware telemetry."
+  },
   "start-real-run": {
     "state": "missing",
     "reason": "This starts a simulated runtime preview because the real runtime backend/worker API is not implemented here."
