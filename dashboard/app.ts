@@ -12,6 +12,7 @@ import {
   patchState,
   openModal,
   pushHistory,
+  pushLog,
   resetHistory,
   runAction,
   seedDemoState,
@@ -50,7 +51,7 @@ import { renderTestView } from './views/testView.ts';
 import { renderLastRunView } from './views/lastRunView.ts';
 import { renderRunningProcessView } from './views/runningProcessView.ts';
 import { renderDatabaseViewerView } from './views/databaseViewerView.ts';
-import { renderOsPlaybackView } from './views/osPlaybackView.ts';
+import { renderOsPlaybackFullscreenOverlay, renderOsPlaybackView } from './views/osPlaybackView.ts';
 import { OS_PLAYBACK_PLATFORMS, type OsPlaybackPlatform } from './services/osPlaybackViewModel.ts';
 import { requestJson, setDashboardRuntimeMode } from './services/apiClient.ts';
 
@@ -60,6 +61,7 @@ type DashboardVisualMode = 'test' | 'real';
 const TRANSIT_EVENT_NAME = 'dashboard:transit';
 const COPY_HISTORY_LABEL = 'copy all log';
 const SCHEDULER_RUN_LOG_POLL_MS = 5000;
+const OS_PLAYBACK_ROTATION_INTERVAL_SECONDS = 12;
 let dashboardVisualMode: DashboardVisualMode | null = null;
 type BackendVersionState = {
   status: 'checking' | 'ready' | 'unavailable';
@@ -74,6 +76,7 @@ let backendVersionState: BackendVersionState = {
   version: null,
   message: null,
 };
+const osPlaybackRotationTimers = new Map<OsPlaybackPlatform, number>();
 const transitTerminal = createTransitTerminal();
 const { describeRealityElement } = createRealityMetadataHelpers({
   getState,
@@ -237,6 +240,7 @@ function render() {
       </main>
     </div>
     ${renderModal(state.modal)}
+    ${renderOsPlaybackFullscreenOverlay(state)}
   `;
 
   hideInspectTooltip();
@@ -409,6 +413,7 @@ async function loadOsPlaybackContract(platform: OsPlaybackPlatform): Promise<voi
         loadedAt: new Date().toISOString(),
         contract: payload,
       };
+      ensureMutableOsPlaybackRotationState(draft, platform);
     });
     pushHistory('PLAYBACK', 'success', `${getOsPlaybackLabel(platform)} playback contract refreshed.`, {
       platform,
@@ -440,6 +445,25 @@ function ensureMutableOsPlaybackState(draft: Record<string, unknown>): Record<st
   return draft.osPlayback as Record<string, unknown>;
 }
 
+
+// Ensures each OS playback platform has mutable primitive rotation state.
+function ensureMutableOsPlaybackRotationState(draft: Record<string, unknown>, platform: OsPlaybackPlatform): Record<string, unknown> {
+  if (!draft.osPlaybackRotation || typeof draft.osPlaybackRotation !== 'object' || Array.isArray(draft.osPlaybackRotation)) {
+    draft.osPlaybackRotation = {};
+  }
+  const bucket = draft.osPlaybackRotation as Record<string, Record<string, unknown>>;
+  if (!bucket[platform] || typeof bucket[platform] !== 'object' || Array.isArray(bucket[platform])) {
+    bucket[platform] = {
+      activeIndex: 0,
+      paused: true,
+      fullscreen: false,
+      intervalSeconds: OS_PLAYBACK_ROTATION_INTERVAL_SECONDS,
+      nextRotationAtIso: null,
+    };
+  }
+  return bucket[platform];
+}
+
 // Maps playback platform ids to operator labels for history entries.
 function getOsPlaybackLabel(platform: OsPlaybackPlatform): string {
   return platform === OS_PLAYBACK_PLATFORMS.windows ? 'Windows' : 'Raspberry OS';
@@ -454,6 +478,185 @@ function getOsPlaybackPlatformForView(viewId: string | null | undefined): OsPlay
     return OS_PLAYBACK_PLATFORMS.raspberry;
   }
   return null;
+}
+
+
+// Normalizes rendered platform attributes back to the supported OS playback platform ids.
+function normalizeOsPlaybackPlatform(value: string | null | undefined): OsPlaybackPlatform {
+  return value === OS_PLAYBACK_PLATFORMS.raspberry ? OS_PLAYBACK_PLATFORMS.raspberry : OS_PLAYBACK_PLATFORMS.windows;
+}
+
+// Starts or pauses browser-side queue rotation for the selected OS playback surface.
+function toggleOsPlaybackRotation(platform: OsPlaybackPlatform): void {
+  const rotation = readOsPlaybackRotation(platform);
+  if (rotation.paused) {
+    startOsPlaybackRotation(platform, 'manual');
+    return;
+  }
+  pauseOsPlaybackRotation(platform, 'manual');
+}
+
+// Starts browser-side rotation and schedules the next queue advance.
+function startOsPlaybackRotation(platform: OsPlaybackPlatform, reason: 'manual' | 'fullscreen' | 'auto'): void {
+  const itemCount = readOsPlaybackItemCount(platform);
+  patchState((draft) => {
+    const rotation = ensureMutableOsPlaybackRotationState(draft, platform);
+    rotation.paused = itemCount <= 1;
+    rotation.intervalSeconds = OS_PLAYBACK_ROTATION_INTERVAL_SECONDS;
+    rotation.nextRotationAtIso = buildNextRotationIso(OS_PLAYBACK_ROTATION_INTERVAL_SECONDS);
+    rotation.activeIndex = clampOsPlaybackIndex(Number(rotation.activeIndex ?? 0), itemCount);
+  });
+  pushHistory('PLAYBACK', itemCount > 1 ? 'success' : 'info', `${getOsPlaybackLabel(platform)} playback rotation ${itemCount > 1 ? 'started' : 'is waiting for more queue items'}.`, { platform, reason, itemCount });
+  pushLog('B4', itemCount > 1 ? 'success' : 'info', `${getOsPlaybackLabel(platform)} playback rotation ${itemCount > 1 ? 'started' : 'waiting for queue'}.`);
+  scheduleOsPlaybackRotation(platform);
+}
+
+// Pauses browser-side queue rotation without leaving the current item.
+function pauseOsPlaybackRotation(platform: OsPlaybackPlatform, reason: 'manual' | 'fullscreen-change'): void {
+  clearOsPlaybackRotationTimer(platform);
+  patchState((draft) => {
+    const rotation = ensureMutableOsPlaybackRotationState(draft, platform);
+    rotation.paused = true;
+    rotation.nextRotationAtIso = null;
+  });
+  pushHistory('PLAYBACK', 'info', `${getOsPlaybackLabel(platform)} playback rotation paused.`, { platform, reason });
+}
+
+// Advances the active queue item for manual controls and automatic rotation ticks.
+function advanceOsPlaybackRotation(platform: OsPlaybackPlatform, step: number, reason: 'manual' | 'auto'): void {
+  const itemCount = readOsPlaybackItemCount(platform);
+  if (itemCount <= 1) {
+    startOsPlaybackRotation(platform, reason);
+    return;
+  }
+  patchState((draft) => {
+    const rotation = ensureMutableOsPlaybackRotationState(draft, platform);
+    const currentIndex = clampOsPlaybackIndex(Number(rotation.activeIndex ?? 0), itemCount);
+    rotation.activeIndex = (currentIndex + step + itemCount) % itemCount;
+    rotation.paused = false;
+    rotation.intervalSeconds = OS_PLAYBACK_ROTATION_INTERVAL_SECONDS;
+    rotation.nextRotationAtIso = buildNextRotationIso(OS_PLAYBACK_ROTATION_INTERVAL_SECONDS);
+  });
+  pushLog('B4', 'info', `${getOsPlaybackLabel(platform)} playback moved to the ${reason === 'auto' ? 'next timed' : 'selected'} queue item.`);
+  scheduleOsPlaybackRotation(platform);
+}
+
+// Opens the OS playback overlay and requests browser fullscreen when supported.
+function enterOsPlaybackFullscreen(platform: OsPlaybackPlatform): void {
+  patchState((draft) => {
+    const rotation = ensureMutableOsPlaybackRotationState(draft, platform);
+    rotation.fullscreen = true;
+    rotation.paused = false;
+    rotation.intervalSeconds = OS_PLAYBACK_ROTATION_INTERVAL_SECONDS;
+    rotation.nextRotationAtIso = buildNextRotationIso(OS_PLAYBACK_ROTATION_INTERVAL_SECONDS);
+    Object.keys((draft.osPlaybackRotation as Record<string, unknown>) ?? {}).forEach((key) => {
+      if (key !== platform && typeof (draft.osPlaybackRotation as Record<string, Record<string, unknown>>)[key] === 'object') {
+        (draft.osPlaybackRotation as Record<string, Record<string, unknown>>)[key].fullscreen = false;
+      }
+    });
+  });
+  pushHistory('PLAYBACK', 'success', `${getOsPlaybackLabel(platform)} fullscreen playback opened.`, { platform });
+  scheduleOsPlaybackRotation(platform);
+  requestBrowserFullscreenForOsPlayback(platform);
+}
+
+// Closes the OS playback overlay and exits browser fullscreen when possible.
+function exitOsPlaybackFullscreen(platform: OsPlaybackPlatform): void {
+  patchState((draft) => {
+    const rotation = ensureMutableOsPlaybackRotationState(draft, platform);
+    rotation.fullscreen = false;
+  });
+  if (document.fullscreenElement && typeof document.exitFullscreen === 'function') {
+    void document.exitFullscreen().catch(() => undefined);
+  }
+  pushHistory('PLAYBACK', 'info', `${getOsPlaybackLabel(platform)} fullscreen playback closed.`, { platform });
+}
+
+// Requests browser fullscreen for the rendered overlay after state has re-rendered.
+function requestBrowserFullscreenForOsPlayback(platform: OsPlaybackPlatform): void {
+  window.setTimeout(() => {
+    const overlay = document.querySelector<HTMLElement>(`[data-os-playback-fullscreen-overlay="${platform}"]`);
+    if (!overlay || typeof overlay.requestFullscreen !== 'function' || document.fullscreenElement) {
+      return;
+    }
+    void overlay.requestFullscreen().catch((error) => {
+      pushHistory('PLAYBACK', 'error', `${getOsPlaybackLabel(platform)} browser fullscreen request failed.`, {
+        platform,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    });
+  }, 0);
+}
+
+// Schedules the next browser-side queue rotation tick for an active platform.
+function scheduleOsPlaybackRotation(platform: OsPlaybackPlatform): void {
+  clearOsPlaybackRotationTimer(platform);
+  const rotation = readOsPlaybackRotation(platform);
+  const itemCount = readOsPlaybackItemCount(platform);
+  if (rotation.paused || itemCount <= 1) {
+    return;
+  }
+  const delayMs = Math.max(250, Date.parse(rotation.nextRotationAtIso ?? '') - Date.now());
+  osPlaybackRotationTimers.set(platform, window.setTimeout(() => {
+    advanceOsPlaybackRotation(platform, 1, 'auto');
+  }, Number.isFinite(delayMs) ? delayMs : OS_PLAYBACK_ROTATION_INTERVAL_SECONDS * 1000));
+}
+
+// Clears any pending queue rotation timer for the selected platform.
+function clearOsPlaybackRotationTimer(platform: OsPlaybackPlatform): void {
+  const timer = osPlaybackRotationTimers.get(platform);
+  if (timer) {
+    clearTimeout(timer);
+    osPlaybackRotationTimers.delete(platform);
+  }
+}
+
+// Reads the primitive rotation state from dashboard state with safe defaults.
+function readOsPlaybackRotation(platform: OsPlaybackPlatform): { activeIndex: number; paused: boolean; nextRotationAtIso: string | null } {
+  const rotation = (getState().osPlaybackRotation as Record<string, Record<string, unknown>> | undefined)?.[platform] ?? {};
+  return {
+    activeIndex: Number(rotation.activeIndex ?? 0),
+    paused: rotation.paused !== false,
+    nextRotationAtIso: typeof rotation.nextRotationAtIso === 'string' ? rotation.nextRotationAtIso : null,
+  };
+}
+
+// Counts queue items available from the read-only playback contract.
+function readOsPlaybackItemCount(platform: OsPlaybackPlatform): number {
+  const playback = ((getState().osPlayback as Record<string, Record<string, unknown>> | undefined)?.[platform]?.contract as { playback?: Record<string, unknown> } | undefined)?.playback;
+  const items = Array.isArray(playback?.items) ? playback.items : [];
+  if (items.length > 0) {
+    return items.length;
+  }
+  return playback?.currentItem || playback?.nextItem ? 1 : 0;
+}
+
+// Builds the next rotation deadline in ISO form for state/rendering.
+function buildNextRotationIso(intervalSeconds: number): string {
+  return new Date(Date.now() + intervalSeconds * 1000).toISOString();
+}
+
+// Clamps queue indices so stale state cannot point outside the current contract list.
+function clampOsPlaybackIndex(index: number, itemCount: number): number {
+  if (itemCount <= 0 || !Number.isFinite(index)) {
+    return 0;
+  }
+  return Math.max(0, Math.min(itemCount - 1, Math.trunc(index)));
+}
+
+// Mirrors browser fullscreen exits back into the dashboard fullscreen overlay state.
+function syncOsPlaybackFullscreenStateFromBrowser(): void {
+  if (document.fullscreenElement) {
+    return;
+  }
+  patchState((draft) => {
+    const rotation = draft.osPlaybackRotation as Record<string, Record<string, unknown>> | undefined;
+    Object.values(rotation ?? {}).forEach((entry) => {
+      if (entry && typeof entry === 'object') {
+        entry.fullscreen = false;
+      }
+    });
+  });
 }
 
 // Binds rendered controls to runtime-truth actions and local state updates.
@@ -497,6 +700,35 @@ function bindEvents() {
         ? OS_PLAYBACK_PLATFORMS.raspberry
         : OS_PLAYBACK_PLATFORMS.windows;
       void loadOsPlaybackContract(osPlaybackPlatform);
+    });
+  });
+
+  app.querySelectorAll<HTMLButtonElement>('[data-playback-view-fullscreen-platform]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const platform = normalizeOsPlaybackPlatform(button.dataset.playbackViewFullscreenPlatform);
+      enterOsPlaybackFullscreen(platform);
+    });
+  });
+
+  app.querySelectorAll<HTMLButtonElement>('[data-os-playback-toggle-rotation-platform]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const platform = normalizeOsPlaybackPlatform(button.dataset.osPlaybackToggleRotationPlatform);
+      toggleOsPlaybackRotation(platform);
+    });
+  });
+
+  app.querySelectorAll<HTMLButtonElement>('[data-os-playback-step-platform]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const platform = normalizeOsPlaybackPlatform(button.dataset.osPlaybackStepPlatform);
+      const step = Number(button.dataset.osPlaybackStep) < 0 ? -1 : 1;
+      advanceOsPlaybackRotation(platform, step, 'manual');
+    });
+  });
+
+  app.querySelectorAll<HTMLButtonElement>('[data-os-playback-exit-fullscreen]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const platform = normalizeOsPlaybackPlatform(button.dataset.osPlaybackExitFullscreen);
+      exitOsPlaybackFullscreen(platform);
     });
   });
 
@@ -904,6 +1136,8 @@ const tryInitPreload = () => {
 tryInitPreload();
 startSchedulerRunLogPolling();
 void loadBackendVersion();
+
+document.addEventListener('fullscreenchange', syncOsPlaybackFullscreenStateFromBrowser);
 
 window.addEventListener('keydown', (event) => {
   if (event.key === 'Escape' && getState().modal) {

@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.6.9 - 2026-05-28 01:15 EEST
+
+- Added browser-side queue rotation for Windows/Raspberry playback views using the read-only playback contract items.
+- Added active Previous, Next, and Start/Pause rotation controls when more than one queue item is loaded.
+- Added a dedicated fullscreen playback overlay that uses the same backend-served media URL and resolved-address metadata as the preview surface.
+- Added `docs/OS_PLAYBACK_VIEWS_SLICE_3.md` and regression tests for rotation state, fullscreen overlay rendering, media URL safety, and preserved backend boundaries.
+- Preserved existing Views A-E, Test/Real runtime separation, B2 Test/Real split, auth/iCloudPD behavior, scheduler behavior, database mutation endpoints, Stage 6 backend selection behavior, and deferred View B input detection reuse.
+
 ## 0.6.8 - 2026-05-27 23:25 EEST
 
 - Added read-only playback API contract endpoints for OS playback views: `GET /api/runtime/playback/current` and `GET /api/runtime/playback/queue`.

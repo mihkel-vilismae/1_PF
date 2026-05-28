@@ -1,7 +1,7 @@
 /*
  * Renders the Windows and Raspberry OS playback view shells.
- * This slice is additive: it presents the final playback layout contract without
- * changing backend playback selection, scheduler execution, or existing A-E views.
+ * This renderer presents the playback layout, browser-side queue rotation controls,
+ * and fullscreen overlay without changing backend selection or scheduler execution.
  */
 import { renderSourceBadge } from '../services/renderers.ts';
 import { escapeHtml } from '../services/renderers/sharedRendererUtils.ts';
@@ -46,7 +46,7 @@ export function renderOsPlaybackView(state: RuntimeState, platform: OsPlaybackPl
         <div class="os-playback-stage" data-os-playback-stage="${escapeHtml(view.platform)}">
           <div class="os-playback-stage__media" aria-label="Playback queue media preview">
             ${renderPlaybackMediaSurface(view.currentMediaUrl, view.currentMediaType, view.currentMediaName)}
-            <span class="os-playback-stage__media-type">${escapeHtml(view.currentMediaType)}</span>
+            <span class="os-playback-stage__media-type">${escapeHtml(view.currentMediaType)} • ${escapeHtml(view.rotation.status)}</span>
             <strong>${escapeHtml(view.currentMediaName)}</strong>
             <small>${escapeHtml(view.queueSummary)}</small>
           </div>
@@ -60,12 +60,12 @@ export function renderOsPlaybackView(state: RuntimeState, platform: OsPlaybackPl
         </div>
         <div class="os-playback-controls" aria-label="Playback controls">
           <button class="button button--primary" type="button" data-playback-view-fullscreen-platform="${escapeHtml(view.platform)}">Switch to Full Screen</button>
-          <button class="button button--secondary" type="button" disabled>Previous</button>
-          <button class="button button--secondary" type="button" disabled>Next</button>
-          <button class="button button--secondary" type="button" disabled>Pause rotation</button>
+          <button class="button button--secondary" type="button" data-os-playback-step-platform="${escapeHtml(view.platform)}" data-os-playback-step="-1" ${view.rotation.canRotate ? '' : 'disabled'}>Previous</button>
+          <button class="button button--secondary" type="button" data-os-playback-step-platform="${escapeHtml(view.platform)}" data-os-playback-step="1" ${view.rotation.canRotate ? '' : 'disabled'}>Next</button>
+          <button class="button button--secondary" type="button" data-os-playback-toggle-rotation-platform="${escapeHtml(view.platform)}" ${view.rotation.canRotate ? '' : 'disabled'}>${escapeHtml(view.rotation.toggleLabel)}</button>
           <button class="button button--secondary" type="button" data-os-playback-refresh-platform="${escapeHtml(view.platform)}">Refresh queue</button>
         </div>
-        <p class="notice notice--neutral">${escapeHtml(view.playbackStatus)} This first slice provides the playback layout and contract without changing backend selection or OS scheduler behavior.</p>
+        <p class="notice notice--neutral">${escapeHtml(view.playbackStatus)} Browser-side rotation uses the read-only playback queue contract; backend selection and OS scheduler behavior remain unchanged.</p>
       </article>
 
       <article class="card os-playback-status-card">
@@ -95,6 +95,54 @@ export function renderOsPlaybackView(state: RuntimeState, platform: OsPlaybackPl
       ${renderTerminalPanel(`${view.code}-MAIN`, 'Main runtime log', 'General playback, queue, worker, and scheduler information.', view.mainLog, 'main')}
     </section>
   `;
+}
+
+
+/**
+ * Renders the active fullscreen playback overlay when an OS playback session requests it.
+ */
+export function renderOsPlaybackFullscreenOverlay(state: RuntimeState): string {
+  const activePlatform = getActiveFullscreenPlatform(state);
+  if (!activePlatform) {
+    return '';
+  }
+
+  const view = buildOsPlaybackViewModel(state, activePlatform);
+  return `
+    <section class="os-playback-fullscreen-overlay" data-os-playback-fullscreen-overlay="${escapeHtml(view.platform)}" role="dialog" aria-modal="true" aria-label="${escapeHtml(view.title)} fullscreen playback">
+      <div class="os-playback-fullscreen-overlay__media">
+        ${renderPlaybackMediaSurface(view.currentMediaUrl, view.currentMediaType, view.currentMediaName)}
+      </div>
+      <div class="os-playback-fullscreen-overlay__hud">
+        <div>
+          <p class="eyebrow">${escapeHtml(view.title)}</p>
+          <h2>${escapeHtml(view.currentMediaName)}</h2>
+          <p>${escapeHtml(view.resolvedAddress)}</p>
+          <small>${escapeHtml(view.rotation.status)} • ${escapeHtml(view.nextIn)}</small>
+        </div>
+        <div class="os-playback-fullscreen-overlay__actions">
+          <button class="button button--secondary" type="button" data-os-playback-step-platform="${escapeHtml(view.platform)}" data-os-playback-step="-1" ${view.rotation.canRotate ? '' : 'disabled'}>Previous</button>
+          <button class="button button--secondary" type="button" data-os-playback-toggle-rotation-platform="${escapeHtml(view.platform)}" ${view.rotation.canRotate ? '' : 'disabled'}>${escapeHtml(view.rotation.toggleLabel)}</button>
+          <button class="button button--secondary" type="button" data-os-playback-step-platform="${escapeHtml(view.platform)}" data-os-playback-step="1" ${view.rotation.canRotate ? '' : 'disabled'}>Next</button>
+          <button class="button button--primary" type="button" data-os-playback-exit-fullscreen="${escapeHtml(view.platform)}">Exit Full Screen</button>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+/**
+ * Finds which playback platform currently owns the fullscreen overlay.
+ */
+function getActiveFullscreenPlatform(state: RuntimeState): OsPlaybackPlatform | null {
+  const rotation = (state as { osPlaybackRotation?: Partial<Record<OsPlaybackPlatform, { fullscreen?: unknown }>> }).osPlaybackRotation;
+  if (rotation?.windows?.fullscreen === true) {
+    return OS_PLAYBACK_PLATFORMS.windows;
+  }
+  if (rotation?.raspberry?.fullscreen === true) {
+    return OS_PLAYBACK_PLATFORMS.raspberry;
+  }
+  return null;
 }
 
 /**

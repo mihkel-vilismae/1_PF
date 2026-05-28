@@ -33,6 +33,28 @@ export type PlaybackLogEntryViewModel = {
   message: string;
 };
 
+export type PlaybackQueueItemViewModel = {
+  mediaAssetId: string | null;
+  displayName: string;
+  mediaType: string;
+  queueStatus: string;
+  resolvedAddress: string;
+  displayUrl: string | null;
+  position: string;
+};
+
+export type PlaybackRotationViewModel = {
+  activeIndex: number;
+  itemCount: number;
+  canRotate: boolean;
+  paused: boolean;
+  fullscreen: boolean;
+  intervalSeconds: number;
+  status: string;
+  nextIn: string;
+  toggleLabel: string;
+};
+
 export type OsPlaybackViewModel = {
   platform: OsPlaybackPlatform;
   code: 'WIN' | 'RPI';
@@ -51,6 +73,8 @@ export type OsPlaybackViewModel = {
   currentMediaUrl: string | null;
   resolvedAddress: string;
   nextIn: string;
+  playbackItems: PlaybackQueueItemViewModel[];
+  rotation: PlaybackRotationViewModel;
   stageItems: PlaybackStageViewModel[];
   workers: PlaybackWorkerViewModel[];
   schedulerLog: PlaybackLogEntryViewModel[];
@@ -93,6 +117,14 @@ type OsPlaybackContractStateLike = {
   contract?: PlaybackContractLike;
 };
 
+type OsPlaybackRotationStateLike = {
+  activeIndex?: unknown;
+  paused?: unknown;
+  fullscreen?: unknown;
+  intervalSeconds?: unknown;
+  nextRotationAtIso?: unknown;
+};
+
 type RuntimeStateLike = {
   truth?: Record<string, unknown>;
   runningProcess?: {
@@ -102,6 +134,7 @@ type RuntimeStateLike = {
   };
   logs?: Record<string, Array<Record<string, unknown>>>;
   osPlayback?: Partial<Record<OsPlaybackPlatform, OsPlaybackContractStateLike>>;
+  osPlaybackRotation?: Partial<Record<OsPlaybackPlatform, OsPlaybackRotationStateLike>>;
 };
 
 const PLATFORM_COPY = Object.freeze({
@@ -145,10 +178,12 @@ export function buildOsPlaybackViewModel(state: RuntimeStateLike, platform: OsPl
   const copy = PLATFORM_COPY[platform];
   const contractState = state.osPlayback?.[platform];
   const playbackContract = contractState?.contract;
-  const contractMedia = normalizeContractMedia(playbackContract);
   const fallbackMedia = normalizeCurrentMedia(state.truth?.currentMedia);
-  const media = contractMedia ?? fallbackMedia;
-  const queueSummary = buildQueueSummary(playbackContract, readNumber(state.truth?.queueLength, 0));
+  const playbackItems = normalizePlaybackItems(playbackContract, fallbackMedia);
+  const defaultActiveIndex = inferDefaultActiveIndex(playbackItems, playbackContract);
+  const rotation = buildRotationViewModel(state.osPlaybackRotation?.[platform], playbackItems.length, defaultActiveIndex);
+  const media = playbackItems[rotation.activeIndex] ?? fallbackMedia;
+  const queueSummary = buildQueueSummary(playbackContract, readNumber(state.truth?.queueLength, 0), playbackItems.length);
   const playbackStatus = buildPlaybackStatus(contractState, playbackContract, readText(state.truth?.playbackStatus, 'Waiting for queued media'));
 
   return {
@@ -164,11 +199,13 @@ export function buildOsPlaybackViewModel(state: RuntimeStateLike, platform: OsPl
     schedulerSummary: copy.schedulerSummary,
     playbackStatus,
     queueSummary,
-    currentMediaName: media.name,
-    currentMediaType: media.type,
+    currentMediaName: media.displayName,
+    currentMediaType: media.mediaType,
     currentMediaUrl: media.displayUrl,
     resolvedAddress: media.resolvedAddress,
-    nextIn: media.nextIn,
+    nextIn: rotation.nextIn,
+    playbackItems,
+    rotation,
     stageItems: buildStageItems(state),
     workers: buildWorkerItems(state),
     schedulerLog: buildSchedulerLog(platform),
@@ -289,64 +326,169 @@ function toPlaybackLogEntry(entry: Record<string, unknown>): PlaybackLogEntryVie
 }
 
 /**
- * Normalizes API contract media into the playback surface display shape.
+ * Builds a queue item list from the playback API contract with a safe fallback.
  */
-function normalizeContractMedia(contract: PlaybackContractLike | null | undefined): { name: string; type: string; resolvedAddress: string; nextIn: string; displayUrl: string | null } | null {
-  const item = contract?.playback?.currentItem ?? contract?.playback?.nextItem ?? null;
-  if (!item) {
-    return null;
+function normalizePlaybackItems(
+  contract: PlaybackContractLike | null | undefined,
+  fallbackMedia: PlaybackQueueItemViewModel,
+): PlaybackQueueItemViewModel[] {
+  const contractItems = Array.isArray(contract?.playback?.items) ? contract?.playback?.items ?? [] : [];
+  const candidates = contractItems.length > 0
+    ? contractItems
+    : [contract?.playback?.currentItem, contract?.playback?.nextItem].filter(Boolean) as PlaybackContractItemLike[];
+
+  const normalized = candidates
+    .map((item, index) => normalizePlaybackItem(item, index, candidates.length))
+    .filter((item) => item.displayUrl || item.displayName !== 'No playback queue item selected');
+
+  if (normalized.length > 0) {
+    return dedupePlaybackItems(normalized).map((item, index, list) => ({
+      ...item,
+      position: `${index + 1} of ${list.length}`,
+    }));
   }
 
-  const displayName = readText(item.displayName, `Media asset ${readText(item.mediaAssetId, 'unknown')}`);
-  const mediaType = readText(item.mediaType, 'media');
-  const queueStatus = readText(item.queueStatus, 'queued');
+  return [fallbackMedia];
+}
+
+/**
+ * Converts one playback API item into the renderer's item shape.
+ */
+function normalizePlaybackItem(item: PlaybackContractItemLike | null | undefined, index: number, total: number): PlaybackQueueItemViewModel {
+  const mediaAssetId = readText(item?.mediaAssetId, '');
+  const displayName = readText(item?.displayName, mediaAssetId ? `Media asset ${mediaAssetId}` : 'Selected playback item');
   return {
-    name: displayName,
-    type: mediaType,
-    resolvedAddress: readText(item.resolvedAddress, 'Address pending until GPS/geocode stages produce a resolved address.'),
-    nextIn: item === contract?.playback?.currentItem
-      ? `Current ${queueStatus} item from playback contract`
-      : `Next ${queueStatus} item from playback contract`,
-    displayUrl: readText(item.displayUrl, '') || null,
+    mediaAssetId: mediaAssetId || null,
+    displayName,
+    mediaType: readText(item?.mediaType, 'media'),
+    queueStatus: readText(item?.queueStatus, 'queued'),
+    resolvedAddress: readText(item?.resolvedAddress, 'Address pending until GPS/geocode stages produce a resolved address.'),
+    displayUrl: readText(item?.displayUrl, '') || null,
+    position: `${index + 1} of ${Math.max(total, 1)}`,
   };
+}
+
+/**
+ * Removes repeated current/next queue items while keeping stable API order.
+ */
+function dedupePlaybackItems(items: PlaybackQueueItemViewModel[]): PlaybackQueueItemViewModel[] {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    const key = item.mediaAssetId ?? `${item.displayName}|${item.displayUrl ?? ''}`;
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+}
+
+/**
+ * Chooses the initial queue index from the current API item when available.
+ */
+function inferDefaultActiveIndex(items: PlaybackQueueItemViewModel[], contract: PlaybackContractLike | null | undefined): number {
+  const currentMediaAssetId = readText(contract?.playback?.currentItem?.mediaAssetId, '');
+  if (!currentMediaAssetId) {
+    return 0;
+  }
+  const index = items.findIndex((item) => item.mediaAssetId === currentMediaAssetId);
+  return index >= 0 ? index : 0;
+}
+
+/**
+ * Builds rotation/fullscreen display state without starting timers in the view model.
+ */
+function buildRotationViewModel(
+  rotationState: OsPlaybackRotationStateLike | null | undefined,
+  itemCount: number,
+  defaultActiveIndex: number,
+): PlaybackRotationViewModel {
+  const intervalSeconds = Math.max(3, Math.min(120, readNumber(rotationState?.intervalSeconds, 12)));
+  const activeIndex = clampIndex(readNumber(rotationState?.activeIndex, defaultActiveIndex), itemCount);
+  const paused = rotationState?.paused !== false;
+  const fullscreen = rotationState?.fullscreen === true;
+  const canRotate = itemCount > 1;
+  const secondsUntilNext = readSecondsUntilNext(rotationState?.nextRotationAtIso);
+  const nextIn = canRotate
+    ? paused
+      ? 'Rotation paused'
+      : `Next in ${secondsUntilNext}s`
+    : 'Rotation waits for more than one queue item';
+
+  return {
+    activeIndex,
+    itemCount,
+    canRotate,
+    paused,
+    fullscreen,
+    intervalSeconds,
+    status: canRotate ? `Showing ${activeIndex + 1} of ${itemCount}` : 'Single item / waiting queue',
+    nextIn,
+    toggleLabel: paused ? 'Start rotation' : 'Pause rotation',
+  };
+}
+
+/**
+ * Clamps a queue index against the current playback item count.
+ */
+function clampIndex(value: number, itemCount: number): number {
+  if (itemCount <= 0) {
+    return 0;
+  }
+  return Math.max(0, Math.min(itemCount - 1, Math.trunc(value)));
+}
+
+/**
+ * Reads the countdown for the next browser-side queue rotation.
+ */
+function readSecondsUntilNext(value: unknown): number {
+  const timestamp = Date.parse(readText(value, ''));
+  if (!Number.isFinite(timestamp)) {
+    return 0;
+  }
+  return Math.max(0, Math.ceil((timestamp - Date.now()) / 1000));
 }
 
 /**
  * Normalizes the selected media summary without requiring a queue API in this slice.
  */
-function normalizeCurrentMedia(rawMedia: unknown): { name: string; type: string; resolvedAddress: string; nextIn: string; displayUrl: string | null } {
+function normalizeCurrentMedia(rawMedia: unknown): PlaybackQueueItemViewModel {
   if (!rawMedia || typeof rawMedia !== 'object') {
     return {
-      name: 'No playback queue item selected',
-      type: 'waiting',
+      mediaAssetId: null,
+      displayName: 'No playback queue item selected',
+      mediaType: 'waiting',
+      queueStatus: 'waiting',
       resolvedAddress: 'Address pending until GPS/geocode stages produce a resolved address.',
-      nextIn: 'Rotation waits for queue item',
       displayUrl: null,
+      position: '0 of 0',
     };
   }
 
   const media = rawMedia as Record<string, unknown>;
   return {
-    name: readText(media.name, 'Selected playback item'),
-    type: readText(media.type, 'media'),
+    mediaAssetId: null,
+    displayName: readText(media.name, 'Selected playback item'),
+    mediaType: readText(media.type, 'media'),
+    queueStatus: 'selected',
     resolvedAddress: readText(media.address, readText(media.resolvedAddress, readText(media.overlay, 'Resolved address pending.'))),
-    nextIn: readText(media.nextIn, 'Next rotation interval pending'),
     displayUrl: readText(media.displayUrl, '') || null,
+    position: '1 of 1',
   };
 }
 
 /**
  * Builds a queue summary from the API contract, with fallback to older truth state.
  */
-function buildQueueSummary(contract: PlaybackContractLike | null | undefined, fallbackQueueLength: number): string {
+function buildQueueSummary(contract: PlaybackContractLike | null | undefined, fallbackQueueLength: number, playbackItemCount: number): string {
   const queue = contract?.playback?.queue;
   if (queue) {
     const ready = readNumber(queue.readyCount, 0);
     const total = readNumber(queue.totalCount, 0);
     const failed = readNumber(queue.failedCount, 0);
-    return `Queue rows: ${total} total • ${ready} READY • ${failed} FAILED.`;
+    return `Queue rows: ${total} total • ${ready} READY • ${failed} FAILED • ${playbackItemCount} loaded for rotation.`;
   }
-  return fallbackQueueLength > 0 ? `Queue contains ${fallbackQueueLength} item${fallbackQueueLength === 1 ? '' : 's'}.` : 'No playback queue rows ready yet.';
+  return fallbackQueueLength > 0 ? `Queue contains ${fallbackQueueLength} item${fallbackQueueLength === 1 ? '' : 's'}; ${playbackItemCount} loaded for rotation.` : 'No playback queue rows ready yet.';
 }
 
 /**
