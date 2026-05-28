@@ -30,6 +30,7 @@ import {
   setPlaybackRenderingPlatform,
   setSchedulerEditableCrontab,
   setSimulationValue,
+  setB5ActivitySourceSelection,
   subscribe,
 } from './services/runtimeTruth.ts';
 import { renderDefinitionList, renderHistory, renderModal } from './services/renderers.ts';
@@ -1041,6 +1042,17 @@ function bindEvents() {
           setting: name,
           enabled: checked,
         });
+      });
+    });
+  });
+
+  app.querySelectorAll<HTMLInputElement>('input[name="b5ActivitySource"]').forEach((input) => {
+    input.addEventListener('change', () => {
+      const source = input.value;
+      setB5ActivitySourceSelection(source, input.checked);
+      pushHistory('SCREEN', 'info', `B5 activity test source ${source} ${input.checked ? 'selected' : 'skipped'}.`, {
+        source,
+        selected: input.checked,
       });
     });
   });

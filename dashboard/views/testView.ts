@@ -13,6 +13,11 @@ import {
   getSharedPlaybackRendererId,
   normalizePlaybackRenderingState,
 } from '../services/playbackRenderer.ts';
+import {
+  B5_ACTIVITY_SOURCES,
+  getB5ActivitySourceLabel,
+  normalizeB5ActivityDetectionState,
+} from '../services/viewBActivityDetection.ts';
 
 // Renders the full View B page from runtime-truth state.
 type DashboardVisualMode = 'test' | 'real' | null | undefined;
@@ -25,6 +30,7 @@ export function renderTestView(state, dashboardVisualMode: DashboardVisualMode =
   const playbackRenderingState = normalizePlaybackRenderingState(state.playbackRendering);
   const playbackRenderingReady = state.truth.playbackActive || state.statusByKey.B4 === 'success';
   const renderingOptions = buildPlaybackRenderingOptions(playbackRenderingReady);
+  const b5ActivityDetection = normalizeB5ActivityDetectionState(state.simulation?.b5ActivityDetection);
   const showTestDownloadCard = dashboardVisualMode !== 'real';
   const showRealDownloadCard = dashboardVisualMode !== 'test';
   return `
@@ -149,6 +155,7 @@ export function renderTestView(state, dashboardVisualMode: DashboardVisualMode =
             ${renderToggle('keyboardEnabled', 'Enable keyboard activity', state.simulation.keyboardEnabled)}
             ${renderToggle('simulateAllEnabled', 'Enable all', state.simulation.simulateAllEnabled)}
           </div>
+          ${renderB5ActivitySourceSelector(b5ActivityDetection)}
           <label class="field-label">
             <span>Inactivity timeout</span>
             <div class="inline-field">
@@ -235,6 +242,26 @@ function renderStageCard(code, title, subtitle, state, sourceMode = 'hybrid') {
       <div class="button-row"><button class="button button--secondary" data-action="run-${code.toLowerCase().replace('.', '-')}">Run</button></div>
       <div class="log-surface">${renderLogEntries(state.logs[code], { sourceKey: code })}</div>
     </article>
+  `;
+}
+
+function renderB5ActivitySourceSelector(activityDetection) {
+  const sourceOptions = B5_ACTIVITY_SOURCES.map((source) => `
+    <label class="toggle-card toggle-card--hybrid b5-activity-source-option">
+      <input type="checkbox" name="b5ActivitySource" value="${source}" ${activityDetection.selectedSources[source] ? 'checked' : ''} />
+      <span class="toggle-card__body">
+        <span class="toggle-card__label">${getB5ActivitySourceLabel(source)}</span>
+        <span class="toggle-card__meta">Included in the next View B/B5 detection test</span>
+      </span>
+    </label>
+  `).join('');
+
+  return `
+    <fieldset class="selector-card selector-card--hybrid b5-activity-test">
+      <legend>B5 activity detection test sources</legend>
+      <p class="stage-card__subtitle">Choose which activity inputs the next test should watch. These checkboxes do not start a test and do not claim real PIR hardware support.</p>
+      <div class="toggle-grid">${sourceOptions}</div>
+    </fieldset>
   `;
 }
 

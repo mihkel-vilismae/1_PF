@@ -11,6 +11,12 @@ import {
   type RuntimeTruthSnapshot,
 } from './runtimeTruth/runtimeTruthPersistence.ts';
 import { normalizePlaybackRenderingState, type PlaybackRenderingMode, type PlaybackRenderingPlatform } from './playbackRenderer.ts';
+import {
+  buildB5ActivityResult,
+  isB5ActivitySource,
+  normalizeB5ActivityDetectionState,
+  type B5ActivitySource,
+} from './viewBActivityDetection.ts';
 
 type RuntimeTruthState = {
   activeView: string;
@@ -304,6 +310,20 @@ export function seedDemoState(): void {
 export function setLastRunMode(mode: string): void {
   patchState((draft) => {
     draft.lastRunMode = mode;
+  });
+}
+
+export function setB5ActivitySourceSelection(source: B5ActivitySource | string, selected: boolean): void {
+  // Updates only the View B/B5 detection-test source selection, not screen simulation toggles.
+  if (!isB5ActivitySource(source)) {
+    return;
+  }
+
+  patchState((draft) => {
+    const next = normalizeB5ActivityDetectionState(draft.simulation.b5ActivityDetection);
+    next.selectedSources[source] = selected;
+    next.results[source] = buildB5ActivityResult(selected ? 'pending' : 'skipped');
+    draft.simulation.b5ActivityDetection = next;
   });
 }
 
