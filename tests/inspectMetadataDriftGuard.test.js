@@ -27,6 +27,7 @@ const localBackendUnknownActions = new Set([
   'toggle-value-inspect-mode',
   'toggle-reality-inspect-mode',
   'toggle-backend-status-inspect-mode',
+  'toggle-live-updates',
   'toggle-marked-for-removal',
 ]);
 

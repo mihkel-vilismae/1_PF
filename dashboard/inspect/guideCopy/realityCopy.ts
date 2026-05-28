@@ -19,6 +19,10 @@ export const ACTION_REALITY_COPY = {
     "state": "real",
     "reason": "Implemented dashboard-shell guide button that classifies UI elements by backend wiring status."
   },
+  "toggle-live-updates": {
+    "state": "real",
+    "reason": "Implemented dashboard-shell inspection helper that pauses background polling and transit-triggered renders without changing backend behavior."
+  },
   "toggle-marked-for-removal": {
     "state": "real",
     "reason": "Implemented dashboard-shell visibility toggle for UI blocks explicitly marked for future removal."

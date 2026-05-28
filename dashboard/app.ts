@@ -74,6 +74,8 @@ const SCHEDULER_RUN_LOG_POLL_MS = 5000;
 const OS_PLAYBACK_OBSERVABILITY_POLL_MS = 5000;
 const OS_PLAYBACK_ROTATION_INTERVAL_SECONDS = 12;
 let dashboardVisualMode: DashboardVisualMode | null = null;
+let liveUpdatesPaused = false;
+let pendingLiveUpdateRender = false;
 type BackendVersionState = {
   status: 'checking' | 'ready' | 'unavailable';
   version: string | null;
@@ -254,6 +256,15 @@ function render() {
             >
               ${state.backendStatusInspectMode ? 'Hide backend status' : 'Show backend status'}
             </button>
+            <button
+              class="button ${liveUpdatesPaused ? 'button--primary' : 'button--secondary'} inspect-toggle"
+              type="button"
+              data-action="toggle-live-updates"
+              aria-pressed="${liveUpdatesPaused ? 'true' : 'false'}"
+              title="Pause background polling and transit-triggered renders so DevTools can inspect stable DOM nodes."
+            >
+              ${liveUpdatesPaused ? 'Resume live updates' : 'Pause live updates'}
+            </button>
           </div>
         </header>
         ${viewMarkup}
@@ -277,6 +288,9 @@ function render() {
   `;
 
   restoreScrollSnapshotAfterLayout(app, scrollSnapshot);
+  if (!liveUpdatesPaused) {
+    pendingLiveUpdateRender = false;
+  }
   hideInspectTooltip();
   bindEvents();
   bindInspectMode({
@@ -311,6 +325,29 @@ function render() {
     handleInspectLeave,
     hideInspectTooltip,
   });
+}
+
+// Requests a dashboard render unless operator inspection mode has paused live updates.
+function requestLiveUpdateRender(): void {
+  if (liveUpdatesPaused) {
+    pendingLiveUpdateRender = true;
+    return;
+  }
+  render();
+}
+
+// Toggles the operator inspection guard that pauses background render churn.
+function toggleLiveUpdatesPaused(): void {
+  liveUpdatesPaused = !liveUpdatesPaused;
+  if (!liveUpdatesPaused && pendingLiveUpdateRender) {
+    pendingLiveUpdateRender = false;
+  }
+  render();
+}
+
+// Checks whether background polling and transit-driven refreshes should currently run.
+function shouldRunLiveUpdates(): boolean {
+  return !liveUpdatesPaused;
 }
 
 // Applies the frontend-only visual mode marker used by mode-specific CSS.
@@ -468,7 +505,7 @@ async function loadBackendVersion(): Promise<void> {
       message: error instanceof Error ? error.message : String(error),
     };
   }
-  render();
+  requestLiveUpdateRender();
 }
 
 // Loads the read-only playback queue/current-item contract for the OS playback views.
@@ -975,6 +1012,10 @@ function bindEvents() {
         toggleBackendStatusInspectMode();
         return;
       }
+      if (action === 'toggle-live-updates') {
+        toggleLiveUpdatesPaused();
+        return;
+      }
       if (action === 'toggle-marked-for-removal') {
         toggleMarkedForRemoval();
         return;
@@ -1438,7 +1479,7 @@ window.addEventListener(TRANSIT_EVENT_NAME, (event) => {
   if (!transitTerminal.consumeRecord((event as CustomEvent)?.detail)) {
     return;
   }
-  render();
+  requestLiveUpdateRender();
 });
 
 
@@ -1446,7 +1487,7 @@ window.addEventListener(TRANSIT_EVENT_NAME, (event) => {
 function startSchedulerRunLogPolling() {
   window.setInterval(() => {
     const state = getState();
-    if (state.activeView !== 'A') {
+    if (!shouldRunLiveUpdates() || state.activeView !== 'A') {
       return;
     }
     runAction('refresh-scheduler-run-log');
@@ -1457,6 +1498,9 @@ function startSchedulerRunLogPolling() {
 // Polls playback observability while an OS playback view is visible.
 function startOsPlaybackObservabilityPolling() {
   window.setInterval(() => {
+    if (!shouldRunLiveUpdates()) {
+      return;
+    }
     const platform = getOsPlaybackPlatformForView(getState().activeView);
     if (!platform) {
       return;

@@ -29,6 +29,10 @@ export const ACTION_INSPECT_COPY = {
     "label": "Show backend status mode",
     "description": "Highlights whether a section is backed by a real backend, frontend-only mock behavior, or missing backend support."
   },
+  "toggle-live-updates": {
+    "label": "Pause live updates",
+    "description": "Pauses background polling and transit-triggered renders so DevTools can inspect stable DOM nodes without the app rebuilding under the cursor."
+  },
   "toggle-marked-for-removal": {
     "label": "Show marked for removal",
     "description": "Shows or hides dashboard blocks that have been explicitly marked for future removal."
