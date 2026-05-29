@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.7.19 - 29.05.2026, 17:18:00 EEST
+
+- Added backend playback resume checkpoint APIs for reading, saving, and clearing Windows/Raspberry checkpoints.
+- Persisted checkpoint payloads through the existing SQLite `runtime_state` surface without changing playback selection, worker stages, Queue behavior, or database schema.
+- Added checkpoint validation against the current playback contract so stale or missing media references are reported safely.
+- Added regression coverage for checkpoint save/read/clear behavior.
+- Bumped version metadata from v0.7.18 to v0.7.19.
+
 ## 0.7.18 - 29.05.2026, 17:05:00 EEST
 
 - Added `docs/20_architecture_and_specs/playback_resume_checkpoint_spec.md` defining the power-outage playback resume checkpoint contract for Windows and Raspberry OS playback views.

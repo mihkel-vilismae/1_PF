@@ -19,6 +19,61 @@ const serverEntryPath = path.join(repoRoot, 'server', 'index.ts');
 const schemaPath = path.join(repoRoot, 'schema.sql');
 const fixedTimestamp = '2026-05-27T19:00:00.000Z';
 
+
+
+test('playback resume checkpoint APIs save, read, validate, and clear platform checkpoints', async () => {
+  await withPlaybackServer(async ({ port }) => {
+    const currentResponse = await requestJson(port, '/api/runtime/playback/current?limit=10');
+    assert.equal(currentResponse.status, 200);
+    const mediaAssetId = currentResponse.json.playback.currentItem.mediaAssetId;
+
+    const saveResponse = await requestJson(port, '/api/runtime/playback/resume-checkpoint', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: {
+        platform: 'windows',
+        mediaAssetId,
+        displayName: currentResponse.json.playback.currentItem.displayName,
+        displayUrl: currentResponse.json.playback.currentItem.displayUrl,
+        mediaType: currentResponse.json.playback.currentItem.mediaType,
+        resolvedAddress: currentResponse.json.playback.currentItem.resolvedAddress,
+        activeIndex: 0,
+        rotationPaused: false,
+        fullscreenRequested: true,
+        fullscreenActive: false,
+        rotationDurationMs: 30000,
+        remainingRotationMs: 12000,
+        videoPositionMs: null,
+        restorePolicy: 'resume_same_item',
+      },
+    });
+    assert.equal(saveResponse.status, 200);
+    assert.equal(saveResponse.json.status, 'saved');
+    assert.equal(saveResponse.json.checkpoint.platform, 'windows');
+    assert.equal(saveResponse.json.checkpoint.viewId, 'WIN');
+    assert.equal(saveResponse.json.validation.status, 'valid');
+
+    const readResponse = await requestJson(port, '/api/runtime/playback/resume-checkpoint?platform=windows');
+    assert.equal(readResponse.status, 200);
+    assert.equal(readResponse.json.status, 'ok');
+    assert.equal(readResponse.json.checkpoint.mediaAssetId, String(mediaAssetId));
+    assert.equal(readResponse.json.validation.mediaFoundInContract, true);
+
+    const clearResponse = await requestJson(port, '/api/runtime/playback/resume-checkpoint/clear', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: { platform: 'windows' },
+    });
+    assert.equal(clearResponse.status, 200);
+    assert.equal(clearResponse.json.status, 'cleared');
+
+    const missingResponse = await requestJson(port, '/api/runtime/playback/resume-checkpoint?platform=windows');
+    assert.equal(missingResponse.status, 200);
+    assert.equal(missingResponse.json.status, 'missing');
+    assert.equal(missingResponse.json.checkpoint, null);
+  });
+});
+
 test('playback current and queue APIs honor Test/Real database separation', async () => {
   await withPlaybackServer(async ({ port, realDbPath, testDbPath }) => {
     const realResponse = await requestJson(port, '/api/runtime/playback/current?limit=10');

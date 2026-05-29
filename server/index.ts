@@ -61,6 +61,42 @@ const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
 const versionFilePath = path.join(repoRoot, 'VERSION');
 const backendVersion = (await readTextIfExists(versionFilePath))?.trim() || 'unknown';
+
+const PLAYBACK_RESUME_CHECKPOINT_SCHEMA_VERSION = 1;
+const PLAYBACK_RESUME_CHECKPOINT_STALE_MS = 10 * 60 * 1000;
+const PLAYBACK_RESUME_RESTORE_POLICIES = new Set(['resume_same_item', 'continue_next', 'safe_default']);
+const PLAYBACK_RESUME_STATE_KEY_PREFIX = 'playback_resume_checkpoint:';
+
+type PlaybackResumePlatform = 'windows' | 'raspberry';
+
+interface PlaybackResumeCheckpoint {
+  schemaVersion: number;
+  platform: PlaybackResumePlatform;
+  viewId: 'WIN' | 'RPI';
+  mediaAssetId: string;
+  displayUrl: string | null;
+  displayName: string | null;
+  mediaType: string | null;
+  resolvedAddress: string | null;
+  activeIndex: number;
+  rotationPaused: boolean;
+  fullscreenRequested: boolean;
+  fullscreenActive: boolean;
+  rotationDurationMs: number | null;
+  remainingRotationMs: number | null;
+  videoPositionMs: number | null;
+  lastHeartbeatAt: string;
+  restorePolicy: 'resume_same_item' | 'continue_next' | 'safe_default';
+  savedAt: string;
+}
+
+interface PlaybackResumeValidation {
+  status: 'valid' | 'stale' | 'invalid' | 'missing';
+  fresh: boolean;
+  stale: boolean;
+  mediaFoundInContract: boolean;
+  reason: string;
+}
 const generatedTestDataDirectory = path.join(repoRoot, 'generated_test_data');
 const defaultEnvFilePath = path.join(repoRoot, '.env');
 const schedulerNodeArguments = Object.freeze(['--import', 'tsx']);
@@ -466,6 +502,9 @@ const routes: Record<string, RouteHandler> = {
   'GET /api/runtime/playback/current': runtimePlaybackCurrentHandler,
   'GET /api/runtime/playback/queue': runtimePlaybackQueueHandler,
   'GET /api/runtime/playback/observability': runtimePlaybackObservabilityHandler,
+  'GET /api/runtime/playback/resume-checkpoint': runtimePlaybackResumeCheckpointGetHandler,
+  'POST /api/runtime/playback/resume-checkpoint': runtimePlaybackResumeCheckpointSaveHandler,
+  'POST /api/runtime/playback/resume-checkpoint/clear': runtimePlaybackResumeCheckpointClearHandler,
   // Live runtime projection: returns a combined runtime projection for the live monitor (View D).
   // This read‑only endpoint provides run state, worker health, playback and screen status,
   // along with field provenance.  It should never mutate runtime truth or lock state.
@@ -1764,6 +1803,198 @@ async function runtimePlaybackSelectCurrentHandler({ context }: Pick<HandlerArgs
       executedAt: selection.executedAt,
     },
   };
+}
+
+
+// Reads the latest persisted playback resume checkpoint for Windows/Raspberry views.
+async function runtimePlaybackResumeCheckpointGetHandler({ url, context }: Pick<HandlerArgs, 'url' | 'context'>): Promise<HandlerResult> {
+  const platform = normalizePlaybackResumePlatform(url.searchParams.get('platform'));
+  const checkpoint = await getDatabaseService().getRuntimeState<PlaybackResumeCheckpoint>(context, buildPlaybackResumeStateKey(platform));
+  const validation = await validatePlaybackResumeCheckpoint(context, checkpoint);
+
+  return {
+    statusCode: 200,
+    payload: {
+      status: checkpoint ? 'ok' : 'missing',
+      platform,
+      checkpoint,
+      validation,
+      runtimeMode: context.runtimeMode ?? 'real',
+      schemaVersion: PLAYBACK_RESUME_CHECKPOINT_SCHEMA_VERSION,
+    },
+  };
+}
+
+// Persists a frontend-reported playback resume checkpoint without changing playback selection.
+async function runtimePlaybackResumeCheckpointSaveHandler({ body, context }: Pick<HandlerArgs, 'body' | 'context'>): Promise<HandlerResult> {
+  const checkpoint = normalizePlaybackResumeCheckpoint(body);
+  const validation = await validatePlaybackResumeCheckpoint(context, checkpoint);
+  if (validation.status === 'invalid') {
+    throw new HttpError(400, 'invalid_playback_resume_checkpoint', validation.reason, { validation, checkpoint });
+  }
+
+  await getDatabaseService().setRuntimeState(context, buildPlaybackResumeStateKey(checkpoint.platform), checkpoint);
+
+  return {
+    statusCode: 200,
+    payload: {
+      status: 'saved',
+      platform: checkpoint.platform,
+      checkpoint,
+      validation,
+      runtimeMode: context.runtimeMode ?? 'real',
+      schemaVersion: PLAYBACK_RESUME_CHECKPOINT_SCHEMA_VERSION,
+    },
+  };
+}
+
+// Clears the persisted playback resume checkpoint for a platform by storing a null state value.
+async function runtimePlaybackResumeCheckpointClearHandler({ body, url, context }: Pick<HandlerArgs, 'body' | 'url' | 'context'>): Promise<HandlerResult> {
+  const platform = normalizePlaybackResumePlatform(isJsonObject(body) ? body.platform : url.searchParams.get('platform'));
+  await getDatabaseService().setRuntimeState(context, buildPlaybackResumeStateKey(platform), null);
+
+  return {
+    statusCode: 200,
+    payload: {
+      status: 'cleared',
+      platform,
+      checkpoint: null,
+      validation: buildMissingPlaybackResumeValidation(),
+      runtimeMode: context.runtimeMode ?? 'real',
+      schemaVersion: PLAYBACK_RESUME_CHECKPOINT_SCHEMA_VERSION,
+    },
+  };
+}
+
+// Normalizes a checkpoint payload into a bounded schema stored in runtime_state.
+function normalizePlaybackResumeCheckpoint(body: JsonObject): PlaybackResumeCheckpoint {
+  const now = new Date().toISOString();
+  const platform = normalizePlaybackResumePlatform(body.platform);
+  const mediaAssetId = readRequiredText(body.mediaAssetId ?? body.media_asset_id, 'mediaAssetId');
+  const restorePolicy = readRestorePolicy(body.restorePolicy ?? body.restore_policy);
+
+  return {
+    schemaVersion: PLAYBACK_RESUME_CHECKPOINT_SCHEMA_VERSION,
+    platform,
+    viewId: platform === 'windows' ? 'WIN' : 'RPI',
+    mediaAssetId,
+    displayUrl: readNullableText(body.displayUrl ?? body.display_url),
+    displayName: readNullableText(body.displayName ?? body.display_name),
+    mediaType: readNullableText(body.mediaType ?? body.media_type),
+    resolvedAddress: readNullableText(body.resolvedAddress ?? body.resolved_address),
+    activeIndex: readBoundedInteger(body.activeIndex ?? body.active_index, 0),
+    rotationPaused: body.rotationPaused !== false && body.rotation_paused !== false,
+    fullscreenRequested: body.fullscreenRequested === true || body.fullscreen_requested === true,
+    fullscreenActive: body.fullscreenActive === true || body.fullscreen_active === true,
+    rotationDurationMs: readNullableNonNegativeInteger(body.rotationDurationMs ?? body.rotation_duration_ms),
+    remainingRotationMs: readNullableNonNegativeInteger(body.remainingRotationMs ?? body.remaining_rotation_ms),
+    videoPositionMs: readNullableNonNegativeInteger(body.videoPositionMs ?? body.video_position_ms),
+    lastHeartbeatAt: readIsoOrNow(body.lastHeartbeatAt ?? body.last_heartbeat_at, now),
+    restorePolicy,
+    savedAt: now,
+  };
+}
+
+// Validates checkpoint freshness and confirms the referenced item appears in the playback contract when possible.
+async function validatePlaybackResumeCheckpoint(context: RequestContext, checkpoint: PlaybackResumeCheckpoint | null): Promise<PlaybackResumeValidation> {
+  if (!checkpoint) {
+    return buildMissingPlaybackResumeValidation();
+  }
+
+  const heartbeatMs = Date.parse(checkpoint.lastHeartbeatAt);
+  const stale = !Number.isFinite(heartbeatMs) || Date.now() - heartbeatMs > PLAYBACK_RESUME_CHECKPOINT_STALE_MS;
+  let mediaFoundInContract = false;
+  try {
+    const contract = await buildPlaybackContract({
+      context,
+      databaseService: getDatabaseService(),
+      repoRoot,
+      limit: 50,
+    });
+    const playback = contract && typeof contract === 'object' && 'playback' in contract
+      ? (contract as { playback?: { currentItem?: unknown; nextItem?: unknown; items?: unknown[] } }).playback
+      : null;
+    const candidates = [playback?.currentItem, playback?.nextItem, ...(Array.isArray(playback?.items) ? playback.items : [])];
+    mediaFoundInContract = candidates.some((item) => isJsonObject(item) && String(item.mediaAssetId ?? '') === checkpoint.mediaAssetId);
+  } catch {
+    mediaFoundInContract = false;
+  }
+
+  if (!checkpoint.mediaAssetId) {
+    return { status: 'invalid', fresh: false, stale, mediaFoundInContract, reason: 'Checkpoint does not include a media asset id.' };
+  }
+  if (!mediaFoundInContract) {
+    return { status: 'invalid', fresh: false, stale, mediaFoundInContract, reason: 'Checkpoint media asset is not present in the current playback contract.' };
+  }
+  if (stale) {
+    return { status: 'stale', fresh: false, stale: true, mediaFoundInContract, reason: 'Checkpoint heartbeat is older than the supported freshness window.' };
+  }
+  return { status: 'valid', fresh: true, stale: false, mediaFoundInContract, reason: 'Checkpoint is fresh and references an item in the current playback contract.' };
+}
+
+// Builds the runtime_state key for platform-scoped playback resume checkpoints.
+function buildPlaybackResumeStateKey(platform: PlaybackResumePlatform): string {
+  return `${PLAYBACK_RESUME_STATE_KEY_PREFIX}${platform}`;
+}
+
+// Converts route/query/body platform values to the supported checkpoint platforms.
+function normalizePlaybackResumePlatform(value: unknown): PlaybackResumePlatform {
+  return value === 'raspberry' || value === 'raspberry-os' || value === 'RPI' ? 'raspberry' : 'windows';
+}
+
+// Builds the standard validation payload for an absent checkpoint.
+function buildMissingPlaybackResumeValidation(): PlaybackResumeValidation {
+  return {
+    status: 'missing',
+    fresh: false,
+    stale: false,
+    mediaFoundInContract: false,
+    reason: 'No playback resume checkpoint has been persisted for this platform.',
+  };
+}
+
+// Reads a required string from a JSON payload and throws a client error when absent.
+function readRequiredText(value: unknown, fieldName: string): string {
+  const text = typeof value === 'string' || typeof value === 'number' ? String(value).trim() : '';
+  if (!text) {
+    throw new HttpError(400, 'missing_playback_resume_field', `Playback resume checkpoint field ${fieldName} is required.`);
+  }
+  return text;
+}
+
+// Reads an optional text field while normalizing empty strings to null.
+function readNullableText(value: unknown): string | null {
+  const text = typeof value === 'string' || typeof value === 'number' ? String(value).trim() : '';
+  return text || null;
+}
+
+// Reads an integer with a minimum of zero and fallback when invalid.
+function readBoundedInteger(value: unknown, fallback: number): number {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) && numeric >= 0 ? Math.trunc(numeric) : fallback;
+}
+
+// Reads optional non-negative millisecond values from checkpoint payloads.
+function readNullableNonNegativeInteger(value: unknown): number | null {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+  const numeric = Number(value);
+  return Number.isFinite(numeric) && numeric >= 0 ? Math.trunc(numeric) : null;
+}
+
+// Uses a supplied ISO timestamp when valid, otherwise returns the current timestamp.
+function readIsoOrNow(value: unknown, now: string): string {
+  const text = typeof value === 'string' ? value.trim() : '';
+  return text && Number.isFinite(Date.parse(text)) ? text : now;
+}
+
+// Normalizes requested restore policy values to the supported checkpoint policy set.
+function readRestorePolicy(value: unknown): PlaybackResumeCheckpoint['restorePolicy'] {
+  const text = typeof value === 'string' ? value.trim() : 'resume_same_item';
+  return PLAYBACK_RESUME_RESTORE_POLICIES.has(text)
+    ? text as PlaybackResumeCheckpoint['restorePolicy']
+    : 'resume_same_item';
 }
 
 // Streams the selected Windows playback media through the backend so the browser can render it safely.
