@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## 0.7.31 - 29.05.2026, 22:02:00 EEST
+
+- Added backend-only Python provider contracts for GPS parsing and reverse geocoding under `server/scripts/media_pipeline/`.
+- Extracted the current EXIF GPS behavior into `ExifGpsProvider` and the deterministic placeholder geocoder into `DeterministicPlaceholderGeocodeProvider`.
+- Routed `stage3_process_gps_queue` and `stage4_process_geocode_queue` through provider-chain helpers while preserving endpoint-visible behavior, queue statuses, DB writes, provider labels, and placeholder output.
+- Added regression tests for provider-chain fallback order and the preserved EXIF/placeholder helper outputs.
+- Documented how future GPS/geocode providers should be added without frontend changes.
+- Bumped version metadata from v0.7.30 to v0.7.31.
+
 ## 0.7.30 - 29.05.2026, 20:18:00 EEST
 
 - Added `docs/20_architecture_and_specs/reference/LOGGING_STANDARD_CONTRACT.md` as a reusable logging contract extracted from the repo's durable backend, verbose request, auth debug, private raw-provider, Test/Real log isolation, and terminal-panel logging patterns.

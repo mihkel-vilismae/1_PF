@@ -73,3 +73,7 @@ The old `docs/categorized/other_documentation/default_project_settings_and_eleme
 ## Native playback
 
 - [Native Playback Runner Spec](./native_playback_runner_spec.md) — Defines backend-owned OS-native fullscreen playback, player adapters, disabled defaults, and worker integration rules.
+
+## Media pipeline providers
+
+- [Media Pipeline Provider Interfaces](./media_pipeline_provider_interfaces.md) — Defines the backend-only Python provider contracts and fallback-chain rules for GPS parsing and reverse geocoding.

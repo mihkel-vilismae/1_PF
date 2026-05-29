@@ -1,3 +1,7 @@
+# Backend SQLite administration and media pipeline worker entrypoint.
+# Provides schema inspection and queued worker operations for PhotoFrame.
+# GPS/geocode worker stages delegate provider-specific work to media_pipeline modules.
+
 import json
 import math
 import os
@@ -6,8 +10,24 @@ import sys
 import hashlib
 from datetime import datetime
 
-from PIL import Image
-from PIL.ExifTags import Base
+
+from media_pipeline.geocode_placeholder_provider import (
+    build_address_cache_key as provider_build_address_cache_key,
+    build_placeholder_address as provider_build_placeholder_address,
+    default_reverse_geocode_providers,
+)
+from media_pipeline.gps_exif_provider import (
+    convert_gps_coordinate as provider_convert_gps_coordinate,
+    default_gps_providers,
+    extract_exif_gps_from_file,
+)
+from media_pipeline.provider_chain import run_gps_provider_chain, run_reverse_geocode_provider_chain
+from media_pipeline.provider_contracts import (
+    GPS_PROVIDER_STATUS_SUCCEEDED,
+    GEOCODE_PROVIDER_STATUS_SUCCEEDED,
+    GpsProviderInput,
+    ReverseGeocodeInput,
+)
 
 
 MAX_PAGE_SIZE = 100
@@ -573,63 +593,32 @@ def stage2_index_register(path: str, download_dir: str, indexed_at: str, schema_
 
 
 def convert_gps_coordinate(parts: tuple[float, float, float], ref: str) -> float:
-    degrees = float(parts[0])
-    minutes = float(parts[1])
-    seconds = float(parts[2])
-    value = degrees + (minutes / 60.0) + (seconds / 3600.0)
-    if ref in ("S", "W"):
-        value *= -1.0
-    return value
+    """Preserves the existing public GPS coordinate conversion helper."""
+
+    return provider_convert_gps_coordinate(parts, ref)
 
 
 def extract_exif_gps(file_path: str) -> dict | None:
-    with Image.open(file_path) as image:
-        exif = image.getexif()
-        if not exif:
-            return None
-        try:
-            gps_ifd = exif.get_ifd(Base.GPSInfo)
-        except KeyError:
-            return None
-        if not gps_ifd:
-            return None
+    """Preserves the existing EXIF GPS helper by delegating to the provider."""
 
-        latitude_parts = gps_ifd.get(2)
-        latitude_ref = gps_ifd.get(1)
-        longitude_parts = gps_ifd.get(4)
-        longitude_ref = gps_ifd.get(3)
-        altitude = gps_ifd.get(6)
-        if not latitude_parts or not latitude_ref or not longitude_parts or not longitude_ref:
-            return None
-
-        latitude = convert_gps_coordinate(latitude_parts, latitude_ref)
-        longitude = convert_gps_coordinate(longitude_parts, longitude_ref)
-        altitude_value = float(altitude) if altitude is not None else None
-        return {
-            "latitude": latitude,
-            "longitude": longitude,
-            "altitude": altitude_value,
-            "parserMethod": "EXIF",
-        }
+    return extract_exif_gps_from_file(file_path)
 
 
 def build_address_cache_key(latitude: float, longitude: float) -> tuple[str, float, float]:
-    rounded_latitude = round(float(latitude), 5)
-    rounded_longitude = round(float(longitude), 5)
-    return (
-        f"{rounded_latitude:.5f},{rounded_longitude:.5f}",
-        rounded_latitude,
-        rounded_longitude,
-    )
+    """Preserves the existing geocode cache-key helper shape."""
+
+    return provider_build_address_cache_key(latitude, longitude)
 
 
 def build_placeholder_address(latitude: float, longitude: float) -> str:
-    rounded_latitude = round(float(latitude), 5)
-    rounded_longitude = round(float(longitude), 5)
-    return f"Lat: {rounded_latitude:.5f}, Lon: {rounded_longitude:.5f}"
+    """Preserves the existing placeholder geocode helper shape."""
+
+    return provider_build_placeholder_address(latitude, longitude)
 
 
 def stage3_process_gps_queue(path: str, executed_at: str, schema_path: str) -> dict:
+    """Processes queued GPS work by running configured GPS providers in order."""
+
     schema_bootstrap = ensure_canonical_schema(
         path,
         schema_path,
@@ -677,18 +666,24 @@ def stage3_process_gps_queue(path: str, executed_at: str, schema_path: str) -> d
             gps_data = None
             failure_code = None
             failure_message = None
-            try:
-                if canonical_path is None or not os.path.exists(canonical_path):
-                    failure_code = "canonical_file_missing"
-                    failure_message = f"Canonical media file does not exist: {canonical_path}"
+            if canonical_path is None or not os.path.exists(canonical_path):
+                failure_code = "canonical_file_missing"
+                failure_message = f"Canonical media file does not exist: {canonical_path}"
+            else:
+                gps_result = run_gps_provider_chain(
+                    GpsProviderInput(canonical_path=canonical_path),
+                    default_gps_providers(),
+                )
+                if gps_result.status == GPS_PROVIDER_STATUS_SUCCEEDED:
+                    gps_data = {
+                        "latitude": gps_result.latitude,
+                        "longitude": gps_result.longitude,
+                        "altitude": gps_result.altitude,
+                        "parserMethod": gps_result.parser_method,
+                    }
                 else:
-                    gps_data = extract_exif_gps(canonical_path)
-                    if gps_data is None:
-                        failure_code = "gps_not_found"
-                        failure_message = "No EXIF GPS coordinates were found in the media asset."
-            except Exception as error:
-                failure_code = "gps_extract_failed"
-                failure_message = str(error)
+                    failure_code = gps_result.failure_code or "gps_not_found"
+                    failure_message = gps_result.message or "No GPS coordinates were found in the media asset."
 
             if gps_data is None:
                 failure_count += 1
@@ -758,6 +753,8 @@ def stage3_process_gps_queue(path: str, executed_at: str, schema_path: str) -> d
 
 
 def stage4_process_geocode_queue(path: str, executed_at: str, schema_path: str) -> dict:
+    """Processes queued geocode work through the reverse-geocode provider chain."""
+
     schema_bootstrap = ensure_canonical_schema(
         path,
         schema_path,
@@ -793,7 +790,6 @@ def stage4_process_geocode_queue(path: str, executed_at: str, schema_path: str) 
             media_asset_id = int(row["media_asset_id"])
             latitude = row["gps_latitude"]
             longitude = row["gps_longitude"]
-            provider_name = "deterministic_placeholder"
 
             cursor.execute(
                 """
@@ -812,7 +808,7 @@ def stage4_process_geocode_queue(path: str, executed_at: str, schema_path: str) 
                     SET geocode_status = 'GEOCODE_FAILED', updated_at = ?
                     WHERE media_asset_id = ?
                     """,
-                    (executedAt := executed_at, media_asset_id),
+                    (executed_at, media_asset_id),
                 )
                 cursor.execute(
                     """
@@ -822,12 +818,47 @@ def stage4_process_geocode_queue(path: str, executed_at: str, schema_path: str) 
                         updated_at = ?
                     WHERE geocode_queue_id = ?
                     """,
-                    (executed_at, provider_name, executed_at, geocode_queue_id),
+                    (executed_at, "deterministic_placeholder", executed_at, geocode_queue_id),
                 )
                 continue
 
-            cache_key, rounded_latitude, rounded_longitude = build_address_cache_key(latitude, longitude)
-            address_text = build_placeholder_address(latitude, longitude)
+            geocode_result = run_reverse_geocode_provider_chain(
+                ReverseGeocodeInput(latitude=float(latitude), longitude=float(longitude), language_code="en"),
+                default_reverse_geocode_providers(),
+            )
+            provider_name = geocode_result.provider_id
+            if geocode_result.status != GEOCODE_PROVIDER_STATUS_SUCCEEDED:
+                failure_count += 1
+                cursor.execute(
+                    """
+                    UPDATE canonical_media_assets
+                    SET geocode_status = 'GEOCODE_FAILED', updated_at = ?
+                    WHERE media_asset_id = ?
+                    """,
+                    (executed_at, media_asset_id),
+                )
+                cursor.execute(
+                    """
+                    UPDATE geocode_queue
+                    SET status = 'RETRY_EXHAUSTED', processing_finished_at = ?, geocode_provider = ?,
+                        failure_code = ?, failure_message = ?, updated_at = ?
+                    WHERE geocode_queue_id = ?
+                    """,
+                    (
+                        executed_at,
+                        provider_name,
+                        geocode_result.failure_code or "geocode_not_found",
+                        geocode_result.message or "No address was resolved for the coordinate pair.",
+                        executed_at,
+                        geocode_queue_id,
+                    ),
+                )
+                continue
+
+            cache_key = geocode_result.address_cache_key
+            rounded_latitude = geocode_result.rounded_latitude
+            rounded_longitude = geocode_result.rounded_longitude
+            address_text = geocode_result.address_text
             changes_before = connection.total_changes
             cursor.execute(
                 """
@@ -838,7 +869,7 @@ def stage4_process_geocode_queue(path: str, executed_at: str, schema_path: str) 
                 """,
                 (
                     cache_key, rounded_latitude, rounded_longitude, address_text, provider_name,
-                    json.dumps({"address_text": address_text, "cache_key": cache_key}), 'en', executed_at, executed_at,
+                    json.dumps(geocode_result.provider_response), geocode_result.language_code, executed_at, executed_at,
                 ),
             )
             if connection.total_changes > changes_before:
