@@ -83,6 +83,17 @@ class GpsProviderResult:
             message=message,
         )
 
+    @classmethod
+    def skipped(cls, provider_id: str, failure_code: str, message: str) -> "GpsProviderResult":
+        """Builds a skipped GPS attempt for disabled/unavailable providers."""
+
+        return cls(
+            provider_id=provider_id,
+            status=GPS_PROVIDER_STATUS_SKIPPED,
+            failure_code=failure_code,
+            message=message,
+        )
+
 
 class GpsProvider(Protocol):
     """Defines the pluggable contract for future GPS metadata providers."""
@@ -159,6 +170,17 @@ class ReverseGeocodeResult:
         return cls(
             provider_id=provider_id,
             status=GEOCODE_PROVIDER_STATUS_FAILED,
+            failure_code=failure_code,
+            message=message,
+        )
+
+    @classmethod
+    def skipped(cls, provider_id: str, failure_code: str, message: str) -> "ReverseGeocodeResult":
+        """Builds a skipped geocoder attempt for disabled/unconfigured providers."""
+
+        return cls(
+            provider_id=provider_id,
+            status=GEOCODE_PROVIDER_STATUS_SKIPPED,
             failure_code=failure_code,
             message=message,
         )

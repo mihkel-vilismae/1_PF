@@ -9,9 +9,11 @@ from collections.abc import Iterable
 from .provider_contracts import (
     GPS_PROVIDER_STATUS_FAILED,
     GPS_PROVIDER_STATUS_NO_RESULT,
+    GPS_PROVIDER_STATUS_SKIPPED,
     GPS_PROVIDER_STATUS_SUCCEEDED,
     GEOCODE_PROVIDER_STATUS_FAILED,
     GEOCODE_PROVIDER_STATUS_NO_RESULT,
+    GEOCODE_PROVIDER_STATUS_SKIPPED,
     GEOCODE_PROVIDER_STATUS_SUCCEEDED,
     GpsProvider,
     GpsProviderInput,
@@ -33,6 +35,8 @@ def run_gps_provider_chain(provider_input: GpsProviderInput, providers: Iterable
             result = GpsProviderResult.failed(provider.provider_id, "gps_extract_failed", str(error))
         if result.status == GPS_PROVIDER_STATUS_SUCCEEDED:
             return result
+        if result.status == GPS_PROVIDER_STATUS_SKIPPED:
+            continue
         if result.status in (GPS_PROVIDER_STATUS_NO_RESULT, GPS_PROVIDER_STATUS_FAILED):
             last_result = result
 
@@ -59,6 +63,8 @@ def run_reverse_geocode_provider_chain(
             result = ReverseGeocodeResult.failed(provider.provider_id, "geocode_failed", str(error))
         if result.status == GEOCODE_PROVIDER_STATUS_SUCCEEDED:
             return result
+        if result.status == GEOCODE_PROVIDER_STATUS_SKIPPED:
+            continue
         if result.status in (GEOCODE_PROVIDER_STATUS_NO_RESULT, GEOCODE_PROVIDER_STATUS_FAILED):
             last_result = result
 

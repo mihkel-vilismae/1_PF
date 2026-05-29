@@ -159,3 +159,111 @@ print(json.dumps({
     address: 'Lat: 58.37763, Lon: 26.72901',
   });
 });
+
+test('reverse geocode registry keeps cache first and account providers disabled by default', () => {
+  const payload = runPythonJson(`
+import json
+import os
+import sys
+
+repo_root = sys.argv[1]
+sys.path.insert(0, os.path.join(repo_root, 'server', 'scripts'))
+
+from media_pipeline.geocode_provider_registry import default_reverse_geocode_providers
+from media_pipeline.provider_chain import run_reverse_geocode_provider_chain
+from media_pipeline.provider_contracts import ReverseGeocodeInput
+
+for key in list(os.environ.keys()):
+    if key.startswith('GEOCODE_'):
+        os.environ.pop(key)
+
+providers = default_reverse_geocode_providers()
+result = run_reverse_geocode_provider_chain(ReverseGeocodeInput(58.377625, 26.729006), providers)
+print(json.dumps({
+    'provider_ids': [provider.provider_id for provider in providers],
+    'result_provider': result.provider_id,
+    'result_status': result.status,
+    'address': result.address_text,
+}))
+`);
+
+  assert.deepEqual(payload.provider_ids, [
+    'address_cache',
+    'nominatim_osm',
+    'photon_komoot',
+    'postcodes_io_uk',
+    'pelias_self_hosted',
+    'opencage',
+    'geoapify',
+    'mapbox',
+    'google_geocoding',
+    'deterministic_placeholder',
+  ]);
+  assert.equal(payload.result_provider, 'deterministic_placeholder');
+  assert.equal(payload.result_status, 'SUCCEEDED');
+  assert.equal(payload.address, 'Lat: 58.37763, Lon: 26.72901');
+});
+
+test('address cache provider resolves before placeholder and network providers', () => {
+  const payload = runPythonJson(`
+import json
+import os
+import sqlite3
+import sys
+
+repo_root = sys.argv[1]
+sys.path.insert(0, os.path.join(repo_root, 'server', 'scripts'))
+
+from media_pipeline.geocode_provider_registry import default_reverse_geocode_providers
+from media_pipeline.provider_chain import run_reverse_geocode_provider_chain
+from media_pipeline.provider_contracts import ReverseGeocodeInput
+
+connection = sqlite3.connect(':memory:')
+connection.row_factory = sqlite3.Row
+connection.execute('''
+    CREATE TABLE address_cache (
+        address_cache_key TEXT PRIMARY KEY,
+        rounded_latitude REAL,
+        rounded_longitude REAL,
+        address_text TEXT,
+        provider_name TEXT,
+        provider_response_json TEXT,
+        language_code TEXT,
+        created_at TEXT,
+        updated_at TEXT
+    )
+''')
+connection.execute('''
+    INSERT INTO address_cache (
+        address_cache_key, rounded_latitude, rounded_longitude, address_text,
+        provider_name, provider_response_json, language_code, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+''', (
+    '58.37763,26.72901', 58.37763, 26.72901, 'Cached Tartu address',
+    'nominatim_osm', '{}', 'en', 'now', 'now'
+))
+connection.commit()
+
+for key in list(os.environ.keys()):
+    if key.startswith('GEOCODE_'):
+        os.environ.pop(key)
+
+result = run_reverse_geocode_provider_chain(
+    ReverseGeocodeInput(58.377625, 26.729006),
+    default_reverse_geocode_providers(connection),
+)
+print(json.dumps({
+    'provider': result.provider_id,
+    'status': result.status,
+    'address': result.address_text,
+    'cached_provider_name': result.provider_response.get('cached_provider_name'),
+}))
+`);
+
+  assert.deepEqual(payload, {
+    provider: 'address_cache',
+    status: 'SUCCEEDED',
+    address: 'Cached Tartu address',
+    cached_provider_name: 'nominatim_osm',
+  });
+});

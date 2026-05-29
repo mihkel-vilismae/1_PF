@@ -14,8 +14,8 @@ from datetime import datetime
 from media_pipeline.geocode_placeholder_provider import (
     build_address_cache_key as provider_build_address_cache_key,
     build_placeholder_address as provider_build_placeholder_address,
-    default_reverse_geocode_providers,
 )
+from media_pipeline.geocode_provider_registry import default_reverse_geocode_providers
 from media_pipeline.gps_exif_provider import (
     convert_gps_coordinate as provider_convert_gps_coordinate,
     default_gps_providers,
@@ -824,7 +824,7 @@ def stage4_process_geocode_queue(path: str, executed_at: str, schema_path: str) 
 
             geocode_result = run_reverse_geocode_provider_chain(
                 ReverseGeocodeInput(latitude=float(latitude), longitude=float(longitude), language_code="en"),
-                default_reverse_geocode_providers(),
+                default_reverse_geocode_providers(connection),
             )
             provider_name = geocode_result.provider_id
             if geocode_result.status != GEOCODE_PROVIDER_STATUS_SUCCEEDED:

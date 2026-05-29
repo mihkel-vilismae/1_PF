@@ -2,8 +2,8 @@
 
 ## Status
 
-Version: 0.7.31  
-Date: 29.05.2026, 22:02:00 EEST  
+Version: 0.7.32  
+Date: 29.05.2026, 22:20:00 EEST  
 Scope: backend-only Python provider foundation for GPS parsing and reverse geocoding.
 
 ## Purpose
@@ -15,7 +15,7 @@ The media pipeline has separate worker stages for GPS parsing and reverse geocod
 | Stage | Contract | Default provider | Current behavior |
 |---|---|---|---|
 | GPS parsing | `GpsProvider` in `server/scripts/media_pipeline/provider_contracts.py` | `ExifGpsProvider` | Reads embedded EXIF GPS via Pillow and returns parser method `EXIF` |
-| Reverse geocoding | `ReverseGeocodeProvider` in `server/scripts/media_pipeline/provider_contracts.py` | `DeterministicPlaceholderGeocodeProvider` | Produces the existing placeholder address format `Lat: 58.37763, Lon: 26.72901` |
+| Reverse geocoding | `ReverseGeocodeProvider` in `server/scripts/media_pipeline/provider_contracts.py` | Cache-first registry ending in `DeterministicPlaceholderGeocodeProvider` by default | Checks `address_cache` first, keeps network/account providers disabled by default, and preserves the existing placeholder address format `Lat: 58.37763, Lon: 26.72901` |
 
 ## Provider-chain rule
 
@@ -36,7 +36,7 @@ The worker integration remains in `server/scripts/sqlite_admin.py`:
 | Worker function | Provider-chain call | Preserved external behavior |
 |---|---|---|
 | `stage3_process_gps_queue` | `run_gps_provider_chain(...)` | Same queue statuses, DB fields, EXIF parser method, geocode queue insertion |
-| `stage4_process_geocode_queue` | `run_reverse_geocode_provider_chain(...)` | Same placeholder provider name, address cache writes, `GEOCODE_FOUND` status |
+| `stage4_process_geocode_queue` | `run_reverse_geocode_provider_chain(...)` | Same endpoint-visible behavior, address cache writes, `GEOCODE_FOUND` status; cache hits now stop before placeholder/network providers |
 
 The TypeScript API routes and dashboard do not own provider selection in this version. They continue to call the same backend worker commands.
 
@@ -74,7 +74,27 @@ class FutureReverseGeocodeProvider:
         )
 ```
 
-Then add it to the ordered list returned by `default_reverse_geocode_providers()` after deciding whether it should run before or after the placeholder provider.
+Then register it in `server/scripts/media_pipeline/geocode_provider_registry.py` and place its provider id in `GEOCODE_PROVIDER_ORDER`. Keep network/account providers disabled by default until explicitly configured.
+
+
+## Current reverse-geocode provider registry
+
+The current registry contains these provider IDs:
+
+```text
+address_cache
+nominatim_osm
+photon_komoot
+postcodes_io_uk
+pelias_self_hosted
+opencage
+geoapify
+mapbox
+google_geocoding
+deterministic_placeholder
+```
+
+See `docs/20_architecture_and_specs/media_pipeline_geocode_provider_chain.md` for account fields, default enablement, and cache-first rules.
 
 ## Rules for future real providers
 

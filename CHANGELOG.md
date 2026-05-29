@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## 0.7.32 - 29.05.2026, 22:20:00 EEST
+
+- Added a cache-first reverse-geocode provider registry with `address_cache` before all network providers.
+- Added disabled-by-default Python adapters for `nominatim_osm`, `photon_komoot`, `postcodes_io_uk`, `pelias_self_hosted`, `opencage`, `geoapify`, `mapbox`, and `google_geocoding`.
+- Standardized geocode provider account/config environment keys for username, account ID, contact email, API key, access token, user agent, base URL, timeout, and enabled state.
+- Preserved existing geocode worker behavior by keeping network providers disabled and the deterministic placeholder fallback enabled by default.
+- Added provider-registry tests proving default disabled behavior and address-cache-first resolution.
+- Bumped version metadata from v0.7.31 to v0.7.32.
+
 ## 0.7.31 - 29.05.2026, 22:02:00 EEST
 
 - Added backend-only Python provider contracts for GPS parsing and reverse geocoding under `server/scripts/media_pipeline/`.
