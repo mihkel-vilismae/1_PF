@@ -12,6 +12,7 @@ $RECYCLE.BIN/
 # Environment and local secrets
 .env
 .env.*
+test.env
 !.env.example
 
 # Dependencies and build outputs
@@ -32,6 +33,7 @@ pnpm-debug.log*
 
 # Local runtime data
 runtime_data/
+test_runtime_data/
 runtime_data/private_logs/
 runtime-truth.json
 conf/runtime-truth.json
