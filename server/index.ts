@@ -44,6 +44,13 @@ import {
 import { selectCurrentPlayableItem } from './playback/playbackSelectionService.ts';
 import { buildPlaybackContract, normalizePlaybackContractLimit, resolvePlaybackAssetMediaPath } from './playback/playbackContractService.ts';
 import { runPlaybackWorker } from './workers/playbackWorker.ts';
+import {
+  detectNativePlayback,
+  getNativePlaybackStatus,
+  NativePlaybackError,
+  startCurrentNativePlayback,
+  stopNativePlayback,
+} from './nativePlayback/nativePlaybackController.ts';
 import { createSchedulerRoutes } from './routes/schedulerRoutes.ts';
 import { createScreenSimulationRoutes } from './routes/screenSimulationRoutes.ts';
 import { createRuntimeTruthRoutes } from './routes/runtimeTruthRoutes.ts';
@@ -505,6 +512,10 @@ const routes: Record<string, RouteHandler> = {
   'GET /api/runtime/playback/resume-checkpoint': runtimePlaybackResumeCheckpointGetHandler,
   'POST /api/runtime/playback/resume-checkpoint': runtimePlaybackResumeCheckpointSaveHandler,
   'POST /api/runtime/playback/resume-checkpoint/clear': runtimePlaybackResumeCheckpointClearHandler,
+  'GET /api/native-playback/status': nativePlaybackStatusHandler,
+  'POST /api/native-playback/detect': nativePlaybackDetectHandler,
+  'POST /api/native-playback/start-current': nativePlaybackStartCurrentHandler,
+  'POST /api/native-playback/stop': nativePlaybackStopHandler,
   // Live runtime projection: returns a combined runtime projection for the live monitor (View D).
   // This read‑only endpoint provides run state, worker health, playback and screen status,
   // along with field provenance.  It should never mutate runtime truth or lock state.
@@ -1490,6 +1501,46 @@ async function runtimeQueuePrepareHandler({ context }: Pick<HandlerArgs, 'contex
       schemaVersion: 1,
       executedAt,
     },
+  };
+}
+
+
+// Returns native playback config and persisted process/status details without launching media.
+async function nativePlaybackStatusHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
+  return {
+    statusCode: 200,
+    payload: await getNativePlaybackStatus({ context, databaseService: getDatabaseService() }),
+  };
+}
+
+// Detects whether the configured OS-native playback executable is available.
+async function nativePlaybackDetectHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
+  return {
+    statusCode: 200,
+    payload: await detectNativePlayback({ context, databaseService: getDatabaseService() }),
+  };
+}
+
+// Starts native fullscreen playback for the current/next backend playback item when enabled.
+async function nativePlaybackStartCurrentHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
+  try {
+    return {
+      statusCode: 200,
+      payload: await startCurrentNativePlayback({ context, databaseService: getDatabaseService(), repoRoot }),
+    };
+  } catch (error) {
+    if (error instanceof NativePlaybackError) {
+      throw new HttpError(error.statusCode, error.code, error.message, error.details);
+    }
+    throw error;
+  }
+}
+
+// Stops the native playback process owned by this backend instance.
+async function nativePlaybackStopHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
+  return {
+    statusCode: 200,
+    payload: await stopNativePlayback({ context, databaseService: getDatabaseService() }),
   };
 }
 

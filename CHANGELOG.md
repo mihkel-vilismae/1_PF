@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.7.24 - 2026-05-29 EEST
+
+- Added a disabled-by-default native playback controller and status/detect/start-current/stop API routes.
+- Native playback uses safe spawn argument arrays, tracks only the owned process, and supports a mock player for tests.
+
+
 ## 0.7.23 - 2026-05-29 EEST
 
 - Added the native playback runner architecture spec for OS-native fullscreen playback.
