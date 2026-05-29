@@ -120,3 +120,24 @@ test('frontend passively reports playback resume checkpoints without rotate muta
   assert.match(appSource, /OS_PLAYBACK_RESUME_HEARTBEAT_MIN_MS/);
   assert.doesNotMatch(appSource, /api\/runtime\/playback\/rotate|api\/runtime\/playback\/fullscreen/);
 });
+
+
+test('playback resume restore UI is user-triggered and reads checkpoint state', () => {
+  const markup = renderOsPlaybackView({
+    ...buildStateWithPlaybackItems(),
+    osPlaybackResume: {
+      windows: {
+        status: 'ok',
+        validation: { status: 'valid' },
+        checkpoint: { fullscreenRequested: true },
+        message: 'Restored the last valid playback item from the backend checkpoint.',
+        restoredFromCheckpoint: true,
+      },
+    },
+  }, OS_PLAYBACK_PLATFORMS.windows);
+
+  assert.match(markup, /Resume checkpoint: valid/);
+  assert.match(markup, /Restore fullscreen playback/);
+  assert.match(appSource, /api\/runtime\/playback\/resume-checkpoint\?platform=\$\{platform\}/);
+  assert.match(appSource, /applyOsPlaybackResumeCheckpoint/);
+});

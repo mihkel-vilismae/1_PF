@@ -535,6 +535,7 @@ async function loadOsPlaybackContract(platform: OsPlaybackPlatform): Promise<voi
       };
       ensureMutableOsPlaybackRotationState(draft, platform);
     });
+    await loadOsPlaybackResumeCheckpoint(platform);
     queueOsPlaybackResumeCheckpointSave(platform, 'contract-refresh');
     pushHistory('PLAYBACK', 'success', `${getOsPlaybackLabel(platform)} playback contract refreshed.`, {
       platform,
@@ -558,6 +559,91 @@ async function loadOsPlaybackContract(platform: OsPlaybackPlatform): Promise<voi
   }
 }
 
+
+
+// Loads and applies a fresh backend playback resume checkpoint for the selected platform.
+async function loadOsPlaybackResumeCheckpoint(platform: OsPlaybackPlatform): Promise<void> {
+  try {
+    const payload = await requestJson<Record<string, unknown>>(`/api/runtime/playback/resume-checkpoint?platform=${platform}`, {
+      headers: { Accept: 'application/json' },
+      operation: `Load ${platform} playback resume checkpoint`,
+    });
+    applyOsPlaybackResumeCheckpoint(platform, payload);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    patchState((draft) => {
+      const resume = ensureMutableOsPlaybackResumeState(draft);
+      resume[platform] = {
+        status: 'error',
+        message,
+        validation: { status: 'invalid', reason: message },
+        checkpoint: null,
+      };
+    });
+  }
+}
+
+// Applies a valid resume checkpoint to browser-side rotation state without forcing fullscreen.
+function applyOsPlaybackResumeCheckpoint(platform: OsPlaybackPlatform, payload: Record<string, unknown>): void {
+  const checkpoint = isRecordValue(payload.checkpoint) ? payload.checkpoint : null;
+  const validation = isRecordValue(payload.validation) ? payload.validation : {};
+  const validationStatus = typeof validation.status === 'string' ? validation.status : 'missing';
+  const mediaAssetId = typeof checkpoint?.mediaAssetId === 'string' ? checkpoint.mediaAssetId : null;
+  const state = getState();
+  const items = readOsPlaybackItems(platform);
+  const restoredIndex = mediaAssetId ? items.findIndex((item) => String(item.mediaAssetId ?? '') === mediaAssetId) : -1;
+  const canRestore = validationStatus === 'valid' && restoredIndex >= 0;
+  const paused = checkpoint?.rotationPaused !== false;
+  const remainingRotationMs = typeof checkpoint?.remainingRotationMs === 'number' ? checkpoint.remainingRotationMs : null;
+
+  patchState((draft) => {
+    const resume = ensureMutableOsPlaybackResumeState(draft);
+    resume[platform] = {
+      ...payload,
+      status: payload.status ?? validationStatus,
+      message: canRestore
+        ? 'Restored the last valid playback item from the backend checkpoint.'
+        : String(validation.reason ?? 'No fresh valid playback checkpoint was applied.'),
+      restoredFromCheckpoint: canRestore,
+    };
+
+    if (!canRestore) {
+      return;
+    }
+
+    const rotation = ensureMutableOsPlaybackRotationState(draft, platform);
+    rotation.activeIndex = restoredIndex;
+    rotation.paused = paused;
+    rotation.fullscreen = false;
+    rotation.intervalSeconds = OS_PLAYBACK_ROTATION_INTERVAL_SECONDS;
+    rotation.nextRotationAtIso = paused
+      ? null
+      : new Date(Date.now() + Math.max(1000, remainingRotationMs ?? OS_PLAYBACK_ROTATION_INTERVAL_SECONDS * 1000)).toISOString();
+  });
+
+  if (canRestore && !paused) {
+    scheduleOsPlaybackRotation(platform);
+  }
+
+  if (canRestore && state.activeView) {
+    pushLog('B4', 'success', `${getOsPlaybackLabel(platform)} restored playback checkpoint item after startup/load.`);
+  }
+}
+
+// Reads playback items from the same OS playback view model used by rendering.
+function readOsPlaybackItems(platform: OsPlaybackPlatform): Array<Record<string, unknown>> {
+  const playback = ((getState().osPlayback as Record<string, Record<string, unknown>> | undefined)?.[platform]?.contract as { playback?: Record<string, unknown> } | undefined)?.playback;
+  const items = Array.isArray(playback?.items) ? playback.items : [];
+  if (items.length > 0) {
+    return items.filter(isRecordValue);
+  }
+  return [playback?.currentItem, playback?.nextItem].filter(isRecordValue);
+}
+
+// Narrows unknown values to records for checkpoint payload inspection.
+function isRecordValue(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
 
 // Loads backend scheduler/log/worker observability for the OS playback views.
 async function loadOsPlaybackObservability(platform: OsPlaybackPlatform): Promise<void> {
@@ -608,6 +694,14 @@ function ensureMutableOsPlaybackState(draft: Record<string, unknown>): Record<st
     draft.osPlayback = {};
   }
   return draft.osPlayback as Record<string, unknown>;
+}
+
+// Ensures the dynamic runtime-truth state has a mutable OS playback observability bucket.
+function ensureMutableOsPlaybackResumeState(draft: Record<string, unknown>): Record<string, unknown> {
+  if (!draft.osPlaybackResume || typeof draft.osPlaybackResume !== 'object' || Array.isArray(draft.osPlaybackResume)) {
+    draft.osPlaybackResume = {};
+  }
+  return draft.osPlaybackResume as Record<string, unknown>;
 }
 
 // Ensures the dynamic runtime-truth state has a mutable OS playback observability bucket.
@@ -977,6 +1071,13 @@ function bindEvents() {
     });
   });
 
+  app.querySelectorAll<HTMLButtonElement>('[data-os-playback-restore-fullscreen-platform]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const platform = normalizeOsPlaybackPlatform(button.dataset.osPlaybackRestoreFullscreenPlatform);
+      enterOsPlaybackFullscreen(platform);
+    });
+  });
+
   app.querySelectorAll<HTMLButtonElement>('[data-playback-view-fullscreen-platform]').forEach((button) => {
     button.addEventListener('click', () => {
       const platform = normalizeOsPlaybackPlatform(button.dataset.playbackViewFullscreenPlatform);
@@ -1225,6 +1326,13 @@ function bindEvents() {
     select.addEventListener('change', () => setSimulationValue('realDownloadRecentCount', Number(select.value || 1)));
   });
 
+
+  app.querySelectorAll<HTMLButtonElement>('[data-os-playback-restore-fullscreen-platform]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const platform = normalizeOsPlaybackPlatform(button.dataset.osPlaybackRestoreFullscreenPlatform);
+      enterOsPlaybackFullscreen(platform);
+    });
+  });
 
   app.querySelectorAll<HTMLButtonElement>('[data-playback-view-fullscreen-platform]').forEach((button) => {
     button.addEventListener('click', () => {

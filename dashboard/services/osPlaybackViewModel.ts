@@ -58,6 +58,13 @@ export type PlaybackActivityViewModel = {
   statusMessage: string;
 };
 
+export type PlaybackResumeViewModel = {
+  status: string;
+  message: string;
+  restoredFromCheckpoint: boolean;
+  canRestoreFullscreen: boolean;
+};
+
 export type PlaybackRotationViewModel = {
   activeIndex: number;
   itemCount: number;
@@ -91,6 +98,7 @@ export type OsPlaybackViewModel = {
   playbackItems: PlaybackQueueItemViewModel[];
   rotation: PlaybackRotationViewModel;
   activity: PlaybackActivityViewModel;
+  resume: PlaybackResumeViewModel;
   stageItems: PlaybackStageViewModel[];
   workers: PlaybackWorkerViewModel[];
   schedulerLog: PlaybackLogEntryViewModel[];
@@ -184,6 +192,7 @@ type RuntimeStateLike = {
   osPlaybackObservability?: Partial<Record<OsPlaybackPlatform, OsPlaybackObservabilityStateLike>>;
   osPlaybackRotation?: Partial<Record<OsPlaybackPlatform, OsPlaybackRotationStateLike>>;
   osPlaybackActivity?: Partial<Record<OsPlaybackPlatform, OsPlaybackActivityStateLike>>;
+  osPlaybackResume?: Partial<Record<OsPlaybackPlatform, Record<string, unknown>>>;
 };
 
 const PLATFORM_COPY = Object.freeze({
@@ -234,6 +243,7 @@ export function buildOsPlaybackViewModel(state: RuntimeStateLike, platform: OsPl
   const defaultActiveIndex = inferDefaultActiveIndex(playbackItems, playbackContract);
   const rotation = buildRotationViewModel(state.osPlaybackRotation?.[platform], playbackItems.length, defaultActiveIndex);
   const activity = buildActivityViewModel(state.osPlaybackActivity?.[platform]);
+  const resume = buildResumeViewModel(state.osPlaybackResume?.[platform]);
   const media = playbackItems[rotation.activeIndex] ?? fallbackMedia;
   const queueSummary = buildQueueSummary(playbackContract, readNumber(state.truth?.queueLength, 0), playbackItems.length);
   const playbackStatus = buildPlaybackStatus(contractState, playbackContract, readText(state.truth?.playbackStatus, 'Waiting for queued media'));
@@ -259,6 +269,7 @@ export function buildOsPlaybackViewModel(state: RuntimeStateLike, platform: OsPl
     playbackItems,
     rotation,
     activity,
+    resume,
     stageItems: buildStageItems(state),
     workers: buildWorkerItems(state, observabilityPayload),
     schedulerLog: buildSchedulerLog(platform, observabilityPayload, observabilityState),
@@ -569,6 +580,36 @@ function inferDefaultActiveIndex(items: PlaybackQueueItemViewModel[], contract: 
   }
   const index = items.findIndex((item) => item.mediaAssetId === currentMediaAssetId);
   return index >= 0 ? index : 0;
+}
+
+
+/**
+ * Builds operator-facing playback resume status from backend checkpoint load state.
+ */
+function buildResumeViewModel(state: Record<string, unknown> | undefined): PlaybackResumeViewModel {
+  const status = readText(state?.status, 'not loaded');
+  const validation = isRecord(state?.validation) ? state?.validation : null;
+  const validationStatus = readText(validation?.status, status);
+  const checkpoint = isRecord(state?.checkpoint) ? state?.checkpoint : null;
+  const fullscreenRequested = checkpoint?.fullscreenRequested === true;
+  const restoredFromCheckpoint = state?.restoredFromCheckpoint === true;
+  const message = readText(state?.message, validationStatus === 'valid'
+    ? 'Fresh playback checkpoint is available.'
+    : 'No fresh playback checkpoint has been applied.');
+
+  return {
+    status: validationStatus,
+    message,
+    restoredFromCheckpoint,
+    canRestoreFullscreen: fullscreenRequested && validationStatus !== 'missing',
+  };
+}
+
+/**
+ * Checks whether an unknown value is a plain record for view-model reads.
+ */
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 /**

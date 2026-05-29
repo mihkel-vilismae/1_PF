@@ -32,7 +32,7 @@ test('Windows playback view renders required playback shell sections', () => {
   assert.match(markup, /Index/);
   assert.match(markup, /GPS parser/);
   assert.match(markup, /Geocode/);
-  assert.match(markup, /Queue \/ Q/);
+  assert.match(markup, /Queue/);
   assert.match(markup, /Regular state worker/);
   assert.match(markup, /Playback worker/);
   assert.match(markup, /On-off worker/);

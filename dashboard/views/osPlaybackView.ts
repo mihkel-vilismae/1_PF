@@ -64,15 +64,17 @@ export function renderOsPlaybackView(state: RuntimeState, platform: OsPlaybackPl
           <button class="button button--secondary" type="button" data-os-playback-step-platform="${escapeHtml(view.platform)}" data-os-playback-step="1" ${view.rotation.canRotate ? '' : 'disabled'}>Next</button>
           <button class="button button--secondary" type="button" data-os-playback-toggle-rotation-platform="${escapeHtml(view.platform)}" ${view.rotation.canRotate ? '' : 'disabled'}>${escapeHtml(view.rotation.toggleLabel)}</button>
           <button class="button button--secondary" type="button" data-os-playback-refresh-platform="${escapeHtml(view.platform)}">Refresh queue</button>
+          ${view.resume.canRestoreFullscreen ? `<button class="button button--secondary" type="button" data-os-playback-restore-fullscreen-platform="${escapeHtml(view.platform)}">Restore fullscreen playback</button>` : ''}
         </div>
         <p class="notice notice--neutral">${escapeHtml(view.playbackStatus)} Browser-side rotation uses the read-only playback queue contract; backend selection and OS scheduler behavior remain unchanged.</p>
+        <p class="notice notice--neutral" data-os-playback-resume-status="${escapeHtml(view.platform)}">Resume checkpoint: ${escapeHtml(view.resume.status)} — ${escapeHtml(view.resume.message)}</p>
         ${renderActivityPanel(view)}
       </article>
 
       <article class="card os-playback-status-card">
         <header class="card__header card__header--tight">
           <div><p class="card__code">${escapeHtml(view.code)}-STAGES</p><h3>Media pipeline stage row</h3></div>
-          <div class="card__header-tags">${renderSourceBadge('hybrid', 'Download → Index → GPS → Geocode → Q')}</div>
+          <div class="card__header-tags">${renderSourceBadge('hybrid', 'Download → Index → GPS parser → Geocode → Queue')}</div>
         </header>
         <div class="os-stage-row">
           ${view.stageItems.map(renderStagePill).join('')}

@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.7.21 - 29.05.2026, 17:49:00 EEST
+
+- Added startup playback resume checkpoint loading for Windows and Raspberry OS playback views.
+- Restored the same playback item when the backend checkpoint is fresh, valid, and present in the current playback contract.
+- Added a user-triggered `Restore fullscreen playback` action instead of assuming the browser can automatically re-enter fullscreen after restart.
+- Preserved existing playback selection, queue rotation controls, worker stages, Test Mode / Real Mode separation, deterministic placeholder Geocode, and Queue terminology.
+- Bumped version metadata from v0.7.20 to v0.7.21.
+
 ## 0.7.20 - 29.05.2026, 17:33:00 EEST
 
 - Added passive frontend playback resume checkpoint heartbeat reporting for Windows and Raspberry OS playback views.
