@@ -65,3 +65,7 @@ Slice 17 moved this reusable project reference/spec checklist into the canonical
 - [Default Project Settings and Elements Checklist](reference/default_project_settings_and_elements_checklist.md)
 
 The old `docs/categorized/other_documentation/default_project_settings_and_elements_checklist.md` path remains a compatibility pointer only. Treat this as reusable reference/spec material, not proof that every item is implemented in this repository.
+
+## Playback recovery
+
+- [Playback Resume Checkpoint Spec](./playback_resume_checkpoint_spec.md) — Defines power-outage playback resume checkpoints, restore policy, and fallback behavior.

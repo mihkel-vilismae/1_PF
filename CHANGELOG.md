@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.7.18 - 29.05.2026, 17:05:00 EEST
+
+- Added `docs/20_architecture_and_specs/playback_resume_checkpoint_spec.md` defining the power-outage playback resume checkpoint contract for Windows and Raspberry OS playback views.
+- Documented checkpoint fields, restore policy, stale checkpoint behavior, image/video behavior, fullscreen limitations, safe fallback rules, and Test Mode / Real Mode boundaries.
+- Preserved runtime behavior, backend routes, database schema, playback selection, worker stages, Queue terminology, and deterministic placeholder Geocode behavior.
+- Bumped version metadata from v0.7.17 to v0.7.18.
+
 ## 0.7.17 - 29.05.2026, 16:31:00 EEST
 
 - Added `docs/10_runbooks/PC_RUNTIME_WORKER_STAGE_VERIFICATION_CHECKLIST_20260529.md` with an operator-facing PC/runtime verification checklist for the five regular worker stages: Download, Index, GPS parser, Geocode, and Queue.

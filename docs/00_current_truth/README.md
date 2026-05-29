@@ -42,3 +42,5 @@ Do not physically move files into this folder until the move is covered by a lin
 - [PC/runtime worker-stage verification checklist](../10_runbooks/PC_RUNTIME_WORKER_STAGE_VERIFICATION_CHECKLIST_20260529.md) — operator checklist for testing Download, Index, GPS parser, Geocode, and Queue on the PC before filling subjective assessment status.
 
 Compatibility note: `../AUTH_EVIDENCE_PACK.md` is kept as a pointer only so older links continue to work.
+
+- [Playback resume checkpoint spec](../20_architecture_and_specs/playback_resume_checkpoint_spec.md) — Current architecture target for exact playback recovery after power outage.

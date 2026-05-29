@@ -237,3 +237,5 @@ Use these documents when investigating result payload / JSON panel scroll resets
 
 
 - `docs/30_status_snapshots/2026-05-28/ENV_SINGLE_FILE_TEST_MODE_FIX_20260528.md` - explains the single `.env` Test Mode projection fix and why `test.env` is no longer a runtime source.
+
+- `docs/20_architecture_and_specs/playback_resume_checkpoint_spec.md` — Power-outage playback resume checkpoint contract.
