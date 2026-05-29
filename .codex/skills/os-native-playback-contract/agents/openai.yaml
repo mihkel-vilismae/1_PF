@@ -1,0 +1,4 @@
+interface:
+  display_name: "OS Native Playback"
+  short_description: "Contract native OS playback changes."
+  default_prompt: "Work on native OS playback launch or supervision while preserving existing playback worker, launcher, dashboard, and test/real boundaries."
