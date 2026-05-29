@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.7.29 - 29.05.2026, 19:31:00 EEST
+
+- Added a copy-ready Windows native fullscreen playback enablement example to `example.env` while preserving the checked-in disabled-by-default native playback values.
+- Bumped version metadata from v0.7.28 to v0.7.29.
+
 ## 0.7.28 - 29.05.2026, 17:41:35 EEST
 
 - Fixed regression guards so local untracked `test.env` files do not fail the checked-in single-env-source test.
