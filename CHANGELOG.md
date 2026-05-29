@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.7.30 - 29.05.2026, 20:18:00 EEST
+
+- Added `docs/20_architecture_and_specs/reference/LOGGING_STANDARD_CONTRACT.md` as a reusable logging contract extracted from the repo's durable backend, verbose request, auth debug, private raw-provider, Test/Real log isolation, and terminal-panel logging patterns.
+- Added documentation regression coverage for the logging contract's mandatory sections and source-evidence links.
+- Preserved existing runtime behavior, backend routes, Test Mode / Real Mode separation, worker stages, native playback controls, Queue terminology, and logging implementation code.
+- Bumped version metadata from v0.7.29 to v0.7.30.
+
 ## 0.7.29 - 29.05.2026, 19:31:00 EEST
 
 - Added a copy-ready Windows native fullscreen playback enablement example to `example.env` while preserving the checked-in disabled-by-default native playback values.

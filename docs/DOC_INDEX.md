@@ -1,14 +1,15 @@
 # Documentation Index
 
-Estonian timestamp: 2026-05-28 20:47 EEST
+Estonian timestamp: 29.05.2026, 20:18:00 EEST
 
 This index classifies non-skill documentation files and separates current truth candidates from status snapshots, specs, backlog, archive material, and tool-local docs. No files were moved by this analysis.
 
-- Included documentation files: 60
-- Included documentation LOC: 7892+
+- Included documentation files: 61
+- Included documentation LOC: 8057+
 
 ## Recent additions
 
+- `docs/20_architecture_and_specs/reference/LOGGING_STANDARD_CONTRACT.md` — reusable logging contract extracted from the durable project logger, verbose request lifecycle logs, auth debug sink, private raw-provider boundary, Test/Real log isolation, and terminal-like UI controls.
 - `docs/10_runbooks/PC_RUNTIME_WORKER_STAGE_VERIFICATION_CHECKLIST_20260529.md` — operator-facing PC/runtime verification checklist and evidence capture table for Download, Index, GPS parser, Geocode, and Queue.
 - `docs/00_current_truth/PROJECT_ISSUES_AND_IMPROVEMENT_GUIDE_20260528.md` — high-level, evidence-aware guide for recurring project issues, provider gaps, workflow safeguards, and verification strategy.
 - `docs/30_status_snapshots/2026-05-28/LIVE_UPDATES_INSPECT_FAILURE_ANALYSIS_20260528.md` — repo-backed cause analysis for DevTools inspect instability under background re-renders.
@@ -23,7 +24,7 @@ This index classifies non-skill documentation files and separates current truth 
 | 02_current_auth_evidence | 2 | 106 | Current auth artifact/evidence guidance plus compatibility pointer. |
 | 03_auth_flow_reference | 1 | 72 | Auth/provider verification reference docs now canonical under `docs/20_architecture_and_specs/auth/`. |
 | 04_current_status_snapshots | 17 | 944 | Status snapshots; verify against code/evidence; includes Slice 11 root-level and Slice 12 categorized status snapshots plus compatibility pointers. |
-| 05_vision_and_target_specs | 7 | 369 | Target architecture/product specs; includes Slice 13 canonical specs plus compatibility pointers. |
+| 05_vision_and_target_specs | 8 | 534 | Target architecture/product specs; includes Slice 13 canonical specs plus compatibility pointers. |
 | 06_backlog_and_active_task_prompts | 15 | 758 | TODOs, backlog, active task prompts, including Slice 9 TODO docs and Slice 10 category backlog docs with compatibility pointers. |
 | 07_historical_task_docs_archive | 18 | 2076 | Historical task archive plus compatibility pointers. |
 | 08_audits_and_migration_reports | 3 | 753 | Audits and migration snapshots. |
@@ -60,6 +61,7 @@ This index classifies non-skill documentation files and separates current truth 
 | docs/AUTH_EVIDENCE_PACK.md | 19 | NEW AUTH Evidence Pack | index_or_table_of_contents | historical_reference | recent_verify_against_code | 02_current_auth_evidence | auth, evidence_pack | Compatibility pointer only; do not add detailed content here. |
 | docs/30_status_snapshots/2026-05-12/IMPLEMENTATION_STATUS_UPDATE_20260512_NEW_AUTH_PROVIDER_VERIFICATION.md | 76 | Implementation Status Update — NEW AUTH Provider Verification UX | implementation_status_snapshot | code_verified_snapshot | recent_verify_against_code | 04_current_status_snapshots | auth, new_auth, icloudpd, provider, view_d, download | Canonical dated status snapshot moved in Slice 11; verify against current routes/tests/evidence before runtime claims. |
 | docs/IMPLEMENTATION_STATUS_UPDATE_20260512_NEW_AUTH_PROVIDER_VERIFICATION.md | 9 | Compatibility pointer — status snapshot moved | implementation_status_snapshot | historical_reference | recent_verify_against_code | 04_current_status_snapshots | auth | Compatibility pointer only; canonical snapshot is in docs/30_status_snapshots/2026-05-12/. |
+| docs/20_architecture_and_specs/reference/LOGGING_STANDARD_CONTRACT.md | 165 | Logging Standard Contract | architecture_or_vision_spec | code_extracted_contract | current_latest_baseline | 05_vision_and_target_specs | logging, observability, request_correlation, redaction, terminal_panels, test_real_separation | Reusable logging contract extracted from current repo evidence; portable to other projects but verify against target architecture before implementation. |
 | docs/20_architecture_and_specs/auth/NEW_AUTH_PROVIDER_VERIFICATION_FLOW.md | 72 | NEW AUTH provider verification flow | auth_reference | code_verified_snapshot | recent_verify_against_code | 03_auth_flow_reference | auth, new_auth, icloudpd, provider | Canonical auth/provider reference moved in Slice 14; verify against routes/tests/evidence before making runtime claims. |
 | docs/NEW_AUTH_PROVIDER_VERIFICATION_FLOW.md | 9 | NEW AUTH provider verification flow moved | compatibility_pointer | historical_reference | recent_verify_against_code | 03_auth_flow_reference | auth, new_auth, provider | Compatibility pointer to canonical auth-flow reference; keep until old-index replacement/link-retirement slice. |
 | docs/30_status_snapshots/2026-05-12/IMPLEMENTATION_GOAL_STATUS_RECONCILIATION_20260512.md | 124 | Implementation Goal Status Reconciliation — 2026‑05‑12 | implementation_status_snapshot | code_verified_snapshot | recent_verify_against_code | 04_current_status_snapshots | auth, new_auth, icloudpd, provider, runtime_truth, cron, view_a, download | Canonical dated status snapshot moved in Slice 11; useful but not live truth. |
