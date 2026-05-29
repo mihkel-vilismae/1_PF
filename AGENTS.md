@@ -23,6 +23,16 @@
 - Keep old category indexes and compatibility pointers intact unless a later link-retirement audit explicitly proves they can be changed.
 
 
+## ACR Skill Check Rule
+
+- Whenever an ACR cycle is performed, include a skill-selection step before producing the refined prompt.
+- During the Analyze phase, check whether any existing reusable skill, workflow rule, repo skill file, project convention, or prior saved project rule is relevant to the task.
+- During the Criticize phase, verify that any selected skill actually fits the task and does not introduce architectural drift, regression risk, outdated assumptions, or unnecessary complexity.
+- During the Refine phase, the final refined prompt must include a short `Skills / rules to apply` section that lists selected skills/rules and why they apply, or `No specific reusable skill found` if none are suitable.
+- Do not force a skill if none fits, and do not let any skill override the active immutable baseline, explicit user instructions, or the current repo/baseline.
+- Prefer repo-local skill files as source of truth when present; preserve architecture boundaries, Test/Real separation, existing behavior, and regression safety.
+
+
 ## Source File Comment Discipline
 
 - Every source file edited from now on must start with a short comment block, about five lines maximum, describing what the file does.
