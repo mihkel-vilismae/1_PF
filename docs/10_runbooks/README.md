@@ -47,3 +47,7 @@ Slice 17 moved this documentation-governance runbook into the canonical runbook 
 
 The old `docs/categorized/other_documentation/documentation_workflow_and_inventory.md` path remains a compatibility pointer only. Use the canonical runbook path for new references.
 - [Windows Full Launcher Runbook](windows_full_launcher.md) — full Windows startup script with dependency install, tests, dual API/frontend tabs, and browser opening.
+
+## Current operator checklists
+
+- [PC/runtime worker-stage verification checklist](PC_RUNTIME_WORKER_STAGE_VERIFICATION_CHECKLIST_20260529.md) — step-by-step PC evidence capture for Download, Index, GPS parser, Geocode, and Queue.

@@ -25,6 +25,7 @@ Create a current-truth media pipeline implementation-status table for Goal 4. In
 | Implemented / bounded | Code exists and is tested, but a known scope limit must remain visible. |
 | Partial | Some code or docs exist, but important production or integration work remains. |
 | Pending user assessment | Requires Mihkel's PC/runtime observation before filling the subjective column. |
+| PC/runtime checklist | Use `docs/10_runbooks/PC_RUNTIME_WORKER_STAGE_VERIFICATION_CHECKLIST_20260529.md` to capture evidence before updating the subjective assessment column. |
 
 ## Pipeline status table
 

@@ -9,6 +9,7 @@ This index classifies non-skill documentation files and separates current truth 
 
 ## Recent additions
 
+- `docs/10_runbooks/PC_RUNTIME_WORKER_STAGE_VERIFICATION_CHECKLIST_20260529.md` — operator-facing PC/runtime verification checklist and evidence capture table for Download, Index, GPS parser, Geocode, and Queue.
 - `docs/00_current_truth/PROJECT_ISSUES_AND_IMPROVEMENT_GUIDE_20260528.md` — high-level, evidence-aware guide for recurring project issues, provider gaps, workflow safeguards, and verification strategy.
 - `docs/30_status_snapshots/2026-05-28/LIVE_UPDATES_INSPECT_FAILURE_ANALYSIS_20260528.md` — repo-backed cause analysis for DevTools inspect instability under background re-renders.
 - `docs/30_status_snapshots/2026-05-28/LIVE_UPDATES_INSPECT_FIX_DESIGN_20260528.md` — selected pause-live-updates design and boundaries.
@@ -37,6 +38,7 @@ This index classifies non-skill documentation files and separates current truth 
 
 | path | kind | authority | topics | note |
 | --- | --- | --- | --- | --- |
+| docs/10_runbooks/PC_RUNTIME_WORKER_STAGE_VERIFICATION_CHECKLIST_20260529.md | runbook | operator_checklist | media_pipeline, pc_runtime, verification | PC/runtime stage checklist for evidence capture before filling subjective assessment columns. |
 | docs/00_current_truth/MEDIA_PIPELINE_IMPLEMENTATION_STATUS_20260528.md | current_truth | repo_backed_current_truth | media_pipeline, download, index, gps, geocode, queue, playback | Current Goal 4 implementation-status table; subjective assessment column remains pending user PC testing. |
 | docs/30_status_snapshots/2026-05-28/GOAL4_MEDIA_PIPELINE_INVENTORY_20260528.md | implementation_status_snapshot | repo_backed_snapshot | media_pipeline, evidence_inventory | Dated evidence map of routes, handlers, schema tables, tests, UI entry points, and docs. |
 | docs/30_status_snapshots/2026-05-28/GOAL4_MEDIA_PIPELINE_STAGE_BEHAVIOR_20260528.md | implementation_status_snapshot | repo_backed_snapshot | media_pipeline, stage_behavior | Dated stage-by-stage behavior analysis with inputs, outputs, DB effects, boundaries, and non-goals. |

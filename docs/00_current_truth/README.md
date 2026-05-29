@@ -39,5 +39,6 @@ Do not physically move files into this folder until the move is covered by a lin
 
 - [NEW AUTH Evidence Pack](AUTH_EVIDENCE_PACK.md) — canonical current-truth guidance for safe login/auth artifact debugging.
 - [Main Issues and Improvement Guide](PROJECT_ISSUES_AND_IMPROVEMENT_GUIDE_20260528.md) — high-level, evidence-aware planning guide for recurring project issues, provider gaps, workflow safeguards, and verification strategy.
+- [PC/runtime worker-stage verification checklist](../10_runbooks/PC_RUNTIME_WORKER_STAGE_VERIFICATION_CHECKLIST_20260529.md) — operator checklist for testing Download, Index, GPS parser, Geocode, and Queue on the PC before filling subjective assessment status.
 
 Compatibility note: `../AUTH_EVIDENCE_PACK.md` is kept as a pointer only so older links continue to work.

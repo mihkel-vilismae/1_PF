@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.7.17 - 29.05.2026, 16:31:00 EEST
+
+- Added `docs/10_runbooks/PC_RUNTIME_WORKER_STAGE_VERIFICATION_CHECKLIST_20260529.md` with an operator-facing PC/runtime verification checklist for the five regular worker stages: Download, Index, GPS parser, Geocode, and Queue.
+- Added stage-by-stage evidence capture guidance covering UI evidence, backend/log evidence, DB/filesystem evidence, success/failure signs, and subjective assessment notes.
+- Linked the checklist from current-truth docs, runbook navigation, the media pipeline implementation-status table, and the documentation index.
+- Preserved runtime behavior, backend routes, database schema, Test Mode / Real Mode separation, and the deterministic placeholder Geocode boundary.
+- Bumped version metadata from v0.7.16 to v0.7.17.
+
 ## 0.7.16 - 28.05.2026, 20:47:00 EEST
 
 - Added `docs/00_current_truth/PROJECT_ISSUES_AND_IMPROVEMENT_GUIDE_20260528.md` as a high-level, evidence-aware guide for main project issues, improvement directions, workflow safeguards, and verification strategy.
