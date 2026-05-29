@@ -1947,6 +1947,15 @@ body.modal-open {
   background: #ef4444;
   box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.78), 0 0 14px rgba(239, 68, 68, 0.34);
 }
+
+.card--new-auth-disabled {
+  opacity: 0.72;
+}
+
+.new-auth-disabled-notice {
+  border-style: dashed;
+}
+
 .new-auth-action-list {
   display: grid;
   gap: 0.7rem;
@@ -1962,6 +1971,11 @@ body.modal-open {
   border-radius: 18px;
   border: 1px solid rgba(148, 163, 184, 0.14);
   background: rgba(15, 23, 42, 0.38);
+}
+
+.new-auth-action-row--disabled {
+  border-style: dashed;
+  background: rgba(15, 23, 42, 0.2);
 }
 
 .new-auth-action-row__status {

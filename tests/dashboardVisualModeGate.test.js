@@ -24,11 +24,18 @@ test('dashboard startup gate exposes Test Mode and Real Mode as frontend-only ch
 test('dashboard startup gate uses shared dashboard markup instead of duplicated dashboards', () => {
   assert.doesNotMatch(appSource, /TestDashboard/);
   assert.doesNotMatch(appSource, /RealDashboard/);
-  assert.match(appSource, /renderInitView\(state\)/);
+  assert.match(appSource, /renderInitView\(state, dashboardVisualMode\)/);
   assert.match(appSource, /renderTestView\(state, dashboardVisualMode\)/);
   assert.match(appSource, /renderLastRunView\(state\)/);
   assert.match(appSource, /renderRunningProcessView\(state\)/);
   assert.match(appSource, /renderDatabaseViewerView\(state\)/);
+});
+
+test('dashboard Test Mode blocks NEW AUTH login actions before dispatch', () => {
+  assert.match(appSource, /TEST_MODE_NEW_AUTH_DISABLED_MESSAGE/);
+  assert.match(appSource, /isNewAuthActionDisabledForCurrentMode\(action\)/);
+  assert.match(appSource, /action\.startsWith\('new-auth-'\)/);
+  assert.match(appSource, /dashboardVisualMode === 'real'[\s\S]+runAction\('new-auth-check-login'\)/);
 });
 
 test('dashboard visual mode CSS keeps mode styling presentation-only', () => {

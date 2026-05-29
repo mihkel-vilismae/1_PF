@@ -104,6 +104,27 @@ test('NEW AUTH passive skipped proof renders actionable verification copy and bu
   }
 });
 
+// Verifies Test Mode keeps the NEW AUTH section visible but disables real login controls.
+test('NEW AUTH card is visible and disabled in Test Mode', () => {
+  const markup = renderInitView(createInitialState(), 'test');
+
+  assert.equal(markup.includes('data-new-auth-card="1A-STASH-OFF"'), true);
+  assert.equal(markup.includes('data-new-auth-disabled="test-mode"'), true);
+  assert.equal(markup.includes('NEW AUTH login is disabled in Test Mode'), true);
+  assert.equal(markup.includes('data-action="new-auth-login-using-env"'), true);
+  assert.match(markup, /data-action="new-auth-login-using-env"[^>]*disabled/);
+  assert.equal(markup.includes('data-disabled-reason="test-mode-new-auth-login-disabled"'), true);
+});
+
+// Verifies Real Mode preserves the NEW AUTH controls as active buttons.
+test('NEW AUTH card remains active in Real Mode', () => {
+  const markup = renderInitView(createInitialState(), 'real');
+
+  assert.equal(markup.includes('data-new-auth-card="1A-STASH-OFF"'), true);
+  assert.equal(markup.includes('data-new-auth-disabled="test-mode"'), false);
+  assert.doesNotMatch(markup, /data-action="new-auth-login-using-env"[^>]*disabled/);
+});
+
 // Verifies the active provider-proof button uses the non-passive status path through transit logging.
 test('NEW AUTH active provider verification uses shared transit logging and non-passive status path', async () => {
   const transitRecords = [];

@@ -50,8 +50,8 @@ const NEW_AUTH_BUTTONS = Object.freeze([
   { action: 'new-auth-session-files', label: 'Show auth/session paths and files', variant: 'secondary' },
 ]);
 
-// Renders the full View A page from runtime-truth state.
-export function renderInitView(state) {
+// Renders the full View A page from runtime-truth state and selected dashboard mode.
+export function renderInitView(state, dashboardVisualMode = null) {
   const schedulerCapability = state.initCapabilities?.scheduler ?? null;
   const installSupportLevel = getOperationSupportLevel(schedulerCapability, SCHEDULER_OPERATION_SUPPORT.install);
   const statusSupportLevel = getOperationSupportLevel(schedulerCapability, SCHEDULER_OPERATION_SUPPORT.status);
@@ -74,7 +74,7 @@ export function renderInitView(state) {
       <div class="section-grid section-grid--two">
         ${renderCard('1A', 'Verify .env', state, '1A', '<button class="button button--primary" data-action="verify-env">Run</button>', 'Validate required configuration keys and render the backend response payload directly in this card.')}
         ${renderAuthCard(state)}
-        ${renderNewAuthCard(state)}
+      ${renderNewAuthCard(state, dashboardVisualMode)}
         ${renderCard(
           '2A',
           'Database controls',
@@ -265,18 +265,24 @@ function renderLegacySchedulerControls(supportLevels, disabled) {
 }
 
 
-function renderNewAuthCard(state) {
+// Renders the NEW AUTH card, with real login controls disabled in Test Mode.
+function renderNewAuthCard(state, dashboardVisualMode = null) {
   const newAuth = state.newAuth ?? {};
+  const disabledInTestMode = dashboardVisualMode === 'test';
+  const disabledNotice = disabledInTestMode
+    ? '<p class="notice notice--warning new-auth-disabled-notice">NEW AUTH login is disabled in Test Mode. Switch to Real Mode to use iCloudPD login controls.</p>'
+    : '';
   return `
-    <article class="card card--hybrid" data-new-auth-card="1A-STASH-OFF">
+    <article class="card card--hybrid ${disabledInTestMode ? 'card--new-auth-disabled' : ''}" data-new-auth-card="1A-STASH-OFF"${disabledInTestMode ? ' data-new-auth-disabled="test-mode" aria-disabled="true"' : ''}>
       <header class="card__header">
         <div><p class="card__code">1A-STASH-OFF</p><h3>NEW AUTH</h3></div>
-        <div class="card__header-tags">${renderSourceBadge('real', 'NEW ENDPOINTS')}</div>
+        <div class="card__header-tags">${renderSourceBadge('real', disabledInTestMode ? 'DISABLED IN TEST MODE' : 'NEW ENDPOINTS')}</div>
         ${statusBadge(state.statusByKey['1A-STASH-OFF'])}
       </header>
       <p class="card__copy">Fresh real-auth UI boundary for iCloudPD. These controls intentionally target only <code>/api/auth/new/*</code> endpoints and do not reuse the existing login card routes.</p>
+      ${disabledNotice}
       <div class="new-auth-action-list">
-        ${NEW_AUTH_BUTTONS.map((button) => renderNewAuthActionRow(button, newAuth.buttonStates ?? {})).join('')}
+        ${NEW_AUTH_BUTTONS.map((button) => renderNewAuthActionRow(button, newAuth.buttonStates ?? {}, disabledInTestMode)).join('')}
       </div>
       ${renderResultSurface(newAuth.latestResult)}
       ${newAuth.sessionFilesResult ? renderResultSurface(newAuth.sessionFilesResult) : ''}
@@ -285,23 +291,28 @@ function renderNewAuthCard(state) {
   `;
 }
 
-function renderNewAuthActionRow(button, buttonStates = {}) {
+// Renders one NEW AUTH action row and applies Test Mode disabled attributes.
+function renderNewAuthActionRow(button, buttonStates = {}, disabledInTestMode = false) {
   const statusState = buttonStates?.[button.action] ?? { status: 'neutral', message: 'Not checked yet.', endpoint: null };
-  const status = normalizeAuthButtonStatus(statusState.status);
+  const status = disabledInTestMode ? 'blocked' : normalizeAuthButtonStatus(statusState.status);
   const copy = getAuthButtonCopy(button.action);
   const rawLabel = copy?.label ?? button.label;
   const label = escapeHtml(rawLabel);
-  const message = statusState.message || copy?.statuses?.[status] || 'Not checked yet.';
-  const endpoint = statusState.endpoint || copy?.endpoint || '';
-  const helpText = getAuthButtonStatusHelp(button.action, status, statusState.message);
+  const disabledMessage = 'Disabled in Test Mode. Switch to Real Mode to use iCloudPD login controls.';
+  const message = disabledInTestMode ? disabledMessage : statusState.message || copy?.statuses?.[status] || 'Not checked yet.';
+  const endpoint = disabledInTestMode ? '' : statusState.endpoint || copy?.endpoint || '';
+  const helpText = disabledInTestMode ? disabledMessage : getAuthButtonStatusHelp(button.action, status, statusState.message);
   const statusLabelText = getAuthButtonStatusLabel(status);
   const title = escapeAttribute(helpText);
+  const disabledAttributes = disabledInTestMode
+    ? ' disabled aria-disabled="true" data-disabled-reason="test-mode-new-auth-login-disabled"'
+    : '';
 
   return `
-    <div class="new-auth-action-row" data-new-auth-action-row="${escapeAttribute(button.action)}">
+    <div class="new-auth-action-row ${disabledInTestMode ? 'new-auth-action-row--disabled' : ''}" data-new-auth-action-row="${escapeAttribute(button.action)}"${disabledInTestMode ? ' data-new-auth-action-disabled="test-mode"' : ''}>
       <span class="auth-button-shell auth-button-shell--${escapeAttribute(status)}" data-auth-button-key="${escapeAttribute(button.action)}" data-auth-button-status="${escapeAttribute(status)}" data-auth-help-text="${title}" title="${title}">
         <span class="auth-button-status-dot" aria-label="${escapeAttribute(`${rawLabel} status: ${statusLabelText}`)}" title="${title}"></span>
-        <button class="button button--${escapeAttribute(button.variant)}" data-action="${escapeAttribute(button.action)}" title="${title}" aria-label="${escapeAttribute(`${rawLabel}. ${helpText}`)}">${label}</button>
+        <button class="button button--${escapeAttribute(button.variant)}" data-action="${escapeAttribute(button.action)}" title="${title}" aria-label="${escapeAttribute(`${rawLabel}. ${helpText}`)}"${disabledAttributes}>${label}</button>
       </span>
       <p class="new-auth-action-row__status"><strong>${escapeHtml(statusLabelText)}.</strong> ${escapeHtml(message)}${endpoint ? ` <span>${escapeHtml(endpoint)}</span>` : ''}</p>
     </div>

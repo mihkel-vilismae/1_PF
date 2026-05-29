@@ -2,7 +2,7 @@
  * Renders the dashboard shell and binds browser-side UI interactions.
  * The frontend owns presentation state while backend routes provide runtime truth.
  * This file also displays component versions visible to operators.
- * The startup mode gate also tags backend calls so Test Mode uses test storage.
+ * The startup mode gate tags backend calls and disables NEW AUTH login in Test Mode.
  */
 import { VIEW_ORDER } from './shared/constants.ts';
 import {
@@ -74,9 +74,12 @@ const SCHEDULER_RUN_LOG_POLL_MS = 5000;
 const OS_PLAYBACK_OBSERVABILITY_POLL_MS = 5000;
 const OS_PLAYBACK_ROTATION_INTERVAL_SECONDS = 12;
 const OS_PLAYBACK_RESUME_HEARTBEAT_MIN_MS = 5000;
+const TEST_MODE_NEW_AUTH_DISABLED_MESSAGE = 'NEW AUTH login is disabled in Test Mode. Switch to Real Mode to use iCloudPD login controls.';
 let dashboardVisualMode: DashboardVisualMode | null = null;
 let liveUpdatesPaused = false;
 let pendingLiveUpdateRender = false;
+let hasInitPreloadRun = false;
+let hasInitNewAuthPreloadRun = false;
 type BackendVersionState = {
   status: 'checking' | 'ready' | 'unavailable';
   version: string | null;
@@ -137,14 +140,14 @@ function render() {
   const state = getState();
   const hasLiveTraffic = transitTerminal.hasLiveTraffic();
   const viewMarkup = {
-    A: renderInitView(state),
+    A: renderInitView(state, dashboardVisualMode),
     B: renderTestView(state, dashboardVisualMode),
     C: renderLastRunView(state),
     D: renderRunningProcessView(state),
     E: renderDatabaseViewerView(state),
     WIN: renderOsPlaybackView(state, OS_PLAYBACK_PLATFORMS.windows),
     RPI: renderOsPlaybackView(state, OS_PLAYBACK_PLATFORMS.raspberry),
-  }[state.activeView] ?? renderInitView(state);
+  }[state.activeView] ?? renderInitView(state, dashboardVisualMode);
 
   document.body.classList.toggle('modal-open', Boolean(state.modal) || dashboardVisualMode === null);
   document.body.classList.toggle('show-marked-for-removal', Boolean(state.showMarkedForRemoval));
@@ -1111,6 +1114,7 @@ function bindEvents() {
       dashboardVisualMode = selectedMode;
       setDashboardRuntimeMode(selectedMode);
       render();
+      tryInitPreload();
     });
   });
 
@@ -1124,7 +1128,9 @@ function bindEvents() {
         runAction('verify-env');
         runAction('check-db');
         runAction('check-cron');
-        runAction('new-auth-check-login');
+        if (dashboardVisualMode === 'real') {
+          runAction('new-auth-check-login');
+        }
       } else if (id === 'C') {
         runAction('refresh-last-run');
       } else if (id === 'D') {
@@ -1298,6 +1304,14 @@ function bindEvents() {
   app.querySelectorAll<HTMLElement>('[data-action]').forEach((button) => {
     button.addEventListener('click', () => {
       const action = button.dataset.action;
+      if (isNewAuthActionDisabledForCurrentMode(action)) {
+        pushHistory('NEW AUTH', 'warning', TEST_MODE_NEW_AUTH_DISABLED_MESSAGE, {
+          action,
+          runtimeMode: dashboardVisualMode,
+          blocked: true,
+        });
+        return;
+      }
       if (action === 'toggle-inspect-mode') {
         toggleInspectMode();
         return;
@@ -1748,16 +1762,26 @@ function openHistoryModal(index) {
 
 subscribe(render);
 render();
-// Automatically run safe read‑only status preloads the first time View A is active.
-let hasInitPreloadRun = false;
+// Blocks NEW AUTH controls in Test Mode before they can reach auth endpoints.
+function isNewAuthActionDisabledForCurrentMode(action: string | undefined): boolean {
+  return dashboardVisualMode === 'test' && typeof action === 'string' && action.startsWith('new-auth-');
+}
+
+// Automatically runs View A preloads while keeping NEW AUTH login disabled outside Real Mode.
 const tryInitPreload = () => {
   const state = getState();
-  if (!hasInitPreloadRun && state.activeView === 'A') {
+  if (state.activeView !== 'A') {
+    return;
+  }
+  if (!hasInitPreloadRun) {
     runAction('verify-env');
     runAction('check-db');
     runAction('check-cron');
-    runAction('new-auth-check-login');
     hasInitPreloadRun = true;
+  }
+  if (!hasInitNewAuthPreloadRun && dashboardVisualMode === 'real') {
+    runAction('new-auth-check-login');
+    hasInitNewAuthPreloadRun = true;
   }
 };
 tryInitPreload();
