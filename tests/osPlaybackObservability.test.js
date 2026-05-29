@@ -99,13 +99,17 @@ test('playback terminal controls are active and scoped by platform and kind', ()
 });
 
 test('frontend loads and polls OS playback observability without backend mutation shortcuts', () => {
-  assert.match(appSource, /api\/runtime\/playback\/observability\?platform=\$\{platform\}&limit=40/);
+  const observabilityRequest = appSource.match(
+    /requestJson<Record<string, unknown>>\(`\/api\/runtime\/playback\/observability\?platform=\$\{platform\}&limit=40`,\s*\{[\s\S]*?operation: `Load \$\{platform\} playback observability`,[\s\S]*?\n\s*\}\);/,
+  );
+
+  assert.ok(observabilityRequest, 'Expected a dedicated read-only playback observability request.');
   assert.match(appSource, /startOsPlaybackObservabilityPolling/);
   assert.match(appSource, /OS_PLAYBACK_OBSERVABILITY_POLL_MS = 5000/);
   assert.match(appSource, /copyOsPlaybackTerminalToClipboard/);
   assert.match(appSource, /clearOsPlaybackTerminal/);
   assert.match(appSource, /openOsPlaybackTerminalRow/);
-  assert.doesNotMatch(appSource, /api\/runtime\/playback\/observability.+method:\s*'POST'/s);
+  assert.doesNotMatch(observabilityRequest[0], /method:\s*'POST'/);
 });
 
 test('backend exposes read-only playback observability from scheduler and mode-specific logs', () => {

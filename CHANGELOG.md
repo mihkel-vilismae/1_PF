@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.7.28 - 29.05.2026, 17:41:35 EEST
+
+- Fixed regression guards so local untracked `test.env` files do not fail the checked-in single-env-source test.
+- Tightened the OS playback observability frontend test to inspect only the dedicated read-only observability request instead of matching later unrelated POST calls.
+- Preserved runtime behavior, backend routes, Test Mode / Real Mode separation, worker stages, native playback controls, and Queue terminology.
+- Bumped version metadata from v0.7.27 to v0.7.28.
+
 ## 0.7.27 - 2026-05-29 EEST
 
 - Added the native playback setup runbook, example environment keys, and API regression coverage.

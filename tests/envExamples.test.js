@@ -5,6 +5,7 @@
  * only checked-in runtime env source; test.example.env remains a template only.
  */
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
@@ -55,12 +56,20 @@ test('test.example.env keeps credentials empty and test paths isolated', () => {
   assertTestEnvValues(parseEnvFile('test.example.env'));
 });
 
+function listTrackedFile(filePath) {
+  /**
+   * Reads Git's tracked-file index so local untracked runtime files do not
+   * make the checked-in env-source guard fail on operator machines.
+   */
+  return execFileSync('git', ['ls-files', '--', filePath], { encoding: 'utf8' }).trim();
+}
+
 test('test.env is not a checked-in runtime env source', () => {
   /**
    * Keeps local operators on a single .env file. Temporary test harness env
-   * files may still be generated outside this committed template set.
+   * files may still exist locally, but must not be tracked as repo sources.
    */
-  assert.throws(() => parseEnvFile('test.env'), /ENOENT/);
+  assert.equal(listTrackedFile('test.env'), '');
 });
 
 test('example.env keeps real log paths inside runtime_data logs', () => {
