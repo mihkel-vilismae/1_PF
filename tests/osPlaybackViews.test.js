@@ -88,6 +88,7 @@ test('playback view renders backend contract media without local filesystem path
   assert.doesNotMatch(markup, /runtime_data\/downloads|test_runtime_data\/downloads|canonicalPath/);
 });
 
+// Verifies the app shell still renders A-E views while adding OS playback views.
 test('app shell wires new playback views without removing existing render calls', () => {
   assert.match(appSource, /WIN: renderOsPlaybackView\(state, OS_PLAYBACK_PLATFORMS\.windows\)/);
   assert.match(appSource, /RPI: renderOsPlaybackView\(state, OS_PLAYBACK_PLATFORMS\.raspberry\)/);
@@ -96,7 +97,7 @@ test('app shell wires new playback views without removing existing render calls'
   assert.match(appSource, /api\/native-playback\/status/);
   assert.match(appSource, /api\/native-playback\/start-current/);
   assert.match(appSource, /data-native-playback-start-platform/);
-  assert.match(appSource, /renderInitView\(state\)/);
+  assert.match(appSource, /renderInitView\(state, dashboardVisualMode\)/);
   assert.match(appSource, /renderTestView\(state, dashboardVisualMode\)/);
   assert.match(appSource, /renderLastRunView\(state\)/);
   assert.match(appSource, /renderRunningProcessView\(state\)/);
