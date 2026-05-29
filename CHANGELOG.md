@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.7.23 - 2026-05-29 EEST
+
+- Added the native playback runner architecture spec for OS-native fullscreen playback.
+- Documented the disabled-by-default native player boundary, process ownership rules, route contract, and worker integration constraints.
+
+
 ## 0.7.22 - 29.05.2026, 18:05:00 EEST
 
 - Added `docs/10_runbooks/POWER_OUTAGE_PLAYBACK_RECOVERY_CHECKLIST_20260529.md` for manual Windows/Raspberry playback recovery verification after simulated power loss.
