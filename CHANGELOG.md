@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.7.26 - 2026-05-29 EEST
+
+- Added disabled-by-default playback worker integration for native fullscreen playback.
+- The playback worker can launch native playback only when explicit native and auto-start gates are enabled.
+
+
 ## 0.7.25 - 2026-05-29 EEST
 
 - Added native playback status/control UI to the Windows and Raspberry playback views.

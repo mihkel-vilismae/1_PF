@@ -7,13 +7,18 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import type { DatabaseService } from '../database/databaseService.ts';
 import { selectCurrentPlayableItem, type PlaybackSelectionContext } from '../playback/playbackSelectionService.ts';
+import {
+  NativePlaybackError,
+  shouldAutoStartNativePlaybackFromWorker,
+  startCurrentNativePlayback,
+} from '../nativePlayback/nativePlaybackController.ts';
 
 type WorkerStatus = 'succeeded' | 'skipped' | 'failed';
 type JsonObject = Record<string, unknown>;
 
 export interface PlaybackWorkerOptions {
   context: PlaybackSelectionContext;
-  databaseService: Pick<DatabaseService, 'runStage6SelectCurrent'>;
+  databaseService: Pick<DatabaseService, 'runStage6SelectCurrent' | 'buildDatabaseStatus' | 'runPythonJson' | 'getRuntimeState' | 'setRuntimeState'>;
   repoRoot: string;
   now?: () => Date;
   workerId?: string;
@@ -35,9 +40,10 @@ export interface PlaybackWorkerResult {
   skippedReason: string | null;
   failureReason: string | null;
   rendering: {
-    claimed: false;
+    claimed: boolean;
     note: string;
   };
+  nativePlayback: unknown | null;
   pipelineStagesRun: [];
   messages: string[];
   schemaVersion: 1;
@@ -48,6 +54,42 @@ interface WorkerLockFile {
   acquiredAt: string;
   pid: number;
   workerId: string;
+}
+
+
+// Starts native playback only when the native worker auto-start gate is explicitly enabled.
+async function maybeStartNativePlaybackFromWorker({
+  context,
+  databaseService,
+  repoRoot,
+}: PlaybackWorkerOptions): Promise<{ claimed: boolean; note: string; nativePlayback: unknown | null; messages: string[] }> {
+  const nativeContext = { ...context, platform: process.platform };
+  if (!shouldAutoStartNativePlaybackFromWorker(nativeContext)) {
+    return {
+      claimed: false,
+      note: 'playback_worker selected the current playable item only; native fullscreen launch is disabled by config.',
+      nativePlayback: null,
+      messages: [],
+    };
+  }
+
+  try {
+    const nativePlayback = await startCurrentNativePlayback({ context: nativeContext, databaseService, repoRoot });
+    return {
+      claimed: true,
+      note: 'playback_worker selected the current playable item and launched native fullscreen playback because native auto-start is enabled.',
+      nativePlayback,
+      messages: ['Native playback auto-start completed after playback selection.'],
+    };
+  } catch (error) {
+    const message = error instanceof NativePlaybackError ? error.message : getErrorMessage(error);
+    return {
+      claimed: false,
+      note: `playback_worker selected the current playable item, but native fullscreen launch failed: ${message}`,
+      nativePlayback: error instanceof NativePlaybackError ? { code: error.code, message: error.message, details: error.details } : { message },
+      messages: [`Native playback auto-start failed: ${message}`],
+    };
+  }
 }
 
 // Runs B4 playback selection once with a single-instance lock and durable status file.
@@ -76,6 +118,14 @@ export async function runPlaybackWorker({
   try {
     const selection = await selectCurrentPlayableItem({ context, databaseService });
     const status: WorkerStatus = selection.outcome === 'selected' ? selection.status === 'warning' ? 'succeeded' : 'succeeded' : 'skipped';
+    const nativeResult = selection.outcome === 'selected'
+      ? await maybeStartNativePlaybackFromWorker({ context, databaseService, repoRoot, now, workerId })
+      : {
+        claimed: false,
+        note: 'playback_worker did not launch native fullscreen playback because no current playable item was selected.',
+        nativePlayback: null,
+        messages: [],
+      };
     result = {
       worker: 'playback_worker',
       status,
@@ -92,11 +142,12 @@ export async function runPlaybackWorker({
       skippedReason: selection.skippedReason,
       failureReason: null,
       rendering: {
-        claimed: false,
-        note: 'playback_worker selects the current playable item only; rendering/fullscreen/screen control is outside this worker.',
+        claimed: nativeResult.claimed,
+        note: nativeResult.note,
       },
+      nativePlayback: nativeResult.nativePlayback,
       pipelineStagesRun: [],
-      messages: selection.messages,
+      messages: [...selection.messages, ...nativeResult.messages],
       schemaVersion: 1,
     };
   } catch (error) {
@@ -117,8 +168,9 @@ export async function runPlaybackWorker({
       failureReason: getErrorMessage(error),
       rendering: {
         claimed: false,
-        note: 'playback_worker failed before selecting a current item and still did not perform rendering/fullscreen/screen control.',
+        note: 'playback_worker failed before selecting a current item and did not perform native fullscreen/screen control.',
       },
+      nativePlayback: null,
       pipelineStagesRun: [],
       messages: [`playback_worker failed: ${getErrorMessage(error)}`],
       schemaVersion: 1,

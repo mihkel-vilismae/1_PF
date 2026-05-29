@@ -64,7 +64,8 @@ test('playback_worker selects current item without claiming rendering or B3/B5 w
     assert.deepEqual(result.selectedItemSummary, { mediaAssetId: 84, canonicalPath: 'runtime/video.mp4' });
     assert.deepEqual(result.pipelineStagesRun, []);
     assert.equal(result.rendering.claimed, false);
-    assert.match(result.rendering.note, /rendering\/fullscreen\/screen control is outside this worker/);
+    assert.match(result.rendering.note, /native fullscreen launch is disabled by config/);
+    assert.equal(result.nativePlayback, null);
 
     const persisted = JSON.parse(await readFile(result.statusPath, 'utf8'));
     assert.equal(persisted.status, 'succeeded');
@@ -137,6 +138,18 @@ function buildClock() {
 
 function buildDatabaseService({ playback }) {
   return {
+    async buildDatabaseStatus() {
+      return { kind: 'sqlite', absolutePath: '/tmp/photo-frame.sqlite', exists: true };
+    },
+    async runPythonJson() {
+      return { currentMediaAssetId: null, currentItem: null, nextItem: null, items: [], queue: { totalCount: 0, readyCount: 0, failedCount: 0, returnedCount: 0, limit: 25 } };
+    },
+    async getRuntimeState() {
+      return null;
+    },
+    async setRuntimeState() {
+      return undefined;
+    },
     async runStage6SelectCurrent() {
       return {
         database: { kind: 'sqlite', absolutePath: '/tmp/photo-frame.sqlite', exists: true },
