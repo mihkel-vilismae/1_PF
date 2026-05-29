@@ -92,3 +92,16 @@ Checkpointing is independent of the regular worker stages. It must work in both 
 ## Regression boundaries
 
 Existing playback queue/current APIs remain read-only for playback display. The checkpoint API persists UI resume evidence only; it must not select a new queue item or mutate Download, Index, GPS parser, Geocode, Queue, or playback worker behavior.
+
+## Implementation status — 29.05.2026
+
+| Area | Status |
+|---|---|
+| Backend save/read/clear checkpoint API | Implemented. |
+| Durable checkpoint persistence | Implemented through SQLite `runtime_state` keys scoped by platform. |
+| Backend checkpoint validation | Implemented against the current playback contract and freshness window. |
+| Frontend heartbeat reporting | Implemented with throttled Windows/Raspberry checkpoint writes. |
+| Startup same-item restore | Implemented when checkpoint is fresh, valid, and present in the current playback contract. |
+| Fullscreen restore | Implemented as user-triggered `Restore fullscreen playback`; automatic fullscreen is intentionally not assumed. |
+| Video timestamp restore | Captured as best-effort checkpoint data; exact seek reliability still needs manual runtime assessment. |
+| Power-outage runbook | Implemented in `docs/10_runbooks/POWER_OUTAGE_PLAYBACK_RECOVERY_CHECKLIST_20260529.md`. |

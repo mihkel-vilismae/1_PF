@@ -44,3 +44,5 @@ Do not physically move files into this folder until the move is covered by a lin
 Compatibility note: `../AUTH_EVIDENCE_PACK.md` is kept as a pointer only so older links continue to work.
 
 - [Playback resume checkpoint spec](../20_architecture_and_specs/playback_resume_checkpoint_spec.md) — Current architecture target for exact playback recovery after power outage.
+
+- [Power-outage playback recovery checklist](../10_runbooks/POWER_OUTAGE_PLAYBACK_RECOVERY_CHECKLIST_20260529.md) — PC/runtime verification guide for the checkpoint restore feature.

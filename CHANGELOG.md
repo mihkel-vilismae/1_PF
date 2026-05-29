@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.7.22 - 29.05.2026, 18:05:00 EEST
+
+- Added `docs/10_runbooks/POWER_OUTAGE_PLAYBACK_RECOVERY_CHECKLIST_20260529.md` for manual Windows/Raspberry playback recovery verification after simulated power loss.
+- Updated the playback resume checkpoint spec with implementation status for backend APIs, durable runtime-state persistence, frontend heartbeat reporting, startup restore, and fullscreen limitations.
+- Added regression coverage for stale checkpoint reporting and invalid media checkpoint rejection.
+- Linked the recovery checklist from runbook navigation, current-truth navigation, and the documentation index.
+- Bumped version metadata from v0.7.21 to v0.7.22.
+
 ## 0.7.21 - 29.05.2026, 17:49:00 EEST
 
 - Added startup playback resume checkpoint loading for Windows and Raspberry OS playback views.
