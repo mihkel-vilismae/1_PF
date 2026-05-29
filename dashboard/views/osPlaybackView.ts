@@ -91,6 +91,8 @@ export function renderOsPlaybackView(state: RuntimeState, platform: OsPlaybackPl
         </div>
       </article>
 
+      ${renderNativePlaybackPanel(view)}
+
       <div class="section-grid section-grid--two os-log-grid">
         ${renderTerminalPanel(view.platform, `${view.code}-CRON`, view.schedulerTitle, view.schedulerSummary, view.schedulerLog, 'scheduler')}
         ${renderTerminalPanel(view.platform, `${view.code}-ERRORS`, 'Error-only log', 'Strictly error-level entries for playback/runtime work.', view.errorLog, 'error')}
@@ -101,6 +103,35 @@ export function renderOsPlaybackView(state: RuntimeState, platform: OsPlaybackPl
 }
 
 
+
+
+/**
+ * Renders native OS player status and manual process controls.
+ */
+function renderNativePlaybackPanel(view: ReturnType<typeof buildOsPlaybackViewModel>): string {
+  return `
+    <article class="card os-playback-status-card" data-native-playback-card="${escapeHtml(view.platform)}">
+      <header class="card__header card__header--tight">
+        <div><p class="card__code">${escapeHtml(view.code)}-NATIVE</p><h3>Native fullscreen playback</h3></div>
+        <div class="card__header-tags">${renderSourceBadge(view.nativePlayback.enabled ? 'real' : 'mock', view.nativePlayback.enabled ? 'ENABLED' : 'DISABLED')}</div>
+      </header>
+      <p class="card__copy">OS-native playback starts a backend-owned player process such as mpv. Browser playback stays available and Test Mode is protected by the disabled default.</p>
+      <dl class="definition-list definition-list--compact">
+        <div class="definition-row"><dt>Status</dt><dd>${escapeHtml(view.nativePlayback.status)}</dd></div>
+        <div class="definition-row"><dt>Player</dt><dd>${escapeHtml(view.nativePlayback.player)} on ${escapeHtml(view.nativePlayback.platform)}</dd></div>
+        <div class="definition-row"><dt>PID</dt><dd>${escapeHtml(view.nativePlayback.pid)}</dd></div>
+        <div class="definition-row"><dt>Current item</dt><dd>${escapeHtml(view.nativePlayback.currentItem)}</dd></div>
+        <div class="definition-row"><dt>Command</dt><dd>${escapeHtml(view.nativePlayback.commandSummary)}</dd></div>
+      </dl>
+      <div class="os-playback-controls" aria-label="Native playback controls">
+        <button class="button button--secondary" type="button" data-native-playback-detect-platform="${escapeHtml(view.platform)}">${escapeHtml(view.nativePlayback.detectLabel)}</button>
+        <button class="button button--primary" type="button" data-native-playback-start-platform="${escapeHtml(view.platform)}" ${view.nativePlayback.startDisabled ? 'disabled' : ''}>Start native fullscreen</button>
+        <button class="button button--secondary" type="button" data-native-playback-stop-platform="${escapeHtml(view.platform)}" ${view.nativePlayback.stopDisabled ? 'disabled' : ''}>Stop native playback</button>
+      </div>
+      ${renderTerminalPanel(view.platform, `${view.code}-NATIVE-LOG`, 'Native playback log', 'Native player command/status evidence. Controls are local to the rendered terminal.', view.nativePlayback.log, 'native')}
+    </article>
+  `;
+}
 
 /**
  * Renders fullscreen activity monitoring status without changing playback selection.

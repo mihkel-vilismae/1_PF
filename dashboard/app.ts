@@ -645,6 +645,84 @@ function isRecordValue(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+
+// Loads native playback status for the selected OS playback platform.
+async function loadNativePlaybackStatus(platform: OsPlaybackPlatform): Promise<void> {
+  patchState((draft) => {
+    const nativePlayback = ensureMutableOsNativePlaybackState(draft);
+    nativePlayback[platform] = {
+      ...(typeof nativePlayback[platform] === 'object' && nativePlayback[platform] !== null ? nativePlayback[platform] as Record<string, unknown> : {}),
+      status: 'loading',
+      loadedAt: new Date().toISOString(),
+    };
+  });
+  try {
+    const payload = await requestJson<Record<string, unknown>>('/api/native-playback/status', {
+      headers: { Accept: 'application/json' },
+      operation: `Load ${platform} native playback status`,
+    });
+    applyNativePlaybackPayload(platform, payload, 'Native playback status refreshed.');
+  } catch (error) {
+    applyNativePlaybackError(platform, error, 'Native playback status refresh failed.');
+  }
+}
+
+// Calls one native playback endpoint and refreshes platform status with the returned payload.
+async function runNativePlaybackCommand(platform: OsPlaybackPlatform, endpoint: string, label: string): Promise<void> {
+  try {
+    const payload = await requestJson<Record<string, unknown>>(endpoint, {
+      method: 'POST',
+      headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+      body: { platform },
+      operation: `${label} for ${platform} native playback`,
+    });
+    applyNativePlaybackPayload(platform, payload, label);
+  } catch (error) {
+    applyNativePlaybackError(platform, error, `${label} failed.`);
+  }
+}
+
+// Stores a successful native playback route payload in dashboard state.
+function applyNativePlaybackPayload(platform: OsPlaybackPlatform, payload: Record<string, unknown>, message: string): void {
+  patchState((draft) => {
+    const nativePlayback = ensureMutableOsNativePlaybackState(draft);
+    nativePlayback[platform] = {
+      status: 'ready',
+      loadedAt: new Date().toISOString(),
+      payload,
+    };
+  });
+  pushHistory('PLAYBACK', 'success', `${getOsPlaybackLabel(platform)} ${message}`, {
+    platform,
+    endpoint: 'native-playback',
+  });
+}
+
+// Stores a native playback route error in dashboard state.
+function applyNativePlaybackError(platform: OsPlaybackPlatform, error: unknown, message: string): void {
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  patchState((draft) => {
+    const nativePlayback = ensureMutableOsNativePlaybackState(draft);
+    nativePlayback[platform] = {
+      status: 'error',
+      loadedAt: new Date().toISOString(),
+      error: errorMessage,
+    };
+  });
+  pushHistory('PLAYBACK', 'error', `${getOsPlaybackLabel(platform)} ${message}`, {
+    platform,
+    error: errorMessage,
+  });
+}
+
+// Ensures dashboard state has a mutable native playback status bucket.
+function ensureMutableOsNativePlaybackState(draft: Record<string, unknown>): Record<string, unknown> {
+  if (!draft.osNativePlayback || typeof draft.osNativePlayback !== 'object' || Array.isArray(draft.osNativePlayback)) {
+    draft.osNativePlayback = {};
+  }
+  return draft.osNativePlayback as Record<string, unknown>;
+}
+
 // Loads backend scheduler/log/worker observability for the OS playback views.
 async function loadOsPlaybackObservability(platform: OsPlaybackPlatform): Promise<void> {
   patchState((draft) => {
@@ -1056,6 +1134,7 @@ function bindEvents() {
       if (osPlaybackPlatform) {
         void loadOsPlaybackContract(osPlaybackPlatform);
         void loadOsPlaybackObservability(osPlaybackPlatform);
+        void loadNativePlaybackStatus(osPlaybackPlatform);
       }
     });
   });
@@ -1068,6 +1147,7 @@ function bindEvents() {
         : OS_PLAYBACK_PLATFORMS.windows;
       void loadOsPlaybackContract(osPlaybackPlatform);
       void loadOsPlaybackObservability(osPlaybackPlatform);
+      void loadNativePlaybackStatus(osPlaybackPlatform);
     });
   });
 
@@ -1164,6 +1244,28 @@ function bindEvents() {
     });
   });
 
+
+
+  app.querySelectorAll<HTMLButtonElement>('[data-native-playback-detect-platform]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const platform = normalizeOsPlaybackPlatform(button.dataset.nativePlaybackDetectPlatform);
+      void runNativePlaybackCommand(platform, '/api/native-playback/detect', 'Native playback player detection');
+    });
+  });
+
+  app.querySelectorAll<HTMLButtonElement>('[data-native-playback-start-platform]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const platform = normalizeOsPlaybackPlatform(button.dataset.nativePlaybackStartPlatform);
+      void runNativePlaybackCommand(platform, '/api/native-playback/start-current', 'Native fullscreen start');
+    });
+  });
+
+  app.querySelectorAll<HTMLButtonElement>('[data-native-playback-stop-platform]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const platform = normalizeOsPlaybackPlatform(button.dataset.nativePlaybackStopPlatform);
+      void runNativePlaybackCommand(platform, '/api/native-playback/stop', 'Native playback stop');
+    });
+  });
 
   app.querySelectorAll<HTMLButtonElement>('[data-os-terminal-copy-all-platform]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -1509,12 +1611,15 @@ function getOsPlaybackTerminalEntries(platform: OsPlaybackPlatform, kind: string
   if (kind === 'error') {
     return viewModel.errorLog;
   }
+  if (kind === 'native') {
+    return viewModel.nativePlayback.log;
+  }
   return viewModel.mainLog;
 }
 
 // Narrows terminal kind values to supported OS playback panels.
 function normalizeOsTerminalKind(value: unknown): string {
-  return value === 'scheduler' || value === 'error' ? value : 'main';
+  return value === 'scheduler' || value === 'error' || value === 'native' ? value : 'main';
 }
 
 // Confirms destructive NEW AUTH session-file removal before dispatching logout.

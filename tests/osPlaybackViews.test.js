@@ -39,6 +39,10 @@ test('Windows playback view renders required playback shell sections', () => {
   assert.match(markup, /Windows CronEmulator activity/);
   assert.match(markup, /Error-only log/);
   assert.match(markup, /Main runtime log/);
+  assert.match(markup, /Native fullscreen playback/);
+  assert.match(markup, /Start native fullscreen/);
+  assert.match(markup, /Stop native playback/);
+  assert.match(markup, /Native playback log/);
 });
 
 test('Raspberry playback view renders required deployment shell sections', () => {
@@ -89,6 +93,9 @@ test('app shell wires new playback views without removing existing render calls'
   assert.match(appSource, /RPI: renderOsPlaybackView\(state, OS_PLAYBACK_PLATFORMS\.raspberry\)/);
   assert.match(appSource, /api\/runtime\/playback\/current\?limit=25/);
   assert.match(appSource, /data-os-playback-refresh-platform/);
+  assert.match(appSource, /api\/native-playback\/status/);
+  assert.match(appSource, /api\/native-playback\/start-current/);
+  assert.match(appSource, /data-native-playback-start-platform/);
   assert.match(appSource, /renderInitView\(state\)/);
   assert.match(appSource, /renderTestView\(state, dashboardVisualMode\)/);
   assert.match(appSource, /renderLastRunView\(state\)/);

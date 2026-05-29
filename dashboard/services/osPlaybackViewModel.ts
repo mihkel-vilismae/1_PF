@@ -65,6 +65,22 @@ export type PlaybackResumeViewModel = {
   canRestoreFullscreen: boolean;
 };
 
+export type NativePlaybackViewModel = {
+  enabled: boolean;
+  autoStartOnWorker: boolean;
+  status: string;
+  platform: string;
+  player: string;
+  pid: string;
+  currentItem: string;
+  commandSummary: string;
+  lastError: string;
+  detectLabel: string;
+  startDisabled: boolean;
+  stopDisabled: boolean;
+  log: PlaybackLogEntryViewModel[];
+};
+
 export type PlaybackRotationViewModel = {
   activeIndex: number;
   itemCount: number;
@@ -99,6 +115,7 @@ export type OsPlaybackViewModel = {
   rotation: PlaybackRotationViewModel;
   activity: PlaybackActivityViewModel;
   resume: PlaybackResumeViewModel;
+  nativePlayback: NativePlaybackViewModel;
   stageItems: PlaybackStageViewModel[];
   workers: PlaybackWorkerViewModel[];
   schedulerLog: PlaybackLogEntryViewModel[];
@@ -193,6 +210,7 @@ type RuntimeStateLike = {
   osPlaybackRotation?: Partial<Record<OsPlaybackPlatform, OsPlaybackRotationStateLike>>;
   osPlaybackActivity?: Partial<Record<OsPlaybackPlatform, OsPlaybackActivityStateLike>>;
   osPlaybackResume?: Partial<Record<OsPlaybackPlatform, Record<string, unknown>>>;
+  osNativePlayback?: Partial<Record<OsPlaybackPlatform, Record<string, unknown>>>;
 };
 
 const PLATFORM_COPY = Object.freeze({
@@ -244,6 +262,7 @@ export function buildOsPlaybackViewModel(state: RuntimeStateLike, platform: OsPl
   const rotation = buildRotationViewModel(state.osPlaybackRotation?.[platform], playbackItems.length, defaultActiveIndex);
   const activity = buildActivityViewModel(state.osPlaybackActivity?.[platform]);
   const resume = buildResumeViewModel(state.osPlaybackResume?.[platform]);
+  const nativePlayback = buildNativePlaybackViewModel(state.osNativePlayback?.[platform], platform);
   const media = playbackItems[rotation.activeIndex] ?? fallbackMedia;
   const queueSummary = buildQueueSummary(playbackContract, readNumber(state.truth?.queueLength, 0), playbackItems.length);
   const playbackStatus = buildPlaybackStatus(contractState, playbackContract, readText(state.truth?.playbackStatus, 'Waiting for queued media'));
@@ -270,6 +289,7 @@ export function buildOsPlaybackViewModel(state: RuntimeStateLike, platform: OsPl
     rotation,
     activity,
     resume,
+    nativePlayback,
     stageItems: buildStageItems(state),
     workers: buildWorkerItems(state, observabilityPayload),
     schedulerLog: buildSchedulerLog(platform, observabilityPayload, observabilityState),
@@ -278,6 +298,48 @@ export function buildOsPlaybackViewModel(state: RuntimeStateLike, platform: OsPl
   };
 }
 
+
+
+/**
+ * Builds native playback status/logs for the OS playback dashboard card.
+ */
+function buildNativePlaybackViewModel(nativeState: Record<string, unknown> | null | undefined, platform: OsPlaybackPlatform): NativePlaybackViewModel {
+  const payload = isObjectRecord(nativeState?.payload) ? nativeState.payload : {};
+  const config = isObjectRecord(payload.config) ? payload.config : {};
+  const nativePlayback = isObjectRecord(payload.nativePlayback) ? payload.nativePlayback : {};
+  const status = readText(nativePlayback.status, readText(nativeState?.status, 'idle'));
+  const messages = Array.isArray(nativePlayback.messages) ? nativePlayback.messages : [];
+  const error = readText(nativePlayback.lastError, readText(nativeState?.error, ''));
+  const log: PlaybackLogEntryViewModel[] = [
+    error ? { at: 'latest', type: 'error', message: error } : null,
+    ...messages.map((message) => ({ at: 'native', type: 'info' as const, message: readText(message, 'Native playback status updated.') })),
+  ].filter((entry): entry is PlaybackLogEntryViewModel => entry !== null).slice(0, 8);
+
+  if (log.length === 0) {
+    log.push({
+      at: 'pending',
+      type: 'info',
+      message: 'Native playback has not been started yet. Use detect first, then start current when enabled.',
+    });
+  }
+
+  const enabled = config.enabled === true || nativePlayback.enabled === true;
+  return {
+    enabled,
+    autoStartOnWorker: config.autoStartOnWorker === true || nativePlayback.autoStartOnWorker === true,
+    status,
+    platform: readText(config.platform, platform),
+    player: readText(config.player, 'mpv'),
+    pid: nativePlayback.pid === null || nativePlayback.pid === undefined ? 'none' : String(nativePlayback.pid),
+    currentItem: readText(nativePlayback.currentDisplayName, 'No native item started yet'),
+    commandSummary: readText(nativePlayback.lastCommandSummary, 'No command launched yet'),
+    lastError: error || 'No native playback error recorded',
+    detectLabel: enabled ? 'Detect player' : 'Detect player (disabled mode)',
+    startDisabled: !enabled,
+    stopDisabled: status !== 'running',
+    log,
+  };
+}
 
 /**
  * Builds the fullscreen playback activity-monitoring view model from reusable activity state.
@@ -782,3 +844,9 @@ function formatIsoTime(value: unknown): string {
 function readText(value: unknown, fallback: string): string {
   return typeof value === 'string' && value.trim().length > 0 ? value : fallback;
 }
+
+// Narrows unknown values to plain records for native playback payloads.
+function isObjectRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+

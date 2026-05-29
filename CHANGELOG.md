@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.7.25 - 2026-05-29 EEST
+
+- Added native playback status/control UI to the Windows and Raspberry playback views.
+- Wired dashboard controls for native player detection, start-current, stop, and native terminal rows.
+
+
 ## 0.7.24 - 2026-05-29 EEST
 
 - Added a disabled-by-default native playback controller and status/detect/start-current/stop API routes.
