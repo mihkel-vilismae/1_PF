@@ -83,7 +83,7 @@ test('playback current and queue APIs honor Test/Real database separation', asyn
     assert.equal(realResponse.json.database.absolutePath, realDbPath);
     assert.equal(realResponse.json.playback.currentItem.displayName, 'real-image.jpg');
     assert.equal(realResponse.json.playback.queue.readyCount, 1);
-    assert.match(realResponse.json.playback.currentItem.displayUrl, /^\/api\/runtime\/playback\/media\?assetId=\d+$/);
+    assert.match(realResponse.json.playback.currentItem.displayUrl, /^\/api\/runtime\/playback\/media\?assetId=\d+&runtimeMode=real$/);
     assert.equal('canonicalPath' in realResponse.json.playback.currentItem, false);
     assert.equal('resolvedCanonicalPath' in realResponse.json.playback.currentItem, false);
 
@@ -104,9 +104,9 @@ test('playback current and queue APIs honor Test/Real database separation', asyn
     assert.equal(queueResponse.json.items.length, 1);
     assert.equal(queueResponse.json.items[0].displayName, 'test-image.jpg');
 
-    const mediaResponse = await fetch(`http://127.0.0.1:${port}${testResponse.json.playback.currentItem.displayUrl}`, {
-      headers: { 'X-Dashboard-Runtime-Mode': 'test' },
-    });
+    assert.match(testResponse.json.playback.currentItem.displayUrl, /^\/api\/runtime\/playback\/media\?assetId=\d+&runtimeMode=test$/);
+
+    const mediaResponse = await fetch(`http://127.0.0.1:${port}${testResponse.json.playback.currentItem.displayUrl}`);
     assert.equal(mediaResponse.status, 200);
     assert.match(mediaResponse.headers.get('content-type') ?? '', /image\/jpeg/);
     assert.equal(await mediaResponse.text(), 'test media body');

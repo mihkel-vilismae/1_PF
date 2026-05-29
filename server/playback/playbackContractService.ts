@@ -87,6 +87,7 @@ export async function buildPlaybackContract({
 }: PlaybackContractServiceOptions): Promise<PlaybackContractEnvelope> {
   const database = await databaseService.buildDatabaseStatus(context);
   const safeLimit = normalizePlaybackContractLimit(limit);
+  const runtimeMode = context.runtimeMode === 'test' ? 'test' : 'real';
   const playback = database.exists
     ? await databaseService.runPythonJson<PlaybackContractPayload>([
       'playback_contract',
@@ -99,12 +100,50 @@ export async function buildPlaybackContract({
   return {
     status: 'ok',
     messages: buildPlaybackContractMessages(playback, database.exists),
-    playback,
+    playback: addRuntimeModeToPlaybackMediaUrls(playback, runtimeMode),
     database,
-    runtimeMode: context.runtimeMode === 'test' ? 'test' : 'real',
+    runtimeMode,
     schemaVersion: 1,
     mediaBasePath: '/api/runtime/playback/media',
   };
+}
+
+// Adds the selected Test/Real mode to browser media URLs because img/video tags
+// cannot attach the shared dashboard runtime-mode header.
+function addRuntimeModeToPlaybackMediaUrls(
+  playback: PlaybackContractPayload,
+  runtimeMode: PlaybackContractEnvelope['runtimeMode'],
+): PlaybackContractPayload {
+  return {
+    ...playback,
+    currentItem: playback.currentItem ? addRuntimeModeToPlaybackItem(playback.currentItem, runtimeMode) : null,
+    nextItem: playback.nextItem ? addRuntimeModeToPlaybackItem(playback.nextItem, runtimeMode) : null,
+    items: playback.items.map((item) => addRuntimeModeToPlaybackItem(item, runtimeMode)),
+  };
+}
+
+// Returns a playback item whose media URL resolves against the same runtime DB
+// as the contract that produced it.
+function addRuntimeModeToPlaybackItem(
+  item: PlaybackContractItem,
+  runtimeMode: PlaybackContractEnvelope['runtimeMode'],
+): PlaybackContractItem {
+  return {
+    ...item,
+    displayUrl: appendRuntimeModeToPlaybackMediaUrl(item.displayUrl, runtimeMode),
+  };
+}
+
+// Appends or replaces the runtimeMode query parameter on backend-owned media URLs.
+function appendRuntimeModeToPlaybackMediaUrl(displayUrl: string, runtimeMode: PlaybackContractEnvelope['runtimeMode']): string {
+  try {
+    const url = new URL(displayUrl, 'http://dashboard.local');
+    url.searchParams.set('runtimeMode', runtimeMode);
+    return `${url.pathname}${url.search}`;
+  } catch {
+    const separator = displayUrl.includes('?') ? '&' : '?';
+    return `${displayUrl}${separator}runtimeMode=${encodeURIComponent(runtimeMode)}`;
+  }
 }
 
 // Resolves a media asset id to a local path on the backend for safe streaming.
