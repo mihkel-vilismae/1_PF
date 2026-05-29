@@ -25,6 +25,22 @@ Install `mpv` first on both Windows and Raspberry OS. The backend also supports 
 | Windows | `mpv --version` in PowerShell or Command Prompt |
 | Raspberry OS | `mpv --version` in the terminal |
 
+## Windows repo-local mpv install
+
+Windows operators can install a portable mpv build into the repository without changing the machine-wide `PATH`:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/install-mpv-windows.ps1
+```
+
+The script downloads the latest normal x86_64-v3 Windows build from the shinchiro mpv Windows release feed, extracts it with Windows `tar.exe`, verifies `mpv.exe --version`, and stores the executable under:
+
+```text
+tools/mpv/windows/mpv.exe
+```
+
+`tools/mpv/windows/` is ignored by git. When `NATIVE_PLAYBACK_PLAYER_PATH` is empty, the backend automatically prefers this repo-local Windows executable before falling back to `mpv` on `PATH`.
+
 ## Environment keys
 
 ```text
@@ -88,6 +104,6 @@ When combined with playback resume checkpoints, the native runner can relaunch t
 |---|---|
 | Desktop/session access required | A Windows service or headless SSH session may not be able to open a visible fullscreen player. |
 | Display selection not implemented yet | First implementation uses the default display. |
-| mpv/VLC installation is external | The repo detects availability but does not install players. |
+| mpv/VLC installation | Windows mpv can be installed repo-locally with `tools/install-mpv-windows.ps1`; Raspberry/VLC setup remains external. |
 | Kill-by-name is intentionally avoided | The backend stops only the process it started. |
 | Test Mode protected | The default is disabled; tests use `NATIVE_PLAYBACK_PLAYER=mock`. |

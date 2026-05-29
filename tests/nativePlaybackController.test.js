@@ -5,6 +5,9 @@
  */
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import test from 'node:test';
 
 import { buildNativePlaybackConfig, shouldAutoStartNativePlaybackFromWorker } from '../server/nativePlayback/nativePlaybackController.ts';
@@ -22,6 +25,24 @@ test('native playback config is disabled by default and uses mpv safely', () => 
   assert.equal(config.fullscreen, true);
   assert.equal(config.replaceExisting, true);
   assert.equal(config.platform, 'raspberry');
+});
+
+// Verifies Windows can use the repo-local portable mpv install without env overrides.
+test('native playback config auto-detects repo-local Windows mpv', async () => {
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'native-playback-local-mpv-'));
+  try {
+    const mpvPath = path.join(repoRoot, 'tools', 'mpv', 'windows', 'mpv.exe');
+    await mkdir(path.dirname(mpvPath), { recursive: true });
+    await writeFile(mpvPath, '', 'utf8');
+
+    const config = buildNativePlaybackConfig({ envValues: {}, platform: 'win32', repoRoot });
+
+    assert.equal(config.player, 'mpv');
+    assert.equal(config.playerPath, mpvPath);
+    assert.equal(config.platform, 'windows');
+  } finally {
+    await rm(repoRoot, { recursive: true, force: true });
+  }
 });
 
 test('native playback mock config can be explicitly enabled for tests', () => {
@@ -60,4 +81,5 @@ test('native playback spec records disabled default and process ownership rules'
   assert.match(specSource, /Track only the process started by this backend instance/);
   assert.match(specSource, /Do not kill arbitrary `mpv` or `vlc` processes by name/);
   assert.match(specSource, /spawn argument arrays/);
+  assert.match(specSource, /tools\/install-mpv-windows\.ps1/);
 });

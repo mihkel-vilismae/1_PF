@@ -63,7 +63,7 @@ async function maybeStartNativePlaybackFromWorker({
   databaseService,
   repoRoot,
 }: PlaybackWorkerOptions): Promise<{ claimed: boolean; note: string; nativePlayback: unknown | null; messages: string[] }> {
-  const nativeContext = { ...context, platform: process.platform };
+  const nativeContext = { ...context, platform: process.platform, repoRoot };
   if (!shouldAutoStartNativePlaybackFromWorker(nativeContext)) {
     return {
       claimed: false,

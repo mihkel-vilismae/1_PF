@@ -1509,7 +1509,7 @@ async function runtimeQueuePrepareHandler({ context }: Pick<HandlerArgs, 'contex
 async function nativePlaybackStatusHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
   return {
     statusCode: 200,
-    payload: await getNativePlaybackStatus({ context, databaseService: getDatabaseService() }),
+    payload: await getNativePlaybackStatus({ context: { ...context, repoRoot }, databaseService: getDatabaseService() }),
   };
 }
 
@@ -1517,7 +1517,7 @@ async function nativePlaybackStatusHandler({ context }: Pick<HandlerArgs, 'conte
 async function nativePlaybackDetectHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
   return {
     statusCode: 200,
-    payload: await detectNativePlayback({ context, databaseService: getDatabaseService() }),
+    payload: await detectNativePlayback({ context: { ...context, repoRoot }, databaseService: getDatabaseService() }),
   };
 }
 
@@ -1540,7 +1540,7 @@ async function nativePlaybackStartCurrentHandler({ context }: Pick<HandlerArgs, 
 async function nativePlaybackStopHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
   return {
     statusCode: 200,
-    payload: await stopNativePlayback({ context, databaseService: getDatabaseService() }),
+    payload: await stopNativePlayback({ context: { ...context, repoRoot }, databaseService: getDatabaseService() }),
   };
 }
 

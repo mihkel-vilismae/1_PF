@@ -50,6 +50,20 @@ NATIVE_PLAYBACK_ENABLED=false
 | `NATIVE_PLAYBACK_IMAGE_DURATION_SECONDS` | `12` | Suggested still-image duration for players that support it. |
 | `NATIVE_PLAYBACK_AUTO_START_ON_WORKER` | `false` | Allows playback_worker to launch native playback after selection. |
 
+When `NATIVE_PLAYBACK_PLAYER=mpv`, `NATIVE_PLAYBACK_PLAYER_PATH` is empty, and the backend runs on Windows, config resolution first checks for the repo-local portable executable installed by:
+
+```text
+tools/install-mpv-windows.ps1
+```
+
+Expected local executable:
+
+```text
+tools/mpv/windows/mpv.exe
+```
+
+If that executable is absent, detection falls back to `mpv` on `PATH`.
+
 ## Process ownership rules
 
 - Track only the process started by this backend instance.

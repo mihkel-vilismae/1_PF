@@ -40,6 +40,7 @@ conf/runtime-truth.json
 tools/CronEmulator/crontab_emulated.txt
 tools/CronEmulator/logs/
 tools/docs_labels/
+tools/mpv/windows/
 found_devices_latest.txt
 *.log
 *.jsonl

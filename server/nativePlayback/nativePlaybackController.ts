@@ -5,6 +5,7 @@
  */
 import { spawn, spawnSync } from 'node:child_process';
 import type { ChildProcessWithoutNullStreams } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import type { DatabaseService } from '../database/databaseService.ts';
 import { buildPlaybackContract, resolvePlaybackAssetMediaPath, type PlaybackContractItem } from '../playback/playbackContractService.ts';
@@ -22,6 +23,7 @@ type NativePlaybackContext = {
   envValues: Record<string, string | undefined>;
   runtimeMode?: 'real' | 'test';
   platform: NodeJS.Platform;
+  repoRoot?: string;
 };
 
 type NativePlaybackDatabase = Pick<DatabaseService, 'buildDatabaseStatus' | 'runPythonJson' | 'getRuntimeState' | 'setRuntimeState'>;
@@ -136,7 +138,7 @@ export async function startCurrentNativePlayback({
   databaseService: NativePlaybackDatabase;
   repoRoot: string;
 }): Promise<NativePlaybackPayload> {
-  const config = buildNativePlaybackConfig(context);
+  const config = buildNativePlaybackConfig({ ...context, repoRoot });
   if (!config.enabled) {
     throw new NativePlaybackError(409, 'native_playback_disabled', 'Native playback is disabled by NATIVE_PLAYBACK_ENABLED.', {
       enabled: config.enabled,
@@ -192,12 +194,13 @@ export function shouldAutoStartNativePlaybackFromWorker(context: NativePlaybackC
 // Normalizes environment values into a small native playback config object.
 export function buildNativePlaybackConfig(context: NativePlaybackContext): NativePlaybackConfig {
   const env = context.envValues ?? {};
+  const player = normalizeNativePlaybackPlayer(env.NATIVE_PLAYBACK_PLAYER);
   return {
     enabled: readBoolean(env.NATIVE_PLAYBACK_ENABLED, false),
     autoStartOnWorker: readBoolean(env.NATIVE_PLAYBACK_AUTO_START_ON_WORKER, false),
     platform: normalizeNativePlaybackPlatform(env.NATIVE_PLAYBACK_PLATFORM, context.platform),
-    player: normalizeNativePlaybackPlayer(env.NATIVE_PLAYBACK_PLAYER),
-    playerPath: readText(env.NATIVE_PLAYBACK_PLAYER_PATH, normalizeNativePlaybackPlayer(env.NATIVE_PLAYBACK_PLAYER)),
+    player,
+    playerPath: resolveNativePlaybackPlayerPath(env.NATIVE_PLAYBACK_PLAYER_PATH, player, context),
     fullscreen: readBoolean(env.NATIVE_PLAYBACK_FULLSCREEN, true),
     replaceExisting: readBoolean(env.NATIVE_PLAYBACK_REPLACE_EXISTING, true),
     imageDurationSeconds: readPositiveInteger(env.NATIVE_PLAYBACK_IMAGE_DURATION_SECONDS, DEFAULT_IMAGE_DURATION_SECONDS),
@@ -433,6 +436,31 @@ function normalizeNativePlaybackPlayer(value: unknown): NativePlaybackPlayer {
     return value;
   }
   return 'mpv';
+}
+
+// Resolves the configured player, preferring repo-local Windows mpv when available.
+function resolveNativePlaybackPlayerPath(value: unknown, player: NativePlaybackPlayer, context: NativePlaybackContext): string {
+  const configuredPath = readText(value, '');
+  if (configuredPath) {
+    return configuredPath;
+  }
+  if (player === 'mpv') {
+    const localWindowsMpvPath = resolveLocalWindowsMpvPath(context);
+    if (localWindowsMpvPath) {
+      return localWindowsMpvPath;
+    }
+  }
+  return player;
+}
+
+// Finds the repo-local portable mpv executable installed by tools/install-mpv-windows.ps1.
+function resolveLocalWindowsMpvPath(context: NativePlaybackContext): string | null {
+  if (context.platform !== 'win32') {
+    return null;
+  }
+  const repoRoot = context.repoRoot ? path.resolve(context.repoRoot) : process.cwd();
+  const candidate = path.join(repoRoot, 'tools', 'mpv', 'windows', 'mpv.exe');
+  return existsSync(candidate) ? candidate : null;
 }
 
 // Reads common truthy/falsey environment values.
