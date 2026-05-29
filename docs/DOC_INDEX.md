@@ -241,3 +241,9 @@ Use these documents when investigating result payload / JSON panel scroll resets
 - `docs/20_architecture_and_specs/playback_resume_checkpoint_spec.md` — Power-outage playback resume checkpoint contract.
 
 - `docs/10_runbooks/POWER_OUTAGE_PLAYBACK_RECOVERY_CHECKLIST_20260529.md` — Operator checklist for verifying playback resume after outage.
+
+
+## Native playback runner
+
+- [Native Playback Runner Spec](20_architecture_and_specs/native_playback_runner_spec.md)
+- [Native Playback Runner Setup Runbook](10_runbooks/native_playback_runner_setup.md)

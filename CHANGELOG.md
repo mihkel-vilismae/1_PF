@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.7.27 - 2026-05-29 EEST
+
+- Added the native playback setup runbook, example environment keys, and API regression coverage.
+- Verified mock native player status/detect/start-current/stop flow without launching a real OS player.
+
+
 ## 0.7.26 - 2026-05-29 EEST
 
 - Added disabled-by-default playback worker integration for native fullscreen playback.

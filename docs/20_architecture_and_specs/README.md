@@ -69,3 +69,7 @@ The old `docs/categorized/other_documentation/default_project_settings_and_eleme
 ## Playback recovery
 
 - [Playback Resume Checkpoint Spec](./playback_resume_checkpoint_spec.md) — Defines power-outage playback resume checkpoints, restore policy, and fallback behavior.
+
+## Native playback
+
+- [Native Playback Runner Spec](./native_playback_runner_spec.md) — Defines backend-owned OS-native fullscreen playback, player adapters, disabled defaults, and worker integration rules.

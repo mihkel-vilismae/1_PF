@@ -53,3 +53,5 @@ The old `docs/categorized/other_documentation/documentation_workflow_and_invento
 - [PC/runtime worker-stage verification checklist](PC_RUNTIME_WORKER_STAGE_VERIFICATION_CHECKLIST_20260529.md) — step-by-step PC evidence capture for Download, Index, GPS parser, Geocode, and Queue.
 
 - [Power-Outage Playback Recovery Checklist](./POWER_OUTAGE_PLAYBACK_RECOVERY_CHECKLIST_20260529.md) — Manual Windows/Raspberry restore verification after simulated power loss.
+
+- [Native Playback Runner Setup Runbook](native_playback_runner_setup.md) — setup, detection, manual start/stop, worker auto-start, and power-outage notes for OS-native fullscreen playback.
