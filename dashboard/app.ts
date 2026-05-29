@@ -73,6 +73,7 @@ const COPY_HISTORY_LABEL = 'copy all log';
 const SCHEDULER_RUN_LOG_POLL_MS = 5000;
 const OS_PLAYBACK_OBSERVABILITY_POLL_MS = 5000;
 const OS_PLAYBACK_ROTATION_INTERVAL_SECONDS = 12;
+const OS_PLAYBACK_RESUME_HEARTBEAT_MIN_MS = 5000;
 let dashboardVisualMode: DashboardVisualMode | null = null;
 let liveUpdatesPaused = false;
 let pendingLiveUpdateRender = false;
@@ -92,6 +93,8 @@ let backendVersionState: BackendVersionState = {
   message: null,
 };
 const osPlaybackRotationTimers = new Map<OsPlaybackPlatform, number>();
+const osPlaybackResumeHeartbeatTimers = new Map<OsPlaybackPlatform, number>();
+const osPlaybackResumeLastSavedAt = new Map<OsPlaybackPlatform, number>();
 const transitTerminal = createTransitTerminal();
 const { describeRealityElement } = createRealityMetadataHelpers({
   getState,
@@ -532,6 +535,7 @@ async function loadOsPlaybackContract(platform: OsPlaybackPlatform): Promise<voi
       };
       ensureMutableOsPlaybackRotationState(draft, platform);
     });
+    queueOsPlaybackResumeCheckpointSave(platform, 'contract-refresh');
     pushHistory('PLAYBACK', 'success', `${getOsPlaybackLabel(platform)} playback contract refreshed.`, {
       platform,
       endpoint: '/api/runtime/playback/current',
@@ -677,6 +681,7 @@ function startOsPlaybackRotation(platform: OsPlaybackPlatform, reason: 'manual' 
   });
   pushHistory('PLAYBACK', itemCount > 1 ? 'success' : 'info', `${getOsPlaybackLabel(platform)} playback rotation ${itemCount > 1 ? 'started' : 'is waiting for more queue items'}.`, { platform, reason, itemCount });
   pushLog('B4', itemCount > 1 ? 'success' : 'info', `${getOsPlaybackLabel(platform)} playback rotation ${itemCount > 1 ? 'started' : 'waiting for queue'}.`);
+  queueOsPlaybackResumeCheckpointSave(platform, reason);
   scheduleOsPlaybackRotation(platform);
 }
 
@@ -689,6 +694,7 @@ function pauseOsPlaybackRotation(platform: OsPlaybackPlatform, reason: 'manual' 
     rotation.nextRotationAtIso = null;
   });
   pushHistory('PLAYBACK', 'info', `${getOsPlaybackLabel(platform)} playback rotation paused.`, { platform, reason });
+  queueOsPlaybackResumeCheckpointSave(platform, reason);
 }
 
 // Advances the active queue item for manual controls and automatic rotation ticks.
@@ -707,6 +713,7 @@ function advanceOsPlaybackRotation(platform: OsPlaybackPlatform, step: number, r
     rotation.nextRotationAtIso = buildNextRotationIso(OS_PLAYBACK_ROTATION_INTERVAL_SECONDS);
   });
   pushLog('B4', 'info', `${getOsPlaybackLabel(platform)} playback moved to the ${reason === 'auto' ? 'next timed' : 'selected'} queue item.`);
+  queueOsPlaybackResumeCheckpointSave(platform, reason);
   scheduleOsPlaybackRotation(platform);
 }
 
@@ -727,6 +734,7 @@ function enterOsPlaybackFullscreen(platform: OsPlaybackPlatform): void {
   pushHistory('PLAYBACK', 'success', `${getOsPlaybackLabel(platform)} fullscreen playback opened.`, { platform });
   startOsPlaybackActivityMonitoring(platform);
   scheduleOsPlaybackRotation(platform);
+  queueOsPlaybackResumeCheckpointSave(platform, 'fullscreen-enter');
   requestBrowserFullscreenForOsPlayback(platform);
 }
 
@@ -741,6 +749,7 @@ function exitOsPlaybackFullscreen(platform: OsPlaybackPlatform): void {
   }
   pushHistory('PLAYBACK', 'info', `${getOsPlaybackLabel(platform)} fullscreen playback closed.`, { platform });
   stopOsPlaybackActivityMonitoring(platform);
+  queueOsPlaybackResumeCheckpointSave(platform, 'fullscreen-exit');
 }
 
 // Requests browser fullscreen for the rendered overlay after state has re-rendered.
@@ -783,13 +792,101 @@ function clearOsPlaybackRotationTimer(platform: OsPlaybackPlatform): void {
 }
 
 // Reads the primitive rotation state from dashboard state with safe defaults.
-function readOsPlaybackRotation(platform: OsPlaybackPlatform): { activeIndex: number; paused: boolean; nextRotationAtIso: string | null } {
+function readOsPlaybackRotation(platform: OsPlaybackPlatform): { activeIndex: number; paused: boolean; fullscreen: boolean; nextRotationAtIso: string | null } {
   const rotation = (getState().osPlaybackRotation as Record<string, Record<string, unknown>> | undefined)?.[platform] ?? {};
   return {
     activeIndex: Number(rotation.activeIndex ?? 0),
     paused: rotation.paused !== false,
+    fullscreen: rotation.fullscreen === true,
     nextRotationAtIso: typeof rotation.nextRotationAtIso === 'string' ? rotation.nextRotationAtIso : null,
   };
+}
+
+
+// Queues a throttled checkpoint save so playback state survives browser/reboot loss without spamming the backend.
+function queueOsPlaybackResumeCheckpointSave(platform: OsPlaybackPlatform, reason: string): void {
+  const now = Date.now();
+  const lastSavedAt = osPlaybackResumeLastSavedAt.get(platform) ?? 0;
+  const remainingDelay = Math.max(0, OS_PLAYBACK_RESUME_HEARTBEAT_MIN_MS - (now - lastSavedAt));
+
+  if (osPlaybackResumeHeartbeatTimers.has(platform)) {
+    return;
+  }
+
+  const timeout = window.setTimeout(() => {
+    osPlaybackResumeHeartbeatTimers.delete(platform);
+    void saveOsPlaybackResumeCheckpoint(platform, reason);
+  }, remainingDelay);
+  osPlaybackResumeHeartbeatTimers.set(platform, timeout);
+}
+
+// Persists the current OS playback surface as a backend resume checkpoint.
+async function saveOsPlaybackResumeCheckpoint(platform: OsPlaybackPlatform, reason: string): Promise<void> {
+  const payload = buildOsPlaybackResumeCheckpointPayload(platform);
+  if (!payload) {
+    return;
+  }
+
+  try {
+    await requestJson('/api/runtime/playback/resume-checkpoint', {
+      method: 'POST',
+      body: { ...payload, heartbeatReason: reason },
+      operation: `Save ${platform} playback resume checkpoint`,
+    });
+    osPlaybackResumeLastSavedAt.set(platform, Date.now());
+  } catch (error) {
+    pushLog('B4', 'warning', `${getOsPlaybackLabel(platform)} playback resume checkpoint save failed.`, {
+      platform,
+      reason,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+
+// Builds a backend checkpoint payload from the rendered OS playback view model.
+function buildOsPlaybackResumeCheckpointPayload(platform: OsPlaybackPlatform): Record<string, unknown> | null {
+  const viewModel = buildOsPlaybackViewModel(getState(), platform);
+  const item = viewModel.playbackItems[viewModel.rotation.activeIndex];
+  if (!item?.mediaAssetId) {
+    return null;
+  }
+
+  const rotation = readOsPlaybackRotation(platform);
+  return {
+    platform,
+    mediaAssetId: item.mediaAssetId,
+    displayUrl: item.displayUrl,
+    displayName: item.displayName,
+    mediaType: item.mediaType,
+    resolvedAddress: item.resolvedAddress,
+    activeIndex: viewModel.rotation.activeIndex,
+    rotationPaused: rotation.paused,
+    fullscreenRequested: rotation.fullscreen,
+    fullscreenActive: document.fullscreenElement !== null && rotation.fullscreen,
+    rotationDurationMs: OS_PLAYBACK_ROTATION_INTERVAL_SECONDS * 1000,
+    remainingRotationMs: computeOsPlaybackRemainingRotationMs(rotation.nextRotationAtIso),
+    videoPositionMs: readActiveOsPlaybackVideoPositionMs(platform),
+    lastHeartbeatAt: new Date().toISOString(),
+    restorePolicy: 'resume_same_item',
+  };
+}
+
+// Computes the approximate remaining image rotation time from the browser-side deadline.
+function computeOsPlaybackRemainingRotationMs(nextRotationAtIso: string | null): number | null {
+  if (!nextRotationAtIso) {
+    return null;
+  }
+  const timestamp = Date.parse(nextRotationAtIso);
+  return Number.isFinite(timestamp) ? Math.max(0, timestamp - Date.now()) : null;
+}
+
+// Reads the active fullscreen video timestamp when the current media is a video element.
+function readActiveOsPlaybackVideoPositionMs(platform: OsPlaybackPlatform): number | null {
+  const video = document.querySelector<HTMLVideoElement>(`[data-os-playback-fullscreen-overlay="${platform}"] video`);
+  if (!video || !Number.isFinite(video.currentTime)) {
+    return null;
+  }
+  return Math.max(0, Math.trunc(video.currentTime * 1000));
 }
 
 // Counts queue items available from the read-only playback contract.
@@ -830,6 +927,8 @@ function syncOsPlaybackFullscreenStateFromBrowser(): void {
   });
   stopOsPlaybackActivityMonitoring(OS_PLAYBACK_PLATFORMS.windows);
   stopOsPlaybackActivityMonitoring(OS_PLAYBACK_PLATFORMS.raspberry);
+  queueOsPlaybackResumeCheckpointSave(OS_PLAYBACK_PLATFORMS.windows, 'browser-fullscreen-exit');
+  queueOsPlaybackResumeCheckpointSave(OS_PLAYBACK_PLATFORMS.raspberry, 'browser-fullscreen-exit');
 }
 
 // Binds rendered controls to runtime-truth actions and local state updates.
@@ -1456,6 +1555,10 @@ void loadBackendVersion();
 document.addEventListener('mousemove', handleB5ActivityMouseMove);
 document.addEventListener('keydown', handleB5ActivityKeyDown);
 document.addEventListener('fullscreenchange', syncOsPlaybackFullscreenStateFromBrowser);
+window.addEventListener('beforeunload', () => {
+  void saveOsPlaybackResumeCheckpoint(OS_PLAYBACK_PLATFORMS.windows, 'beforeunload');
+  void saveOsPlaybackResumeCheckpoint(OS_PLAYBACK_PLATFORMS.raspberry, 'beforeunload');
+});
 
 window.addEventListener('keydown', (event) => {
   if (event.key === 'Escape' && getState().modal) {

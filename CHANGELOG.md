@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.7.20 - 29.05.2026, 17:33:00 EEST
+
+- Added passive frontend playback resume checkpoint heartbeat reporting for Windows and Raspberry OS playback views.
+- Captured current item, active index, pause/fullscreen state, rotation timing, and best-effort video timestamp without changing startup restore behavior yet.
+- Throttled checkpoint writes and preserved existing browser-side rotation, fullscreen controls, playback selection, worker stages, Test Mode / Real Mode separation, and Queue behavior.
+- Added regression coverage confirming checkpoint reporting is additive and does not add playback rotate/fullscreen mutation endpoints.
+- Bumped version metadata from v0.7.19 to v0.7.20.
+
 ## 0.7.19 - 29.05.2026, 17:18:00 EEST
 
 - Added backend playback resume checkpoint APIs for reading, saving, and clearing Windows/Raspberry checkpoints.

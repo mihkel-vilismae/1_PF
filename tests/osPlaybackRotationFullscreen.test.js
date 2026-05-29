@@ -112,3 +112,11 @@ test('slice documentation records preserved boundaries and deferred reuse', () =
   assert.match(docsSource, /Test\/Real storage separation/);
   assert.match(docsSource, /PIR\/mouse\/keyboard detection reuse remains a later task/);
 });
+
+
+test('frontend passively reports playback resume checkpoints without rotate mutation endpoints', () => {
+  assert.match(appSource, /api\/runtime\/playback\/resume-checkpoint/);
+  assert.match(appSource, /queueOsPlaybackResumeCheckpointSave\(platform, 'contract-refresh'\)/);
+  assert.match(appSource, /OS_PLAYBACK_RESUME_HEARTBEAT_MIN_MS/);
+  assert.doesNotMatch(appSource, /api\/runtime\/playback\/rotate|api\/runtime\/playback\/fullscreen/);
+});
