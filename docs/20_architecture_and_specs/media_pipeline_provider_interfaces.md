@@ -14,7 +14,7 @@ The media pipeline has separate worker stages for GPS parsing and reverse geocod
 
 | Stage | Contract | Default provider | Current behavior |
 |---|---|---|---|
-| GPS parsing | `GpsProvider` in `server/scripts/media_pipeline/provider_contracts.py` | `ExifGpsProvider` | Reads embedded EXIF GPS via Pillow and returns parser method `EXIF` |
+| GPS parsing | `GpsProvider` in `server/scripts/media_pipeline/provider_contracts.py` | EXIF first, then offline sidecar/path fallbacks | Reads embedded EXIF GPS via Pillow first, then tries explicit local coordinate metadata without network calls |
 | Reverse geocoding | `ReverseGeocodeProvider` in `server/scripts/media_pipeline/provider_contracts.py` | Cache-first registry ending in `DeterministicPlaceholderGeocodeProvider` by default | Checks `address_cache` first, keeps network/account providers disabled by default, and preserves the existing placeholder address format `Lat: 58.37763, Lon: 26.72901` |
 
 ## Provider-chain rule
@@ -39,6 +39,31 @@ The worker integration remains in `server/scripts/sqlite_admin.py`:
 | `stage4_process_geocode_queue` | `run_reverse_geocode_provider_chain(...)` | Same endpoint-visible behavior, address cache writes, `GEOCODE_FOUND` status; cache hits now stop before placeholder/network providers |
 
 The TypeScript API routes and dashboard do not own provider selection in this version. They continue to call the same backend worker commands.
+
+
+## Current GPS parsing provider order
+
+The GPS stage now uses these safe local/offline methods in order:
+
+```text
+exif
+json_sidecar
+xmp_sidecar
+text_sidecar
+filename_coordinates
+path_coordinates
+```
+
+| Provider ID | Parser method | What it reads | Notes |
+|---|---|---|---|
+| `exif` | `EXIF` | Embedded image EXIF GPS metadata through Pillow | Preserves the original behavior and remains first. |
+| `json_sidecar` | `JSON_SIDECAR` | Adjacent `.json` / `.gps.json` sidecars with explicit latitude/longitude keys | Supports common flat, nested, and GeoJSON-like coordinate objects. |
+| `xmp_sidecar` | `XMP_SIDECAR` | Adjacent `.xmp` / `.gps.xmp` sidecars with explicit GPS text tokens | Useful for photo tools that export XMP sidecars. |
+| `text_sidecar` | `TEXT_SIDECAR` | Adjacent `.txt` / `.gps.txt` sidecars with `lat` / `lon` tokens | Intended for simple local metadata exports and fixtures. |
+| `filename_coordinates` | `FILENAME_COORDINATES` | Explicit coordinate tokens in the media file name | Conservative fallback; does not infer coordinates from unrelated numbers. |
+| `path_coordinates` | `PATH_COORDINATES` | Explicit coordinate tokens in parent folder names | Last fallback; useful for album folders named with coordinates. |
+
+These providers do not call external services, do not require credentials, and validate coordinate bounds before returning success. Missing or malformed metadata remains an honest `NO_RESULT`, so the existing queue behavior for files without GPS is preserved.
 
 ## Adding a future GPS provider
 
