@@ -2,11 +2,13 @@
 
 Estonian timestamp: 2026-05-28 20:47 EEST
 
+Latest review timestamp: 30.05.2026, 21:12 EEST
+
 ## Scope and authority
 
-This guide records a high-level, decision-grade analysis of recent project-chat themes, the active v0.7.15 baseline, and current project-goal documentation. It is documentation only: no runtime behavior, backend routes, frontend rendering, Test Mode behavior, Real Mode behavior, worker logic, database schema, or scripts are changed by this guide.
+This guide records a high-level, decision-grade analysis of recent project-chat themes, the current v0.7.32 provider-enabled baseline, and current project-goal documentation. It is documentation only: no runtime behavior, backend routes, frontend rendering, Test Mode behavior, Real Mode behavior, worker logic, database schema, or scripts are changed by this guide.
 
-Use this document as a planning guide for later slice prompts. Treat code, tests, generated evidence packs, and runtime artifacts as stronger evidence than this guide when they disagree. Previous chat messages are used as context and leads; repo-backed statements are called out when the v0.7.15 baseline already provides supporting evidence.
+Use this document as a planning guide for later slice prompts. Treat code, tests, generated evidence packs, and runtime artifacts as stronger evidence than this guide when they disagree. Previous chat messages are used as context and leads; repo-backed statements are called out when the current v0.7.32 baseline already provides supporting evidence.
 
 ## Executive summary
 
@@ -90,9 +92,9 @@ A good solution is not to rewrite Download first. The next safe step is a PC/run
 
 ### 5. GPS parser breadth
 
-The GPS parser has real behavior for EXIF-style fixtures. Real libraries can contain HEIC, videos, sidecar metadata, missing GPS, corrupt files, renamed files, or provider-specific metadata quirks.
+The GPS parser now has a provider chain for EXIF plus local/offline fallback metadata sources: JSON sidecars, XMP sidecars, text sidecars, filename coordinate tokens, and path coordinate tokens. Real libraries can still contain HEIC, videos, corrupt files, missing GPS, or tool-specific metadata quirks.
 
-A good solution is to define metadata parser boundaries before adding branches. The project should prefer a provider/fallback chain over one large parser function that slowly accumulates unrelated cases.
+A good solution is now to prove the existing fallback methods with real PC media and add future providers only when a concrete unsupported metadata source is observed. Avoid turning the parser into one large ad-hoc function.
 
 ### 6. UI stability: focus, scroll, and live updates
 
@@ -135,8 +137,8 @@ The project should use provider/adapter boundaries where real behavior varies by
 | Area | Needed boundary |
 |---|---|
 | Download | Mock/generated provider vs iCloudPD provider vs possible future providers. |
-| GPS parser | EXIF parser vs video metadata parser vs HEIC/sidecar/fallback parser. |
-| Geocode | Placeholder provider vs real reverse-geocoder provider. |
+| GPS parser | EXIF provider vs JSON/XMP/text sidecar providers vs filename/path token providers vs future HEIC/video/tool-specific providers. |
+| Geocode | Address-cache provider vs disabled-by-default network providers vs deterministic placeholder fallback. |
 | Queue | Strict default policy vs future ordering/retention/requeue policy. |
 | Runtime status | Observed logs/status vs actual scheduler/worker control. |
 
@@ -200,8 +202,8 @@ Do not let a read-only status panel imply that a worker is actively managed unle
 | Priority | Work | Reason |
 |---|---|---|
 | P1 | PC/runtime verification from real iCloudPD download through Queue. | Proves real data path before changing code. |
-| P1 | Geocoder adapter design, then implementation with placeholder default. | Closes biggest provider gap safely. |
-| P1 | GPS parser provider/fallback design. | Avoids ad-hoc parser growth. |
+| P1 | Geocoder activation/proof harness with cache-first behavior and placeholder default preserved. | Provider registry exists; the next gap is safe runtime proof and address-quality validation. |
+| P1 | GPS parser fixture/runtime proof for added EXIF, sidecar, filename, and path providers. | Provider chain exists; the next gap is evidence against real media and operator-provided metadata formats. |
 
 ### P2 — tests, observability, and docs
 
@@ -246,4 +248,4 @@ Do not let a read-only status panel imply that a worker is actively managed unle
 
 The best next action is a documentation/status slice that records this guide, normalizes current documentation terminology to use “Queue” only, and keeps the current implementation truth honest: deterministic pipeline implemented, real-provider maturity still incomplete.
 
-After that, the next practical project action should be a PC/runtime verification guide and run for the five regular worker stages using real media. That should happen before implementing real geocoding or broader GPS provider behavior, because real media evidence will reveal which provider gaps matter first.
+After that, the next practical project action should be a PC/runtime verification run for the five regular worker stages using real media. That should happen before enabling production geocoding by default or adding more GPS provider branches, because real media evidence will reveal which provider gaps matter first.
