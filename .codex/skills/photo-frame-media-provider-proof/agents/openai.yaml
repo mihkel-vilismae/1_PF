@@ -1,0 +1,4 @@
+interface:
+  display_name: "Photo Frame Media Provider Proof"
+  short_description: "Verify GPS and geocode provider behavior"
+  default_prompt: "Use $photo-frame-media-provider-proof to update or verify PF_login media metadata providers while preserving EXIF-first GPS behavior, cache-first geocoding, disabled-by-default network providers, and evidence-based documentation."
