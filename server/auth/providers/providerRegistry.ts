@@ -1,3 +1,9 @@
+/*
+ * Builds the auth provider registry and normalizes provider outcomes.
+ * The registry keeps iCloud as the default auth provider boundary.
+ * Outcome normalization prevents unsupported provider states from leaking upward.
+ * This file does not execute provider login flows directly.
+ */
 import { createIcloudAuthProvider } from './icloudAuthProvider.ts';
 import type { AuthProvider, AuthProviderOutcome, AuthProviderRegistry } from '../authTypes.ts';
 
@@ -8,7 +14,16 @@ export const PROVIDER_OUTCOMES = Object.freeze({
   REQUIRES_2FA: 'requires_2fa',
   AUTHENTICATED: 'authenticated',
   FAILED: 'failed',
-});
+} as const);
+
+type ProviderOutcomeValue = typeof PROVIDER_OUTCOMES[keyof typeof PROVIDER_OUTCOMES];
+
+const providerOutcomeValues = new Set<ProviderOutcomeValue>(Object.values(PROVIDER_OUTCOMES));
+
+// Checks provider outcome strings against the supported registry contract.
+function isProviderOutcomeValue(value: unknown): value is ProviderOutcomeValue {
+  return typeof value === 'string' && providerOutcomeValues.has(value as ProviderOutcomeValue);
+}
 
 interface CreateProviderRegistryOptions {
   providers?: Record<string, AuthProvider>;
@@ -43,7 +58,7 @@ export function normalizeProviderOutcome(outcome: unknown): AuthProviderOutcome 
   }
 
   const providerOutcome = outcome as AuthProviderOutcome;
-  if (!Object.values(PROVIDER_OUTCOMES).includes(providerOutcome.outcome)) {
+  if (!isProviderOutcomeValue(providerOutcome.outcome)) {
     return {
       outcome: PROVIDER_OUTCOMES.FAILED,
       code: 'provider_unsupported_outcome',
