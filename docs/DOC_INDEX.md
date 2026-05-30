@@ -273,3 +273,5 @@ Use these documents when investigating result payload / JSON panel scroll resets
 
 - [Native Playback Runner Spec](20_architecture_and_specs/native_playback_runner_spec.md)
 - [Native Playback Runner Setup Runbook](10_runbooks/native_playback_runner_setup.md)
+
+| `docs/40_backlog_and_tasks/active_workflow/runtime_gap_implementation_plan_20260530.md` | Backlog / active workflow | Ordered plan for real iCloudPD proof, geocode proof, GPS fallback proof, Raspberry recovery, View C restore, and View D monitor. | Current planning | Use for next slice planning only; not implementation proof. |

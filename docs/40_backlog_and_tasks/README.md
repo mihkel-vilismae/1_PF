@@ -54,5 +54,6 @@ Estonian timestamp: 2026-05-25 01:56 EEST
 Slice 17 moved this active workflow planning note into the canonical backlog/task area:
 
 - [Slice 8 and Slice 9 Route Selection](active_workflow/slice_8_9_route_selection.md)
+- [Runtime Gap Implementation Plan — 2026-05-30](active_workflow/runtime_gap_implementation_plan_20260530.md) turns current doc-audit findings into ordered proof/implementation slices.
 
 The old `docs/active_workflow_docs/slice_8_9_route_selection.md` path remains a compatibility pointer only. Treat this as planning/workflow context, not current implementation proof.

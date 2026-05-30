@@ -77,6 +77,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | Path | Use |
 | --- | --- |
 | `docs/40_backlog_and_tasks/active_workflow/` | Active workflow notes and slice plans. |
+| `docs/40_backlog_and_tasks/active_workflow/runtime_gap_implementation_plan_20260530.md` | Ordered plan for remaining runtime proof and implementation gaps. |
 | `docs/40_backlog_and_tasks/task_documentation_still_to_implement/active_implementation_backlog.md` | Backlog items; verify against current implementation before acting. |
 | `docs/40_backlog_and_tasks/task_documentation_still_to_implement/verification_and_reconciliation_tasks.md` | Verification/reconciliation tasks. |
 | `docs/40_backlog_and_tasks/task_documentation_still_to_implement/rejected_or_superseded_tasks.md` | Rejected/superseded items. |
