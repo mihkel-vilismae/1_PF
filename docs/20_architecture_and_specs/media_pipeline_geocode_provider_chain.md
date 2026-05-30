@@ -80,3 +80,8 @@ Do not commit real credentials. Keep `.env` local.
 - Network providers are disabled by default to avoid behavior shifts and unexpected API calls.
 - Cache hits stop the chain before network providers.
 - Placeholder geocoding must stay clearly labeled as placeholder behavior.
+
+
+## Operator activation runbook
+
+Use `docs/10_runbooks/geocode_provider_activation.md` when enabling any provider. That runbook keeps activation intentionally narrow: one provider at a time, `address_cache` first, sanitized evidence only, and network providers disabled again after testing unless continued Real Mode testing is intentional.

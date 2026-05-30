@@ -50,6 +50,8 @@ The old `docs/categorized/other_documentation/documentation_workflow_and_invento
 
 - [GPS Metadata Sources](gps_metadata_sources.md) — EXIF, JSON/XMP/text sidecar, filename-token, and path-token coordinate source examples for the GPS parser stage.
 
+- [Geocode Provider Activation](geocode_provider_activation.md) — safe activation, cache-first verification, placeholder fallback checks, and secret-handling rules for reverse geocoding providers.
+
 ## Current operator checklists
 
 - [PC/runtime worker-stage verification checklist](PC_RUNTIME_WORKER_STAGE_VERIFICATION_CHECKLIST_20260529.md) — step-by-step PC evidence capture for Download, Index, GPS parser, Geocode, and Queue.
