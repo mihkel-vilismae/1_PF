@@ -193,6 +193,7 @@ interface RequestContext {
   platform: NodeJS.Platform;
   nodePath: string;
   username: string | null;
+  [key: string]: unknown;
 }
 
 interface DatabaseStatusPayload {
@@ -232,6 +233,7 @@ interface EnvCheck {
   message: string;
   valuePreview: string | null;
   details: EnvCheckDetails;
+  [key: string]: unknown;
 }
 
 interface HandlerArgs {
@@ -246,6 +248,34 @@ interface HandlerResult {
   statusCode: number;
   payload: unknown;
 }
+
+type DatabaseStatusResult = Awaited<ReturnType<DatabaseService['buildDatabaseStatus']>>;
+type DatabaseInspectionResult = Awaited<ReturnType<DatabaseService['inspectDatabase']>>;
+type DatabaseDeleteArtifactsResult = Awaited<ReturnType<DatabaseService['deleteDatabaseArtifacts']>>;
+type DatabaseRecreateResult = Awaited<ReturnType<DatabaseService['recreateEmptyDatabase']>>;
+type DatabaseTableListResult = Awaited<ReturnType<DatabaseService['listDatabaseViewerTables']>>;
+type DatabaseRowsResult = Awaited<ReturnType<DatabaseService['loadDatabaseViewerRows']>>;
+type DatabaseViewerVerificationResult = Awaited<ReturnType<DatabaseService['buildDatabaseViewerVerification']>>;
+type RecreatedDatabaseStatus = DatabaseStatusResult & { schemaBootstrap?: unknown };
+type Stage2IndexingPayload = {
+  scannedMediaCount: number;
+  insertedCanonicalCount: number;
+  [key: string]: unknown;
+};
+type StageQueueProcessingPayload = {
+  processedCount: number;
+  successCount: number;
+  failureCount: number;
+  [key: string]: unknown;
+};
+type Stage5QueuePayload = {
+  insertedCount: number;
+  skippedCount: number;
+  insertedIds: unknown[];
+  skipped: unknown[];
+  message: string;
+  [key: string]: unknown;
+};
 
 interface SentJsonResponse {
   statusCode: number;
@@ -420,7 +450,7 @@ interface ErrorPayload {
 let databaseViewerLoggingSession: DatabaseViewerLoggingSession | null = null;
 let cronEmulatorProcess: ChildProcessWithoutNullStreams | null = null;
 const authRouteHandlers = createAuthRoutes({
-  getAuthReadinessChecks,
+  getAuthReadinessChecks: (context) => getAuthReadinessChecks(context as RequestContext),
   singleFileDownloadDirectory: authSingleFileDownloadDirectory,
 });
 const newAuthRouteHandlers = createNewAuthRoutes();
@@ -798,7 +828,7 @@ async function inspectDatabaseHandler({ context }) {
         message: 'Inspect database failed because the SQLite file does not exist.',
         details: {
           databaseExists: false,
-          absolutePath: error.details?.database?.absolutePath,
+          absolutePath: getMissingDatabaseAbsolutePath(error.details),
         },
       });
     }
@@ -864,6 +894,7 @@ async function deleteDatabaseHandler({ body, context }) {
 async function recreateEmptyDatabaseHandler({ body, context }) {
   ensureConfirmed(body, 'recreate-db');
   const { database, created } = await recreateEmptyDatabase(context);
+  const createdStatus = created as RecreatedDatabaseStatus;
   recordDatabaseViewerActivity({
     endpoint: '/api/init/database/recreate-empty',
     operation: 'init_database_recreate_empty',
@@ -871,9 +902,9 @@ async function recreateEmptyDatabaseHandler({ body, context }) {
     message: 'Recreated SQLite database and applied canonical schema tables.',
     details: {
       absolutePath: database.absolutePath,
-      existsAfter: created.exists,
-      sizeBytesAfter: created.sizeBytes,
-      schemaBootstrap: created.schemaBootstrap ?? null,
+      existsAfter: createdStatus.exists,
+      sizeBytesAfter: createdStatus.sizeBytes,
+      schemaBootstrap: createdStatus.schemaBootstrap ?? null,
     },
   });
   return {
@@ -884,10 +915,10 @@ async function recreateEmptyDatabaseHandler({ body, context }) {
       confirmed: true,
       database: {
         ...database,
-        existsAfter: created.exists,
-        sizeBytesAfter: created.sizeBytes,
+        existsAfter: createdStatus.exists,
+        sizeBytesAfter: createdStatus.sizeBytes,
       },
-      schemaBootstrap: created.schemaBootstrap ?? null,
+      schemaBootstrap: createdStatus.schemaBootstrap ?? null,
       schemaVersion: 1,
     },
   };
@@ -1070,7 +1101,7 @@ async function databaseViewerTablesHandler({ context }) {
         message: 'Show tables failed because the SQLite file does not exist.',
         details: {
           databaseExists: false,
-          absolutePath: error.details?.database?.absolutePath,
+          absolutePath: getMissingDatabaseAbsolutePath(error.details),
         },
       });
     }
@@ -1117,7 +1148,7 @@ async function databaseViewerRowsHandler({ body, context }) {
         details: {
           databaseExists: false,
           tableName,
-          absolutePath: error.details?.database?.absolutePath,
+          absolutePath: getMissingDatabaseAbsolutePath(error.details),
         },
       });
     }
@@ -1415,7 +1446,8 @@ function normalizeRealDownloadBatchSize(value: unknown): number {
 }
 
 async function runtimeIndexRunHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
-  const { database, indexedAt, indexing } = await getDatabaseService().runStage2IndexRegister(context);
+  const { database, indexedAt, indexing: rawIndexing } = await getDatabaseService().runStage2IndexRegister(context);
+  const indexing = rawIndexing as Stage2IndexingPayload;
 
   return {
     statusCode: 200,
@@ -1436,7 +1468,8 @@ async function runtimeIndexRunHandler({ context }: Pick<HandlerArgs, 'context'>)
 }
 
 async function runtimeGpsRunHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
-  const { database, executedAt, gps } = await getDatabaseService().runStage3ProcessGpsQueue(context);
+  const { database, executedAt, gps: rawGps } = await getDatabaseService().runStage3ProcessGpsQueue(context);
+  const gps = rawGps as StageQueueProcessingPayload;
 
   return {
     statusCode: 200,
@@ -1461,7 +1494,8 @@ async function runtimeGpsRunHandler({ context }: Pick<HandlerArgs, 'context'>): 
 }
 
 async function runtimeGeocodeRunHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
-  const { database, executedAt, geocode } = await getDatabaseService().runStage4ProcessGeocodeQueue(context);
+  const { database, executedAt, geocode: rawGeocode } = await getDatabaseService().runStage4ProcessGeocodeQueue(context);
+  const geocode = rawGeocode as StageQueueProcessingPayload;
 
   return {
     statusCode: 200,
@@ -1486,7 +1520,8 @@ async function runtimeGeocodeRunHandler({ context }: Pick<HandlerArgs, 'context'
 }
 
 async function runtimeQueuePrepareHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
-  const { database, executedAt, queue } = await getDatabaseService().runStage5PrepareQueue(context);
+  const { database, executedAt, queue: rawQueue } = await getDatabaseService().runStage5PrepareQueue(context);
+  const queue = rawQueue as Stage5QueuePayload;
 
   return {
     statusCode: 200,
@@ -2253,7 +2288,8 @@ async function runtimeOrchestrationRunHandler({ context }: Pick<HandlerArgs, 'co
         // Final stage success
         currentState.status = 'SUCCEEDED';
         currentState.finished_at = new Date().toISOString();
-        currentState.selected_asset_summary = payload?.playback?.selected ?? null;
+        const playbackPayload = isJsonObject(payload.playback) ? payload.playback : {};
+        currentState.selected_asset_summary = playbackPayload.selected ?? null;
         await setOrchestrationState(context, 'orchestration_current', currentState);
         await setOrchestrationState(context, 'orchestration_last', currentState);
         return { statusCode: 200, payload: currentState };
@@ -2639,11 +2675,11 @@ function previewValue(entry: EnvSchemaEntry, rawValue: string): string {
   return `${rawValue.slice(0, 6)}...${rawValue.slice(-4)}`;
 }
 
-async function buildDatabaseStatus(context: RequestContext): Promise<DatabaseStatusPayload> {
+async function buildDatabaseStatus(context: RequestContext): Promise<DatabaseStatusResult> {
   return getDatabaseService().buildDatabaseStatus(context);
 }
 
-async function buildDatabaseViewerVerification(context: RequestContext): Promise<unknown> {
+async function buildDatabaseViewerVerification(context: RequestContext): Promise<DatabaseViewerVerificationResult> {
   return getDatabaseService().buildDatabaseViewerVerification(context);
 }
 
@@ -2706,23 +2742,23 @@ function getDatabaseViewerLoggingCoverage(): string {
   return getDatabaseService().getDatabaseViewerLoggingCoverage();
 }
 
-async function inspectDatabase(context: RequestContext): Promise<unknown> {
+async function inspectDatabase(context: RequestContext): Promise<DatabaseInspectionResult> {
   return getDatabaseService().inspectDatabase(context);
 }
 
-async function deleteDatabaseArtifacts(context: RequestContext): Promise<unknown> {
+async function deleteDatabaseArtifacts(context: RequestContext): Promise<DatabaseDeleteArtifactsResult> {
   return getDatabaseService().deleteDatabaseArtifacts(context);
 }
 
-async function recreateEmptyDatabase(context: RequestContext): Promise<unknown> {
+async function recreateEmptyDatabase(context: RequestContext): Promise<DatabaseRecreateResult> {
   return getDatabaseService().recreateEmptyDatabase(context);
 }
 
-async function listDatabaseViewerTables(context: RequestContext): Promise<unknown> {
+async function listDatabaseViewerTables(context: RequestContext): Promise<DatabaseTableListResult> {
   return getDatabaseService().listDatabaseViewerTables(context);
 }
 
-async function loadDatabaseViewerRows(context: RequestContext, body: JsonObject): Promise<unknown> {
+async function loadDatabaseViewerRows(context: RequestContext, body: JsonObject): Promise<DatabaseRowsResult> {
   return getDatabaseService().loadDatabaseViewerRows(context, body);
 }
 
@@ -4072,6 +4108,14 @@ function readDashboardRequestId(request: IncomingMessage): string | null {
 
 function reportLoggerWriteError(error: unknown): void {
   console.warn('[logger] Failed to write project log.', getErrorMessage(error) || error);
+}
+
+// Reads database path details from structured HttpError details without trusting shape.
+function getMissingDatabaseAbsolutePath(details: unknown): string | null {
+  if (!isJsonObject(details) || !isJsonObject(details.database)) {
+    return null;
+  }
+  return typeof details.database.absolutePath === 'string' ? details.database.absolutePath : null;
 }
 
 function errorPayload(code: string, message: string, details: unknown = undefined): ErrorPayload {
