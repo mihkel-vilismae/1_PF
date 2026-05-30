@@ -16,7 +16,9 @@ Read only what is relevant to the claim:
 - `AGENTS.md`
 - `README.md`
 - `CHANGELOG.md` for dated change evidence, not proof by itself
-- `conf/runtime-truth.json` for the dashboard/file-synced runtime-truth snapshot
+- `conf/runtime-truth.seed.json` for committed baseline runtime-truth defaults
+- `conf/runtime-truth.json` only when inspecting local mutable runtime state produced by a run
+- `docs/20_architecture_and_specs/runtime_truth_local_state.md` for the seed-versus-runtime-state contract
 - `dashboard/services/runtimeTruth/*` for frontend truth state, guards, persistence, and actions
 - `dashboard/inspect/*` for inspect-mode labels and value-source explanations
 - `server/index.ts` and focused `server/**` modules for backend-owned projections and endpoints
@@ -34,7 +36,7 @@ Classify each claim before relying on it:
 | Class | Meaning | Typical evidence |
 |---|---|---|
 | `code-verified` | Confirmed from current code, tests, or live command output. | Source files, tests, endpoint responses, build/typecheck/test output. |
-| `runtime-state` | Current local state, often mutable and time-bound. | `conf/runtime-truth.json`, lock files, logs, runtime data, live API responses. |
+| `runtime-state` | Current local state, often mutable and time-bound. | Ignored `conf/runtime-truth.json`, lock files, logs, runtime data, live API responses. |
 | `target-spec` | Intended architecture or desired behavior, not proof of implementation. | Vision/spec docs and decision records. |
 | `documentation-derived` | Current docs say it, but code was not checked in this run. | Status docs, READMEs, changelog entries. |
 | `evidence-history` | Useful audit/history material, not active behavioral authority by default. | Old docs, workflow reports, archived audits, run logs. |
@@ -43,7 +45,7 @@ Classify each claim before relying on it:
 ## Workflow
 
 1. State the exact claim or decision being checked.
-   - Example: "`conf/runtime-truth.json` is the source of truth for current playback state."
+   - Example: "`conf/runtime-truth.json` is the current local runtime-truth snapshot, while `conf/runtime-truth.seed.json` is the committed baseline seed."
    - Example: "View C is backend-backed."
 2. Identify the affected surface.
    - UI truth panel
@@ -73,6 +75,7 @@ Classify each claim before relying on it:
 
 ## Project-Specific Rules
 
+- Do not treat `conf/runtime-truth.json` as committed baseline truth. It is ignored local runtime state; use `conf/runtime-truth.seed.json` for committed defaults and current code/tests/live output for implementation truth.
 - Do not treat `conf/runtime-truth.json` as complete backend runtime authority. It is a dashboard/file-synced truth surface unless code proves a stronger backend-owned contract for the specific value.
 - Do not claim backend ownership from frontend labels alone.
 - Do not claim a target architecture rule is implemented without checking the relevant implementation path.

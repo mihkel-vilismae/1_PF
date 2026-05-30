@@ -13,6 +13,7 @@ Before making documentation claims, reorganizing docs, or choosing a destination
 
 - `AGENTS.md`
 - `docs/DOC_REFACTOR_CLOSURE_REPORT_20260525.md`
+- `docs/table_of_contents.md`
 - `docs/DOC_INDEX.md`
 - `docs/DOC_FRESHNESS_MATRIX.md`
 - `docs/DOC_REORGANIZATION_PLAN.md`
@@ -75,6 +76,7 @@ Do not claim implementation behavior is preserved or current unless the relevant
 
 When adding, moving, deleting, or materially reclassifying canonical documentation, update:
 
+- `docs/table_of_contents.md`
 - `docs/DOC_INDEX.md`
 - `docs/DOC_FRESHNESS_MATRIX.md`
 
@@ -114,5 +116,5 @@ Do not:
 - Treat archived, backlog, TODO, spec, or compatibility-pointer docs as current implementation truth without direct evidence.
 - Centralize tool-local docs into `docs/` by default.
 - Mix unrelated refactors into documentation generation.
-- Skip `DOC_INDEX.md` and `DOC_FRESHNESS_MATRIX.md` maintenance when the canonical inventory changes.
+- Skip `docs/table_of_contents.md`, `DOC_INDEX.md`, and `DOC_FRESHNESS_MATRIX.md` maintenance when the canonical inventory changes.
 - Present generated documentation as proof that the implementation works.

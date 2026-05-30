@@ -28,7 +28,8 @@ Use `source-of-truth` alongside this skill for claim classification.
 - CronEmulator command execution is not the same as successful production behavior.
 - B5 simulation is not real screen hardware.
 - Stage 1 mock/generated download is not production provider download.
-- Deterministic placeholder geocode is not production geocoding.
+- Cache-first geocode provider wiring is not the same as production geocoding proof; network providers are disabled by default until deliberately activated and verified.
+- GPS provider implementation is not the same as runtime proof for every source type; distinguish EXIF, sidecar, filename, and path-coordinate evidence.
 - A worker is only complete when command, business logic, lock/status/log evidence, tests, and docs agree.
 
 ## Workflow

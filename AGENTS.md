@@ -4,6 +4,7 @@
 
 - Before making documentation claims, reorganizing docs, or treating repository documentation as source of truth, read these files first:
   - `docs/DOC_REFACTOR_CLOSURE_REPORT_20260525.md`
+  - `docs/table_of_contents.md`
   - `docs/DOC_INDEX.md`
   - `docs/DOC_FRESHNESS_MATRIX.md`
   - `docs/DOC_REORGANIZATION_PLAN.md`
@@ -11,6 +12,7 @@
   - `docs/CARD_BUTTON_IMPLEMENTATION_STATUS.md` when working on View A/B/D cards, card buttons, button labels/actions, card/button implementation status, user-observed subjective assessments, or the related follow-up issue list.
   - `docs/30_status_snapshots/2026-05-26/USER_OBSERVED_CARD_STATUS_AND_ISSUES_20260526_1457_EEST.md` when working on user-observed View A/B/D subjective status snapshots, follow-up issue lists, or validation notes captured from manual/user testing. Treat it as less authoritative than code/tests/runtime evidence.
   - `.codex/skills/test-real-visual-mode-split/SKILL.md`, `.codex/skills/mode-specific-css-architecture/SKILL.md`, `.codex/skills/pending-card-button-border-audit/SKILL.md`, `.codex/skills/test-vs-real-behavior-boundary/SKILL.md`, and `.codex/skills/mock-test-real-implementation-boundary/SKILL.md` when working on the Test Mode / Real Mode visual split, mode CSS organization, pending card/button borders, future test-vs-real behavior boundaries, or reusable mock/test versus real implementation architecture.
+  - `.codex/skills/photo-frame-media-provider-proof/SKILL.md` when working on GPS parsing providers, reverse-geocoding providers, provider order, provider activation, cache-first behavior, fallback behavior, or provider proof evidence.
 - Use canonical numbered documentation folders for new documentation:
   - `docs/00_current_truth/` for verified or evidence-backed current truth only.
   - `docs/10_runbooks/` for operator/how-to procedures.
@@ -32,6 +34,12 @@
 - Do not force a skill if none fits, and do not let any skill override the active immutable baseline, explicit user instructions, or the current repo/baseline.
 - Prefer repo-local skill files as source of truth when present; preserve architecture boundaries, Test/Real separation, existing behavior, and regression safety.
 
+## Mutable Runtime State Rule
+
+- Treat committed seed/config files differently from runtime-written local state.
+- `conf/runtime-truth.seed.json` is the committed neutral runtime-truth seed.
+- `conf/runtime-truth.json` is ignored local runtime state created or updated during runs; do not commit it into future baselines unless the user explicitly reverses this rule.
+- When a mutable runtime file is needed for app operation, prefer a committed `.seed`, `.example`, or template file plus documentation over tracking changing local state.
 
 ## Source File Comment Discipline
 

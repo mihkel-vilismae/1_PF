@@ -51,7 +51,8 @@ Read narrower files first when the task names a specific worker.
 - Workers must not run concurrently for the same worker type.
 - Workers must not delete unrelated lock/log/state files.
 - Stage 1 remains mock/generated-data unless production provider work is explicitly requested.
-- Geocode remains deterministic placeholder unless production geocoder work is explicitly requested.
+- Geocode uses the configured provider registry and remains cache-first with network providers disabled by default; do not enable production/network geocoding unless explicitly requested and safely gated.
+- GPS parsing uses an EXIF-first provider chain with local/offline fallbacks; do not fabricate coordinates, and record proof for each method when changing provider behavior.
 - Screen behavior remains simulation-only unless the screen hardware contract skill applies.
 
 ## Verification
