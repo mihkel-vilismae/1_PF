@@ -2,7 +2,7 @@
  * Builds the dashboard runtime-truth state used by views, logs, and action guards.
  * It also owns initial View A scheduler target and CronEmulator UI state.
  */
-import runtimeTruthSeed from '../../../conf/runtime-truth.json' with { type: 'json' };
+import runtimeTruthSeed from '../../../conf/runtime-truth.seed.json' with { type: 'json' };
 import {
   SCHEDULER_EMULATOR_BUTTON_KEYS,
   type SchedulerEmulatorButtonKey,
@@ -28,6 +28,7 @@ import {
 } from '../../../shared/schedulerWorkerCommands.ts';
 
 export const RUNTIME_TRUTH_SEED_PATH = 'conf/runtime-truth.json';
+export const RUNTIME_TRUTH_TEMPLATE_PATH = 'conf/runtime-truth.seed.json';
 
 export type SchedulerActionKey =
   | 'install-cron'
@@ -158,6 +159,7 @@ export function buildInitialSchedulerTarget(): SchedulerTarget {
 }
 
 export function buildInitialTruthState(): RuntimeTruthSeed {
+  // Builds local dashboard truth from the committed seed while runtime writes stay ignored.
   const truth = structuredClone(runtimeTruthSeed) as RuntimeTruthSeed;
   if (!truth.sourceOfTruth) {
     truth.sourceOfTruth = RUNTIME_TRUTH_SEED_PATH;

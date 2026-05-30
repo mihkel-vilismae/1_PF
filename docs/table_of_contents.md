@@ -63,6 +63,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/20_architecture_and_specs/media_pipeline_geocode_provider_chain.md` | Reverse-geocode provider registry/config behavior. |
 | `docs/20_architecture_and_specs/native_playback_runner_spec.md` | Native playback runner contract. |
 | `docs/20_architecture_and_specs/playback_resume_checkpoint_spec.md` | Playback checkpoint save/read/clear contract. |
+| `docs/20_architecture_and_specs/runtime_truth_local_state.md` | Runtime-truth seed vs local mutable file contract. |
 | `docs/20_architecture_and_specs/reference/LOGGING_STANDARD_CONTRACT.md` | Logging standard contract. |
 | `docs/20_architecture_and_specs/reference/default_project_settings_and_elements_checklist.md` | Default project settings and reusable UI/runtime elements. |
 
@@ -104,7 +105,8 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | --- | --- |
 | `start_win_full.cmd` / `start_scripts/start_win_full.ps1` | Full Windows launcher. |
 | `start_win.cmd` | Lighter Windows startup path. |
-| `conf/runtime-truth.json` | Runtime-truth configuration; may be environment-local and should not be casually overwritten. |
+| `conf/runtime-truth.seed.json` | Committed neutral runtime-truth seed used at dashboard boot. |
+| `conf/runtime-truth.json` | Ignored local runtime-truth state written during app use. |
 | `example.env` | Environment key template, including geocode provider settings. |
 | `logs/` | Runtime logs when generated locally. Do not commit secrets. |
 | `tools/` | Tool-local utilities such as CronEmulator and repo-update helpers. |

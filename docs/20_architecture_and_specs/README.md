@@ -77,3 +77,7 @@ The old `docs/categorized/other_documentation/default_project_settings_and_eleme
 ## Media pipeline providers
 
 - [Media Pipeline Provider Interfaces](./media_pipeline_provider_interfaces.md) — Defines the backend-only Python provider contracts and fallback-chain rules for GPS parsing and reverse geocoding.
+
+## Runtime truth local state
+
+- [Runtime Truth Local State Contract](./runtime_truth_local_state.md) — Defines why `conf/runtime-truth.seed.json` is tracked while `conf/runtime-truth.json` is ignored local runtime state.
