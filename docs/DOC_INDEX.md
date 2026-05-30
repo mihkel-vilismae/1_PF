@@ -1,14 +1,25 @@
 # Documentation Index
 
-Estonian timestamp: 30.05.2026, 17:44:16 EEST
+Estonian timestamp: 30.05.2026, 21:04 EEST
 
 This index classifies non-skill documentation files and separates current truth candidates from status snapshots, specs, backlog, archive material, and tool-local docs. The 2026-05-30 update archived old documentation-refactor status logs out of active `docs/` root navigation.
 
-- Included documentation files: 81
-- Included documentation LOC: 8587+
+- Included documentation files: 132
+- Included documentation LOC: 10624+
+
+
+## 2026-05-30 navigation refresh
+
+- `docs/table_of_contents.md` is now the short canonical documentation map for humans and agents.
+- `docs/10_runbooks/gps_metadata_sources.md` documents the newly added local/offline GPS coordinate extraction methods.
+- `docs/10_runbooks/geocode_provider_activation.md` documents safe reverse-geocode provider activation while preserving cache-first behavior and disabled-by-default network providers.
+- The current detailed index still contains compatibility pointers and historical entries; use this refresh note plus the freshness matrix to avoid treating older snapshots as active truth.
 
 ## Recent additions
 
+- `docs/table_of_contents.md` — short top-level table of contents for root docs, current truth, runbooks, architecture docs, backlog, scripts, config, and logs.
+- `docs/10_runbooks/gps_metadata_sources.md` — operator examples for EXIF, JSON/XMP/text sidecars, filename tokens, and path tokens used by the GPS provider chain.
+- `docs/10_runbooks/geocode_provider_activation.md` — safe activation checklist for cache-first reverse geocoding providers.
 - `docs/90_archive/documentation_refactor_status_2026-05-25/README.md` — archive catalog for old root-level documentation-refactor slice status logs that were removed from active `docs/` root navigation.
 - `docs/20_architecture_and_specs/reference/LOGGING_STANDARD_CONTRACT.md` — reusable logging contract extracted from the durable project logger, verbose request lifecycle logs, auth debug sink, private raw-provider boundary, Test/Real log isolation, and terminal-like UI controls.
 - `docs/10_runbooks/PC_RUNTIME_WORKER_STAGE_VERIFICATION_CHECKLIST_20260529.md` — operator-facing PC/runtime verification checklist and evidence capture table for Download, Index, GPS parser, Geocode, and Queue.

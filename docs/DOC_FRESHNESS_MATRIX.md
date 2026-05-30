@@ -1,8 +1,22 @@
 # Documentation Freshness Matrix
 
-Estonian timestamp: 2026-05-30 17:44 EEST
+Estonian timestamp: 30.05.2026, 21:04 EEST
 
 This matrix groups documentation by freshness and trust risk. Freshness estimates are navigation aids, not proof of implementation correctness.
+
+
+## 2026-05-30 freshness update
+
+The latest repo state includes typecheck stabilization, additional local/offline GPS metadata providers, committed native-playback tooling updates, and new runbook/doc navigation slices. Current claims should prefer these updated files:
+
+| Path | Freshness | Authority note |
+| --- | --- | --- |
+| `docs/table_of_contents.md` | current_latest_baseline | Short documentation map created after GPS/geocode provider work. |
+| `docs/00_current_truth/MEDIA_PIPELINE_IMPLEMENTATION_STATUS_20260528.md` | current_latest_baseline | Updated for GPS fallback providers and geocode provider registry state. |
+| `docs/10_runbooks/gps_metadata_sources.md` | current_latest_baseline | Operator examples for supported GPS metadata sources. |
+| `docs/10_runbooks/geocode_provider_activation.md` | current_latest_baseline | Safe cache-first geocode provider activation runbook. |
+| `docs/20_architecture_and_specs/media_pipeline_provider_interfaces.md` | current_latest_baseline | Provider contracts and ordered GPS/geocode provider lists. |
+| `docs/20_architecture_and_specs/media_pipeline_geocode_provider_chain.md` | current_latest_baseline | Geocode provider registry, disabled-by-default network behavior, and account/config fields. |
 
 ## Freshness summary
 
@@ -108,7 +122,7 @@ This matrix groups documentation by freshness and trust risk. Freshness estimate
 
 ## Archived documentation-refactor status logs
 
-Estonian timestamp: 2026-05-30 17:44 EEST
+Estonian timestamp: 30.05.2026, 21:04 EEST
 
 The old root-level `docs/IMPLEMENTATION_STATUS_DOC_*.md` files and `docs/IMPLEMENTATION_STATUS_AI_DOC_ENTRYPOINT_20260525_0236_EEST.md` are now archived under `docs/90_archive/documentation_refactor_status_2026-05-25/`.
 

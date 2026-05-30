@@ -17,6 +17,7 @@ Use `start_win.cmd` for the older lighter startup path.
 
 Use the current documentation navigation files before treating older docs as truth:
 
+- [`docs/table_of_contents.md`](docs/table_of_contents.md) is the short top-level documentation table of contents.
 - [`docs/DOC_INDEX.md`](docs/DOC_INDEX.md) is the main map for docs by purpose, kind, authority, and topic.
 - [`docs/DOC_FRESHNESS_MATRIX.md`](docs/DOC_FRESHNESS_MATRIX.md) shows which docs are current, recent-but-verify, historical, or risky.
 - [`docs/DOC_REORGANIZATION_PLAN.md`](docs/DOC_REORGANIZATION_PLAN.md) must be checked before moving or renaming documentation files.
@@ -27,6 +28,7 @@ Old TODO files, `task_docs/`, backlog docs, old categorized indexes, and vision/
 
 Start here:
 
+- [`docs/table_of_contents.md`](docs/table_of_contents.md) for the short documentation map.
 - [`docs/DOC_INDEX.md`](docs/DOC_INDEX.md) for the full documentation inventory.
 - [`docs/00_current_truth/`](docs/00_current_truth/) for current evidence-backed guides.
 - [`docs/10_runbooks/operator_setup_and_auth_notes.md`](docs/10_runbooks/operator_setup_and_auth_notes.md) for operator setup and auth notes.
