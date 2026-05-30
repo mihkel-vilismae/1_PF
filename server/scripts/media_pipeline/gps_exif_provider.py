@@ -7,6 +7,13 @@ so additional GPS metadata providers can be added later without worker rewrites.
 from PIL import Image
 from PIL.ExifTags import Base
 
+from .gps_sidecar_providers import (
+    FilenameGpsProvider,
+    JsonSidecarGpsProvider,
+    PathGpsProvider,
+    TextSidecarGpsProvider,
+    XmpSidecarGpsProvider,
+)
 from .provider_contracts import GpsProviderInput, GpsProviderResult
 
 
@@ -84,7 +91,14 @@ def extract_exif_gps_from_file(file_path: str) -> dict | None:
         }
 
 
-def default_gps_providers() -> list[ExifGpsProvider]:
-    """Returns GPS providers in the current default fallback order."""
+def default_gps_providers() -> list:
+    """Returns GPS providers in the default safe local fallback order."""
 
-    return [ExifGpsProvider()]
+    return [
+        ExifGpsProvider(),
+        JsonSidecarGpsProvider(),
+        XmpSidecarGpsProvider(),
+        TextSidecarGpsProvider(),
+        FilenameGpsProvider(),
+        PathGpsProvider(),
+    ]
