@@ -1,6 +1,6 @@
 # Documentation Freshness Matrix
 
-Estonian timestamp: 2026-05-24 22:58 EEST
+Estonian timestamp: 2026-05-30 17:44 EEST
 
 This matrix groups documentation by freshness and trust risk. Freshness estimates are navigation aids, not proof of implementation correctness.
 
@@ -11,7 +11,7 @@ This matrix groups documentation by freshness and trust risk. Freshness estimate
 | current_latest_baseline | 1 | 87 | Start here for latest/current docs. |
 | recent_verify_against_code | 29 | 3440 | Useful, but verify against code/tests/evidence; includes compatibility pointers for moved docs. |
 | medium_recent_reference | 22 | 2144 | Reference/spec/workflow value; not proof. |
-| historical_reference_only | 9 | 1959 | Archive/provenance only. |
+| historical_reference_only | 29 | 2489 | Archive/provenance only. |
 | dirty_or_untracked_risk | 4 | 173 | Audit before trusting. |
 | unknown | 0 | 0 | Manual review required. |
 
@@ -105,6 +105,18 @@ This matrix groups documentation by freshness and trust risk. Freshness estimate
 | tools/network-scan-terminal-gui/README.md | dirty_or_untracked_risk | dirty_or_untracked_risk | tool_local_doc | general | Tool-local submodule doc; audit separately. |
 | tools/network-scan-terminal-gui/docs/IMPLEMENTATION_PROMPT.md | dirty_or_untracked_risk | dirty_or_untracked_risk | tool_local_doc | general | Tool-local submodule doc; audit separately. |
 | generated_test_data/README.md | medium_recent_reference | historical_reference | test_data_doc | general | Dataset README; keep with test data. |
+
+## Archived documentation-refactor status logs
+
+Estonian timestamp: 2026-05-30 17:44 EEST
+
+The old root-level `docs/IMPLEMENTATION_STATUS_DOC_*.md` files and `docs/IMPLEMENTATION_STATUS_AI_DOC_ENTRYPOINT_20260525_0236_EEST.md` are now archived under `docs/90_archive/documentation_refactor_status_2026-05-25/`.
+
+| path | freshness | authority | kind | topics | note |
+| --- | --- | --- | --- | --- | --- |
+| docs/90_archive/documentation_refactor_status_2026-05-25/README.md | historical_reference_only | historical_reference | historical_task_archive | documentation_governance | Archive catalog for documentation-refactor slice status logs removed from active `docs/` root navigation. |
+| docs/90_archive/documentation_refactor_status_2026-05-25/IMPLEMENTATION_STATUS_AI_DOC_ENTRYPOINT_20260525_0236_EEST.md | historical_reference_only | historical_reference | historical_task_archive | documentation_governance | Old AI documentation-entrypoint slice status log; use current governance docs instead. |
+| docs/90_archive/documentation_refactor_status_2026-05-25/IMPLEMENTATION_STATUS_DOC_*.md | historical_reference_only | historical_reference | historical_task_archive | documentation_governance | Old documentation-refactor slice status logs; redundant with the closure report, link audit, old-index decision, index, and freshness matrix. |
 
 ## Slice 6 current-truth move note
 

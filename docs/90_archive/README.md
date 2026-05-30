@@ -58,3 +58,13 @@ Canonical file:
 - [Archive and Reference Material](reference_material_2026-05-10/archive_and_reference_material.md)
 
 The old `docs/categorized/other_documentation/archive_and_reference_material.md` path remains a compatibility pointer only. Treat this material as reference/provenance, not current implementation truth.
+
+## Archived documentation-refactor status logs — 2026-05-25
+
+The old root-level documentation-refactor slice status logs have been removed from active `docs/` root navigation and archived in:
+
+```text
+docs/90_archive/documentation_refactor_status_2026-05-25/
+```
+
+Use [Documentation Refactor Status Logs - 2026-05-25](documentation_refactor_status_2026-05-25/README.md) only for provenance. The current documentation-governance entrypoints remain `DOC_INDEX.md`, `DOC_FRESHNESS_MATRIX.md`, `DOC_REFACTOR_CLOSURE_REPORT_20260525.md`, `DOC_REORGANIZATION_PLAN.md`, `DOC_LINK_AUDIT.md`, and `OLD_INDEX_REPLACEMENT_DECISION.md`.

@@ -1,14 +1,15 @@
 # Documentation Index
 
-Estonian timestamp: 29.05.2026, 20:18:00 EEST
+Estonian timestamp: 30.05.2026, 17:44:16 EEST
 
-This index classifies non-skill documentation files and separates current truth candidates from status snapshots, specs, backlog, archive material, and tool-local docs. No files were moved by this analysis.
+This index classifies non-skill documentation files and separates current truth candidates from status snapshots, specs, backlog, archive material, and tool-local docs. The 2026-05-30 update archived old documentation-refactor status logs out of active `docs/` root navigation.
 
-- Included documentation files: 61
-- Included documentation LOC: 8057+
+- Included documentation files: 81
+- Included documentation LOC: 8587+
 
 ## Recent additions
 
+- `docs/90_archive/documentation_refactor_status_2026-05-25/README.md` — archive catalog for old root-level documentation-refactor slice status logs that were removed from active `docs/` root navigation.
 - `docs/20_architecture_and_specs/reference/LOGGING_STANDARD_CONTRACT.md` — reusable logging contract extracted from the durable project logger, verbose request lifecycle logs, auth debug sink, private raw-provider boundary, Test/Real log isolation, and terminal-like UI controls.
 - `docs/10_runbooks/PC_RUNTIME_WORKER_STAGE_VERIFICATION_CHECKLIST_20260529.md` — operator-facing PC/runtime verification checklist and evidence capture table for Download, Index, GPS parser, Geocode, and Queue.
 - `docs/00_current_truth/PROJECT_ISSUES_AND_IMPROVEMENT_GUIDE_20260528.md` — high-level, evidence-aware guide for recurring project issues, provider gaps, workflow safeguards, and verification strategy.
@@ -26,7 +27,7 @@ This index classifies non-skill documentation files and separates current truth 
 | 04_current_status_snapshots | 17 | 944 | Status snapshots; verify against code/evidence; includes Slice 11 root-level and Slice 12 categorized status snapshots plus compatibility pointers. |
 | 05_vision_and_target_specs | 8 | 534 | Target architecture/product specs; includes Slice 13 canonical specs plus compatibility pointers. |
 | 06_backlog_and_active_task_prompts | 15 | 758 | TODOs, backlog, active task prompts, including Slice 9 TODO docs and Slice 10 category backlog docs with compatibility pointers. |
-| 07_historical_task_docs_archive | 18 | 2076 | Historical task archive plus compatibility pointers. |
+| 07_historical_task_docs_archive | 38 | 2606 | Historical task archive, archived documentation-refactor status logs, plus compatibility pointers. |
 | 08_audits_and_migration_reports | 3 | 753 | Audits and migration snapshots. |
 | 09_documentation_indexes_and_reference | 9 | 918+ | Legacy indexes/reference docs, including compatibility pointers and the A/B/D card-button audit pointer. |
 | 13_operator_runbooks | 1 | 115 | Operator-facing runbooks moved into docs/10_runbooks. |
@@ -140,6 +141,18 @@ This index classifies non-skill documentation files and separates current truth 
 | tools/network-scan-terminal-gui/docs/IMPLEMENTATION_PROMPT.md | 38 | Implementation Prompt | tool_local_doc | dirty_or_untracked_risk | dirty_or_untracked_risk | 11_tool_docs_network_scan_dirty | general | Tool-local submodule doc; audit separately. |
 | generated_test_data/README.md | 41 | Photo Frame Test Dataset | test_data_doc | historical_reference | medium_recent_reference | 12_test_data_docs | general | Dataset README; keep with test data. |
 
+## Archived documentation-refactor status logs
+
+Estonian timestamp: 2026-05-30 17:44 EEST
+
+The old root-level `docs/IMPLEMENTATION_STATUS_DOC_*.md` files and `docs/IMPLEMENTATION_STATUS_AI_DOC_ENTRYPOINT_20260525_0236_EEST.md` are now archived under `docs/90_archive/documentation_refactor_status_2026-05-25/`.
+
+| path | kind | authority | freshness | note |
+| --- | --- | --- | --- | --- |
+| docs/90_archive/documentation_refactor_status_2026-05-25/README.md | historical_task_archive | historical_reference | historical_reference_only | Archive catalog for documentation-refactor slice status logs removed from active `docs/` root navigation. |
+| docs/90_archive/documentation_refactor_status_2026-05-25/IMPLEMENTATION_STATUS_AI_DOC_ENTRYPOINT_20260525_0236_EEST.md | historical_task_archive | historical_reference | historical_reference_only | Old AI documentation-entrypoint slice status log; use current governance docs instead. |
+| docs/90_archive/documentation_refactor_status_2026-05-25/IMPLEMENTATION_STATUS_DOC_*.md | historical_task_archive | historical_reference | historical_reference_only | Old documentation-refactor slice status logs; redundant with the closure report, link audit, old-index decision, index, and freshness matrix. |
+
 ## Trust rule
 
 Use docs as navigation, not proof. Prefer generated evidence packs, tests, and code over stale docs or historical prompts.
@@ -213,7 +226,7 @@ Use [`docs/VIEW_CARD_MODE_CLASSIFICATION.md`](VIEW_CARD_MODE_CLASSIFICATION.md) 
 ## Runbooks
 
 - `docs/10_runbooks/windows_full_launcher.md` — Windows full startup launcher: install dependencies, run tests/build, open API/frontend tabs, and open the browser.
-Use [`docs/30_status_snapshots/2026-05-26/USER_OBSERVED_CARD_STATUS_AND_ISSUES_20260526_1457_EEST.md`](docs/30_status_snapshots/2026-05-26/USER_OBSERVED_CARD_STATUS_AND_ISSUES_20260526_1457_EEST.md) when working specifically from the dated user-observed subjective assessment snapshot or follow-up issue list captured on 2026-05-26 14:57 EEST. It is useful for validation planning, but code, tests, generated evidence packs, and runtime artifacts override it when they conflict.
+Use [`docs/30_status_snapshots/2026-05-26/USER_OBSERVED_CARD_STATUS_AND_ISSUES_20260526_1457_EEST.md`](30_status_snapshots/2026-05-26/USER_OBSERVED_CARD_STATUS_AND_ISSUES_20260526_1457_EEST.md) when working specifically from the dated user-observed subjective assessment snapshot or follow-up issue list captured on 2026-05-26 14:57 EEST. It is useful for validation planning, but code, tests, generated evidence packs, and runtime artifacts override it when they conflict.
 
 
 
@@ -223,9 +236,9 @@ Estonian timestamp: 2026-05-28 12:48 EEST
 
 Use these documents when investigating the Windows auth logout `EPERM` unit-test failure or the related test isolation fix:
 
-- [`docs/30_status_snapshots/2026-05-28/AUTH_LOGOUT_EPERM_FAILURE_ANALYSIS_20260528.md`](docs/30_status_snapshots/2026-05-28/AUTH_LOGOUT_EPERM_FAILURE_ANALYSIS_20260528.md)
-- [`docs/30_status_snapshots/2026-05-28/AUTH_LOGOUT_EPERM_FIX_DESIGN_20260528.md`](docs/30_status_snapshots/2026-05-28/AUTH_LOGOUT_EPERM_FIX_DESIGN_20260528.md)
-- [`docs/30_status_snapshots/2026-05-28/AUTH_LOGOUT_EPERM_VERIFICATION_20260528.md`](docs/30_status_snapshots/2026-05-28/AUTH_LOGOUT_EPERM_VERIFICATION_20260528.md)
+- [`docs/30_status_snapshots/2026-05-28/AUTH_LOGOUT_EPERM_FAILURE_ANALYSIS_20260528.md`](30_status_snapshots/2026-05-28/AUTH_LOGOUT_EPERM_FAILURE_ANALYSIS_20260528.md)
+- [`docs/30_status_snapshots/2026-05-28/AUTH_LOGOUT_EPERM_FIX_DESIGN_20260528.md`](30_status_snapshots/2026-05-28/AUTH_LOGOUT_EPERM_FIX_DESIGN_20260528.md)
+- [`docs/30_status_snapshots/2026-05-28/AUTH_LOGOUT_EPERM_VERIFICATION_20260528.md`](30_status_snapshots/2026-05-28/AUTH_LOGOUT_EPERM_VERIFICATION_20260528.md)
 
 ## Nested payload scroll preservation fix notes
 
@@ -233,9 +246,9 @@ Estonian timestamp: 2026-05-28 13:06 EEST
 
 Use these documents when investigating result payload / JSON panel scroll resets during dashboard re-renders:
 
-- [`docs/30_status_snapshots/2026-05-28/NESTED_PAYLOAD_SCROLL_FAILURE_ANALYSIS_20260528.md`](docs/30_status_snapshots/2026-05-28/NESTED_PAYLOAD_SCROLL_FAILURE_ANALYSIS_20260528.md)
-- [`docs/30_status_snapshots/2026-05-28/NESTED_PAYLOAD_SCROLL_FIX_DESIGN_20260528.md`](docs/30_status_snapshots/2026-05-28/NESTED_PAYLOAD_SCROLL_FIX_DESIGN_20260528.md)
-- [`docs/30_status_snapshots/2026-05-28/NESTED_PAYLOAD_SCROLL_VERIFICATION_20260528.md`](docs/30_status_snapshots/2026-05-28/NESTED_PAYLOAD_SCROLL_VERIFICATION_20260528.md)
+- [`docs/30_status_snapshots/2026-05-28/NESTED_PAYLOAD_SCROLL_FAILURE_ANALYSIS_20260528.md`](30_status_snapshots/2026-05-28/NESTED_PAYLOAD_SCROLL_FAILURE_ANALYSIS_20260528.md)
+- [`docs/30_status_snapshots/2026-05-28/NESTED_PAYLOAD_SCROLL_FIX_DESIGN_20260528.md`](30_status_snapshots/2026-05-28/NESTED_PAYLOAD_SCROLL_FIX_DESIGN_20260528.md)
+- [`docs/30_status_snapshots/2026-05-28/NESTED_PAYLOAD_SCROLL_VERIFICATION_20260528.md`](30_status_snapshots/2026-05-28/NESTED_PAYLOAD_SCROLL_VERIFICATION_20260528.md)
 
 
 - `docs/30_status_snapshots/2026-05-28/ENV_SINGLE_FILE_TEST_MODE_FIX_20260528.md` - explains the single `.env` Test Mode projection fix and why `test.env` is no longer a runtime source.

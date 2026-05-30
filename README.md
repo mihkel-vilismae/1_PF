@@ -1,8 +1,8 @@
 # Photo Frame Dashboard System
 
-This repository contains a dashboard-driven system for managing a staged photo-processing pipeline and playback simulation.
+This repository contains a dashboard-driven photo-frame system for managing staged media processing, runtime monitoring, and playback surfaces.
 
-The system documentation has been consolidated into categorized canonical docs under `docs/categorized/`. Implementation status in those docs is documentation-derived only unless a document explicitly states that a code path was verified.
+The system documentation is organized in canonical numbered folders under `docs/`: `00_current_truth`, `10_runbooks`, `20_architecture_and_specs`, `30_status_snapshots`, `40_backlog_and_tasks`, `50_audits_and_migrations`, and `90_archive`. Implementation status in documentation is not current runtime truth unless the document cites current code, tests, generated evidence, or runtime output.
 
 ## Windows full launcher
 
@@ -13,52 +13,42 @@ Use `start_win.cmd` for the older lighter startup path.
 ## Documentation entry points
 
 
-### Documentation navigation (current grouping)
+### Documentation navigation
 
 Use the current documentation navigation files before treating older docs as truth:
 
 - [`docs/DOC_INDEX.md`](docs/DOC_INDEX.md) is the main map for docs by purpose, kind, authority, and topic.
 - [`docs/DOC_FRESHNESS_MATRIX.md`](docs/DOC_FRESHNESS_MATRIX.md) shows which docs are current, recent-but-verify, historical, or risky.
 - [`docs/DOC_REORGANIZATION_PLAN.md`](docs/DOC_REORGANIZATION_PLAN.md) must be checked before moving or renaming documentation files.
-- [`docs/AUTH_EVIDENCE_PACK.md`](docs/AUTH_EVIDENCE_PACK.md) is the starting point for login/auth artifact debugging.
+- [`docs/DOC_REFACTOR_CLOSURE_REPORT_20260525.md`](docs/DOC_REFACTOR_CLOSURE_REPORT_20260525.md) summarizes the canonical folder layout and compatibility-pointer policy.
+- [`docs/00_current_truth/AUTH_EVIDENCE_PACK.md`](docs/00_current_truth/AUTH_EVIDENCE_PACK.md) is the canonical starting point for login/auth artifact debugging.
 
-Old TODO files, `task_docs/`, backlog docs, and vision/spec docs are useful context, but they are not current implementation truth unless code, tests, or generated evidence confirm them.
+Old TODO files, `task_docs/`, backlog docs, old categorized indexes, and vision/spec docs are useful context, but they are not current implementation truth unless code, tests, or generated evidence confirm them.
 
 Start here:
 
-- `docs/main_readme.md` - global documentation index, authority rules, conflict summary, and full old-to-new migration map.
-- `docs/categorized/vision_spec_docs/main_readme.md` - product vision, architecture intent, runtime recovery, dashboard, auth, and pipeline specs.
-- `docs/categorized/current_implementation_status_docs/main_readme.md` - documented current system status, button/view verification evidence, and known gaps.
-- `docs/categorized/task_documentation_still_to_implement/main_readme.md` - still-actionable implementation, verification, and reconciliation tasks.
-- `docs/categorized/other_documentation/main_readme.md` - operator notes, setup/auth notes, documentation workflow, default project checklist, and archive/reference orientation.
-- `docs/NEW_AUTH_PROVIDER_VERIFICATION_FLOW.md` - current NEW AUTH passive-status and active provider-verification operator flow.
-- `docs/IMPLEMENTATION_STATUS_UPDATE_20260512_NEW_AUTH_PROVIDER_VERIFICATION.md` - latest implementation-status update for the NEW AUTH provider-verification UX slices.
+- [`docs/DOC_INDEX.md`](docs/DOC_INDEX.md) for the full documentation inventory.
+- [`docs/00_current_truth/`](docs/00_current_truth/) for current evidence-backed guides.
+- [`docs/10_runbooks/operator_setup_and_auth_notes.md`](docs/10_runbooks/operator_setup_and_auth_notes.md) for operator setup and auth notes.
+- [`docs/10_runbooks/windows_full_launcher.md`](docs/10_runbooks/windows_full_launcher.md) for the full Windows startup workflow.
+- [`docs/20_architecture_and_specs/auth/NEW_AUTH_PROVIDER_VERIFICATION_FLOW.md`](docs/20_architecture_and_specs/auth/NEW_AUTH_PROVIDER_VERIFICATION_FLOW.md) for the NEW AUTH provider-verification reference.
+- [`docs/30_status_snapshots/`](docs/30_status_snapshots/) for dated implementation snapshots that must be rechecked against current code before use.
 
-## 2026-05-12 status update
-
-NEW AUTH Slices 1–10 plus the 2026-05-12 provider-verification UX reconciliation are documented as closed. The dashboard uses `/api/auth/new/*` for the new auth flow. Local session files alone are not authenticated; provider proof or stronger test-download proof is required. Passive status remains read-only; `Verify with iCloudPD` runs active provider proof through `GET /api/auth/new/status`, while `Verify iCloudPD install` remains an executable/config readiness check only.
-
-View B has backend-wired pipeline maintenance controls for stale persisted pipeline lock detection and stale-lock clearing. The detector currently classifies stale pipeline locks only.
-
-B3.5 owns playback queue preparation/building. B4 and `playback_worker` select the current playable item from already prepared queue/state as the final worker-stage action before the loop can begin again. Preview/fullscreen rendering are still not real media display, Raspberry OS rendering remains disabled/planned, and screen hardware control remains outside B4.
-
-Windows CronEmulator playback-worker command wiring is partial: it reaches `npm run api -- --scheduler playback-worker` from the expected `tools/CronEmulator` launch context, but live local scheduler/emulator operation still depends on that context being installed/launched correctly.
-
-View C now reads the last orchestration run from the backend using the `GET /api/runtime/orchestration/last` endpoint and renders a read‑only summary derived from SQLite.  The dashboard explicitly labels this snapshot as read‑only and does not attempt any restore; the “Resume” button remains a disabled placeholder until a deliberate restore contract exists.  View D continues to be a runtime‑monitoring gap in terms of backend support, but the UI now clarifies the origin of each field (database, lock, heartbeat, log tail or computed) in the simulated runtime preview.
+Legacy `docs/main_readme.md`, `docs/categorized/*`, `task_docs/`, and `_TODO_13_05_26/` paths are compatibility navigation only unless a current code/test/evidence check proves otherwise.
 
 ## Current documented state
 
 The consolidated status docs describe the system as partially implemented, with mixed real backend behavior and simulated or placeholder-backed dashboard behavior.
 
-Documentation-derived summary:
+Code-checked entrypoint summary:
 
 | Area | Documented state |
 |---|---|
-| View A - Init | Backend-backed initialization surfaces with documented scheduler/platform limitations. |
-| View B - Test | Hybrid area with a mix of real endpoints and simulated or placeholder-backed stages. |
-| View C - Last Run Info | Demo/status-oriented surface unless otherwise verified separately. |
-| View D - Running Process | Runtime preview/simulation unless otherwise verified separately. |
-| Inspect/metadata | Important for explaining UI state, backend status, and provenance. |
+| Frontend | Vite app under `dashboard/`, served by `npm run dev` on `http://localhost:5173/`. |
+| Backend API | TypeScript server entrypoint at `server/index.ts`, started by `npm run api`. |
+| Version display | Frontend reads backend version from `GET /api/version`; repo version is stored in `VERSION` and `package.json`. |
+| NEW AUTH | Backend routes are under `/api/auth/new/*`; authentication claims still require endpoint/evidence checks. |
+| Runtime/playback | Backend routes exist for orchestration, runtime pipeline stages, playback contracts, resume checkpoints, and native playback status/actions. |
 
 This README does not assert source-code truth. Check code/tests directly before making implementation claims.
 
@@ -67,8 +57,11 @@ This README does not assert source-code truth. Check code/tests directly before 
 High-level documented components:
 
 - `dashboard/` - frontend UI, views, and inspect surfaces.
-- `docs/` - consolidated documentation entrypoints and categorized docs.
+- `server/` - backend API routes, runtime services, auth, database, playback, scheduler, and worker entrypoints.
+- `shared/` - shared TypeScript contracts.
+- `docs/` - canonical numbered documentation, compatibility pointers, snapshots, specs, runbooks, audits, and archive material.
 - `scripts/` - local tooling and governance helpers.
+- `tools/` - tool-local utilities such as CronEmulator.
 - staged pipeline model - download, index, GPS parsing, geocode, B3.5 queue preparation/building, and B4/current-item playback selection concepts as documented.
 
 ## How to run
@@ -86,7 +79,7 @@ npm run build
 npm run dev
 ```
 
-On Windows, `start_win.cmd` checks dependencies, runs `npm run build`, then starts `npm run api` and `npm run dev` in separate terminals.
+On Windows, `start_win.cmd` checks dependencies, runs `npm run build`, then starts `npm run api` and `npm run dev` in separate terminals. `start_win_full.cmd` delegates to `start_scripts/start_win_full.ps1`, which installs dependencies, runs tests, builds, starts API/frontend tabs, and opens the browser.
 
 Open the local app:
 
@@ -119,7 +112,7 @@ fix!:
 BREAKING CHANGE:
 ```
 
-Local validation is documented in `docs/categorized/other_documentation/operator_setup_and_auth_notes.md` and the versioning/changelog governance notes.
+Local validation is documented in `docs/10_runbooks/operator_setup_and_auth_notes.md` and the versioning/changelog governance notes.
 
 ## Repository structure
 
