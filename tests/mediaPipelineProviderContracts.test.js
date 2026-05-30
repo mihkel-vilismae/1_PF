@@ -267,3 +267,119 @@ print(json.dumps({
     cached_provider_name: 'nominatim_osm',
   });
 });
+
+test('GPS provider chain reads offline sidecar and path coordinate fallbacks', () => {
+  const payload = runPythonJson(`
+import json
+import os
+import sys
+import tempfile
+from pathlib import Path
+
+repo_root = sys.argv[1]
+sys.path.insert(0, os.path.join(repo_root, 'server', 'scripts'))
+
+from media_pipeline.gps_exif_provider import default_gps_providers
+from media_pipeline.provider_chain import run_gps_provider_chain
+from media_pipeline.provider_contracts import GpsProviderInput
+
+
+def parse(path):
+    result = run_gps_provider_chain(GpsProviderInput(str(path)), default_gps_providers())
+    return {
+        'provider': result.provider_id,
+        'status': result.status,
+        'method': result.parser_method,
+        'latitude': round(result.latitude, 6) if result.latitude is not None else None,
+        'longitude': round(result.longitude, 6) if result.longitude is not None else None,
+        'altitude': result.altitude,
+    }
+
+with tempfile.TemporaryDirectory() as temp_dir:
+    root = Path(temp_dir)
+
+    json_media = root / 'json-photo.jpg'
+    json_media.write_bytes(b'not an image')
+    (root / 'json-photo.jpg.json').write_text(
+        json.dumps({'location': {'latitude': 58.377625, 'longitude': 26.729006, 'altitude': 123.45}}),
+        encoding='utf-8',
+    )
+
+    xmp_media = root / 'xmp-photo.jpg'
+    xmp_media.write_bytes(b'not an image')
+    (root / 'xmp-photo.xmp').write_text(
+        '<rdf:Description exif:GPSLatitude="58.377626" exif:GPSLongitude="26.729007" exif:GPSAltitude="124.45" />',
+        encoding='utf-8',
+    )
+
+    text_media = root / 'text-photo.jpg'
+    text_media.write_bytes(b'not an image')
+    (root / 'text-photo.gps.txt').write_text('lat=58.377627 lon=26.729008 altitude=125.45', encoding='utf-8')
+
+    filename_media = root / 'IMG_lat_58.377628_lon_26.729009.jpg'
+    filename_media.write_bytes(b'not an image')
+
+    path_dir = root / 'album_lat_58.377629_lon_26.729010'
+    path_dir.mkdir()
+    path_media = path_dir / 'plain.jpg'
+    path_media.write_bytes(b'not an image')
+
+    print(json.dumps({
+        'provider_ids': [provider.provider_id for provider in default_gps_providers()],
+        'json': parse(json_media),
+        'xmp': parse(xmp_media),
+        'text': parse(text_media),
+        'filename': parse(filename_media),
+        'path': parse(path_media),
+    }))
+`);
+
+  assert.deepEqual(payload.provider_ids, [
+    'exif',
+    'json_sidecar',
+    'xmp_sidecar',
+    'text_sidecar',
+    'filename_coordinates',
+    'path_coordinates',
+  ]);
+  assert.deepEqual(payload.json, {
+    provider: 'json_sidecar',
+    status: 'SUCCEEDED',
+    method: 'JSON_SIDECAR',
+    latitude: 58.377625,
+    longitude: 26.729006,
+    altitude: 123.45,
+  });
+  assert.deepEqual(payload.xmp, {
+    provider: 'xmp_sidecar',
+    status: 'SUCCEEDED',
+    method: 'XMP_SIDECAR',
+    latitude: 58.377626,
+    longitude: 26.729007,
+    altitude: 124.45,
+  });
+  assert.deepEqual(payload.text, {
+    provider: 'text_sidecar',
+    status: 'SUCCEEDED',
+    method: 'TEXT_SIDECAR',
+    latitude: 58.377627,
+    longitude: 26.729008,
+    altitude: 125.45,
+  });
+  assert.deepEqual(payload.filename, {
+    provider: 'filename_coordinates',
+    status: 'SUCCEEDED',
+    method: 'FILENAME_COORDINATES',
+    latitude: 58.377628,
+    longitude: 26.729009,
+    altitude: null,
+  });
+  assert.deepEqual(payload.path, {
+    provider: 'path_coordinates',
+    status: 'SUCCEEDED',
+    method: 'PATH_COORDINATES',
+    latitude: 58.377629,
+    longitude: 26.72901,
+    altitude: null,
+  });
+});
