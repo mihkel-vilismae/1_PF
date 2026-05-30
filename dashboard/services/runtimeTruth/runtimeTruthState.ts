@@ -197,7 +197,7 @@ export function buildInitialAuthButtonStates(): Record<(typeof AUTH_PREFLIGHT_BU
         endpoint: null,
       },
     ]),
-  );
+  ) as Record<(typeof AUTH_PREFLIGHT_BUTTON_KEYS)[number], AuthButtonState>;
 }
 
 

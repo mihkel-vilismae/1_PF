@@ -4,7 +4,7 @@
  * remain centralized.
  */
 import { createRuntimeTruthBehavior } from './runtimeTruth/runtimeTruthBehavior.ts';
-import { createInitialState } from './runtimeTruth/runtimeTruthState.ts';
+import { createInitialState, type SchedulerEndpointLogEntry } from './runtimeTruth/runtimeTruthState.ts';
 import {
   createRuntimeTruthPersistence,
   type RuntimeTruthPersistenceApi,
@@ -44,6 +44,13 @@ type RuntimeTruthState = {
   databaseViewer: {
     selectedTableName?: string | null;
     rows?: { page?: number } | null;
+    [key: string]: unknown;
+  };
+  schedulerEmulator?: {
+    editableCrontab?: string;
+    activeCrontab?: string;
+    endpointLog?: SchedulerEndpointLogEntry[];
+    buttonStates?: Record<string, unknown>;
     [key: string]: unknown;
   };
   runningProcess: {
