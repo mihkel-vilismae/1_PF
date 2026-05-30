@@ -39,3 +39,11 @@ Record task statements that are stale, conflicting, duplicate, or non-authoritat
 | `INSPECT_CONTROLS_SLICE1_ANALYSIS.md` | Workflow repair guidance retained as verification input only. |
 | `vision_and_implementation/UNRESOLVED_QUESTIONS.md` | Marked predecessor/archive relative to `VISION_SPEC/16-unresolved-questions.md`. |
 | `17-deprecated-superseded-docs-log.md` | Harvest-first, marker-required cleanup rule adopted. |
+
+## Slice 5 superseded implementation wording — 2026-05-30 21:35 EEST
+
+| ID | Task statement (source wording/context) | Status | Reason | Replacement / handling |
+|---|---|---|---|---|
+| RS-6 | "Implement durable last-run snapshot read path for View C" as an open runtime gap. | Superseded | Current View C uses `/api/runtime/orchestration/last` as a backend-owned read-only last-run projection. | Keep only the controlled restore/resume backend contract as active work. |
+| RS-7 | "Geocode has no provider model" or equivalent adapter-absence wording. | Superseded | The repo now includes a cache-first `ReverseGeocodeProvider` registry with disabled-by-default network providers and deterministic placeholder fallback. | Track safe provider activation/proof, cache-first evidence, and address-quality checks. |
+| RS-8 | "GPS parsing only has EXIF" as an architecture gap. | Superseded | The repo now includes EXIF-first GPS providers plus JSON/XMP/text sidecars and filename/path token providers. | Track real-media fixture proof and add future providers only for observed unsupported metadata sources. |
