@@ -20,16 +20,16 @@ _LONGITUDE_KEYS = ("longitude", "lon", "lng", "gpslongitude", "gps_longitude", "
 _ALTITUDE_KEYS = ("altitude", "alt", "elevation", "gpsaltitude", "gps_altitude")
 _NUMBER_PATTERN = r"[-+]?(?:\d+(?:\.\d+)?|\.\d+)"
 _TOKEN_COORDINATE_PATTERN = re.compile(
-    rf"(?:lat(?:itude)?|gpslat)\s*[:=_ -]?\s*(?P<lat>{_NUMBER_PATTERN}).{{0,48}}?"
-    rf"(?:lon(?:gitude)?|lng|gpslon|gpslng)\s*[:=_ -]?\s*(?P<lon>{_NUMBER_PATTERN})",
+    rf"(?:lat(?:itude)?|gpslat(?:itude)?)[^0-9+-]{{0,16}}(?P<lat>{_NUMBER_PATTERN}).{{0,48}}?"
+    rf"(?:lon(?:gitude)?|lng|gpslon(?:gitude)?|gpslng)[^0-9+-]{{0,16}}(?P<lon>{_NUMBER_PATTERN})",
     re.IGNORECASE,
 )
 _REVERSED_TOKEN_COORDINATE_PATTERN = re.compile(
-    rf"(?:lon(?:gitude)?|lng|gpslon|gpslng)\s*[:=_ -]?\s*(?P<lon>{_NUMBER_PATTERN}).{{0,48}}?"
-    rf"(?:lat(?:itude)?|gpslat)\s*[:=_ -]?\s*(?P<lat>{_NUMBER_PATTERN})",
+    rf"(?:lon(?:gitude)?|lng|gpslon(?:gitude)?|gpslng)[^0-9+-]{{0,16}}(?P<lon>{_NUMBER_PATTERN}).{{0,48}}?"
+    rf"(?:lat(?:itude)?|gpslat(?:itude)?)[^0-9+-]{{0,16}}(?P<lat>{_NUMBER_PATTERN})",
     re.IGNORECASE,
 )
-_ALTITUDE_PATTERN = re.compile(rf"(?:alt(?:itude)?|elevation)\s*[:=_ -]?\s*(?P<alt>{_NUMBER_PATTERN})", re.IGNORECASE)
+_ALTITUDE_PATTERN = re.compile(rf"(?:alt(?:itude)?|elevation|gpsalt(?:itude)?)[^0-9+-]{{0,16}}(?P<alt>{_NUMBER_PATTERN})", re.IGNORECASE)
 _GPS_PAIR_PATTERN = re.compile(rf"gps\s*[:=_ -](?P<lat>{_NUMBER_PATTERN})\s*[,;_ -]+(?P<lon>{_NUMBER_PATTERN})", re.IGNORECASE)
 
 
