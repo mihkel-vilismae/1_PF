@@ -19,6 +19,7 @@ This index classifies non-skill documentation files and separates current truth 
 
 - `docs/table_of_contents.md` — short top-level table of contents for root docs, current truth, runbooks, architecture docs, backlog, scripts, config, and logs.
 - `docs/10_runbooks/gps_metadata_sources.md` — operator examples for EXIF, JSON/XMP/text sidecars, filename tokens, and path tokens used by the GPS provider chain.
+- `docs/proofs/gps_fallback_proof.md` and `tools/run-gps-fallback-proof.mjs` — deterministic local proof that GPS fallback providers can produce coordinates.
 - `docs/10_runbooks/geocode_provider_activation.md` — safe activation checklist for cache-first reverse geocoding providers.
 - `docs/90_archive/documentation_refactor_status_2026-05-25/README.md` — archive catalog for old root-level documentation-refactor slice status logs that were removed from active `docs/` root navigation.
 - `docs/20_architecture_and_specs/reference/LOGGING_STANDARD_CONTRACT.md` — reusable logging contract extracted from the durable project logger, verbose request lifecycle logs, auth debug sink, private raw-provider boundary, Test/Real log isolation, and terminal-like UI controls.

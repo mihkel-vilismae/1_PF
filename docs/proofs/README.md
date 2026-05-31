@@ -16,3 +16,13 @@ This folder documents proof workflows for behavior that cannot be honestly prove
 | `TIMED_OUT` | The proof command exceeded its configured timeout. |
 
 Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API keys, provider tokens, raw provider output, or private filesystem paths.
+
+## Available proof runners
+
+| Proof | Command | Runtime mode |
+|---|---|---|
+| Full test suite stability | `npm run proof:full-test` | local test |
+| Real iCloudPD pipeline | `npm run proof:real-icloudpd` | opt-in real provider |
+| Real geocode provider | `npm run proof:geocode-provider` | opt-in real provider |
+| GPS fallback parsing | `npm run proof:gps-fallback` | deterministic local |
+| Raspberry power-loss recovery | `npm run proof:raspberry-recovery` | hardware/operator proof |
