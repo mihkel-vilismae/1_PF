@@ -191,3 +191,5 @@ The documentation refactor is closed as an organization pass. [`DOC_REFACTOR_CLO
 Freshness rules remain unchanged: code, tests, generated evidence packs, and direct runtime checks are stronger than documentation. Compatibility pointers and old category indexes are navigation only.
 
 | docs/proofs/native_fullscreen_playback_proof.md | current_latest_baseline | proof_reference | proof_doc | native_playback, fullscreen | Deterministic proof workflow for native-player safety boundaries and browser fullscreen playback UI. |
+
+| docs/proofs/windows_cronemulator_proof.md | current_latest_baseline | deterministic_local_proof | proof_doc | cron, windows_emulator, scheduler | Windows CronEmulator proof doc; explicitly not Raspberry hardware proof. |

@@ -28,7 +28,9 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Deterministic media pipeline | `npm run proof:deterministic-media-pipeline` | deterministic local |
 | Address display | `npm run proof:address-display` | deterministic local |
 | Native / fullscreen playback | `npm run proof:native-fullscreen-playback` | deterministic local |
+| Windows CronEmulator | `npm run proof:windows-cronemulator` | windows emulator |
 | Real download continuation | `npm run proof:real-download-continuation` | opt-in real provider |
 | Raspberry power-loss recovery | `npm run proof:raspberry-recovery` | hardware/operator proof |
 
 - `dirty_shutdown_testing_proof.md` — deterministic proof for the Test Mode-only View C dirty-shutdown testing panel and backend guard scaffold.
+- `windows_cronemulator_proof.md` — deterministic proof for Windows CronEmulator parsing, scheduling, executor boundaries, and Python tests.

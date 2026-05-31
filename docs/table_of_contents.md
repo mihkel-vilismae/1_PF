@@ -68,6 +68,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/proofs/raspberry_power_loss_recovery_proof.md` | Raspberry power-loss recovery proof workflow. |
 | `docs/proofs/native_fullscreen_playback_proof.md` | Native/fullscreen playback boundary proof workflow. |
 | `docs/proofs/dirty_shutdown_testing_proof.md` | Test Mode-only dirty-shutdown testing panel and backend guard proof. |
+| `docs/proofs/windows_cronemulator_proof.md` | Windows CronEmulator boundary and duplicate-run proof. |
 
 ## Architecture and specs
 

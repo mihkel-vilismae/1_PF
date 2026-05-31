@@ -163,3 +163,7 @@ A deterministic native/fullscreen playback proof was added in Slice 6. It verifi
 ## Slice 7 dirty-shutdown testing panel note
 
 `docs/proofs/dirty_shutdown_testing_proof.md` documents a deterministic Test Mode-only View C `TESTING` panel and backend guard scaffold. This improves software recovery testing readiness, but it does not prove real Raspberry hardware power loss, does not kill the backend process, and does not execute startup recovery.
+
+## Slice 8 update — Windows CronEmulator proof
+
+Slice 8 added `npm run proof:windows-cronemulator` and `docs/proofs/windows_cronemulator_proof.md`. This improves evidence for the Windows emulator scheduling layer only. It does not upgrade Raspberry power-loss recovery to hardware-proven status; Raspberry recovery remains dependent on real device power-loss evidence.
