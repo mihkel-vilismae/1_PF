@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.7.34 - 2026-05-31
+
+- Added proof artifact schema and full test suite stability proof runner.
+- Added sanitizer coverage for proof evidence so runtime artifacts can be shared without secrets.
+
 ## 0.7.33 - 31.05.2026, 12:33:00 EEST
 
 - Fixed GPS worker queue failure-code normalization so all no-result GPS provider fallbacks persist the stable worker-level `gps_not_found` code.

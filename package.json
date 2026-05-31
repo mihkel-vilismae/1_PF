@@ -12,7 +12,8 @@
     "preview": "vite preview",
     "task-docs:toc": "node scripts/generate-task-docs-toc.mjs",
     "task-docs:check": "node scripts/generate-task-docs-toc.mjs --check",
-    "validate:view-e": "node scripts/validate-view-e.mjs"
+    "validate:view-e": "node scripts/validate-view-e.mjs",
+    "proof:full-test": "node tools/run-full-test-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
