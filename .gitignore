@@ -52,7 +52,7 @@ found_devices_latest.txt
 
 # Local/generated archives
 zip_ignore.json
-*.zip
+/*.zip
 
 # Local/generated debug evidence
 debug_artifacts/
