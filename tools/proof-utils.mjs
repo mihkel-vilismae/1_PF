@@ -67,7 +67,8 @@ export async function writeProofArtifact(proofKind, proofEnvelope) {
 export function runCommand(command, args, options = {}) {
   return new Promise((resolve) => {
     const startedAt = Date.now();
-    const child = spawn(command, args, { cwd: options.cwd ?? repoRoot, env: options.env ?? process.env, shell: options.shell ?? false, detached: options.detached ?? false });
+    const detached = options.detached ?? process.platform !== 'win32';
+    const child = spawn(command, args, { cwd: options.cwd ?? repoRoot, env: options.env ?? process.env, shell: options.shell ?? false, detached });
     let stdout = '';
     let stderr = '';
     let timedOut = false;
@@ -81,7 +82,17 @@ export function runCommand(command, args, options = {}) {
       if (forceTimer) clearTimeout(forceTimer);
       resolve({ command, args, exitCode, signal, timedOut, durationMs: Date.now() - startedAt, stdout: sanitizeText(stdout).text, stderr: sanitizeText(stderr).text });
     }
-    function killChild(signal) { try { child.kill(signal); } catch {} }
+    function killChild(signal) {
+      try {
+        if (detached && child.pid && process.platform !== 'win32') {
+          process.kill(-child.pid, signal);
+          return;
+        }
+        child.kill(signal);
+      } catch {
+        try { child.kill(signal); } catch {}
+      }
+    }
     const timer = setTimeout(() => { timedOut = true; killChild('SIGTERM'); forceTimer = setTimeout(() => { killChild('SIGKILL'); finish(null, 'SIGKILL_TIMEOUT'); }, options.forceKillGraceMs ?? 2000); }, timeoutMs);
     child.stdout?.on('data', (chunk) => { stdout += chunk.toString(); });
     child.stderr?.on('data', (chunk) => { stderr += chunk.toString(); });
