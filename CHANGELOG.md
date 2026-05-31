@@ -5,6 +5,7 @@
 - Added proof artifact schema and full test suite stability proof runner.
 - Added sanitizer coverage for proof evidence so runtime artifacts can be shared without secrets.
 - Added opt-in real iCloudPD pipeline proof runner that is blocked by default and uses only existing backend routes.
+- Added opt-in real geocode provider proof runner that rejects placeholder-only proof.
 
 ## 0.7.33 - 31.05.2026, 12:33:00 EEST
 
