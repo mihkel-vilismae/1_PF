@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.7.33 - 31.05.2026, 12:33:00 EEST
+
+- Fixed GPS worker queue failure-code normalization so all no-result GPS provider fallbacks persist the stable worker-level `gps_not_found` code.
+- Preserved provider-chain fallback behavior for sidecar, filename, and path coordinate providers while preventing fallback-specific no-result codes from leaking into the Wave C queue contract.
+- Preserved provider-specific failure codes for actual provider failures.
+- Bumped version metadata from v0.7.32 to v0.7.33.
+
 ## 0.7.32 - 29.05.2026, 22:20:00 EEST
 
 - Added a cache-first reverse-geocode provider registry with `address_cache` before all network providers.

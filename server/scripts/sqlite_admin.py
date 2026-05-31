@@ -23,6 +23,7 @@ from media_pipeline.gps_exif_provider import (
 )
 from media_pipeline.provider_chain import run_gps_provider_chain, run_reverse_geocode_provider_chain
 from media_pipeline.provider_contracts import (
+    GPS_PROVIDER_STATUS_NO_RESULT,
     GPS_PROVIDER_STATUS_SUCCEEDED,
     GEOCODE_PROVIDER_STATUS_SUCCEEDED,
     GpsProviderInput,
@@ -682,8 +683,12 @@ def stage3_process_gps_queue(path: str, executed_at: str, schema_path: str) -> d
                         "parserMethod": gps_result.parser_method,
                     }
                 else:
-                    failure_code = gps_result.failure_code or "gps_not_found"
-                    failure_message = gps_result.message or "No GPS coordinates were found in the media asset."
+                    if gps_result.status == GPS_PROVIDER_STATUS_NO_RESULT:
+                        failure_code = "gps_not_found"
+                        failure_message = "No GPS coordinates were found in the media asset."
+                    else:
+                        failure_code = gps_result.failure_code or "gps_not_found"
+                        failure_message = gps_result.message or "No GPS coordinates were found in the media asset."
 
             if gps_data is None:
                 failure_count += 1
