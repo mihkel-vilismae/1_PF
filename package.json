@@ -15,7 +15,8 @@
     "validate:view-e": "node scripts/validate-view-e.mjs",
     "proof:full-test": "node tools/run-full-test-proof.mjs",
     "proof:real-icloudpd": "node tools/run-real-icloudpd-pipeline-proof.mjs",
-    "proof:geocode-provider": "node tools/run-geocode-provider-proof.mjs"
+    "proof:geocode-provider": "node tools/run-geocode-provider-proof.mjs",
+    "proof:raspberry-recovery": "node tools/collect-raspberry-recovery-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
