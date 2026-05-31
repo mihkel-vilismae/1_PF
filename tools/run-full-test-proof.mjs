@@ -6,6 +6,7 @@
  * Intended for local verification before claiming full-suite stability.
  */
 import process from 'node:process';
+import { spawnSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { createProofEnvelope, getProofEnvironment, runCommand, writeProofArtifact } from './proof-utils.mjs';
 
@@ -26,6 +27,17 @@ function parseNodeTestCounts(output) {
   return counts;
 }
 
+/**
+ * Cleans up orphaned test children after a timeout in Unix-like environments.
+ */
+function cleanupLingeringTestProcesses(commandResult) {
+  if (!commandResult.timedOut || process.platform === 'win32') {
+    return;
+  }
+  spawnSync('pkill', ['-f', `${process.cwd()}.*node_modules/.bin/tsx`], { stdio: 'ignore' });
+  spawnSync('pkill', ['-f', `${process.cwd()}.*server/index.ts`], { stdio: 'ignore' });
+}
+
 /** Runs tests and writes proof JSON. */
 async function main() {
   const timeoutMs = Number(process.env.PF_FULL_TEST_PROOF_TIMEOUT_MS ?? '300000');
@@ -33,6 +45,7 @@ async function main() {
   const args = ['tsx', '--test', '--test-reporter=spec'];
   const metadata = await readProjectMetadata();
   const result = await runCommand(command, args, { timeoutMs });
+  cleanupLingeringTestProcesses(result);
   const combinedOutput = `${result.stdout}\n${result.stderr}`;
   const proofStatus = result.timedOut ? 'TIMED_OUT' : result.exitCode === 0 ? 'PASSED' : 'FAILED';
   const envelope = createProofEnvelope({ proofKind: 'full_test_suite_stability', baselineVersion: metadata.version, gitCommit: metadata.gitCommit, proofStatus, runtimeMode: 'test', evidence: { environment: getProofEnvironment(), command: `${command} ${args.join(' ')}`, timeout_ms: timeoutMs, exit_code: result.exitCode, signal: result.signal, timed_out: result.timedOut, duration_ms: result.durationMs, test_counts: parseNodeTestCounts(combinedOutput), stdout_tail: result.stdout.slice(-8000), stderr_tail: result.stderr.slice(-8000) }, knownLimitations: ['This proof only proves the local environment where it was run.', 'External iCloudPD, geocode-provider, and Raspberry hardware behavior are out of scope.'] });
