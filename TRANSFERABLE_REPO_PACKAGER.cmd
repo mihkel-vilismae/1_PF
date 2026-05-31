@@ -52,6 +52,9 @@ Repo ZIP Packager
 Creates a ZIP archive of a repository while preserving .git history.
 
 Behavior:
+- Prints .git size and file count before git gc, after git gc, and after ZIP creation.
+- Runs git gc --prune=now before packaging to compact Git storage.
+- Warns when .git changes during ZIP creation after git gc.
 - Includes .git/ by default.
 - Excludes files ignored by .gitignore, using git check-ignore when available.
 - Excludes additional files/folders/patterns from zip_ignore.json.
@@ -90,6 +93,7 @@ class IgnoreConfig:
 class SizeSnapshot:
     total_bytes: int
     git_bytes: int
+    git_file_count: int
 
 
 DEFAULT_IGNORE_CONFIG = IgnoreConfig(
@@ -182,6 +186,7 @@ def color_print(message: str, color: str | None = None) -> None:
 
     color_codes = {
         "Green": "\033[92m",
+        "Yellow": "\033[93m",
         "Red": "\033[91m",
     }
 
@@ -227,14 +232,72 @@ def directory_size_bytes(root: Path, excluded_paths: set[Path] | None = None) ->
     return total
 
 
+def directory_file_count(root: Path, excluded_paths: set[Path] | None = None) -> int:
+    """Return the count of files under a directory."""
+    if not root.exists():
+        return 0
+
+    excluded_resolved = {path.resolve() for path in excluded_paths or set()}
+    total = 0
+
+    for current_root, dir_names, file_names in os.walk(root):
+        dir_names.sort()
+        file_names.sort()
+        current_path = Path(current_root)
+
+        for file_name in file_names:
+            file_path = current_path / file_name
+
+            try:
+                resolved_file = file_path.resolve()
+            except OSError:
+                continue
+
+            if resolved_file in excluded_resolved:
+                continue
+
+            if file_path.is_file():
+                total += 1
+
+    return total
+
+
 def capture_size_snapshot(repo_root: Path, output_zip_path: Path | None = None) -> SizeSnapshot:
-    """Capture total repository size and .git folder size."""
+    """Capture total repository size plus .git folder size and file count."""
     excluded_paths = {output_zip_path.resolve()} if output_zip_path is not None else set()
     git_root = repo_root / ".git"
 
     return SizeSnapshot(
         total_bytes=directory_size_bytes(repo_root, excluded_paths),
         git_bytes=directory_size_bytes(git_root),
+        git_file_count=directory_file_count(git_root),
+    )
+
+
+def print_git_checkpoint(label: str, snapshot: SizeSnapshot) -> None:
+    """Print one clearly named .git size and file-count checkpoint."""
+    print(f"{label}:")
+    print(f"- .git folder size: {format_size(snapshot.git_bytes)}")
+    print(f"- .git file count: {snapshot.git_file_count}")
+
+
+def describe_git_delta(before_snapshot: SizeSnapshot, after_snapshot: SizeSnapshot) -> str:
+    """Return a compact size/count delta string between two .git checkpoints."""
+    size_delta = after_snapshot.git_bytes - before_snapshot.git_bytes
+    count_delta = after_snapshot.git_file_count - before_snapshot.git_file_count
+    sign_size = "+" if size_delta >= 0 else "-"
+    sign_count = "+" if count_delta >= 0 else "-"
+    return (
+        f"size {sign_size}{format_size(abs(size_delta))}, "
+        f"files {sign_count}{abs(count_delta)}"
+    )
+
+
+def has_git_changed(before_snapshot: SizeSnapshot, after_snapshot: SizeSnapshot) -> bool:
+    """Return True when .git size or file count changed between checkpoints."""
+    return (
+        before_snapshot.git_bytes != after_snapshot.git_bytes
+        or before_snapshot.git_file_count != after_snapshot.git_file_count
     )
 
 
@@ -322,6 +385,38 @@ def run_git_check_ignore(repo_root: Path, rel_path: str) -> bool:
         return result.returncode == 0
     except FileNotFoundError:
         return False
+
+
+def run_git_gc_prune_now(repo_root: Path) -> None:
+    """Run Git garbage collection before packaging to compact repository metadata."""
+    if not (repo_root / ".git").exists():
+        raise FileNotFoundError("No .git folder found. This packager must be run from a Git repository root.")
+
+    print("Running git gc --prune=now before packaging.")
+
+    try:
+        result = subprocess.run(
+            ["git", "gc", "--prune=now"],
+            cwd=repo_root,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+    except FileNotFoundError as error:
+        raise FileNotFoundError("git.exe was not found on PATH. Install Git for Windows or add it to PATH.") from error
+
+    if result.stdout.strip():
+        print(result.stdout.strip())
+
+    if result.returncode != 0:
+        stderr = result.stderr.strip() or "git gc failed without stderr output."
+        raise RuntimeError(f"git gc --prune=now failed with exit code {result.returncode}: {stderr}")
+
+    if result.stderr.strip():
+        print(result.stderr.strip())
+
+    print("git gc --prune=now completed successfully.")
 
 
 def path_matches_extra_ignore(rel_path: str, config: IgnoreConfig) -> bool:
@@ -483,11 +578,13 @@ def parse_args() -> argparse.Namespace:
 def print_final_report(
     start_datetime: datetime,
     start_perf: float,
-    before_snapshot: SizeSnapshot,
+    before_gc_snapshot: SizeSnapshot,
+    after_gc_snapshot: SizeSnapshot,
+    after_zip_snapshot: SizeSnapshot,
     output_zip_path: Path,
     success: bool,
 ) -> None:
-    """Print the required final timing and size report."""
+    """Print the required final timing and clearly labeled size report."""
     end_datetime = datetime.now()
     elapsed_seconds = time.perf_counter() - start_perf
     final_color = "Green" if success else "Red"
@@ -496,10 +593,16 @@ def print_final_report(
     print("")
     color_print(f"Finished TRANSFERABLE_REPO_PACKAGER at {format_datetime(end_datetime)}.", final_color)
     color_print(f"Time taken: {elapsed_seconds:.2f} seconds.", final_color)
-    color_print("Total size:", final_color)
-    color_print(f"- before packaging: {format_size(before_snapshot.total_bytes)}.", final_color)
-    color_print(f"- after packaging: {format_size(output_zip_size)}", final_color)
-    color_print(f".git folder size before packaging: {format_size(before_snapshot.git_bytes)}.", final_color)
+    color_print(f"Repository size before ZIP creation: {format_size(after_gc_snapshot.total_bytes)}.", final_color)
+    color_print(f"Created ZIP size: {format_size(output_zip_size)}.", final_color)
+    color_print("Git metadata checkpoints:", final_color)
+    color_print(f"- before git gc: {format_size(before_gc_snapshot.git_bytes)}, {before_gc_snapshot.git_file_count} files.", final_color)
+    color_print(f"- after git gc: {format_size(after_gc_snapshot.git_bytes)}, {after_gc_snapshot.git_file_count} files.", final_color)
+    color_print(f"- after ZIP creation: {format_size(after_zip_snapshot.git_bytes)}, {after_zip_snapshot.git_file_count} files.", final_color)
+    color_print(f"Git gc delta: {describe_git_delta(before_gc_snapshot, after_gc_snapshot)}.", final_color)
+    color_print(f"ZIP creation delta: {describe_git_delta(after_gc_snapshot, after_zip_snapshot)}.", final_color)
+    if has_git_changed(after_gc_snapshot, after_zip_snapshot):
+        color_print("WARNING: .git changed during ZIP creation or ignore scanning.", "Yellow")
     color_print("Press any key to exit.", final_color)
 
 
@@ -517,18 +620,29 @@ def main() -> int:
     ignore_json_path = Path(args.ignore_json) if args.ignore_json else None
     manifest_path = Path(args.manifest) if args.manifest else None
 
-    before_snapshot = SizeSnapshot(total_bytes=0, git_bytes=0)
+    before_gc_snapshot = SizeSnapshot(total_bytes=0, git_bytes=0, git_file_count=0)
+    after_gc_snapshot = SizeSnapshot(total_bytes=0, git_bytes=0, git_file_count=0)
+    after_zip_snapshot = SizeSnapshot(total_bytes=0, git_bytes=0, git_file_count=0)
 
     try:
         print(f"Repository: {repo_root}")
         print(f"Filename to create: {output_zip_path.name}")
         print(f"Output ZIP path: {output_zip_path}")
 
-        with DynamicProgressLine("Calculating repository size before packaging"):
-            before_snapshot = capture_size_snapshot(repo_root, output_zip_path)
+        with DynamicProgressLine("Capturing .git checkpoint before git gc"):
+            before_gc_snapshot = capture_size_snapshot(repo_root, output_zip_path)
 
-        print(f"Total size before packaging: {format_size(before_snapshot.total_bytes)}")
-        print(f".git folder size before packaging: {format_size(before_snapshot.git_bytes)}")
+        print_git_checkpoint(".git checkpoint before git gc", before_gc_snapshot)
+
+        with DynamicProgressLine("Compacting Git database"):
+            run_git_gc_prune_now(repo_root)
+
+        with DynamicProgressLine("Capturing repository and .git checkpoint after git gc"):
+            after_gc_snapshot = capture_size_snapshot(repo_root, output_zip_path)
+
+        print(f"Repository size before ZIP creation: {format_size(after_gc_snapshot.total_bytes)}")
+        print_git_checkpoint(".git checkpoint after git gc", after_gc_snapshot)
+        print(f"Git gc delta: {describe_git_delta(before_gc_snapshot, after_gc_snapshot)}")
 
         with DynamicProgressLine("Loading ignore rules"):
             config = load_ignore_config(ignore_json_path)
@@ -548,14 +662,23 @@ def main() -> int:
             print(f"Manifest: {manifest_path.resolve()}")
         print(f"Files added: {added_count}")
         print(f"Files skipped: {skipped_count}")
-        print("Calculating created ZIP size.")
+        print("Calculating created ZIP size and post-ZIP .git checkpoint.")
+        after_zip_snapshot = capture_size_snapshot(repo_root, output_zip_path)
+        print_git_checkpoint(".git checkpoint after ZIP creation", after_zip_snapshot)
+        print(f"ZIP creation delta: {describe_git_delta(after_gc_snapshot, after_zip_snapshot)}")
+        if has_git_changed(after_gc_snapshot, after_zip_snapshot):
+            color_print("WARNING: .git changed during ZIP creation or ignore scanning.", "Yellow")
 
-        print_final_report(start_datetime, start_perf, before_snapshot, output_zip_path, True)
+        print_final_report(start_datetime, start_perf, before_gc_snapshot, after_gc_snapshot, after_zip_snapshot, output_zip_path, True)
         wait_for_keypress()
         return 0
     except Exception as error:
         color_print(f"ERROR: {error}", "Red")
-        print_final_report(start_datetime, start_perf, before_snapshot, output_zip_path, False)
+        try:
+            after_zip_snapshot = capture_size_snapshot(repo_root, output_zip_path)
+        except Exception:
+            after_zip_snapshot = after_gc_snapshot
+        print_final_report(start_datetime, start_perf, before_gc_snapshot, after_gc_snapshot, after_zip_snapshot, output_zip_path, False)
         wait_for_keypress()
         return 1
 
