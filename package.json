@@ -19,7 +19,8 @@
     "proof:raspberry-recovery": "node tools/collect-raspberry-recovery-proof.mjs",
     "proof:gps-fallback": "node tools/run-gps-fallback-proof.mjs",
     "proof:deterministic-media-pipeline": "node tools/run-deterministic-media-pipeline-proof.mjs",
-    "proof:real-download-continuation": "node tools/run-real-download-continuation-proof.mjs"
+    "proof:real-download-continuation": "node tools/run-real-download-continuation-proof.mjs",
+    "proof:address-display": "node tools/run-address-display-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

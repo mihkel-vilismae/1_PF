@@ -62,6 +62,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/proofs/real_icloudpd_pipeline_proof.md` | Real iCloudPD pipeline proof workflow. |
 | `docs/proofs/geocode_provider_proof.md` | Real geocode provider proof workflow. |
 | `docs/proofs/real_download_continuation_proof.md` | Real download continuation/deduplication proof workflow. |
+| `docs/proofs/address_display_proof.md` | Deterministic proof that resolved address text reaches playback payloads. |
 | `docs/proofs/gps_fallback_proof.md` | Deterministic local GPS fallback proof workflow. |
 | `docs/proofs/deterministic_media_pipeline_proof.md` | Deterministic local media pipeline proof workflow. |
 | `docs/proofs/raspberry_power_loss_recovery_proof.md` | Raspberry power-loss recovery proof workflow. |
