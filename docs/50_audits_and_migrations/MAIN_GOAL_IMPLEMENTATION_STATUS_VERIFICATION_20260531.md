@@ -154,3 +154,7 @@ This document is documentation-only. It does not change runtime behavior, APIs, 
 | Gate B | Pending/blocked: no move, merge, archive, or canonicalization was performed. |
 | Gate C | Pending/blocked: no deletes, pointer retirement, or old-index removal was performed. |
 | Gate D | Required after edits: run link checks, `git diff --check`, targeted tests, and clean git status before packaging. |
+
+## Slice 6 native/fullscreen proof update — 2026-05-31
+
+A deterministic native/fullscreen playback proof was added in Slice 6. It verifies disabled-by-default native playback, safe mock-player proof mode, route separation, process-ownership documentation, and browser fullscreen overlay behavior. It does **not** prove real OS fullscreen stability, native player launch behavior, Raspberry HDMI output, or hardware display behavior. Use `npm run proof:native-fullscreen-playback` for this deterministic boundary proof.

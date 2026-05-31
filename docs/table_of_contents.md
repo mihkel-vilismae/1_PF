@@ -66,6 +66,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/proofs/gps_fallback_proof.md` | Deterministic local GPS fallback proof workflow. |
 | `docs/proofs/deterministic_media_pipeline_proof.md` | Deterministic local media pipeline proof workflow. |
 | `docs/proofs/raspberry_power_loss_recovery_proof.md` | Raspberry power-loss recovery proof workflow. |
+| `docs/proofs/native_fullscreen_playback_proof.md` | Native/fullscreen playback boundary proof workflow. |
 
 ## Architecture and specs
 

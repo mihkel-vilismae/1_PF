@@ -17,6 +17,7 @@ The latest repo state includes typecheck stabilization, additional local/offline
 | `docs/10_runbooks/geocode_provider_activation.md` | current_latest_baseline | Safe cache-first geocode provider activation runbook. |
 | `docs/20_architecture_and_specs/media_pipeline_provider_interfaces.md` | current_latest_baseline | Provider contracts and ordered GPS/geocode provider lists. |
 | `docs/20_architecture_and_specs/media_pipeline_geocode_provider_chain.md` | current_latest_baseline | Geocode provider registry, disabled-by-default network behavior, and account/config fields. |
+| `docs/proofs/native_fullscreen_playback_proof.md` | current_latest_baseline | Native/fullscreen deterministic boundary proof. |
 
 ## 2026-05-31 addition
 
@@ -186,3 +187,5 @@ Estonian timestamp: 2026-05-25 02:18 EEST
 The documentation refactor is closed as an organization pass. [`DOC_REFACTOR_CLOSURE_REPORT_20260525.md`](DOC_REFACTOR_CLOSURE_REPORT_20260525.md) summarizes canonical folders, pointer policy, and where future docs should be added.
 
 Freshness rules remain unchanged: code, tests, generated evidence packs, and direct runtime checks are stronger than documentation. Compatibility pointers and old category indexes are navigation only.
+
+| docs/proofs/native_fullscreen_playback_proof.md | current_latest_baseline | proof_reference | proof_doc | native_playback, fullscreen | Deterministic proof workflow for native-player safety boundaries and browser fullscreen playback UI. |

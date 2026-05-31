@@ -27,5 +27,6 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | GPS fallback parsing | `npm run proof:gps-fallback` | deterministic local |
 | Deterministic media pipeline | `npm run proof:deterministic-media-pipeline` | deterministic local |
 | Address display | `npm run proof:address-display` | deterministic local |
+| Native / fullscreen playback | `npm run proof:native-fullscreen-playback` | deterministic local |
 | Real download continuation | `npm run proof:real-download-continuation` | opt-in real provider |
 | Raspberry power-loss recovery | `npm run proof:raspberry-recovery` | hardware/operator proof |
