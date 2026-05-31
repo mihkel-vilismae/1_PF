@@ -51,6 +51,18 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/10_runbooks/geocode_provider_activation.md` | Safe geocode provider activation and cache-first verification. |
 | `docs/10_runbooks/documentation_workflow_and_inventory.md` | Documentation workflow and inventory rules. |
 
+
+## Proof artifacts
+
+| Path | Use |
+| --- | --- |
+| `docs/proofs/README.md` | Proof artifact overview and status vocabulary. |
+| `docs/proofs/proof_artifact_schema.md` | Shared proof JSON schema. |
+| `docs/proofs/full_test_suite_stability_proof.md` | Full test suite stability proof workflow. |
+| `docs/proofs/real_icloudpd_pipeline_proof.md` | Real iCloudPD pipeline proof workflow. |
+| `docs/proofs/geocode_provider_proof.md` | Real geocode provider proof workflow. |
+| `docs/proofs/raspberry_power_loss_recovery_proof.md` | Raspberry power-loss recovery proof workflow. |
+
 ## Architecture and specs
 
 | Path | Use |

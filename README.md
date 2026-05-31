@@ -91,6 +91,20 @@ http://localhost:5173/
 
 Expected behavior depends on the current implementation state. The docs intentionally distinguish documented status from verified runtime behavior.
 
+
+## Proof artifact workflows
+
+Proof workflows document and collect sanitized evidence for behavior that cannot be proven by source code alone. Human docs live under [`docs/proofs/`](docs/proofs/), while generated runtime JSON is written under ignored `runtime_data/proofs/`.
+
+| Script | Purpose | Default behavior |
+|---|---|---|
+| `npm run proof:full-test` | Runs the full test suite and writes local pass/fail/timeout evidence. | Executes tests locally. |
+| `npm run proof:real-icloudpd` | Proves the real iCloudPD pipeline through existing backend routes. | Writes `BLOCKED` unless explicitly enabled. |
+| `npm run proof:geocode-provider` | Proves a real geocode provider and rejects placeholder-only proof. | Writes `BLOCKED` unless explicitly enabled. |
+| `npm run proof:raspberry-recovery` | Collects Raspberry power-loss recovery proof from explicit hardware evidence. | Writes `BLOCKED` unless explicitly enabled. |
+
+Generated proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API keys, provider tokens, raw provider output, or private filesystem paths.
+
 ## Versioning and changelog workflow
 
 The documentation set preserves the existing forward-only SemVer governance model.
