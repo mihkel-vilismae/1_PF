@@ -22,9 +22,9 @@ Keep the audit single-agent when:
 
 ### Audit index
 
-File:
+File, only when the task explicitly asks for a durable index or the repository already has one:
 
-- `docs/button_verification_results/INDEX.md`
+- canonical docs location chosen with `pf-doc-governance-writer`
 
 Store:
 
@@ -39,9 +39,9 @@ Store:
 
 ### Append-only run log
 
-File:
+File, only when the task explicitly asks for a durable run log or the repository already has one:
 
-- `docs/button_verification_results/RUN_LOG.md`
+- canonical docs location chosen with `pf-doc-governance-writer`
 
 Store:
 
@@ -58,7 +58,7 @@ Store:
 
 Rule:
 
-- append one new row for every completed audit, even when the same button is re-audited
+- append one new row for every completed audit only when a run-log document exists or the user explicitly asked to create one
 
 ### Action inventory
 

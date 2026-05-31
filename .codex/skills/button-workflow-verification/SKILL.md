@@ -1,6 +1,6 @@
 ---
 name: button-workflow-verification
-description: Apply the canonical button verification workflow in the 1_PF dashboard repository. Use when Codex needs to audit a specific dashboard button or action, trace it from UI trigger through frontend wiring and backend execution, classify it as Works, Partial, Broken, or Mock-only, produce a per-button result report, and optionally add the smallest missing test or inspect-metadata fix.
+description: Apply the canonical button verification workflow in the PF_login dashboard repository. Use when Codex needs to audit a specific dashboard button or action, trace it from UI trigger through frontend wiring and backend execution, classify it as Works, Partial, Broken, or Mock-only, produce a per-button result report, and optionally add the smallest missing test or inspect-metadata fix.
 ---
 
 # Button Workflow Verification
@@ -11,27 +11,28 @@ Use the repo's canonical button workflow instead of improvising a one-off audit.
 
 ## Read First
 
-1. `docs/button_verification_workflow/BUTTON_VERIFICATION_WORKFLOW.md`
-2. `docs/button_verification_workflow/BUTTON_VERIFICATION_ACCELERATION_LAYER.md`
-3. `docs/button_verification_results/RUN_LOG.md`
-4. `references/repo-evidence-map.md`
-5. The view-specific current-truth docs for the target button
-6. Existing tests that already cover the button, endpoint, or inspect metadata
+1. `references/repo-evidence-map.md`
+2. `references/report-template.md`
+3. `docs/table_of_contents.md`
+4. `docs/DOC_INDEX.md`
+5. `docs/DOC_FRESHNESS_MATRIX.md`
+6. The view-specific current-truth or status docs for the target button
+7. Existing tests that already cover the button, endpoint, or inspect metadata
 
 For View A actions, start with:
 
-- `docs/OLD_DOCS/VIEW_A_INIT.md`
-- `docs/OLD_DOCS/13_FRONTEND_BACKEND_CONTRACT.md`
-- `placeholder_implementations.md`
+- `docs/CARD_BUTTON_IMPLEMENTATION_STATUS.md`
+- `docs/30_status_snapshots/2026-05-26/USER_OBSERVED_CARD_STATUS_AND_ISSUES_20260526_1457_EEST.md`
+- `docs/50_audits_and_migrations/placeholder_implementations.md`
 
-Do not assume the older non-`OLD_DOCS` file names still exist in this checkout.
+Treat old categorized docs and compatibility pointers as navigation only unless current code, tests, runtime evidence, or canonical current-truth docs verify the claim.
 
 ## Reuse Before Re-Audit
 
 Before tracing code again:
 
-- check `docs/button_verification_results/INDEX.md`
-- check `docs/button_verification_results/RUN_LOG.md`
+- check `docs/CARD_BUTTON_IMPLEMENTATION_STATUS.md` for existing A/B/D audit context
+- check dated status snapshots under `docs/30_status_snapshots/` when the target button is covered there
 - reuse an existing per-button report when the same control was already audited
 - reuse existing endpoint and metadata tests before adding new ones
 - update shared reusable artifacts when the same search or fix pattern repeats
@@ -65,9 +66,8 @@ Before tracing code again:
    - Include exact file references, live endpoint facts, gaps, and the final classification.
    - State clearly when evidence came from code tracing rather than an automated browser click.
 8. Record the run.
-   - Append one new row to `docs/button_verification_results/RUN_LOG.md` for every completed audit, including re-runs of the same button.
-   - Prefer `python scripts/append_button_verification_run.py ...` so the ledger stays consistent.
-   - Update `docs/button_verification_results/INDEX.md` to reflect the latest known status for that button.
+   - If the task asks for a durable report, place it in the appropriate canonical docs folder and update documentation indexes according to `pf-doc-governance-writer`.
+   - Do not create or update a run ledger unless the current repository contains that ledger or the user explicitly asks for one.
 
 ## Delegation Pattern
 
@@ -98,7 +98,7 @@ Use `references/agent-patterns.md` for concrete delegation splits.
 - Do not call a button real unless the backend route exists and the response is exercised or otherwise evidenced.
 - Do not treat a running Vite page as proof that the backend works.
 - Do not leave inspect text inline when it belongs in metadata.
-- Do not invent current-truth doc paths; this repo currently keeps several of them under `docs/OLD_DOCS/`.
+- Do not invent current-truth doc paths; use `docs/table_of_contents.md`, `docs/DOC_INDEX.md`, and `docs/DOC_FRESHNESS_MATRIX.md` to locate canonical docs.
 - Do not widen scope to unrelated buttons during a single audit unless the user asks.
 - Do not let a smaller delegated agent make the final truth classification without main-agent review.
 

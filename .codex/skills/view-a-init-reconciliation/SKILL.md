@@ -1,21 +1,22 @@
 ---
 name: view-a-init-reconciliation
-description: Use when analyzing or repairing View A in the 1_PF repository so the Init UI, backend contract, runtime behavior, and current-truth docs stay aligned without inventing implementation status.
+description: Use when analyzing or repairing View A in the PF_login dashboard so the Init UI, backend contract, runtime behavior, and current-truth docs stay aligned without inventing implementation status.
 ---
 
 # View A Init Reconciliation
 
-Use this skill when the task is to analyze, reconcile, or fix `A — Init` in the `1_PF` repository.
+Use this skill when the task is to analyze, reconcile, or fix `A — Init` in the `PF_login` dashboard.
 
 ## Read First
 
 1. `README.md`
-2. `docs/15_CURRENT_IMPLEMENTATION_STATUS.md`
-3. `docs/VIEW_A_INIT.md`
-4. `docs/13_FRONTEND_BACKEND_CONTRACT.md`
-5. `docs/09_CRON_AND_WATCHDOG.md`
-6. `placeholder_implementations.md`
-7. `docs/23_VIEW_A_INIT_RECONCILIATION_PROMPT.md` if the task is prompt-driven or audit-driven
+2. `docs/table_of_contents.md`
+3. `docs/DOC_INDEX.md`
+4. `docs/DOC_FRESHNESS_MATRIX.md`
+5. `docs/CARD_BUTTON_IMPLEMENTATION_STATUS.md`
+6. `docs/30_status_snapshots/2026-05-26/USER_OBSERVED_CARD_STATUS_AND_ISSUES_20260526_1457_EEST.md`
+7. `docs/50_audits_and_migrations/placeholder_implementations.md`
+8. Current code and tests for the specific View A action being checked
 
 ## Core Workflow
 
@@ -61,4 +62,4 @@ Use this skill when the task is to analyze, reconcile, or fix `A — Init` in th
 - Do not treat a dead API process as proof that endpoint code is missing.
 - Do not claim B, C, or D are backend-backed.
 - Do not claim the scheduler host runs real business services unless code proves it.
-- Do not update `placeholder_implementations.md` unless implementation status actually changed.
+- Do not update `docs/50_audits_and_migrations/placeholder_implementations.md` unless implementation status actually changed.
