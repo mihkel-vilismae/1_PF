@@ -1,6 +1,13 @@
+/*
+ * Renders View C, the last-run and restore-status dashboard surface.
+ * The view is read-only for normal restore data and keeps placeholders explicit.
+ * Test Mode may render a guarded TESTING panel for dirty-shutdown experiments.
+ * Real Mode must hide destructive testing affordances from the DOM.
+ */
 import { renderDefinitionList, renderLogEntries, renderSourceBadge } from '../services/renderers.ts';
 
-export function renderLastRunView(state) {
+// Renders View C and includes Test Mode-only dirty-shutdown controls when selected.
+export function renderLastRunView(state, dashboardVisualMode = null) {
   const mode = state.lastRunMode;
   const noRun = mode === 'none';
   const error = mode === 'error';
@@ -52,6 +59,32 @@ export function renderLastRunView(state) {
         </div>
         <div class="log-surface" data-scroll-preserve="log-C">${renderLogEntries(state.logs.C, { sourceKey: 'C' })}</div>
       </article>
+
+      ${renderTestingPanel(dashboardVisualMode)}
     </section>
+  `;
+}
+
+
+// Renders the Test Mode-only dirty-shutdown testing panel for View C.
+function renderTestingPanel(dashboardVisualMode) {
+  if (dashboardVisualMode !== 'test') {
+    return '';
+  }
+  return `
+      <article class="card card--mock" data-testid="view-c-testing-panel">
+        <header class="card__header"><div><p class="card__code">C-TEST</p><h3>TESTING</h3></div><div class="card__header-tags">${renderSourceBadge('mock', 'TEST MODE ONLY')}</div></header>
+        <p class="card__copy">
+          Test Mode only: plan or request a guarded dirty-shutdown simulation to exercise recovery behavior.
+          The first safe version never kills the backend and does not use broad process-name matching.
+        </p>
+        <p class="notice notice--warning">
+          This simulates unexpected shutdown conditions for software recovery tests. It does not prove real Raspberry hardware power loss.
+        </p>
+        <div class="button-row">
+          <button class="button button--secondary" data-action="plan-dirty-shutdown-test">Plan dirty shutdown test</button>
+          <button class="button button--danger" data-action="simulate-dirty-shutdown">Simulate dirty shutdown</button>
+        </div>
+      </article>
   `;
 }

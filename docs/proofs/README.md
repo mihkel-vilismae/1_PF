@@ -30,3 +30,5 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Native / fullscreen playback | `npm run proof:native-fullscreen-playback` | deterministic local |
 | Real download continuation | `npm run proof:real-download-continuation` | opt-in real provider |
 | Raspberry power-loss recovery | `npm run proof:raspberry-recovery` | hardware/operator proof |
+
+- `dirty_shutdown_testing_proof.md` — deterministic proof for the Test Mode-only View C dirty-shutdown testing panel and backend guard scaffold.

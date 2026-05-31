@@ -21,7 +21,8 @@
     "proof:deterministic-media-pipeline": "node tools/run-deterministic-media-pipeline-proof.mjs",
     "proof:real-download-continuation": "node tools/run-real-download-continuation-proof.mjs",
     "proof:address-display": "node tools/run-address-display-proof.mjs",
-    "proof:native-fullscreen-playback": "node tools/run-native-fullscreen-playback-proof.mjs"
+    "proof:native-fullscreen-playback": "node tools/run-native-fullscreen-playback-proof.mjs",
+    "proof:dirty-shutdown-testing": "node tools/run-dirty-shutdown-testing-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

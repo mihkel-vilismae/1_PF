@@ -142,7 +142,7 @@ function render() {
   const viewMarkup = {
     A: renderInitView(state, dashboardVisualMode),
     B: renderTestView(state, dashboardVisualMode),
-    C: renderLastRunView(state),
+    C: renderLastRunView(state, dashboardVisualMode),
     D: renderRunningProcessView(state),
     E: renderDatabaseViewerView(state),
     WIN: renderOsPlaybackView(state, OS_PLAYBACK_PLATFORMS.windows),

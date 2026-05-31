@@ -24,6 +24,8 @@ The latest repo state includes typecheck stabilization, additional local/offline
 The Gate A documentation audit file `docs/50_audits_and_migrations/GATE_A_DOCUMENTATION_AUDIT_20260531.md` has been added.  Treat it as a recent audit reference; verify its recommendations against current code/tests before acting.
 The corrective main-goal implementation-status verification file `docs/50_audits_and_migrations/MAIN_GOAL_IMPLEMENTATION_STATUS_VERIFICATION_20260531.md` has been added.  Treat it as the current audit reference for six-goal implementation status until superseded by a later verification run.
 
+| `docs/proofs/dirty_shutdown_testing_proof.md` | current_latest_baseline | Deterministic local proof for the Test Mode-only dirty-shutdown testing panel and guarded backend scaffold. |
+
 ## Freshness summary
 
 | Freshness | Files | LOC | How to use |

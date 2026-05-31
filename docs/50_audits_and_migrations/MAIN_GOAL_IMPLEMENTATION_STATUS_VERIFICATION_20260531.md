@@ -158,3 +158,8 @@ This document is documentation-only. It does not change runtime behavior, APIs, 
 ## Slice 6 native/fullscreen proof update — 2026-05-31
 
 A deterministic native/fullscreen playback proof was added in Slice 6. It verifies disabled-by-default native playback, safe mock-player proof mode, route separation, process-ownership documentation, and browser fullscreen overlay behavior. It does **not** prove real OS fullscreen stability, native player launch behavior, Raspberry HDMI output, or hardware display behavior. Use `npm run proof:native-fullscreen-playback` for this deterministic boundary proof.
+
+
+## Slice 7 dirty-shutdown testing panel note
+
+`docs/proofs/dirty_shutdown_testing_proof.md` documents a deterministic Test Mode-only View C `TESTING` panel and backend guard scaffold. This improves software recovery testing readiness, but it does not prove real Raspberry hardware power loss, does not kill the backend process, and does not execute startup recovery.

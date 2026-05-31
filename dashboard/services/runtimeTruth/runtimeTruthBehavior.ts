@@ -29,6 +29,8 @@ import {
   runRuntimeGps,
   runRuntimeIndex,
   runRuntimeRealDownload,
+  planDirtyShutdownTesting,
+  simulateDirtyShutdownTesting,
 } from '../runtimeExecutionService.ts';
 import { createRuntimeTruthDatabaseActions } from './runtimeTruthDatabaseActions.ts';
 import { createRuntimeTruthAuthActions } from './runtimeTruthAuthActions.ts';
@@ -228,6 +230,8 @@ export function createRuntimeTruthBehavior({
       // endpoint and updates worker health without starting/stopping any workers.
       'refresh-running-process': () => demoActions.loadLiveRuntimeProjection(),
       'resume-last-run': () => demoActions.genericAction('C', 'RECOVERY', 'Restore placeholder activated from the current last-run demo state.'),
+      'plan-dirty-shutdown-test': () => void demoActions.runBackendAction({ key: 'C', source: 'TESTING', operation: 'Plan dirty shutdown test', endpoint: RUNTIME_EXECUTION_ENDPOINTS.dirtyShutdownPlan, execute: planDirtyShutdownTesting }),
+      'simulate-dirty-shutdown': () => void demoActions.runBackendAction({ key: 'C', source: 'TESTING', operation: 'Simulate dirty shutdown', endpoint: RUNTIME_EXECUTION_ENDPOINTS.dirtyShutdownSimulate, execute: simulateDirtyShutdownTesting }),
       'start-real-run': () => demoActions.startRealRun(),
     };
 

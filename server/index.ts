@@ -54,6 +54,7 @@ import {
 import { createSchedulerRoutes } from './routes/schedulerRoutes.ts';
 import { createScreenSimulationRoutes } from './routes/screenSimulationRoutes.ts';
 import { createRuntimeTruthRoutes } from './routes/runtimeTruthRoutes.ts';
+import { buildDirtyShutdownTestingResult } from './testing_dirtyShutdownTestingService.ts';
 import { createInspectionRoutes } from './routes/inspectionRoutes.ts';
 import { createRuntimeStatusRoutes } from './routes/runtimeStatusRoutes.ts';
 import {
@@ -551,6 +552,26 @@ const routes: Record<string, RouteHandler> = {
   // along with field provenance.  It should never mutate runtime truth or lock state.
   'GET /api/runtime/projection/live': runtimeLiveProjectionHandler,
   // Wave E orchestration endpoints
+  'POST /api/testing/dirty-shutdown/plan': async ({ context, body }) => ({
+    statusCode: 200,
+    payload: await buildDirtyShutdownTestingResult({
+      mode: 'plan',
+      envValues: context.baseEnvValues,
+      runtimeMode: context.runtimeMode,
+      records: Array.isArray(body?.records) ? body.records as any : undefined,
+      processRecordsDir: path.join(repoRoot, 'runtime_data', 'processes'),
+    }),
+  }),
+  'POST /api/testing/dirty-shutdown/simulate': async ({ context, body }) => ({
+    statusCode: 200,
+    payload: await buildDirtyShutdownTestingResult({
+      mode: 'simulate',
+      envValues: context.baseEnvValues,
+      runtimeMode: context.runtimeMode,
+      records: Array.isArray(body?.records) ? body.records as any : undefined,
+      processRecordsDir: path.join(repoRoot, 'runtime_data', 'processes'),
+    }),
+  }),
   'POST /api/runtime/orchestration/run': runtimeOrchestrationRunHandler,
   ...createRuntimeStatusRoutes({
     runtimeOrchestrationCurrentHandler,

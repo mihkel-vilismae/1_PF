@@ -17,6 +17,8 @@ This index classifies non-skill documentation files and separates current truth 
 
 ## Recent additions
 
+- `docs/proofs/dirty_shutdown_testing_proof.md` — deterministic proof for the Test Mode-only View C dirty-shutdown testing panel and guarded backend scaffold.
+
 - `docs/proofs/native_fullscreen_playback_proof.md` — deterministic proof workflow for native-player safety boundaries and browser fullscreen playback UI.
 - `docs/table_of_contents.md` — short top-level table of contents for root docs, current truth, runbooks, architecture docs, backlog, scripts, config, and logs.
 - `docs/10_runbooks/gps_metadata_sources.md` — operator examples for EXIF, JSON/XMP/text sidecars, filename tokens, and path tokens used by the GPS provider chain.

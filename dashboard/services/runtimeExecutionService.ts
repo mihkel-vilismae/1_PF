@@ -31,6 +31,8 @@ export const RUNTIME_EXECUTION_ENDPOINTS = Object.freeze({
   // Returns a live projection of runtime state, including run state and worker health.  This
   // endpoint is a read‑only monitor surface used by View D and must not mutate backend state.
   projectionLive: { method: 'GET', path: '/api/runtime/projection/live' },
+  dirtyShutdownPlan: { method: 'POST', path: '/api/testing/dirty-shutdown/plan' },
+  dirtyShutdownSimulate: { method: 'POST', path: '/api/testing/dirty-shutdown/simulate' },
 });
 
 export function runRuntimeDownload(body: RuntimeRequestBody = {}): Promise<RuntimeEndpointResponse> {
@@ -94,6 +96,16 @@ export function clearRuntimePipelineStaleLocks(body: RuntimeRequestBody = {}): P
 // and should be used by View D to display backend‑owned monitor data.
 export function getRuntimeLiveProjection(): Promise<RuntimeEndpointResponse> {
   return callRuntimeEndpoint(RUNTIME_EXECUTION_ENDPOINTS.projectionLive);
+}
+
+// Requests a non-destructive dirty-shutdown testing plan for View C.
+export function planDirtyShutdownTesting(body: RuntimeRequestBody = {}): Promise<RuntimeEndpointResponse> {
+  return callRuntimeEndpoint(RUNTIME_EXECUTION_ENDPOINTS.dirtyShutdownPlan, body);
+}
+
+// Requests the guarded dirty-shutdown simulation endpoint for View C.
+export function simulateDirtyShutdownTesting(body: RuntimeRequestBody = {}): Promise<RuntimeEndpointResponse> {
+  return callRuntimeEndpoint(RUNTIME_EXECUTION_ENDPOINTS.dirtyShutdownSimulate, body);
 }
 
 // Applies the shared capture-meta request shape for runtime backend calls.
