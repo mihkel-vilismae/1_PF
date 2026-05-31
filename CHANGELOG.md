@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.7.35 - 2026-05-31
+
+- Bumped project metadata after the proof-artifact slices added since v0.7.34.
+- Added changelog coverage for the NEW AUTH artifact controls, GPS fallback proof, deterministic media pipeline proof, real download continuation proof, address display proof, native/fullscreen playback proof, dirty-shutdown testing panel, and Windows CronEmulator proof.
+- Aligned `VERSION`, `package.json`, `package-lock.json`, and final ZIP/folder naming for the new baseline.
+- Preserved runtime behavior, backend routes, Test/Real separation, proof-artifact conventions, compatibility pointers, and existing documentation structure.
+
 ## 0.7.34 - 2026-05-31
 
 - Added proof artifact schema and full test suite stability proof runner.
