@@ -25,4 +25,5 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Real iCloudPD pipeline | `npm run proof:real-icloudpd` | opt-in real provider |
 | Real geocode provider | `npm run proof:geocode-provider` | opt-in real provider |
 | GPS fallback parsing | `npm run proof:gps-fallback` | deterministic local |
+| Deterministic media pipeline | `npm run proof:deterministic-media-pipeline` | deterministic local |
 | Raspberry power-loss recovery | `npm run proof:raspberry-recovery` | hardware/operator proof |

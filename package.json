@@ -17,7 +17,8 @@
     "proof:real-icloudpd": "node tools/run-real-icloudpd-pipeline-proof.mjs",
     "proof:geocode-provider": "node tools/run-geocode-provider-proof.mjs",
     "proof:raspberry-recovery": "node tools/collect-raspberry-recovery-proof.mjs",
-    "proof:gps-fallback": "node tools/run-gps-fallback-proof.mjs"
+    "proof:gps-fallback": "node tools/run-gps-fallback-proof.mjs",
+    "proof:deterministic-media-pipeline": "node tools/run-deterministic-media-pipeline-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
