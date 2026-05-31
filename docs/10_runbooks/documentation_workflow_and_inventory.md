@@ -62,3 +62,7 @@ The checklist in `default_project_settings_and_elements_checklist.md` is a repo-
 | `part3_slice3_reconciliation_findings.md` | reduced | kept actionable documentation findings only |
 | VISION_SPEC authority/reconciliation governance docs | merged | preserved authority and deprecation workflow constraints |
 | Duplicate final reconciliation report variant | reduced | treated as same report family, not separate authority |
+
+## Gate A documentation audit — 2026‑05‑31
+
+The Gate A documentation audit for this repository is stored in `docs/50_audits_and_migrations/GATE_A_DOCUMENTATION_AUDIT_20260531.md`.  It provides an evidence‑based inventory of the current documentation set, assigns evidence grades based on the freshness matrix, and lists recommended actions.  When updating or adding documentation, consult this audit and update the inventory accordingly.  This runbook should reference the latest audit to avoid duplication.

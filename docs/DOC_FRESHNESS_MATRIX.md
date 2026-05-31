@@ -18,6 +18,10 @@ The latest repo state includes typecheck stabilization, additional local/offline
 | `docs/20_architecture_and_specs/media_pipeline_provider_interfaces.md` | current_latest_baseline | Provider contracts and ordered GPS/geocode provider lists. |
 | `docs/20_architecture_and_specs/media_pipeline_geocode_provider_chain.md` | current_latest_baseline | Geocode provider registry, disabled-by-default network behavior, and account/config fields. |
 
+## 2026-05-31 addition
+
+The Gate A documentation audit file `docs/50_audits_and_migrations/GATE_A_DOCUMENTATION_AUDIT_20260531.md` has been added.  Treat it as a recent audit reference; verify its recommendations against current code/tests before acting.
+
 ## Freshness summary
 
 | Freshness | Files | LOC | How to use |
@@ -97,6 +101,7 @@ The latest repo state includes typecheck stabilization, additional local/offline
 | docs/TYPE_FUNCTION_MIGRATION_CLOSURE_AUDIT.md | recent_verify_against_code | historical_reference | audit_or_migration_report | auth, provider, view_d | Compatibility pointer only; canonical file is in docs/50_audits_and_migrations/. |
 | docs/50_audits_and_migrations/placeholder_implementations.md | medium_recent_reference | historical_reference | audit_or_migration_report | auth, provider, runtime_truth, cron, monitoring, view_a, real_vs_mock, download | Canonical audit/migration doc moved in Slice 15; recheck before using. |
 | placeholder_implementations.md | recent_verify_against_code | historical_reference | audit_or_migration_report | auth, provider, runtime_truth, cron, monitoring, view_a, real_vs_mock, download | Compatibility pointer only; canonical file is in docs/50_audits_and_migrations/. |
+| docs/50_audits_and_migrations/GATE_A_DOCUMENTATION_AUDIT_20260531.md | recent_verify_against_code | audit_or_migration_report | audit_or_migration_report | docs_governance | Gate A audit and inventory; use to guide documentation updates |
 | docs/90_archive/reference_material_2026-05-10/archive_and_reference_material.md | historical_reference_only | historical_reference | historical_task_archive | auth, runtime_truth | Canonical reference/archive orientation moved in Slice 17; not current truth. |
 | docs/categorized/other_documentation/archive_and_reference_material.md | recent_verify_against_code | historical_reference | index_or_table_of_contents | auth, runtime_truth | Compatibility pointer to canonical archive/reference material. |
 | docs/20_architecture_and_specs/reference/default_project_settings_and_elements_checklist.md | medium_recent_reference | target_spec | architecture_or_vision_spec | auth, real_vs_mock | Canonical reusable default project checklist moved in Slice 17; reference/spec only. |

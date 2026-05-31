@@ -21,7 +21,9 @@ Method and authority:
 - The tests/code status is based on static source and test inspection unless explicitly marked as runtime-observed.
 - The docs status is based on repository documentation and remains weaker than code, tests, generated evidence, and runtime artifacts when there is a conflict.
 - The `Your subjective assessment` column is user-observed and intentionally less authoritative than code/tests/docs. It is useful for practical validation and follow-up planning, not proof of full production readiness.
-- This is documentation only; it does not change UI behavior, runtime behavior, routes, source code, or authentication/scheduler/pipeline logic.
+  - This is documentation only; it does not change UI behavior, runtime behavior, routes, source code, or authentication/scheduler/pipeline logic.
+
+**Evidence classification note**:  A Gate A documentation audit dated 2026‑05‑31 cross‑checks each implementation claim in this table against the codebase and tests.  The audit assigns an evidence grade (Verified, Inferred, Unknown, or Contradicted) to each claim and summarises the recommended actions.  See `docs/50_audits_and_migrations/GATE_A_DOCUMENTATION_AUDIT_20260531.md` for details.
 
 ## View A
 
