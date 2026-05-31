@@ -2,6 +2,8 @@
 
 Latest review timestamp: 30.05.2026, 21:12 EEST
 
+> **Corrective verification note — 2026-05-31:** Main goal status was rechecked against repository files in `docs/50_audits_and_migrations/MAIN_GOAL_IMPLEMENTATION_STATUS_VERIFICATION_20260531.md`. The deterministic pipeline remains verified by code/tests, while real iCloudPD, real geocode-provider, native fullscreen playback, and Raspberry power-loss recovery remain proof-gated or hardware/runtime-unproven.
+
 ## ACR slice record
 
 ### Original instruction

@@ -21,6 +21,7 @@ The latest repo state includes typecheck stabilization, additional local/offline
 ## 2026-05-31 addition
 
 The Gate A documentation audit file `docs/50_audits_and_migrations/GATE_A_DOCUMENTATION_AUDIT_20260531.md` has been added.  Treat it as a recent audit reference; verify its recommendations against current code/tests before acting.
+The corrective main-goal implementation-status verification file `docs/50_audits_and_migrations/MAIN_GOAL_IMPLEMENTATION_STATUS_VERIFICATION_20260531.md` has been added.  Treat it as the current audit reference for six-goal implementation status until superseded by a later verification run.
 
 ## Freshness summary
 
@@ -102,6 +103,7 @@ The Gate A documentation audit file `docs/50_audits_and_migrations/GATE_A_DOCUM
 | docs/50_audits_and_migrations/placeholder_implementations.md | medium_recent_reference | historical_reference | audit_or_migration_report | auth, provider, runtime_truth, cron, monitoring, view_a, real_vs_mock, download | Canonical audit/migration doc moved in Slice 15; recheck before using. |
 | placeholder_implementations.md | recent_verify_against_code | historical_reference | audit_or_migration_report | auth, provider, runtime_truth, cron, monitoring, view_a, real_vs_mock, download | Compatibility pointer only; canonical file is in docs/50_audits_and_migrations/. |
 | docs/50_audits_and_migrations/GATE_A_DOCUMENTATION_AUDIT_20260531.md | recent_verify_against_code | audit_or_migration_report | audit_or_migration_report | docs_governance | Gate A audit and inventory; use to guide documentation updates |
+| docs/50_audits_and_migrations/MAIN_GOAL_IMPLEMENTATION_STATUS_VERIFICATION_20260531.md | current_latest_baseline | corrective_implementation_status_audit | audit_or_migration_report | main_goals, implementation_status | Corrective verification of six main app goals against repository files/tests/proof tooling. |
 | docs/90_archive/reference_material_2026-05-10/archive_and_reference_material.md | historical_reference_only | historical_reference | historical_task_archive | auth, runtime_truth | Canonical reference/archive orientation moved in Slice 17; not current truth. |
 | docs/categorized/other_documentation/archive_and_reference_material.md | recent_verify_against_code | historical_reference | index_or_table_of_contents | auth, runtime_truth | Compatibility pointer to canonical archive/reference material. |
 | docs/20_architecture_and_specs/reference/default_project_settings_and_elements_checklist.md | medium_recent_reference | target_spec | architecture_or_vision_spec | auth, real_vs_mock | Canonical reusable default project checklist moved in Slice 17; reference/spec only. |

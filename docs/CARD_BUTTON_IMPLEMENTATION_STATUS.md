@@ -23,6 +23,8 @@ Method and authority:
 - The `Your subjective assessment` column is user-observed and intentionally less authoritative than code/tests/docs. It is useful for practical validation and follow-up planning, not proof of full production readiness.
   - This is documentation only; it does not change UI behavior, runtime behavior, routes, source code, or authentication/scheduler/pipeline logic.
 
+> **Corrective verification note — 2026-05-31:** Control/button presence should not be read as proof of production runtime behavior. Use `docs/50_audits_and_migrations/MAIN_GOAL_IMPLEMENTATION_STATUS_VERIFICATION_20260531.md` for the current evidence-grade status of the main app goals.
+
 **Evidence classification note**:  A Gate A documentation audit dated 2026‑05‑31 cross‑checks each implementation claim in this table against the codebase and tests.  The audit assigns an evidence grade (Verified, Inferred, Unknown, or Contradicted) to each claim and summarises the recommended actions.  See `docs/50_audits_and_migrations/GATE_A_DOCUMENTATION_AUDIT_20260531.md` for details.
 
 ## View A

@@ -4,6 +4,8 @@ Estonian timestamp: 2026-05-28 20:47 EEST
 
 Latest review timestamp: 30.05.2026, 21:12 EEST
 
+> **Corrective verification note — 2026-05-31:** Use `docs/50_audits_and_migrations/MAIN_GOAL_IMPLEMENTATION_STATUS_VERIFICATION_20260531.md` for the current six-goal implementation-status matrix. This guide remains planning guidance and should not override the corrective evidence-grade audit.
+
 ## Scope and authority
 
 This guide records a high-level, decision-grade analysis of recent project-chat themes, the current v0.7.32 provider-enabled baseline, and current project-goal documentation. It is documentation only: no runtime behavior, backend routes, frontend rendering, Test Mode behavior, Real Mode behavior, worker logic, database schema, or scripts are changed by this guide.

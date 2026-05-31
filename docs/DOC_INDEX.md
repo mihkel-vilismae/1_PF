@@ -29,6 +29,7 @@ This index classifies non-skill documentation files and separates current truth 
 - `docs/30_status_snapshots/2026-05-28/LIVE_UPDATES_INSPECT_VERIFICATION_20260528.md` — targeted verification and build notes for the live-update pause fix.
 
 - `docs/50_audits_and_migrations/GATE_A_DOCUMENTATION_AUDIT_20260531.md` — Gate A documentation audit and inventory with recommended actions (2026‑05‑31).
+- `docs/50_audits_and_migrations/MAIN_GOAL_IMPLEMENTATION_STATUS_VERIFICATION_20260531.md` — corrective implementation-status verification for the six main app goals (2026‑05‑31).
 
 ## Group summary
 

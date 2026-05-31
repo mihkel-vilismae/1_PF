@@ -6,6 +6,8 @@ This document consolidates the findings from the 2026‑05‑31 Gate A document
 
 ## Summary
 
+> **Correction note — 2026-05-31:** This Gate A audit integrated the documentation inventory and navigation updates, but it did not fully verify the main goal implementation status against all implementation files. Use `docs/50_audits_and_migrations/MAIN_GOAL_IMPLEMENTATION_STATUS_VERIFICATION_20260531.md` as the authoritative corrective implementation-status verification for the six main app goals.
+
 The Gate A audit verified that the canonical folder structure is in place, that all mandatory governance documents exist, and that there are no broken local Markdown links.  It produced a structured inventory (see CSV section below) summarising all documentation entries and assigned evidence grades based on the freshness matrix.  Key recommendations include:
 
 - Retain current‑truth guides and runbooks in their numbered folders.

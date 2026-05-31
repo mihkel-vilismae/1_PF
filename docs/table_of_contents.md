@@ -103,6 +103,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/50_audits_and_migrations/TYPE_FUNCTION_AUDIT_AND_MIGRATION_PLAN.md` | Type/function migration plan. |
 | `docs/50_audits_and_migrations/TYPE_FUNCTION_MIGRATION_CLOSURE_AUDIT.md` | Type/function migration closure audit. |
 | `docs/50_audits_and_migrations/GATE_A_DOCUMENTATION_AUDIT_20260531.md` | Gate A documentation audit and inventory (2026‑05‑31). |
+| `docs/50_audits_and_migrations/MAIN_GOAL_IMPLEMENTATION_STATUS_VERIFICATION_20260531.md` | Corrective main-goal implementation-status verification (2026‑05‑31). |
 
 ## Archive and compatibility pointers
 
