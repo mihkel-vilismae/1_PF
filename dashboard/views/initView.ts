@@ -48,6 +48,8 @@ const NEW_AUTH_BUTTONS = Object.freeze([
   { action: 'new-auth-check-login', label: 'Check login', variant: 'secondary' },
   { action: 'new-auth-logout-session', label: 'Log out and remove existing session', variant: 'danger' },
   { action: 'new-auth-session-files', label: 'Show auth/session paths and files', variant: 'secondary' },
+  { action: 'new-auth-generate-artifact-pack', label: 'Generate auth evidence pack', variant: 'secondary' },
+  { action: 'new-auth-list-artifact-packs', label: 'List auth evidence packs', variant: 'secondary' },
 ]);
 
 // Renders the full View A page from runtime-truth state and selected dashboard mode.
@@ -286,6 +288,8 @@ function renderNewAuthCard(state, dashboardVisualMode = null) {
       </div>
       ${renderResultSurface(newAuth.latestResult)}
       ${newAuth.sessionFilesResult ? renderResultSurface(newAuth.sessionFilesResult) : ''}
+      ${newAuth.artifactPackResult ? renderResultSurface(newAuth.artifactPackResult) : ''}
+      ${newAuth.artifactPackListResult ? renderResultSurface(newAuth.artifactPackListResult) : ''}
       <div class="log-surface" data-scroll-preserve="log-1A-STASH-OFF">${renderLogEntries(state.logs['1A-STASH-OFF'], { sourceKey: '1A-STASH-OFF' })}</div>
     </article>
   `;

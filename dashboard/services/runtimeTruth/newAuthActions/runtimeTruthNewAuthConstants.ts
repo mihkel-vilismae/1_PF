@@ -16,5 +16,7 @@ export const NEW_AUTH_BUTTON_DEFAULTS = Object.freeze({
   'new-auth-check-login': 'Not checked yet.',
   'new-auth-logout-session': 'Not checked yet.',
   'new-auth-session-files': 'Not checked yet.',
+  'new-auth-generate-artifact-pack': 'Not checked yet.',
+  'new-auth-list-artifact-packs': 'Not checked yet.',
 });
 export const NEW_AUTH_SESSION_BUTTON_KEYS = Object.freeze(['new-auth-login-using-env', 'new-auth-check-login']);

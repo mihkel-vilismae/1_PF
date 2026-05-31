@@ -12,6 +12,8 @@ test('NEW AUTH backend-status metadata marks implemented routes as real', () => 
     'new-auth-check-login',
     'new-auth-logout-session',
     'new-auth-session-files',
+    'new-auth-generate-artifact-pack',
+    'new-auth-list-artifact-packs',
   ];
 
   for (const key of buttonKeys) {

@@ -25,6 +25,8 @@ test('new auth action button keys remain unchanged after split', () => {
     'new-auth-check-login',
     'new-auth-logout-session',
     'new-auth-session-files',
+    'new-auth-generate-artifact-pack',
+    'new-auth-list-artifact-packs',
   ]);
 });
 

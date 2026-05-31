@@ -208,6 +208,8 @@ export function createRuntimeTruthBehavior({
       'new-auth-check-login': () => void newAuthActions.checkLoginAction(),
       'new-auth-logout-session': () => void newAuthActions.logoutAction(),
       'new-auth-session-files': () => void newAuthActions.sessionFilesAction(),
+      'new-auth-generate-artifact-pack': () => void newAuthActions.generateArtifactPackAction(),
+      'new-auth-list-artifact-packs': () => void newAuthActions.listArtifactPacksAction(),
       'new-auth-submit-2fa': (detail) => void newAuthActions.submitTwoFactorAction(detail?.code ?? ''),
       'run-b2': () => void demoActions.runBackendAction({ key: 'B2', source: 'TEST', operation: 'Run download test action', endpoint: RUNTIME_EXECUTION_ENDPOINTS.downloadRun, execute: runRuntimeDownload }),
       'run-b2-real-download': () => void demoActions.runBackendAction({ key: 'B2-REAL_DOWNLOAD', source: 'TEST', operation: 'Run authenticated real iCloudPD download', endpoint: RUNTIME_EXECUTION_ENDPOINTS.realDownloadRun, execute: runRuntimeRealDownload, requestBody: { recentCount: Number(getState().simulation.realDownloadRecentCount || 1) } }),

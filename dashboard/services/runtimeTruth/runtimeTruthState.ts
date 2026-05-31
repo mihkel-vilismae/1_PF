@@ -210,6 +210,8 @@ export const NEW_AUTH_BUTTON_KEYS = Object.freeze([
   'new-auth-check-login',
   'new-auth-logout-session',
   'new-auth-session-files',
+  'new-auth-generate-artifact-pack',
+  'new-auth-list-artifact-packs',
 ] as const);
 
 export function buildInitialNewAuthButtonStates(): Record<(typeof NEW_AUTH_BUTTON_KEYS)[number], AuthButtonState> {
