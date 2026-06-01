@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## 2026-06-02 02:14 EEST — v0.7.40
+
+### Added
+- None
+
+### Changed
+- Updated proof runner command construction to use local runtimes instead of shell-dependent `npx` or `python3` assumptions.
+- Aligned static dashboard render-call assertions with the current visual-mode-aware render signature.
+
+### Fixed
+- Fixed Windows full-launcher proof failures caused by missing `python3` and subprocess `npx` lookup failures.
+
+### Removed
+- None
+
 ## 2026-06-02 02:04 EEST — v0.7.39
 
 ### Added

@@ -26,7 +26,7 @@ test('dashboard startup gate uses shared dashboard markup instead of duplicated 
   assert.doesNotMatch(appSource, /RealDashboard/);
   assert.match(appSource, /renderInitView\(state, dashboardVisualMode\)/);
   assert.match(appSource, /renderTestView\(state, dashboardVisualMode\)/);
-  assert.match(appSource, /renderLastRunView\(state\)/);
+  assert.match(appSource, /renderLastRunView\(state, dashboardVisualMode\)/);
   assert.match(appSource, /renderRunningProcessView\(state\)/);
   assert.match(appSource, /renderDatabaseViewerView\(state\)/);
 });

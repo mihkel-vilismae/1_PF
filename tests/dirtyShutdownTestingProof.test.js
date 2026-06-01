@@ -4,6 +4,7 @@
  * It returns a standard proof envelope using the shared proof schema.
  */
 import assert from 'node:assert/strict';
+import process from 'node:process';
 import test from 'node:test';
 import {
   buildDirtyShutdownTestingProofCommand,
@@ -12,8 +13,9 @@ import {
 
 test('dirty-shutdown testing proof command targets panel and service tests', () => {
   const command = buildDirtyShutdownTestingProofCommand();
-  assert.equal(command.command, 'npx');
-  assert.deepEqual(command.args.slice(0, 2), ['tsx', '--test']);
+  assert.equal(command.command, process.execPath);
+  assert.match(command.args[0], /tsx[/\\]dist[/\\]cli\.mjs$/);
+  assert.deepEqual(command.args.slice(1, 2), ['--test']);
   assert.ok(command.args.includes('tests/viewCTestingPanel.test.js'));
   assert.ok(command.args.includes('tests/dirtyShutdownTestingService.test.js'));
 });

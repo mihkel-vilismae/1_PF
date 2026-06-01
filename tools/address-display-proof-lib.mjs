@@ -8,6 +8,31 @@
 import { spawnSync } from 'node:child_process';
 import { createProofEnvelope, getProofEnvironment, sanitizeText } from './proof-utils.mjs';
 
+const PYTHON_COMMAND_CANDIDATES = Object.freeze([
+  { command: 'python3', prefixArgs: [] },
+  { command: 'py', prefixArgs: ['-3'] },
+  { command: 'python', prefixArgs: [] },
+]);
+
+/** Runs the proof Python script with Windows and POSIX command fallbacks. */
+function runPythonProofScript(script, cwd) {
+  const attempts = [];
+  for (const candidate of PYTHON_COMMAND_CANDIDATES) {
+    const args = [...candidate.prefixArgs, '-c', script, cwd];
+    const result = spawnSync(candidate.command, args, {
+      cwd,
+      encoding: 'utf8',
+      timeout: 120000,
+    });
+    attempts.push({ candidate, args, result });
+    if (!result.error || result.error.code !== 'ENOENT') {
+      return { candidate, args, result, attempts };
+    }
+  }
+  const lastAttempt = attempts[attempts.length - 1];
+  return { ...lastAttempt, attempts };
+}
+
 /** Builds the deterministic Python script that proves address propagation. */
 export function buildAddressDisplayProofPythonScript() {
   return String.raw`
@@ -82,20 +107,23 @@ with tempfile.TemporaryDirectory() as temp_dir:
 /** Runs the deterministic address propagation proof and returns a proof envelope. */
 export async function runAddressDisplayProof({ metadata, cwd = process.cwd() }) {
   const startedAt = Date.now();
-  const processResult = spawnSync('python3', ['-c', buildAddressDisplayProofPythonScript(), cwd], {
-    cwd,
-    encoding: 'utf8',
-    timeout: 120000,
-  });
+  const proofScript = buildAddressDisplayProofPythonScript();
+  const { candidate, args, result: processResult, attempts } = runPythonProofScript(proofScript, cwd);
   const commandResult = {
-    command: 'python3',
-    args: ['-c', '[ADDRESS_DISPLAY_PROOF_SCRIPT]', cwd],
+    command: candidate.command,
+    args: [...candidate.prefixArgs, '-c', '[ADDRESS_DISPLAY_PROOF_SCRIPT]', cwd],
+    attemptedCommands: attempts.map((attempt) => ({
+      command: attempt.candidate.command,
+      args: [...attempt.candidate.prefixArgs, '-c', '[ADDRESS_DISPLAY_PROOF_SCRIPT]', cwd],
+      errorCode: attempt.result.error?.code ?? null,
+      exitCode: attempt.result.status,
+    })),
     exitCode: processResult.status,
     signal: processResult.signal,
     timedOut: Boolean(processResult.error && processResult.error.code === 'ETIMEDOUT'),
     durationMs: Date.now() - startedAt,
     stdout: sanitizeText(processResult.stdout ?? '').text,
-    stderr: sanitizeText(processResult.stderr ?? '').text,
+    stderr: sanitizeText(processResult.stderr ?? processResult.error?.message ?? '').text,
   };
 
   if (commandResult.exitCode !== 0) {

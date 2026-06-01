@@ -1,8 +1,11 @@
-// Tests the deterministic native/fullscreen playback proof runner.
-// The proof uses targeted tests and does not launch native OS players.
-// It verifies that proof evidence clearly separates local boundary proof from live fullscreen proof.
-
+/*
+ * Tests the deterministic native/fullscreen playback proof runner.
+ * The proof uses targeted tests and does not launch native OS players.
+ * It verifies local boundary evidence separately from live fullscreen proof.
+ * These assertions keep the proof runner portable across Windows and POSIX shells.
+ */
 import assert from 'node:assert/strict';
+import process from 'node:process';
 import test from 'node:test';
 import {
   buildNativeFullscreenPlaybackProofCommand,
@@ -12,8 +15,9 @@ import {
 
 test('native/fullscreen proof command covers native controller and fullscreen UI tests', () => {
   const command = buildNativeFullscreenPlaybackProofCommand();
-  assert.equal(command.command, 'npx');
-  assert.deepEqual(command.args.slice(0, 2), ['tsx', '--test']);
+  assert.equal(command.command, process.execPath);
+  assert.match(command.args[0], /tsx[/\\]dist[/\\]cli\.mjs$/);
+  assert.deepEqual(command.args.slice(1, 2), ['--test']);
   assert.ok(command.args.includes('tests/nativePlaybackController.test.js'));
   assert.ok(command.args.includes('tests/osPlaybackRotationFullscreen.test.js'));
   assert.ok(command.args.includes('tests/osPlaybackViews.test.js'));

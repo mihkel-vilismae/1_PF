@@ -6,7 +6,16 @@
  * Does not launch real fullscreen players unless a future opt-in proof is approved.
  */
 import { access, readFile } from 'node:fs/promises';
+import process from 'node:process';
+import { createRequire } from 'node:module';
 import { createProofEnvelope, getProofEnvironment, runCommand } from './proof-utils.mjs';
+
+const require = createRequire(import.meta.url);
+
+/** Resolves the local tsx CLI so proof subprocesses do not depend on shell PATH npx lookup. */
+function resolveTsxCliPath() {
+  return require.resolve('tsx/cli');
+}
 
 const TARGETED_TESTS = Object.freeze([
   'tests/nativePlaybackController.test.js',
@@ -21,7 +30,7 @@ const REQUIRED_DOCS = Object.freeze([
 
 /** Returns the targeted command that proves native/fullscreen playback boundaries. */
 export function buildNativeFullscreenPlaybackProofCommand() {
-  return { command: 'npx', args: ['tsx', '--test', ...TARGETED_TESTS] };
+  return { command: process.execPath, args: [resolveTsxCliPath(), '--test', ...TARGETED_TESTS] };
 }
 
 /** Inspects the native/fullscreen proof support docs without treating docs as runtime proof. */
