@@ -57,6 +57,15 @@
 - After source edits, verify that every edited source file has a top comment block and every edited function has a leading comment.
 - This rule does not apply to non-source metadata/support files such as `.gitignore`, package manifests, lockfiles, changelogs, or this instruction file unless explicitly requested.
 
+## Thin Entrypoint Architecture Rule
+
+- `server/index.ts` must stay thin and may only bootstrap services, compose routes, create the HTTP server, and start listening.
+- `dashboard/app.ts` must stay thin and may only initialize the dashboard shell, subscribe to state, call render orchestration, and bind imported feature event binders.
+- New backend feature behavior must live in feature-local route modules, services, controllers, adapters, or utilities instead of being added directly to `server/index.ts`.
+- New frontend feature behavior must live in feature-local controllers, views, services, or event binders instead of being added directly to `dashboard/app.ts`.
+- Any commit or PR that grows either entrypoint by more than about 50 lines must explain why the behavior cannot live in a feature module and whether the growth is temporary or permanent.
+- Exact line-count budgets and enforcement thresholds must be implemented and adjusted repo-locally so checks prevent architectural drift without encouraging mechanical file splitting.
+
 ## UI Version Display
 
 - In apps with distinct frontend and backend parts, the top-right version display must show separate lines for each persistent component, including the component name and version number.

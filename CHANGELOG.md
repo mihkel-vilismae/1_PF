@@ -1,6 +1,20 @@
 # CHANGELOG
 
-## 0.7.38 - 2026-06-02
+## 2026-06-02 02:04 EEST — v0.7.39
+
+### Added
+- Added a PF_login-specific thin-entrypoint architecture rule to `AGENTS.md` for `server/index.ts` and `dashboard/app.ts`.
+
+### Changed
+- Bumped project metadata from v0.7.38 to v0.7.39 for the repo-local governance documentation update.
+
+### Fixed
+- None
+
+### Removed
+- None
+
+## 2026-06-02 00:52 EEST — v0.7.38
 
 - Merged remote `origin/master` updates into local `master`, including the repository VERSION output rule and root-only ZIP archive ignore rule.
 - Preserved the local v0.7.36/v0.7.37 Windows launcher component-status monitor and repository packager changes.
