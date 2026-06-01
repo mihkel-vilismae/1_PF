@@ -34,6 +34,12 @@
 - Do not force a skill if none fits, and do not let any skill override the active immutable baseline, explicit user instructions, or the current repo/baseline.
 - Prefer repo-local skill files as source of truth when present; preserve architecture boundaries, Test/Real separation, existing behavior, and regression safety.
 
+## VERSION Output Rule
+
+- When the user says `VERSION`, print the full repository version block.
+- The block must include current root/project version, `package.json` version, CronEmulator version, one empty line, `LATEST COMMIT WAS [X AMOUNT OF TIME] AGO`, one empty line, a small summary of latest changes based on `CHANGELOG.md`, one empty line, and `Latest 3 git commits:` with timestamps.
+- Compute all values from the current repository state at response time; do not reuse stale values from prior turns.
+
 ## Mutable Runtime State Rule
 
 - Treat committed seed/config files differently from runtime-written local state.
