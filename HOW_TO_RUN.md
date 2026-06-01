@@ -19,9 +19,9 @@ npm run api
 npm run dev
 ```
 
-On Windows, you can also run `start_win.cmd` from the repository root. It checks Node/npm, installs dependencies when needed, runs `npm run build`, then starts the API server and Vite frontend in separate terminals.
+On Windows, you can also run `start_win.cmd` from the repository root. It checks Node/npm, installs dependencies when needed, runs `npm run build`, then starts the API server, Vite frontend, and component-status monitor in separate terminals.
 
-For a fuller Windows startup pass, run `start_win_full.cmd` from the repository root. It installs dependencies with verbose npm output, runs `npm test`, runs `npm run build`, opens API and frontend in Windows Terminal tabs when available, falls back to separate `cmd.exe` windows, and opens the frontend in the default browser. See [`docs/10_runbooks/windows_full_launcher.md`](docs/10_runbooks/windows_full_launcher.md).
+For a fuller Windows startup pass, run `start_win_full.cmd` from the repository root. It installs dependencies with verbose npm output, runs `npm test`, runs `npm run build`, opens API, frontend, and component-status monitor tabs when Windows Terminal is available, falls back to separate `cmd.exe` windows, and opens the frontend in the default browser. See [`docs/10_runbooks/windows_full_launcher.md`](docs/10_runbooks/windows_full_launcher.md).
 
 Open the local Vite URL in your browser.
 

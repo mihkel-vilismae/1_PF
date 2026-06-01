@@ -2,6 +2,7 @@
 # Installs dependencies, runs tests, then opens API/frontend tabs.
 # Prefers Windows Terminal tabs and falls back to separate cmd windows.
 # Opens the Vite frontend in the default browser after launch.
+# Also opens a component status monitor showing API/dashboard status and versions.
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
@@ -102,10 +103,13 @@ function Start-WindowsTerminalTabs {
     $repo = $RepoRoot.Path
     $apiCommand = "cd /d `"$repo`" && npm run api"
     $frontendCommand = "cd /d `"$repo`" && npm run dev"
+    $statusScript = Join-Path $repo "start_scripts\start_component_status.ps1"
+    $statusCommand = "cd /d `"$repo`" && powershell -NoProfile -ExecutionPolicy Bypass -File `"$statusScript`""
 
     Start-Process -FilePath "wt.exe" -ArgumentList @(
         "new-tab", "--title", "PF API", "cmd", "/k", $apiCommand,
-        ";", "new-tab", "--title", "PF Frontend", "cmd", "/k", $frontendCommand
+        ";", "new-tab", "--title", "PF Frontend", "cmd", "/k", $frontendCommand,
+        ";", "new-tab", "--title", "PF Status", "cmd", "/k", $statusCommand
     )
 }
 
@@ -114,8 +118,10 @@ Starts API and frontend in separate cmd windows when Windows Terminal is unavail
 #>
 function Start-CmdFallbackWindows {
     $repo = $RepoRoot.Path
+    $statusScript = Join-Path $repo "start_scripts\start_component_status.ps1"
     Start-Process -FilePath "cmd.exe" -ArgumentList @("/k", "cd /d `"$repo`" && npm run api") -WorkingDirectory $repo
     Start-Process -FilePath "cmd.exe" -ArgumentList @("/k", "cd /d `"$repo`" && npm run dev") -WorkingDirectory $repo
+    Start-Process -FilePath "cmd.exe" -ArgumentList @("/k", "cd /d `"$repo`" && powershell -NoProfile -ExecutionPolicy Bypass -File `"$statusScript`"") -WorkingDirectory $repo
 }
 
 <#
@@ -125,17 +131,18 @@ function Start-ProjectServers {
     Write-Host "[STEP] Start API and frontend"
     $windowsTerminal = Get-Command "wt.exe" -ErrorAction SilentlyContinue
     if ($null -ne $windowsTerminal) {
-        Write-Host "[INFO] Opening Windows Terminal with API and frontend tabs."
+        Write-Host "[INFO] Opening Windows Terminal with API, frontend, and status tabs."
         Start-WindowsTerminalTabs
     }
     else {
-        Write-Host "[WARN] Windows Terminal not found. Opening separate cmd windows instead."
+        Write-Host "[WARN] Windows Terminal not found. Opening separate cmd windows for API, frontend, and status instead."
         Start-CmdFallbackWindows
     }
 
     Start-Sleep -Seconds 3
     Write-Host "[INFO] API: $ApiUrl"
     Write-Host "[INFO] Frontend: $FrontendUrl"
+    Write-Host "[INFO] Status monitor: API/dashboard running state and versions"
     Write-Host "[STEP] Open frontend in browser"
     Start-Process $FrontendUrl
 }

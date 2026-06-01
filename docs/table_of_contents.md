@@ -124,8 +124,9 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 
 | Path | Use |
 | --- | --- |
-| `start_win_full.cmd` / `start_scripts/start_win_full.ps1` | Full Windows launcher. |
-| `start_win.cmd` | Lighter Windows startup path. |
+| `start_win_full.cmd` / `start_scripts/start_win_full.ps1` | Full Windows launcher with API, frontend, and component-status monitor tabs/windows. |
+| `start_win.cmd` | Lighter Windows startup path with API, frontend, and component-status monitor terminals. |
+| `start_scripts/start_component_status.ps1` | API/dashboard running-status and version monitor for Windows launchers. |
 | `conf/runtime-truth.seed.json` | Committed neutral runtime-truth seed used at dashboard boot. |
 | `conf/runtime-truth.json` | Ignored local runtime-truth state written during app use. |
 | `example.env` | Environment key template, including geocode provider settings. |

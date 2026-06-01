@@ -10,5 +10,5 @@
     "lib": ["DOM", "ES2022"],
     "types": ["node"]
   },
-  "exclude": ["tools/"]
+  "exclude": ["tools/", "dist/", "node_modules/"]
 }

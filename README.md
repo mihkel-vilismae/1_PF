@@ -6,7 +6,7 @@ The system documentation is organized in canonical numbered folders under `docs/
 
 ## Windows full launcher
 
-Run `start_win_full.cmd` from the repository root for the full Windows startup workflow. It installs dependencies, runs tests, builds the frontend, opens API and frontend in Windows Terminal tabs when available, and opens `http://localhost:5173` in the default browser.
+Run `start_win_full.cmd` from the repository root for the full Windows startup workflow. It installs dependencies, runs tests, builds the frontend, opens API, frontend, and component-status monitor tabs/windows when available, and opens `http://localhost:5173` in the default browser.
 
 Use `start_win.cmd` for the older lighter startup path.
 
@@ -81,7 +81,7 @@ npm run build
 npm run dev
 ```
 
-On Windows, `start_win.cmd` checks dependencies, runs `npm run build`, then starts `npm run api` and `npm run dev` in separate terminals. `start_win_full.cmd` delegates to `start_scripts/start_win_full.ps1`, which installs dependencies, runs tests, builds, starts API/frontend tabs, and opens the browser.
+On Windows, `start_win.cmd` checks dependencies, runs `npm run build`, then starts `npm run api`, `npm run dev`, and a component-status monitor in separate terminals. `start_win_full.cmd` delegates to `start_scripts/start_win_full.ps1`, which installs dependencies, runs tests, builds, starts API/frontend/status tabs or windows, and opens the browser.
 
 Open the local app:
 

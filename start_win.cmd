@@ -73,6 +73,9 @@ start "12_PF API" cmd /k "cd /d ""%~dp0"" && npm run api"
 echo [INFO] Starting 12_PF frontend in a new terminal...
 start "12_PF Frontend" cmd /k "cd /d ""%~dp0"" && npm run dev"
 
+echo [INFO] Starting component status monitor in a new terminal...
+start "12_PF Status" cmd /k "cd /d ""%~dp0"" && powershell -NoProfile -ExecutionPolicy Bypass -File ""%~dp0start_scripts\start_component_status.ps1"""
+
 echo [INFO] Startup commands launched.
 echo [INFO] API: usually http://127.0.0.1:4301
 echo [INFO] Frontend: usually http://localhost:5173

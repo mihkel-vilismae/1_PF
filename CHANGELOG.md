@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.7.36 - 2026-06-01
+
+- Updated `start_win.cmd` to keep its lightweight API/frontend launch behavior while also opening a component-status monitor terminal.
+- Updated `start_win_full.cmd` / `start_scripts/start_win_full.ps1` to launch a status monitor tab/window alongside API and dashboard.
+- Added `start_scripts/start_component_status.ps1`, which displays API and dashboard running status plus backend/dashboard versions without logging secrets or provider output.
+- Updated Windows launcher documentation and bumped project metadata from v0.7.35 to v0.7.36.
+- Excluded generated `dist/` output from TypeScript checks so launcher builds do not poison later `npm run typecheck` runs.
+
 ## 0.7.35 - 2026-05-31
 
 - Bumped project metadata after the proof-artifact slices added since v0.7.34.
