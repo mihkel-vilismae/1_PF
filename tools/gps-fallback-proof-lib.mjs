@@ -5,8 +5,7 @@
  * Writes no media data into Git and returns a sanitized proof envelope.
  * Keeps proof output under ignored runtime_data/proofs through proof-utils.
  */
-import { spawnSync } from 'node:child_process';
-import { createProofEnvelope, sanitizeText } from './proof-utils.mjs';
+import { createProofEnvelope, getProofEnvironment, runPythonScriptWithFallback } from './proof-utils.mjs';
 
 /** Builds the deterministic Python script used by the GPS fallback proof. */
 export function buildGpsFallbackProofPythonScript() {
@@ -77,22 +76,12 @@ print(json.dumps({
 
 /** Runs the local Python GPS fallback proof and returns a proof envelope. */
 export async function runGpsFallbackProof({ metadata, cwd = process.cwd() }) {
-  const startedAt = Date.now();
-  const processResult = spawnSync('python3', ['-c', buildGpsFallbackProofPythonScript(), cwd], {
+  const { commandResult, processResult } = runPythonScriptWithFallback({
+    script: buildGpsFallbackProofPythonScript(),
     cwd,
-    encoding: 'utf8',
-    timeout: 60000,
+    scriptLabel: 'GPS_FALLBACK_PROOF_SCRIPT',
+    timeoutMs: 60000,
   });
-  const commandResult = {
-    command: 'python3',
-    args: ['-c', '[GPS_FALLBACK_PROOF_SCRIPT]', cwd],
-    exitCode: processResult.status,
-    signal: processResult.signal,
-    timedOut: Boolean(processResult.error && processResult.error.code === 'ETIMEDOUT'),
-    durationMs: Date.now() - startedAt,
-    stdout: sanitizeText(processResult.stdout ?? '').text,
-    stderr: sanitizeText(processResult.stderr ?? '').text,
-  };
 
   if (commandResult.exitCode !== 0) {
     return createProofEnvelope({
@@ -101,7 +90,7 @@ export async function runGpsFallbackProof({ metadata, cwd = process.cwd() }) {
       gitCommit: metadata.gitCommit,
       proofStatus: commandResult.timedOut ? 'TIMED_OUT' : 'FAILED',
       runtimeMode: 'deterministic_local',
-      evidence: { command_result: commandResult },
+      evidence: { environment: getProofEnvironment(), command_result: commandResult },
       knownLimitations: ['The Python GPS fallback proof did not complete successfully.'],
     });
   }
@@ -120,6 +109,7 @@ export async function runGpsFallbackProof({ metadata, cwd = process.cwd() }) {
     proofStatus: proofPassed ? 'PASSED' : 'PARTIAL',
     runtimeMode: 'deterministic_local',
     evidence: {
+      environment: getProofEnvironment(),
       command_result: commandResult,
       default_provider_order: payload.default_provider_order ?? [],
       expected_provider_ids: [...expectedProviders].sort(),

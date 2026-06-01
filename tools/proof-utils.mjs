@@ -8,12 +8,20 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
+import { createRequire } from 'node:module';
 import process from 'node:process';
 
 const __filename = fileURLToPath(import.meta.url);
 const repoRoot = dirname(dirname(__filename));
+const require = createRequire(import.meta.url);
 const VALID_STATUSES = new Set(['PASSED', 'FAILED', 'BLOCKED', 'PARTIAL', 'TIMED_OUT']);
+
+const PYTHON_COMMAND_CANDIDATES = Object.freeze([
+  { command: 'python3', prefixArgs: [] },
+  { command: 'py', prefixArgs: ['-3'] },
+  { command: 'python', prefixArgs: [] },
+]);
 const SECRET_PATTERNS = [
   { name: 'apple_id_email', pattern: /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi },
   { name: 'password_assignment', pattern: /(password|pass|pwd)(\s*[:=]\s*)[^\s,;]+/gi, replacement: '$1$2[REDACTED]' },
@@ -61,6 +69,63 @@ export async function writeProofArtifact(proofKind, proofEnvelope) {
   await mkdir(dirname(outputPath), { recursive: true });
   await writeFile(outputPath, `${JSON.stringify(proofEnvelope, null, 2)}\n`, 'utf8');
   return outputPath;
+}
+
+
+/** Resolves the local tsx CLI so proof subprocesses do not depend on shell PATH npx lookup. */
+export function resolveTsxCliPath() {
+  return require.resolve('tsx/cli');
+}
+
+/** Builds a Node-backed tsx command so proof runners avoid shell-dependent npx lookup. */
+export function buildLocalTsxCommand(argsAfterCli) {
+  return { command: process.execPath, args: [resolveTsxCliPath(), ...argsAfterCli] };
+}
+
+/** Builds a Node test command backed by the local tsx CLI. */
+export function buildLocalTsxTestCommand(testPaths = [], extraTestArgs = []) {
+  return buildLocalTsxCommand(['--test', ...extraTestArgs, ...testPaths]);
+}
+
+/** Runs an inline Python script with Windows and POSIX command fallbacks. */
+export function runPythonScriptWithFallback({ script, cwd = repoRoot, scriptLabel = 'PYTHON_PROOF_SCRIPT', timeoutMs = 120000 }) {
+  const startedAt = Date.now();
+  const attempts = [];
+  for (const candidate of PYTHON_COMMAND_CANDIDATES) {
+    const args = [...candidate.prefixArgs, '-c', script, cwd];
+    const result = spawnSync(candidate.command, args, {
+      cwd,
+      encoding: 'utf8',
+      timeout: timeoutMs,
+    });
+    attempts.push({ candidate, args, result });
+    if (!result.error || result.error.code !== 'ENOENT') {
+      return buildPythonFallbackResult({ candidate, args, result, attempts, startedAt, cwd, scriptLabel });
+    }
+  }
+  const lastAttempt = attempts[attempts.length - 1];
+  return buildPythonFallbackResult({ ...lastAttempt, attempts, startedAt, cwd, scriptLabel });
+}
+
+/** Builds sanitized command evidence for a Python fallback proof attempt. */
+function buildPythonFallbackResult({ candidate, result, attempts, startedAt, cwd, scriptLabel }) {
+  const commandResult = {
+    command: candidate.command,
+    args: [...candidate.prefixArgs, '-c', `[${scriptLabel}]`, cwd],
+    attemptedCommands: attempts.map((attempt) => ({
+      command: attempt.candidate.command,
+      args: [...attempt.candidate.prefixArgs, '-c', `[${scriptLabel}]`, cwd],
+      errorCode: attempt.result.error?.code ?? null,
+      exitCode: attempt.result.status,
+    })),
+    exitCode: result.status,
+    signal: result.signal,
+    timedOut: Boolean(result.error && result.error.code === 'ETIMEDOUT'),
+    durationMs: Date.now() - startedAt,
+    stdout: sanitizeText(result.stdout ?? '').text,
+    stderr: sanitizeText(result.stderr ?? result.error?.message ?? '').text,
+  };
+  return { commandResult, processResult: result };
 }
 
 /** Runs a child command and resolves even when a timeout needs force-kill. */

@@ -8,7 +8,7 @@
 import process from 'node:process';
 import { spawnSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
-import { createProofEnvelope, getProofEnvironment, runCommand, writeProofArtifact } from './proof-utils.mjs';
+import { buildLocalTsxTestCommand, createProofEnvelope, getProofEnvironment, runCommand, writeProofArtifact } from './proof-utils.mjs';
 
 /** Reads project version and short commit. */
 async function readProjectMetadata() {
@@ -41,8 +41,7 @@ function cleanupLingeringTestProcesses(commandResult) {
 /** Runs tests and writes proof JSON. */
 async function main() {
   const timeoutMs = Number(process.env.PF_FULL_TEST_PROOF_TIMEOUT_MS ?? '300000');
-  const command = process.platform === 'win32' ? 'npx.cmd' : 'npx';
-  const args = ['tsx', '--test', '--test-reporter=spec'];
+  const { command, args } = buildLocalTsxTestCommand([], ['--test-reporter=spec']);
   const metadata = await readProjectMetadata();
   const result = await runCommand(command, args, { timeoutMs });
   cleanupLingeringTestProcesses(result);

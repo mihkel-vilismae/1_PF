@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## 2026-06-02 02:50 EEST — v0.7.41
+
+### Added
+- Added shared proof subprocess helpers for local `tsx` commands and Python command fallback evidence.
+
+### Changed
+- Updated remaining local proof wrappers to avoid shell-dependent `npx` and hard-coded `python3` assumptions.
+- Reused the shared local `tsx` command builder across deterministic proof runners.
+
+### Fixed
+- Fixed remaining proof artifact runner portability failures for full-test, GPS fallback, and deterministic media pipeline proofs.
+
+### Removed
+- None
+
 ## 2026-06-02 02:14 EEST — v0.7.40
 
 ### Added

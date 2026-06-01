@@ -7,7 +7,8 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createProofEnvelope, sanitizeEvidence, sanitizeText } from '../tools/proof-utils.mjs';
+import process from 'node:process';
+import { buildLocalTsxTestCommand, createProofEnvelope, runPythonScriptWithFallback, sanitizeEvidence, sanitizeText } from '../tools/proof-utils.mjs';
 
 /** Verifies common auth/provider secrets are removed from strings. */
 test('proof sanitizer redacts credentials, tokens, codes, and private paths', () => {
@@ -42,4 +43,28 @@ test('createProofEnvelope writes an honest sanitized proof envelope', () => {
   assert.equal(envelope.proof_status, 'BLOCKED');
   assert.equal(envelope.evidence.providerOutput, 'token=[REDACTED]');
   assert.deepEqual(envelope.known_limitations, ['provider unavailable']);
+});
+
+
+/** Verifies local tsx command construction avoids shell-dependent npx lookup. */
+test('buildLocalTsxTestCommand uses the current Node executable and local tsx CLI', () => {
+  const command = buildLocalTsxTestCommand(['tests/example.test.js'], ['--test-reporter=spec']);
+  assert.equal(command.command, process.execPath);
+  assert.match(command.args[0], /tsx[/\\]dist[/\\]cli\.mjs$/);
+  assert.deepEqual(command.args.slice(1), ['--test', '--test-reporter=spec', 'tests/example.test.js']);
+});
+
+/** Verifies Python proof execution records fallback attempts without exposing script bodies. */
+test('runPythonScriptWithFallback records sanitized Python fallback attempts', () => {
+  const result = runPythonScriptWithFallback({
+    script: 'print("proof helper ok")',
+    cwd: process.cwd(),
+    scriptLabel: 'UNIT_TEST_SCRIPT',
+    timeoutMs: 30000,
+  });
+  assert.equal(result.commandResult.exitCode, 0, JSON.stringify(result.commandResult, null, 2));
+  assert.equal(result.commandResult.stdout.trim(), 'proof helper ok');
+  assert.ok(result.commandResult.attemptedCommands.length >= 1);
+  assert.equal(result.commandResult.args.includes('print("proof helper ok")'), false);
+  assert.ok(result.commandResult.args.includes('[UNIT_TEST_SCRIPT]'));
 });

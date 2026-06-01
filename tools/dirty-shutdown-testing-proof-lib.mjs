@@ -4,16 +4,7 @@
  * Proves first-version safety boundaries without killing OS processes.
  * Writes sanitized proof envelopes through shared proof helpers.
  */
-import process from 'node:process';
-import { createRequire } from 'node:module';
-import { createProofEnvelope, getProofEnvironment, runCommand } from './proof-utils.mjs';
-
-const require = createRequire(import.meta.url);
-
-/** Resolves the local tsx CLI so proof subprocesses do not depend on shell PATH npx lookup. */
-function resolveTsxCliPath() {
-  return require.resolve('tsx/cli');
-}
+import { buildLocalTsxTestCommand, createProofEnvelope, getProofEnvironment, runCommand } from './proof-utils.mjs';
 
 const TARGETED_TESTS = Object.freeze([
   'tests/viewCTestingPanel.test.js',
@@ -22,7 +13,7 @@ const TARGETED_TESTS = Object.freeze([
 
 /** Returns the targeted command that proves dirty-shutdown testing safeguards. */
 export function buildDirtyShutdownTestingProofCommand() {
-  return { command: process.execPath, args: [resolveTsxCliPath(), '--test', ...TARGETED_TESTS] };
+  return buildLocalTsxTestCommand([...TARGETED_TESTS]);
 }
 
 /** Runs the deterministic dirty-shutdown testing proof and returns a proof envelope. */

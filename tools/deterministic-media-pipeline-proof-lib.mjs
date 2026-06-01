@@ -6,7 +6,7 @@
  * Keeps real-provider and hardware proof claims out of this local proof.
  */
 import { access, readFile } from 'node:fs/promises';
-import { createProofEnvelope, getProofEnvironment, runCommand } from './proof-utils.mjs';
+import { buildLocalTsxTestCommand, createProofEnvelope, getProofEnvironment, runCommand } from './proof-utils.mjs';
 
 const TARGETED_TESTS = Object.freeze([
   'tests/mediaPipelineProviderContracts.test.js',
@@ -15,7 +15,7 @@ const TARGETED_TESTS = Object.freeze([
 
 /** Returns the deterministic test command used by this proof. */
 export function buildDeterministicMediaPipelineProofCommand() {
-  return { command: 'npx', args: ['tsx', '--test', ...TARGETED_TESTS] };
+  return buildLocalTsxTestCommand([...TARGETED_TESTS]);
 }
 
 /** Checks fixture manifest presence used by the local media pipeline test corpus. */
