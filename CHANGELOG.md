@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.7.37 - 2026-06-01
+
+- Committed the previously dirty `TRANSFERABLE_REPO_PACKAGER.cmd` improvements that report `.git` size/file-count checkpoints, run `git gc --prune=now`, and warn if `.git` metadata changes during packaging.
+- Preserved the existing file-mode normalization for `scripts/raspberry_power_loss_recovery_check.sh` and `tools/run-dirty-shutdown-testing-proof.mjs` so the baseline working tree is clean.
+- Bumped project metadata from v0.7.36 to v0.7.37 without changing app runtime behavior.
+
 ## 0.7.36 - 2026-06-01
 
 - Updated `start_win.cmd` to keep its lightweight API/frontend launch behavior while also opening a component-status monitor terminal.
