@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.7.38 - 2026-06-02
+
+- Merged remote `origin/master` updates into local `master`, including the repository VERSION output rule and root-only ZIP archive ignore rule.
+- Preserved the local v0.7.36/v0.7.37 Windows launcher component-status monitor and repository packager changes.
+- Bumped project metadata from v0.7.37 to v0.7.38 for the merge commit.
+
 ## 0.7.37 - 2026-06-01
 
 - Committed the previously dirty `TRANSFERABLE_REPO_PACKAGER.cmd` improvements that report `.git` size/file-count checkpoints, run `git gc --prune=now`, and warn if `.git` metadata changes during packaging.
