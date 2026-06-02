@@ -58,9 +58,9 @@ This README does not assert source-code truth. Check code/tests directly before 
 
 The dashboard is a Vite browser UI with Views A-E plus Windows and Raspberry playback surfaces. The display-facing playback UI shows the selected media preview, media type, queue summary, resolved address caption, fullscreen controls, activity status, worker status, and terminal-style runtime logs.
 
-## v0.7.44 code summary
+## v0.7.45 code summary
 
-v0.7.44 adds `proof:address-display-ui`, a deterministic local UI-render proof. It renders the Windows playback surface and fullscreen overlay from local state, verifies semantic address-display fragments, checks missing-address fallback copy, and confirms raw filesystem path-like fields are not exposed in rendered UI evidence.
+v0.7.45 stabilizes `proof:full-test` as the next proof-priority step after targeted proof work. The proof now uses a local Node/tsx command, serial test execution, structured pass/fail/timeout evidence, parsed Node test counts when available, and sanitized runtime JSON under `runtime_data/proofs`.
 
 ## Architecture overview
 
@@ -106,7 +106,7 @@ Proof workflows document and collect sanitized evidence for behavior that cannot
 
 | Script | Purpose | Default behavior |
 |---|---|---|
-| `npm run proof:full-test` | Runs the full test suite and writes local pass/fail/timeout evidence. | Executes tests locally. |
+| `npm run proof:full-test` | Runs the full test suite and writes structured local pass/fail/timeout evidence with parsed test counts when available. | Executes tests locally with serial Node/tsx test execution. |
 | `npm run proof:real-icloudpd` | Proves the real iCloudPD pipeline through existing backend routes. | Writes `BLOCKED` unless explicitly enabled. |
 | `npm run proof:geocode-provider` | Proves a real geocode provider and rejects placeholder-only proof. | Writes `BLOCKED` unless explicitly enabled. |
 | `npm run proof:real-geocode-provider-chain` | Proves a configured real geocode provider, cache-first behavior, fallback from cache miss, human-readable address plausibility, and placeholder rejection. | Writes `BLOCKED` unless `PF_PROOF_ENABLE_REAL_GEOCODE_CHAIN=true` and provider config are supplied. |

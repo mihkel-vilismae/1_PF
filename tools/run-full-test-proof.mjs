@@ -7,49 +7,29 @@
  */
 import process from 'node:process';
 import { spawnSync } from 'node:child_process';
-import { readFile } from 'node:fs/promises';
-import { buildLocalTsxTestCommand, createProofEnvelope, getProofEnvironment, runCommand, writeProofArtifact } from './proof-utils.mjs';
+import { FULL_TEST_PROOF_KIND, runFullTestProof } from './full-test-proof-lib.mjs';
+import { writeProofArtifact } from './proof-utils.mjs';
 
-/** Reads project version and short commit. */
-async function readProjectMetadata() {
-  const version = (await readFile('VERSION', 'utf8')).trim();
-  const gitResult = await runCommand('git', ['rev-parse', '--short', 'HEAD'], { timeoutMs: 10000 });
-  return { version, gitCommit: gitResult.stdout.trim() || 'unknown' };
-}
-
-/** Parses Node test summary counts when present. */
-function parseNodeTestCounts(output) {
-  const counts = { total: null, passed: null, failed: null, skipped: null, cancelled: null, todo: null };
-  for (const [key, pattern] of [['total', /tests\s+(\d+)/], ['passed', /pass\s+(\d+)/], ['failed', /fail\s+(\d+)/], ['skipped', /skipped\s+(\d+)/], ['cancelled', /cancelled\s+(\d+)/], ['todo', /todo\s+(\d+)/]]) {
-    const match = output.match(pattern);
-    if (match) counts[key] = Number(match[1]);
-  }
-  return counts;
-}
-
-/**
- * Cleans up orphaned test children after a timeout in Unix-like environments.
- */
-function cleanupLingeringTestProcesses(commandResult) {
-  if (!commandResult.timedOut || process.platform === 'win32') {
+/** Cleans up orphaned test children after a timeout in Unix-like environments. */
+function cleanupLingeringTestProcesses(proofEnvelope) {
+  if (!proofEnvelope.evidence?.timed_out || process.platform === 'win32') {
     return;
   }
   spawnSync('pkill', ['-f', `${process.cwd()}.*node_modules/.bin/tsx`], { stdio: 'ignore' });
   spawnSync('pkill', ['-f', `${process.cwd()}.*server/index.ts`], { stdio: 'ignore' });
 }
 
-/** Runs tests and writes proof JSON. */
+/** Runs tests, writes proof JSON, and exits non-zero unless the full suite passed. */
 async function main() {
-  const timeoutMs = Number(process.env.PF_FULL_TEST_PROOF_TIMEOUT_MS ?? '300000');
-  const { command, args } = buildLocalTsxTestCommand([], ['--test-reporter=spec']);
-  const metadata = await readProjectMetadata();
-  const result = await runCommand(command, args, { timeoutMs });
-  cleanupLingeringTestProcesses(result);
-  const combinedOutput = `${result.stdout}\n${result.stderr}`;
-  const proofStatus = result.timedOut ? 'TIMED_OUT' : result.exitCode === 0 ? 'PASSED' : 'FAILED';
-  const envelope = createProofEnvelope({ proofKind: 'full_test_suite_stability', baselineVersion: metadata.version, gitCommit: metadata.gitCommit, proofStatus, runtimeMode: 'test', evidence: { environment: getProofEnvironment(), command: `${command} ${args.join(' ')}`, timeout_ms: timeoutMs, exit_code: result.exitCode, signal: result.signal, timed_out: result.timedOut, duration_ms: result.durationMs, test_counts: parseNodeTestCounts(combinedOutput), stdout_tail: result.stdout.slice(-8000), stderr_tail: result.stderr.slice(-8000) }, knownLimitations: ['This proof only proves the local environment where it was run.', 'External iCloudPD, geocode-provider, and Raspberry hardware behavior are out of scope.'] });
-  const outputPath = await writeProofArtifact('full_test_suite_stability', envelope);
-  console.log(JSON.stringify({ status: proofStatus, outputPath, durationMs: result.durationMs }, null, 2));
-  process.exit(result.exitCode === 0 && !result.timedOut ? 0 : 1);
+  const timeoutMs = Number(process.env.PF_FULL_TEST_PROOF_TIMEOUT_MS ?? '600000');
+  const envelope = await runFullTestProof({ timeoutMs });
+  cleanupLingeringTestProcesses(envelope);
+  const outputPath = await writeProofArtifact(FULL_TEST_PROOF_KIND, envelope);
+  console.log(JSON.stringify({ status: envelope.proof_status, outputPath, durationMs: envelope.evidence.duration_ms, testCounts: envelope.evidence.test_counts }, null, 2));
+  process.exit(envelope.proof_status === 'PASSED' ? 0 : 1);
 }
-main().catch((error) => { console.error(error instanceof Error ? error.message : String(error)); process.exit(1); });
+
+main().catch((error) => {
+  console.error(error instanceof Error ? error.message : String(error));
+  process.exit(1);
+});
