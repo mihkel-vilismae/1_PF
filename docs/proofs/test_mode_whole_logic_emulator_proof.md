@@ -32,3 +32,7 @@ This proof does not prove real Raspberry cron firing, real Windows Task Schedule
 
 The proof still does not claim real Raspberry cron firing, real Windows Task Scheduler firing, real native fullscreen playback, or real OS process termination.
 
+
+## v0.8.0 proof additions
+
+The proof now also verifies that the manual cronjob call panel starts disabled, becomes enabled after the large start button creates the owned Test Mode controller run, and records manual `1`, `2`, and `3` calls for the regular, playback, and screen-on-off worker cronjob boundaries. The proof verifies status counters and sanitized `end2end_test.log` entries for those manual calls.

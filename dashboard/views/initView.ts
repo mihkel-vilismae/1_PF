@@ -3,20 +3,30 @@
  * Scheduler UI stays backend-backed and keeps Windows CronEmulator controls local
  * to the selected scheduler target.
  */
-import { statusBadge, renderLogEntries, renderResultSurface, renderStepList, renderSourceBadge } from '../services/renderers.ts';
-import { getAuthButtonCopy, getAuthButtonStatusHelp, getAuthButtonStatusLabel } from '../data/authButtonStatusCopy.ts';
+import {
+  statusBadge,
+  renderLogEntries,
+  renderResultSurface,
+  renderStepList,
+  renderSourceBadge,
+} from "../services/renderers.ts";
+import {
+  getAuthButtonCopy,
+  getAuthButtonStatusHelp,
+  getAuthButtonStatusLabel,
+} from "../data/authButtonStatusCopy.ts";
 import {
   getSchedulerEmulatorButtonCopy,
   getSchedulerEmulatorButtonStatusHelp,
   getSchedulerEmulatorButtonStatusLabel,
   normalizeSchedulerEmulatorButtonStatus,
-} from '../data/schedulerEmulatorStatusCopy.ts';
+} from "../data/schedulerEmulatorStatusCopy.ts";
 import {
   getOperationSupportLevel,
   SCHEDULER_OPERATION_SUPPORT,
   SCHEDULER_SUPPORT_LEVELS,
   SCHEDULER_TARGETS,
-} from '../../shared/schedulerPlatformCapabilities.ts';
+} from "../../shared/schedulerPlatformCapabilities.ts";
 import {
   WHOLE_LOGIC_TEST_MODE_BUTTON_LABEL,
   WHOLE_LOGIC_TEST_MODE_FAST_EMULATOR_LABEL,
@@ -25,50 +35,112 @@ import {
   WHOLE_LOGIC_TEST_MODE_SECTION_TITLE,
   WHOLE_LOGIC_TEST_MODE_STAGE_LIMIT,
   WHOLE_LOGIC_TEST_MODE_CONTROL_ACTIONS,
+  buildWholeLogicManualCronButtons,
   buildWholeLogicInitialFocusedLog,
   buildWholeLogicInitialStatusRows,
-} from '../../shared/testModeWholeLogicContract.ts';
+} from "../../shared/testModeWholeLogicContract.ts";
 
 // View A owns this card as 1A-AUTH. Some data-action values still contain "b1" because
 // they are compatibility action IDs used by existing tests/runtime wiring from the old B1 auth card.
 // Do not add new B1-named actions; route new auth-preflight behavior through this adapter list first.
 const AUTH_BUTTONS = Object.freeze([
-  { action: 'verify-icloudpd', label: 'Verify icloudpd', variant: 'secondary' },
-  { action: 'check-login', label: 'Check login', variant: 'secondary' },
-  { action: 'login-using-env', label: 'Login using .env values', variant: 'primary' },
-  { action: 'logout-b1-auth', label: 'Logout', variant: 'danger' },
-  { action: 'refresh-b1-auth-status', label: 'Refresh status', variant: 'secondary' },
-  { action: 'reset-b1-auth', label: 'Reset local attempt', variant: 'secondary' },
-  { action: 'test-b1-login-download-one', label: 'TEST LOGIN BY DOWNLOADING A SINGLE FILE', variant: 'secondary' },
+  { action: "verify-icloudpd", label: "Verify icloudpd", variant: "secondary" },
+  { action: "check-login", label: "Check login", variant: "secondary" },
+  {
+    action: "login-using-env",
+    label: "Login using .env values",
+    variant: "primary",
+  },
+  { action: "logout-b1-auth", label: "Logout", variant: "danger" },
+  {
+    action: "refresh-b1-auth-status",
+    label: "Refresh status",
+    variant: "secondary",
+  },
+  {
+    action: "reset-b1-auth",
+    label: "Reset local attempt",
+    variant: "secondary",
+  },
+  {
+    action: "test-b1-login-download-one",
+    label: "TEST LOGIN BY DOWNLOADING A SINGLE FILE",
+    variant: "secondary",
+  },
 ]);
 
-const AUTH_2FA_BUTTON = Object.freeze({ action: 'submit-b1-2fa', label: 'Submit 2FA', variant: 'primary' });
+const AUTH_2FA_BUTTON = Object.freeze({
+  action: "submit-b1-2fa",
+  label: "Submit 2FA",
+  variant: "primary",
+});
 
 const SCHEDULER_EMULATOR_BUTTONS = Object.freeze([
-  { action: 'check-emulator-scheduler', variant: 'secondary' },
-  { action: 'run-emulator', variant: 'primary' },
-  { action: 'stop-emulator', variant: 'secondary' },
-  { action: 'install-crontab', variant: 'secondary' },
-  { action: 'get-active-crontab', variant: 'secondary' },
+  { action: "check-emulator-scheduler", variant: "secondary" },
+  { action: "run-emulator", variant: "primary" },
+  { action: "stop-emulator", variant: "secondary" },
+  { action: "install-crontab", variant: "secondary" },
+  { action: "get-active-crontab", variant: "secondary" },
 ]);
 
 const NEW_AUTH_BUTTONS = Object.freeze([
-  { action: 'new-auth-verify-icloudpd', label: 'Verify iCloudPD install', variant: 'secondary' },
-  { action: 'new-auth-verify-provider-session', label: 'Verify with iCloudPD', variant: 'primary' },
-  { action: 'new-auth-login-using-env', label: 'Login using .env values', variant: 'primary' },
-  { action: 'new-auth-check-login', label: 'Check login', variant: 'secondary' },
-  { action: 'new-auth-logout-session', label: 'Log out and remove existing session', variant: 'danger' },
-  { action: 'new-auth-session-files', label: 'Show auth/session paths and files', variant: 'secondary' },
-  { action: 'new-auth-generate-artifact-pack', label: 'Generate auth evidence pack', variant: 'secondary' },
-  { action: 'new-auth-list-artifact-packs', label: 'List auth evidence packs', variant: 'secondary' },
+  {
+    action: "new-auth-verify-icloudpd",
+    label: "Verify iCloudPD install",
+    variant: "secondary",
+  },
+  {
+    action: "new-auth-verify-provider-session",
+    label: "Verify with iCloudPD",
+    variant: "primary",
+  },
+  {
+    action: "new-auth-login-using-env",
+    label: "Login using .env values",
+    variant: "primary",
+  },
+  {
+    action: "new-auth-check-login",
+    label: "Check login",
+    variant: "secondary",
+  },
+  {
+    action: "new-auth-logout-session",
+    label: "Log out and remove existing session",
+    variant: "danger",
+  },
+  {
+    action: "new-auth-session-files",
+    label: "Show auth/session paths and files",
+    variant: "secondary",
+  },
+  {
+    action: "new-auth-generate-artifact-pack",
+    label: "Generate auth evidence pack",
+    variant: "secondary",
+  },
+  {
+    action: "new-auth-list-artifact-packs",
+    label: "List auth evidence packs",
+    variant: "secondary",
+  },
 ]);
 
 // Renders the full View A page from runtime-truth state and selected dashboard mode.
 export function renderInitView(state, dashboardVisualMode = null) {
   const schedulerCapability = state.initCapabilities?.scheduler ?? null;
-  const installSupportLevel = getOperationSupportLevel(schedulerCapability, SCHEDULER_OPERATION_SUPPORT.install);
-  const statusSupportLevel = getOperationSupportLevel(schedulerCapability, SCHEDULER_OPERATION_SUPPORT.status);
-  const printSupportLevel = getOperationSupportLevel(schedulerCapability, SCHEDULER_OPERATION_SUPPORT.print);
+  const installSupportLevel = getOperationSupportLevel(
+    schedulerCapability,
+    SCHEDULER_OPERATION_SUPPORT.install,
+  );
+  const statusSupportLevel = getOperationSupportLevel(
+    schedulerCapability,
+    SCHEDULER_OPERATION_SUPPORT.status,
+  );
+  const printSupportLevel = getOperationSupportLevel(
+    schedulerCapability,
+    SCHEDULER_OPERATION_SUPPORT.print,
+  );
 
   return `
     <section class="view-page">
@@ -87,21 +159,21 @@ export function renderInitView(state, dashboardVisualMode = null) {
       ${renderWholeLogicWithoutLoginPanel(state, dashboardVisualMode)}
 
       <div class="section-grid section-grid--two">
-        ${renderCard('1A', 'Verify .env', state, '1A', '<button class="button button--primary" data-action="verify-env">Run</button>', 'Validate required configuration keys and render the backend response payload directly in this card.')}
+        ${renderCard("1A", "Verify .env", state, "1A", '<button class="button button--primary" data-action="verify-env">Run</button>', "Validate required configuration keys and render the backend response payload directly in this card.")}
         ${renderAuthCard(state)}
       ${renderNewAuthCard(state, dashboardVisualMode)}
         ${renderCard(
-          '2A',
-          'Database controls',
+          "2A",
+          "Database controls",
           state,
-          '2A',
+          "2A",
           `
             <button class="button button--secondary" data-action="check-db">Check DB</button>
             <button class="button button--secondary" data-action="inspect-db">Inspect DB</button>
             <button class="button button--danger" data-action="delete-db">Delete DB</button>
             <button class="button button--secondary" data-action="recreate-db">Recreate DB</button>
           `,
-          'Database actions now target the documented init endpoints and should surface backend summaries or failures here.',
+          "Database actions now target the documented init endpoints and should surface backend summaries or failures here.",
         )}
       </div>
 
@@ -113,21 +185,25 @@ export function renderInitView(state, dashboardVisualMode = null) {
 
 // Renders the Group 3 Test Mode control panel with owned controller actions only.
 function renderWholeLogicWithoutLoginPanel(state, dashboardVisualMode) {
-  if (dashboardVisualMode !== 'test') {
-    return '';
+  if (dashboardVisualMode !== "test") {
+    return "";
   }
 
-  const runtimeKeyRows = WHOLE_LOGIC_TEST_MODE_RUNTIME_KEYS
-    .map((entry) => `<li><code>${escapeHtml(entry)}</code></li>`)
-    .join('');
-  const safetyRows = WHOLE_LOGIC_TEST_MODE_SAFETY_LIMITS
-    .map((entry) => `<li>${escapeHtml(entry)}</li>`)
-    .join('');
+  const runtimeKeyRows = WHOLE_LOGIC_TEST_MODE_RUNTIME_KEYS.map(
+    (entry) => `<li><code>${escapeHtml(entry)}</code></li>`,
+  ).join("");
+  const safetyRows = WHOLE_LOGIC_TEST_MODE_SAFETY_LIMITS.map(
+    (entry) => `<li>${escapeHtml(entry)}</li>`,
+  ).join("");
 
   const wholeLogicState = state.wholeLogicTestMode ?? null;
-  const isStartDisabled = Boolean(wholeLogicState?.startButton?.disabled || state.statusByKey['1A-TEST-WHOLE-LOGIC'] === 'running' || state.statusByKey['1A-TEST-WHOLE-LOGIC'] === 'success');
-  const disabledText = isStartDisabled ? ' disabled aria-disabled="true"' : '';
-  const disabledClass = isStartDisabled ? ' button--disabled' : '';
+  const isStartDisabled = Boolean(
+    wholeLogicState?.startButton?.disabled ||
+    state.statusByKey["1A-TEST-WHOLE-LOGIC"] === "running" ||
+    state.statusByKey["1A-TEST-WHOLE-LOGIC"] === "success",
+  );
+  const disabledText = isStartDisabled ? ' disabled aria-disabled="true"' : "";
+  const disabledClass = isStartDisabled ? " button--disabled" : "";
 
   return `
     <article class="card card--feature card--mock card--pending" aria-label="${escapeAttribute(WHOLE_LOGIC_TEST_MODE_SECTION_TITLE)}">
@@ -136,8 +212,8 @@ function renderWholeLogicWithoutLoginPanel(state, dashboardVisualMode) {
           <p class="card__code">1A-TEST-WHOLE-LOGIC</p>
           <h3>${escapeHtml(WHOLE_LOGIC_TEST_MODE_SECTION_TITLE)}</h3>
         </div>
-        <div class="card__header-tags">${renderSourceBadge('mock', 'TEST MODE ONLY')}</div>
-        ${statusBadge(state.statusByKey['1A-TEST-WHOLE-LOGIC'] ?? 'idle')}
+        <div class="card__header-tags">${renderSourceBadge("mock", "TEST MODE ONLY")}</div>
+        ${statusBadge(state.statusByKey["1A-TEST-WHOLE-LOGIC"] ?? "idle")}
       </header>
       <p class="card__copy">${escapeHtml(WHOLE_LOGIC_TEST_MODE_FAST_EMULATOR_LABEL)} owns only tracked Test Mode controller records for q/w/e/r/t power controls. It does not kill the dashboard or arbitrary Node/Python/SQLite/system processes.</p>
       <p class="card__copy">Configured worker-stage item limit: <strong>${WHOLE_LOGIC_TEST_MODE_STAGE_LIMIT}</strong> items per stage, including mock download.</p>
@@ -145,14 +221,15 @@ function renderWholeLogicWithoutLoginPanel(state, dashboardVisualMode) {
         <button class="button button--primary${disabledClass}" data-action="run-whole-logic-test-mode" data-whole-logic-start-button="true" title="Configure the Test Mode fast-emulator boundary with max-5 worker-stage limits"${disabledText}>${escapeHtml(WHOLE_LOGIC_TEST_MODE_BUTTON_LABEL)}</button>
         <button class="button button--secondary" data-action="status-whole-logic-test-mode" title="Read the owned Test Mode fast-emulator controller state">Read controller status</button>
       </div>
+      ${renderWholeLogicManualCronPanel(wholeLogicState?.manualCronButtons)}
       ${renderWholeLogicStatusPanel(wholeLogicState?.statusRows)}
       ${renderWholeLogicFocusedLog(wholeLogicState?.focusedLog)}
       <div class="button-row" aria-label="Whole-logic Test Mode power controls">
-        ${renderWholeLogicControlButton('q')}
-        ${renderWholeLogicControlButton('w')}
-        ${renderWholeLogicControlButton('e')}
-        ${renderWholeLogicControlButton('r')}
-        ${renderWholeLogicControlButton('t')}
+        ${renderWholeLogicControlButton("q")}
+        ${renderWholeLogicControlButton("w")}
+        ${renderWholeLogicControlButton("e")}
+        ${renderWholeLogicControlButton("r")}
+        ${renderWholeLogicControlButton("t")}
       </div>
       <section class="selector-card selector-card--mock" aria-label="Native fullscreen power control instructions">
         <p class="selector-card__label">Native fullscreen control text</p>
@@ -166,17 +243,47 @@ function renderWholeLogicWithoutLoginPanel(state, dashboardVisualMode) {
   `;
 }
 
+// Renders manual cronjob call buttons that are disabled until the large start button is pressed.
+function renderWholeLogicManualCronPanel(
+  buttons = buildWholeLogicManualCronButtons(false),
+) {
+  const buttonRows = buttons
+    .map((button) => {
+      const disabledText = button.disabled
+        ? ' disabled aria-disabled="true"'
+        : "";
+      const disabledClass = button.disabled ? " button--disabled" : "";
+      return `
+        <li class="whole-logic-manual-row" data-whole-logic-manual-key="${escapeAttribute(button.key)}" data-whole-logic-manual-enabled="${button.enabled ? "true" : "false"}">
+          <button class="button button--secondary whole-logic-manual-button${disabledClass}" data-action="${escapeAttribute(button.action)}" title="${escapeAttribute(button.hoverTitle)}"${disabledText}>${escapeHtml(button.label)}</button>
+          <span class="whole-logic-manual-explanation">${escapeHtml(button.explanation)}</span>
+        </li>`;
+    })
+    .join("");
+
+  return `
+    <section class="whole-logic-manual-panel" aria-label="Manual cronjob call buttons">
+      <p class="selector-card__label">Manual cronjob calls</p>
+      <p class="card__copy">Buttons 1, 2, and 3 are disabled until the large TEST MODE FAST EMULATOR start button is pressed. Hover a button for more detail.</p>
+      <ul class="whole-logic-manual-list">${buttonRows}</ul>
+    </section>
+  `;
+}
 
 // Renders blank status-circle rows for the Test Mode fast-emulator status panel.
-function renderWholeLogicStatusPanel(rows = buildWholeLogicInitialStatusRows()) {
+function renderWholeLogicStatusPanel(
+  rows = buildWholeLogicInitialStatusRows(),
+) {
   const statusRows = rows
-    .map((row) => `
+    .map(
+      (row) => `
       <li class="whole-logic-status-row whole-logic-status-row--${escapeAttribute(row.state)}" data-whole-logic-status-id="${escapeAttribute(row.id)}" data-whole-logic-status-state="${escapeAttribute(row.state)}">
         <span class="whole-logic-status-circle whole-logic-status-circle--${escapeAttribute(row.state)}" aria-label="${escapeAttribute(row.state)} status circle"></span>
         <span class="whole-logic-status-label">${escapeHtml(row.label)}</span>
         <span class="whole-logic-status-meta">${escapeHtml(formatWholeLogicStatusMeta(row))}</span>
-      </li>`)
-    .join('');
+      </li>`,
+    )
+    .join("");
 
   return `
     <section class="whole-logic-status-panel" aria-label="TEST MODE FAST EMULATOR status circles">
@@ -187,10 +294,15 @@ function renderWholeLogicStatusPanel(rows = buildWholeLogicInitialStatusRows()) 
 }
 
 // Renders the focused terminal-like log surface for the main Test Mode run process.
-function renderWholeLogicFocusedLog(entries = buildWholeLogicInitialFocusedLog()) {
+function renderWholeLogicFocusedLog(
+  entries = buildWholeLogicInitialFocusedLog(),
+) {
   const logRows = entries
-    .map((entry) => `<div class="whole-logic-terminal-row whole-logic-terminal-row--${escapeAttribute(entry.level)}"><span>${escapeHtml(entry.at)}</span> ${escapeHtml(entry.message)}</div>`)
-    .join('');
+    .map(
+      (entry) =>
+        `<div class="whole-logic-terminal-row whole-logic-terminal-row--${escapeAttribute(entry.level)}"><span>${escapeHtml(entry.at)}</span> ${escapeHtml(entry.message)}</div>`,
+    )
+    .join("");
 
   return `
     <section class="whole-logic-terminal" aria-label="TEST MODE FAST EMULATOR focused log">
@@ -216,7 +328,10 @@ function renderWholeLogicControlButton(key) {
 
 // Renders scheduler target selection and the active target control panel.
 function renderSchedulerCard(state, schedulerCapability, supportLevels) {
-  const selectedTarget = state.selectedSchedulerTarget ?? schedulerCapability?.schedulerTarget ?? SCHEDULER_TARGETS.windowsCronEmulator;
+  const selectedTarget =
+    state.selectedSchedulerTarget ??
+    schedulerCapability?.schedulerTarget ??
+    SCHEDULER_TARGETS.windowsCronEmulator;
   return `
     <article class="card card--scheduler-targets">
       <header class="card__header">
@@ -224,36 +339,36 @@ function renderSchedulerCard(state, schedulerCapability, supportLevels) {
           <p class="card__code">3A</p>
           <h3>Scheduler controls</h3>
         </div>
-        ${statusBadge(state.statusByKey['3A'])}
+        ${statusBadge(state.statusByKey["3A"])}
       </header>
       <p class="card__copy">${renderSchedulerCopy(schedulerCapability, supportLevels.installSupportLevel)}</p>
       <div class="scheduler-tabs" role="tablist" aria-label="Scheduler target">
-        ${renderSchedulerTabButton('WINDOWS (crontab emulator)', SCHEDULER_TARGETS.windowsCronEmulator, selectedTarget, 'select-scheduler-target-windows')}
-        ${renderSchedulerTabButton('RASPBERRY (real crontab)', SCHEDULER_TARGETS.raspberryRealCrontab, selectedTarget, 'select-scheduler-target-raspberry')}
+        ${renderSchedulerTabButton("WINDOWS (crontab emulator)", SCHEDULER_TARGETS.windowsCronEmulator, selectedTarget, "select-scheduler-target-windows")}
+        ${renderSchedulerTabButton("RASPBERRY (real crontab)", SCHEDULER_TARGETS.raspberryRealCrontab, selectedTarget, "select-scheduler-target-raspberry")}
       </div>
       <div class="scheduler-target-grid">
         ${renderSchedulerTargetPanel({
-          title: 'WINDOWS',
-          subtitle: 'crontab emulator',
+          title: "WINDOWS",
+          subtitle: "crontab emulator",
           target: SCHEDULER_TARGETS.windowsCronEmulator,
           selectedTarget,
           supportLevels,
           state,
-          copy: 'Uses tools/CronEmulator as the Windows cron job runner. The emulator source stays unchanged; the backend launches and inspects it as an external process.',
+          copy: "Uses tools/CronEmulator as the Windows cron job runner. The emulator source stays unchanged; the backend launches and inspects it as an external process.",
         })}
         ${renderSchedulerTargetPanel({
-          title: 'RASPBERRY',
-          subtitle: 'real crontab',
+          title: "RASPBERRY",
+          subtitle: "real crontab",
           target: SCHEDULER_TARGETS.raspberryRealCrontab,
           selectedTarget,
           supportLevels,
           state,
-          copy: 'Uses the current user crontab on Raspberry Pi OS/Linux and manages only the project-owned marked block.',
+          copy: "Uses the current user crontab on Raspberry Pi OS/Linux and manages only the project-owned marked block.",
         })}
       </div>
       ${renderSchedulerEndpointTerminal(state.schedulerEmulator?.endpointLog ?? [])}
-      ${renderResultSurface(state.initResults['3A'])}
-      <div class="log-surface" data-scroll-preserve="log-3A">${renderLogEntries(state.logs['3A'], { sourceKey: '3A' })}</div>
+      ${renderResultSurface(state.initResults["3A"])}
+      <div class="log-surface" data-scroll-preserve="log-3A">${renderLogEntries(state.logs["3A"], { sourceKey: "3A" })}</div>
     </article>
   `;
 }
@@ -261,13 +376,13 @@ function renderSchedulerCard(state, schedulerCapability, supportLevels) {
 // Renders one scheduler target tab button.
 function renderSchedulerTabButton(label, target, selectedTarget, action) {
   const selected = target === selectedTarget;
-  return `<button class="scheduler-tab ${selected ? 'scheduler-tab--active' : ''}" type="button" role="tab" aria-selected="${selected ? 'true' : 'false'}" data-action="${escapeAttribute(action)}">${escapeHtml(label)}</button>`;
+  return `<button class="scheduler-tab ${selected ? "scheduler-tab--active" : ""}" type="button" role="tab" aria-selected="${selected ? "true" : "false"}" data-action="${escapeAttribute(action)}">${escapeHtml(label)}</button>`;
 }
 
 // Renders a terminal-style live endpoint log for Windows CronEmulator calls.
 function renderSchedulerEndpointTerminal(entries = []) {
   const rows = entries.length
-    ? entries.map((entry) => renderSchedulerEndpointTerminalRow(entry)).join('')
+    ? entries.map((entry) => renderSchedulerEndpointTerminalRow(entry)).join("")
     : '<div class="scheduler-endpoint-terminal__empty">No cron endpoint calls yet.</div>';
   return `
     <section class="scheduler-endpoint-terminal" aria-label="Live cron endpoint call log">
@@ -288,40 +403,60 @@ function renderSchedulerEndpointTerminal(entries = []) {
 
 // Renders one compact terminal row for endpoint traffic or actual cron row execution.
 function renderSchedulerEndpointTerminalRow(entry) {
-  const rowId = String(entry.id ?? '');
-  const isCronRowCall = entry.actualCronRowCall === true || String(entry.type ?? '').startsWith('cron-run');
+  const rowId = String(entry.id ?? "");
+  const isCronRowCall =
+    entry.actualCronRowCall === true ||
+    String(entry.type ?? "").startsWith("cron-run");
   const statusText = isCronRowCall
-    ? (entry.type === 'cron-run-failed' ? 'ROW FAIL' : 'ROW OK')
-    : (typeof entry.status === 'number' ? `HTTP ${entry.status}` : entry.type.toUpperCase());
-  const title = isCronRowCall && entry.rawCronRow ? ` title="${escapeAttribute(entry.rawCronRow)}"` : '';
+    ? entry.type === "cron-run-failed"
+      ? "ROW FAIL"
+      : "ROW OK"
+    : typeof entry.status === "number"
+      ? `HTTP ${entry.status}`
+      : entry.type.toUpperCase();
+  const title =
+    isCronRowCall && entry.rawCronRow
+      ? ` title="${escapeAttribute(entry.rawCronRow)}"`
+      : "";
   return `
-    <div class="scheduler-endpoint-terminal__row scheduler-endpoint-terminal__row--${escapeAttribute(entry.type ?? 'request')}"${title}>
-      <span class="scheduler-endpoint-terminal__time">${escapeHtml(entry.at ?? '')}</span>
+    <div class="scheduler-endpoint-terminal__row scheduler-endpoint-terminal__row--${escapeAttribute(entry.type ?? "request")}"${title}>
+      <span class="scheduler-endpoint-terminal__time">${escapeHtml(entry.at ?? "")}</span>
       <span class="scheduler-endpoint-terminal__status">${escapeHtml(statusText)}</span>
-      <span class="scheduler-endpoint-terminal__method">${escapeHtml(entry.method ?? '')}</span>
-      <span class="scheduler-endpoint-terminal__endpoint">${escapeHtml(entry.endpoint ?? '')}</span>
-      <span class="scheduler-endpoint-terminal__message">${escapeHtml(entry.message ?? '')}</span>
+      <span class="scheduler-endpoint-terminal__method">${escapeHtml(entry.method ?? "")}</span>
+      <span class="scheduler-endpoint-terminal__endpoint">${escapeHtml(entry.endpoint ?? "")}</span>
+      <span class="scheduler-endpoint-terminal__message">${escapeHtml(entry.message ?? "")}</span>
       <button class="button button--ghost scheduler-endpoint-terminal__expand" type="button" data-scheduler-endpoint-row-expand="${escapeAttribute(rowId)}">expand row</button>
     </div>
   `;
 }
 
 // Renders one scheduler target panel, using CronEmulator controls for Windows.
-function renderSchedulerTargetPanel({ title, subtitle, target, selectedTarget, supportLevels, copy, state }) {
+function renderSchedulerTargetPanel({
+  title,
+  subtitle,
+  target,
+  selectedTarget,
+  supportLevels,
+  copy,
+  state,
+}) {
   const active = target === selectedTarget;
-  const disabled = active ? '' : ' disabled aria-disabled="true"';
-  const inactiveNote = active ? '' : '<p class="scheduler-target-panel__note">Inactive target. Controls are disabled until this tab is selected.</p>';
-  const controls = target === SCHEDULER_TARGETS.windowsCronEmulator
-    ? renderWindowsSchedulerControls(state, disabled)
-    : renderLegacySchedulerControls(supportLevels, disabled);
+  const disabled = active ? "" : ' disabled aria-disabled="true"';
+  const inactiveNote = active
+    ? ""
+    : '<p class="scheduler-target-panel__note">Inactive target. Controls are disabled until this tab is selected.</p>';
+  const controls =
+    target === SCHEDULER_TARGETS.windowsCronEmulator
+      ? renderWindowsSchedulerControls(state, disabled)
+      : renderLegacySchedulerControls(supportLevels, disabled);
   return `
-    <section class="scheduler-target-panel ${active ? 'scheduler-target-panel--active' : 'scheduler-target-panel--inactive'}" data-scheduler-target="${escapeAttribute(target)}">
+    <section class="scheduler-target-panel ${active ? "scheduler-target-panel--active" : "scheduler-target-panel--inactive"}" data-scheduler-target="${escapeAttribute(target)}">
       <div class="scheduler-target-panel__header">
         <div>
           <p class="card__code">${escapeHtml(title)}</p>
           <h4>${escapeHtml(subtitle)}</h4>
         </div>
-        <span class="status-badge status-badge--${active ? 'info' : 'disabled'}">${active ? 'Active' : 'Disabled'}</span>
+        <span class="status-badge status-badge--${active ? "info" : "disabled"}">${active ? "Active" : "Disabled"}</span>
       </div>
       <p class="card__copy">${escapeHtml(copy)}</p>
       ${controls}
@@ -336,12 +471,12 @@ function renderWindowsSchedulerControls(state, disabled) {
   return `
     <div class="scheduler-emulator-controls">
       <div class="button-row scheduler-emulator-button-row">
-        ${SCHEDULER_EMULATOR_BUTTONS.map((button) => renderSchedulerEmulatorActionButton(button, schedulerState.buttonStates ?? {}, disabled)).join('')}
+        ${SCHEDULER_EMULATOR_BUTTONS.map((button) => renderSchedulerEmulatorActionButton(button, schedulerState.buttonStates ?? {}, disabled)).join("")}
       </div>
       <div class="scheduler-crontab-grid">
         <label class="scheduler-crontab-field">
           <span>insert crontab</span>
-          <textarea class="terminal-textarea" data-scheduler-crontab-input spellcheck="false"${disabled}>${escapeHtml(schedulerState.editableCrontab ?? '')}</textarea>
+          <textarea class="terminal-textarea" data-scheduler-crontab-input spellcheck="false"${disabled}>${escapeHtml(schedulerState.editableCrontab ?? "")}</textarea>
         </label>
         <label class="scheduler-crontab-field">
           <span>crontab from CronEmulator</span>
@@ -355,13 +490,21 @@ function renderWindowsSchedulerControls(state, disabled) {
 // Renders one CronEmulator action button with an auth-style status circle.
 function renderSchedulerEmulatorActionButton(button, buttonStates, disabled) {
   const copy = getSchedulerEmulatorButtonCopy(button.action);
-  const statusState = buttonStates?.[button.action] ?? { status: 'neutral', message: 'Not checked yet.', endpoint: null };
+  const statusState = buttonStates?.[button.action] ?? {
+    status: "neutral",
+    message: "Not checked yet.",
+    endpoint: null,
+  };
   const status = normalizeSchedulerEmulatorButtonStatus(statusState.status);
   const label = copy?.label ?? button.action;
-  const helpText = getSchedulerEmulatorButtonStatusHelp(button.action, status, statusState.message);
+  const helpText = getSchedulerEmulatorButtonStatusHelp(
+    button.action,
+    status,
+    statusState.message,
+  );
   const statusLabelText = getSchedulerEmulatorButtonStatusLabel(status);
   const title = escapeAttribute(helpText);
-  const disabledAttribute = disabled || '';
+  const disabledAttribute = disabled || "";
 
   return `
     <span class="auth-button-shell auth-button-shell--${escapeAttribute(status)} scheduler-emulator-button" data-scheduler-button-key="${escapeAttribute(button.action)}" data-scheduler-button-status="${escapeAttribute(status)}" data-scheduler-help-text="${title}" title="${title}">
@@ -382,59 +525,75 @@ function renderLegacySchedulerControls(supportLevels, disabled) {
   `;
 }
 
-
 // Renders the NEW AUTH card, with real login controls disabled in Test Mode.
 function renderNewAuthCard(state, dashboardVisualMode = null) {
   const newAuth = state.newAuth ?? {};
-  const disabledInTestMode = dashboardVisualMode === 'test';
+  const disabledInTestMode = dashboardVisualMode === "test";
   const disabledNotice = disabledInTestMode
     ? '<p class="notice notice--warning new-auth-disabled-notice">NEW AUTH login is disabled in Test Mode. Switch to Real Mode to use iCloudPD login controls.</p>'
-    : '';
+    : "";
   return `
-    <article class="card card--hybrid ${disabledInTestMode ? 'card--new-auth-disabled' : ''}" data-new-auth-card="1A-STASH-OFF"${disabledInTestMode ? ' data-new-auth-disabled="test-mode" aria-disabled="true"' : ''}>
+    <article class="card card--hybrid ${disabledInTestMode ? "card--new-auth-disabled" : ""}" data-new-auth-card="1A-STASH-OFF"${disabledInTestMode ? ' data-new-auth-disabled="test-mode" aria-disabled="true"' : ""}>
       <header class="card__header">
         <div><p class="card__code">1A-STASH-OFF</p><h3>NEW AUTH</h3></div>
-        <div class="card__header-tags">${renderSourceBadge('real', disabledInTestMode ? 'DISABLED IN TEST MODE' : 'NEW ENDPOINTS')}</div>
-        ${statusBadge(state.statusByKey['1A-STASH-OFF'])}
+        <div class="card__header-tags">${renderSourceBadge("real", disabledInTestMode ? "DISABLED IN TEST MODE" : "NEW ENDPOINTS")}</div>
+        ${statusBadge(state.statusByKey["1A-STASH-OFF"])}
       </header>
       <p class="card__copy">Fresh real-auth UI boundary for iCloudPD. These controls intentionally target only <code>/api/auth/new/*</code> endpoints and do not reuse the existing login card routes.</p>
       ${disabledNotice}
       <div class="new-auth-action-list">
-        ${NEW_AUTH_BUTTONS.map((button) => renderNewAuthActionRow(button, newAuth.buttonStates ?? {}, disabledInTestMode)).join('')}
+        ${NEW_AUTH_BUTTONS.map((button) => renderNewAuthActionRow(button, newAuth.buttonStates ?? {}, disabledInTestMode)).join("")}
       </div>
       ${renderResultSurface(newAuth.latestResult)}
-      ${newAuth.sessionFilesResult ? renderResultSurface(newAuth.sessionFilesResult) : ''}
-      ${newAuth.artifactPackResult ? renderResultSurface(newAuth.artifactPackResult) : ''}
-      ${newAuth.artifactPackListResult ? renderResultSurface(newAuth.artifactPackListResult) : ''}
-      <div class="log-surface" data-scroll-preserve="log-1A-STASH-OFF">${renderLogEntries(state.logs['1A-STASH-OFF'], { sourceKey: '1A-STASH-OFF' })}</div>
+      ${newAuth.sessionFilesResult ? renderResultSurface(newAuth.sessionFilesResult) : ""}
+      ${newAuth.artifactPackResult ? renderResultSurface(newAuth.artifactPackResult) : ""}
+      ${newAuth.artifactPackListResult ? renderResultSurface(newAuth.artifactPackListResult) : ""}
+      <div class="log-surface" data-scroll-preserve="log-1A-STASH-OFF">${renderLogEntries(state.logs["1A-STASH-OFF"], { sourceKey: "1A-STASH-OFF" })}</div>
     </article>
   `;
 }
 
 // Renders one NEW AUTH action row and applies Test Mode disabled attributes.
-function renderNewAuthActionRow(button, buttonStates = {}, disabledInTestMode = false) {
-  const statusState = buttonStates?.[button.action] ?? { status: 'neutral', message: 'Not checked yet.', endpoint: null };
-  const status = disabledInTestMode ? 'blocked' : normalizeAuthButtonStatus(statusState.status);
+function renderNewAuthActionRow(
+  button,
+  buttonStates = {},
+  disabledInTestMode = false,
+) {
+  const statusState = buttonStates?.[button.action] ?? {
+    status: "neutral",
+    message: "Not checked yet.",
+    endpoint: null,
+  };
+  const status = disabledInTestMode
+    ? "blocked"
+    : normalizeAuthButtonStatus(statusState.status);
   const copy = getAuthButtonCopy(button.action);
   const rawLabel = copy?.label ?? button.label;
   const label = escapeHtml(rawLabel);
-  const disabledMessage = 'Disabled in Test Mode. Switch to Real Mode to use iCloudPD login controls.';
-  const message = disabledInTestMode ? disabledMessage : statusState.message || copy?.statuses?.[status] || 'Not checked yet.';
-  const endpoint = disabledInTestMode ? '' : statusState.endpoint || copy?.endpoint || '';
-  const helpText = disabledInTestMode ? disabledMessage : getAuthButtonStatusHelp(button.action, status, statusState.message);
+  const disabledMessage =
+    "Disabled in Test Mode. Switch to Real Mode to use iCloudPD login controls.";
+  const message = disabledInTestMode
+    ? disabledMessage
+    : statusState.message || copy?.statuses?.[status] || "Not checked yet.";
+  const endpoint = disabledInTestMode
+    ? ""
+    : statusState.endpoint || copy?.endpoint || "";
+  const helpText = disabledInTestMode
+    ? disabledMessage
+    : getAuthButtonStatusHelp(button.action, status, statusState.message);
   const statusLabelText = getAuthButtonStatusLabel(status);
   const title = escapeAttribute(helpText);
   const disabledAttributes = disabledInTestMode
     ? ' disabled aria-disabled="true" data-disabled-reason="test-mode-new-auth-login-disabled"'
-    : '';
+    : "";
 
   return `
-    <div class="new-auth-action-row ${disabledInTestMode ? 'new-auth-action-row--disabled' : ''}" data-new-auth-action-row="${escapeAttribute(button.action)}"${disabledInTestMode ? ' data-new-auth-action-disabled="test-mode"' : ''}>
+    <div class="new-auth-action-row ${disabledInTestMode ? "new-auth-action-row--disabled" : ""}" data-new-auth-action-row="${escapeAttribute(button.action)}"${disabledInTestMode ? ' data-new-auth-action-disabled="test-mode"' : ""}>
       <span class="auth-button-shell auth-button-shell--${escapeAttribute(status)}" data-auth-button-key="${escapeAttribute(button.action)}" data-auth-button-status="${escapeAttribute(status)}" data-auth-help-text="${title}" title="${title}">
         <span class="auth-button-status-dot" aria-label="${escapeAttribute(`${rawLabel} status: ${statusLabelText}`)}" title="${title}"></span>
         <button class="button button--${escapeAttribute(button.variant)}" data-action="${escapeAttribute(button.action)}" title="${title}" aria-label="${escapeAttribute(`${rawLabel}. ${helpText}`)}"${disabledAttributes}>${label}</button>
       </span>
-      <p class="new-auth-action-row__status"><strong>${escapeHtml(statusLabelText)}.</strong> ${escapeHtml(message)}${endpoint ? ` <span>${escapeHtml(endpoint)}</span>` : ''}</p>
+      <p class="new-auth-action-row__status"><strong>${escapeHtml(statusLabelText)}.</strong> ${escapeHtml(message)}${endpoint ? ` <span>${escapeHtml(endpoint)}</span>` : ""}</p>
     </div>
   `;
 }
@@ -447,7 +606,7 @@ function renderAuthCard(state) {
     <article class="card card--hybrid marked-for-removal" data-marked-for-removal="true">
       <header class="card__header">
         <div><p class="card__code">1A-AUTH</p><h3>Verify icloudpd</h3></div>
-        <div class="card__header-tags">${renderSourceBadge('real', 'BACKEND')}</div>
+        <div class="card__header-tags">${renderSourceBadge("real", "BACKEND")}</div>
         ${statusBadge(state.statusByKey.B1)}
       </header>
       <p class="card__copy">Backend-owned icloudpd verification and login controls. This card checks executable/config readiness separately from authenticated provider state.</p>
@@ -455,26 +614,42 @@ function renderAuthCard(state) {
       ${renderAuthStateSummary(authState, state.authPreflight?.loaded)}
       ${renderAuthOperatorControls(authState, state.authPreflight?.buttonStates)}
       ${renderResultSurface(latestResult)}
-      <div class="log-surface" data-scroll-preserve="log-B1">${renderLogEntries(state.logs.B1, { sourceKey: 'B1' })}</div>
+      <div class="log-surface" data-scroll-preserve="log-B1">${renderLogEntries(state.logs.B1, { sourceKey: "B1" })}</div>
     </article>
   `;
 }
 
 function renderAuthOperatorControls(authState, buttonStates = {}) {
-  const showTwoFactor = authState?.requires_2fa === true && authState?.two_factor_status === 'required';
-  const twoFactorControl = showTwoFactor ? '<label class="field-label" for="auth-preflight-2fa-code">2FA code</label><input id="auth-preflight-2fa-code" class="input" type="text" inputmode="numeric" autocomplete="one-time-code" data-auth-2fa-code aria-label="2FA code" />' : '';
-  const renderedButtons = AUTH_BUTTONS.map((button) => renderAuthActionButton(button, buttonStates)).join('');
-  const twoFactorButton = showTwoFactor ? renderAuthActionButton(AUTH_2FA_BUTTON, buttonStates) : '';
+  const showTwoFactor =
+    authState?.requires_2fa === true &&
+    authState?.two_factor_status === "required";
+  const twoFactorControl = showTwoFactor
+    ? '<label class="field-label" for="auth-preflight-2fa-code">2FA code</label><input id="auth-preflight-2fa-code" class="input" type="text" inputmode="numeric" autocomplete="one-time-code" data-auth-2fa-code aria-label="2FA code" />'
+    : "";
+  const renderedButtons = AUTH_BUTTONS.map((button) =>
+    renderAuthActionButton(button, buttonStates),
+  ).join("");
+  const twoFactorButton = showTwoFactor
+    ? renderAuthActionButton(AUTH_2FA_BUTTON, buttonStates)
+    : "";
   return `${twoFactorControl}<div class="button-row button-row--auth">${renderedButtons}${twoFactorButton}</div>`;
 }
 
 function renderAuthActionButton(button, buttonStates) {
-  const statusState = buttonStates?.[button.action] ?? { status: 'neutral', message: '', endpoint: null };
+  const statusState = buttonStates?.[button.action] ?? {
+    status: "neutral",
+    message: "",
+    endpoint: null,
+  };
   const status = normalizeAuthButtonStatus(statusState.status);
   const copy = getAuthButtonCopy(button.action);
   const rawLabel = copy?.label ?? button.label;
   const label = escapeHtml(rawLabel);
-  const helpText = getAuthButtonStatusHelp(button.action, status, statusState.message);
+  const helpText = getAuthButtonStatusHelp(
+    button.action,
+    status,
+    statusState.message,
+  );
   const title = escapeAttribute(helpText);
   const statusLabelText = getAuthButtonStatusLabel(status);
   const statusLabel = `${rawLabel} status: ${statusLabelText}`;
@@ -488,22 +663,30 @@ function renderAuthActionButton(button, buttonStates) {
   `;
 }
 
-
 function normalizeAuthButtonStatus(status) {
-  return ['neutral', 'running', 'success', 'failed', 'blocked', 'pending'].includes(status) ? status : 'neutral';
+  return [
+    "neutral",
+    "running",
+    "success",
+    "failed",
+    "blocked",
+    "pending",
+  ].includes(status)
+    ? status
+    : "neutral";
 }
 
 function escapeHtml(value) {
   return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 function escapeAttribute(value) {
-  return escapeHtml(value).replace(/`/g, '&#96;');
+  return escapeHtml(value).replace(/`/g, "&#96;");
 }
 
 function renderAuthStateSummary(authState, loaded) {
@@ -512,12 +695,12 @@ function renderAuthStateSummary(authState, loaded) {
   }
 
   return renderResultSurface({
-    operation: 'Current safe auth state',
-    method: 'GET',
-    endpoint: '/api/auth/status',
-    receivedAt: authState.updatedAt ?? 'Not attempted yet',
-    outcome: authState.status === 'preflight_failed' ? 'error' : 'success',
-    message: `Check login: ${authState.status === 'authenticated' ? 'TRUE' : authState.status === 'unknown' ? 'UNKNOWN' : 'FALSE'}; status: ${authState.status ?? 'unknown'}; next action: ${authState.next_action ?? 'unknown'}.`,
+    operation: "Current safe auth state",
+    method: "GET",
+    endpoint: "/api/auth/status",
+    receivedAt: authState.updatedAt ?? "Not attempted yet",
+    outcome: authState.status === "preflight_failed" ? "error" : "success",
+    message: `Check login: ${authState.status === "authenticated" ? "TRUE" : authState.status === "unknown" ? "UNKNOWN" : "FALSE"}; status: ${authState.status ?? "unknown"}; next action: ${authState.next_action ?? "unknown"}.`,
     payload: authState,
   });
 }
@@ -542,23 +725,26 @@ function renderCard(code, title, state, logKey, actions, copy) {
 
 function buildSchedulerButtonAttributes(supportLevel) {
   if (supportLevel === SCHEDULER_SUPPORT_LEVELS.supported) {
-    return '';
+    return "";
   }
   return ' disabled aria-disabled="true"';
 }
 
 function renderSchedulerCopy(capability, installSupportLevel) {
   if (!capability) {
-    return 'The legacy cron routes manage scheduler behavior through a platform-aware backend capability model.';
+    return "The legacy cron routes manage scheduler behavior through a platform-aware backend capability model.";
   }
 
-  const profile = capability.platformProfileLabel ?? capability.profileLabel ?? 'current platform';
-  const target = capability.schedulerTarget ?? 'unknown';
-  const mode = capability.schedulerMode ?? 'unknown';
-  const support = capability.supportLevel ?? 'unknown';
+  const profile =
+    capability.platformProfileLabel ??
+    capability.profileLabel ??
+    "current platform";
+  const target = capability.schedulerTarget ?? "unknown";
+  const mode = capability.schedulerMode ?? "unknown";
+  const support = capability.supportLevel ?? "unknown";
   const installLine =
     installSupportLevel === SCHEDULER_SUPPORT_LEVELS.supported
-      ? 'Install scheduler is enabled for this platform profile.'
+      ? "Install scheduler is enabled for this platform profile."
       : `Install scheduler is ${installSupportLevel} for this platform profile and is intentionally disabled in the UI.`;
 
   return `Legacy /api/init/cron/* routes stay compatible while the backend advertises the real platform target (${profile} -> ${target}, mode ${mode}, support ${support}). ${installLine}`;

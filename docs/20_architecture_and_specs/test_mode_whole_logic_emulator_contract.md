@@ -51,6 +51,18 @@ This deterministic controller proof is not a Raspberry cron proof. It is not a r
 The five-field CronEmulator rows still have minute-granularity limits. The 3-second playback cadence is preserved in the controller config/proof model and needs a future real runtime scheduler loop before it can be claimed as actual sub-minute OS execution.
 
 
+## v0.8.0 manual cronjob buttons
+
+The final baseline for this feature is `0.8.0` because the completed Test Mode fast-emulator control surface is a feature-level UI/controller change, not a small patch. The large start button remains the prerequisite for the owned controller run. The manual cronjob panel is disabled before that start boundary succeeds and enabled only after the backend state returns manual buttons with `enabled: true`.
+
+| Button | Manual call | Enabled when | Notes |
+|---|---|---|---|
+| `1` | regular worker cronjob boundary | owned Test Mode controller run is active | Records the call in controller state and focused logs. |
+| `2` | playback worker cronjob boundary | owned Test Mode controller run is active | Records the call in controller state and focused logs. |
+| `3` | screen on-off worker cronjob boundary | owned Test Mode controller run is active | Records the call in controller state and focused logs. |
+
+Each button has visible explanatory text beside it and a hover title with more detail. These manual buttons call the deterministic Test Mode controller boundary; they do not prove real OS cron firing.
+
 ## v0.7.49 Group B scope
 
 Group B completes the fast-emulator controller evidence layer. After the large Test Mode button is clicked, the backend returns a controller state whose `startButton.disabled` flag is true. The UI renders that disabled state and duplicate backend starts are blocked while the owned controller run is active.

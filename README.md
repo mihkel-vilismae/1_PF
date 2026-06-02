@@ -58,6 +58,9 @@ This README does not assert source-code truth. Check code/tests directly before 
 
 The dashboard is a Vite browser UI with Views A-E plus Windows and Raspberry playback surfaces. The display-facing playback UI shows the selected media preview, media type, queue summary, resolved address caption, fullscreen controls, activity status, worker status, and terminal-style runtime logs.
 
+## v0.8.0 code summary
+
+v0.8.0 is the corrected minor-version baseline for the TEST MODE FAST EMULATOR control surface. It preserves v0.7.49 behavior and adds manual cronjob call buttons `1`, `2`, and `3` under the large start button. The manual button panel is disabled by default, includes explanation text plus hover details, and becomes enabled only after the large TEST MODE FAST EMULATOR start button has created the owned Test Mode controller run. The buttons record manual regular, playback, and screen-on-off cronjob calls in controller state and `logs/end2end_test.log`; they still do not claim real Raspberry cron, real Windows Task Scheduler, or arbitrary OS process control.
 
 ## v0.7.49 code summary
 

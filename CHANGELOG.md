@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## 2026-06-02 06:20 EEST — v0.8.0
+
+### Added
+- Added manual Test Mode cronjob call buttons `1`, `2`, and `3` under the large TEST MODE FAST EMULATOR start button.
+- Added per-button explanation text and hover titles for the manual regular, playback, and screen-on-off worker cronjob calls.
+- Added controller-state tracking so the manual button panel is disabled before the large start button is pressed and enabled only after the owned Test Mode controller run exists.
+
+### Changed
+- Corrected the completed TEST MODE FAST EMULATOR feature line from patch-level `0.7.49` progression to the minor-version baseline `0.8.0`.
+- Updated `proof:test-mode-whole-logic-emulator` to verify manual cronjob button gating and manual worker-call status/log evidence.
+
+### Fixed
+- None
+
+### Removed
+- None
 ## 2026-06-02 06:07 EEST — v0.7.49
 
 ### Added
