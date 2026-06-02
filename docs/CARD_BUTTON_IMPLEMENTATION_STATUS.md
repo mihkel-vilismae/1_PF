@@ -29,6 +29,12 @@ Method and authority:
 
 ## View A
 
+### .card code and Heading: 1A-TEST-WHOLE-LOGIC — RUN whole logic without logging in
+
+| View | .card code | Heading | Purpose | Priority | Button label | Button action / attribute | Implementation status according to tests/code | Implementation status according to docs | Your subjective assessment |
+|---|---|---|---|---|---|---|---|---|---|
+| A | 1A-TEST-WHOLE-LOGIC | RUN whole logic without logging in | Test Mode-only operator surface for the planned whole-logic scheduler/emulator flow without requiring login. | High | INSTALL CRONTAB/EMULATOR, CALLING REGULAR WORKER EVERY 1 MINUTES, PLAYBACK WORKER EVERY 30sec, screen on-off worker EVERY 2 MINUTES, ADD LIMIT OF 5 ITEMS TO EACH WORKER STAGE (INCLUDING THE MOCK DOWNLOAD) | `data-action="run-whole-logic-test-mode" disabled` | Group 1 UI/contract only. Focused tests prove it renders only in Test Mode and remains disabled until backend wiring. | Documented in `docs/20_architecture_and_specs/test_mode_whole_logic_emulator_contract.md`. | Correct for Group 1; not yet a runnable scheduler/emulator feature. |
+
 ### .card code and Heading: 1A — Verify .env
 
 | View | .card code | Heading | Purpose | Priority | Button label | Button action / attribute | Implementation status according to tests/code | Implementation status according to docs | Your subjective assessment |

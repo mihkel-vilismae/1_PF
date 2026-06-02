@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## 2026-06-02 04:50 EEST — v0.7.46
+
+### Added
+- Added Group 1 Test Mode-only View A panel titled `RUN whole logic without logging in`.
+- Added the requested long operator button label, native fullscreen shutdown key copy, and safe power-outage simulation boundary copy.
+- Added `docs/20_architecture_and_specs/test_mode_whole_logic_emulator_contract.md` to pin the UI/contract scope before backend wiring.
+- Added focused UI tests for Test Mode-only rendering and disabled Group 1 behavior.
+
+### Changed
+- Bumped project metadata from v0.7.45 to v0.7.46 for Group 1.
+
+### Fixed
+- None
+
+### Removed
+- None
+
 ## 2026-06-02 04:00 EEST — v0.7.44
 
 ### Added

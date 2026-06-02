@@ -58,9 +58,9 @@ This README does not assert source-code truth. Check code/tests directly before 
 
 The dashboard is a Vite browser UI with Views A-E plus Windows and Raspberry playback surfaces. The display-facing playback UI shows the selected media preview, media type, queue summary, resolved address caption, fullscreen controls, activity status, worker status, and terminal-style runtime logs.
 
-## v0.7.45 code summary
+## v0.7.46 code summary
 
-v0.7.45 stabilizes `proof:full-test` as the next proof-priority step after targeted proof work. The proof now uses a local Node/tsx command, serial test execution, structured pass/fail/timeout evidence, parsed Node test counts when available, and sanitized runtime JSON under `runtime_data/proofs`.
+v0.7.46 adds Group 1 of the Test Mode whole-logic emulator workflow. View A now shows a Test Mode-only **RUN whole logic without logging in** contract panel with the requested operator button text, native-fullscreen shutdown copy, and explicit safe process termination limits. The button remains disabled until Group 2 wires the backend scheduler/emulator boundary.
 
 ## Architecture overview
 
