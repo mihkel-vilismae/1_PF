@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## 2026-06-02 03:02 EEST — v0.7.42
+
+### Added
+- Added `proof:e2e-local-photo-frame` to generate deterministic local product-story evidence from Wave D, Wave E, and address-display proof tests.
+- Added focused tests for the local photo-frame proof wrapper, fixture discovery, and proof envelope status handling.
+
+### Changed
+- Bumped project metadata from v0.7.41 to v0.7.42 for the new proof artifact command.
+
+### Fixed
+- None
+
+### Removed
+- None
+
 ## 2026-06-02 02:50 EEST — v0.7.41
 
 ### Added
