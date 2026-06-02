@@ -124,6 +124,11 @@ function renderWholeLogicWithoutLoginPanel(state, dashboardVisualMode) {
     .map((entry) => `<li>${escapeHtml(entry)}</li>`)
     .join('');
 
+  const wholeLogicState = state.wholeLogicTestMode ?? null;
+  const isStartDisabled = Boolean(wholeLogicState?.startButton?.disabled || state.statusByKey['1A-TEST-WHOLE-LOGIC'] === 'running' || state.statusByKey['1A-TEST-WHOLE-LOGIC'] === 'success');
+  const disabledText = isStartDisabled ? ' disabled aria-disabled="true"' : '';
+  const disabledClass = isStartDisabled ? ' button--disabled' : '';
+
   return `
     <article class="card card--feature card--mock card--pending" aria-label="${escapeAttribute(WHOLE_LOGIC_TEST_MODE_SECTION_TITLE)}">
       <header class="card__header">
@@ -137,11 +142,11 @@ function renderWholeLogicWithoutLoginPanel(state, dashboardVisualMode) {
       <p class="card__copy">${escapeHtml(WHOLE_LOGIC_TEST_MODE_FAST_EMULATOR_LABEL)} owns only tracked Test Mode controller records for q/w/e/r/t power controls. It does not kill the dashboard or arbitrary Node/Python/SQLite/system processes.</p>
       <p class="card__copy">Configured worker-stage item limit: <strong>${WHOLE_LOGIC_TEST_MODE_STAGE_LIMIT}</strong> items per stage, including mock download.</p>
       <div class="button-row">
-        <button class="button button--primary" data-action="run-whole-logic-test-mode" title="Configure the Test Mode fast-emulator boundary with max-5 worker-stage limits">${escapeHtml(WHOLE_LOGIC_TEST_MODE_BUTTON_LABEL)}</button>
+        <button class="button button--primary${disabledClass}" data-action="run-whole-logic-test-mode" data-whole-logic-start-button="true" title="Configure the Test Mode fast-emulator boundary with max-5 worker-stage limits"${disabledText}>${escapeHtml(WHOLE_LOGIC_TEST_MODE_BUTTON_LABEL)}</button>
         <button class="button button--secondary" data-action="status-whole-logic-test-mode" title="Read the owned Test Mode fast-emulator controller state">Read controller status</button>
       </div>
-      ${renderWholeLogicStatusPanel()}
-      ${renderWholeLogicFocusedLog()}
+      ${renderWholeLogicStatusPanel(wholeLogicState?.statusRows)}
+      ${renderWholeLogicFocusedLog(wholeLogicState?.focusedLog)}
       <div class="button-row" aria-label="Whole-logic Test Mode power controls">
         ${renderWholeLogicControlButton('q')}
         ${renderWholeLogicControlButton('w')}
@@ -163,13 +168,13 @@ function renderWholeLogicWithoutLoginPanel(state, dashboardVisualMode) {
 
 
 // Renders blank status-circle rows for the Test Mode fast-emulator status panel.
-function renderWholeLogicStatusPanel() {
-  const statusRows = buildWholeLogicInitialStatusRows()
+function renderWholeLogicStatusPanel(rows = buildWholeLogicInitialStatusRows()) {
+  const statusRows = rows
     .map((row) => `
       <li class="whole-logic-status-row whole-logic-status-row--${escapeAttribute(row.state)}" data-whole-logic-status-id="${escapeAttribute(row.id)}" data-whole-logic-status-state="${escapeAttribute(row.state)}">
         <span class="whole-logic-status-circle whole-logic-status-circle--${escapeAttribute(row.state)}" aria-label="${escapeAttribute(row.state)} status circle"></span>
         <span class="whole-logic-status-label">${escapeHtml(row.label)}</span>
-        <span class="whole-logic-status-meta">FIRST CALLED not called yet / LAST CALLED not called yet / CALLED ${row.calledCount} times</span>
+        <span class="whole-logic-status-meta">${escapeHtml(formatWholeLogicStatusMeta(row))}</span>
       </li>`)
     .join('');
 
@@ -182,8 +187,8 @@ function renderWholeLogicStatusPanel() {
 }
 
 // Renders the focused terminal-like log surface for the main Test Mode run process.
-function renderWholeLogicFocusedLog() {
-  const logRows = buildWholeLogicInitialFocusedLog()
+function renderWholeLogicFocusedLog(entries = buildWholeLogicInitialFocusedLog()) {
+  const logRows = entries
     .map((entry) => `<div class="whole-logic-terminal-row whole-logic-terminal-row--${escapeAttribute(entry.level)}"><span>${escapeHtml(entry.at)}</span> ${escapeHtml(entry.message)}</div>`)
     .join('');
 
@@ -193,6 +198,14 @@ function renderWholeLogicFocusedLog() {
       <div class="whole-logic-terminal__body" data-whole-logic-focused-log="true">${logRows}</div>
     </section>
   `;
+}
+
+// Formats status timing metadata for the Test Mode fast-emulator panel.
+function formatWholeLogicStatusMeta(row) {
+  if (!row.firstCalledAt || !row.lastCalledAt) {
+    return `FIRST CALLED not called yet / LAST CALLED not called yet / CALLED ${row.calledCount} times`;
+  }
+  return `FIRST CALLED 0 seconds ago / LAST CALLED 0 seconds ago / CALLED ${row.calledCount} times`;
 }
 
 // Renders one q/w/e/r/t control button for the owned Test Mode controller.

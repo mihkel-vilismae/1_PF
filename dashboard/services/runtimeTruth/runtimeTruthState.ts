@@ -21,6 +21,7 @@ import {
 import { createDefaultPlaybackRenderingState } from '../playbackRenderer.ts';
 import { createDefaultOsPlaybackActivityState } from '../osPlaybackActivityDetection.ts';
 import { createDefaultB5ActivityDetectionState } from '../viewBActivityDetection.ts';
+import { buildWholeLogicTestModeConfig } from '../../../shared/testModeWholeLogicContract.ts';
 import {
   WINDOWS_CRON_EMULATOR_PLAYBACK_WORKER_CRON_ROW,
   WINDOWS_CRON_EMULATOR_REGULAR_STAGE_WORKER_CRON_ROW,
@@ -334,7 +335,7 @@ export function createInitialState() {
       '3A': [{ at: now, type: 'info', message: buildSchedulerReadyMessage(schedulerCapability) }],
       B1: [{ at: now, type: 'info', message: 'Auth preflight status has not been loaded yet.' }],
       '1A-STASH-OFF': [{ at: now, type: 'info', message: 'New auth UI is ready. Slice 1 points only at /api/auth/new/* endpoints.' }],
-      '1A-TEST-WHOLE-LOGIC': [{ at: now, type: 'info', message: 'Test Mode whole-logic emulator boundary is ready to configure max-5 worker-stage limits.' }],
+      '1A-TEST-WHOLE-LOGIC': [{ at: now, type: 'info', message: 'TEST MODE FAST EMULATOR is ready to configure max-5 worker-stage limits.' }],
       B2: [{ at: now, type: 'info', message: 'Ready to call POST /api/runtime/download/run.' }],
       'B2-REAL_DOWNLOAD': [{ at: now, type: 'info', message: 'Ready to call POST /api/runtime/download/real-run after auth/session verification.' }],
       'B3.1': [{ at: now, type: 'info', message: 'Ready to call POST /api/runtime/download/run.' }],
@@ -356,6 +357,7 @@ export function createInitialState() {
       '2A': null,
       '3A': null,
     },
+    wholeLogicTestMode: buildWholeLogicTestModeConfig(new Date().toISOString()),
     selectedSchedulerTarget,
     schedulerEmulator: {
       editableCrontab: SCHEDULER_EMULATOR_DEFAULT_INSERT_CRONTAB,

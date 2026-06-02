@@ -8,6 +8,7 @@ import test from 'node:test';
 
 import { createInitialState } from '../dashboard/services/runtimeTruth/runtimeTruthState.ts';
 import { renderInitView } from '../dashboard/views/initView.ts';
+import { buildWholeLogicTestModeControllerState } from '../shared/testModeWholeLogicContract.ts';
 
 const WHOLE_LOGIC_BUTTON_LABEL = 'INSTALL TEST MODE EMULATOR, CALLING REGULAR WORKER EVERY 6sec, PLAYBACK WORKER EVERY 3sec, screen-on-off worker EVERY 12sec, ADD LIMIT OF 5 ITEMS TO EACH WORKER STAGE (INCLUDING THE MOCK DOWNLOAD)';
 
@@ -59,6 +60,23 @@ test('Group A panel documents safe process termination boundaries before process
   assert.match(markup, /Configured worker-stage item limit: <strong>5<\/strong>/);
 });
 
+
+
+test('Group B panel renders disabled large button and updated statuses after start', () => {
+  const state = createInitialState();
+  state.statusByKey['1A-TEST-WHOLE-LOGIC'] = 'success';
+  state.wholeLogicTestMode = buildWholeLogicTestModeControllerState('2026-06-02T01:00:00.000Z');
+
+  const markup = renderInitView(state, 'test');
+
+  assert.match(markup, /data-whole-logic-start-button="true"/);
+  assert.match(markup, /data-action="run-whole-logic-test-mode"[^>]+disabled/);
+  assert.match(markup, /button--disabled/);
+  assert.match(markup, /data-whole-logic-status-id="crontab_working"[^>]+data-whole-logic-status-state="passed"/);
+  assert.match(markup, /data-whole-logic-status-id="native_playback_started"[^>]+data-whole-logic-status-state="pending"/);
+  assert.match(markup, /FIRST CALLED 0 seconds ago \/ LAST CALLED 0 seconds ago \/ CALLED 1 times/);
+  assert.match(markup, /Large TEST MODE FAST EMULATOR start button clicked/);
+});
 
 test('Group A panel renders blank status circles and focused fast-emulator log', () => {
   const markup = renderInitView(createInitialState(), 'test');

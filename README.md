@@ -58,6 +58,11 @@ This README does not assert source-code truth. Check code/tests directly before 
 
 The dashboard is a Vite browser UI with Views A-E plus Windows and Raspberry playback surfaces. The display-facing playback UI shows the selected media preview, media type, queue summary, resolved address caption, fullscreen controls, activity status, worker status, and terminal-style runtime logs.
 
+
+## v0.7.49 code summary
+
+v0.7.49 completes Group B of the TEST MODE FAST EMULATOR UI/controller proof work. The View A Test Mode panel keeps the 6s / 3s / 12s fast-emulator cadence, disables the large start button after the backend start boundary succeeds, blocks duplicate starts, renders backend-owned status rows, and writes dedicated runtime evidence to `logs/end2end_test.log`. The log is runtime-generated and ignored by Git. The proof remains deterministic: it does not claim real Raspberry cron, real Windows Task Scheduler, real native fullscreen playback, or arbitrary OS process killing.
+
 ## v0.7.48.a code summary
 
 v0.7.48.a adds Group 3 of the Test Mode whole-logic emulator workflow. View A now exposes controller status plus q/w/e/r/t controls for an owned Test Mode controller state. The backend adds status/control endpoints, keeps all controls blocked outside Test Mode, and preserves the safety boundary: only tracked Test Mode controller records may be stopped; the dashboard and arbitrary Node/Python/SQLite/system processes must not be killed.

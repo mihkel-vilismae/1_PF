@@ -134,6 +134,7 @@ const cronEmulatorDefaultCrontabPath = process.env.CRON_EMULATOR_CRONTAB_FILE
 const cronEmulatorRuntimeDirectory = path.join(schedulerRuntimeDirectory, 'cron-emulator');
 const cronEmulatorLogFilePath = path.join(cronEmulatorRuntimeDirectory, 'cron_calls.jsonl');
 const wholeLogicControllerStateFilePath = path.join(schedulerRuntimeDirectory, 'whole-logic-test-mode-controller.json');
+const wholeLogicEnd2EndLogFilePath = path.join(repoRoot, 'logs', 'end2end_test.log');
 const cronEmulatorHost = '127.0.0.1';
 const cronEmulatorPort = 8765;
 const cronEmulatorStateUrl = `http://${cronEmulatorHost}:${cronEmulatorPort}/api/state`;
@@ -587,6 +588,7 @@ const routes: Record<string, RouteHandler> = {
       configFilePath: path.join(schedulerRuntimeDirectory, 'whole-logic-test-mode-config.json'),
       crontabFilePath: path.join(cronEmulatorRoot, 'crontab_emulated.txt'),
       controllerStateFilePath: wholeLogicControllerStateFilePath,
+      end2endLogFilePath: wholeLogicEnd2EndLogFilePath,
     }),
   }),
   'GET /api/testing/whole-logic-emulator/status': async ({ context }) => ({
@@ -594,6 +596,7 @@ const routes: Record<string, RouteHandler> = {
     payload: await buildWholeLogicTestModeStatusResult({
       runtimeMode: context.runtimeMode,
       controllerStateFilePath: wholeLogicControllerStateFilePath,
+      end2endLogFilePath: wholeLogicEnd2EndLogFilePath,
     }),
   }),
   'POST /api/testing/whole-logic-emulator/control': async ({ context, body }) => ({
@@ -601,6 +604,7 @@ const routes: Record<string, RouteHandler> = {
     payload: await buildWholeLogicTestModeControlResult({
       runtimeMode: context.runtimeMode,
       controllerStateFilePath: wholeLogicControllerStateFilePath,
+      end2endLogFilePath: wholeLogicEnd2EndLogFilePath,
       key: body?.key,
     }),
   }),

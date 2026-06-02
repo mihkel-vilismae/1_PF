@@ -18,3 +18,17 @@ The proof deterministically exercises the Test Mode whole-logic service boundary
 ## What it does not prove
 
 This proof does not prove real Raspberry cron firing, real Windows Task Scheduler firing, real native fullscreen playback, or real OS process termination. Those remain separate runtime/hardware evidence types.
+
+
+## v0.7.49 proof additions
+
+`proof:test-mode-whole-logic-emulator` now also verifies:
+
+- large TEST MODE FAST EMULATOR start state becomes disabled after start;
+- duplicate starts are blocked while the owned controller run is active;
+- status rows transition from blank to passed/pending semantic states;
+- `logs/end2end_test.log` is written in the proof temp runtime area;
+- the dedicated log contains relevant start/control entries and excludes obvious secret-bearing patterns.
+
+The proof still does not claim real Raspberry cron firing, real Windows Task Scheduler firing, real native fullscreen playback, or real OS process termination.
+

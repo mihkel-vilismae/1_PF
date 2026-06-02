@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## 2026-06-02 06:07 EEST — v0.7.49
+
+### Added
+- Added Group B TEST MODE FAST EMULATOR start-state behavior: the large button disables visually/functionally after start and duplicate starts are blocked.
+- Added dedicated runtime log writing for `logs/end2end_test.log` after the large start button is clicked.
+- Added backend-owned status rows after start, including passed controller rows and pending native playback/pipeline rows.
+
+### Changed
+- Updated `proof:test-mode-whole-logic-emulator` to verify disabled start state, duplicate-start blocking, status transitions, and sanitized end-to-end log evidence.
+- Bumped project metadata from v0.7.48.a to v0.7.49 as the final Group B baseline.
+
+### Fixed
+- None
+
+### Removed
+- None
+
 ## 2026-06-02 05:50 EEST — v0.7.48.a
 
 ### Added

@@ -1,7 +1,7 @@
 /*
  * Defines the Test Mode whole-logic emulator contract shared by UI and backend.
- * The contract records safe cadence, item-limit, and operator-control semantics.
- * It does not execute cron rows or terminate processes by itself.
+ * The contract records safe cadence, item-limit, focused-log, and status semantics.
+ * It does not execute cron rows or terminate arbitrary processes by itself.
  */
 import {
   POWERSHELL_ENTRYPOINT_PREFIX,
@@ -13,6 +13,8 @@ export const WHOLE_LOGIC_TEST_MODE_FAST_EMULATOR_LABEL = 'TEST MODE FAST EMULATO
 export const WHOLE_LOGIC_TEST_MODE_SECTION_TITLE = 'RUN whole logic without logging in — TEST MODE FAST EMULATOR';
 
 export const WHOLE_LOGIC_TEST_MODE_BUTTON_LABEL = 'INSTALL TEST MODE EMULATOR, CALLING REGULAR WORKER EVERY 6sec, PLAYBACK WORKER EVERY 3sec, screen-on-off worker EVERY 12sec, ADD LIMIT OF 5 ITEMS TO EACH WORKER STAGE (INCLUDING THE MOCK DOWNLOAD)';
+
+export const WHOLE_LOGIC_TEST_MODE_START_DISABLED_REASON = 'TEST MODE FAST EMULATOR run already started; duplicate start calls are blocked.';
 
 export const WHOLE_LOGIC_TEST_MODE_RUNTIME_KEYS = Object.freeze([
   'PRESS [q] to shut down regular worker process.',
@@ -30,6 +32,7 @@ export const WHOLE_LOGIC_TEST_MODE_SAFETY_LIMITS = Object.freeze([
 ]);
 
 export const WHOLE_LOGIC_TEST_MODE_STAGE_LIMIT = 5;
+export const WHOLE_LOGIC_TEST_MODE_END2END_LOG_RELATIVE_PATH = 'logs/end2end_test.log';
 
 export const WHOLE_LOGIC_TEST_MODE_CONTROL_KEYS = Object.freeze(['q', 'w', 'e', 'r', 't'] as const);
 export type WholeLogicControlKey = typeof WHOLE_LOGIC_TEST_MODE_CONTROL_KEYS[number];
@@ -94,7 +97,6 @@ export const WHOLE_LOGIC_TEST_MODE_WORKERS = Object.freeze({
   },
 } as const);
 
-
 export const WHOLE_LOGIC_TEST_MODE_STATUS_STATES = Object.freeze({
   blank: 'blank',
   pending: 'pending',
@@ -134,8 +136,14 @@ export type WholeLogicFocusedLogEntry = {
   message: string;
 };
 
+export type WholeLogicStartButtonState = {
+  enabled: boolean;
+  disabled: boolean;
+  reason: string | null;
+};
+
 export const WHOLE_LOGIC_TEST_MODE_CONFIG_SCHEMA_VERSION = 1;
-export const WHOLE_LOGIC_TEST_MODE_CONTROLLER_SCHEMA_VERSION = 1;
+export const WHOLE_LOGIC_TEST_MODE_CONTROLLER_SCHEMA_VERSION = 2;
 
 export type WholeLogicWorkerState = {
   id: string;
@@ -154,6 +162,8 @@ export type WholeLogicWorkerState = {
 export type WholeLogicControllerState = {
   schemaVersion: number;
   mode: 'test-mode-whole-logic-controller';
+  runActive: boolean;
+  startButton: WholeLogicStartButtonState;
   powerState: 'on' | 'off';
   cronjobsEnabled: boolean;
   cronState: 'enabled' | 'stopped';
@@ -162,6 +172,7 @@ export type WholeLogicControllerState = {
   itemLimitPerWorkerStage: number;
   safeTerminationBoundary: string[];
   nativeFullscreenOperatorInstructions: string[];
+  end2endLogRelativePath: string;
   workers: {
     regularStage: WholeLogicWorkerState;
     playback: WholeLogicWorkerState;
@@ -182,6 +193,7 @@ export function buildWholeLogicTestModeConfig(nowIso = new Date().toISOString())
     mode: 'test-mode-whole-logic-emulator',
     title: WHOLE_LOGIC_TEST_MODE_SECTION_TITLE,
     buttonLabel: WHOLE_LOGIC_TEST_MODE_BUTTON_LABEL,
+    startButton: buildWholeLogicStartButtonState(false),
     workerStageItemLimit: WHOLE_LOGIC_TEST_MODE_STAGE_LIMIT,
     statusRows: buildWholeLogicInitialStatusRows(),
     focusedLog: buildWholeLogicInitialFocusedLog(nowIso),
@@ -189,15 +201,18 @@ export function buildWholeLogicTestModeConfig(nowIso = new Date().toISOString())
     safeTerminationBoundary: [...WHOLE_LOGIC_TEST_MODE_SAFETY_LIMITS],
     nativeFullscreenOperatorInstructions: [...WHOLE_LOGIC_TEST_MODE_RUNTIME_KEYS],
     controlActions: structuredClone(WHOLE_LOGIC_TEST_MODE_CONTROL_ACTIONS),
+    end2endLogRelativePath: WHOLE_LOGIC_TEST_MODE_END2END_LOG_RELATIVE_PATH,
     generatedAt: nowIso,
   };
 }
 
-// Builds a fresh owned controller state for the no-login whole-logic Test Mode flow.
+// Builds a fresh owned controller state after the large Test Mode start button is clicked.
 export function buildWholeLogicTestModeControllerState(nowIso = new Date().toISOString()): WholeLogicControllerState {
   return {
     schemaVersion: WHOLE_LOGIC_TEST_MODE_CONTROLLER_SCHEMA_VERSION,
     mode: 'test-mode-whole-logic-controller',
+    runActive: true,
+    startButton: buildWholeLogicStartButtonState(true),
     powerState: 'on',
     cronjobsEnabled: true,
     cronState: 'enabled',
@@ -206,20 +221,20 @@ export function buildWholeLogicTestModeControllerState(nowIso = new Date().toISO
     itemLimitPerWorkerStage: WHOLE_LOGIC_TEST_MODE_STAGE_LIMIT,
     safeTerminationBoundary: [...WHOLE_LOGIC_TEST_MODE_SAFETY_LIMITS],
     nativeFullscreenOperatorInstructions: [...WHOLE_LOGIC_TEST_MODE_RUNTIME_KEYS],
-    statusRows: buildWholeLogicInitialStatusRows(),
-    focusedLog: buildWholeLogicInitialFocusedLog(nowIso),
+    end2endLogRelativePath: WHOLE_LOGIC_TEST_MODE_END2END_LOG_RELATIVE_PATH,
+    statusRows: buildWholeLogicStartedStatusRows(nowIso),
+    focusedLog: buildWholeLogicStartedFocusedLog(nowIso),
     workers: {
       regularStage: buildWorkerState('regularStage', nowIso),
       playback: buildWorkerState('playback', nowIso),
       screenOnOff: buildWorkerState('screenOnOff', nowIso),
     },
-    events: [{ at: nowIso, key: 'start', action: 'Started owned Test Mode whole-logic controller state.' }],
+    events: [{ at: nowIso, key: 'start', action: 'Started owned Test Mode fast-emulator controller state.' }],
     lastControlKey: null,
     createdAt: nowIso,
     updatedAt: nowIso,
   };
 }
-
 
 // Builds blank status rows for the status-circle panel before a run touches them.
 export function buildWholeLogicInitialStatusRows(): WholeLogicStatusRow[] {
@@ -234,13 +249,67 @@ export function buildWholeLogicInitialStatusRows(): WholeLogicStatusRow[] {
   }));
 }
 
-// Builds the focused run-log seed shown in the Test Mode panel terminal surface.
+// Builds the status rows produced by the safe deterministic start boundary.
+export function buildWholeLogicStartedStatusRows(nowIso = new Date().toISOString()): WholeLogicStatusRow[] {
+  const passed = new Set(['crontab_working', 'regular_worker_called', 'playback_worker_called', 'screen_on_off_worker_called']);
+  const pending = new Set([
+    'native_playback_started',
+    'stage_mock_download',
+    'stage_index_register',
+    'stage_gps_processing',
+    'stage_geocode_address',
+    'stage_queue_prepare',
+    'stage_playback_select',
+  ]);
+  return WHOLE_LOGIC_TEST_MODE_STATUS_ITEMS.map((item) => {
+    const state = passed.has(item.id)
+      ? WHOLE_LOGIC_TEST_MODE_STATUS_STATES.passed
+      : pending.has(item.id)
+        ? WHOLE_LOGIC_TEST_MODE_STATUS_STATES.pending
+        : WHOLE_LOGIC_TEST_MODE_STATUS_STATES.blank;
+    return buildCalledStatusRow(item.id, item.label, state, nowIso, buildStartedStatusMessage(item.id, state));
+  });
+}
+
+// Builds the focused run-log seed shown in the Test Mode panel terminal surface before start.
 export function buildWholeLogicInitialFocusedLog(nowIso = new Date().toISOString()): WholeLogicFocusedLogEntry[] {
   return [{
     at: nowIso,
     level: 'info',
     message: 'Awaiting TEST MODE FAST EMULATOR start; no login is required in Test Mode.',
   }];
+}
+
+// Builds focused log rows that are relevant only to the started fast-emulator run.
+export function buildWholeLogicStartedFocusedLog(nowIso = new Date().toISOString()): WholeLogicFocusedLogEntry[] {
+  return [
+    { at: nowIso, level: 'info', message: 'Large TEST MODE FAST EMULATOR start button clicked.' },
+    { at: nowIso, level: 'success', message: 'CronEmulator configuration was verified and written for the owned Test Mode controller.' },
+    { at: nowIso, level: 'success', message: 'Owned regular, playback, and screen-on-off worker records were started without login.' },
+    { at: nowIso, level: 'warning', message: 'Native playback and pipeline stages are marked pending until real runtime execution proves them.' },
+  ];
+}
+
+// Builds enabled/disabled button state for the large Test Mode start control.
+export function buildWholeLogicStartButtonState(started: boolean): WholeLogicStartButtonState {
+  return {
+    enabled: !started,
+    disabled: started,
+    reason: started ? WHOLE_LOGIC_TEST_MODE_START_DISABLED_REASON : null,
+  };
+}
+
+// Builds one status row after an item was called, attempted, or verified.
+export function buildCalledStatusRow(id: string, label: string, state: WholeLogicStatusState, nowIso: string, message: string): WholeLogicStatusRow {
+  return {
+    id,
+    label,
+    state,
+    firstCalledAt: nowIso,
+    lastCalledAt: nowIso,
+    calledCount: 1,
+    message,
+  };
 }
 
 // Normalizes a keyboard/button control value to the supported operator key set.
@@ -280,4 +349,17 @@ function buildWorkerState(workerKey: keyof typeof WHOLE_LOGIC_TEST_MODE_WORKERS,
     lastSignal: null,
     unfinishedStateAllowed: false,
   };
+}
+
+// Describes each status row after the deterministic start boundary touches it.
+function buildStartedStatusMessage(id: string, state: WholeLogicStatusState): string {
+  if (id === 'native_playback_started') {
+    return 'Native playback start intent is pending; real fullscreen runtime proof is not claimed.';
+  }
+  if (id.startsWith('stage_')) {
+    return 'Stage is scheduled by the Test Mode fast-emulator controller and awaits runtime execution proof.';
+  }
+  return state === WHOLE_LOGIC_TEST_MODE_STATUS_STATES.passed
+    ? 'Owned Test Mode controller record was started or verified successfully.'
+    : 'Status was called and is waiting for completion evidence.';
 }

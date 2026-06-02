@@ -22,6 +22,7 @@ export async function runWholeLogicTestModeProof({ metadata }) {
     const controllerStateFilePath = path.join(tempRoot, 'scheduler', 'whole-logic-controller.json');
     const configFilePath = path.join(tempRoot, 'scheduler', 'whole-logic-config.json');
     const crontabFilePath = path.join(tempRoot, 'cron', 'crontab_emulated.txt');
+    const end2endLogFilePath = path.join(tempRoot, 'logs', 'end2end_test.log');
 
     const start = await buildWholeLogicTestModeStartResult({
       runtimeMode: 'test',
@@ -29,18 +30,21 @@ export async function runWholeLogicTestModeProof({ metadata }) {
       configFilePath,
       crontabFilePath,
       controllerStateFilePath,
+      end2endLogFilePath,
       now: new Date('2026-06-02T02:00:00.000Z'),
     });
-    const q = await buildWholeLogicTestModeControlResult({ runtimeMode: 'test', controllerStateFilePath, key: 'q', now: new Date('2026-06-02T02:00:01.000Z') });
-    const w = await buildWholeLogicTestModeControlResult({ runtimeMode: 'test', controllerStateFilePath, key: 'w', now: new Date('2026-06-02T02:00:02.000Z') });
-    const e = await buildWholeLogicTestModeControlResult({ runtimeMode: 'test', controllerStateFilePath, key: 'e', now: new Date('2026-06-02T02:00:03.000Z') });
-    const r = await buildWholeLogicTestModeControlResult({ runtimeMode: 'test', controllerStateFilePath, key: 'r', now: new Date('2026-06-02T02:00:04.000Z') });
-    const powerOff = await buildWholeLogicTestModeControlResult({ runtimeMode: 'test', controllerStateFilePath, key: 't', now: new Date('2026-06-02T02:00:05.000Z') });
-    const powerOn = await buildWholeLogicTestModeControlResult({ runtimeMode: 'test', controllerStateFilePath, key: 't', now: new Date('2026-06-02T02:00:06.000Z') });
+    const duplicateStart = await buildWholeLogicTestModeStartResult({ runtimeMode: 'test', controllerStateFilePath, end2endLogFilePath, now: new Date('2026-06-02T02:00:00.500Z') });
+    const q = await buildWholeLogicTestModeControlResult({ runtimeMode: 'test', controllerStateFilePath, end2endLogFilePath, key: 'q', now: new Date('2026-06-02T02:00:01.000Z') });
+    const w = await buildWholeLogicTestModeControlResult({ runtimeMode: 'test', controllerStateFilePath, end2endLogFilePath, key: 'w', now: new Date('2026-06-02T02:00:02.000Z') });
+    const e = await buildWholeLogicTestModeControlResult({ runtimeMode: 'test', controllerStateFilePath, end2endLogFilePath, key: 'e', now: new Date('2026-06-02T02:00:03.000Z') });
+    const r = await buildWholeLogicTestModeControlResult({ runtimeMode: 'test', controllerStateFilePath, end2endLogFilePath, key: 'r', now: new Date('2026-06-02T02:00:04.000Z') });
+    const powerOff = await buildWholeLogicTestModeControlResult({ runtimeMode: 'test', controllerStateFilePath, end2endLogFilePath, key: 't', now: new Date('2026-06-02T02:00:05.000Z') });
+    const powerOn = await buildWholeLogicTestModeControlResult({ runtimeMode: 'test', controllerStateFilePath, end2endLogFilePath, key: 't', now: new Date('2026-06-02T02:00:06.000Z') });
     const realBlocked = await buildWholeLogicTestModeControlResult({ runtimeMode: 'real', controllerStateFilePath, key: 'q', now: new Date('2026-06-02T02:00:07.000Z') });
 
     const crontabText = await readFile(crontabFilePath, 'utf8');
-    const assertions = buildAssertions({ start, q, w, e, r, powerOff, powerOn, realBlocked, crontabText });
+    const end2endLogText = await readFile(end2endLogFilePath, 'utf8');
+    const assertions = buildAssertions({ start, duplicateStart, q, w, e, r, powerOff, powerOn, realBlocked, crontabText, end2endLogText });
     const proofStatus = assertions.every((assertion) => assertion.passed) ? 'PASSED' : 'FAILED';
 
     return createProofEnvelope({
@@ -58,8 +62,11 @@ export async function runWholeLogicTestModeProof({ metadata }) {
           screenOnOff: start.config.workers.screenOnOff.cadenceSeconds,
         },
         initialStatusRows: start.config.statusRows.map((row) => ({ id: row.id, state: row.state, calledCount: row.calledCount })),
-        focusedLog: start.config.focusedLog,
+        startedStatusRows: start.controllerState.statusRows.map((row) => ({ id: row.id, state: row.state, calledCount: row.calledCount })),
+        focusedLog: start.controllerState.focusedLog,
+        end2endLog: { relativePath: 'logs/end2end_test.log', lineCount: end2endLogText.trim().split('\n').filter(Boolean).length, containsStartClick: end2endLogText.includes('Large TEST MODE FAST EMULATOR start button clicked') },
         start: summarizeStart(start),
+        duplicateStart: { status: duplicateStart.status, duplicateStartBlocked: duplicateStart.duplicateStartBlocked === true },
         controls: {
           q: summarizeWorker(q, 'regularStage'),
           w: summarizeWorker(w, 'playback'),
@@ -94,12 +101,16 @@ export async function runWholeLogicTestModeProof({ metadata }) {
 }
 
 // Builds semantic assertions for the proof artifact.
-function buildAssertions({ start, q, w, e, r, powerOff, powerOn, realBlocked, crontabText }) {
+function buildAssertions({ start, duplicateStart, q, w, e, r, powerOff, powerOn, realBlocked, crontabText, end2endLogText }) {
   return [
     { name: 'start_configures_test_mode_only_controller', passed: start.status === 'ok' && start.loginRequired === false },
     { name: 'stage_limit_is_five', passed: start.workerStageItemLimit === WHOLE_LOGIC_TEST_MODE_STAGE_LIMIT },
     { name: 'requested_cadences_are_recorded', passed: start.config.workers.regularStage.cadenceSeconds === 6 && start.config.workers.playback.cadenceSeconds === 3 && start.config.workers.screenOnOff.cadenceSeconds === 12 },
     { name: 'cron_rows_include_three_workers', passed: /regular_stage_worker\.ps1/.test(crontabText) && /playback_worker\.ps1/.test(crontabText) && /screen_on_off_worker\.ps1/.test(crontabText) },
+    { name: 'large_button_disabled_after_start', passed: start.controllerState.startButton.disabled === true && start.controllerState.runActive === true },
+    { name: 'status_rows_mark_start_effects', passed: start.controllerState.statusRows.some((row) => row.id === 'crontab_working' && row.state === 'passed' && row.calledCount === 1) && start.controllerState.statusRows.some((row) => row.id === 'native_playback_started' && row.state === 'pending') },
+    { name: 'duplicate_start_blocked', passed: duplicateStart.status === 'blocked' && duplicateStart.duplicateStartBlocked === true },
+    { name: 'end2end_log_written_and_filtered', passed: /Large TEST MODE FAST EMULATOR start button clicked/.test(end2endLogText) && !/(password=|token=|secret=|cookie=)/i.test(end2endLogText) },
     { name: 'q_terminates_regular_worker_only', passed: q.controllerState.workers.regularStage.processState === 'terminated' && q.controllerState.workers.playback.processState === 'running' },
     { name: 'w_terminates_playback_worker', passed: w.controllerState.workers.playback.processState === 'terminated' },
     { name: 'e_terminates_screen_worker', passed: e.controllerState.workers.screenOnOff.processState === 'terminated' },
@@ -119,6 +130,7 @@ function summarizeStart(start) {
     workerStageItemLimit: start.workerStageItemLimit,
     controllerPowerState: start.controllerState.powerState,
     cronjobsEnabled: start.controllerState.cronjobsEnabled,
+    startButtonDisabled: start.controllerState.startButton.disabled,
   };
 }
 

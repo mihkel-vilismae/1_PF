@@ -49,3 +49,13 @@ The regular stage worker includes the mock-download limit in the max-5 worker-st
 This deterministic controller proof is not a Raspberry cron proof. It is not a real Windows Task Scheduler proof. It is not real native fullscreen runtime proof. It does not launch or kill arbitrary OS processes.
 
 The five-field CronEmulator rows still have minute-granularity limits. The 3-second playback cadence is preserved in the controller config/proof model and needs a future real runtime scheduler loop before it can be claimed as actual sub-minute OS execution.
+
+
+## v0.7.49 Group B scope
+
+Group B completes the fast-emulator controller evidence layer. After the large Test Mode button is clicked, the backend returns a controller state whose `startButton.disabled` flag is true. The UI renders that disabled state and duplicate backend starts are blocked while the owned controller run is active.
+
+The controller writes a dedicated runtime log at `logs/end2end_test.log`. That file is runtime-generated, ignored by Git through the existing `*.log` rule, and should contain only relevant TEST MODE FAST EMULATOR entries. It must not contain secrets, raw provider output, unrelated dashboard logs, or arbitrary console noise.
+
+Status rows remain semantic evidence only. `CRONTAB WORKING` and the three owned worker records may become green/passed after the deterministic start boundary verifies the owned controller records. Native playback and pipeline stages remain yellow/pending until real runtime execution proves them.
+
