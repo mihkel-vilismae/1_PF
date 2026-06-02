@@ -78,6 +78,7 @@ function Write-InstallEvidence {
 
 <#
 Runs mpv with --version to prove the discovered binary is executable.
+Uses Start-Process with redirected output so normal mpv stdout/stderr is evidence, not a PowerShell exception.
 #>
 function Test-MpvExecutable {
     param(
@@ -86,20 +87,33 @@ function Test-MpvExecutable {
     )
 
     if (-not (Test-Path $MpvPath)) {
-        return @{ ok = $false; summary = "mpv.exe not found" }
+        return @{ ok = $false; summary = "mpv.exe not found"; exit_code = $null }
     }
 
+    $verificationRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("pf-mpv-verify-" + [System.Guid]::NewGuid().ToString("N"))
+    $stdoutPath = Join-Path $verificationRoot "stdout.txt"
+    $stderrPath = Join-Path $verificationRoot "stderr.txt"
+
     try {
-        $output = & $MpvPath --version 2>&1 | Select-Object -First 3
-        $exitCode = $LASTEXITCODE
+        New-Item -ItemType Directory -Force -Path $verificationRoot | Out-Null
+        $process = Start-Process -FilePath $MpvPath -ArgumentList "--version" -NoNewWindow -Wait -PassThru -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath
+        $stdout = if (Test-Path $stdoutPath) { Get-Content -Path $stdoutPath -Raw -ErrorAction SilentlyContinue } else { "" }
+        $stderr = if (Test-Path $stderrPath) { Get-Content -Path $stderrPath -Raw -ErrorAction SilentlyContinue } else { "" }
+        $combinedOutput = (($stdout, $stderr) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) -join "`n"
+        $summaryLines = $combinedOutput -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -First 3
+        $summary = if ($summaryLines.Count -gt 0) { $summaryLines -join "`n" } else { "mpv --version exited with no output" }
+
         return @{
-            ok = ($exitCode -eq 0)
-            summary = ConvertTo-InstallSafeText ($output -join "`n")
-            exit_code = $exitCode
+            ok = ($process.ExitCode -eq 0)
+            summary = ConvertTo-InstallSafeText $summary
+            exit_code = $process.ExitCode
         }
     }
     catch {
         return @{ ok = $false; summary = ConvertTo-InstallSafeText $_.Exception.Message; exit_code = $null }
+    }
+    finally {
+        Remove-Item -Path $verificationRoot -Recurse -Force -ErrorAction SilentlyContinue
     }
 }
 

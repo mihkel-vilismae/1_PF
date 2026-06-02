@@ -1,4 +1,8 @@
+## 0.8.5 — Windows mpv installer version verification fix
 
+- Fixed `scripts/install_mpv_windows.ps1` so successful `mpv.exe --version` output is treated as verification evidence instead of a failure reason.
+- Reworked mpv verification to use `Start-Process` with redirected stdout/stderr, preserving the v0.8.4 repo-path regex escaping fix.
+- Added regression coverage so normal multiline mpv version output, including copyright and FFmpeg lines, does not force reinstall or block the live native playback proof launcher.
 
 ## 0.8.4 — Windows mpv installer regex escaping fix
 

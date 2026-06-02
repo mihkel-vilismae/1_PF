@@ -40,6 +40,11 @@ test('mpv installer targets repo-local mpv path and writes sanitized evidence', 
   assert.match(installer, /shinchiro\/mpv-winbuild-cmake/);
   assert.match(installer, /mpv_windows_install_\$timestamp\.json/);
   assert.match(installer, /--version/);
+  assert.match(installer, /Start-Process/);
+  assert.match(installer, /RedirectStandardOutput/);
+  assert.match(installer, /RedirectStandardError/);
+  assert.match(installer, /exit_code = \$process\.ExitCode/);
+  assert.match(installer, /ok = \(\$process\.ExitCode -eq 0\)/);
   assert.match(installer, /function ConvertTo-InstallSafeText/);
   assert.match(installer, /\[regex\]::Escape\(\$RepoRoot\)/);
   assert.doesNotMatch(installer, /-replace \$RepoRoot/);
@@ -63,4 +68,12 @@ test('operator docs explain auto-install and proof boundary', () => {
   assert.match(proofDoc, /## mpv availability/);
   assert.match(proofDoc, /start_win_full\.cmd/);
   assert.match(proofDoc, /should remain `BLOCKED`/);
+});
+
+
+test('mpv installer treats normal version stdout as evidence rather than failure text', () => {
+  const installer = fs.readFileSync(INSTALLER, 'utf8');
+  assert.match(installer, /normal mpv stdout\/stderr is evidence, not a PowerShell exception/);
+  assert.match(installer, /summaryLines = \$combinedOutput -split/);
+  assert.match(installer, /Select-Object -First 3/);
 });
