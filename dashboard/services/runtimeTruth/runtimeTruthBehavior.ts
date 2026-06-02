@@ -31,6 +31,7 @@ import {
   runRuntimeRealDownload,
   planDirtyShutdownTesting,
   simulateDirtyShutdownTesting,
+  startWholeLogicTestModeEmulator,
 } from '../runtimeExecutionService.ts';
 import { createRuntimeTruthDatabaseActions } from './runtimeTruthDatabaseActions.ts';
 import { createRuntimeTruthAuthActions } from './runtimeTruthAuthActions.ts';
@@ -213,6 +214,7 @@ export function createRuntimeTruthBehavior({
       'new-auth-generate-artifact-pack': () => void newAuthActions.generateArtifactPackAction(),
       'new-auth-list-artifact-packs': () => void newAuthActions.listArtifactPacksAction(),
       'new-auth-submit-2fa': (detail) => void newAuthActions.submitTwoFactorAction(detail?.code ?? ''),
+      'run-whole-logic-test-mode': () => void demoActions.runBackendAction({ key: '1A-TEST-WHOLE-LOGIC', source: 'TEST', operation: 'Configure Test Mode whole-logic emulator', endpoint: RUNTIME_EXECUTION_ENDPOINTS.wholeLogicTestModeStart, execute: startWholeLogicTestModeEmulator }),
       'run-b2': () => void demoActions.runBackendAction({ key: 'B2', source: 'TEST', operation: 'Run download test action', endpoint: RUNTIME_EXECUTION_ENDPOINTS.downloadRun, execute: runRuntimeDownload }),
       'run-b2-real-download': () => void demoActions.runBackendAction({ key: 'B2-REAL_DOWNLOAD', source: 'TEST', operation: 'Run authenticated real iCloudPD download', endpoint: RUNTIME_EXECUTION_ENDPOINTS.realDownloadRun, execute: runRuntimeRealDownload, requestBody: { recentCount: Number(getState().simulation.realDownloadRecentCount || 1) } }),
       'run-b3-1': () => demoActions.runBackendPipelineStage({ key: 'B3.1', operation: 'Run download stage', endpoint: RUNTIME_EXECUTION_ENDPOINTS.downloadRun, execute: runRuntimeDownload }),

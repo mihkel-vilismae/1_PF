@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## 2026-06-02 05:10 EEST — v0.7.47
+
+### Added
+- Added Group 2 backend/service boundary for the Test Mode whole-logic emulator start action.
+- Added shared whole-logic Test Mode contract constants for UI/backend alignment.
+- Added `/api/testing/whole-logic-emulator/start`, which is blocked outside Test Mode and writes the max-5 worker-stage config plus Windows CronEmulator crontab rows when called in Test Mode.
+- Added focused tests for the Group 2 service, UI action enablement, and frontend endpoint constant.
+
+### Changed
+- Enabled the View A Test Mode button so it can call the safe backend boundary.
+- Bumped project metadata from v0.7.46 to v0.7.47 for Group 2.
+
+### Fixed
+- None
+
+### Removed
+- None
+
 ## 2026-06-02 04:50 EEST — v0.7.46
 
 ### Added

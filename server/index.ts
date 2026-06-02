@@ -55,6 +55,7 @@ import { createSchedulerRoutes } from './routes/schedulerRoutes.ts';
 import { createScreenSimulationRoutes } from './routes/screenSimulationRoutes.ts';
 import { createRuntimeTruthRoutes } from './routes/runtimeTruthRoutes.ts';
 import { buildDirtyShutdownTestingResult } from './testing_dirtyShutdownTestingService.ts';
+import { buildWholeLogicTestModeStartResult } from './testing_wholeLogicTestModeService.ts';
 import { createInspectionRoutes } from './routes/inspectionRoutes.ts';
 import { createRuntimeStatusRoutes } from './routes/runtimeStatusRoutes.ts';
 import {
@@ -570,6 +571,16 @@ const routes: Record<string, RouteHandler> = {
       runtimeMode: context.runtimeMode,
       records: Array.isArray(body?.records) ? body.records as any : undefined,
       processRecordsDir: path.join(repoRoot, 'runtime_data', 'processes'),
+    }),
+  }),
+  'POST /api/testing/whole-logic-emulator/start': async ({ context }) => ({
+    statusCode: 200,
+    payload: await buildWholeLogicTestModeStartResult({
+      runtimeMode: context.runtimeMode,
+      platform: context.platform,
+      repoRoot,
+      configFilePath: path.join(schedulerRuntimeDirectory, 'whole-logic-test-mode-config.json'),
+      crontabFilePath: path.join(cronEmulatorRoot, 'crontab_emulated.txt'),
     }),
   }),
   'POST /api/runtime/orchestration/run': runtimeOrchestrationRunHandler,

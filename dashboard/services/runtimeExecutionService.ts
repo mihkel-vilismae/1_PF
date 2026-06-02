@@ -33,6 +33,7 @@ export const RUNTIME_EXECUTION_ENDPOINTS = Object.freeze({
   projectionLive: { method: 'GET', path: '/api/runtime/projection/live' },
   dirtyShutdownPlan: { method: 'POST', path: '/api/testing/dirty-shutdown/plan' },
   dirtyShutdownSimulate: { method: 'POST', path: '/api/testing/dirty-shutdown/simulate' },
+  wholeLogicTestModeStart: { method: 'POST', path: '/api/testing/whole-logic-emulator/start' },
 });
 
 export function runRuntimeDownload(body: RuntimeRequestBody = {}): Promise<RuntimeEndpointResponse> {
@@ -106,6 +107,11 @@ export function planDirtyShutdownTesting(body: RuntimeRequestBody = {}): Promise
 // Requests the guarded dirty-shutdown simulation endpoint for View C.
 export function simulateDirtyShutdownTesting(body: RuntimeRequestBody = {}): Promise<RuntimeEndpointResponse> {
   return callRuntimeEndpoint(RUNTIME_EXECUTION_ENDPOINTS.dirtyShutdownSimulate, body);
+}
+
+// Configures the Test Mode no-login whole-logic emulator boundary without production auth.
+export function startWholeLogicTestModeEmulator(body: RuntimeRequestBody = {}): Promise<RuntimeEndpointResponse> {
+  return callRuntimeEndpoint(RUNTIME_EXECUTION_ENDPOINTS.wholeLogicTestModeStart, body);
 }
 
 // Applies the shared capture-meta request shape for runtime backend calls.

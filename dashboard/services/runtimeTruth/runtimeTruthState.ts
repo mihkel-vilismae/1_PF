@@ -301,6 +301,7 @@ export function createInitialState() {
       // B1 is retained as the compatibility status/log key for the visible 1A-AUTH card.
       B1: 'idle',
       '1A-STASH-OFF': 'idle',
+      '1A-TEST-WHOLE-LOGIC': 'idle',
       B2: 'idle',
       'B2-REAL_DOWNLOAD': 'idle',
       B3: 'idle',
@@ -333,6 +334,7 @@ export function createInitialState() {
       '3A': [{ at: now, type: 'info', message: buildSchedulerReadyMessage(schedulerCapability) }],
       B1: [{ at: now, type: 'info', message: 'Auth preflight status has not been loaded yet.' }],
       '1A-STASH-OFF': [{ at: now, type: 'info', message: 'New auth UI is ready. Slice 1 points only at /api/auth/new/* endpoints.' }],
+      '1A-TEST-WHOLE-LOGIC': [{ at: now, type: 'info', message: 'Test Mode whole-logic emulator boundary is ready to configure max-5 worker-stage limits.' }],
       B2: [{ at: now, type: 'info', message: 'Ready to call POST /api/runtime/download/run.' }],
       'B2-REAL_DOWNLOAD': [{ at: now, type: 'info', message: 'Ready to call POST /api/runtime/download/real-run after auth/session verification.' }],
       'B3.1': [{ at: now, type: 'info', message: 'Ready to call POST /api/runtime/download/run.' }],

@@ -34,24 +34,25 @@ test('View A renders the whole-logic no-login panel only in Test Mode', () => {
   assert.match(renderInitView(state, 'test'), /RUN whole logic without logging in/);
 });
 
-test('Group 1 panel exposes the exact requested operator text but keeps the action disabled', () => {
+test('Group 2 panel exposes the exact requested operator text and enables the backend boundary action', () => {
   const markup = renderInitView(createInitialState(), 'test');
 
   assert.match(markup, new RegExp(escapeRegExp(WHOLE_LOGIC_BUTTON_LABEL)));
-  assert.match(markup, /data-action="run-whole-logic-test-mode" disabled aria-disabled="true"/);
+  assert.match(markup, /data-action="run-whole-logic-test-mode"/);
+  assert.doesNotMatch(markup, /data-action="run-whole-logic-test-mode" disabled/);
   for (const expectedText of EXPECTED_POWER_KEYS) {
     assert.match(markup, new RegExp(escapeRegExp(expectedText)));
   }
 });
 
-test('Group 1 panel documents safe process termination boundaries before backend wiring', () => {
+test('Group 2 panel documents safe process termination boundaries before process controls', () => {
   const markup = renderInitView(createInitialState(), 'test');
 
   for (const expectedText of EXPECTED_SAFETY_LIMITS) {
     assert.match(markup, new RegExp(escapeRegExp(expectedText)));
   }
-  assert.match(markup, /Group 1 adds the operator-visible contract only/);
-  assert.match(markup, /Group 2 will wire the safe Test Mode scheduler\/emulator boundary/);
+  assert.match(markup, /Group 2 wires the safe Test Mode scheduler\/emulator boundary/);
+  assert.match(markup, /Configured worker-stage item limit: <strong>5<\/strong>/);
 });
 
 /**

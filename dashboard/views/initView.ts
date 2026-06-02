@@ -17,6 +17,13 @@ import {
   SCHEDULER_SUPPORT_LEVELS,
   SCHEDULER_TARGETS,
 } from '../../shared/schedulerPlatformCapabilities.ts';
+import {
+  WHOLE_LOGIC_TEST_MODE_BUTTON_LABEL,
+  WHOLE_LOGIC_TEST_MODE_RUNTIME_KEYS,
+  WHOLE_LOGIC_TEST_MODE_SAFETY_LIMITS,
+  WHOLE_LOGIC_TEST_MODE_SECTION_TITLE,
+  WHOLE_LOGIC_TEST_MODE_STAGE_LIMIT,
+} from '../../shared/testModeWholeLogicContract.ts';
 
 // View A owns this card as 1A-AUTH. Some data-action values still contain "b1" because
 // they are compatibility action IDs used by existing tests/runtime wiring from the old B1 auth card.
@@ -52,23 +59,6 @@ const NEW_AUTH_BUTTONS = Object.freeze([
   { action: 'new-auth-list-artifact-packs', label: 'List auth evidence packs', variant: 'secondary' },
 ]);
 
-const WHOLE_LOGIC_TEST_MODE_BUTTON_LABEL = 'INSTALL CRONTAB/EMULATOR, CALLING REGULAR WORKER EVERY 1 MINUTES, PLAYBACK WORKER EVERY 30sec, screen on-off worker EVERY 2 MINUTES, ADD LIMIT OF 5 ITEMS TO EACH WORKER STAGE (INCLUDING THE MOCK DOWNLOAD)';
-
-const WHOLE_LOGIC_TEST_MODE_RUNTIME_KEYS = Object.freeze([
-  'PRESS [q] to shut down regular worker process.',
-  'PRESS [w] to shut down playback worker process.',
-  'PRESS [e] to shut down screen-on-off worker process.',
-  'PRESS [r] to stop all cronjobs - so that the processes would not autorun',
-  'PRESS [t] to stop all running processes related to the photoframe app (but not the photoframe dashboard itself!) - the database, playaback, everything. this also stops cronjobs. kill them using a signal that imitates a sudden power-outage. they can leave unfisinshed state etc, it must imitate sudden poweroff',
-  'PRESS [t] again to imitate a power on and enable all the cronjobs',
-]);
-
-const WHOLE_LOGIC_TEST_MODE_SAFETY_LIMITS = Object.freeze([
-  'Only stop/terminate worker processes spawned and tracked by this TEST mode controller.',
-  'Do not kill the dashboard process.',
-  'Do not kill arbitrary Node/Python/SQLite/system processes.',
-]);
-
 // Renders the full View A page from runtime-truth state and selected dashboard mode.
 export function renderInitView(state, dashboardVisualMode = null) {
   const schedulerCapability = state.initCapabilities?.scheduler ?? null;
@@ -90,7 +80,7 @@ export function renderInitView(state, dashboardVisualMode = null) {
         </div>
       </div>
 
-      ${renderWholeLogicWithoutLoginPanel(dashboardVisualMode)}
+      ${renderWholeLogicWithoutLoginPanel(state, dashboardVisualMode)}
 
       <div class="section-grid section-grid--two">
         ${renderCard('1A', 'Verify .env', state, '1A', '<button class="button button--primary" data-action="verify-env">Run</button>', 'Validate required configuration keys and render the backend response payload directly in this card.')}
@@ -117,8 +107,8 @@ export function renderInitView(state, dashboardVisualMode = null) {
   `;
 }
 
-// Renders the Group 1 Test Mode contract panel without starting worker or cron behavior.
-function renderWholeLogicWithoutLoginPanel(dashboardVisualMode) {
+// Renders the Group 2 Test Mode control panel without process termination behavior.
+function renderWholeLogicWithoutLoginPanel(state, dashboardVisualMode) {
   if (dashboardVisualMode !== 'test') {
     return '';
   }
@@ -131,18 +121,19 @@ function renderWholeLogicWithoutLoginPanel(dashboardVisualMode) {
     .join('');
 
   return `
-    <article class="card card--feature card--mock card--pending" aria-label="RUN whole logic without logging in">
+    <article class="card card--feature card--mock card--pending" aria-label="${escapeAttribute(WHOLE_LOGIC_TEST_MODE_SECTION_TITLE)}">
       <header class="card__header">
         <div>
           <p class="card__code">1A-TEST-WHOLE-LOGIC</p>
-          <h3>RUN whole logic without logging in</h3>
+          <h3>${escapeHtml(WHOLE_LOGIC_TEST_MODE_SECTION_TITLE)}</h3>
         </div>
         <div class="card__header-tags">${renderSourceBadge('mock', 'TEST MODE ONLY')}</div>
-        ${statusBadge('disabled')}
+        ${statusBadge(state.statusByKey['1A-TEST-WHOLE-LOGIC'] ?? 'idle')}
       </header>
-      <p class="card__copy">Group 1 adds the operator-visible contract only. Group 2 will wire the safe Test Mode scheduler/emulator boundary without changing production backend behavior or real iCloudPD login.</p>
+      <p class="card__copy">Group 2 wires the safe Test Mode scheduler/emulator boundary and max-5 worker-stage contract without changing production backend behavior or real iCloudPD login.</p>
+      <p class="card__copy">Configured worker-stage item limit: <strong>${WHOLE_LOGIC_TEST_MODE_STAGE_LIMIT}</strong> items per stage, including mock download.</p>
       <div class="button-row">
-        <button class="button button--secondary" data-action="run-whole-logic-test-mode" disabled aria-disabled="true" title="Planned for Group 2 backend wiring">${escapeHtml(WHOLE_LOGIC_TEST_MODE_BUTTON_LABEL)}</button>
+        <button class="button button--primary" data-action="run-whole-logic-test-mode" title="Configure the Test Mode whole-logic emulator boundary with max-5 worker-stage limits">${escapeHtml(WHOLE_LOGIC_TEST_MODE_BUTTON_LABEL)}</button>
       </div>
       <section class="selector-card selector-card--mock" aria-label="Native fullscreen power control instructions">
         <p class="selector-card__label">Native fullscreen control text</p>
