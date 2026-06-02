@@ -52,11 +52,14 @@ test('normal full launcher remains explicit and does not enable native playback 
   assert.doesNotMatch(startPs1, /live_windows_native_playback_proof\.env/);
 });
 
-test('mpv installer resolves repo root inside script body instead of default parameter expression', () => {
+test('mpv installer resolves repo root and escapes Windows paths before regex redaction', () => {
   const installer = fs.readFileSync(INSTALLER, 'utf8');
   assert.match(installer, /\[string\]\$RepoRoot = ""/);
   assert.match(installer, /\$PSCommandPath/);
   assert.match(installer, /Resolve-Path \(Join-Path \$scriptRoot "\.\."\)/);
+  assert.match(installer, /function ConvertTo-InstallSafeText/);
+  assert.match(installer, /\[regex\]::Escape\(\$RepoRoot\)/);
+  assert.doesNotMatch(installer, /-replace \$RepoRoot/);
 });
 
 test('package and docs expose the dedicated proof launcher', () => {

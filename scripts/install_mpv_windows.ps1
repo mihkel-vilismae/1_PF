@@ -27,6 +27,24 @@ $TargetExe = Join-Path $TargetDirectory "mpv.exe"
 $EvidenceDirectory = Join-Path $RepoRoot "runtime_data\proofs"
 
 <#
+Redacts repo-local absolute paths from installer messages without treating Windows paths as raw regex.
+#>
+function ConvertTo-InstallSafeText {
+    param(
+        [AllowNull()]
+        [object]$Value
+    )
+
+    $text = if ($null -eq $Value) { "" } else { [string]$Value }
+    if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
+        return $text
+    }
+
+    $repoRootPattern = [regex]::Escape($RepoRoot)
+    return ($text -replace $repoRootPattern, "[REPO_ROOT]")
+}
+
+<#
 Writes a compact sanitized JSON evidence file for installer status.
 #>
 function Write-InstallEvidence {
@@ -76,12 +94,12 @@ function Test-MpvExecutable {
         $exitCode = $LASTEXITCODE
         return @{
             ok = ($exitCode -eq 0)
-            summary = (($output -join "`n") -replace $RepoRoot, "[REPO_ROOT]")
+            summary = ConvertTo-InstallSafeText ($output -join "`n")
             exit_code = $exitCode
         }
     }
     catch {
-        return @{ ok = $false; summary = $_.Exception.Message; exit_code = $null }
+        return @{ ok = $false; summary = ConvertTo-InstallSafeText $_.Exception.Message; exit_code = $null }
     }
 }
 
@@ -185,6 +203,6 @@ try {
 }
 catch {
     Write-Host "[BLOCKED] mpv auto-install could not complete: $($_.Exception.Message)"
-    Write-InstallEvidence -Status "BLOCKED" -Message $_.Exception.Message -Extra @{ release_api_url = $ReleaseApiUrl; asset_pattern = $AssetPattern }
+    Write-InstallEvidence -Status "BLOCKED" -Message (ConvertTo-InstallSafeText $_.Exception.Message) -Extra @{ release_api_url = $ReleaseApiUrl; asset_pattern = $AssetPattern }
     exit 2
 }

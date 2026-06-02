@@ -40,6 +40,9 @@ test('mpv installer targets repo-local mpv path and writes sanitized evidence', 
   assert.match(installer, /shinchiro\/mpv-winbuild-cmake/);
   assert.match(installer, /mpv_windows_install_\$timestamp\.json/);
   assert.match(installer, /--version/);
+  assert.match(installer, /function ConvertTo-InstallSafeText/);
+  assert.match(installer, /\[regex\]::Escape\(\$RepoRoot\)/);
+  assert.doesNotMatch(installer, /-replace \$RepoRoot/);
   assert.doesNotMatch(installer, /--fs/);
 });
 

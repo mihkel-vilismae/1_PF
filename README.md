@@ -187,3 +187,8 @@ cd S:\PF_login
 ```
 
 This starts a proof-only API with native playback enabled through `runtime_data/live_windows_native_playback_proof.env`, runs `proof:live-windows-native-playback` against `http://127.0.0.1:4301`, exports an evidence ZIP, and keeps normal `start_win_full.cmd` behavior unchanged.
+
+
+### Windows mpv installer path note
+
+The Windows mpv installer redacts repo-local absolute paths with escaped regex patterns, so paths such as `S:\PF_login` are safe during installer verification. Normal `start_win_full.cmd` still does not enable native playback by default; use `start_live_windows_native_playback_proof.cmd` for the opt-in live proof.

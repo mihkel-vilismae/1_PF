@@ -1,4 +1,11 @@
 
+
+## 0.8.4 — Windows mpv installer regex escaping fix
+
+- Fixed `scripts/install_mpv_windows.ps1` so repo-root redaction escapes Windows paths before using them in regex replacement.
+- Preserved the dedicated live native playback proof launcher and normal launcher defaults.
+- Added static regression coverage for `S:\PF_login`-style paths so installer verification does not fail before the live proof can start.
+
 ## 0.8.3 - 2026-06-02
 
 - Added dedicated Windows live native playback proof launcher `start_live_windows_native_playback_proof.cmd`.
