@@ -1,10 +1,10 @@
 # Test Mode whole-logic emulator contract
 
-This document defines the staged contract for the Test Mode control surface named **RUN whole logic without logging in**.
+This document defines the staged contract for the Test Mode control surface named **RUN whole logic without logging in — TEST MODE FAST EMULATOR**.
 
-## v0.7.48 Group 3 scope
+## v0.7.48.a Group A scope
 
-Group 3 adds the owned Test Mode controller state and q/w/e/r/t control actions. The controller is intentionally bounded: it controls only records/processes spawned and tracked by this Test Mode controller. It must not kill the dashboard process and must not kill arbitrary Node, Python, SQLite, or system processes.
+Group A keeps the owned Test Mode controller state and adds the TEST MODE FAST EMULATOR wording, 6/3/12-second cadence model, blank status-circle panel contract, and focused UI log surface. The controller is intentionally bounded: it controls only records/processes spawned and tracked by this Test Mode controller. It must not kill the dashboard process and must not kill arbitrary Node, Python, SQLite, or system processes.
 
 ## UI behavior
 
@@ -38,9 +38,9 @@ The contract records:
 
 | Worker | Requested cadence | Item limit |
 |---|---:|---:|
-| regular stage worker | 60 seconds | 5 |
-| playback worker | 30 seconds | 5 |
-| screen on-off worker | 120 seconds | 5 |
+| regular stage worker | 6 seconds | 5 |
+| playback worker | 3 seconds | 5 |
+| screen on-off worker | 12 seconds | 5 |
 
 The regular stage worker includes the mock-download limit in the max-5 worker-stage contract.
 
@@ -48,4 +48,4 @@ The regular stage worker includes the mock-download limit in the max-5 worker-st
 
 This deterministic controller proof is not a Raspberry cron proof. It is not a real Windows Task Scheduler proof. It is not real native fullscreen runtime proof. It does not launch or kill arbitrary OS processes.
 
-The five-field CronEmulator rows still have minute-granularity limits. The 30-second playback cadence is preserved in the controller config/proof model and needs a future real runtime scheduler loop before it can be claimed as actual sub-minute OS execution.
+The five-field CronEmulator rows still have minute-granularity limits. The 3-second playback cadence is preserved in the controller config/proof model and needs a future real runtime scheduler loop before it can be claimed as actual sub-minute OS execution.

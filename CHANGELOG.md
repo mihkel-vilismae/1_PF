@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## 2026-06-02 05:50 EEST — v0.7.48.a
+
+### Added
+- Added Group A TEST MODE FAST EMULATOR status-circle panel rows for crontab, worker calls, native playback intent, and current pipeline stages.
+- Added a focused terminal-like UI log surface for the Test Mode fast-emulator run process.
+- Added shared status-row and focused-log contract helpers for blank/pending/passed/failed state modeling.
+
+### Changed
+- Renamed the View A no-login panel to `RUN whole logic without logging in — TEST MODE FAST EMULATOR`.
+- Changed Test Mode fast-emulator cadence labels/config from 60/30/120 seconds to 6/3/12 seconds for regular/playback/screen-on-off worker records.
+- Updated focused tests and proof expectations for the new fast-emulator wording and cadence model.
+
+### Fixed
+- None
+
+### Removed
+- None
+
 ## 2026-06-02 05:25 EEST — v0.7.48
 
 ### Added

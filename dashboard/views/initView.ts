@@ -19,11 +19,14 @@ import {
 } from '../../shared/schedulerPlatformCapabilities.ts';
 import {
   WHOLE_LOGIC_TEST_MODE_BUTTON_LABEL,
+  WHOLE_LOGIC_TEST_MODE_FAST_EMULATOR_LABEL,
   WHOLE_LOGIC_TEST_MODE_RUNTIME_KEYS,
   WHOLE_LOGIC_TEST_MODE_SAFETY_LIMITS,
   WHOLE_LOGIC_TEST_MODE_SECTION_TITLE,
   WHOLE_LOGIC_TEST_MODE_STAGE_LIMIT,
   WHOLE_LOGIC_TEST_MODE_CONTROL_ACTIONS,
+  buildWholeLogicInitialFocusedLog,
+  buildWholeLogicInitialStatusRows,
 } from '../../shared/testModeWholeLogicContract.ts';
 
 // View A owns this card as 1A-AUTH. Some data-action values still contain "b1" because
@@ -131,12 +134,14 @@ function renderWholeLogicWithoutLoginPanel(state, dashboardVisualMode) {
         <div class="card__header-tags">${renderSourceBadge('mock', 'TEST MODE ONLY')}</div>
         ${statusBadge(state.statusByKey['1A-TEST-WHOLE-LOGIC'] ?? 'idle')}
       </header>
-      <p class="card__copy">Group 3 owns only tracked Test Mode controller records for q/w/e/r/t power controls. It does not kill the dashboard or arbitrary Node/Python/SQLite/system processes.</p>
+      <p class="card__copy">${escapeHtml(WHOLE_LOGIC_TEST_MODE_FAST_EMULATOR_LABEL)} owns only tracked Test Mode controller records for q/w/e/r/t power controls. It does not kill the dashboard or arbitrary Node/Python/SQLite/system processes.</p>
       <p class="card__copy">Configured worker-stage item limit: <strong>${WHOLE_LOGIC_TEST_MODE_STAGE_LIMIT}</strong> items per stage, including mock download.</p>
       <div class="button-row">
-        <button class="button button--primary" data-action="run-whole-logic-test-mode" title="Configure the Test Mode whole-logic emulator boundary with max-5 worker-stage limits">${escapeHtml(WHOLE_LOGIC_TEST_MODE_BUTTON_LABEL)}</button>
-        <button class="button button--secondary" data-action="status-whole-logic-test-mode" title="Read the owned Test Mode whole-logic controller state">Read controller status</button>
+        <button class="button button--primary" data-action="run-whole-logic-test-mode" title="Configure the Test Mode fast-emulator boundary with max-5 worker-stage limits">${escapeHtml(WHOLE_LOGIC_TEST_MODE_BUTTON_LABEL)}</button>
+        <button class="button button--secondary" data-action="status-whole-logic-test-mode" title="Read the owned Test Mode fast-emulator controller state">Read controller status</button>
       </div>
+      ${renderWholeLogicStatusPanel()}
+      ${renderWholeLogicFocusedLog()}
       <div class="button-row" aria-label="Whole-logic Test Mode power controls">
         ${renderWholeLogicControlButton('q')}
         ${renderWholeLogicControlButton('w')}
@@ -153,6 +158,40 @@ function renderWholeLogicWithoutLoginPanel(state, dashboardVisualMode) {
         <ul class="stage-list">${safetyRows}</ul>
       </section>
     </article>
+  `;
+}
+
+
+// Renders blank status-circle rows for the Test Mode fast-emulator status panel.
+function renderWholeLogicStatusPanel() {
+  const statusRows = buildWholeLogicInitialStatusRows()
+    .map((row) => `
+      <li class="whole-logic-status-row whole-logic-status-row--${escapeAttribute(row.state)}" data-whole-logic-status-id="${escapeAttribute(row.id)}" data-whole-logic-status-state="${escapeAttribute(row.state)}">
+        <span class="whole-logic-status-circle whole-logic-status-circle--${escapeAttribute(row.state)}" aria-label="${escapeAttribute(row.state)} status circle"></span>
+        <span class="whole-logic-status-label">${escapeHtml(row.label)}</span>
+        <span class="whole-logic-status-meta">FIRST CALLED not called yet / LAST CALLED not called yet / CALLED ${row.calledCount} times</span>
+      </li>`)
+    .join('');
+
+  return `
+    <section class="whole-logic-status-panel" aria-label="TEST MODE FAST EMULATOR status circles">
+      <p class="selector-card__label">TEST MODE FAST EMULATOR STATUS</p>
+      <ul class="whole-logic-status-list">${statusRows}</ul>
+    </section>
+  `;
+}
+
+// Renders the focused terminal-like log surface for the main Test Mode run process.
+function renderWholeLogicFocusedLog() {
+  const logRows = buildWholeLogicInitialFocusedLog()
+    .map((entry) => `<div class="whole-logic-terminal-row whole-logic-terminal-row--${escapeAttribute(entry.level)}"><span>${escapeHtml(entry.at)}</span> ${escapeHtml(entry.message)}</div>`)
+    .join('');
+
+  return `
+    <section class="whole-logic-terminal" aria-label="TEST MODE FAST EMULATOR focused log">
+      <p class="selector-card__label">Focused TEST MODE FAST EMULATOR log</p>
+      <div class="whole-logic-terminal__body" data-whole-logic-focused-log="true">${logRows}</div>
+    </section>
   `;
 }
 

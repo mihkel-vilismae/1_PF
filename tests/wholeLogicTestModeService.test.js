@@ -38,10 +38,15 @@ test('whole-logic start records requested cadences, max-5 item limit, and owned 
   assert.equal(result.status, 'ok');
   assert.equal(result.loginRequired, false);
   assert.equal(result.workerStageItemLimit, WHOLE_LOGIC_TEST_MODE_STAGE_LIMIT);
-  assert.equal(result.config.workers.regularStage.cadenceSeconds, 60);
-  assert.equal(result.config.workers.playback.cadenceSeconds, 30);
-  assert.equal(result.config.workers.screenOnOff.cadenceSeconds, 120);
+  assert.equal(result.config.workers.regularStage.cadenceSeconds, 6);
+  assert.equal(result.config.workers.playback.cadenceSeconds, 3);
+  assert.equal(result.config.workers.screenOnOff.cadenceSeconds, 12);
   assert.equal(result.config.workers.regularStage.includesMockDownloadLimit, true);
+
+  assert.equal(result.config.statusRows[0].state, 'blank');
+  assert.equal(result.config.statusRows[0].calledCount, 0);
+  assert.ok(result.config.statusRows.some((row) => row.label === 'NATIVE PLAYBACK STARTED'));
+  assert.match(result.config.focusedLog[0].message, /TEST MODE FAST EMULATOR/);
   assert.equal(result.controllerState.workers.playback.ownedByController, true);
   assert.equal(result.controllerState.workers.playback.osPid, null);
   assert.match(result.emulator.crontabText, /regular_stage_worker\.ps1/);
@@ -68,7 +73,7 @@ test('whole-logic start writes runtime config, CronEmulator crontab, and control
     const config = JSON.parse(await readFile(configPath, 'utf8'));
     const controllerState = JSON.parse(await readFile(controllerPath, 'utf8'));
     assert.equal(config.workerStageItemLimit, WHOLE_LOGIC_TEST_MODE_STAGE_LIMIT);
-    assert.equal(config.workers.playback.cadenceSeconds, 30);
+    assert.equal(config.workers.playback.cadenceSeconds, 3);
     assert.equal(controllerState.powerState, 'on');
     assert.equal(controllerState.cronjobsEnabled, true);
   } finally {

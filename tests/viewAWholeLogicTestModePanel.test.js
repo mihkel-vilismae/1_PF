@@ -1,7 +1,7 @@
 /*
  * Guards the View A Test Mode whole-logic control panel contract.
- * Group 1 is intentionally UI/contract-only so no scheduler, worker, or process
- * termination behavior can start from this slice.
+ * Group A adds the fast-emulator status/log model while preserving the
+ * existing owned-controller safety boundary from v0.7.48.
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
@@ -9,7 +9,7 @@ import test from 'node:test';
 import { createInitialState } from '../dashboard/services/runtimeTruth/runtimeTruthState.ts';
 import { renderInitView } from '../dashboard/views/initView.ts';
 
-const WHOLE_LOGIC_BUTTON_LABEL = 'INSTALL CRONTAB/EMULATOR, CALLING REGULAR WORKER EVERY 1 MINUTES, PLAYBACK WORKER EVERY 30sec, screen on-off worker EVERY 2 MINUTES, ADD LIMIT OF 5 ITEMS TO EACH WORKER STAGE (INCLUDING THE MOCK DOWNLOAD)';
+const WHOLE_LOGIC_BUTTON_LABEL = 'INSTALL TEST MODE EMULATOR, CALLING REGULAR WORKER EVERY 6sec, PLAYBACK WORKER EVERY 3sec, screen-on-off worker EVERY 12sec, ADD LIMIT OF 5 ITEMS TO EACH WORKER STAGE (INCLUDING THE MOCK DOWNLOAD)';
 
 const EXPECTED_POWER_KEYS = Object.freeze([
   'PRESS [q] to shut down regular worker process.',
@@ -34,7 +34,7 @@ test('View A renders the whole-logic no-login panel only in Test Mode', () => {
   assert.match(renderInitView(state, 'test'), /RUN whole logic without logging in/);
 });
 
-test('Group 3 panel exposes the exact requested operator text and controller actions', () => {
+test('Group A panel exposes the exact requested operator text and controller actions', () => {
   const markup = renderInitView(createInitialState(), 'test');
 
   assert.match(markup, new RegExp(escapeRegExp(WHOLE_LOGIC_BUTTON_LABEL)));
@@ -49,14 +49,32 @@ test('Group 3 panel exposes the exact requested operator text and controller act
   }
 });
 
-test('Group 3 panel documents safe process termination boundaries before process controls', () => {
+test('Group A panel documents safe process termination boundaries before process controls', () => {
   const markup = renderInitView(createInitialState(), 'test');
 
   for (const expectedText of EXPECTED_SAFETY_LIMITS) {
     assert.match(markup, new RegExp(escapeRegExp(expectedText)));
   }
-  assert.match(markup, /Group 3 owns only tracked Test Mode controller records/);
+  assert.match(markup, /TEST MODE FAST EMULATOR owns only tracked Test Mode controller records/);
   assert.match(markup, /Configured worker-stage item limit: <strong>5<\/strong>/);
+});
+
+
+test('Group A panel renders blank status circles and focused fast-emulator log', () => {
+  const markup = renderInitView(createInitialState(), 'test');
+
+  assert.match(markup, /TEST MODE FAST EMULATOR STATUS/);
+  assert.match(markup, /data-whole-logic-status-id="crontab_working"/);
+  assert.match(markup, /data-whole-logic-status-id="regular_worker_called"/);
+  assert.match(markup, /data-whole-logic-status-id="playback_worker_called"/);
+  assert.match(markup, /data-whole-logic-status-id="screen_on_off_worker_called"/);
+  assert.match(markup, /data-whole-logic-status-id="native_playback_started"/);
+  assert.match(markup, /STAGE: MOCK DOWNLOAD/);
+  assert.match(markup, /STAGE: PLAYBACK SELECT/);
+  assert.match(markup, /data-whole-logic-status-state="blank"/);
+  assert.match(markup, /FIRST CALLED not called yet \/ LAST CALLED not called yet \/ CALLED 0 times/);
+  assert.match(markup, /data-whole-logic-focused-log="true"/);
+  assert.match(markup, /Awaiting TEST MODE FAST EMULATOR start/);
 });
 
 /**

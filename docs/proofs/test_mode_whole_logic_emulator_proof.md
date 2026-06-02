@@ -7,7 +7,7 @@
 The proof deterministically exercises the Test Mode whole-logic service boundary and verifies:
 
 - the no-login Test Mode start path is allowed only in Test Mode;
-- requested worker cadences are recorded: 60 seconds, 30 seconds, and 120 seconds;
+- requested worker cadences are recorded: 6 seconds, 3 seconds, and 12 seconds;
 - the worker-stage item limit is 5, including the mock-download stage;
 - CronEmulator rows include the three worker entrypoints;
 - `q`, `w`, and `e` terminate only the matching owned controller worker record;

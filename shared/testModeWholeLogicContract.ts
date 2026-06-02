@@ -8,9 +8,11 @@ import {
   WINDOWS_CRON_EMULATOR_ENTRYPOINTS,
 } from './schedulerWorkerCommands.ts';
 
-export const WHOLE_LOGIC_TEST_MODE_SECTION_TITLE = 'RUN whole logic without logging in';
+export const WHOLE_LOGIC_TEST_MODE_FAST_EMULATOR_LABEL = 'TEST MODE FAST EMULATOR';
 
-export const WHOLE_LOGIC_TEST_MODE_BUTTON_LABEL = 'INSTALL CRONTAB/EMULATOR, CALLING REGULAR WORKER EVERY 1 MINUTES, PLAYBACK WORKER EVERY 30sec, screen on-off worker EVERY 2 MINUTES, ADD LIMIT OF 5 ITEMS TO EACH WORKER STAGE (INCLUDING THE MOCK DOWNLOAD)';
+export const WHOLE_LOGIC_TEST_MODE_SECTION_TITLE = 'RUN whole logic without logging in — TEST MODE FAST EMULATOR';
+
+export const WHOLE_LOGIC_TEST_MODE_BUTTON_LABEL = 'INSTALL TEST MODE EMULATOR, CALLING REGULAR WORKER EVERY 6sec, PLAYBACK WORKER EVERY 3sec, screen-on-off worker EVERY 12sec, ADD LIMIT OF 5 ITEMS TO EACH WORKER STAGE (INCLUDING THE MOCK DOWNLOAD)';
 
 export const WHOLE_LOGIC_TEST_MODE_RUNTIME_KEYS = Object.freeze([
   'PRESS [q] to shut down regular worker process.',
@@ -69,7 +71,7 @@ export const WHOLE_LOGIC_TEST_MODE_WORKERS = Object.freeze({
   regularStage: {
     id: 'regular_stage_worker',
     label: 'regular worker',
-    cadenceSeconds: 60,
+    cadenceSeconds: 6,
     itemLimit: WHOLE_LOGIC_TEST_MODE_STAGE_LIMIT,
     includesMockDownloadLimit: true,
     windowsCrontabRow: `* * * * * ${POWERSHELL_ENTRYPOINT_PREFIX} "${WINDOWS_CRON_EMULATOR_ENTRYPOINTS.regularStage}"`,
@@ -77,7 +79,7 @@ export const WHOLE_LOGIC_TEST_MODE_WORKERS = Object.freeze({
   playback: {
     id: 'playback_worker',
     label: 'playback worker',
-    cadenceSeconds: 30,
+    cadenceSeconds: 3,
     itemLimit: WHOLE_LOGIC_TEST_MODE_STAGE_LIMIT,
     includesMockDownloadLimit: false,
     windowsCrontabRow: `* * * * * ${POWERSHELL_ENTRYPOINT_PREFIX} "${WINDOWS_CRON_EMULATOR_ENTRYPOINTS.playback}"`,
@@ -85,12 +87,52 @@ export const WHOLE_LOGIC_TEST_MODE_WORKERS = Object.freeze({
   screenOnOff: {
     id: 'screen_on_off_worker',
     label: 'screen on-off worker',
-    cadenceSeconds: 120,
+    cadenceSeconds: 12,
     itemLimit: WHOLE_LOGIC_TEST_MODE_STAGE_LIMIT,
     includesMockDownloadLimit: false,
     windowsCrontabRow: `*/2 * * * * ${POWERSHELL_ENTRYPOINT_PREFIX} "${WINDOWS_CRON_EMULATOR_ENTRYPOINTS.screenOnOff}"`,
   },
 } as const);
+
+
+export const WHOLE_LOGIC_TEST_MODE_STATUS_STATES = Object.freeze({
+  blank: 'blank',
+  pending: 'pending',
+  passed: 'passed',
+  failed: 'failed',
+} as const);
+
+export type WholeLogicStatusState = typeof WHOLE_LOGIC_TEST_MODE_STATUS_STATES[keyof typeof WHOLE_LOGIC_TEST_MODE_STATUS_STATES];
+
+export const WHOLE_LOGIC_TEST_MODE_STATUS_ITEMS = Object.freeze([
+  { id: 'crontab_working', label: 'CRONTAB WORKING' },
+  { id: 'regular_worker_called', label: 'REGULAR WORKER CALLED' },
+  { id: 'playback_worker_called', label: 'PLAYBACK WORKER CALLED' },
+  { id: 'screen_on_off_worker_called', label: 'ON/OFF WORKER CALLED' },
+  { id: 'native_playback_started', label: 'NATIVE PLAYBACK STARTED' },
+  { id: 'stage_mock_download', label: 'STAGE: MOCK DOWNLOAD' },
+  { id: 'stage_index_register', label: 'STAGE: INDEX / REGISTER MEDIA' },
+  { id: 'stage_gps_processing', label: 'STAGE: GPS PROCESSING' },
+  { id: 'stage_geocode_address', label: 'STAGE: GEOCODE / ADDRESS RESOLUTION' },
+  { id: 'stage_queue_prepare', label: 'STAGE: QUEUE PREPARE' },
+  { id: 'stage_playback_select', label: 'STAGE: PLAYBACK SELECT' },
+] as const);
+
+export type WholeLogicStatusRow = {
+  id: string;
+  label: string;
+  state: WholeLogicStatusState;
+  firstCalledAt: string | null;
+  lastCalledAt: string | null;
+  calledCount: number;
+  message: string;
+};
+
+export type WholeLogicFocusedLogEntry = {
+  at: string;
+  level: 'info' | 'success' | 'warning' | 'error';
+  message: string;
+};
 
 export const WHOLE_LOGIC_TEST_MODE_CONFIG_SCHEMA_VERSION = 1;
 export const WHOLE_LOGIC_TEST_MODE_CONTROLLER_SCHEMA_VERSION = 1;
@@ -125,6 +167,8 @@ export type WholeLogicControllerState = {
     playback: WholeLogicWorkerState;
     screenOnOff: WholeLogicWorkerState;
   };
+  statusRows: WholeLogicStatusRow[];
+  focusedLog: WholeLogicFocusedLogEntry[];
   events: Array<{ at: string; key: string; action: string }>;
   lastControlKey: string | null;
   createdAt: string;
@@ -139,6 +183,8 @@ export function buildWholeLogicTestModeConfig(nowIso = new Date().toISOString())
     title: WHOLE_LOGIC_TEST_MODE_SECTION_TITLE,
     buttonLabel: WHOLE_LOGIC_TEST_MODE_BUTTON_LABEL,
     workerStageItemLimit: WHOLE_LOGIC_TEST_MODE_STAGE_LIMIT,
+    statusRows: buildWholeLogicInitialStatusRows(),
+    focusedLog: buildWholeLogicInitialFocusedLog(nowIso),
     workers: structuredClone(WHOLE_LOGIC_TEST_MODE_WORKERS),
     safeTerminationBoundary: [...WHOLE_LOGIC_TEST_MODE_SAFETY_LIMITS],
     nativeFullscreenOperatorInstructions: [...WHOLE_LOGIC_TEST_MODE_RUNTIME_KEYS],
@@ -160,6 +206,8 @@ export function buildWholeLogicTestModeControllerState(nowIso = new Date().toISO
     itemLimitPerWorkerStage: WHOLE_LOGIC_TEST_MODE_STAGE_LIMIT,
     safeTerminationBoundary: [...WHOLE_LOGIC_TEST_MODE_SAFETY_LIMITS],
     nativeFullscreenOperatorInstructions: [...WHOLE_LOGIC_TEST_MODE_RUNTIME_KEYS],
+    statusRows: buildWholeLogicInitialStatusRows(),
+    focusedLog: buildWholeLogicInitialFocusedLog(nowIso),
     workers: {
       regularStage: buildWorkerState('regularStage', nowIso),
       playback: buildWorkerState('playback', nowIso),
@@ -170,6 +218,29 @@ export function buildWholeLogicTestModeControllerState(nowIso = new Date().toISO
     createdAt: nowIso,
     updatedAt: nowIso,
   };
+}
+
+
+// Builds blank status rows for the status-circle panel before a run touches them.
+export function buildWholeLogicInitialStatusRows(): WholeLogicStatusRow[] {
+  return WHOLE_LOGIC_TEST_MODE_STATUS_ITEMS.map((item) => ({
+    id: item.id,
+    label: item.label,
+    state: WHOLE_LOGIC_TEST_MODE_STATUS_STATES.blank,
+    firstCalledAt: null,
+    lastCalledAt: null,
+    calledCount: 0,
+    message: 'Waiting for TEST MODE FAST EMULATOR start.',
+  }));
+}
+
+// Builds the focused run-log seed shown in the Test Mode panel terminal surface.
+export function buildWholeLogicInitialFocusedLog(nowIso = new Date().toISOString()): WholeLogicFocusedLogEntry[] {
+  return [{
+    at: nowIso,
+    level: 'info',
+    message: 'Awaiting TEST MODE FAST EMULATOR start; no login is required in Test Mode.',
+  }];
 }
 
 // Normalizes a keyboard/button control value to the supported operator key set.
@@ -186,7 +257,7 @@ export function buildWholeLogicWindowsCronEmulatorCrontabText(): string {
   return [
     '# PF_login TEST MODE whole-logic emulator rows.',
     '# Managed by the dashboard Test Mode whole-logic controller.',
-    '# Playback requests 30 seconds in the dashboard contract; five-field CronEmulator rows run at minute granularity until Group 3 controller timing owns sub-minute cadence.',
+    '# Fast-emulator playback requests 3 seconds in the dashboard contract; five-field CronEmulator rows stay minute-granularity until the owned controller loop executes sub-minute cadence.',
     WHOLE_LOGIC_TEST_MODE_WORKERS.regularStage.windowsCrontabRow,
     WHOLE_LOGIC_TEST_MODE_WORKERS.playback.windowsCrontabRow,
     WHOLE_LOGIC_TEST_MODE_WORKERS.screenOnOff.windowsCrontabRow,

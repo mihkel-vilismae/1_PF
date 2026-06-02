@@ -52,6 +52,13 @@ export async function runWholeLogicTestModeProof({ metadata }) {
       evidence: {
         environment: getProofEnvironment(),
         stageLimit: WHOLE_LOGIC_TEST_MODE_STAGE_LIMIT,
+        cadenceSeconds: {
+          regularStage: start.config.workers.regularStage.cadenceSeconds,
+          playback: start.config.workers.playback.cadenceSeconds,
+          screenOnOff: start.config.workers.screenOnOff.cadenceSeconds,
+        },
+        initialStatusRows: start.config.statusRows.map((row) => ({ id: row.id, state: row.state, calledCount: row.calledCount })),
+        focusedLog: start.config.focusedLog,
         start: summarizeStart(start),
         controls: {
           q: summarizeWorker(q, 'regularStage'),
@@ -91,7 +98,7 @@ function buildAssertions({ start, q, w, e, r, powerOff, powerOn, realBlocked, cr
   return [
     { name: 'start_configures_test_mode_only_controller', passed: start.status === 'ok' && start.loginRequired === false },
     { name: 'stage_limit_is_five', passed: start.workerStageItemLimit === WHOLE_LOGIC_TEST_MODE_STAGE_LIMIT },
-    { name: 'requested_cadences_are_recorded', passed: start.config.workers.regularStage.cadenceSeconds === 60 && start.config.workers.playback.cadenceSeconds === 30 && start.config.workers.screenOnOff.cadenceSeconds === 120 },
+    { name: 'requested_cadences_are_recorded', passed: start.config.workers.regularStage.cadenceSeconds === 6 && start.config.workers.playback.cadenceSeconds === 3 && start.config.workers.screenOnOff.cadenceSeconds === 12 },
     { name: 'cron_rows_include_three_workers', passed: /regular_stage_worker\.ps1/.test(crontabText) && /playback_worker\.ps1/.test(crontabText) && /screen_on_off_worker\.ps1/.test(crontabText) },
     { name: 'q_terminates_regular_worker_only', passed: q.controllerState.workers.regularStage.processState === 'terminated' && q.controllerState.workers.playback.processState === 'running' },
     { name: 'w_terminates_playback_worker', passed: w.controllerState.workers.playback.processState === 'terminated' },

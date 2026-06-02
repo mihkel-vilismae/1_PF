@@ -2394,3 +2394,87 @@ body[data-dashboard-visual-mode="unselected"] {
 .os-worker-card--error {
   box-shadow: 0 0 0 1px rgba(255, 96, 96, 0.42), 0 0 28px rgba(255, 96, 96, 0.12);
 }
+
+/*
+ * Styles the Test Mode fast-emulator status and focused-log surfaces.
+ * The circles are semantic UI hints only; runtime proof remains backend/proof based.
+ */
+.whole-logic-status-panel,
+.whole-logic-terminal {
+  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.28));
+  border-radius: 12px;
+  margin: 0.75rem 0;
+  padding: 0.85rem;
+  background: rgba(15, 23, 42, 0.32);
+}
+
+.whole-logic-status-list {
+  display: grid;
+  gap: 0.45rem;
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+}
+
+.whole-logic-status-row {
+  align-items: center;
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: auto minmax(11rem, 1fr) minmax(16rem, 1.3fr);
+  min-width: 0;
+}
+
+.whole-logic-status-circle {
+  border: 1px solid rgba(226, 232, 240, 0.75);
+  border-radius: 999px;
+  display: inline-block;
+  height: 0.8rem;
+  width: 0.8rem;
+}
+
+.whole-logic-status-circle--blank {
+  background: transparent;
+}
+
+.whole-logic-status-circle--pending {
+  background: #facc15;
+  border-color: #fde68a;
+}
+
+.whole-logic-status-circle--passed {
+  background: #22c55e;
+  border-color: #86efac;
+}
+
+.whole-logic-status-circle--failed {
+  background: #ef4444;
+  border-color: #fca5a5;
+}
+
+.whole-logic-status-label {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.whole-logic-status-meta {
+  color: var(--text-muted, #94a3b8);
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Consolas, monospace);
+  font-size: 0.82rem;
+}
+
+.whole-logic-terminal__body {
+  background: rgba(2, 6, 23, 0.88);
+  border-radius: 10px;
+  color: #dbeafe;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Consolas, monospace);
+  font-size: 0.84rem;
+  margin-top: 0.5rem;
+  max-height: 13rem;
+  overflow: auto;
+  padding: 0.75rem;
+  white-space: pre-wrap;
+}
+
+.whole-logic-terminal-row + .whole-logic-terminal-row {
+  margin-top: 0.35rem;
+}

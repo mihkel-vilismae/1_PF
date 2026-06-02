@@ -71,7 +71,7 @@ export async function buildWholeLogicTestModeStartResult(options: WholeLogicStar
       crontabFilePath: writes.crontabFilePath,
       configFilePath: writes.configFilePath,
       controllerStateFilePath: writes.controllerStateFilePath,
-      limitation: 'Current CronEmulator uses five-field minute cron rows; requested 30-second playback cadence is executed by the Test Mode controller state/proof model and is not claimed as real OS cron proof.',
+      limitation: 'Current CronEmulator uses five-field minute cron rows; requested 6/3/12-second fast-emulator cadences are executed by the Test Mode controller state/proof model and are not claimed as real OS cron proof.',
     },
     workerStageItemLimit: WHOLE_LOGIC_TEST_MODE_STAGE_LIMIT,
     config,
