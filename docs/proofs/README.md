@@ -28,6 +28,7 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | GPS fallback parsing | `npm run proof:gps-fallback` | deterministic local |
 | Deterministic media pipeline | `npm run proof:deterministic-media-pipeline` | deterministic local |
 | Address display | `npm run proof:address-display` | deterministic local |
+| Address display UI | `npm run proof:address-display-ui` | deterministic local UI render |
 | Native / fullscreen playback | `npm run proof:native-fullscreen-playback` | deterministic local |
 | Windows CronEmulator | `npm run proof:windows-cronemulator` | windows emulator |
 | Real download continuation | `npm run proof:real-download-continuation` | opt-in real provider |
@@ -51,3 +52,9 @@ npm run proof:real-geocode-provider-chain
 ```
 
 Use provider-specific API-key or token environment variables for providers that require accounts. The generated artifact must not include API keys, access tokens, raw headers, or raw provider output.
+
+## Address display UI proof
+
+`npm run proof:address-display-ui` renders the dashboard/display-facing Windows playback view and fullscreen overlay from deterministic local state. It asserts semantic UI fragments only, including the selected media name, resolved address label, expected address text, safe backend media URL, pending-address fallback copy, and absence of raw filesystem path exposure.
+
+The generated JSON artifact intentionally stores assertion results and markup length metrics, not full HTML snapshots. This keeps the proof stable across harmless layout/CSS changes while still proving the address evidence reaches the display-facing UI contract.

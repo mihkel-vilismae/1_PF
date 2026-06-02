@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## 2026-06-02 04:00 EEST — v0.7.44
+
+### Added
+- Added `proof:address-display-ui`, a deterministic dashboard/display-facing UI proof that renders selected playback address evidence into the Windows playback surface and fullscreen overlay.
+- Added semantic UI assertions for the selected address, safe backend media URL, missing-address fallback copy, and omission of unsafe raw filesystem paths.
+- Added focused tests for the address display UI proof envelope without storing brittle full-page snapshots.
+
+### Changed
+- Bumped project metadata from v0.7.43 to v0.7.44 for the new UI proof command.
+
+### Fixed
+- None
+
+### Removed
+- None
+
 ## 2026-06-02 03:24 EEST — v0.7.43
 
 ### Added

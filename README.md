@@ -54,6 +54,14 @@ Code-checked entrypoint summary:
 
 This README does not assert source-code truth. Check code/tests directly before making implementation claims.
 
+## Screen summary
+
+The dashboard is a Vite browser UI with Views A-E plus Windows and Raspberry playback surfaces. The display-facing playback UI shows the selected media preview, media type, queue summary, resolved address caption, fullscreen controls, activity status, worker status, and terminal-style runtime logs.
+
+## v0.7.44 code summary
+
+v0.7.44 adds `proof:address-display-ui`, a deterministic local UI-render proof. It renders the Windows playback surface and fullscreen overlay from local state, verifies semantic address-display fragments, checks missing-address fallback copy, and confirms raw filesystem path-like fields are not exposed in rendered UI evidence.
+
 ## Architecture overview
 
 High-level documented components:
@@ -102,6 +110,7 @@ Proof workflows document and collect sanitized evidence for behavior that cannot
 | `npm run proof:real-icloudpd` | Proves the real iCloudPD pipeline through existing backend routes. | Writes `BLOCKED` unless explicitly enabled. |
 | `npm run proof:geocode-provider` | Proves a real geocode provider and rejects placeholder-only proof. | Writes `BLOCKED` unless explicitly enabled. |
 | `npm run proof:real-geocode-provider-chain` | Proves a configured real geocode provider, cache-first behavior, fallback from cache miss, human-readable address plausibility, and placeholder rejection. | Writes `BLOCKED` unless `PF_PROOF_ENABLE_REAL_GEOCODE_CHAIN=true` and provider config are supplied. |
+| `npm run proof:address-display-ui` | Proves selected playback address evidence renders into the dashboard/display-facing playback UI. | Deterministic local UI render; writes sanitized JSON under `runtime_data/proofs/`. |
 | `npm run proof:raspberry-recovery` | Collects Raspberry power-loss recovery proof from explicit hardware evidence. | Writes `BLOCKED` unless explicitly enabled. |
 
 Generated proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API keys, provider tokens, raw provider output, or private filesystem paths.

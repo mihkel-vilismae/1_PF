@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.7.43",
+  "version": "0.7.44",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -21,6 +21,7 @@
     "proof:deterministic-media-pipeline": "node tools/run-deterministic-media-pipeline-proof.mjs",
     "proof:real-download-continuation": "node tools/run-real-download-continuation-proof.mjs",
     "proof:address-display": "node tools/run-address-display-proof.mjs",
+    "proof:address-display-ui": "node --import tsx tools/run-address-display-ui-proof.mjs",
     "proof:native-fullscreen-playback": "node tools/run-native-fullscreen-playback-proof.mjs",
     "proof:dirty-shutdown-testing": "node tools/run-dirty-shutdown-testing-proof.mjs",
     "proof:windows-cronemulator": "node tools/run-windows-cronemulator-proof.mjs",
