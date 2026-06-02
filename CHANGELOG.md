@@ -1,3 +1,11 @@
+
+## 0.8.3 - 2026-06-02
+
+- Added dedicated Windows live native playback proof launcher `start_live_windows_native_playback_proof.cmd`.
+- Added `start_scripts/run_live_windows_native_playback_proof.ps1` to create a proof-only env file, start an owned API with native playback enabled, run `proof:live-windows-native-playback`, stop only the owned API process, and export evidence ZIPs.
+- Fixed `scripts/install_mpv_windows.ps1` repo-root resolution when invoked from Windows launchers.
+- Preserved normal `start_win_full.cmd` behavior: native playback remains disabled by default outside explicit proof mode.
+
 # CHANGELOG
 
 ## 0.8.2 - Windows mpv auto-install launcher

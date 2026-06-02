@@ -56,3 +56,25 @@ tools/mpv/windows/mpv.exe
 ```
 
 The binary is runtime-installed and ignored by Git. If it already exists and verifies with `--version`, it is reused. If the download is blocked, the launcher prints a warning and continues normal dashboard startup; `proof:live-windows-native-playback` will remain blocked until mpv is available.
+
+## Live Windows native playback proof launcher
+
+Use this dedicated launcher when you want to prove real Windows native playback with repo-local `mpv.exe`:
+
+```powershell
+clear
+cd S:\PF_login
+.\start_live_windows_native_playback_proof.cmd
+```
+
+This command is intentionally separate from `start_win_full.cmd`. Normal `start_win_full.cmd` still keeps native playback disabled by default. The proof launcher creates a proof-only env file at `runtime_data/live_windows_native_playback_proof.env`, appends `NATIVE_PLAYBACK_ENABLED=true`, starts an owned API process on `http://127.0.0.1:4301`, waits until `/api/native-playback/status` reports native playback enabled, runs `npm run proof:live-windows-native-playback`, stops only the API process it started, packs logs/proofs/artifacts into a ZIP under Downloads, and opens Explorer on that ZIP.
+
+Optional worker-autostart run:
+
+```powershell
+clear
+cd S:\PF_login
+.\start_live_windows_native_playback_proof.cmd -WorkerAutostart
+```
+
+The proof launcher calls `scripts\install_mpv_windows.ps1` with the repo root explicitly. This fixes launcher-time path handling and keeps `tools/mpv/windows/mpv.exe` runtime-installed and ignored by Git.

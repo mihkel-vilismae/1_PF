@@ -74,3 +74,25 @@ Proof JSON is written under ignored `runtime_data/proofs/` with proof kind:
 ```text
 live_windows_native_playback
 ```
+
+## Dedicated Windows proof launcher
+
+For operator runs, prefer the dedicated proof launcher instead of manually starting `start_win_full.cmd` and then setting environment variables in another terminal:
+
+```powershell
+clear
+cd S:\PF_login
+.\start_live_windows_native_playback_proof.cmd
+```
+
+The normal `start_win_full.cmd` does not enable native playback by default. That is intentional. Environment values for native playback are loaded by the backend from its configured env file, so setting `NATIVE_PLAYBACK_ENABLED=true` in a second terminal after the API is already running does not change the running API process.
+
+The dedicated launcher creates a proof-only env file under `runtime_data/live_windows_native_playback_proof.env`, starts an owned API process on the actual proof API port, runs `proof:live-windows-native-playback`, writes sanitized proof JSON under `runtime_data/proofs`, stops only the API process it started, and packs logs/proofs/artifacts into a Downloads ZIP.
+
+Use worker auto-start coverage with:
+
+```powershell
+.\start_live_windows_native_playback_proof.cmd -WorkerAutostart
+```
+
+This still does not claim Raspberry HDMI playback, real reboot recovery, or monitor-pixel/focus proof.

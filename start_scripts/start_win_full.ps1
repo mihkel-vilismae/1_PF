@@ -97,7 +97,7 @@ function Install-NativePlaybackPlayer {
     Write-Host "[STEP] Verify/install repo-local mpv for native playback"
     Push-Location $RepoRoot
     try {
-        & powershell -NoProfile -ExecutionPolicy Bypass -File $installerScript
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $installerScript -RepoRoot $RepoRoot
         $exitCode = $LASTEXITCODE
         if ($exitCode -eq 0) {
             Write-Host "[INFO] Repo-local mpv is available for native playback proof/runtime use."

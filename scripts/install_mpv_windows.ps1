@@ -6,7 +6,7 @@
 
 [CmdletBinding()]
 param(
-    [string]$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path,
+    [string]$RepoRoot = "",
     [string]$ReleaseApiUrl = "https://api.github.com/repos/shinchiro/mpv-winbuild-cmake/releases/latest",
     [string]$AssetPattern = "mpv-x86_64-v3-*.7z",
     [switch]$ForceReinstall
@@ -14,6 +14,13 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+
+if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
+    $scriptRoot = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $PSCommandPath }
+    $RepoRoot = (Resolve-Path (Join-Path $scriptRoot "..")).Path
+} else {
+    $RepoRoot = (Resolve-Path $RepoRoot).Path
+}
 
 $TargetDirectory = Join-Path $RepoRoot "tools\mpv\windows"
 $TargetExe = Join-Path $TargetDirectory "mpv.exe"

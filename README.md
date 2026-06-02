@@ -175,3 +175,15 @@ CHANGELOG.md      forward-only changelog
 ## v0.8.2 code summary
 
 v0.8.2 adds automatic Windows mpv setup to the full Windows launcher flow. `start_win_full.cmd` remains a thin wrapper, while `start_scripts/start_win_full.ps1` delegates to `scripts/install_mpv_windows.ps1` after `npm install --verbose`. The installer verifies or downloads a repo-local mpv binary to `tools/mpv/windows/mpv.exe`, writes sanitized install evidence under `runtime_data/proofs`, and never starts native fullscreen playback. If mpv setup is blocked by network/extraction availability, the normal dashboard launch continues with a warning and the live native playback proof remains blocked until mpv is installed.
+
+### Dedicated live Windows native playback proof
+
+For live Windows `mpv` native playback proof, use the dedicated launcher:
+
+```powershell
+clear
+cd S:\PF_login
+.\start_live_windows_native_playback_proof.cmd
+```
+
+This starts a proof-only API with native playback enabled through `runtime_data/live_windows_native_playback_proof.env`, runs `proof:live-windows-native-playback` against `http://127.0.0.1:4301`, exports an evidence ZIP, and keeps normal `start_win_full.cmd` behavior unchanged.
