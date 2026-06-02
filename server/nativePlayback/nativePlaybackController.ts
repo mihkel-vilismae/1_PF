@@ -8,7 +8,7 @@ import type { ChildProcessWithoutNullStreams } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import type { DatabaseService } from '../database/databaseService.ts';
-import { buildPlaybackContract, resolvePlaybackAssetMediaPath, type PlaybackContractItem } from '../playback/playbackContractService.ts';
+import { buildPlaybackContract, resolvePlaybackAssetMediaPath, type PlaybackContractItem, type PlaybackMediaPathPayload } from '../playback/playbackContractService.ts';
 
 const NATIVE_PLAYBACK_STATUS_KEY = 'native_playback_status';
 const NATIVE_PLAYBACK_SCHEMA_VERSION = 1;
@@ -138,17 +138,32 @@ export async function startCurrentNativePlayback({
   databaseService: NativePlaybackDatabase;
   repoRoot: string;
 }): Promise<NativePlaybackPayload> {
+  const contract = await buildPlaybackContract({ context, databaseService, repoRoot, limit: 50 });
+  const item = contract.playback.currentItem ?? contract.playback.nextItem;
+  if (!item) {
+    throw new NativePlaybackError(404, 'native_playback_no_current_item', 'No current or next playback item is available for native playback.');
+  }
+
+  return startNativePlaybackForPlaybackItem({ context, databaseService, repoRoot, item });
+}
+
+// Starts the native player for the exact playback item supplied by a worker.
+export async function startNativePlaybackForPlaybackItem({
+  context,
+  databaseService,
+  repoRoot,
+  item,
+}: {
+  context: NativePlaybackContext;
+  databaseService: NativePlaybackDatabase;
+  repoRoot: string;
+  item: PlaybackContractItem;
+}): Promise<NativePlaybackPayload> {
   const config = buildNativePlaybackConfig({ ...context, repoRoot });
   if (!config.enabled) {
     throw new NativePlaybackError(409, 'native_playback_disabled', 'Native playback is disabled by NATIVE_PLAYBACK_ENABLED.', {
       enabled: config.enabled,
     });
-  }
-
-  const contract = await buildPlaybackContract({ context, databaseService, repoRoot, limit: 50 });
-  const item = contract.playback.currentItem ?? contract.playback.nextItem;
-  if (!item) {
-    throw new NativePlaybackError(404, 'native_playback_no_current_item', 'No current or next playback item is available for native playback.');
   }
 
   const resolvedMedia = await resolvePlaybackAssetMediaPath({
@@ -163,13 +178,30 @@ export async function startCurrentNativePlayback({
     });
   }
 
+  const playbackItem = completePlaybackItemForNativePlayback(item, resolvedMedia.media);
   const mediaPath = path.resolve(resolvedMedia.media.resolvedPath);
   if (config.replaceExisting) {
     await stopOwnedNativeProcess(context, databaseService, 'replace-existing');
   }
 
-  const status = await launchNativePlayer({ context, databaseService, config, item, mediaPath });
+  const status = await launchNativePlayer({ context, databaseService, config, item: playbackItem, mediaPath });
   return { status: 'started', config, nativePlayback: status, schemaVersion: NATIVE_PLAYBACK_SCHEMA_VERSION };
+}
+
+// Starts native playback for a selected media asset without re-reading next/current queue state.
+export async function startNativePlaybackForSelectedAsset({
+  context,
+  databaseService,
+  repoRoot,
+  selectedItemSummary,
+}: {
+  context: NativePlaybackContext;
+  databaseService: NativePlaybackDatabase;
+  repoRoot: string;
+  selectedItemSummary: unknown;
+}): Promise<NativePlaybackPayload> {
+  const item = buildPlaybackItemFromSelectedSummary(selectedItemSummary);
+  return startNativePlaybackForPlaybackItem({ context, databaseService, repoRoot, item });
 }
 
 // Stops the owned native playback process if this backend instance started one.
@@ -205,6 +237,79 @@ export function buildNativePlaybackConfig(context: NativePlaybackContext): Nativ
     replaceExisting: readBoolean(env.NATIVE_PLAYBACK_REPLACE_EXISTING, true),
     imageDurationSeconds: readPositiveInteger(env.NATIVE_PLAYBACK_IMAGE_DURATION_SECONDS, DEFAULT_IMAGE_DURATION_SECONDS),
   };
+}
+
+// Converts a worker-selected item summary into a stable native playback item.
+function buildPlaybackItemFromSelectedSummary(selectedItemSummary: unknown): PlaybackContractItem {
+  const summary = normalizeJsonObject(selectedItemSummary);
+  const mediaAssetId = readPositiveNumber(summary.mediaAssetId);
+  if (!mediaAssetId) {
+    throw new NativePlaybackError(500, 'native_playback_selected_item_missing_id', 'The playback worker selected item did not include a usable media asset id.');
+  }
+
+  const canonicalPath = readOptionalString(summary.resolvedCanonicalPath) ?? readOptionalString(summary.canonicalPath);
+  const displayName = readOptionalString(summary.displayName) ?? (canonicalPath ? path.basename(canonicalPath) : `media-${mediaAssetId}`);
+  const fileExtension = readFileExtension(displayName) ?? readFileExtension(canonicalPath);
+
+  return {
+    mediaAssetId,
+    slideshowQueueId: readPositiveNumber(summary.slideshowQueueId) ?? 0,
+    displayName,
+    mediaType: inferMediaType(fileExtension),
+    queueStatus: 'READY',
+    resolvedAddress: readOptionalString(summary.addressText) ?? '',
+    hasResolvedAddress: Boolean(readOptionalString(summary.addressText)),
+    capturedAt: null,
+    lastShownAt: null,
+    viewCount: 0,
+    fileExtension,
+    gpsStatus: null,
+    geocodeStatus: null,
+    isCurrent: true,
+    displayUrl: `/api/runtime/playback/media?assetId=${encodeURIComponent(String(mediaAssetId))}`,
+  };
+}
+
+// Fills media type/extension from backend media-path lookup when available.
+function completePlaybackItemForNativePlayback(item: PlaybackContractItem, media: PlaybackMediaPathPayload): PlaybackContractItem {
+  const extension = item.fileExtension ?? media.fileExtension ?? readFileExtension(media.resolvedPath);
+  return {
+    ...item,
+    mediaType: media.mediaType ?? item.mediaType ?? inferMediaType(extension),
+    fileExtension: extension,
+    displayName: item.displayName || (media.resolvedPath ? path.basename(media.resolvedPath) : `media-${item.mediaAssetId}`),
+  };
+}
+
+// Returns a JSON object wrapper for untrusted bridge payloads.
+function normalizeJsonObject(value: unknown): JsonObject {
+  return typeof value === 'object' && value !== null && !Array.isArray(value) ? value as JsonObject : {};
+}
+
+// Reads a positive integer-like value without trusting bridge types.
+function readPositiveNumber(value: unknown): number | null {
+  const parsed = typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : NaN;
+  return Number.isFinite(parsed) && parsed > 0 ? Math.trunc(parsed) : null;
+}
+
+// Reads optional bridge strings and treats empty strings as absent.
+function readOptionalString(value: unknown): string | null {
+  return typeof value === 'string' && value.trim() ? value : null;
+}
+
+// Extracts a lowercase file extension without the leading dot.
+function readFileExtension(value: unknown): string | null {
+  const text = readOptionalString(value);
+  if (!text) {
+    return null;
+  }
+  const extension = path.extname(text).replace(/^\./, '').toLowerCase();
+  return extension || null;
+}
+
+// Infers media type conservatively for native player command construction.
+function inferMediaType(fileExtension: string | null): string {
+  return fileExtension && ['mp4', 'mov', 'm4v', 'avi', 'mkv', 'webm'].includes(fileExtension) ? 'video' : 'image';
 }
 
 // Launches a real or mock player and persists the resulting native playback status.

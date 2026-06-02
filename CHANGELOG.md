@@ -1,3 +1,10 @@
+## 0.8.7 — Playback worker native autostart exact-item fix
+
+- Fixed `playback_worker` native auto-start so it launches native playback for the exact media asset selected by Stage 6 instead of re-reading the playback contract and potentially advancing to another next item.
+- Added a native playback helper for worker-selected assets that resolves the selected media asset directly and preserves the existing route-based `/api/native-playback/start-current` behavior separately.
+- Added regression coverage proving worker native auto-start uses the worker-selected media asset id and does not rely on a second current/next queue lookup.
+- Preserved normal native-playback-disabled defaults, owned-process stop behavior, and the existing live Windows proof launcher.
+
 ## 0.8.6 — Worker-autostart native playback proof identity fix
 
 - Fixed `proof:live-windows-native-playback` worker-autostart mode so it no longer calls `/api/native-playback/start-current` after `playback_worker` has already run.

@@ -10,7 +10,7 @@ import { selectCurrentPlayableItem, type PlaybackSelectionContext } from '../pla
 import {
   NativePlaybackError,
   shouldAutoStartNativePlaybackFromWorker,
-  startCurrentNativePlayback,
+  startNativePlaybackForSelectedAsset,
 } from '../nativePlayback/nativePlaybackController.ts';
 
 type WorkerStatus = 'succeeded' | 'skipped' | 'failed';
@@ -62,7 +62,8 @@ async function maybeStartNativePlaybackFromWorker({
   context,
   databaseService,
   repoRoot,
-}: PlaybackWorkerOptions): Promise<{ claimed: boolean; note: string; nativePlayback: unknown | null; messages: string[] }> {
+  selectedItemSummary,
+}: PlaybackWorkerOptions & { selectedItemSummary: unknown }): Promise<{ claimed: boolean; note: string; nativePlayback: unknown | null; messages: string[] }> {
   const nativeContext = { ...context, platform: process.platform, repoRoot };
   if (!shouldAutoStartNativePlaybackFromWorker(nativeContext)) {
     return {
@@ -74,7 +75,7 @@ async function maybeStartNativePlaybackFromWorker({
   }
 
   try {
-    const nativePlayback = await startCurrentNativePlayback({ context: nativeContext, databaseService, repoRoot });
+    const nativePlayback = await startNativePlaybackForSelectedAsset({ context: nativeContext, databaseService, repoRoot, selectedItemSummary });
     return {
       claimed: true,
       note: 'playback_worker selected the current playable item and launched native fullscreen playback because native auto-start is enabled.',
@@ -119,7 +120,7 @@ export async function runPlaybackWorker({
     const selection = await selectCurrentPlayableItem({ context, databaseService });
     const status: WorkerStatus = selection.outcome === 'selected' ? selection.status === 'warning' ? 'succeeded' : 'succeeded' : 'skipped';
     const nativeResult = selection.outcome === 'selected'
-      ? await maybeStartNativePlaybackFromWorker({ context, databaseService, repoRoot, now, workerId })
+      ? await maybeStartNativePlaybackFromWorker({ context, databaseService, repoRoot, now, workerId, selectedItemSummary: selection.selectedItemSummary })
       : {
         claimed: false,
         note: 'playback_worker did not launch native fullscreen playback because no current playable item was selected.',

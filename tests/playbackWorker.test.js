@@ -75,6 +75,62 @@ test('playback_worker selects current item without claiming rendering or B3/B5 w
   }
 });
 
+
+test('playback_worker native auto-start launches the exact worker-selected item', async () => {
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'playback-worker-native-exact-'));
+  try {
+    const calls = [];
+    const databaseService = buildDatabaseService({
+      playback: {
+        outcome: 'selected',
+        failedCandidateCount: 0,
+        selected: {
+          slideshowQueueId: 79,
+          mediaAssetId: 125,
+          canonicalPath: path.join(repoRoot, 'runtime_data', 'downloads', 'same_gps_02.jpg'),
+          addressText: 'Lat: 59.43700, Lon: 24.75360',
+        },
+      },
+    });
+    databaseService.runPythonJson = async (args) => {
+      calls.push(args);
+      assert.equal(args[0], 'playback_asset_media_path');
+      assert.equal(args[2], '125');
+      return {
+        found: true,
+        mediaAssetId: 125,
+        mediaType: 'image',
+        fileExtension: 'jpg',
+        resolvedPath: path.join(repoRoot, 'runtime_data', 'downloads', 'same_gps_02.jpg'),
+      };
+    };
+
+    const result = await runPlaybackWorker({
+      context: {
+        envValues: {
+          NATIVE_PLAYBACK_ENABLED: 'true',
+          NATIVE_PLAYBACK_AUTO_START_ON_WORKER: 'true',
+          NATIVE_PLAYBACK_PLAYER: 'mock',
+          NATIVE_PLAYBACK_PLATFORM: 'windows',
+        },
+      },
+      databaseService,
+      repoRoot,
+      now: buildClock(),
+      workerId: 'test-worker-native-exact',
+    });
+
+    const nativePlayback = result.nativePlayback;
+    assert.equal(result.rendering.claimed, true);
+    assert.equal(nativePlayback.nativePlayback.currentMediaAssetId, '125');
+    assert.equal(nativePlayback.nativePlayback.currentDisplayName, 'same_gps_02.jpg');
+    assert.equal(nativePlayback.nativePlayback.currentMediaType, 'image');
+    assert.equal(calls.length, 1);
+  } finally {
+    await rm(repoRoot, { recursive: true, force: true });
+  }
+});
+
 test('playback_worker reports no READY row as an honest skipped state', async () => {
   const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'playback-worker-skipped-'));
   try {
