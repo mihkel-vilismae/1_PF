@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## 2026-06-02 03:24 EEST — v0.7.43
+
+### Added
+- Added `proof:real-geocode-provider-chain`, an opt-in real-network geocode proof that exercises the existing Python reverse-geocode provider interfaces and writes sanitized evidence under `runtime_data/proofs/`.
+- Added proof checks for real provider success, cache-first miss, cache-hit reuse, placeholder rejection, and human-readable address plausibility.
+- Added focused tests for the real geocode provider-chain proof helpers without making network calls in the normal test suite.
+
+### Changed
+- Bumped project metadata from v0.7.42 to v0.7.43 for the new real geocode provider-chain proof command.
+
+### Fixed
+- None
+
+### Removed
+- None
+
 ## 2026-06-02 03:02 EEST — v0.7.42
 
 ### Added

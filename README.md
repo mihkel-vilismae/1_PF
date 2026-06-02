@@ -101,6 +101,7 @@ Proof workflows document and collect sanitized evidence for behavior that cannot
 | `npm run proof:full-test` | Runs the full test suite and writes local pass/fail/timeout evidence. | Executes tests locally. |
 | `npm run proof:real-icloudpd` | Proves the real iCloudPD pipeline through existing backend routes. | Writes `BLOCKED` unless explicitly enabled. |
 | `npm run proof:geocode-provider` | Proves a real geocode provider and rejects placeholder-only proof. | Writes `BLOCKED` unless explicitly enabled. |
+| `npm run proof:real-geocode-provider-chain` | Proves a configured real geocode provider, cache-first behavior, fallback from cache miss, human-readable address plausibility, and placeholder rejection. | Writes `BLOCKED` unless `PF_PROOF_ENABLE_REAL_GEOCODE_CHAIN=true` and provider config are supplied. |
 | `npm run proof:raspberry-recovery` | Collects Raspberry power-loss recovery proof from explicit hardware evidence. | Writes `BLOCKED` unless explicitly enabled. |
 
 Generated proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API keys, provider tokens, raw provider output, or private filesystem paths.

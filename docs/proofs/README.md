@@ -24,6 +24,7 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Full test suite stability | `npm run proof:full-test` | local test |
 | Real iCloudPD pipeline | `npm run proof:real-icloudpd` | opt-in real provider |
 | Real geocode provider | `npm run proof:geocode-provider` | opt-in real provider |
+| Real geocode provider chain | `npm run proof:real-geocode-provider-chain` | opt-in real network provider |
 | GPS fallback parsing | `npm run proof:gps-fallback` | deterministic local |
 | Deterministic media pipeline | `npm run proof:deterministic-media-pipeline` | deterministic local |
 | Address display | `npm run proof:address-display` | deterministic local |
@@ -34,3 +35,19 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 
 - `dirty_shutdown_testing_proof.md` — deterministic proof for the Test Mode-only View C dirty-shutdown testing panel and backend guard scaffold.
 - `windows_cronemulator_proof.md` — deterministic proof for Windows CronEmulator parsing, scheduling, executor boundaries, and Python tests.
+
+## Real geocode provider-chain proof
+
+`npm run proof:real-geocode-provider-chain` is blocked by default. To run it, set `PF_PROOF_ENABLE_REAL_GEOCODE_CHAIN=true` and choose a real provider with `PF_GEOCODE_CHAIN_PROOF_PROVIDER`, for example `nominatim_osm`. The proof uses the existing Python reverse-geocode provider interfaces, disables deterministic placeholder fallback for the subprocess, checks cache miss -> network provider -> cache hit behavior, and verifies that the returned address is human-readable and contains expected terms.
+
+Example PowerShell setup for the no-key Nominatim path:
+
+```powershell
+$env:PF_PROOF_ENABLE_REAL_GEOCODE_CHAIN = "true"
+$env:PF_GEOCODE_CHAIN_PROOF_PROVIDER = "nominatim_osm"
+$env:PF_GEOCODE_CHAIN_EXPECTED_TERMS = "Tallinn;Estonia"
+$env:GEOCODE_NOMINATIM_OSM_USER_AGENT = "PF_login-proof/0.7.43"
+npm run proof:real-geocode-provider-chain
+```
+
+Use provider-specific API-key or token environment variables for providers that require accounts. The generated artifact must not include API keys, access tokens, raw headers, or raw provider output.
