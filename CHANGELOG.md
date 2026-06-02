@@ -1,3 +1,10 @@
+## 0.8.6 — Worker-autostart native playback proof identity fix
+
+- Fixed `proof:live-windows-native-playback` worker-autostart mode so it no longer calls `/api/native-playback/start-current` after `playback_worker` has already run.
+- Worker-autostart proof now compares the `playback_worker` selected media asset against native playback status immediately after the worker run.
+- Missing video queue coverage is reported as a limitation for image-only runs instead of being treated as failure of worker-autostart image playback.
+- The dedicated Windows proof launcher now passes the generated proof-only env file to the npm proof command so the worker CLI sees the same native playback configuration as the proof API.
+
 ## 0.8.5 — Windows mpv installer version verification fix
 
 - Fixed `scripts/install_mpv_windows.ps1` so successful `mpv.exe --version` output is treated as verification evidence instead of a failure reason.

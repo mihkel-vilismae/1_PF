@@ -41,6 +41,7 @@ test('proof runner targets the actual API port and sets proof env for npm proof 
   assert.match(ps1, /\[int\] \$ApiPort = 4301/);
   assert.match(ps1, /PF_API_BASE_URL\s*=\s*\$ApiBaseUrl/);
   assert.match(ps1, /PF_LIVE_WINDOWS_NATIVE_PLAYBACK_PROOF\s*=\s*"1"/);
+  assert.match(ps1, /INIT_ENV_FILE\s*=\s*\$GeneratedEnvPath/);
   assert.match(ps1, /npm" -Arguments @\("run", "proof:live-windows-native-playback"\)/);
 });
 

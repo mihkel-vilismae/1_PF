@@ -32,7 +32,7 @@ export function parseExpectedMediaTypes(value = '') {
   return allowed.length ? [...new Set(allowed)] : [...DEFAULT_EXPECTED_MEDIA_TYPES];
 }
 
-/** Builds the route plan used by the API-driven part of the live proof. */
+/** Builds the route plan used by the direct route live proof. */
 export function buildLiveWindowsNativePlaybackRoutePlan() {
   return [
     { key: 'browser_playback_contract', method: 'GET', path: '/api/runtime/playback/current?limit=50' },
@@ -40,6 +40,17 @@ export function buildLiveWindowsNativePlaybackRoutePlan() {
     { key: 'native_detect', method: 'POST', path: '/api/native-playback/detect' },
     { key: 'native_start_current', method: 'POST', path: '/api/native-playback/start-current' },
     { key: 'native_status_after_start', method: 'GET', path: '/api/native-playback/status' },
+    { key: 'native_stop_owned', method: 'POST', path: '/api/native-playback/stop' },
+  ];
+}
+
+/** Builds the route plan used after playback_worker native auto-start. */
+export function buildLiveWindowsWorkerAutostartRoutePlan() {
+  return [
+    { key: 'browser_playback_contract', method: 'GET', path: '/api/runtime/playback/current?limit=50' },
+    { key: 'native_status_before', method: 'GET', path: '/api/native-playback/status' },
+    { key: 'native_detect', method: 'POST', path: '/api/native-playback/detect' },
+    { key: 'native_status_after_worker_autostart', method: 'GET', path: '/api/native-playback/status' },
     { key: 'native_stop_owned', method: 'POST', path: '/api/native-playback/stop' },
   ];
 }
@@ -82,6 +93,33 @@ export function summarizeMediaTypeCoverage(playbackPayload, expectedMediaTypes =
   const present = [...new Set(items.map((item) => String(item.mediaType ?? '').toLowerCase()).filter(Boolean))].sort();
   const missing = expectedMediaTypes.filter((type) => !present.includes(type));
   return { expected: expectedMediaTypes, present, missing, hasAllExpected: missing.length === 0 };
+}
+
+/** Parses the playback_worker stdout JSON and extracts the selected media item. */
+export function extractWorkerSelectedItem(workerResult) {
+  if (!workerResult?.stdout) {
+    return null;
+  }
+  try {
+    const parsed = JSON.parse(workerResult.stdout);
+    const selected = parsed?.selectedItemSummary ?? parsed?.selection?.selectedItemSummary ?? parsed?.selection?.playback?.selected ?? null;
+    return selected?.mediaAssetId
+      ? {
+          mediaAssetId: String(selected.mediaAssetId),
+          displayName: selected.displayName ?? null,
+          mediaType: selected.mediaType ?? null,
+          addressText: selected.addressText ?? null,
+          selectedAt: selected.selectedAt ?? null,
+        }
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Selects the browser item that should align with the worker-selected item when available. */
+export function selectWorkerAutostartComparisonItem(browserItem, workerSelectedItem) {
+  return workerSelectedItem?.mediaAssetId ? workerSelectedItem : browserItem;
 }
 
 /** Verifies that native status is running the same selected item as the browser contract. */
@@ -175,37 +213,98 @@ export async function runLiveWindowsNativePlaybackProof({ metadata, cwd = proces
     });
   }
 
+  const workerRequired = shouldRunPlaybackWorkerAutoStart(env);
   let workerResult = null;
-  if (shouldRunPlaybackWorkerAutoStart(env)) {
-    workerResult = await runPlaybackWorkerAutoStart({ cwd, env });
+  let workerSelectedItem = null;
+  let comparisonTargetItem = browserItem;
+
+  const initialStatusResult = await requestJson(baseUrl, routePlan[1], runtimeMode);
+  stageResults.push(initialStatusResult);
+  if (!initialStatusResult.ok) {
+    return createProofEnvelope({
+      proofKind: 'live_windows_native_playback',
+      baselineVersion: metadata.version,
+      gitCommit: metadata.gitCommit,
+      proofStatus: 'FAILED',
+      runtimeMode: 'live_windows_opt_in',
+      evidence: { environment: getProofEnvironment(), base_url: baseUrl, failed_route: initialStatusResult.key, stage_results: stageResults, browser_item: browserItem, media_type_coverage: mediaTypeCoverage },
+      knownLimitations: ['The proof stopped at the first failed native playback status route.'],
+    });
   }
 
-  for (const route of routePlan.slice(1)) {
-    const result = await requestJson(baseUrl, route, runtimeMode);
-    stageResults.push(result);
-    if (!result.ok) {
+  const detectResult = await requestJson(baseUrl, routePlan[2], runtimeMode);
+  stageResults.push(detectResult);
+  if (!detectResult.ok) {
+    return createProofEnvelope({
+      proofKind: 'live_windows_native_playback',
+      baselineVersion: metadata.version,
+      gitCommit: metadata.gitCommit,
+      proofStatus: 'FAILED',
+      runtimeMode: 'live_windows_opt_in',
+      evidence: { environment: getProofEnvironment(), base_url: baseUrl, failed_route: detectResult.key, stage_results: stageResults, browser_item: browserItem, media_type_coverage: mediaTypeCoverage },
+      knownLimitations: ['The proof stopped at the native playback detection route.'],
+    });
+  }
+
+  if (workerRequired) {
+    workerResult = await runPlaybackWorkerAutoStart({ cwd, env });
+    workerSelectedItem = extractWorkerSelectedItem(workerResult);
+    comparisonTargetItem = selectWorkerAutostartComparisonItem(browserItem, workerSelectedItem);
+
+    const workerStatusResult = await requestJson(baseUrl, { key: 'native_status_after_worker_autostart', method: 'GET', path: '/api/native-playback/status' }, runtimeMode);
+    stageResults.push(workerStatusResult);
+    if (!workerStatusResult.ok) {
       return createProofEnvelope({
         proofKind: 'live_windows_native_playback',
         baselineVersion: metadata.version,
         gitCommit: metadata.gitCommit,
         proofStatus: 'FAILED',
         runtimeMode: 'live_windows_opt_in',
-        evidence: { environment: getProofEnvironment(), base_url: baseUrl, failed_route: route.key, stage_results: stageResults, browser_item: browserItem, media_type_coverage: mediaTypeCoverage, worker_result: workerResult },
-        knownLimitations: ['The proof stopped at the first failed live native playback route.'],
+        evidence: { environment: getProofEnvironment(), base_url: baseUrl, failed_route: workerStatusResult.key, stage_results: stageResults, browser_item: browserItem, worker_selected_item: workerSelectedItem, media_type_coverage: mediaTypeCoverage, worker_result: workerResult },
+        knownLimitations: ['The worker-autostart proof could not read native playback status after playback_worker ran.'],
       });
+    }
+
+    const stopResult = await requestJson(baseUrl, routePlan[5], runtimeMode);
+    stageResults.push(stopResult);
+    if (!stopResult.ok) {
+      return createProofEnvelope({
+        proofKind: 'live_windows_native_playback',
+        baselineVersion: metadata.version,
+        gitCommit: metadata.gitCommit,
+        proofStatus: 'FAILED',
+        runtimeMode: 'live_windows_opt_in',
+        evidence: { environment: getProofEnvironment(), base_url: baseUrl, failed_route: stopResult.key, stage_results: stageResults, browser_item: browserItem, worker_selected_item: workerSelectedItem, media_type_coverage: mediaTypeCoverage, worker_result: workerResult },
+        knownLimitations: ['The worker-autostart proof could not stop the owned native playback process.'],
+      });
+    }
+  } else {
+    for (const route of routePlan.slice(3)) {
+      const result = await requestJson(baseUrl, route, runtimeMode);
+      stageResults.push(result);
+      if (!result.ok) {
+        return createProofEnvelope({
+          proofKind: 'live_windows_native_playback',
+          baselineVersion: metadata.version,
+          gitCommit: metadata.gitCommit,
+          proofStatus: 'FAILED',
+          runtimeMode: 'live_windows_opt_in',
+          evidence: { environment: getProofEnvironment(), base_url: baseUrl, failed_route: route.key, stage_results: stageResults, browser_item: browserItem, media_type_coverage: mediaTypeCoverage, worker_result: workerResult },
+          knownLimitations: ['The proof stopped at the first failed live native playback route.'],
+        });
+      }
     }
   }
 
-  const nativeAfterStart = stageResults.find((entry) => entry.key === 'native_status_after_start')?.payload;
-  const itemComparison = compareNativeAndBrowserItems(browserItem, nativeAfterStart);
+  const nativeAfterStart = stageResults.find((entry) => entry.key === 'native_status_after_worker_autostart' || entry.key === 'native_status_after_start')?.payload;
+  const itemComparison = compareNativeAndBrowserItems(comparisonTargetItem, nativeAfterStart);
   const stopPayload = stageResults.find((entry) => entry.key === 'native_stop_owned')?.payload;
   const stoppedOwned = stopPayload?.nativePlayback?.status === 'stopped';
-  const workerRequired = shouldRunPlaybackWorkerAutoStart(env);
-  const workerPassed = !workerRequired || (workerResult?.exitCode === 0 && !workerResult?.timedOut);
+  const workerPassed = !workerRequired || (workerResult?.exitCode === 0 && !workerResult?.timedOut && Boolean(workerSelectedItem?.mediaAssetId));
   const livePassed = itemComparison.sameMediaAsset && itemComparison.nativeStatus === 'running' && itemComparison.nativePidPresent && stoppedOwned && workerPassed;
   const imageVideoCoverageLimitation = mediaTypeCoverage.hasAllExpected
     ? 'The queue contained the expected image/video media type coverage; the live launch still proves the selected item only.'
-    : `The queue did not contain all expected media types: missing ${mediaTypeCoverage.missing.join(', ')}.`;
+    : `The queue did not contain all expected media types: missing ${mediaTypeCoverage.missing.join(', ')}. This is recorded as a coverage limitation, not as failure of image-only native playback proof.`;
 
   return createProofEnvelope({
     proofKind: 'live_windows_native_playback',
@@ -218,6 +317,9 @@ export async function runLiveWindowsNativePlaybackProof({ metadata, cwd = proces
       base_url: baseUrl,
       runtime_mode_header: runtimeMode,
       browser_item: browserItem,
+      worker_selected_item: workerSelectedItem,
+      comparison_target_item: comparisonTargetItem,
+      proof_mode: workerRequired ? 'worker_autostart_native_playback' : 'direct_route_native_playback',
       media_type_coverage: mediaTypeCoverage,
       item_comparison: itemComparison,
       worker_autostart_requested: workerRequired,

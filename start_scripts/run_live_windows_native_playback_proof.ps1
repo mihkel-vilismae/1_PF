@@ -229,6 +229,7 @@ function Invoke-LiveNativeProof {
         NATIVE_PLAYBACK_FULLSCREEN = $env:NATIVE_PLAYBACK_FULLSCREEN
         NATIVE_PLAYBACK_PLAYER = $env:NATIVE_PLAYBACK_PLAYER
         NATIVE_PLAYBACK_PLAYER_PATH = $env:NATIVE_PLAYBACK_PLAYER_PATH
+        INIT_ENV_FILE = $env:INIT_ENV_FILE
     }
 
     try {
@@ -240,6 +241,7 @@ function Invoke-LiveNativeProof {
         $env:NATIVE_PLAYBACK_FULLSCREEN = "true"
         $env:NATIVE_PLAYBACK_PLAYER = "mpv"
         $env:NATIVE_PLAYBACK_PLAYER_PATH = $MpvPath
+        $env:INIT_ENV_FILE = $GeneratedEnvPath
         if ($RunWorkerAutostart) {
             $env:PF_LIVE_WINDOWS_NATIVE_PLAYBACK_WORKER_AUTOSTART = "1"
         } else {

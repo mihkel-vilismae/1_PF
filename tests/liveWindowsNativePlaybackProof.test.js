@@ -9,10 +9,13 @@ import test from 'node:test';
 import {
   buildBlockedLiveWindowsNativePlaybackProof,
   buildLiveWindowsNativePlaybackRoutePlan,
+  buildLiveWindowsWorkerAutostartRoutePlan,
   compareNativeAndBrowserItems,
+  extractWorkerSelectedItem,
   isLiveWindowsNativePlaybackProofEnabled,
   parseExpectedMediaTypes,
   selectBrowserPlaybackItem,
+  selectWorkerAutostartComparisonItem,
   shouldRunPlaybackWorkerAutoStart,
   summarizeMediaTypeCoverage,
 } from '../tools/live-windows-native-playback-proof-lib.mjs';
@@ -85,6 +88,50 @@ test('live proof compares native running status to the browser-selected item', (
   assert.equal(comparison.nativeStatus, 'running');
   assert.equal(comparison.nativePidPresent, true);
   assert.equal(comparison.commandSummaryPresent, true);
+});
+
+
+test('worker-autostart route plan does not call direct start-current after playback_worker', () => {
+  const routes = buildLiveWindowsWorkerAutostartRoutePlan();
+  assert.deepEqual(routes.map((route) => route.key), [
+    'browser_playback_contract',
+    'native_status_before',
+    'native_detect',
+    'native_status_after_worker_autostart',
+    'native_stop_owned',
+  ]);
+  assert.ok(routes.some((route) => route.path === '/api/native-playback/status'));
+  assert.ok(routes.some((route) => route.path === '/api/native-playback/stop'));
+  assert.ok(!routes.some((route) => route.path === '/api/native-playback/start-current'));
+});
+
+test('worker-autostart proof extracts worker-selected item and uses it for comparison', () => {
+  const workerResult = {
+    stdout: JSON.stringify({
+      selectedItemSummary: {
+        mediaAssetId: 124,
+        addressText: 'Lat: 59.43700, Lon: 24.75360',
+        selectedAt: '2026-06-02T20:59:00.000Z',
+      },
+    }),
+  };
+  const workerItem = extractWorkerSelectedItem(workerResult);
+  assert.deepEqual(workerItem, {
+    mediaAssetId: '124',
+    displayName: null,
+    mediaType: null,
+    addressText: 'Lat: 59.43700, Lon: 24.75360',
+    selectedAt: '2026-06-02T20:59:00.000Z',
+  });
+
+  const comparisonTarget = selectWorkerAutostartComparisonItem({ mediaAssetId: '123' }, workerItem);
+  const comparison = compareNativeAndBrowserItems(
+    comparisonTarget,
+    { nativePlayback: { status: 'running', currentMediaAssetId: '124', currentMediaType: 'image', pid: 4321, lastCommandSummary: 'mpv --fs same_gps_01.jpg' } },
+  );
+  assert.equal(comparison.sameMediaAsset, true);
+  assert.equal(comparison.browserMediaAssetId, '124');
+  assert.equal(comparison.nativeMediaAssetId, '124');
 });
 
 test('blocked live proof records operator instructions without launching OS player', () => {

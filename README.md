@@ -197,3 +197,8 @@ The Windows mpv installer redacts repo-local absolute paths with escaped regex p
 ### v0.8.5 note — mpv version verification
 
 The Windows mpv installer verifies `tools/mpv/windows/mpv.exe` with `mpv.exe --version` using redirected stdout/stderr. Normal multiline mpv version output is recorded as sanitized evidence and must not be treated as a failed install.
+
+### v0.8.6 note — worker-autostart native playback proof
+
+Worker-autostart live native playback proof now validates the item selected by `playback_worker` against native playback status directly after the worker run. In `-WorkerAutostart` mode the proof does not call the direct `/api/native-playback/start-current` route after the worker, because doing so can advance to a different next item and invalidate the worker identity proof. Missing video queue coverage is recorded as a limitation unless a video-specific proof run is explicitly required.
+
