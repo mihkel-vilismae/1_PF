@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## 2026-06-02 05:25 EEST — v0.7.48
+
+### Added
+- Added Group 3 owned Test Mode whole-logic controller state for q/w/e/r/t controls.
+- Added `/api/testing/whole-logic-emulator/status` and `/api/testing/whole-logic-emulator/control`, both blocked outside Test Mode.
+- Added deterministic `proof:test-mode-whole-logic-emulator` artifact runner and proof documentation.
+- Added focused tests for controller state transitions, Test Mode gating, UI control buttons, and endpoint constants.
+
+### Changed
+- Updated the View A Test Mode panel to show controller status and q/w/e/r/t control buttons.
+- Bumped project metadata from v0.7.47 to v0.7.48 for Group 3.
+
+### Fixed
+- None
+
+### Removed
+- None
+
 ## 2026-06-02 05:10 EEST — v0.7.47
 
 ### Added

@@ -1800,8 +1800,26 @@ window.addEventListener('beforeunload', () => {
 window.addEventListener('keydown', (event) => {
   if (event.key === 'Escape' && getState().modal) {
     closeModal();
+    return;
+  }
+  const wholeLogicAction = getWholeLogicTestModeKeyboardAction(event.key);
+  if (wholeLogicAction) {
+    event.preventDefault();
+    runAction(wholeLogicAction);
   }
 });
+
+// Maps q/w/e/r/t immediate keys to the owned Test Mode whole-logic controller only.
+function getWholeLogicTestModeKeyboardAction(key: string): string | null {
+  if (dashboardVisualMode !== 'test' || getState().activeView !== 'A') {
+    return null;
+  }
+  const normalizedKey = key.toLowerCase();
+  if (!['q', 'w', 'e', 'r', 't'].includes(normalizedKey)) {
+    return null;
+  }
+  return `control-whole-logic-${normalizedKey}`;
+}
 
 window.addEventListener('resize', () => {
   hideInspectTooltip();

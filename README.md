@@ -58,9 +58,9 @@ This README does not assert source-code truth. Check code/tests directly before 
 
 The dashboard is a Vite browser UI with Views A-E plus Windows and Raspberry playback surfaces. The display-facing playback UI shows the selected media preview, media type, queue summary, resolved address caption, fullscreen controls, activity status, worker status, and terminal-style runtime logs.
 
-## v0.7.47 code summary
+## v0.7.48 code summary
 
-v0.7.47 adds Group 2 of the Test Mode whole-logic emulator workflow. View A now enables the Test Mode-only **RUN whole logic without logging in** button and wires it to `/api/testing/whole-logic-emulator/start`. The backend boundary is blocked outside Test Mode, writes the max-5 worker-stage config, and writes Windows CronEmulator rows without changing production auth/backend behavior or adding process termination controls.
+v0.7.48 adds Group 3 of the Test Mode whole-logic emulator workflow. View A now exposes controller status plus q/w/e/r/t controls for an owned Test Mode controller state. The backend adds status/control endpoints, keeps all controls blocked outside Test Mode, and preserves the safety boundary: only tracked Test Mode controller records may be stopped; the dashboard and arbitrary Node/Python/SQLite/system processes must not be killed.
 
 ## Architecture overview
 

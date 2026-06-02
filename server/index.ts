@@ -55,7 +55,11 @@ import { createSchedulerRoutes } from './routes/schedulerRoutes.ts';
 import { createScreenSimulationRoutes } from './routes/screenSimulationRoutes.ts';
 import { createRuntimeTruthRoutes } from './routes/runtimeTruthRoutes.ts';
 import { buildDirtyShutdownTestingResult } from './testing_dirtyShutdownTestingService.ts';
-import { buildWholeLogicTestModeStartResult } from './testing_wholeLogicTestModeService.ts';
+import {
+  buildWholeLogicTestModeControlResult,
+  buildWholeLogicTestModeStartResult,
+  buildWholeLogicTestModeStatusResult,
+} from './testing_wholeLogicTestModeService.ts';
 import { createInspectionRoutes } from './routes/inspectionRoutes.ts';
 import { createRuntimeStatusRoutes } from './routes/runtimeStatusRoutes.ts';
 import {
@@ -129,6 +133,7 @@ const cronEmulatorDefaultCrontabPath = process.env.CRON_EMULATOR_CRONTAB_FILE
   : path.join(cronEmulatorRoot, 'crontab_emulated.txt');
 const cronEmulatorRuntimeDirectory = path.join(schedulerRuntimeDirectory, 'cron-emulator');
 const cronEmulatorLogFilePath = path.join(cronEmulatorRuntimeDirectory, 'cron_calls.jsonl');
+const wholeLogicControllerStateFilePath = path.join(schedulerRuntimeDirectory, 'whole-logic-test-mode-controller.json');
 const cronEmulatorHost = '127.0.0.1';
 const cronEmulatorPort = 8765;
 const cronEmulatorStateUrl = `http://${cronEmulatorHost}:${cronEmulatorPort}/api/state`;
@@ -581,6 +586,22 @@ const routes: Record<string, RouteHandler> = {
       repoRoot,
       configFilePath: path.join(schedulerRuntimeDirectory, 'whole-logic-test-mode-config.json'),
       crontabFilePath: path.join(cronEmulatorRoot, 'crontab_emulated.txt'),
+      controllerStateFilePath: wholeLogicControllerStateFilePath,
+    }),
+  }),
+  'GET /api/testing/whole-logic-emulator/status': async ({ context }) => ({
+    statusCode: 200,
+    payload: await buildWholeLogicTestModeStatusResult({
+      runtimeMode: context.runtimeMode,
+      controllerStateFilePath: wholeLogicControllerStateFilePath,
+    }),
+  }),
+  'POST /api/testing/whole-logic-emulator/control': async ({ context, body }) => ({
+    statusCode: 200,
+    payload: await buildWholeLogicTestModeControlResult({
+      runtimeMode: context.runtimeMode,
+      controllerStateFilePath: wholeLogicControllerStateFilePath,
+      key: body?.key,
     }),
   }),
   'POST /api/runtime/orchestration/run': runtimeOrchestrationRunHandler,

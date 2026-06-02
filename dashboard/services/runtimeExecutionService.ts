@@ -34,6 +34,8 @@ export const RUNTIME_EXECUTION_ENDPOINTS = Object.freeze({
   dirtyShutdownPlan: { method: 'POST', path: '/api/testing/dirty-shutdown/plan' },
   dirtyShutdownSimulate: { method: 'POST', path: '/api/testing/dirty-shutdown/simulate' },
   wholeLogicTestModeStart: { method: 'POST', path: '/api/testing/whole-logic-emulator/start' },
+  wholeLogicTestModeStatus: { method: 'GET', path: '/api/testing/whole-logic-emulator/status' },
+  wholeLogicTestModeControl: { method: 'POST', path: '/api/testing/whole-logic-emulator/control' },
 });
 
 export function runRuntimeDownload(body: RuntimeRequestBody = {}): Promise<RuntimeEndpointResponse> {
@@ -112,6 +114,16 @@ export function simulateDirtyShutdownTesting(body: RuntimeRequestBody = {}): Pro
 // Configures the Test Mode no-login whole-logic emulator boundary without production auth.
 export function startWholeLogicTestModeEmulator(body: RuntimeRequestBody = {}): Promise<RuntimeEndpointResponse> {
   return callRuntimeEndpoint(RUNTIME_EXECUTION_ENDPOINTS.wholeLogicTestModeStart, body);
+}
+
+// Reads the owned Test Mode whole-logic controller state without mutation.
+export function getWholeLogicTestModeEmulatorStatus(): Promise<RuntimeEndpointResponse> {
+  return callRuntimeEndpoint(RUNTIME_EXECUTION_ENDPOINTS.wholeLogicTestModeStatus);
+}
+
+// Sends a q/w/e/r/t operator control to the owned Test Mode controller.
+export function controlWholeLogicTestModeEmulator(body: RuntimeRequestBody = {}): Promise<RuntimeEndpointResponse> {
+  return callRuntimeEndpoint(RUNTIME_EXECUTION_ENDPOINTS.wholeLogicTestModeControl, body);
 }
 
 // Applies the shared capture-meta request shape for runtime backend calls.

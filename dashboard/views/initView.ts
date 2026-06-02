@@ -23,6 +23,7 @@ import {
   WHOLE_LOGIC_TEST_MODE_SAFETY_LIMITS,
   WHOLE_LOGIC_TEST_MODE_SECTION_TITLE,
   WHOLE_LOGIC_TEST_MODE_STAGE_LIMIT,
+  WHOLE_LOGIC_TEST_MODE_CONTROL_ACTIONS,
 } from '../../shared/testModeWholeLogicContract.ts';
 
 // View A owns this card as 1A-AUTH. Some data-action values still contain "b1" because
@@ -107,7 +108,7 @@ export function renderInitView(state, dashboardVisualMode = null) {
   `;
 }
 
-// Renders the Group 2 Test Mode control panel without process termination behavior.
+// Renders the Group 3 Test Mode control panel with owned controller actions only.
 function renderWholeLogicWithoutLoginPanel(state, dashboardVisualMode) {
   if (dashboardVisualMode !== 'test') {
     return '';
@@ -130,10 +131,18 @@ function renderWholeLogicWithoutLoginPanel(state, dashboardVisualMode) {
         <div class="card__header-tags">${renderSourceBadge('mock', 'TEST MODE ONLY')}</div>
         ${statusBadge(state.statusByKey['1A-TEST-WHOLE-LOGIC'] ?? 'idle')}
       </header>
-      <p class="card__copy">Group 2 wires the safe Test Mode scheduler/emulator boundary and max-5 worker-stage contract without changing production backend behavior or real iCloudPD login.</p>
+      <p class="card__copy">Group 3 owns only tracked Test Mode controller records for q/w/e/r/t power controls. It does not kill the dashboard or arbitrary Node/Python/SQLite/system processes.</p>
       <p class="card__copy">Configured worker-stage item limit: <strong>${WHOLE_LOGIC_TEST_MODE_STAGE_LIMIT}</strong> items per stage, including mock download.</p>
       <div class="button-row">
         <button class="button button--primary" data-action="run-whole-logic-test-mode" title="Configure the Test Mode whole-logic emulator boundary with max-5 worker-stage limits">${escapeHtml(WHOLE_LOGIC_TEST_MODE_BUTTON_LABEL)}</button>
+        <button class="button button--secondary" data-action="status-whole-logic-test-mode" title="Read the owned Test Mode whole-logic controller state">Read controller status</button>
+      </div>
+      <div class="button-row" aria-label="Whole-logic Test Mode power controls">
+        ${renderWholeLogicControlButton('q')}
+        ${renderWholeLogicControlButton('w')}
+        ${renderWholeLogicControlButton('e')}
+        ${renderWholeLogicControlButton('r')}
+        ${renderWholeLogicControlButton('t')}
       </div>
       <section class="selector-card selector-card--mock" aria-label="Native fullscreen power control instructions">
         <p class="selector-card__label">Native fullscreen control text</p>
@@ -145,6 +154,12 @@ function renderWholeLogicWithoutLoginPanel(state, dashboardVisualMode) {
       </section>
     </article>
   `;
+}
+
+// Renders one q/w/e/r/t control button for the owned Test Mode controller.
+function renderWholeLogicControlButton(key) {
+  const action = WHOLE_LOGIC_TEST_MODE_CONTROL_ACTIONS[key];
+  return `<button class="button button--secondary" data-action="control-whole-logic-${escapeAttribute(key)}" title="${escapeAttribute(action.resultMessage)}">${escapeHtml(key.toUpperCase())}</button>`;
 }
 
 // Renders scheduler target selection and the active target control panel.

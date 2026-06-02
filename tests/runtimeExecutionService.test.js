@@ -20,4 +20,6 @@ test('runtime execution endpoints stay aligned with implemented backend routes',
   assert.deepEqual(RUNTIME_EXECUTION_ENDPOINTS.pipelineIssuesDetect, { method: 'POST', path: '/api/runtime/pipeline/issues/detect' });
   assert.deepEqual(RUNTIME_EXECUTION_ENDPOINTS.pipelineStaleLocksClear, { method: 'POST', path: '/api/runtime/pipeline/stale-locks/clear' });
   assert.deepEqual(RUNTIME_EXECUTION_ENDPOINTS.wholeLogicTestModeStart, { method: 'POST', path: '/api/testing/whole-logic-emulator/start' });
+  assert.deepEqual(RUNTIME_EXECUTION_ENDPOINTS.wholeLogicTestModeStatus, { method: 'GET', path: '/api/testing/whole-logic-emulator/status' });
+  assert.deepEqual(RUNTIME_EXECUTION_ENDPOINTS.wholeLogicTestModeControl, { method: 'POST', path: '/api/testing/whole-logic-emulator/control' });
 });

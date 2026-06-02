@@ -1,52 +1,51 @@
 # Test Mode whole-logic emulator contract
 
-## Scope
+This document defines the staged contract for the Test Mode control surface named **RUN whole logic without logging in**.
 
-This document defines the staged contract for the Test Mode control surface named **RUN whole logic without logging in**. Group 2 adds a guarded backend/service boundary for configuring the scheduler/emulator plan, but it still does not terminate processes or claim real Raspberry/native-fullscreen runtime proof.
+## v0.7.48 Group 3 scope
 
-## Operator control
+Group 3 adds the owned Test Mode controller state and q/w/e/r/t control actions. The controller is intentionally bounded: it controls only records/processes spawned and tracked by this Test Mode controller. It must not kill the dashboard process and must not kill arbitrary Node, Python, SQLite, or system processes.
 
-The Test Mode View A panel exposes this planned button text:
+## UI behavior
 
-```text
-INSTALL CRONTAB/EMULATOR, CALLING REGULAR WORKER EVERY 1 MINUTES, PLAYBACK WORKER EVERY 30sec, screen on-off worker EVERY 2 MINUTES, ADD LIMIT OF 5 ITEMS TO EACH WORKER STAGE (INCLUDING THE MOCK DOWNLOAD)
-```
+View A renders the section only in Test Mode. The primary button configures the no-login whole-logic emulator boundary. The control buttons and immediate keyboard keys map to:
 
-The button is enabled in Group 2 and calls `/api/testing/whole-logic-emulator/start`. The endpoint is blocked outside Test Mode. In Test Mode it records the requested worker-stage max item limit of 5, writes a runtime config, and writes Windows CronEmulator rows. The current five-field CronEmulator can only express minute-granularity rows, so the requested 30-second playback cadence is preserved in the controller config and must be executed by the Group 3 controller loop before it can be claimed as runtime cadence proof.
+| Key | Meaning |
+|---|---|
+| `q` | Shut down the regular worker process record. |
+| `w` | Shut down the playback worker process record. |
+| `e` | Shut down the screen-on-off worker process record. |
+| `r` | Stop cronjobs so worker processes do not autorun. |
+| `t` | Toggle power-off/power-on simulation for app-owned runtime state. |
 
-## Required runtime copy
+The exact operator text remains visible in the UI, including the requested native fullscreen instructions.
 
-When native fullscreen playback starts in later groups, the UI must show this operator copy:
+## Backend behavior
 
-```text
-PRESS [q] to shut down regular worker process.
-PRESS [w] to shut down playback worker process.
-PRESS [e] to shut down screen-on-off worker process.
-PRESS [r] to stop all cronjobs - so that the processes would not autorun
-PRESS [t] to stop all running processes related to the photoframe app (but not the photoframe dashboard itself!) - the database, playaback, everything. this also stops cronjobs. kill them using a signal that imitates a sudden power-outage. they can leave unfisinshed state etc, it must imitate sudden poweroff
-PRESS [t] again to imitate a power on and enable all the cronjobs
-```
+The backend exposes:
 
-## Safety boundary
+| Endpoint | Purpose |
+|---|---|
+| `POST /api/testing/whole-logic-emulator/start` | Creates the Test Mode runtime config, CronEmulator rows, and owned controller state. |
+| `GET /api/testing/whole-logic-emulator/status` | Reads the owned controller state. |
+| `POST /api/testing/whole-logic-emulator/control` | Applies one q/w/e/r/t control action to the owned controller state. |
 
-Any later process-stop implementation must obey these limits:
+All endpoints are blocked outside Test Mode. They do not require real iCloudPD login and they do not enable production network providers.
 
-```text
-Only stop/terminate worker processes spawned and tracked by this TEST mode controller.
-Do not kill the dashboard process.
-Do not kill arbitrary Node/Python/SQLite/system processes.
-```
+## Cadence and limits
 
-## Non-goals for Group 2
+The contract records:
 
-- No production backend behavior changes.
-- No real iCloudPD authentication changes.
-- No process termination or power-cycle key behavior yet.
-- No real Raspberry cron proof.
-- No Windows Task Scheduler proof.
-- No real native fullscreen runtime proof.
-- No process termination behavior.
+| Worker | Requested cadence | Item limit |
+|---|---:|---:|
+| regular stage worker | 60 seconds | 5 |
+| playback worker | 30 seconds | 5 |
+| screen on-off worker | 120 seconds | 5 |
 
-## Evidence
+The regular stage worker includes the mock-download limit in the max-5 worker-stage contract.
 
-Group 2 evidence includes deterministic UI rendering tests, endpoint constant tests, and service tests proving Test Mode gating, max-5 worker-stage configuration, requested cadence recording, CronEmulator row generation, and runtime config/crontab file writes. Stop/power-cycle behavior belongs to Group 3.
+## Honest limitations
+
+This deterministic controller proof is not a Raspberry cron proof. It is not a real Windows Task Scheduler proof. It is not real native fullscreen runtime proof. It does not launch or kill arbitrary OS processes.
+
+The five-field CronEmulator rows still have minute-granularity limits. The 30-second playback cadence is preserved in the controller config/proof model and needs a future real runtime scheduler loop before it can be claimed as actual sub-minute OS execution.

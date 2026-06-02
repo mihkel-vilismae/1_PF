@@ -29,6 +29,42 @@ export const WHOLE_LOGIC_TEST_MODE_SAFETY_LIMITS = Object.freeze([
 
 export const WHOLE_LOGIC_TEST_MODE_STAGE_LIMIT = 5;
 
+export const WHOLE_LOGIC_TEST_MODE_CONTROL_KEYS = Object.freeze(['q', 'w', 'e', 'r', 't'] as const);
+export type WholeLogicControlKey = typeof WHOLE_LOGIC_TEST_MODE_CONTROL_KEYS[number];
+
+export const WHOLE_LOGIC_TEST_MODE_CONTROL_ACTIONS = Object.freeze({
+  q: {
+    key: 'q',
+    label: 'shut down regular worker process',
+    workerKey: 'regularStage',
+    resultMessage: 'Regular worker process was terminated in the owned Test Mode controller state.',
+  },
+  w: {
+    key: 'w',
+    label: 'shut down playback worker process',
+    workerKey: 'playback',
+    resultMessage: 'Playback worker process was terminated in the owned Test Mode controller state.',
+  },
+  e: {
+    key: 'e',
+    label: 'shut down screen-on-off worker process',
+    workerKey: 'screenOnOff',
+    resultMessage: 'Screen on-off worker process was terminated in the owned Test Mode controller state.',
+  },
+  r: {
+    key: 'r',
+    label: 'stop all cronjobs',
+    workerKey: null,
+    resultMessage: 'Cronjobs were stopped in the owned Test Mode controller state.',
+  },
+  t: {
+    key: 't',
+    label: 'toggle whole app power-off/power-on simulation',
+    workerKey: null,
+    resultMessage: 'Whole app power state was toggled in the owned Test Mode controller state.',
+  },
+} as const);
+
 export const WHOLE_LOGIC_TEST_MODE_WORKERS = Object.freeze({
   regularStage: {
     id: 'regular_stage_worker',
@@ -57,6 +93,43 @@ export const WHOLE_LOGIC_TEST_MODE_WORKERS = Object.freeze({
 } as const);
 
 export const WHOLE_LOGIC_TEST_MODE_CONFIG_SCHEMA_VERSION = 1;
+export const WHOLE_LOGIC_TEST_MODE_CONTROLLER_SCHEMA_VERSION = 1;
+
+export type WholeLogicWorkerState = {
+  id: string;
+  label: string;
+  cadenceSeconds: number;
+  itemLimit: number;
+  ownedByController: true;
+  osPid: null;
+  processState: 'running' | 'terminated';
+  startedAt: string;
+  terminatedAt: string | null;
+  lastSignal: string | null;
+  unfinishedStateAllowed: boolean;
+};
+
+export type WholeLogicControllerState = {
+  schemaVersion: number;
+  mode: 'test-mode-whole-logic-controller';
+  powerState: 'on' | 'off';
+  cronjobsEnabled: boolean;
+  cronState: 'enabled' | 'stopped';
+  databaseState: 'available' | 'abruptly_interrupted';
+  playbackState: 'available' | 'abruptly_interrupted';
+  itemLimitPerWorkerStage: number;
+  safeTerminationBoundary: string[];
+  nativeFullscreenOperatorInstructions: string[];
+  workers: {
+    regularStage: WholeLogicWorkerState;
+    playback: WholeLogicWorkerState;
+    screenOnOff: WholeLogicWorkerState;
+  };
+  events: Array<{ at: string; key: string; action: string }>;
+  lastControlKey: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
 
 // Builds the canonical Test Mode whole-logic configuration object for API responses and proofs.
 export function buildWholeLogicTestModeConfig(nowIso = new Date().toISOString()) {
@@ -69,8 +142,43 @@ export function buildWholeLogicTestModeConfig(nowIso = new Date().toISOString())
     workers: structuredClone(WHOLE_LOGIC_TEST_MODE_WORKERS),
     safeTerminationBoundary: [...WHOLE_LOGIC_TEST_MODE_SAFETY_LIMITS],
     nativeFullscreenOperatorInstructions: [...WHOLE_LOGIC_TEST_MODE_RUNTIME_KEYS],
+    controlActions: structuredClone(WHOLE_LOGIC_TEST_MODE_CONTROL_ACTIONS),
     generatedAt: nowIso,
   };
+}
+
+// Builds a fresh owned controller state for the no-login whole-logic Test Mode flow.
+export function buildWholeLogicTestModeControllerState(nowIso = new Date().toISOString()): WholeLogicControllerState {
+  return {
+    schemaVersion: WHOLE_LOGIC_TEST_MODE_CONTROLLER_SCHEMA_VERSION,
+    mode: 'test-mode-whole-logic-controller',
+    powerState: 'on',
+    cronjobsEnabled: true,
+    cronState: 'enabled',
+    databaseState: 'available',
+    playbackState: 'available',
+    itemLimitPerWorkerStage: WHOLE_LOGIC_TEST_MODE_STAGE_LIMIT,
+    safeTerminationBoundary: [...WHOLE_LOGIC_TEST_MODE_SAFETY_LIMITS],
+    nativeFullscreenOperatorInstructions: [...WHOLE_LOGIC_TEST_MODE_RUNTIME_KEYS],
+    workers: {
+      regularStage: buildWorkerState('regularStage', nowIso),
+      playback: buildWorkerState('playback', nowIso),
+      screenOnOff: buildWorkerState('screenOnOff', nowIso),
+    },
+    events: [{ at: nowIso, key: 'start', action: 'Started owned Test Mode whole-logic controller state.' }],
+    lastControlKey: null,
+    createdAt: nowIso,
+    updatedAt: nowIso,
+  };
+}
+
+// Normalizes a keyboard/button control value to the supported operator key set.
+export function normalizeWholeLogicControlKey(value: unknown): WholeLogicControlKey | null {
+  if (typeof value !== 'string') {
+    return null;
+  }
+  const key = value.trim().toLowerCase();
+  return (WHOLE_LOGIC_TEST_MODE_CONTROL_KEYS as readonly string[]).includes(key) ? key as WholeLogicControlKey : null;
 }
 
 // Builds the Windows CronEmulator crontab text for the rows supported by the current emulator.
@@ -83,4 +191,22 @@ export function buildWholeLogicWindowsCronEmulatorCrontabText(): string {
     WHOLE_LOGIC_TEST_MODE_WORKERS.playback.windowsCrontabRow,
     WHOLE_LOGIC_TEST_MODE_WORKERS.screenOnOff.windowsCrontabRow,
   ].join('\n') + '\n';
+}
+
+// Creates one owned worker-process record without binding to an arbitrary OS PID.
+function buildWorkerState(workerKey: keyof typeof WHOLE_LOGIC_TEST_MODE_WORKERS, nowIso: string): WholeLogicWorkerState {
+  const worker = WHOLE_LOGIC_TEST_MODE_WORKERS[workerKey];
+  return {
+    id: worker.id,
+    label: worker.label,
+    cadenceSeconds: worker.cadenceSeconds,
+    itemLimit: worker.itemLimit,
+    ownedByController: true,
+    osPid: null,
+    processState: 'running',
+    startedAt: nowIso,
+    terminatedAt: null,
+    lastSignal: null,
+    unfinishedStateAllowed: false,
+  };
 }

@@ -32,6 +32,8 @@ import {
   planDirtyShutdownTesting,
   simulateDirtyShutdownTesting,
   startWholeLogicTestModeEmulator,
+  getWholeLogicTestModeEmulatorStatus,
+  controlWholeLogicTestModeEmulator,
 } from '../runtimeExecutionService.ts';
 import { createRuntimeTruthDatabaseActions } from './runtimeTruthDatabaseActions.ts';
 import { createRuntimeTruthAuthActions } from './runtimeTruthAuthActions.ts';
@@ -215,6 +217,12 @@ export function createRuntimeTruthBehavior({
       'new-auth-list-artifact-packs': () => void newAuthActions.listArtifactPacksAction(),
       'new-auth-submit-2fa': (detail) => void newAuthActions.submitTwoFactorAction(detail?.code ?? ''),
       'run-whole-logic-test-mode': () => void demoActions.runBackendAction({ key: '1A-TEST-WHOLE-LOGIC', source: 'TEST', operation: 'Configure Test Mode whole-logic emulator', endpoint: RUNTIME_EXECUTION_ENDPOINTS.wholeLogicTestModeStart, execute: startWholeLogicTestModeEmulator }),
+      'status-whole-logic-test-mode': () => void demoActions.runBackendAction({ key: '1A-TEST-WHOLE-LOGIC', source: 'TEST', operation: 'Read Test Mode whole-logic controller status', endpoint: RUNTIME_EXECUTION_ENDPOINTS.wholeLogicTestModeStatus, execute: getWholeLogicTestModeEmulatorStatus }),
+      'control-whole-logic-q': () => void demoActions.runBackendAction({ key: '1A-TEST-WHOLE-LOGIC', source: 'TEST', operation: 'Shut down regular worker process', endpoint: RUNTIME_EXECUTION_ENDPOINTS.wholeLogicTestModeControl, execute: controlWholeLogicTestModeEmulator, requestBody: { key: 'q' } }),
+      'control-whole-logic-w': () => void demoActions.runBackendAction({ key: '1A-TEST-WHOLE-LOGIC', source: 'TEST', operation: 'Shut down playback worker process', endpoint: RUNTIME_EXECUTION_ENDPOINTS.wholeLogicTestModeControl, execute: controlWholeLogicTestModeEmulator, requestBody: { key: 'w' } }),
+      'control-whole-logic-e': () => void demoActions.runBackendAction({ key: '1A-TEST-WHOLE-LOGIC', source: 'TEST', operation: 'Shut down screen-on-off worker process', endpoint: RUNTIME_EXECUTION_ENDPOINTS.wholeLogicTestModeControl, execute: controlWholeLogicTestModeEmulator, requestBody: { key: 'e' } }),
+      'control-whole-logic-r': () => void demoActions.runBackendAction({ key: '1A-TEST-WHOLE-LOGIC', source: 'TEST', operation: 'Stop all Test Mode cronjobs', endpoint: RUNTIME_EXECUTION_ENDPOINTS.wholeLogicTestModeControl, execute: controlWholeLogicTestModeEmulator, requestBody: { key: 'r' } }),
+      'control-whole-logic-t': () => void demoActions.runBackendAction({ key: '1A-TEST-WHOLE-LOGIC', source: 'TEST', operation: 'Toggle Test Mode power-off/power-on simulation', endpoint: RUNTIME_EXECUTION_ENDPOINTS.wholeLogicTestModeControl, execute: controlWholeLogicTestModeEmulator, requestBody: { key: 't' } }),
       'run-b2': () => void demoActions.runBackendAction({ key: 'B2', source: 'TEST', operation: 'Run download test action', endpoint: RUNTIME_EXECUTION_ENDPOINTS.downloadRun, execute: runRuntimeDownload }),
       'run-b2-real-download': () => void demoActions.runBackendAction({ key: 'B2-REAL_DOWNLOAD', source: 'TEST', operation: 'Run authenticated real iCloudPD download', endpoint: RUNTIME_EXECUTION_ENDPOINTS.realDownloadRun, execute: runRuntimeRealDownload, requestBody: { recentCount: Number(getState().simulation.realDownloadRecentCount || 1) } }),
       'run-b3-1': () => demoActions.runBackendPipelineStage({ key: 'B3.1', operation: 'Run download stage', endpoint: RUNTIME_EXECUTION_ENDPOINTS.downloadRun, execute: runRuntimeDownload }),
