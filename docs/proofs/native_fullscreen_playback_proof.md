@@ -35,4 +35,4 @@ The proof passes when the targeted native playback and fullscreen UI tests pass 
 
 ## Limitations
 
-This proof does not prove actual OS fullscreen stability, native player process behavior on Windows/Raspberry, HDMI output, focus handling, or long-running slideshow display. A future opt-in live native playback proof is still required for real fullscreen behavior.
+This proof does not prove actual OS fullscreen stability, native player process behavior on Windows/Raspberry, HDMI output, focus handling, or long-running slideshow display. Use `proof:live-windows-native-playback` for the opt-in Windows live native playback proof. That proof remains disabled unless explicitly enabled by the operator.

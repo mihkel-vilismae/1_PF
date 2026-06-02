@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.8.1 - Live Windows native playback proof scaffold
+
+- Added `proof:live-windows-native-playback` as an opt-in Windows-only live native playback proof.
+- Added helper tests for proof gating, browser/native media identity checks, route planning, image/video queue coverage reporting, and BLOCKED evidence.
+- Documented that the proof does not claim Raspberry HDMI, real reboot recovery, or monitor-pixel verification.
+
+
 ## 2026-06-02 06:20 EEST — v0.8.0
 
 ### Added

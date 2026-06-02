@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.8.0",
+  "version": "0.8.1",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -27,7 +27,8 @@
     "proof:windows-cronemulator": "node tools/run-windows-cronemulator-proof.mjs",
     "proof:e2e-local-photo-frame": "node tools/run-e2e-local-photo-frame-proof.mjs",
     "proof:real-geocode-provider-chain": "node tools/run-real-geocode-provider-chain-proof.mjs",
-    "proof:test-mode-whole-logic-emulator": "node --import tsx tools/run-whole-logic-test-mode-proof.mjs"
+    "proof:test-mode-whole-logic-emulator": "node --import tsx tools/run-whole-logic-test-mode-proof.mjs",
+    "proof:live-windows-native-playback": "node tools/run-live-windows-native-playback-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
