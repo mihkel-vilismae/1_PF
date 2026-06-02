@@ -171,3 +171,7 @@ CHANGELOG.md      forward-only changelog
 - Do not turn current-status docs into product requirements.
 - Do not preserve task docs as actionable when they conflict with active vision/spec docs.
 - Verify code paths directly before claiming implementation behavior.
+
+## v0.8.2 code summary
+
+v0.8.2 adds automatic Windows mpv setup to the full Windows launcher flow. `start_win_full.cmd` remains a thin wrapper, while `start_scripts/start_win_full.ps1` delegates to `scripts/install_mpv_windows.ps1` after `npm install --verbose`. The installer verifies or downloads a repo-local mpv binary to `tools/mpv/windows/mpv.exe`, writes sanitized install evidence under `runtime_data/proofs`, and never starts native fullscreen playback. If mpv setup is blocked by network/extraction availability, the normal dashboard launch continues with a warning and the live native playback proof remains blocked until mpv is installed.

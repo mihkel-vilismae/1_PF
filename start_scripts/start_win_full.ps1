@@ -82,6 +82,36 @@ function Install-Dependencies {
     Invoke-RepoCommand -FilePath "npm" -Arguments @("install", "--verbose") -StepName "Install dependencies"
 }
 
+
+<#
+Verifies or installs repo-local mpv for native playback proof/runtime use.
+The installer is non-fatal for normal dashboard launch because native playback stays opt-in.
+#>
+function Install-NativePlaybackPlayer {
+    $installerScript = Join-Path $RepoRoot "scripts\install_mpv_windows.ps1"
+    if (-not (Test-Path $installerScript)) {
+        Write-Host "[WARN] mpv installer script not found: $installerScript"
+        return
+    }
+
+    Write-Host "[STEP] Verify/install repo-local mpv for native playback"
+    Push-Location $RepoRoot
+    try {
+        & powershell -NoProfile -ExecutionPolicy Bypass -File $installerScript
+        $exitCode = $LASTEXITCODE
+        if ($exitCode -eq 0) {
+            Write-Host "[INFO] Repo-local mpv is available for native playback proof/runtime use."
+            return
+        }
+
+        Write-Host "[WARN] mpv installer reported BLOCKED/FAILED with exit code $exitCode."
+        Write-Host "[WARN] Continuing normal dashboard launch; live native playback proof may remain blocked until mpv is installed."
+    }
+    finally {
+        Pop-Location
+    }
+}
+
 <#
 Runs the repository test suite before starting long-running servers.
 #>
@@ -157,6 +187,7 @@ function Start-FullWindowsLaunch {
     Assert-CommandAvailable -CommandName "npm" -InstallHint "Install Node.js/npm, reopen the terminal, and retry."
     Initialize-EnvironmentFile
     Install-Dependencies
+    Install-NativePlaybackPlayer
     Invoke-ProjectTests
     Invoke-ProjectBuild
     Start-ProjectServers

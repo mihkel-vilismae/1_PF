@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.8.2 - Windows mpv auto-install launcher
+
+- Added `scripts/install_mpv_windows.ps1` to verify or install repo-local mpv at `tools/mpv/windows/mpv.exe` for native playback proof/runtime use.
+- Updated the full Windows launcher flow so `start_win_full.cmd` remains thin and `start_scripts/start_win_full.ps1` delegates mpv setup after dependency install.
+- Documented that mpv binaries are runtime-installed, ignored by Git, and that installer success does not claim live native fullscreen proof.
+
 ## 0.8.1 - Live Windows native playback proof scaffold
 
 - Added `proof:live-windows-native-playback` as an opt-in Windows-only live native playback proof.

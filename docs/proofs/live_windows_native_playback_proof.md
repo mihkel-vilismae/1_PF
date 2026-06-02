@@ -47,6 +47,17 @@ npm run proof:live-windows-native-playback
 
 The proof reports image/video coverage from the playback queue. By default it expects both `image` and `video` media types to exist in the browser playback contract and records missing types in the proof artifact. The live native player launch still proves the currently selected item only; separate runs with an image selected and a video selected are required to prove both real playback types.
 
+
+## mpv availability
+
+The live Windows proof needs a real native player. `start_win_full.cmd` now automatically delegates mpv verification/installation through `scripts/install_mpv_windows.ps1` before the app starts. The preferred repo-local target is:
+
+```text
+tools/mpv/windows/mpv.exe
+```
+
+The installer uses the documented shinchiro Windows builds referenced from mpv installation guidance, writes sanitized install evidence under `runtime_data/proofs`, and never launches fullscreen playback. If setup is blocked by network or extraction availability, the proof should remain `BLOCKED` rather than silently claiming native playback.
+
 ## Safety boundaries
 
 - The proof is Windows-only.

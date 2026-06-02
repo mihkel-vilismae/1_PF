@@ -40,3 +40,19 @@ Provider output, passwords, 2FA codes, cookies, session contents, tokens, and au
 
 Status documentation for this flow is recorded in `docs/IMPLEMENTATION_STATUS_UPDATE_20260512_NEW_AUTH_PROVIDER_VERIFICATION.md`.
 
+
+## Windows native playback mpv setup
+
+`start_win_full.cmd` now verifies or installs repo-local mpv before running tests/build and launching the dashboard. The `.cmd` stays thin and delegates to `start_scripts/start_win_full.ps1`, which delegates the actual mpv logic to:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\install_mpv_windows.ps1
+```
+
+The installer target is:
+
+```text
+tools/mpv/windows/mpv.exe
+```
+
+The binary is runtime-installed and ignored by Git. If it already exists and verifies with `--version`, it is reused. If the download is blocked, the launcher prints a warning and continues normal dashboard startup; `proof:live-windows-native-playback` will remain blocked until mpv is available.

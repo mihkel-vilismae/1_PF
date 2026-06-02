@@ -1,6 +1,6 @@
 @echo off
 REM Windows full startup wrapper for the PF_login photo-frame dashboard.
-REM Delegates dependency install, test execution, dual-tab launch,
+REM Delegates dependency install, repo-local mpv setup, test execution, dual-tab launch,
 REM and browser opening to start_scripts\start_win_full.ps1.
 setlocal
 cd /d "%~dp0"
