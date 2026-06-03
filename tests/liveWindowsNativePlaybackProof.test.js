@@ -14,6 +14,7 @@ import {
   extractWorkerSelectedItem,
   isLiveWindowsNativePlaybackProofEnabled,
   parseExpectedMediaTypes,
+  parseWorkerStdoutJson,
   selectBrowserPlaybackItem,
   selectWorkerAutostartComparisonItem,
   shouldRunPlaybackWorkerAutoStart,
@@ -132,6 +133,23 @@ test('worker-autostart proof extracts worker-selected item and uses it for compa
   assert.equal(comparison.sameMediaAsset, true);
   assert.equal(comparison.browserMediaAssetId, '124');
   assert.equal(comparison.nativeMediaAssetId, '124');
+});
+
+
+
+test('worker stdout parser extracts JSON surrounded by launcher noise', () => {
+  const parsed = parseWorkerStdoutJson('log before\n{"selectedItemSummary":{"mediaAssetId":127,"displayName":"same_gps_04.jpg"}}\nlog after');
+  assert.equal(parsed.selectedItemSummary.mediaAssetId, 127);
+  assert.equal(parsed.selectedItemSummary.displayName, 'same_gps_04.jpg');
+
+  const workerItem = extractWorkerSelectedItem({ stdout: 'prefix\n{"selectedItemSummary":{"mediaAssetId":127,"displayName":"same_gps_04.jpg"}}\nsuffix' });
+  assert.deepEqual(workerItem, {
+    mediaAssetId: '127',
+    displayName: 'same_gps_04.jpg',
+    mediaType: null,
+    addressText: null,
+    selectedAt: null,
+  });
 });
 
 test('blocked live proof records operator instructions without launching OS player', () => {

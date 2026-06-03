@@ -199,6 +199,11 @@ The Windows mpv installer redacts repo-local absolute paths with escaped regex p
 The Windows mpv installer verifies `tools/mpv/windows/mpv.exe` with `mpv.exe --version` using redirected stdout/stderr. Normal multiline mpv version output is recorded as sanitized evidence and must not be treated as a failed install.
 
 
+
+### v0.8.8 note — worker-autostart native proof timeout cleanup
+
+Worker-autostart native playback now detaches/unrefs the OS player process so `playback_worker` can exit after launching native playback instead of waiting on the player lifetime. The live proof also extracts the worker-selected item from stdout even when surrounding log lines are present, and the stop route can target the persisted owned native playback PID without killing arbitrary `mpv`/`vlc` processes by name.
+
 ### v0.8.7 note — worker native autostart exact selected item
 
 `playback_worker` native auto-start now launches the exact media asset selected by Stage 6. It no longer re-resolves current/next playback state through a generic native start path after selection, because that can advance to another queue item and make the worker-selected item differ from the native item. Use the worker-autostart proof launcher to validate this path on Windows:

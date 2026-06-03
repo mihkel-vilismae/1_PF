@@ -76,6 +76,22 @@ test('server exposes native playback routes separately from browser playback rou
   assert.match(serverSource, /GET \/api\/runtime\/playback\/current/);
 });
 
+
+
+test('native playback launches OS player detached so worker CLI does not wait on player lifetime', () => {
+  const source = readFileSync('server/nativePlayback/nativePlaybackController.ts', 'utf8');
+  assert.match(source, /stdio:\s*'ignore'/);
+  assert.match(source, /detached:\s*true/);
+  assert.match(source, /activeProcess\.unref\(\)/);
+});
+
+test('native playback stop can target persisted owned pid without killing by process name', () => {
+  const source = readFileSync('server/nativePlayback/nativePlaybackController.ts', 'utf8');
+  assert.match(source, /process\.kill\(saved\.pid\)/);
+  assert.doesNotMatch(source, /taskkill.*mpv|pkill.*mpv|killall.*mpv/i);
+  assert.match(source, /persisted owned pid/);
+});
+
 test('native playback spec records disabled default and process ownership rules', () => {
   assert.match(specSource, /NATIVE_PLAYBACK_ENABLED=false/);
   assert.match(specSource, /Track only the process started by this backend instance/);

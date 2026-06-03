@@ -4,7 +4,7 @@
  * Native playback is disabled by default and uses safe spawn argument arrays.
  */
 import { spawn, spawnSync } from 'node:child_process';
-import type { ChildProcessWithoutNullStreams } from 'node:child_process';
+import type { ChildProcess } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import type { DatabaseService } from '../database/databaseService.ts';
@@ -93,7 +93,7 @@ export class NativePlaybackError extends Error {
   }
 }
 
-let activeProcess: ChildProcessWithoutNullStreams | null = null;
+let activeProcess: ChildProcess | null = null;
 
 // Returns persisted native playback status merged with the current runtime config.
 export async function getNativePlaybackStatus({
@@ -344,7 +344,12 @@ async function launchNativePlayer({
   }
 
   try {
-    activeProcess = spawn(command.executable, command.args, { stdio: ['ignore', 'pipe', 'pipe'], shell: false });
+    activeProcess = spawn(command.executable, command.args, {
+      stdio: 'ignore',
+      shell: false,
+      detached: true,
+    });
+    activeProcess.unref();
   } catch (error) {
     const failedStatus = buildFailedStatus(config, item, mediaPath, getErrorMessage(error), commandSummary);
     await persistNativePlaybackStatus(context, databaseService, failedStatus);
@@ -383,9 +388,17 @@ async function stopOwnedNativeProcess(
 ): Promise<NativePlaybackStatus> {
   const config = buildNativePlaybackConfig(context);
   const saved = mergeNativePlaybackStatus(config, await readNativePlaybackStatus(context, databaseService));
+  let stopMessage = `Native playback stop requested: ${reason}.`;
   if (activeProcess && !activeProcess.killed) {
     activeProcess.kill();
     activeProcess = null;
+  } else if (typeof saved.pid === 'number' && saved.status === 'running') {
+    try {
+      process.kill(saved.pid);
+      stopMessage = `Native playback stop requested for persisted owned pid ${saved.pid}: ${reason}.`;
+    } catch (error) {
+      stopMessage = `Native playback stop requested for persisted owned pid ${saved.pid}, but the process was already unavailable: ${reason}.`;
+    }
   }
   const status: NativePlaybackStatus = {
     ...saved,
@@ -393,7 +406,7 @@ async function stopOwnedNativeProcess(
     pid: null,
     stoppedAt: new Date().toISOString(),
     lastExitCode: saved.lastExitCode,
-    messages: [`Native playback stop requested: ${reason}.`, ...saved.messages].slice(0, 8),
+    messages: [stopMessage, ...saved.messages].slice(0, 8),
   };
   await persistNativePlaybackStatus(context, databaseService, status);
   return status;

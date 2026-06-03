@@ -97,23 +97,38 @@ export function summarizeMediaTypeCoverage(playbackPayload, expectedMediaTypes =
 
 /** Parses the playback_worker stdout JSON and extracts the selected media item. */
 export function extractWorkerSelectedItem(workerResult) {
-  if (!workerResult?.stdout) {
+  const parsed = parseWorkerStdoutJson(workerResult?.stdout);
+  const selected = parsed?.selectedItemSummary ?? parsed?.selection?.selectedItemSummary ?? parsed?.selection?.playback?.selected ?? null;
+  return selected?.mediaAssetId
+    ? {
+        mediaAssetId: String(selected.mediaAssetId),
+        displayName: selected.displayName ?? null,
+        mediaType: selected.mediaType ?? null,
+        addressText: selected.addressText ?? null,
+        selectedAt: selected.selectedAt ?? null,
+      }
+    : null;
+}
+
+/** Parses worker stdout even when surrounding log lines are present. */
+export function parseWorkerStdoutJson(stdout) {
+  if (!stdout) {
     return null;
   }
+  const text = String(stdout).trim();
   try {
-    const parsed = JSON.parse(workerResult.stdout);
-    const selected = parsed?.selectedItemSummary ?? parsed?.selection?.selectedItemSummary ?? parsed?.selection?.playback?.selected ?? null;
-    return selected?.mediaAssetId
-      ? {
-          mediaAssetId: String(selected.mediaAssetId),
-          displayName: selected.displayName ?? null,
-          mediaType: selected.mediaType ?? null,
-          addressText: selected.addressText ?? null,
-          selectedAt: selected.selectedAt ?? null,
-        }
-      : null;
+    return JSON.parse(text);
   } catch {
-    return null;
+    const firstBrace = text.indexOf('{');
+    const lastBrace = text.lastIndexOf('}');
+    if (firstBrace < 0 || lastBrace <= firstBrace) {
+      return null;
+    }
+    try {
+      return JSON.parse(text.slice(firstBrace, lastBrace + 1));
+    } catch {
+      return null;
+    }
   }
 }
 

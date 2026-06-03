@@ -2007,3 +2007,10 @@
 - Fixed B5 screen simulation so toggle and timeout changes now drive shared screen/playback truth and the B4 preview state.
 - Added re-entrant action guards for generic control actions and the B1 login flow to prevent overlapping timers and duplicate UI runs.
 - Recorded and verified ISSUE-0003 and ISSUE-0004 in the central issues registry.
+
+## 0.8.8 - 2026-06-03
+
+- Fixed worker-autostart live native playback proof timeout behavior by launching the native player detached from the worker CLI process.
+- Improved worker-selected item extraction from proof stdout when surrounding log lines are present.
+- Added persisted owned PID stop fallback for native playback started by a short-lived worker process, without killing arbitrary mpv/vlc processes by name.
+- Preserved native playback disabled by default outside the dedicated proof launcher.
