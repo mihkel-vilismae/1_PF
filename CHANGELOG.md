@@ -1,3 +1,9 @@
+## 0.8.15 — Video fixture repair handoff snapshot
+
+- Snapshotted the current `generated_test_data` repair handoff state with `generated_test_data/VIDEO_FIXTURE_REPAIR_HANDOFF_20260603.md` and `generated_test_data/generated_test_data.zip`.
+- Replaced the previously tracked Apple-style video fixture paths under `generated_test_data/videos_with_gps/` and `generated_test_data/videos_no_gps/` with the current zero-byte blocker-file state now present in the working tree.
+- Preserved unrelated dashboard, backend, proof launcher, and runtime behavior; this commit only records the current generated-test-data handoff state for follow-up repair work.
+
 ## 0.8.14 — Generated video fixture repair integration
 
 - Integrated repaired `generated_test_data` video fixtures from `generated_test_data_video_fixture_repair_v0.8.14_full_git.zip`.
