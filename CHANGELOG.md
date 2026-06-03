@@ -1,3 +1,10 @@
+## 0.8.13 — Target proof-owned launchers
+
+- Added dedicated Windows command/PowerShell launchers for live native video playback, live native recovery, and live scheduler proof tracks.
+- Video and recovery launchers follow the proven native playback launcher pattern: generate proof-only env files, start an owned API on the proof port, wait for native playback readiness, run the npm proof command, export evidence ZIPs, and stop only the owned API process.
+- Scheduler launcher runs the blocked-by-default scheduler proof through a proof-owned wrapper and exports evidence without claiming Raspberry cron, Windows reboot, or arbitrary scheduler success.
+- Preserved normal `start_win_full.cmd` behavior; native playback remains disabled by default outside explicit proof launchers.
+
 ## 0.8.9 — Worker stdout proof parser redaction fix
 
 - Fixed `proof:live-windows-native-playback` worker-autostart reporting so sanitized worker stdout containing legacy unquoted `[REDACTED]` placeholders remains parseable.
