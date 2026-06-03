@@ -113,3 +113,8 @@ cd S:\PF_login
 
 Worker-autostart live native playback proof now validates the item selected by `playback_worker` against native playback status directly after the worker run. In `-WorkerAutostart` mode the proof does not call the direct `/api/native-playback/start-current` route after the worker, because doing so can advance to a different next item and invalidate the worker identity proof. Missing video queue coverage is recorded as a limitation unless a video-specific proof run is explicitly required.
 
+
+
+### v0.8.10 - Native Windows video playback proof
+
+Added `proof:live-windows-native-video-playback`, an opt-in Windows proof that requires a real video item to be current/next before launching native playback. Missing video media is reported as `BLOCKED`, not as fake proof.

@@ -4,6 +4,11 @@
 - Added regression coverage that extracts `worker_selected_item` from noisy worker stdout with sanitized database fields.
 - Preserved v0.8.8 native player detach/unref behavior, exact selected-item native playback, owned PID stop behavior, and missing-video-as-limitation handling.
 
+
+### v0.8.10 - Native Windows video playback proof
+
+Added `proof:live-windows-native-video-playback`, an opt-in Windows proof that requires a real video item to be current/next before launching native playback. Missing video media is reported as `BLOCKED`, not as fake proof.
+
 ## 0.8.7 — Playback worker native autostart exact-item fix
 
 - Fixed `playback_worker` native auto-start so it launches native playback for the exact media asset selected by Stage 6 instead of re-reading the playback contract and potentially advancing to another next item.
