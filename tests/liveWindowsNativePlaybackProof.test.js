@@ -152,6 +152,37 @@ test('worker stdout parser extracts JSON surrounded by launcher noise', () => {
   });
 });
 
+
+
+test('worker stdout parser tolerates unquoted sanitizer placeholders in worker JSON', () => {
+  const stdout = `prefix log
+{
+  "worker": "playback_worker",
+  "selectedItemSummary": {
+    "mediaAssetId": 128,
+    "displayName": "gps_valid_01.jpg",
+    "addressText": "Lat: 58.37760, Lon: 26.72900",
+    "selectedAt": "2026-06-03T11:26:04.000Z"
+  },
+  "database": {
+    "sizeBytes": [REDACTED]
+  }
+}
+suffix log`;
+  const parsed = parseWorkerStdoutJson(stdout);
+  assert.equal(parsed.selectedItemSummary.mediaAssetId, 128);
+  assert.equal(parsed.database.sizeBytes, '[REDACTED]');
+
+  const workerItem = extractWorkerSelectedItem({ stdout });
+  assert.deepEqual(workerItem, {
+    mediaAssetId: '128',
+    displayName: 'gps_valid_01.jpg',
+    mediaType: null,
+    addressText: 'Lat: 58.37760, Lon: 26.72900',
+    selectedAt: '2026-06-03T11:26:04.000Z',
+  });
+});
+
 test('blocked live proof records operator instructions without launching OS player', () => {
   const envelope = buildBlockedLiveWindowsNativePlaybackProof({
     metadata: { version: '0.8.1', gitCommit: 'test' },

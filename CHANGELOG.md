@@ -1,3 +1,9 @@
+## 0.8.9 — Worker stdout proof parser redaction fix
+
+- Fixed `proof:live-windows-native-playback` worker-autostart reporting so sanitized worker stdout containing legacy unquoted `[REDACTED]` placeholders remains parseable.
+- Added regression coverage that extracts `worker_selected_item` from noisy worker stdout with sanitized database fields.
+- Preserved v0.8.8 native player detach/unref behavior, exact selected-item native playback, owned PID stop behavior, and missing-video-as-limitation handling.
+
 ## 0.8.7 — Playback worker native autostart exact-item fix
 
 - Fixed `playback_worker` native auto-start so it launches native playback for the exact media asset selected by Stage 6 instead of re-reading the playback contract and potentially advancing to another next item.

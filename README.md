@@ -200,6 +200,10 @@ The Windows mpv installer verifies `tools/mpv/windows/mpv.exe` with `mpv.exe --v
 
 
 
+### v0.8.9 note — worker stdout proof parser redaction fix
+
+The live Windows native playback proof now tolerates legacy sanitized worker stdout where numeric fields were replaced with unquoted `[REDACTED]` placeholders. The proof keeps strict media identity checks, but it can still extract `worker_selected_item` from the playback worker output after sanitization. Missing video media remains an explicit coverage limitation, not a failure of image-only native playback proof.
+
 ### v0.8.8 note — worker-autostart native proof timeout cleanup
 
 Worker-autostart native playback now detaches/unrefs the OS player process so `playback_worker` can exit after launching native playback instead of waiting on the player lifetime. The live proof also extracts the worker-selected item from stdout even when surrounding log lines are present, and the stop route can target the persisted owned native playback PID without killing arbitrary `mpv`/`vlc` processes by name.

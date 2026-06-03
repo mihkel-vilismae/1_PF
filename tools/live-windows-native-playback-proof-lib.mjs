@@ -110,26 +110,39 @@ export function extractWorkerSelectedItem(workerResult) {
     : null;
 }
 
-/** Parses worker stdout even when surrounding log lines are present. */
+/**
+ * Normalizes legacy sanitizer placeholders so worker stdout remains JSON-parseable.
+ * Older proof evidence can contain unquoted [REDACTED] values inside JSON output.
+ */
+function normalizeSanitizedWorkerJson(text) {
+  return String(text ?? '').replace(/:\s*\[REDACTED\](?=\s*[,}])/g, ': "[REDACTED]"');
+}
+
+/** Parses worker stdout even when surrounding log lines or sanitized placeholders are present. */
 export function parseWorkerStdoutJson(stdout) {
   if (!stdout) {
     return null;
   }
   const text = String(stdout).trim();
-  try {
-    return JSON.parse(text);
-  } catch {
-    const firstBrace = text.indexOf('{');
-    const lastBrace = text.lastIndexOf('}');
-    if (firstBrace < 0 || lastBrace <= firstBrace) {
-      return null;
-    }
+  const candidates = [text, normalizeSanitizedWorkerJson(text)];
+  for (const candidate of candidates) {
     try {
-      return JSON.parse(text.slice(firstBrace, lastBrace + 1));
-    } catch {
-      return null;
-    }
+      return JSON.parse(candidate);
+    } catch {}
   }
+
+  const firstBrace = text.indexOf('{');
+  const lastBrace = text.lastIndexOf('}');
+  if (firstBrace < 0 || lastBrace <= firstBrace) {
+    return null;
+  }
+  const sliced = text.slice(firstBrace, lastBrace + 1);
+  for (const candidate of [sliced, normalizeSanitizedWorkerJson(sliced)]) {
+    try {
+      return JSON.parse(candidate);
+    } catch {}
+  }
+  return null;
 }
 
 /** Selects the browser item that should align with the worker-selected item when available. */
