@@ -14,6 +14,11 @@ Added `proof:live-windows-native-video-playback`, an opt-in Windows proof that r
 
 Added `proof:live-windows-native-recovery`, a target-safe proof track for controlled API restart/recovery. It explicitly does not claim Windows reboot or Raspberry power recovery.
 
+
+### v0.8.12 - Live Windows scheduler proof track
+
+Added `proof:live-windows-scheduler`, a blocked-by-default target proof track for scheduled worker invocations. It separates CronEmulator contract evidence from live Windows scheduler evidence and does not claim Raspberry cron or Windows reboot behavior.
+
 ## 0.8.7 — Playback worker native autostart exact-item fix
 
 - Fixed `playback_worker` native auto-start so it launches native playback for the exact media asset selected by Stage 6 instead of re-reading the playback contract and potentially advancing to another next item.
