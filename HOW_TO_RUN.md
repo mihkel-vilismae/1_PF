@@ -118,3 +118,8 @@ Worker-autostart live native playback proof now validates the item selected by `
 ### v0.8.10 - Native Windows video playback proof
 
 Added `proof:live-windows-native-video-playback`, an opt-in Windows proof that requires a real video item to be current/next before launching native playback. Missing video media is reported as `BLOCKED`, not as fake proof.
+
+
+### v0.8.11 - Controlled Windows native recovery proof
+
+Added `proof:live-windows-native-recovery`, a target-safe proof track for controlled API restart/recovery. It explicitly does not claim Windows reboot or Raspberry power recovery.
