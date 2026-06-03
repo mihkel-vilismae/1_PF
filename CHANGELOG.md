@@ -1,3 +1,9 @@
+## 0.8.16 — GIT WORK artifact confirmation safeguard
+
+- Added a repo-local `GIT WORK` artifact confirmation rule to `AGENTS.md`.
+- `GIT WORK` must now stop for explicit confirmation before commit/push when the dirty tree looks like an obvious artifact regression snapshot, such as tracked fixture directories collapsing into zero-byte files.
+- Preserved ordinary `GIT WORK` behavior for normal dirty-tree commits, expected fixture regeneration, and user-requested intentional artifact removals.
+
 ## 0.8.15 — Video fixture repair handoff snapshot
 
 - Snapshotted the current `generated_test_data` repair handoff state with `generated_test_data/VIDEO_FIXTURE_REPAIR_HANDOFF_20260603.md` and `generated_test_data/generated_test_data.zip`.

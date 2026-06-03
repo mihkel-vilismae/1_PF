@@ -71,3 +71,13 @@
 - In apps with distinct frontend and backend parts, the top-right version display must show separate lines for each persistent component, including the component name and version number.
 - If other distinct components connect at runtime, such as transient ESP32 devices, add a version line for each connected component while it is present.
 - Transient component version lines must be visually distinguishable from persistent component lines, for example with a more muted, secondary, or status-like style.
+
+## GIT WORK Artifact Confirmation Rule
+
+- During `GIT WORK`, do not auto-commit a dirty tree that appears to contain an obvious artifact regression snapshot without first asking for explicit confirmation.
+- Treat these as confirmation-required examples:
+  - a tracked fixture or artifact directory path has been replaced by a zero-byte file
+  - tracked media, fixture, or generated-proof files were deleted and the replacement state looks structurally broken rather than intentionally regenerated
+  - `git status`, `git diff --stat`, or direct filesystem checks show a path-collision snapshot like `generated_test_data/videos_with_gps` or `generated_test_data/videos_no_gps` existing as files instead of directories
+- When this rule triggers, stop before commit/push and send one concise confirmation line that states the suspicious paths and that `GIT WORK` will snapshot the broken-looking state as-is unless the user approves.
+- Do not use this rule to block ordinary dirty-worktree commits, expected fixture regeneration, or intentional artifact removals that were already explicitly requested by the user.
