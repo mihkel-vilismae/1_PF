@@ -133,3 +133,6 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `example.env` | Environment key template, including geocode provider settings. |
 | `logs/` | Runtime logs when generated locally. Do not commit secrets. |
 | `tools/` | Tool-local utilities such as CronEmulator and repo-update helpers. |
+| `generated_test_data/README.md` | Proof-only generated media fixture inventory, including repaired synthetic video fixtures. |
+| `tools/verify_generated_test_data.py` | Deterministic generated fixture validation script. |
+| `docs/VIDEO_FIXTURE_REPAIR_HANDOFF_20260603.md` | Handoff and repair context for generated video fixture mismatch. |

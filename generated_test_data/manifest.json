@@ -6,7 +6,7 @@
     "clean": true,
     "seed": 20260401,
     "include_heic": false,
-    "include_videos": false,
+    "include_videos": true,
     "valid_gps_count": 10,
     "same_gps_count": 4,
     "no_gps_count": 8,
@@ -15,18 +15,20 @@
     "corrupted_count": 2,
     "duplicate_count": 2,
     "heic_count": 2,
-    "video_gps_count": 2,
+    "video_gps_count": 3,
     "video_no_gps_count": 2
   },
   "summary": {
-    "gps_valid": 10,
-    "gps_same_location": 4,
-    "no_gps": 8,
-    "invalid_gps": 2,
-    "rotated": 2,
-    "duplicates": 2,
-    "corrupted": 2,
-    "mixed_batch": 7
+    "gps_valid": 12,
+    "gps_same_location": 6,
+    "no_gps": 10,
+    "invalid_gps": 4,
+    "rotated": 4,
+    "duplicates": 4,
+    "corrupted": 6,
+    "mixed_batch": 9,
+    "videos_with_gps": 3,
+    "videos_no_gps": 2
   },
   "records": [
     {
@@ -427,6 +429,718 @@
       "notes": [
         "representative mixed-batch copy of corrupted_random_01.jpg"
       ]
+    },
+    {
+      "category": "videos_with_gps",
+      "path": "videos_with_gps\\apple_like_h264_mov_gps_tallinn.mov",
+      "kind": "video/quicktime",
+      "gps": "synthetic_quicktime_location",
+      "sha256": "d3215f955ec6581d7871ba73a0f54c2bebced17efea8ff1001ea33f48100647a",
+      "size_bytes": 29626,
+      "notes": [
+        "Apple-style MOV with H.264/AAC and synthetic Tallinn location metadata",
+        "GPS video parser proof fixture",
+        "proof-only fixture; not production media"
+      ],
+      "duration_seconds": 2.0,
+      "resolution": "640x360",
+      "video_codec": "h264",
+      "video_codec_tag": "avc1",
+      "audio": true,
+      "audio_codec": "aac",
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "location_tag_present": true
+    },
+    {
+      "category": "videos_with_gps",
+      "path": "videos_with_gps\\apple_like_h264_mov_gps_tokyo.mov",
+      "kind": "video/quicktime",
+      "gps": "synthetic_quicktime_location",
+      "sha256": "1c79d90ea2bfa247bf188ae8e1bb65c035add760c793ba3af8771f52c90c0877",
+      "size_bytes": 29626,
+      "notes": [
+        "Apple-style MOV with H.264/AAC and synthetic Tokyo location metadata",
+        "GPS video parser proof fixture",
+        "proof-only fixture; not production media"
+      ],
+      "duration_seconds": 2.0,
+      "resolution": "640x360",
+      "video_codec": "h264",
+      "video_codec_tag": "avc1",
+      "audio": true,
+      "audio_codec": "aac",
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "location_tag_present": true
+    },
+    {
+      "category": "videos_with_gps",
+      "path": "videos_with_gps\\apple_like_h264_mp4_gps_new_york.mp4",
+      "kind": "video/mp4",
+      "gps": "synthetic_quicktime_location",
+      "sha256": "8518dd1c1c6aac853af1395296b186539e129004cfa09ec86a9ebb6ffc33a3c6",
+      "size_bytes": 29510,
+      "notes": [
+        "Apple-style MP4 with H.264/AAC and synthetic New York location metadata",
+        "GPS video parser proof fixture",
+        "proof-only fixture; not production media"
+      ],
+      "duration_seconds": 2.0,
+      "resolution": "640x360",
+      "video_codec": "h264",
+      "video_codec_tag": "avc1",
+      "audio": true,
+      "audio_codec": "aac",
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "location_tag_present": true
+    },
+    {
+      "category": "videos_no_gps",
+      "path": "videos_no_gps\\apple_like_h264_mov_no_gps.mov",
+      "kind": "video/quicktime",
+      "gps": null,
+      "sha256": "d3eba3e1fe0ba62657cbc5e8fbf77181873622082b5aa2e8928e9d6c6611e52f",
+      "size_bytes": 29431,
+      "notes": [
+        "Apple-style MOV with H.264/AAC and no location metadata",
+        "No-GPS video parser proof fixture",
+        "proof-only fixture; not production media"
+      ],
+      "duration_seconds": 2.0,
+      "resolution": "640x360",
+      "video_codec": "h264",
+      "video_codec_tag": "avc1",
+      "audio": true,
+      "audio_codec": "aac",
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "location_tag_present": false
+    },
+    {
+      "category": "videos_no_gps",
+      "path": "videos_no_gps\\apple_like_h264_mp4_no_gps.mp4",
+      "kind": "video/mp4",
+      "gps": null,
+      "sha256": "75f9133274ac7cd0c7e3bb7a8008d0cb68ef88c76f0bccf4d09a798ebb70549f",
+      "size_bytes": 29315,
+      "notes": [
+        "Apple-style MP4 with H.264/AAC and no location metadata",
+        "No-GPS video parser proof fixture",
+        "proof-only fixture; not production media"
+      ],
+      "duration_seconds": 2.0,
+      "resolution": "640x360",
+      "video_codec": "h264",
+      "video_codec_tag": "avc1",
+      "audio": true,
+      "audio_codec": "aac",
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "location_tag_present": false
+    },
+    {
+      "category": "corrupted",
+      "path": "corrupted\\invalid_empty_apple_like.mov",
+      "kind": "video/quicktime",
+      "gps": null,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size_bytes": 0,
+      "notes": [
+        "Zero-byte Apple-like MOV extension; intentionally not decodable",
+        "Parser rejection proof fixture",
+        "proof-only fixture; not production media"
+      ],
+      "duration_seconds": null,
+      "resolution": null,
+      "video_codec": null,
+      "video_codec_tag": null,
+      "audio": false,
+      "audio_codec": null,
+      "format_name": null,
+      "location_tag_present": false
+    },
+    {
+      "category": "corrupted",
+      "path": "corrupted\\invalid_fake_apple_like.mp4",
+      "kind": "video/mp4",
+      "gps": null,
+      "sha256": "4f476b46d06cbfbbde5ac8f63026e8b99cba677d0c6e1b59f530974616dd5c91",
+      "size_bytes": 313,
+      "notes": [
+        "Malformed fake Apple-like MP4 bytes; intentionally not decodable",
+        "Parser rejection proof fixture",
+        "proof-only fixture; not production media"
+      ],
+      "duration_seconds": null,
+      "resolution": null,
+      "video_codec": null,
+      "video_codec_tag": null,
+      "audio": false,
+      "audio_codec": null,
+      "format_name": null,
+      "location_tag_present": false
+    },
+    {
+      "category": "corrupted",
+      "path": "corrupted\\corrupted_truncated_video_01.mov",
+      "kind": "video/quicktime",
+      "gps": null,
+      "sha256": "ed7766ce1b5ef2b768990e278de20b7f768b627bdd70058e88c75f200f749b24",
+      "size_bytes": 20,
+      "notes": [
+        "Generated truncated MOV; intentionally not decodable",
+        "Parser rejection proof fixture",
+        "proof-only fixture; not production media"
+      ],
+      "duration_seconds": null,
+      "resolution": null,
+      "video_codec": null,
+      "video_codec_tag": null,
+      "audio": false,
+      "expected_media_type": "invalid_video",
+      "expected_proof_role": "Parser rejection proof fixture",
+      "source_ownership": "Synthetic generated fixture for this dataset",
+      "permission_license": "May be committed to this repository/dataset ZIP for local proof runs",
+      "privacy_safety": "Contains no private visual/audio content or real private media"
+    },
+    {
+      "category": "corrupted",
+      "path": "corrupted\\corrupted_fake_video_02.mp4",
+      "kind": "video/mp4",
+      "gps": null,
+      "sha256": "9cdd2bf7f66832645651b9195dffb7cdbc58f511c4935fa8e571140c06c55238",
+      "size_bytes": 312,
+      "notes": [
+        "Generated malformed MP4-like bytes; intentionally not decodable",
+        "Parser rejection proof fixture",
+        "proof-only fixture; not production media"
+      ],
+      "duration_seconds": null,
+      "resolution": null,
+      "video_codec": null,
+      "video_codec_tag": null,
+      "audio": false,
+      "expected_media_type": "invalid_video",
+      "expected_proof_role": "Parser rejection proof fixture",
+      "source_ownership": "Synthetic generated fixture for this dataset",
+      "permission_license": "May be committed to this repository/dataset ZIP for local proof runs",
+      "privacy_safety": "Contains no private visual/audio content or real private media"
+    },
+    {
+      "category": "gps_valid",
+      "path": "gps_valid\\gps_valid_video_01_tallinn.mov",
+      "kind": "video/quicktime",
+      "gps": [
+        59.437,
+        24.7536
+      ],
+      "sha256": "0046c67ec451a350bc99e275c77313acb73af937776bedb66471057b1aafe0a5",
+      "size_bytes": 49664,
+      "notes": [
+        "Apple-style synthetic video fixture with H.264/AAC",
+        "Valid GPS video fixture matching happy-path GPS semantics",
+        "proof-only fixture; not production media"
+      ],
+      "duration_seconds": 2.0,
+      "resolution": "640x360",
+      "video_codec": "h264",
+      "video_codec_tag": "avc1",
+      "audio": true,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "format_long_name": "QuickTime / MOV",
+      "metadata_tags": {
+        "major_brand": "qt  ",
+        "minor_version": "512",
+        "compatible_brands": "qt  ",
+        "creation_time": "2026-06-03T12:00:00.000000Z",
+        "title": "synthetic proof fixture - gps_valid gps_valid_video_01_tallinn.mov",
+        "encoder": "Lavf61.7.100",
+        "location": "+59.4370+024.7536+000.000/"
+      },
+      "expected_media_type": "video",
+      "expected_proof_role": "Valid GPS video fixture matching happy-path GPS semantics",
+      "source_ownership": "Synthetic generated fixture for this dataset",
+      "permission_license": "May be committed to this repository/dataset ZIP for local proof runs",
+      "privacy_safety": "Contains no private faces, addresses, license plates, account data, or real private media"
+    },
+    {
+      "category": "gps_valid",
+      "path": "gps_valid\\gps_valid_video_02_tartu.mp4",
+      "kind": "video/mp4",
+      "gps": [
+        58.3776,
+        26.729
+      ],
+      "sha256": "30271101d092d8f442a3a27b6578c2afa09bdd7f43e15a4118aa82d4381055c8",
+      "size_bytes": 49620,
+      "notes": [
+        "Apple-style synthetic video fixture with H.264/AAC",
+        "Valid GPS video fixture matching happy-path GPS semantics",
+        "proof-only fixture; not production media"
+      ],
+      "duration_seconds": 2.0,
+      "resolution": "640x360",
+      "video_codec": "h264",
+      "video_codec_tag": "avc1",
+      "audio": true,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "format_long_name": "QuickTime / MOV",
+      "metadata_tags": {
+        "major_brand": "isom",
+        "minor_version": "512",
+        "compatible_brands": "isomiso2avc1mp41",
+        "creation_time": "2026-06-03T12:00:00.000000Z",
+        "title": "synthetic proof fixture - gps_valid gps_valid_video_02_tartu.mp4",
+        "encoder": "Lavf61.7.100",
+        "location-eng": "+58.3776+026.7290/",
+        "location": "+58.3776+026.7290/"
+      },
+      "expected_media_type": "video",
+      "expected_proof_role": "Valid GPS video fixture matching happy-path GPS semantics",
+      "source_ownership": "Synthetic generated fixture for this dataset",
+      "permission_license": "May be committed to this repository/dataset ZIP for local proof runs",
+      "privacy_safety": "Contains no private faces, addresses, license plates, account data, or real private media"
+    },
+    {
+      "category": "gps_same_location",
+      "path": "gps_same_location\\same_gps_video_01.mov",
+      "kind": "video/quicktime",
+      "gps": [
+        59.437,
+        24.7536
+      ],
+      "sha256": "4b34287d6aa98d8371e9e482c03fd03c9d602c271674ef6c44e8b071859c4547",
+      "size_bytes": 49663,
+      "notes": [
+        "Apple-style synthetic video fixture with H.264/AAC",
+        "Same-location GPS video fixture for cache/dedup tests",
+        "proof-only fixture; not production media"
+      ],
+      "duration_seconds": 2.0,
+      "resolution": "640x360",
+      "video_codec": "h264",
+      "video_codec_tag": "avc1",
+      "audio": true,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "format_long_name": "QuickTime / MOV",
+      "metadata_tags": {
+        "major_brand": "qt  ",
+        "minor_version": "512",
+        "compatible_brands": "qt  ",
+        "creation_time": "2026-06-03T12:00:00.000000Z",
+        "title": "synthetic proof fixture - gps_same_location same_gps_video_01.mov",
+        "encoder": "Lavf61.7.100",
+        "location": "+59.4370+024.7536+000.000/"
+      },
+      "expected_media_type": "video",
+      "expected_proof_role": "Same-location GPS video fixture for cache/dedup tests",
+      "source_ownership": "Synthetic generated fixture for this dataset",
+      "permission_license": "May be committed to this repository/dataset ZIP for local proof runs",
+      "privacy_safety": "Contains no private faces, addresses, license plates, account data, or real private media"
+    },
+    {
+      "category": "gps_same_location",
+      "path": "gps_same_location\\same_gps_video_02.mp4",
+      "kind": "video/mp4",
+      "gps": [
+        59.437,
+        24.7536
+      ],
+      "sha256": "b89a6f61722b2541da60ff0b1f54a7774d894ace9c22b811e17e0c28a1a5e0ae",
+      "size_bytes": 49621,
+      "notes": [
+        "Apple-style synthetic video fixture with H.264/AAC",
+        "Same-location GPS video fixture for cache/dedup tests",
+        "proof-only fixture; not production media"
+      ],
+      "duration_seconds": 2.0,
+      "resolution": "640x360",
+      "video_codec": "h264",
+      "video_codec_tag": "avc1",
+      "audio": true,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "format_long_name": "QuickTime / MOV",
+      "metadata_tags": {
+        "major_brand": "isom",
+        "minor_version": "512",
+        "compatible_brands": "isomiso2avc1mp41",
+        "creation_time": "2026-06-03T12:00:00.000000Z",
+        "title": "synthetic proof fixture - gps_same_location same_gps_video_02.mp4",
+        "encoder": "Lavf61.7.100",
+        "location-eng": "+59.4370+024.7536/",
+        "location": "+59.4370+024.7536/"
+      },
+      "expected_media_type": "video",
+      "expected_proof_role": "Same-location GPS video fixture for cache/dedup tests",
+      "source_ownership": "Synthetic generated fixture for this dataset",
+      "permission_license": "May be committed to this repository/dataset ZIP for local proof runs",
+      "privacy_safety": "Contains no private faces, addresses, license plates, account data, or real private media"
+    },
+    {
+      "category": "no_gps",
+      "path": "no_gps\\no_gps_video_01.mov",
+      "kind": "video/quicktime",
+      "gps": null,
+      "sha256": "d25d14be907d891f0df2d60186d6aae2651235e9e1f65a985c6e462414d47a8c",
+      "size_bytes": 49612,
+      "notes": [
+        "Apple-style synthetic video fixture with H.264/AAC",
+        "No-GPS video fixture matching no-location semantics",
+        "proof-only fixture; not production media"
+      ],
+      "duration_seconds": 2.0,
+      "resolution": "640x360",
+      "video_codec": "h264",
+      "video_codec_tag": "avc1",
+      "audio": true,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "format_long_name": "QuickTime / MOV",
+      "metadata_tags": {
+        "major_brand": "qt  ",
+        "minor_version": "512",
+        "compatible_brands": "qt  ",
+        "creation_time": "2026-06-03T12:00:00.000000Z",
+        "title": "synthetic proof fixture - no_gps no_gps_video_01.mov",
+        "encoder": "Lavf61.7.100"
+      },
+      "expected_media_type": "video",
+      "expected_proof_role": "No-GPS video fixture matching no-location semantics",
+      "source_ownership": "Synthetic generated fixture for this dataset",
+      "permission_license": "May be committed to this repository/dataset ZIP for local proof runs",
+      "privacy_safety": "Contains no private faces, addresses, license plates, account data, or real private media"
+    },
+    {
+      "category": "no_gps",
+      "path": "no_gps\\no_gps_video_02.mp4",
+      "kind": "video/mp4",
+      "gps": null,
+      "sha256": "f98121e955946ee1eddd4c957937d90bc31821710c0202e1024c1b7c2daf28fc",
+      "size_bytes": 49573,
+      "notes": [
+        "Apple-style synthetic video fixture with H.264/AAC",
+        "No-GPS video fixture matching no-location semantics",
+        "proof-only fixture; not production media"
+      ],
+      "duration_seconds": 2.0,
+      "resolution": "640x360",
+      "video_codec": "h264",
+      "video_codec_tag": "avc1",
+      "audio": true,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "format_long_name": "QuickTime / MOV",
+      "metadata_tags": {
+        "major_brand": "isom",
+        "minor_version": "512",
+        "compatible_brands": "isomiso2avc1mp41",
+        "creation_time": "2026-06-03T12:00:00.000000Z",
+        "title": "synthetic proof fixture - no_gps no_gps_video_02.mp4",
+        "encoder": "Lavf61.7.100"
+      },
+      "expected_media_type": "video",
+      "expected_proof_role": "No-GPS video fixture matching no-location semantics",
+      "source_ownership": "Synthetic generated fixture for this dataset",
+      "permission_license": "May be committed to this repository/dataset ZIP for local proof runs",
+      "privacy_safety": "Contains no private faces, addresses, license plates, account data, or real private media"
+    },
+    {
+      "category": "invalid_gps",
+      "path": "invalid_gps\\invalid_gps_video_01.mov",
+      "kind": "video/quicktime",
+      "gps": "intentionally_invalid_synthetic_location",
+      "sha256": "e8c8946a2038757465e90aef8434421fccf96888109100a5544752164d449008",
+      "size_bytes": 49661,
+      "notes": [
+        "Apple-style synthetic video fixture with H.264/AAC",
+        "Valid video container with intentionally invalid GPS metadata string",
+        "proof-only fixture; not production media"
+      ],
+      "duration_seconds": 2.0,
+      "resolution": "640x360",
+      "video_codec": "h264",
+      "video_codec_tag": "avc1",
+      "audio": true,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "format_long_name": "QuickTime / MOV",
+      "metadata_tags": {
+        "major_brand": "qt  ",
+        "minor_version": "512",
+        "compatible_brands": "qt  ",
+        "creation_time": "2026-06-03T12:00:00.000000Z",
+        "title": "synthetic proof fixture - invalid_gps invalid_gps_video_01.mov",
+        "encoder": "Lavf61.7.100",
+        "location": "+999.0000+999.0000+000.000/"
+      },
+      "expected_media_type": "video",
+      "expected_proof_role": "Valid video container with intentionally invalid GPS metadata string",
+      "source_ownership": "Synthetic generated fixture for this dataset",
+      "permission_license": "May be committed to this repository/dataset ZIP for local proof runs",
+      "privacy_safety": "Contains no private faces, addresses, license plates, account data, or real private media"
+    },
+    {
+      "category": "invalid_gps",
+      "path": "invalid_gps\\invalid_gps_video_02.mp4",
+      "kind": "video/mp4",
+      "gps": "intentionally_invalid_synthetic_location",
+      "sha256": "66fc5f5c37262175d39d750a5dc2f35e44de2a7620a23ae71836a76d9b761642",
+      "size_bytes": 49618,
+      "notes": [
+        "Apple-style synthetic video fixture with H.264/AAC",
+        "Valid video container with intentionally invalid GPS metadata string",
+        "proof-only fixture; not production media"
+      ],
+      "duration_seconds": 2.0,
+      "resolution": "640x360",
+      "video_codec": "h264",
+      "video_codec_tag": "avc1",
+      "audio": true,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "format_long_name": "QuickTime / MOV",
+      "metadata_tags": {
+        "major_brand": "isom",
+        "minor_version": "512",
+        "compatible_brands": "isomiso2avc1mp41",
+        "creation_time": "2026-06-03T12:00:00.000000Z",
+        "title": "synthetic proof fixture - invalid_gps invalid_gps_video_02.mp4",
+        "encoder": "Lavf61.7.100",
+        "location-eng": "-999.0000-999.0000/",
+        "location": "-999.0000-999.0000/"
+      },
+      "expected_media_type": "video",
+      "expected_proof_role": "Valid video container with intentionally invalid GPS metadata string",
+      "source_ownership": "Synthetic generated fixture for this dataset",
+      "permission_license": "May be committed to this repository/dataset ZIP for local proof runs",
+      "privacy_safety": "Contains no private faces, addresses, license plates, account data, or real private media"
+    },
+    {
+      "category": "rotated",
+      "path": "rotated\\rotated_video_01_90deg.mov",
+      "kind": "video/quicktime",
+      "gps": null,
+      "sha256": "050e2647bfd0d37fa68e03b577f1cd20d633a20f10b60f07bc0f1bcf03a21f0c",
+      "size_bytes": 49620,
+      "notes": [
+        "Apple-style synthetic video fixture with H.264/AAC",
+        "No-GPS video with rotation metadata for slideshow orientation tests",
+        "proof-only fixture; not production media",
+        "Contains best-effort rotation metadata"
+      ],
+      "duration_seconds": 2.0,
+      "resolution": "640x360",
+      "video_codec": "h264",
+      "video_codec_tag": "avc1",
+      "audio": true,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "format_long_name": "QuickTime / MOV",
+      "metadata_tags": {
+        "major_brand": "qt  ",
+        "minor_version": "512",
+        "compatible_brands": "qt  ",
+        "creation_time": "2026-06-03T12:00:00.000000Z",
+        "title": "synthetic proof fixture - rotated rotated_video_01_90deg.mov",
+        "encoder": "Lavf61.7.100"
+      },
+      "expected_media_type": "video",
+      "expected_proof_role": "No-GPS video with rotation metadata for slideshow orientation tests",
+      "source_ownership": "Synthetic generated fixture for this dataset",
+      "permission_license": "May be committed to this repository/dataset ZIP for local proof runs",
+      "privacy_safety": "Contains no private faces, addresses, license plates, account data, or real private media"
+    },
+    {
+      "category": "rotated",
+      "path": "rotated\\rotated_video_02_180deg.mp4",
+      "kind": "video/mp4",
+      "gps": null,
+      "sha256": "884bfdf4e58de01966fdf8ca3265882bb239066c6ee42476d91a621c7b653ce0",
+      "size_bytes": 49582,
+      "notes": [
+        "Apple-style synthetic video fixture with H.264/AAC",
+        "No-GPS video with rotation metadata for slideshow orientation tests",
+        "proof-only fixture; not production media",
+        "Contains best-effort rotation metadata"
+      ],
+      "duration_seconds": 2.0,
+      "resolution": "640x360",
+      "video_codec": "h264",
+      "video_codec_tag": "avc1",
+      "audio": true,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "format_long_name": "QuickTime / MOV",
+      "metadata_tags": {
+        "major_brand": "isom",
+        "minor_version": "512",
+        "compatible_brands": "isomiso2avc1mp41",
+        "creation_time": "2026-06-03T12:00:00.000000Z",
+        "title": "synthetic proof fixture - rotated rotated_video_02_180deg.mp4",
+        "encoder": "Lavf61.7.100"
+      },
+      "expected_media_type": "video",
+      "expected_proof_role": "No-GPS video with rotation metadata for slideshow orientation tests",
+      "source_ownership": "Synthetic generated fixture for this dataset",
+      "permission_license": "May be committed to this repository/dataset ZIP for local proof runs",
+      "privacy_safety": "Contains no private faces, addresses, license plates, account data, or real private media"
+    },
+    {
+      "category": "duplicates",
+      "path": "duplicates\\duplicate_video_01.mov",
+      "kind": "video/quicktime",
+      "gps": null,
+      "sha256": "b79ec51f3d98f1c09d124ae00daeb4d07efd9c08991b2a77e3173c50cc3a049c",
+      "size_bytes": 49619,
+      "notes": [
+        "Apple-style synthetic video fixture with H.264/AAC",
+        "First byte-for-byte duplicate video fixture",
+        "proof-only fixture; not production media",
+        "Designed as a byte-for-byte duplicate pair"
+      ],
+      "duration_seconds": 2.0,
+      "resolution": "640x360",
+      "video_codec": "h264",
+      "video_codec_tag": "avc1",
+      "audio": true,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "format_long_name": "QuickTime / MOV",
+      "metadata_tags": {
+        "major_brand": "qt  ",
+        "minor_version": "512",
+        "compatible_brands": "qt  ",
+        "creation_time": "2026-06-03T12:00:00.000000Z",
+        "title": "synthetic proof fixture - duplicates duplicate_video_01.mov",
+        "encoder": "Lavf61.7.100"
+      },
+      "expected_media_type": "video",
+      "expected_proof_role": "First byte-for-byte duplicate video fixture",
+      "source_ownership": "Synthetic generated fixture for this dataset",
+      "permission_license": "May be committed to this repository/dataset ZIP for local proof runs",
+      "privacy_safety": "Contains no private faces, addresses, license plates, account data, or real private media"
+    },
+    {
+      "category": "duplicates",
+      "path": "duplicates\\duplicate_video_02.mov",
+      "kind": "video/quicktime",
+      "gps": null,
+      "sha256": "b79ec51f3d98f1c09d124ae00daeb4d07efd9c08991b2a77e3173c50cc3a049c",
+      "size_bytes": 49619,
+      "notes": [
+        "Apple-style synthetic video fixture with H.264/AAC",
+        "Second byte-for-byte duplicate video fixture",
+        "proof-only fixture; not production media",
+        "Designed as a byte-for-byte duplicate pair"
+      ],
+      "duration_seconds": 2.0,
+      "resolution": "640x360",
+      "video_codec": "h264",
+      "video_codec_tag": "avc1",
+      "audio": true,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "format_long_name": "QuickTime / MOV",
+      "metadata_tags": {
+        "major_brand": "qt  ",
+        "minor_version": "512",
+        "compatible_brands": "qt  ",
+        "creation_time": "2026-06-03T12:00:00.000000Z",
+        "title": "synthetic proof fixture - duplicates duplicate_video_01.mov",
+        "encoder": "Lavf61.7.100"
+      },
+      "expected_media_type": "video",
+      "expected_proof_role": "Second byte-for-byte duplicate video fixture",
+      "source_ownership": "Synthetic generated fixture for this dataset",
+      "permission_license": "May be committed to this repository/dataset ZIP for local proof runs",
+      "privacy_safety": "Contains no private faces, addresses, license plates, account data, or real private media"
+    },
+    {
+      "category": "mixed_batch",
+      "path": "mixed_batch\\mixed_video_gps_01.mov",
+      "kind": "video/quicktime",
+      "gps": [
+        59.437,
+        24.7536
+      ],
+      "sha256": "149b3c02871e135ce36610f19397269001ee557521bb943a54d2f4188bc0c254",
+      "size_bytes": 49658,
+      "notes": [
+        "Apple-style synthetic video fixture with H.264/AAC",
+        "Representative GPS video in mixed batch",
+        "proof-only fixture; not production media"
+      ],
+      "duration_seconds": 2.0,
+      "resolution": "640x360",
+      "video_codec": "h264",
+      "video_codec_tag": "avc1",
+      "audio": true,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "format_long_name": "QuickTime / MOV",
+      "metadata_tags": {
+        "major_brand": "qt  ",
+        "minor_version": "512",
+        "compatible_brands": "qt  ",
+        "creation_time": "2026-06-03T12:00:00.000000Z",
+        "title": "synthetic proof fixture - mixed_batch mixed_video_gps_01.mov",
+        "encoder": "Lavf61.7.100",
+        "location": "+59.4370+024.7536+000.000/"
+      },
+      "expected_media_type": "video",
+      "expected_proof_role": "Representative GPS video in mixed batch",
+      "source_ownership": "Synthetic generated fixture for this dataset",
+      "permission_license": "May be committed to this repository/dataset ZIP for local proof runs",
+      "privacy_safety": "Contains no private faces, addresses, license plates, account data, or real private media"
+    },
+    {
+      "category": "mixed_batch",
+      "path": "mixed_batch\\mixed_video_no_gps_02.mp4",
+      "kind": "video/mp4",
+      "gps": null,
+      "sha256": "11ed173f092d040634f12bc2119b998110eeb1123418e4d64929ba4810d46d2a",
+      "size_bytes": 49584,
+      "notes": [
+        "Apple-style synthetic video fixture with H.264/AAC",
+        "Representative no-GPS video in mixed batch",
+        "proof-only fixture; not production media"
+      ],
+      "duration_seconds": 2.0,
+      "resolution": "640x360",
+      "video_codec": "h264",
+      "video_codec_tag": "avc1",
+      "audio": true,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "format_long_name": "QuickTime / MOV",
+      "metadata_tags": {
+        "major_brand": "isom",
+        "minor_version": "512",
+        "compatible_brands": "isomiso2avc1mp41",
+        "creation_time": "2026-06-03T12:00:00.000000Z",
+        "title": "synthetic proof fixture - mixed_batch mixed_video_no_gps_02.mp4",
+        "encoder": "Lavf61.7.100"
+      },
+      "expected_media_type": "video",
+      "expected_proof_role": "Representative no-GPS video in mixed batch",
+      "source_ownership": "Synthetic generated fixture for this dataset",
+      "permission_license": "May be committed to this repository/dataset ZIP for local proof runs",
+      "privacy_safety": "Contains no private faces, addresses, license plates, account data, or real private media"
     }
-  ]
+  ],
+  "video_fixture_notes": {
+    "source": "Synthetic Apple-style video fixtures generated for local parser/proof testing.",
+    "permission": "Generated for this project; safe to commit and redistribute inside this local proof fixture dataset.",
+    "privacy": "Synthetic clips contain no faces, addresses, license plates, account data, or real private media.",
+    "limitations": "Apple-style QuickTime/MP4 fixtures; not real iPhone camera originals and not HEVC originals.",
+    "per_folder_coverage": "All existing top-level fixture folders now include at least two generated video files while preserving folder semantics."
+  },
+  "video_coverage_summary": {
+    "requirement": "Every existing top-level fixture folder contains at least two generated video fixtures.",
+    "video_extensions_counted": [
+      ".m4v",
+      ".mov",
+      ".mp4"
+    ],
+    "per_folder_video_file_counts": {
+      "corrupted": 4,
+      "duplicates": 2,
+      "gps_same_location": 2,
+      "gps_valid": 2,
+      "invalid_gps": 2,
+      "mixed_batch": 2,
+      "no_gps": 2,
+      "rotated": 2,
+      "videos_no_gps": 2,
+      "videos_with_gps": 3
+    },
+    "all_folders_have_at_least_two_videos": true
+  }
 }

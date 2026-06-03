@@ -249,3 +249,14 @@ Dedicated Windows wrappers now exist for the v0.8.10–v0.8.12 target proof trac
 ```
 
 The video and recovery wrappers start a proof-owned API with a proof-only env file before running the proof command, then export an evidence ZIP and stop only the owned API process. The scheduler wrapper exports scheduler proof evidence without claiming Raspberry cron, Windows reboot, or arbitrary Task Scheduler success. Normal `start_win_full.cmd` remains unchanged and does not enable native playback by default.
+
+### v0.8.14 note — generated video fixture repair
+
+The committed `generated_test_data` dataset now includes repaired synthetic proof-only video fixtures. The former zero-byte `videos_with_gps` and `videos_no_gps` blocker paths are directories, and the dataset README/manifest align with the repaired filesystem. Validate with:
+
+```bash
+npm run proof:verify-generated-test-data
+```
+
+These fixtures are proof/test data only. They do not prove real iPhone capture, iCloud ingestion, Raspberry playback, monitor-pixel correctness, or reboot recovery.
+

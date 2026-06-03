@@ -1,3 +1,12 @@
+## 0.8.14 — Generated video fixture repair integration
+
+- Integrated repaired `generated_test_data` video fixtures from `generated_test_data_video_fixture_repair_v0.8.14_full_git.zip`.
+- Replaced zero-byte `generated_test_data/videos_with_gps` and `generated_test_data/videos_no_gps` blocker files with directories containing deterministic synthetic Apple-style H.264/AAC video fixtures.
+- Added per-folder generated video clips so each existing top-level fixture folder has at least two video fixtures, preserving proof-only fixture boundaries.
+- Added `tools/verify_generated_test_data.py` and `tools/regenerate_video_fixtures.py` for deterministic validation/regeneration of the repaired fixture set.
+- Added `proof:verify-generated-test-data` npm script and repair handoff documentation.
+- Preserved v0.8.13 proof-owned launchers and did not change production playback ordering.
+
 ## 0.8.13 — Target proof-owned launchers
 
 - Added dedicated Windows command/PowerShell launchers for live native video playback, live native recovery, and live scheduler proof tracks.
