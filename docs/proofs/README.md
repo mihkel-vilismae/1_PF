@@ -63,3 +63,7 @@ The generated JSON artifact intentionally stores assertion results and markup le
 ## Windows native proof milestone
 
 `docs/proofs/windows_native_proof_milestone_v0.8.26.md` is the consolidated proof-status snapshot for the v0.8.26 Windows target-machine checkpoint. It records the PASSED Windows native image/video/recovery/scheduler-loop evidence and keeps non-claims explicit for Windows Task Scheduler, full Windows reboot, Raspberry cron/reboot/power-loss recovery, monitor-pixel proof, production iCloud continuation, and vendored media tooling.
+
+## Windows Task Scheduler dry-run proof
+
+`npm run proof:windows-task-scheduler-dry-run` validates the dry-run contract for future Windows Task Scheduler integration. It checks proof-owned task definitions, worker entrypoint paths, cleanup command previews, and local media-tool boundaries without installing persistent tasks. See `windows_task_scheduler_dry_run_proof.md`.

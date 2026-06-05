@@ -177,3 +177,13 @@ Added bounded proof-owned scheduler evidence collection for `proof:live-windows-
 ### v0.8.27 - Windows native proof milestone documentation
 
 Consolidated the v0.8.26 Windows proof checkpoint in `docs/proofs/windows_native_proof_milestone_v0.8.26.md`. The milestone records target-machine PASSED evidence for generated video fixture validation, native Windows image playback, worker-autostart image playback, native Windows video playback, controlled API-restart native recovery, and the proof-owned live Windows scheduler loop. It keeps limitations explicit: no Windows Task Scheduler proof, no full Windows reboot proof, no Raspberry cron/reboot/power-loss proof, no monitor-pixel proof, and no vendored `tools/mpv/` or `tools/ffmpeg/` binaries in Git.
+
+## Windows Task Scheduler dry-run proof
+
+Run this before any real Windows Task Scheduler install/run slice:
+
+```powershell
+npm run proof:windows-task-scheduler-dry-run
+```
+
+This is a dry-run inspection proof only. It does not call `schtasks.exe`, install scheduled tasks, prove reboot behavior, or prove Raspberry cron/power recovery.
