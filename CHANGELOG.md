@@ -1,3 +1,9 @@
+## 0.8.20 — Large binary commit confirmation rule
+
+- Added a repo-local `AGENTS.md` rule that requires explicit confirmation before committing newly tracked vendored binaries above GitHub's 50 MB warning threshold.
+- Added a stronger warning path for binaries at or above GitHub's 100 MB hard limit so commit/push workflows call out likely push failure before the user proceeds.
+- Preserved the existing artifact-regression confirmation rule and normal commit behavior for ordinary source changes, small assets, and unchanged tracked binaries.
+
 ## 0.8.19 — Untrack vendored Windows FFmpeg bundle
 
 - Added `tools/ffmpeg/` to `.gitignore` so local FFmpeg binaries stay outside Git tracking by default.

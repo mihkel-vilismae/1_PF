@@ -81,3 +81,11 @@
   - `git status`, `git diff --stat`, or direct filesystem checks show a path-collision snapshot like `generated_test_data/videos_with_gps` or `generated_test_data/videos_no_gps` existing as files instead of directories
 - When this rule triggers, stop before commit/push and send one concise confirmation line that states the suspicious paths and that `GIT WORK` will snapshot the broken-looking state as-is unless the user approves.
 - Do not use this rule to block ordinary dirty-worktree commits, expected fixture regeneration, or intentional artifact removals that were already explicitly requested by the user.
+
+## Large Binary Commit Confirmation Rule
+
+- Before creating any commit during `GIT COMMIT`, `git work`, or similar commit/push workflows, inspect newly added or newly tracked vendored binary files.
+- If any newly added or newly tracked binary is larger than GitHub's 50 MB warning threshold, stop and ask for explicit confirmation before committing it.
+- If any newly added or newly tracked binary is at or above GitHub's 100 MB hard limit, stop and warn that a normal GitHub push is expected to fail unless the file is removed from history or handled through an approved alternative such as Git LFS.
+- The confirmation message must name the affected paths and sizes and state whether the risk is a warning-threshold case or a likely push-blocking case.
+- Do not use this rule to block ordinary source files, small assets, or already-tracked unchanged binaries; it applies to newly introduced tracked binary payloads that materially affect Git/GitHub workflow safety.
