@@ -171,12 +171,12 @@ The live Windows native video proof seed route now demotes other READY rows insi
 
 ### v0.8.26 - Proof-owned live Windows scheduler evidence collection
 
-Added bounded proof-owned scheduler evidence collection for `proof:live-windows-scheduler`. The proof labels its mode as `proof-owned-scheduler-loop`, invokes regular/playback/screen-on-off worker entrypoints, records timestamps/counts, verifies playback worker duplicate-lock protection, and still does not claim Raspberry cron, Windows reboot, Windows Task Scheduler, or power-loss proof.
+Added bounded proof-owned scheduler evidence collection for `proof:live-windows-scheduler`. The proof labels its mode as `proof-owned-scheduler-loop`, invokes regular/playback/screen-on-off worker entrypoints, records timestamps/counts, verifies playback worker duplicate-lock protection, and still does not claim Raspberry cron, Windows reboot, or power-loss proof; Windows Task Scheduler is out of scope.
 
 
 ### v0.8.27 - Windows native proof milestone documentation
 
-Consolidated the v0.8.26 Windows proof checkpoint in `docs/proofs/windows_native_proof_milestone_v0.8.26.md`. The milestone records target-machine PASSED evidence for generated video fixture validation, native Windows image playback, worker-autostart image playback, native Windows video playback, controlled API-restart native recovery, and the proof-owned live Windows scheduler loop. It keeps limitations explicit: no Windows Task Scheduler proof, no full Windows reboot proof, no Raspberry cron/reboot/power-loss proof, no monitor-pixel proof, and no vendored `tools/mpv/` or `tools/ffmpeg/` binaries in Git.
+Consolidated the v0.8.26 Windows proof checkpoint in `docs/proofs/windows_native_proof_milestone_v0.8.26.md`. The milestone records target-machine PASSED evidence for generated video fixture validation, native Windows image playback, worker-autostart image playback, native Windows video playback, controlled API-restart native recovery, and the proof-owned live Windows scheduler loop. It keeps limitations explicit: Windows Task Scheduler is out of scope, no full Windows reboot proof, no Raspberry cron/reboot/power-loss proof, no monitor-pixel proof, and no vendored `tools/mpv/` or `tools/ffmpeg/` binaries in Git.
 
 ## Windows Task Scheduler dry-run proof
 

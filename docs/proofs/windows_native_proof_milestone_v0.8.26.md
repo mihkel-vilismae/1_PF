@@ -33,7 +33,7 @@ This document consolidates the Windows native proof checkpoint reached at PF_log
 
 These proof results do not claim the following:
 
-- Windows Task Scheduler installation or startup integration.
+- Windows Task Scheduler is out of scope for this project.
 - Full Windows reboot recovery.
 - Raspberry playback, Raspberry cron, Raspberry reboot, or Raspberry power-loss recovery.
 - Monitor-pixel verification, screen-focus verification, or long-running physical display stability.
@@ -52,7 +52,7 @@ These proof results do not claim the following:
 
 | Priority | Next proof | Reason |
 |---:|---|---|
-| 1 | Windows Task Scheduler proof | The v0.8.26 scheduler proof is a proof-owned bounded scheduler loop, not real Windows Task Scheduler. |
+| 1 | Windows scheduler scope | Windows Task Scheduler is out of scope; the supported Windows evidence path is the proof-owned bounded scheduler loop. |
 | 2 | Windows reboot recovery proof | Controlled API restart is proven, but full OS reboot recovery is not. |
 | 3 | Raspberry playback/recovery proof | Raspberry cron, reboot, and power-loss claims still need hardware evidence. |
 | 4 | Long-run display observation proof | Native launch/stop is proven, but extended display/focus/pixel behavior is not. |

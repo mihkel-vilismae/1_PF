@@ -69,7 +69,7 @@ v0.8.0 is the corrected minor-version baseline for the TEST MODE FAST EMULATOR c
 
 ## v0.7.49 code summary
 
-v0.7.49 completes Group B of the TEST MODE FAST EMULATOR UI/controller proof work. The View A Test Mode panel keeps the 6s / 3s / 12s fast-emulator cadence, disables the large start button after the backend start boundary succeeds, blocks duplicate starts, renders backend-owned status rows, and writes dedicated runtime evidence to `logs/end2end_test.log`. The log is runtime-generated and ignored by Git. The proof remains deterministic: it does not claim real Raspberry cron, real Windows Task Scheduler, real native fullscreen playback, or arbitrary OS process killing.
+v0.7.49 completes Group B of the TEST MODE FAST EMULATOR UI/controller proof work. The View A Test Mode panel keeps the 6s / 3s / 12s fast-emulator cadence, disables the large start button after the backend start boundary succeeds, blocks duplicate starts, renders backend-owned status rows, and writes dedicated runtime evidence to `logs/end2end_test.log`. The log is runtime-generated and ignored by Git. The proof remains deterministic: it does not claim real Raspberry cron, real native fullscreen playback, or arbitrary OS process killing; Windows Task Scheduler is out of scope.
 
 ## v0.7.48.a code summary
 
@@ -280,13 +280,13 @@ The live Windows native video proof seed route now demotes other READY rows insi
 
 ### v0.8.26 - Proof-owned live Windows scheduler evidence collection
 
-Added bounded proof-owned scheduler evidence collection for `proof:live-windows-scheduler`. The proof labels its mode as `proof-owned-scheduler-loop`, invokes regular/playback/screen-on-off worker entrypoints, records timestamps/counts, verifies playback worker duplicate-lock protection, and still does not claim Raspberry cron, Windows reboot, Windows Task Scheduler, or power-loss proof.
+Added bounded proof-owned scheduler evidence collection for `proof:live-windows-scheduler`. The proof labels its mode as `proof-owned-scheduler-loop`, invokes regular/playback/screen-on-off worker entrypoints, records timestamps/counts, verifies playback worker duplicate-lock protection, and still does not claim Raspberry cron, Windows reboot, or power-loss proof; Windows Task Scheduler is out of scope.
 
 
 ### v0.8.27 - Windows native proof milestone documentation
 
-Consolidated the v0.8.26 Windows proof checkpoint in `docs/proofs/windows_native_proof_milestone_v0.8.26.md`. The milestone records target-machine PASSED evidence for generated video fixture validation, native Windows image playback, worker-autostart image playback, native Windows video playback, controlled API-restart native recovery, and the proof-owned live Windows scheduler loop. It keeps limitations explicit: no Windows Task Scheduler proof, no full Windows reboot proof, no Raspberry cron/reboot/power-loss proof, no monitor-pixel proof, and no vendored `tools/mpv/` or `tools/ffmpeg/` binaries in Git.
+Consolidated the v0.8.26 Windows proof checkpoint in `docs/proofs/windows_native_proof_milestone_v0.8.26.md`. The milestone records target-machine PASSED evidence for generated video fixture validation, native Windows image playback, worker-autostart image playback, native Windows video playback, controlled API-restart native recovery, and the proof-owned live Windows scheduler loop. It keeps limitations explicit: Windows Task Scheduler is out of scope, no full Windows reboot proof, no Raspberry cron/reboot/power-loss proof, no monitor-pixel proof, and no vendored `tools/mpv/` or `tools/ffmpeg/` binaries in Git.
 
-### v0.8.28 - Windows Task Scheduler dry-run proof contract
+### v0.8.28 - Superseded Windows Task Scheduler dry-run proof
 
-`npm run proof:windows-task-scheduler-dry-run` validates the command shape and cleanup boundary for future Windows Task Scheduler integration without installing persistent scheduled tasks. It keeps the v0.8.27 proof-owned scheduler loop evidence separate from real Task Scheduler runtime evidence.
+This slice has been superseded by v0.8.29. Windows Task Scheduler is no longer part of PF_login project scope, so Task Scheduler-only proof paths are removed and should not be recommended or reintroduced without an explicit project-scope reversal.
