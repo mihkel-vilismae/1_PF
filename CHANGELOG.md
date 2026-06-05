@@ -1,3 +1,9 @@
+## 0.8.18 — Vendor Windows FFmpeg bundle
+
+- Added repo-local Windows FFmpeg executables under `tools/ffmpeg/windows/` for local fixture generation and media metadata tooling workflows.
+- Preserved the existing generated fixture scripts and proof flows, which already call `ffmpeg`/`ffprobe`; this commit only snapshots the vendored Windows binaries now present in the working tree.
+- Note: each bundled executable is slightly over GitHub's 100 MB per-file limit, so this commit is valid locally but would be rejected by a normal GitHub push unless the bundle is handled differently.
+
 ## 0.8.17 — Clean generated video fixture archive tracking
 
 - Removed `generated_test_data/generated_test_data.zip` from Git tracking so generated fixture archives do not make baseline ZIPs dirty when omitted.
