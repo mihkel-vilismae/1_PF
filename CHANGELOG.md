@@ -1,3 +1,10 @@
+## 0.8.17 — Clean generated video fixture archive tracking
+
+- Removed `generated_test_data/generated_test_data.zip` from Git tracking so generated fixture archives do not make baseline ZIPs dirty when omitted.
+- Added an ignore rule for `generated_test_data/*.zip` while preserving tracked fixture files, manifests, and README metadata.
+- Restored `generated_test_data/videos_with_gps/` and `generated_test_data/videos_no_gps/` as real fixture directories with their synthetic video files.
+- Preserved v0.8.16 documentation workflow updates and v0.8.14/v0.8.15 generated video fixture behavior.
+
 ## 0.8.16 — GIT WORK artifact confirmation safeguard
 
 - Added a repo-local `GIT WORK` artifact confirmation rule to `AGENTS.md`.

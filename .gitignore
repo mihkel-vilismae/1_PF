@@ -58,3 +58,6 @@ zip_ignore.json
 
 # Local/generated debug evidence
 debug_artifacts/
+
+# Generated fixture archives should not be tracked; fixture files and manifests are tracked separately.
+generated_test_data/*.zip
