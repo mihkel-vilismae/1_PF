@@ -7,6 +7,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   buildLiveWindowsSchedulerProofPlan,
+  buildProofOwnedSchedulerCrontabText,
   evaluateScheduledWorkerEvidence,
   isLiveWindowsSchedulerProofEnabled,
   runLiveWindowsSchedulerProof,
@@ -42,4 +43,35 @@ test('scheduled worker evidence requires calls, counts, and timestamps', () => {
   assert.equal(passed.passed, true);
   const failed = evaluateScheduledWorkerEvidence({ worker_calls: { regular_worker: { called: true, count: 1 } } });
   assert.equal(failed.passed, false);
+});
+
+
+test('proof-owned scheduler crontab labels the three proof worker rows', () => {
+  const crontab = buildProofOwnedSchedulerCrontabText();
+  assert.match(crontab, /regular_stage_worker\.ps1/);
+  assert.match(crontab, /playback_worker\.ps1/);
+  assert.match(crontab, /screen_on_off_worker\.ps1/);
+  assert.match(crontab, /proof-only scheduler rows/);
+});
+
+test('orchestrated scheduler evidence can pass with worker calls and lock evidence', async () => {
+  const envelope = await runLiveWindowsSchedulerProof({
+    repoRoot,
+    metadata,
+    env: { PF_LIVE_WINDOWS_SCHEDULER_PROOF: '1' },
+    deterministicProof: { proof_status: 'PASSED' },
+    liveEvidence: {
+      scheduler: { mode: 'proof-owned-scheduler-loop', active: true },
+      worker_calls: {
+        regular_worker: { called: true, count: 1, firstCalledAt: 't1' },
+        playback_worker: { called: true, count: 1, firstCalledAt: 't2' },
+        screen_on_off_worker: { called: true, count: 1, firstCalledAt: 't3' },
+      },
+      locks: { duplicateBlocked: true },
+      playback: { selectedMediaAssetId: '1' },
+    },
+  });
+  assert.equal(envelope.proof_status, 'PASSED');
+  assert.equal(envelope.evidence.scheduler.mode, 'proof-owned-scheduler-loop');
+  assert.equal(envelope.evidence.locks.duplicateBlocked, true);
 });

@@ -167,3 +167,8 @@ The live Windows native video proof seed route now demotes other READY rows insi
 ### v0.8.25 note — controlled Windows native recovery orchestration
 
 `proof:live-windows-native-recovery` now performs a proof-owned controlled API restart: it captures the selected item, starts native playback, stops only the proof-owned API process, restarts the API with the same proof env, verifies the same selected item after restart, relaunches native playback, and stops the owned native playback process. This is not a full Windows reboot proof and does not prove Raspberry or power-loss recovery.
+
+
+### v0.8.26 - Proof-owned live Windows scheduler evidence collection
+
+Added bounded proof-owned scheduler evidence collection for `proof:live-windows-scheduler`. The proof labels its mode as `proof-owned-scheduler-loop`, invokes regular/playback/screen-on-off worker entrypoints, records timestamps/counts, verifies playback worker duplicate-lock protection, and still does not claim Raspberry cron, Windows reboot, Windows Task Scheduler, or power-loss proof.

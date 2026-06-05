@@ -1,4 +1,10 @@
 
+
+### v0.8.26 - Proof-owned live Windows scheduler evidence collection
+
+Added bounded proof-owned scheduler evidence collection for `proof:live-windows-scheduler`. The proof labels its mode as `proof-owned-scheduler-loop`, invokes regular/playback/screen-on-off worker entrypoints, records timestamps/counts, verifies playback worker duplicate-lock protection, and still does not claim Raspberry cron, Windows reboot, Windows Task Scheduler, or power-loss proof.
+
+
 ### v0.8.23 - Live native video proof Test Mode header fix
 
 Fixed the Windows native video proof launcher so the proof-only seed route is called in Test Mode instead of Real Mode. This preserves the seed route guard, keeps production playback ordering unchanged, and still requires real target evidence before native video playback can be claimed as PASS.
