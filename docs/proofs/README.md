@@ -33,6 +33,7 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Windows CronEmulator | `npm run proof:windows-cronemulator` | windows emulator |
 | Real download continuation | `npm run proof:real-download-continuation` | opt-in real provider |
 | Raspberry power-loss recovery | `npm run proof:raspberry-recovery` | hardware/operator proof |
+| Windows native proof milestone | `docs/proofs/windows_native_proof_milestone_v0.8.26.md` | target-machine evidence summary |
 
 - `dirty_shutdown_testing_proof.md` — deterministic proof for the Test Mode-only View C dirty-shutdown testing panel and backend guard scaffold.
 - `windows_cronemulator_proof.md` — deterministic proof for Windows CronEmulator parsing, scheduling, executor boundaries, and Python tests.
@@ -58,3 +59,7 @@ Use provider-specific API-key or token environment variables for providers that 
 `npm run proof:address-display-ui` renders the dashboard/display-facing Windows playback view and fullscreen overlay from deterministic local state. It asserts semantic UI fragments only, including the selected media name, resolved address label, expected address text, safe backend media URL, pending-address fallback copy, and absence of raw filesystem path exposure.
 
 The generated JSON artifact intentionally stores assertion results and markup length metrics, not full HTML snapshots. This keeps the proof stable across harmless layout/CSS changes while still proving the address evidence reaches the display-facing UI contract.
+
+## Windows native proof milestone
+
+`docs/proofs/windows_native_proof_milestone_v0.8.26.md` is the consolidated proof-status snapshot for the v0.8.26 Windows target-machine checkpoint. It records the PASSED Windows native image/video/recovery/scheduler-loop evidence and keeps non-claims explicit for Windows Task Scheduler, full Windows reboot, Raspberry cron/reboot/power-loss recovery, monitor-pixel proof, production iCloud continuation, and vendored media tooling.

@@ -69,6 +69,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/proofs/native_fullscreen_playback_proof.md` | Native/fullscreen playback boundary proof workflow. |
 | `docs/proofs/dirty_shutdown_testing_proof.md` | Test Mode-only dirty-shutdown testing panel and backend guard proof. |
 | `docs/proofs/windows_cronemulator_proof.md` | Windows CronEmulator boundary and duplicate-run proof. |
+| `docs/proofs/windows_native_proof_milestone_v0.8.26.md` | Consolidated v0.8.26 Windows native proof milestone and non-claim boundary. |
 
 ## Architecture and specs
 

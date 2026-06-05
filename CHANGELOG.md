@@ -1,3 +1,10 @@
+### v0.8.27 - Windows native proof milestone documentation
+
+- Added `docs/proofs/windows_native_proof_milestone_v0.8.26.md` to consolidate the v0.8.26 Windows target-machine proof checkpoint.
+- Documented PASSED evidence boundaries for generated video fixture validation, native Windows image playback, worker-autostart image playback, native Windows video playback, controlled API-restart native recovery, and proof-owned live Windows scheduler loop.
+- Preserved explicit non-claims for Windows Task Scheduler, full Windows reboot, Raspberry cron/reboot/power-loss recovery, monitor-pixel proof, production iCloud continuation, and vendored media tooling.
+- Added documentation regression coverage for the proof milestone and non-claim boundaries.
+
 
 
 ### v0.8.26 - Proof-owned live Windows scheduler evidence collection
