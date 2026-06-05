@@ -41,7 +41,7 @@ export function canStartCurrentOrNextVideoItem(playbackPayload) {
 }
 
 /** Creates a safe BLOCKED envelope for unmet video proof prerequisites. */
-function buildBlockedVideoProof({ metadata, baseUrl, reason, playbackPayload = null }) {
+function buildBlockedVideoProof({ metadata, baseUrl, reason, playbackPayload = null, stageResults = [] }) {
   return createProofEnvelope({
     proofKind: 'live_windows_native_video_playback',
     baselineVersion: metadata.version,
@@ -53,6 +53,7 @@ function buildBlockedVideoProof({ metadata, baseUrl, reason, playbackPayload = n
       enable_flag: VIDEO_PROOF_FLAG,
       base_url: baseUrl,
       route_plan: buildLiveWindowsNativeVideoPlaybackRoutePlan(),
+      stage_results: stageResults,
       browser_item: playbackPayload ? selectBrowserPlaybackItem(playbackPayload) : null,
       media_type_coverage: playbackPayload ? summarizeMediaTypeCoverage(playbackPayload, ['video']) : null,
     },
@@ -105,6 +106,7 @@ export async function runLiveWindowsNativeVideoPlaybackProof({ metadata, env = p
       baseUrl,
       playbackPayload: currentResult.payload,
       reason: 'The seeded generated_test_data fixture did not become the current/next video item. Check proof-only seed route evidence before claiming video playback.',
+      stageResults: [seedResult, currentResult],
     });
   }
 

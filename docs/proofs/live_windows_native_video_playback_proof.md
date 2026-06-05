@@ -38,3 +38,7 @@ The video and recovery wrappers start a proof-owned API with a proof-only env fi
 ### v0.8.22 — proof-only native video seed/select path
 
 The live Windows native video playback proof now seeds one deterministic `generated_test_data` video fixture into the Test Mode database before checking `/api/runtime/playback/current`. This is a proof-only route under `/api/testing/live-windows-native-video/seed`; it does not change normal production playback ordering and the proof still cannot pass unless native playback reports a running video item with `currentMediaType=video`. Local `tools/mpv/` and `tools/ffmpeg/` bundles remain ignored and must not be vendored into baseline ZIPs.
+
+### v0.8.24 note — proof-seeded native video current item
+
+The live Windows native video proof seed route now demotes other READY rows inside the Test Mode proof database so the deterministic generated video fixture becomes the current/next playback item for the proof run. This remains proof-only behavior and does not change normal production playback ordering. BLOCKED video proof artifacts now include seed/current stage evidence for diagnosis.

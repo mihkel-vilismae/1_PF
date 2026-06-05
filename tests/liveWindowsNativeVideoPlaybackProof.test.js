@@ -48,3 +48,9 @@ test('video proof seed route is test-mode only and proof scoped in server source
   assert.match(source, /seed_live_windows_native_video_fixture/);
   assert.doesNotMatch(source, /'POST \/api\/runtime\/playback\/seed-video'/);
 });
+
+test('blocked video proof can carry seed route evidence for diagnosis', () => {
+  const source = fs.readFileSync(new URL('../tools/live-windows-native-video-playback-proof-lib.mjs', import.meta.url), 'utf8');
+  assert.match(source, /stage_results: stageResults/);
+  assert.match(source, /stageResults: \[seedResult, currentResult\]/);
+});

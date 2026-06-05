@@ -2105,3 +2105,9 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 - Improved worker-selected item extraction from proof stdout when surrounding log lines are present.
 - Added persisted owned PID stop fallback for native playback started by a short-lived worker process, without killing arbitrary mpv/vlc processes by name.
 - Preserved native playback disabled by default outside the dedicated proof launcher.
+
+## 0.8.24 - Proof-seeded native video selection
+
+- Updated the Test Mode-only live Windows native video proof seed path so seeded generated video fixtures are promoted ahead of existing READY image rows for the proof database only.
+- Added diagnostic seed/current stage evidence to BLOCKED video proof envelopes.
+- Preserved normal production playback ordering and the guarded Test Mode-only seed route.

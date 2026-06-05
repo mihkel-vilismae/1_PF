@@ -1153,6 +1153,18 @@ def seed_live_windows_native_video_fixture(path: str, fixture_relative_path: str
             (media_asset_id, normalized_fixture, extension, file_size_bytes, content_hash, executed_at, executed_at),
         )
 
+        demoted_rows = cursor.execute(
+            """
+            UPDATE slideshow_queue
+            SET last_shown_datetime = COALESCE(last_shown_datetime, ?),
+                view_count = CASE WHEN view_count < 1 THEN 1 ELSE view_count END,
+                updated_at = ?
+            WHERE status = 'READY'
+              AND media_asset_id != ?
+            """,
+            (executed_at, executed_at, media_asset_id),
+        ).rowcount
+
         queue_row = cursor.execute(
             "SELECT slideshow_queue_id FROM slideshow_queue WHERE media_asset_id = ?",
             (media_asset_id,),
@@ -1208,6 +1220,7 @@ def seed_live_windows_native_video_fixture(path: str, fixture_relative_path: str
             "slideshowQueueId": slideshow_queue_id,
             "assetAction": asset_action,
             "queueAction": queue_action,
+            "demotedReadyRows": demoted_rows,
             "mediaType": "video",
             "fileExtension": extension,
             "fileSizeBytes": file_size_bytes,
