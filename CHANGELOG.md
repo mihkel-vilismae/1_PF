@@ -1,3 +1,8 @@
+
+### v0.8.23 - Live native video proof Test Mode header fix
+
+Fixed the Windows native video proof launcher so the proof-only seed route is called in Test Mode instead of Real Mode. This preserves the seed route guard, keeps production playback ordering unchanged, and still requires real target evidence before native video playback can be claimed as PASS.
+
 ## 0.8.21 — Remove media tool bundles from local Git history
 
 ## 0.8.22 - 2026-06-05

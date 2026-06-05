@@ -236,7 +236,7 @@ function Invoke-LiveNativeProof {
     try {
         $env:PF_API_BASE_URL = $ApiBaseUrl
         $env:PF_LIVE_WINDOWS_NATIVE_PLAYBACK_PROOF = "1"
-        $env:PF_LIVE_WINDOWS_NATIVE_PLAYBACK_RUNTIME_MODE = "real"
+        $env:PF_LIVE_WINDOWS_NATIVE_PLAYBACK_RUNTIME_MODE = "test"
         $env:PF_LIVE_WINDOWS_NATIVE_VIDEO_PLAYBACK_PROOF = "1"
         $env:NATIVE_PLAYBACK_ENABLED = "true"
         $env:NATIVE_PLAYBACK_AUTO_START_ON_WORKER = "true"
