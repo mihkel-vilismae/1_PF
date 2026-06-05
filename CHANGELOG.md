@@ -3,6 +3,12 @@
 
 Fixed the Windows native video proof launcher so the proof-only seed route is called in Test Mode instead of Real Mode. This preserves the seed route guard, keeps production playback ordering unchanged, and still requires real target evidence before native video playback can be claimed as PASS.
 
+
+## 0.8.25 - Controlled Windows native recovery orchestration
+
+- Implemented proof-owned controlled API stop/restart orchestration for `proof:live-windows-native-recovery`.
+- The recovery proof now starts native playback before restart, stops only the proof-owned API process, restarts the proof API with the same env, verifies the same selected item after restart, relaunches native playback, and stops the owned native playback process.
+- Preserved the boundary that this is a controlled API restart proof, not a full Windows reboot, Raspberry recovery, or power-loss proof.
 ## 0.8.21 — Remove media tool bundles from local Git history
 
 ## 0.8.22 - 2026-06-05

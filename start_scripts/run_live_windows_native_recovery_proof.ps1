@@ -1,5 +1,5 @@
 # Windows live native recovery proof runner for PF_login / 1234_PF.
-# Starts a proof-only API process with native playback env values in a temp env file.
+# Creates a proof-only env file and lets the Node proof runner own API stop/restart orchestration.
 # Runs proof:live-windows-native-recovery against the actual API port used by this runner.
 # Stops only the API process started by this script and never changes normal launcher defaults.
 # Packs runtime logs/proofs/artifacts into a Downloads evidence ZIP for easy upload.
@@ -225,6 +225,8 @@ function Invoke-LiveNativeProof {
         PF_LIVE_WINDOWS_NATIVE_PLAYBACK_RUNTIME_MODE = $env:PF_LIVE_WINDOWS_NATIVE_PLAYBACK_RUNTIME_MODE
         PF_LIVE_WINDOWS_NATIVE_PLAYBACK_WORKER_AUTOSTART = $env:PF_LIVE_WINDOWS_NATIVE_PLAYBACK_WORKER_AUTOSTART
         PF_LIVE_WINDOWS_NATIVE_RECOVERY_PROOF = $env:PF_LIVE_WINDOWS_NATIVE_RECOVERY_PROOF
+        PF_LIVE_WINDOWS_NATIVE_RECOVERY_ORCHESTRATE = $env:PF_LIVE_WINDOWS_NATIVE_RECOVERY_ORCHESTRATE
+        PORT = $env:PORT
         NATIVE_PLAYBACK_ENABLED = $env:NATIVE_PLAYBACK_ENABLED
         NATIVE_PLAYBACK_AUTO_START_ON_WORKER = $env:NATIVE_PLAYBACK_AUTO_START_ON_WORKER
         NATIVE_PLAYBACK_FULLSCREEN = $env:NATIVE_PLAYBACK_FULLSCREEN
@@ -238,6 +240,8 @@ function Invoke-LiveNativeProof {
         $env:PF_LIVE_WINDOWS_NATIVE_PLAYBACK_PROOF = "1"
         $env:PF_LIVE_WINDOWS_NATIVE_PLAYBACK_RUNTIME_MODE = "real"
         $env:PF_LIVE_WINDOWS_NATIVE_RECOVERY_PROOF = "1"
+        $env:PF_LIVE_WINDOWS_NATIVE_RECOVERY_ORCHESTRATE = "1"
+        $env:PORT = [string]$ApiPort
         $env:NATIVE_PLAYBACK_ENABLED = "true"
         $env:NATIVE_PLAYBACK_AUTO_START_ON_WORKER = "true"
         $env:NATIVE_PLAYBACK_FULLSCREEN = "true"
@@ -336,8 +340,6 @@ try {
         Invoke-RepoCommand -FilePath "npm" -Arguments @("install", "--verbose") -StepName "Install dependencies"
         Ensure-RepoLocalMpv
         New-ProofEnvironmentFile
-        $apiProcess = Start-ProofApiProcess
-        Wait-ForNativeProofApi -Process $apiProcess | Out-Null
         $proofFailure = $null
         try {
             Invoke-LiveNativeProof -RunWorkerAutostart:$($WorkerAutostart.IsPresent)

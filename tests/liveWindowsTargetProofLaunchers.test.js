@@ -29,22 +29,16 @@ test('video and recovery proof cmd wrappers are thin PowerShell delegates', () =
   }
 });
 
-test('video and recovery launchers start proof-owned API with proof-only env', () => {
-  const cases = [
-    [VIDEO_PS1, 'live_windows_native_video_playback_proof.env', 'PF_LIVE_WINDOWS_NATIVE_VIDEO_PLAYBACK_PROOF', 'proof:live-windows-native-video-playback'],
-    [RECOVERY_PS1, 'live_windows_native_recovery_proof.env', 'PF_LIVE_WINDOWS_NATIVE_RECOVERY_PROOF', 'proof:live-windows-native-recovery'],
-  ];
-  for (const [psUrl, envName, flagName, proofScript] of cases) {
-    const ps1 = fs.readFileSync(psUrl, 'utf8');
-    assert.match(ps1, new RegExp(envName));
-    assert.match(ps1, /NATIVE_PLAYBACK_ENABLED=true/);
-    assert.match(ps1, /Start-Process -FilePath "node"/);
-    assert.match(ps1, /Wait-ForNativeProofApi/);
-    assert.match(ps1, /Stop-ProofApiProcess/);
-    assert.match(ps1, /Export-EvidenceZip/);
-    assert.match(ps1, new RegExp(`${flagName}\\s*=\\s*"1"`));
-    assert.match(ps1, new RegExp(proofScript.replace(/[-:]/g, (m) => `\\${m}`)));
-  }
+test('video launcher starts proof-owned API with proof-only env', () => {
+  const ps1 = fs.readFileSync(VIDEO_PS1, 'utf8');
+  assert.match(ps1, /live_windows_native_video_playback_proof\.env/);
+  assert.match(ps1, /NATIVE_PLAYBACK_ENABLED=true/);
+  assert.match(ps1, /Start-Process -FilePath "node"/);
+  assert.match(ps1, /Wait-ForNativeProofApi/);
+  assert.match(ps1, /Stop-ProofApiProcess/);
+  assert.match(ps1, /Export-EvidenceZip/);
+  assert.match(ps1, /PF_LIVE_WINDOWS_NATIVE_VIDEO_PLAYBACK_PROOF\s*=\s*"1"/);
+  assert.match(ps1, /proof:live-windows-native-video-playback/);
 });
 
 test('scheduler proof launcher is proof-owned and does not start native API', () => {
@@ -68,4 +62,11 @@ test('package exposes Windows launcher scripts without changing normal launcher 
   assert.doesNotMatch(startPs1, /NATIVE_PLAYBACK_ENABLED\s*=\s*"true"/);
   assert.doesNotMatch(startPs1, /live_windows_native_video_playback_proof\.env/);
   assert.doesNotMatch(startPs1, /live_windows_native_recovery_proof\.env/);
+});
+
+
+test('native recovery launcher delegates API restart ownership to the Node proof runner', () => {
+  const script = fs.readFileSync(RECOVERY_PS1, 'utf8');
+  assert.match(script, /PF_LIVE_WINDOWS_NATIVE_RECOVERY_ORCHESTRATE\s*=\s*"1"/);
+  assert.doesNotMatch(script, /\$apiProcess\s*=\s*Start-ProofApiProcess/);
 });

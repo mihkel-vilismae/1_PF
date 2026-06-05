@@ -163,3 +163,7 @@ Fixed the Windows native video proof launcher so the proof-only seed route is ca
 ### v0.8.24 note — proof-seeded native video current item
 
 The live Windows native video proof seed route now demotes other READY rows inside the Test Mode proof database so the deterministic generated video fixture becomes the current/next playback item for the proof run. This remains proof-only behavior and does not change normal production playback ordering. BLOCKED video proof artifacts now include seed/current stage evidence for diagnosis.
+
+### v0.8.25 note — controlled Windows native recovery orchestration
+
+`proof:live-windows-native-recovery` now performs a proof-owned controlled API restart: it captures the selected item, starts native playback, stops only the proof-owned API process, restarts the API with the same proof env, verifies the same selected item after restart, relaunches native playback, and stops the owned native playback process. This is not a full Windows reboot proof and does not prove Raspberry or power-loss recovery.
