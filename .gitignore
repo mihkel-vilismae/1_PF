@@ -42,6 +42,7 @@ conf/runtime-truth.json
 tools/CronEmulator/crontab_emulated.txt
 tools/CronEmulator/logs/
 tools/docs_labels/
+tools/ffmpeg/
 tools/mpv/windows/*
 !tools/mpv/windows/.gitkeep
 !tools/mpv/windows/README.md

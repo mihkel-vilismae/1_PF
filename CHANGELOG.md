@@ -1,3 +1,9 @@
+## 0.8.19 — Untrack vendored Windows FFmpeg bundle
+
+- Added `tools/ffmpeg/` to `.gitignore` so local FFmpeg binaries stay outside Git tracking by default.
+- Removed the previously committed `tools/ffmpeg/windows/` executables from the Git index with `git rm --cached` while preserving the files on disk for local tooling use.
+- Preserved existing fixture-generation and metadata-verification scripts, which still expect `ffmpeg` and `ffprobe` to be available locally.
+
 ## 0.8.18 — Vendor Windows FFmpeg bundle
 
 - Added repo-local Windows FFmpeg executables under `tools/ffmpeg/windows/` for local fixture generation and media metadata tooling workflows.
