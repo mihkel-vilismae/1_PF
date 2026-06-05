@@ -1,3 +1,9 @@
+## 0.8.21 — Remove media tool bundles from local Git history
+
+- Added explicit whole-directory ignore rules for `tools/mpv/` and `tools/ffmpeg/`.
+- Rewrote local Git history with `git-filter-repo` to remove both directory trees from all local commits while preserving the files on disk for local runtime/tooling use.
+- Re-added the original `origin` URL only as local configuration after the rewrite; remote history was not pushed or force-updated by this change.
+
 ## 0.8.20 — Large binary commit confirmation rule
 
 - Added a repo-local `AGENTS.md` rule that requires explicit confirmation before committing newly tracked vendored binaries above GitHub's 50 MB warning threshold.
