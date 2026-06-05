@@ -1,5 +1,11 @@
 ## 0.8.21 — Remove media tool bundles from local Git history
 
+## 0.8.22 - 2026-06-05
+
+- Added a proof-only Test Mode seed path that imports a deterministic generated_test_data video fixture as the current READY playback item for the live Windows native video playback proof.
+- Updated the live Windows native video proof to call the seed route before checking the playback contract, while preserving strict native `currentMediaType=video` pass criteria.
+- Preserved normal production playback ordering, native playback disabled-by-default launcher behavior, and local-only ignored `tools/mpv/` / `tools/ffmpeg/` boundaries.
+
 - Added explicit whole-directory ignore rules for `tools/mpv/` and `tools/ffmpeg/`.
 - Rewrote local Git history with `git-filter-repo` to remove both directory trees from all local commits while preserving the files on disk for local runtime/tooling use.
 - Re-added the original `origin` URL only as local configuration after the rewrite; remote history was not pushed or force-updated by this change.

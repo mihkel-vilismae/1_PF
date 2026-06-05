@@ -5,6 +5,7 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import {
   buildLiveWindowsNativeVideoPlaybackRoutePlan,
   canStartCurrentOrNextVideoItem,
@@ -24,6 +25,7 @@ test('live Windows native video proof is opt-in only', async () => {
 
 test('live Windows native video route plan uses native start and owned stop boundaries', () => {
   assert.deepEqual(buildLiveWindowsNativeVideoPlaybackRoutePlan(), [
+    'POST /api/testing/live-windows-native-video/seed',
     'GET /api/runtime/playback/current?limit=50',
     'POST /api/native-playback/detect',
     'POST /api/native-playback/start-current',
@@ -36,4 +38,13 @@ test('video proof only allows start-current when current or next item is video',
   assert.equal(canStartCurrentOrNextVideoItem({ playback: { currentItem: { mediaAssetId: 1, mediaType: 'image' }, nextItem: { mediaAssetId: 2, mediaType: 'video' } } }), false);
   assert.equal(canStartCurrentOrNextVideoItem({ playback: { currentItem: null, nextItem: { mediaAssetId: 2, mediaType: 'video' } } }), true);
   assert.equal(canStartCurrentOrNextVideoItem({ playback: { currentItem: { mediaAssetId: 3, mediaType: 'video' }, nextItem: null } }), true);
+});
+
+
+test('video proof seed route is test-mode only and proof scoped in server source', () => {
+  const source = fs.readFileSync(new URL('../server/index.ts', import.meta.url), 'utf8');
+  assert.match(source, /POST \/api\/testing\/live-windows-native-video\/seed/);
+  assert.match(source, /proof_video_seed_requires_test_mode/);
+  assert.match(source, /seed_live_windows_native_video_fixture/);
+  assert.doesNotMatch(source, /'POST \/api\/runtime\/playback\/seed-video'/);
 });

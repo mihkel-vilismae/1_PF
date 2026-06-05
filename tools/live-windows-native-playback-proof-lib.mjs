@@ -59,7 +59,7 @@ export function buildLiveWindowsWorkerAutostartRoutePlan() {
 export async function requestJson(baseUrl, route, runtimeMode = 'test') {
   const response = await fetch(new URL(route.path, baseUrl), {
     method: route.method,
-    headers: { 'content-type': 'application/json', 'x-pf-runtime-mode': runtimeMode },
+    headers: { 'content-type': 'application/json', 'x-dashboard-runtime-mode': runtimeMode, 'x-pf-runtime-mode': runtimeMode },
   });
   const text = await response.text();
   let payload = null;

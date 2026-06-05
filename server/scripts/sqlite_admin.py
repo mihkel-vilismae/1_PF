@@ -1024,6 +1024,204 @@ def prepare_slideshow_queue(path: str, executed_at: str, schema_path: str) -> di
     finally:
         connection.close()
 
+
+def seed_live_windows_native_video_fixture(path: str, fixture_relative_path: str, repo_root: str, executed_at: str, schema_path: str) -> dict:
+    """Seed one deterministic generated_test_data video as the proof-only current READY item."""
+    normalized_fixture = (fixture_relative_path or "").replace("\\", "/").strip().lstrip("/")
+    if not normalized_fixture.startswith("generated_test_data/"):
+        raise ValueError("proof video fixture must be under generated_test_data")
+
+    fixture_path = os.path.abspath(os.path.join(repo_root, normalized_fixture))
+    generated_root = os.path.abspath(os.path.join(repo_root, "generated_test_data"))
+    if not (fixture_path == generated_root or fixture_path.startswith(generated_root + os.sep)):
+        raise ValueError("proof video fixture resolved outside generated_test_data")
+    if classify_media_type(fixture_path) != "video":
+        raise ValueError("proof video fixture must be a supported video file")
+    if not os.path.isfile(fixture_path):
+        raise FileNotFoundError(f"proof video fixture does not exist: {fixture_path}")
+
+    schema_bootstrap = ensure_canonical_schema(
+        path,
+        schema_path,
+        (
+            "canonical_media_assets",
+            "media_asset_variants",
+            "slideshow_queue",
+            "runtime_state",
+        ),
+    )
+    file_stats = os.stat(fixture_path)
+    file_size_bytes = int(file_stats.st_size)
+    extension = os.path.splitext(fixture_path)[1].lower().lstrip(".") or None
+    content_hash = compute_file_sha1(fixture_path)
+    original_filename = os.path.basename(fixture_path)
+    asset_key = "proof-live-windows-native-video:" + normalized_fixture
+    has_gps = "/videos_with_gps/" in ("/" + normalized_fixture)
+    latitude = 59.437 if has_gps else None
+    longitude = 24.7536 if has_gps else None
+    address_text = "Proof fixture video location: Tallinn" if has_gps else "Proof fixture video: no GPS metadata"
+
+    connection = connect_read_write(path)
+    try:
+        cursor = connection.cursor()
+        cursor.execute("BEGIN IMMEDIATE")
+        existing = cursor.execute(
+            "SELECT media_asset_id FROM canonical_media_assets WHERE asset_key = ?",
+            (asset_key,),
+        ).fetchone()
+        if existing is None:
+            cursor.execute(
+                """
+                INSERT INTO canonical_media_assets (
+                    asset_key, original_filename, canonical_path, media_type, file_extension,
+                    file_size_bytes, content_hash, captured_at, gps_latitude, gps_longitude,
+                    gps_altitude, gps_status, geocode_status, address_text, address_cache_key,
+                    successful_gps_parser_method, created_at, updated_at
+                ) VALUES (?, ?, ?, 'video', ?, ?, ?, ?, ?, ?, NULL, ?, 'GEOCODE_FOUND', ?, NULL, ?, ?, ?)
+                """,
+                (
+                    asset_key,
+                    original_filename,
+                    normalized_fixture,
+                    extension,
+                    file_size_bytes,
+                    content_hash,
+                    executed_at,
+                    latitude,
+                    longitude,
+                    "GPS_FOUND" if has_gps else "GPS_NOT_FOUND",
+                    address_text,
+                    "generated-test-data-proof-fixture",
+                    executed_at,
+                    executed_at,
+                ),
+            )
+            media_asset_id = int(cursor.lastrowid)
+            asset_action = "inserted"
+        else:
+            media_asset_id = int(existing["media_asset_id"])
+            cursor.execute(
+                """
+                UPDATE canonical_media_assets
+                SET original_filename = ?,
+                    canonical_path = ?,
+                    media_type = 'video',
+                    file_extension = ?,
+                    file_size_bytes = ?,
+                    content_hash = ?,
+                    gps_latitude = ?,
+                    gps_longitude = ?,
+                    gps_status = ?,
+                    geocode_status = 'GEOCODE_FOUND',
+                    address_text = ?,
+                    successful_gps_parser_method = ?,
+                    updated_at = ?
+                WHERE media_asset_id = ?
+                """,
+                (
+                    original_filename,
+                    normalized_fixture,
+                    extension,
+                    file_size_bytes,
+                    content_hash,
+                    latitude,
+                    longitude,
+                    "GPS_FOUND" if has_gps else "GPS_NOT_FOUND",
+                    address_text,
+                    "generated-test-data-proof-fixture",
+                    executed_at,
+                    media_asset_id,
+                ),
+            )
+            asset_action = "updated"
+
+        cursor.execute(
+            """
+            INSERT INTO media_asset_variants (
+                media_asset_id, variant_kind, file_path, file_extension, file_size_bytes,
+                width_px, height_px, duration_ms, checksum, created_at, updated_at
+            ) VALUES (?, 'original', ?, ?, ?, 640, 360, 2000, ?, ?, ?)
+            ON CONFLICT(media_asset_id, variant_kind, file_path) DO UPDATE SET
+                file_extension = excluded.file_extension,
+                file_size_bytes = excluded.file_size_bytes,
+                width_px = excluded.width_px,
+                height_px = excluded.height_px,
+                duration_ms = excluded.duration_ms,
+                checksum = excluded.checksum,
+                updated_at = excluded.updated_at
+            """,
+            (media_asset_id, normalized_fixture, extension, file_size_bytes, content_hash, executed_at, executed_at),
+        )
+
+        queue_row = cursor.execute(
+            "SELECT slideshow_queue_id FROM slideshow_queue WHERE media_asset_id = ?",
+            (media_asset_id,),
+        ).fetchone()
+        if queue_row is None:
+            cursor.execute(
+                """
+                INSERT INTO slideshow_queue (
+                    media_asset_id, status, failure_reason, sort_bucket, eligible_since,
+                    last_shown_datetime, view_count, created_at, updated_at
+                ) VALUES (?, 'READY', NULL, 'proof-live-windows-native-video', ?, NULL, 0, ?, ?)
+                """,
+                (media_asset_id, executed_at, executed_at, executed_at),
+            )
+            slideshow_queue_id = int(cursor.lastrowid)
+            queue_action = "inserted"
+        else:
+            slideshow_queue_id = int(queue_row["slideshow_queue_id"])
+            cursor.execute(
+                """
+                UPDATE slideshow_queue
+                SET status = 'READY',
+                    failure_reason = NULL,
+                    sort_bucket = 'proof-live-windows-native-video',
+                    eligible_since = ?,
+                    last_shown_datetime = NULL,
+                    view_count = 0,
+                    updated_at = ?
+                WHERE slideshow_queue_id = ?
+                """,
+                (executed_at, executed_at, slideshow_queue_id),
+            )
+            queue_action = "updated"
+
+        cursor.execute(
+            """
+            INSERT INTO runtime_state (state_key, state_value, value_type, updated_at, updated_by)
+            VALUES ('current_media_asset_id', ?, 'text', ?, 'live_windows_native_video_proof_seed')
+            ON CONFLICT(state_key) DO UPDATE SET
+                state_value = excluded.state_value,
+                value_type = excluded.value_type,
+                updated_at = excluded.updated_at,
+                updated_by = excluded.updated_by
+            """,
+            (str(media_asset_id), executed_at),
+        )
+        connection.commit()
+        return {
+            "status": "ok",
+            "proofOnly": True,
+            "fixtureRelativePath": normalized_fixture,
+            "mediaAssetId": media_asset_id,
+            "slideshowQueueId": slideshow_queue_id,
+            "assetAction": asset_action,
+            "queueAction": queue_action,
+            "mediaType": "video",
+            "fileExtension": extension,
+            "fileSizeBytes": file_size_bytes,
+            "sha1": content_hash,
+            "hasGpsLikeLocation": has_gps,
+            "schemaBootstrap": schema_bootstrap,
+            "executedAt": executed_at,
+        }
+    except Exception:
+        connection.rollback()
+        raise
+    finally:
+        connection.close()
+
 def resolve_canonical_path(raw_path: str | None, repo_root: str) -> str | None:
     if raw_path is None:
         return None
@@ -1411,7 +1609,7 @@ def runtime_state_set(
 def main() -> int:
     if len(sys.argv) < 3:
         raise ValueError(
-            "Expected usage: sqlite_admin.py <inspect|recreate|rows|stage2_index_register|stage3_process_gps_queue|stage4_process_geocode_queue|stage5_prepare_queue|stage6_select_current|playback_contract|playback_asset_media_path|runtime_state_get|runtime_state_set> <path> [args]"
+            "Expected usage: sqlite_admin.py <inspect|recreate|rows|stage2_index_register|stage3_process_gps_queue|stage4_process_geocode_queue|stage5_prepare_queue|stage6_select_current|playback_contract|playback_asset_media_path|runtime_state_get|runtime_state_set|seed_live_windows_native_video_fixture> <path> [args]"
         )
 
     operation = sys.argv[1]
@@ -1467,6 +1665,14 @@ def main() -> int:
                 "playback_asset_media_path expects: sqlite_admin.py playback_asset_media_path <path> <media_asset_id> <repo_root>"
             )
         result = playback_asset_media_path(path, sys.argv[3], os.path.abspath(sys.argv[4]))
+
+    elif operation == "seed_live_windows_native_video_fixture":
+        # Usage: sqlite_admin.py seed_live_windows_native_video_fixture <path> <fixture_relative_path> <repo_root> <executed_at> <schema_path>
+        if len(sys.argv) != 7:
+            raise ValueError(
+                "seed_live_windows_native_video_fixture expects: sqlite_admin.py seed_live_windows_native_video_fixture <path> <fixture_relative_path> <repo_root> <executed_at> <schema_path>"
+            )
+        result = seed_live_windows_native_video_fixture(path, sys.argv[3], os.path.abspath(sys.argv[4]), sys.argv[5], os.path.abspath(sys.argv[6]))
     elif operation == "runtime_state_get":
         # Usage: sqlite_admin.py runtime_state_get <path> <state_key>
         if len(sys.argv) != 4:

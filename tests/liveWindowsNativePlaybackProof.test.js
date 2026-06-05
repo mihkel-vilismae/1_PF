@@ -5,6 +5,7 @@
  * Live OS playback remains an explicit operator-run proof outside normal tests.
  */
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import {
   buildBlockedLiveWindowsNativePlaybackProof,
@@ -195,4 +196,11 @@ test('blocked live proof records operator instructions without launching OS play
   assert.equal(envelope.evidence.enable_flag, 'PF_LIVE_WINDOWS_NATIVE_PLAYBACK_PROOF');
   assert.match(envelope.evidence.planned_routes.join('\n'), /native-playback\/start-current/);
   assert.match(envelope.known_limitations.join('\n'), /No real native player was launched/);
+});
+
+
+test('live proof request helper sends the dashboard runtime mode header', () => {
+  const source = readFileSync('tools/live-windows-native-playback-proof-lib.mjs', 'utf8');
+  assert.match(source, /x-dashboard-runtime-mode/);
+  assert.match(source, /x-pf-runtime-mode/);
 });

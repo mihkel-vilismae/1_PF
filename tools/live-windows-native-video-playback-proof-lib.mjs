@@ -25,6 +25,7 @@ export function isLiveWindowsNativeVideoPlaybackProofEnabled(env = process.env) 
 /** Builds the video proof route plan for docs/tests without launching a player. */
 export function buildLiveWindowsNativeVideoPlaybackRoutePlan() {
   return [
+    'POST /api/testing/live-windows-native-video/seed',
     'GET /api/runtime/playback/current?limit=50',
     'POST /api/native-playback/detect',
     'POST /api/native-playback/start-current',
@@ -73,6 +74,19 @@ export async function runLiveWindowsNativeVideoPlaybackProof({ metadata, env = p
     return buildBlockedVideoProof({ metadata, baseUrl, reason: `Live native video playback proof is Windows-only; current platform is ${process.platform}.` });
   }
 
+  const seedResult = await requestJson(baseUrl, { key: 'proof_video_seed', method: 'POST', path: '/api/testing/live-windows-native-video/seed' }, runtimeMode);
+  if (!seedResult.ok) {
+    return createProofEnvelope({
+      proofKind: 'live_windows_native_video_playback',
+      baselineVersion: metadata.version,
+      gitCommit: metadata.gitCommit,
+      proofStatus: 'FAILED',
+      runtimeMode: 'live_windows_video_opt_in',
+      evidence: { environment: getProofEnvironment(), base_url: baseUrl, failed_route: seedResult.key, stage_results: [seedResult] },
+      knownLimitations: ['The proof could not seed the deterministic generated_test_data video fixture.'],
+    });
+  }
+
   const currentResult = await requestJson(baseUrl, { key: 'browser_playback_contract', method: 'GET', path: '/api/runtime/playback/current?limit=50' }, runtimeMode);
   if (!currentResult.ok) {
     return createProofEnvelope({
@@ -81,8 +95,8 @@ export async function runLiveWindowsNativeVideoPlaybackProof({ metadata, env = p
       gitCommit: metadata.gitCommit,
       proofStatus: 'FAILED',
       runtimeMode: 'live_windows_video_opt_in',
-      evidence: { environment: getProofEnvironment(), base_url: baseUrl, failed_route: currentResult.key, stage_results: [currentResult] },
-      knownLimitations: ['The proof could not inspect the browser playback contract.'],
+      evidence: { environment: getProofEnvironment(), base_url: baseUrl, failed_route: currentResult.key, stage_results: [seedResult, currentResult] },
+      knownLimitations: ['The proof could not inspect the browser playback contract after seeding the video fixture.'],
     });
   }
   if (!canStartCurrentOrNextVideoItem(currentResult.payload)) {
@@ -90,7 +104,7 @@ export async function runLiveWindowsNativeVideoPlaybackProof({ metadata, env = p
       metadata,
       baseUrl,
       playbackPayload: currentResult.payload,
-      reason: 'The current/next playback item is not video. Prepare a READY video item as current/next before running this live video proof.',
+      reason: 'The seeded generated_test_data fixture did not become the current/next video item. Check proof-only seed route evidence before claiming video playback.',
     });
   }
 
@@ -106,6 +120,10 @@ export async function runLiveWindowsNativeVideoPlaybackProof({ metadata, env = p
     ...envelope,
     proof_kind: 'live_windows_native_video_playback',
     runtime_mode: 'live_windows_video_opt_in',
+    evidence: {
+      ...(envelope.evidence ?? {}),
+      video_seed_result: seedResult,
+    },
     known_limitations: [
       ...(envelope.known_limitations ?? []),
       'This video proof proves native route/process status for a video current/next item; it does not inspect monitor pixels.',

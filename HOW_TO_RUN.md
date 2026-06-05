@@ -151,3 +151,7 @@ npm run proof:verify-generated-test-data
 
 These fixtures are proof/test data only. They do not prove real iPhone capture, iCloud ingestion, Raspberry playback, monitor-pixel correctness, or reboot recovery.
 
+### v0.8.22 — proof-only native video seed/select path
+
+The live Windows native video playback proof now seeds one deterministic `generated_test_data` video fixture into the Test Mode database before checking `/api/runtime/playback/current`. This is a proof-only route under `/api/testing/live-windows-native-video/seed`; it does not change normal production playback ordering and the proof still cannot pass unless native playback reports a running video item with `currentMediaType=video`. Local `tools/mpv/` and `tools/ffmpeg/` bundles remain ignored and must not be vendored into baseline ZIPs.
+

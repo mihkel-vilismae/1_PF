@@ -554,6 +554,7 @@ const routes: Record<string, RouteHandler> = {
   'POST /api/native-playback/detect': nativePlaybackDetectHandler,
   'POST /api/native-playback/start-current': nativePlaybackStartCurrentHandler,
   'POST /api/native-playback/stop': nativePlaybackStopHandler,
+  'POST /api/testing/live-windows-native-video/seed': liveWindowsNativeVideoSeedHandler,
   // Live runtime projection: returns a combined runtime projection for the live monitor (View D).
   // This read‑only endpoint provides run state, worker health, playback and screen status,
   // along with field provenance.  It should never mutate runtime truth or lock state.
@@ -1636,6 +1637,43 @@ async function nativePlaybackStopHandler({ context }: Pick<HandlerArgs, 'context
   };
 }
 
+
+// Seeds a deterministic generated_test_data video fixture into Test Mode for live video proof only.
+async function liveWindowsNativeVideoSeedHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
+  if (context.runtimeMode !== 'test') {
+    throw new HttpError(409, 'proof_video_seed_requires_test_mode', 'Live Windows native video proof seeding is only allowed in Test Mode.');
+  }
+
+  const fixtureRelativePath = context.envValues.PF_LIVE_WINDOWS_NATIVE_VIDEO_PROOF_FIXTURE
+    || 'generated_test_data/videos_with_gps/apple_like_h264_mp4_gps_new_york.mp4';
+  const databaseService = getDatabaseService();
+  const database = await databaseService.buildDatabaseStatus(context);
+  const executedAt = new Date().toISOString();
+  const seed = await databaseService.runPythonJson([
+    'seed_live_windows_native_video_fixture',
+    database.absolutePath,
+    fixtureRelativePath,
+    repoRoot,
+    executedAt,
+    databaseService.getSchemaPath(),
+  ]);
+
+  return {
+    statusCode: 200,
+    payload: {
+      status: 'ok',
+      proofOnly: true,
+      runtimeMode: context.runtimeMode,
+      database,
+      seed,
+      messages: [
+        'Seeded a generated_test_data video fixture for the live Windows native video proof only.',
+        'This route is Test Mode only and does not change normal production playback ordering.',
+      ],
+      schemaVersion: 1,
+    },
+  };
+}
 
 async function runtimePlaybackCurrentHandler({ context, url }: Pick<HandlerArgs, 'context' | 'url'>): Promise<HandlerResult> {
   const contract = await buildPlaybackContract({
