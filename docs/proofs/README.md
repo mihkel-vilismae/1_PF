@@ -34,6 +34,7 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Real download continuation | `npm run proof:real-download-continuation` | opt-in real provider |
 | Raspberry power-loss recovery | `npm run proof:raspberry-recovery` | hardware/operator proof |
 | Windows native proof milestone | `docs/proofs/windows_native_proof_milestone_v0.8.26.md` | target-machine evidence summary |
+| Windows reboot/restart recovery preflight | `npm run proof:windows-reboot-recovery-preflight` | safe preflight, no reboot |
 
 - `dirty_shutdown_testing_proof.md` — deterministic proof for the Test Mode-only View C dirty-shutdown testing panel and backend guard scaffold.
 - `windows_cronemulator_proof.md` — deterministic proof for Windows CronEmulator parsing, scheduling, executor boundaries, and Python tests.
@@ -67,3 +68,7 @@ The generated JSON artifact intentionally stores assertion results and markup le
 ## Windows scheduler scope
 
 Windows Task Scheduler is not part of PF_login project scope. Task Scheduler-only proof files, scripts, and recommendations were removed in v0.8.29. The supported Windows scheduler evidence path is the proof-owned scheduler loop proof.
+
+## Windows reboot/restart recovery preflight
+
+`npm run proof:windows-reboot-recovery-preflight` validates the project-owned Windows recovery proof contract without rebooting. It checks required launchers and proof scripts, local-only media-tool ignore boundaries, cleanup rules, and non-claims. Windows Task Scheduler is not part of PF_login project scope and the preflight does not use `schtasks.exe`.

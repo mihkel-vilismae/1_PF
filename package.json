@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.8.29",
+  "version": "0.8.30",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -36,7 +36,8 @@
     "proof:live-windows-native-video-playback:windows": "powershell -NoProfile -ExecutionPolicy Bypass -File start_scripts/run_live_windows_native_video_playback_proof.ps1",
     "proof:live-windows-native-recovery:windows": "powershell -NoProfile -ExecutionPolicy Bypass -File start_scripts/run_live_windows_native_recovery_proof.ps1",
     "proof:live-windows-scheduler:windows": "powershell -NoProfile -ExecutionPolicy Bypass -File start_scripts/run_live_windows_scheduler_proof.ps1",
-    "proof:verify-generated-test-data": "python tools/verify_generated_test_data.py"
+    "proof:verify-generated-test-data": "python tools/verify_generated_test_data.py",
+    "proof:windows-reboot-recovery-preflight": "node tools/run-windows-reboot-recovery-preflight-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

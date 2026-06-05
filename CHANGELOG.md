@@ -1,5 +1,11 @@
 ### v0.8.27 - Windows native proof milestone documentation
 
+## 0.8.30 — Windows reboot/restart recovery preflight
+
+- Added `proof:windows-reboot-recovery-preflight` as a safe preflight for future manual Windows reboot/restart recovery proof work.
+- Added a proof library, runner, documentation, and regression tests that validate project-owned launcher/proof prerequisites, ignored local media-tool boundaries, cleanup expectations, and explicit non-claims.
+- Preserved the project decision that Windows Task Scheduler is not part of PF_login scope; the preflight does not call `schtasks.exe`, does not reboot Windows, and does not claim reboot, Raspberry, monitor-pixel, or production iCloud continuation proof.
+
 - Added `docs/proofs/windows_native_proof_milestone_v0.8.26.md` to consolidate the v0.8.26 Windows target-machine proof checkpoint.
 - Documented PASSED evidence boundaries for generated video fixture validation, native Windows image playback, worker-autostart image playback, native Windows video playback, controlled API-restart native recovery, and proof-owned live Windows scheduler loop.
 - Preserved explicit non-claims for Windows Task Scheduler, full Windows reboot, Raspberry cron/reboot/power-loss recovery, monitor-pixel proof, production iCloud continuation, and vendored media tooling.

@@ -290,3 +290,8 @@ Consolidated the v0.8.26 Windows proof checkpoint in `docs/proofs/windows_native
 ### v0.8.28 - Superseded Windows Task Scheduler dry-run proof
 
 This slice has been superseded by v0.8.29. Windows Task Scheduler is no longer part of PF_login project scope, so Task Scheduler-only proof paths are removed and should not be recommended or reintroduced without an explicit project-scope reversal.
+
+
+### v0.8.30 — Windows reboot/restart recovery preflight
+
+Added `proof:windows-reboot-recovery-preflight` as a safe project-owned recovery preflight. It verifies launcher, proof command, ignored local media-tool, cleanup, and non-claim boundaries before any future manual Windows reboot proof. It does not reboot Windows, does not use Windows Task Scheduler, and does not change runtime behavior.

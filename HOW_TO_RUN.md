@@ -187,3 +187,14 @@ npm run proof:windows-task-scheduler-dry-run
 ```
 
 This is a dry-run inspection proof only. It does not call `schtasks.exe`, install scheduled tasks, prove reboot behavior, or prove Raspberry cron/power recovery.
+
+
+## Windows reboot/restart recovery preflight
+
+Run this safe preflight before any future manual target-machine reboot proof:
+
+```powershell
+npm run proof:windows-reboot-recovery-preflight
+```
+
+The preflight does not reboot Windows. Windows Task Scheduler is not part of PF_login project scope. It checks project-owned launcher/proof prerequisites, local-only `tools/mpv/` / `tools/ffmpeg/` boundaries, cleanup rules, and explicit non-claims.
