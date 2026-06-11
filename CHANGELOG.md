@@ -1,3 +1,10 @@
+## 0.8.36 — Endpoint contract OpenSpec extraction
+
+- Added `docs/20_architecture_and_specs/openspec/endpoint_contract_inventory_openspec.md` as the same-origin HTTP API route-surface contract for dashboard, proof-runner, and local operator callers.
+- Added `tools/collect-endpoint-contract-inventory.mjs` plus `npm run contract:endpoints` and `npm run contract:endpoints:check` to statically extract `METHOD /api/...` route keys and guard the OpenSpec against route drift.
+- Added `tests/endpointContractInventoryOpenSpec.test.js` to preserve endpoint coverage and proof-honesty boundaries.
+- No runtime route behavior changed.
+
 ## 0.8.35 — Task docs TOC drift repair
 
 - Regenerated `task_docs/_TABLE_OF_CONTENTS.md` so `npm run task-docs:check` passes again after recent Git history changes updated the latest task-doc commit fingerprint.

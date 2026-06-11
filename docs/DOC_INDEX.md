@@ -290,3 +290,5 @@ Use these documents when investigating result payload / JSON panel scroll resets
 | `docs/40_backlog_and_tasks/active_workflow/runtime_gap_implementation_plan_20260530.md` | Backlog / active workflow | Ordered plan for real iCloudPD proof, geocode proof, GPS fallback proof, Raspberry recovery, View C restore, and View D monitor. | Current planning | Use for next slice planning only; not implementation proof. |
 
 - `docs/20_architecture_and_specs/runtime_truth_local_state.md` — current contract for tracked runtime-truth seed vs ignored local mutable `conf/runtime-truth.json`.
+
+- `docs/20_architecture_and_specs/openspec/endpoint_contract_inventory_openspec.md` — current same-origin HTTP API endpoint contract inventory and route-drift guard.

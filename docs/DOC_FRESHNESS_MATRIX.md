@@ -1,6 +1,6 @@
 # Documentation Freshness Matrix
 
-Estonian timestamp: 2026-06-11 22:35 EEST
+Estonian timestamp: 2026-06-11 22:45 EEST
 
 This matrix is a navigation aid for deciding which PF_login documents can be trusted first. Code, tests, generated evidence, and target-machine runtime output remain stronger than prose documentation.
 
@@ -10,12 +10,13 @@ This matrix is a navigation aid for deciding which PF_login documents can be tru
 |---|---|---|
 | `README.md` | current_latest_baseline | Current project overview, proof milestone summaries, and navigation entry point. |
 | `HOW_TO_RUN.md` | current_latest_baseline | Current run instructions; active `npm run ...` references are covered by `tests/docsNpmScriptReferences.test.js`. |
-| `CHANGELOG.md` | current_latest_baseline | Forward version log through v0.8.35; v0.8.28 is marked superseded by v0.8.29. |
+| `CHANGELOG.md` | current_latest_baseline | Forward version log through v0.8.36; v0.8.28 is marked superseded by v0.8.29. |
 | `docs/table_of_contents.md` | current_latest_baseline | Short operator-friendly map. |
 | `docs/proofs/README.md` | current_latest_baseline | Proof vocabulary and complete current `proof:*` npm script index. |
 | `docs/proofs/windows_native_proof_milestone_v0.8.26.md` | current_latest_baseline | Consolidated Windows target-machine proof milestone and non-claim boundary. |
 | `docs/proofs/windows_reboot_recovery_preflight.md` | current_latest_baseline | Safe preflight contract for future manual Windows reboot/restart proof; no reboot, no Windows Task Scheduler. |
 | `docs/20_architecture_and_specs/openspec/raspberry_os_missing_features_openspec.md` | current_latest_baseline | Raspberry OS missing-feature OpenSpec; documentation only, no Raspberry runtime proof. |
+| `docs/20_architecture_and_specs/openspec/endpoint_contract_inventory_openspec.md` | current_latest_baseline | Same-origin HTTP API route inventory; guarded by `npm run contract:endpoints:check`. |
 | `docs/50_audits_and_migrations/DOC_CONSISTENCY_AUDIT_20260611.md` | current_latest_baseline | Latest documentation issue registry and recommended next doc/implementation slices. |
 | `docs/50_audits_and_migrations/PF_LOGIN_PROJECT_STATUS_ANALYSIS_20260611.md` | current_latest_baseline | Current v0.8.33 structured status report covering goals, implementation coverage, OpenSpec/docs coverage, endpoints/interfaces, proof matrix, issues, and next slices. |
 
@@ -35,6 +36,7 @@ This matrix is a navigation aid for deciding which PF_login documents can be tru
 | v0.8.33 | Project status analysis and endpoint inventory report. | Documentation-only report; no runtime behavior changed. |
 | v0.8.34 | Runtime proof artifact ignore guard. | `.gitignore` and regression test only; local proof evidence remains uploadable but untracked. |
 | v0.8.35 | Task docs TOC drift repair. | Documentation-maintenance only; `npm run task-docs:check` restored to PASS. |
+| v0.8.36 | Endpoint contract OpenSpec extraction. | Static same-origin API route inventory plus docs drift guard; no runtime route behavior changed. |
 
 ## Trust classes
 

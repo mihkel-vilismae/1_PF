@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.8.35",
+  "version": "0.8.36",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -13,6 +13,8 @@
     "task-docs:toc": "node scripts/generate-task-docs-toc.mjs",
     "task-docs:check": "node scripts/generate-task-docs-toc.mjs --check",
     "validate:view-e": "node scripts/validate-view-e.mjs",
+    "contract:endpoints": "node tools/collect-endpoint-contract-inventory.mjs",
+    "contract:endpoints:check": "node tools/collect-endpoint-contract-inventory.mjs --check-doc docs/20_architecture_and_specs/openspec/endpoint_contract_inventory_openspec.md",
     "proof:full-test": "node tools/run-full-test-proof.mjs",
     "proof:real-icloudpd": "node tools/run-real-icloudpd-pipeline-proof.mjs",
     "proof:geocode-provider": "node tools/run-geocode-provider-proof.mjs",

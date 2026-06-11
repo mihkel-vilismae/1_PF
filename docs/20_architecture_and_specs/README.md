@@ -86,3 +86,4 @@ The old `docs/categorized/other_documentation/default_project_settings_and_eleme
 
 - [OpenSpec documentation index](openspec/README.md) — forward-looking contracts that are not implementation proof.
 - [Raspberry OS missing feature OpenSpec](openspec/raspberry_os_missing_features_openspec.md) — documentation-only Raspberry OS contract for launcher, tools, playback, scheduler, recovery, power-loss, evidence export, and operator-guide gaps.
+- [Endpoint contract inventory OpenSpec](openspec/endpoint_contract_inventory_openspec.md) — same-origin HTTP API route-surface map and drift guard.

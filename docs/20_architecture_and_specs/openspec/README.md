@@ -7,3 +7,5 @@ OpenSpec documents in this folder are requirements and proof contracts, not impl
 Current OpenSpec entries:
 
 - [Raspberry OS missing feature OpenSpec](raspberry_os_missing_features_openspec.md)
+
+- [Endpoint contract inventory OpenSpec](endpoint_contract_inventory_openspec.md) — static inventory of PF_login `METHOD /api/...` routes and boundary notes.
