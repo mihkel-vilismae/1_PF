@@ -72,3 +72,8 @@ Windows Task Scheduler is not part of PF_login project scope. Task Scheduler-onl
 ## Windows reboot/restart recovery preflight
 
 `npm run proof:windows-reboot-recovery-preflight` validates the project-owned Windows recovery proof contract without rebooting. It checks required launchers and proof scripts, local-only media-tool ignore boundaries, cleanup rules, and non-claims. Windows Task Scheduler is not part of PF_login project scope and the preflight does not use `schtasks.exe`.
+## Raspberry OS proof planning
+
+The Raspberry OS implementation path is documented first as OpenSpec, not as a runtime proof claim: `docs/20_architecture_and_specs/openspec/raspberry_os_missing_features_openspec.md`. It marks Raspberry runtime launcher, local tool checker, native image/video playback, address overlay, path portability, project-owned scheduler loop, worker autostart, screen on/off behavior, generated fixture validation on Raspberry, controlled recovery, manual reboot recovery, power-loss recovery, evidence export, and operator guide work as not implemented/not proven unless later evidence says otherwise.
+
+Windows Task Scheduler is not part of PF_login project scope; the Raspberry OpenSpec does not reintroduce it as a project path.

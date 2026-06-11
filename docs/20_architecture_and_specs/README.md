@@ -81,3 +81,8 @@ The old `docs/categorized/other_documentation/default_project_settings_and_eleme
 ## Runtime truth local state
 
 - [Runtime Truth Local State Contract](./runtime_truth_local_state.md) — Defines why `conf/runtime-truth.seed.json` is tracked while `conf/runtime-truth.json` is ignored local runtime state.
+
+## OpenSpec contracts
+
+- [OpenSpec documentation index](openspec/README.md) — forward-looking contracts that are not implementation proof.
+- [Raspberry OS missing feature OpenSpec](openspec/raspberry_os_missing_features_openspec.md) — documentation-only Raspberry OS contract for launcher, tools, playback, scheduler, recovery, power-loss, evidence export, and operator-guide gaps.

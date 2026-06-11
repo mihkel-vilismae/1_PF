@@ -29,6 +29,7 @@ Old TODO files, `task_docs/`, backlog docs, old categorized indexes, and vision/
 Start here:
 
 - [`docs/table_of_contents.md`](docs/table_of_contents.md) for the short documentation map.
+- [`docs/20_architecture_and_specs/openspec/raspberry_os_missing_features_openspec.md`](docs/20_architecture_and_specs/openspec/raspberry_os_missing_features_openspec.md) for the Raspberry OS OpenSpec that lists missing launcher, tooling, playback, scheduler, recovery, and evidence-export contracts before implementation.
 - [`docs/DOC_INDEX.md`](docs/DOC_INDEX.md) for the full documentation inventory.
 - [`docs/00_current_truth/`](docs/00_current_truth/) for current evidence-backed guides.
 - [`docs/10_runbooks/operator_setup_and_auth_notes.md`](docs/10_runbooks/operator_setup_and_auth_notes.md) for operator setup and auth notes.
@@ -295,3 +296,6 @@ This slice has been superseded by v0.8.29. Windows Task Scheduler is no longer p
 ### v0.8.30 — Windows reboot/restart recovery preflight
 
 Added `proof:windows-reboot-recovery-preflight` as a safe project-owned recovery preflight. It verifies launcher, proof command, ignored local media-tool, cleanup, and non-claim boundaries before any future manual Windows reboot proof. It does not reboot Windows, does not use Windows Task Scheduler, and does not change runtime behavior.
+### v0.8.31 — Raspberry OS OpenSpec missing feature documentation
+
+Added `docs/20_architecture_and_specs/openspec/raspberry_os_missing_features_openspec.md` as a documentation-only OpenSpec for Raspberry OS support. It defines missing launcher, local tool checker, native image/video playback, address overlay, path portability, project-owned scheduler loop, worker autostart, screen on/off, generated fixture validation on Raspberry, controlled recovery, manual reboot recovery, power-loss recovery, evidence export, and operator-guide contracts. It does not implement or prove Raspberry runtime behavior, does not reintroduce Windows Task Scheduler, and preserves local-only `tools/mpv/` / `tools/ffmpeg/` boundaries.

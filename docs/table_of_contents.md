@@ -85,6 +85,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/20_architecture_and_specs/test_mode_whole_logic_emulator_contract.md` | Test Mode whole-logic emulator UI and safety contract. |
 | `docs/20_architecture_and_specs/playback_resume_checkpoint_spec.md` | Playback checkpoint save/read/clear contract. |
 | `docs/20_architecture_and_specs/runtime_truth_local_state.md` | Runtime-truth seed vs local mutable file contract. |
+| `docs/20_architecture_and_specs/openspec/raspberry_os_missing_features_openspec.md` | Raspberry OS OpenSpec for missing launcher, tooling, playback, scheduler, recovery, power-loss, and evidence-export features. |
 | `docs/20_architecture_and_specs/reference/LOGGING_STANDARD_CONTRACT.md` | Logging standard contract. |
 | `docs/20_architecture_and_specs/reference/default_project_settings_and_elements_checklist.md` | Default project settings and reusable UI/runtime elements. |
 

@@ -198,3 +198,9 @@ npm run proof:windows-reboot-recovery-preflight
 ```
 
 The preflight does not reboot Windows. Windows Task Scheduler is not part of PF_login project scope. It checks project-owned launcher/proof prerequisites, local-only `tools/mpv/` / `tools/ffmpeg/` boundaries, cleanup rules, and explicit non-claims.
+
+### v0.8.31 — Raspberry OS OpenSpec docs
+
+Raspberry OS support is currently documented as an OpenSpec planning contract at `docs/20_architecture_and_specs/openspec/raspberry_os_missing_features_openspec.md`. The OpenSpec lists missing Raspberry launcher, local media tool checks, native image/video playback, address overlay, path portability, project-owned scheduler loop, worker autostart, screen on/off, generated fixture validation on Raspberry, controlled recovery, manual reboot recovery, power-loss recovery, evidence export, and HOW_TO_RUN/operator guide work.
+
+This is documentation only. It does not add Raspberry runtime commands, does not prove Raspberry playback/reboot/power-loss behavior, does not use Windows Task Scheduler, and does not vendor `tools/mpv/` or `tools/ffmpeg/` binaries.

@@ -1,3 +1,10 @@
+## 0.8.31 — Raspberry OS OpenSpec missing feature documentation
+
+- Added `docs/20_architecture_and_specs/openspec/` as the OpenSpec documentation area.
+- Added `raspberry_os_missing_features_openspec.md` to define Raspberry OS launcher, local tool checker, native image/video playback, address overlay, path portability, project-owned scheduler loop, worker autostart, screen on/off, generated fixture validation on Raspberry, controlled recovery, manual reboot recovery, power-loss recovery, evidence export, and operator-guide contracts.
+- Added documentation regression coverage to keep Raspberry features marked not implemented/not proven, preserve Windows proof milestone claims, preserve local-only `tools/mpv/` and `tools/ffmpeg/` boundaries, and keep Windows Task Scheduler out of scope.
+- No runtime behavior was changed and no Raspberry target-machine proof is claimed.
+
 ### v0.8.27 - Windows native proof milestone documentation
 
 ## 0.8.30 — Windows reboot/restart recovery preflight
