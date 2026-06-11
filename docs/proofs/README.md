@@ -48,6 +48,7 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Raspberry recovery evidence collector | `npm run proof:raspberry-recovery` | hardware/operator collector; not current Raspberry proof |
 | Raspberry tool checker | `npm run proof:raspberry-tool-checker` | Raspberry target readiness preflight |
 | Raspberry generated fixture validation | `npm run proof:raspberry-generated-fixtures` | Raspberry target fixture validation |
+| Raspberry native image playback | `npm run proof:raspberry-native-image-playback` | Raspberry target native image playback |
 
 The table above is intentionally complete for current `proof:*` package scripts. `tests/docsNpmScriptReferences.test.js` guards active documentation against stale `npm run ...` script references.
 
@@ -99,3 +100,7 @@ Windows Task Scheduler is not part of PF_login project scope; the Raspberry Open
 ## Raspberry generated fixture proof
 
 `npm run proof:raspberry-generated-fixtures` validates `generated_test_data/` on a Raspberry-like target using `python3` and `ffprobe`. It returns `BLOCKED` off-target or when prerequisites are missing, and does not prove native playback, scheduler behavior, recovery, display focus, or production iCloud continuation. See [`raspberry_generated_fixture_proof.md`](raspberry_generated_fixture_proof.md).
+
+## Raspberry native image playback proof
+
+`npm run proof:raspberry-native-image-playback` is the first target-gated Raspberry native playback proof. It selects `generated_test_data/gps_valid/gps_valid_01.jpg`, records the project-owned Raspberry launcher dry-run boundary, and starts a bounded `mpv` fullscreen image command only on a non-override Raspberry-like display target with `mpv` available. Off-target, explicit-override, missing-display, missing-tool, or missing-fixture runs return `BLOCKED`. See [`raspberry_native_image_playback_proof.md`](raspberry_native_image_playback_proof.md).

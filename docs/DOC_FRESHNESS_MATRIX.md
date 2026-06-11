@@ -10,17 +10,19 @@ This matrix is a navigation aid for deciding which PF_login documents can be tru
 |---|---|---|
 | `README.md` | current_latest_baseline | Current project overview, proof milestone summaries, and navigation entry point. |
 | `HOW_TO_RUN.md` | current_latest_baseline | Current run instructions; active `npm run ...` references are covered by `tests/docsNpmScriptReferences.test.js`. |
-| `CHANGELOG.md` | current_latest_baseline | Forward version log through v0.8.37; v0.8.28 is marked superseded by v0.8.29. |
+| `CHANGELOG.md` | current_latest_baseline | Forward version log through v0.8.40; v0.8.28 is marked superseded by v0.8.29. |
 | `docs/table_of_contents.md` | current_latest_baseline | Short operator-friendly map. |
 | `docs/proofs/README.md` | current_latest_baseline | Proof vocabulary and complete current `proof:*` npm script index. |
 | `docs/proofs/windows_native_proof_milestone_v0.8.26.md` | current_latest_baseline | Consolidated Windows target-machine proof milestone and non-claim boundary. |
 | `docs/proofs/windows_reboot_recovery_preflight.md` | current_latest_baseline | Safe preflight contract for future manual Windows reboot/restart proof; no reboot, no Windows Task Scheduler. |
 | `docs/proofs/raspberry_tool_checker_proof.md` | current_latest_baseline | Implemented Raspberry tool-checker proof workflow; PASS requires Raspberry-like target and tools. |
 | `docs/proofs/raspberry_generated_fixture_proof.md` | current_latest_baseline | Implemented Raspberry generated fixture proof workflow; PASS requires Raspberry-like target, `python3`, `ffprobe`, and validator success. |
+| `docs/proofs/raspberry_native_image_playback_proof.md` | current_latest_baseline | Implemented Raspberry native image proof workflow; PASS requires non-override Raspberry-like display target, `mpv`, deterministic fixture, launcher dry-run evidence, and bounded playback process evidence. |
 | `docs/20_architecture_and_specs/openspec/raspberry_os_missing_features_openspec.md` | current_latest_baseline | Raspberry OS missing-feature OpenSpec; documentation only, no Raspberry runtime proof. |
 | `docs/20_architecture_and_specs/openspec/raspberry_local_tool_checker_openspec.md` | current_latest_baseline | Raspberry `mpv`/`ffmpeg`/`ffprobe` readiness preflight contract; no playback/recovery claim. |
 | `docs/20_architecture_and_specs/openspec/raspberry_project_owned_launcher_openspec.md` | current_latest_baseline | Raspberry project-owned launcher skeleton contract; optional API ownership only, no playback/scheduler/recovery claim. |
 | `docs/20_architecture_and_specs/openspec/raspberry_generated_fixture_proof_openspec.md` | current_latest_baseline | Raspberry target generated fixture proof contract; fixture validation only, no playback/scheduler/recovery claim. |
+| `docs/20_architecture_and_specs/openspec/raspberry_native_image_playback_proof_openspec.md` | current_latest_baseline | Raspberry target native image playback proof contract; no video/scheduler/recovery claim. |
 | `docs/20_architecture_and_specs/openspec/endpoint_contract_inventory_openspec.md` | current_latest_baseline | Same-origin HTTP API route inventory; guarded by `npm run contract:endpoints:check`. |
 | `docs/50_audits_and_migrations/DOC_CONSISTENCY_AUDIT_20260611.md` | current_latest_baseline | Latest documentation issue registry and recommended next doc/implementation slices. |
 | `docs/50_audits_and_migrations/PF_LOGIN_PROJECT_STATUS_ANALYSIS_20260611.md` | current_latest_baseline | Current v0.8.33 structured status report covering goals, implementation coverage, OpenSpec/docs coverage, endpoints/interfaces, proof matrix, issues, and next slices. |
@@ -45,6 +47,7 @@ This matrix is a navigation aid for deciding which PF_login documents can be tru
 | v0.8.37 | Raspberry local tool checker preflight. | Implemented target-readiness proof runner for `mpv`, `ffmpeg`, and `ffprobe`; no playback/recovery proof claimed. |
 | v0.8.38 | Raspberry project-owned launcher skeleton. | Adds conservative dry-run launcher and optional project-owned API start; no playback/scheduler/recovery proof claimed. |
 | v0.8.39 | Raspberry generated fixture proof. | Adds target-gated generated fixture validation proof runner; no playback/scheduler/recovery proof claimed. |
+| v0.8.40 | Raspberry native image playback proof. | Adds first target-gated native image playback proof; no video/scheduler/recovery proof claimed. |
 
 ## Trust classes
 
@@ -70,7 +73,7 @@ This matrix is a navigation aid for deciding which PF_login documents can be tru
 
 - No Windows Task Scheduler proof path is part of PF_login.
 - No full Windows reboot recovery proof is claimed yet.
-- No Raspberry native playback, Raspberry cron/systemd/autostart, Raspberry reboot, or Raspberry power-loss recovery proof is claimed yet.
+- Raspberry native image playback is now target-gated by `proof:raspberry-native-image-playback`; no Raspberry native video playback, Raspberry cron/systemd/autostart, Raspberry reboot, or Raspberry power-loss recovery proof is claimed yet.
 - No monitor-pixel proof is claimed yet.
 - No production iCloud continuation proof is claimed by the Windows proof milestone.
 - `tools/mpv/` and `tools/ffmpeg/` are local-only ignored tool bundles and must not be vendored or re-tracked.

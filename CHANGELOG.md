@@ -1,3 +1,11 @@
+## 0.8.40 — Raspberry native image playback proof
+
+- Added `proof:raspberry-native-image-playback` for the first target-gated Raspberry native playback proof.
+- Added a proof library/runner, OpenSpec, proof documentation, and regression tests for deterministic image playback using `generated_test_data/gps_valid/gps_valid_01.jpg`.
+- Proof returns `BLOCKED` off-target, on explicit override runs, without a display session, without `mpv`, or without the deterministic image fixture.
+- Proof can return `PASSED` only on a non-override Raspberry-like display target after the project-owned launcher dry-run boundary succeeds and bounded `mpv` image playback evidence is collected.
+- Preserved non-claims for Raspberry native video playback, scheduler behavior, systemd/cron/autostart, reboot/power-loss recovery, monitor-pixel observation, native address overlay equivalence, and production iCloud continuation.
+
 ## 0.8.39 — Raspberry generated fixture proof
 
 - Added `proof:raspberry-generated-fixtures` with `tools/run-raspberry-generated-fixture-proof.mjs` and `tools/raspberry-generated-fixture-proof-lib.mjs`.

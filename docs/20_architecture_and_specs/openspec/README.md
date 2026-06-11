@@ -15,3 +15,5 @@ Current OpenSpec entries:
 - [Raspberry project-owned launcher OpenSpec](raspberry_project_owned_launcher_openspec.md) — launcher skeleton for dry-run evidence and optional API ownership without playback/scheduler/recovery claims.
 
 - [Raspberry generated fixture proof OpenSpec](raspberry_generated_fixture_proof_openspec.md) — target-gated generated fixture validation using `python3` and `ffprobe` without playback/recovery claims.
+
+- [Raspberry native image playback proof OpenSpec](raspberry_native_image_playback_proof_openspec.md) — first target-gated Raspberry native image playback proof using the launcher dry-run boundary and bounded `mpv` command.

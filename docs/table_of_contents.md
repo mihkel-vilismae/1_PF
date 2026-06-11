@@ -74,6 +74,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/proofs/windows_native_proof_milestone_v0.8.26.md` | Consolidated v0.8.26 Windows native proof milestone and non-claim boundary. |
 | `docs/proofs/windows_reboot_recovery_preflight.md` | Safe Windows reboot/restart recovery preflight contract; no reboot and no Windows Task Scheduler. |
 | `docs/proofs/raspberry_generated_fixture_proof.md` | Raspberry target generated fixture validation proof contract. |
+| `docs/proofs/raspberry_native_image_playback_proof.md` | Raspberry target native image playback proof contract. |
 
 ## Architecture and specs
 
@@ -93,6 +94,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/20_architecture_and_specs/openspec/raspberry_local_tool_checker_openspec.md` | Raspberry tool-readiness preflight contract and non-claims. |
 | `docs/20_architecture_and_specs/openspec/raspberry_project_owned_launcher_openspec.md` | Raspberry project-owned launcher skeleton contract and non-claims. |
 | `docs/20_architecture_and_specs/openspec/raspberry_generated_fixture_proof_openspec.md` | Raspberry target generated fixture validation contract and non-claims. |
+| `docs/20_architecture_and_specs/openspec/raspberry_native_image_playback_proof_openspec.md` | Raspberry target native image playback contract and non-claims. |
 | `docs/20_architecture_and_specs/openspec/endpoint_contract_inventory_openspec.md` | Same-origin HTTP API endpoint contract inventory and drift guard. |
 | `docs/20_architecture_and_specs/openspec/README.md` | OpenSpec area overview and documentation-only boundary. |
 | `docs/20_architecture_and_specs/reference/LOGGING_STANDARD_CONTRACT.md` | Logging standard contract. |

@@ -1,6 +1,6 @@
 /**
  * Verifies the Raspberry OS OpenSpec documentation slice.
- * This is documentation-only: Raspberry runtime behavior must remain unclaimed.
+ * This started as documentation-only; newer slices may mark narrow target-gated Raspberry proofs while keeping unimplemented areas unclaimed.
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -56,7 +56,7 @@ test('Raspberry OpenSpec marks features unimplemented or not run, not proven', (
   assert.match(text, /NOT_IMPLEMENTED/);
   assert.match(text, /NOT_RUN/);
   assert.match(text, /BLOCKED unless explicit hardware evidence/);
-  assert.match(text, /This OpenSpec does not prove:[\s\S]*Raspberry playback/);
+  assert.match(text, /This OpenSpec does not prove:[\s\S]*Raspberry native video playback/);
   assert.match(text, /This OpenSpec does not prove:[\s\S]*Raspberry power-loss recovery/);
 });
 

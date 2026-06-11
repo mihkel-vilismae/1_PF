@@ -32,7 +32,7 @@ Raspberry OS support must eventually provide a target-machine path for:
 
 1. Raspberry OS runtime launcher.
 2. Raspberry local tool checker/installer preflight for `mpv`, `ffmpeg`, and `ffprobe` (implemented in v0.8.37; installer remains operator-managed).
-3. Raspberry native fullscreen image playback.
+3. Raspberry native fullscreen image playback (implemented as a target-gated proof runner in v0.8.40; target PASS still requires Raspberry/display/`mpv` evidence).
 4. Raspberry native fullscreen video playback.
 5. Raspberry address/location overlay strategy.
 6. Raspberry path, environment, and runtime-data portability.
@@ -113,14 +113,15 @@ ffprobe -version
 
 ### 3. Raspberry native fullscreen image playback
 
-Status: `NOT_IMPLEMENTED`
+Status: `IMPLEMENTED_TARGET_GATED_PROOF` as of v0.8.40; target-machine PASS still requires non-override Raspberry-like display hardware/session and `mpv`.
 
 Contract:
 
-- Launch the currently selected image item on the Raspberry display using an owned native player process.
-- Record owned process identity, media identity, and stop boundary evidence.
+- Launch a deterministic generated image fixture on the Raspberry display using a bounded proof-owned `mpv` process.
+- Use `npm run proof:raspberry-native-image-playback` for the implemented target-gated proof.
+- Record project-owned launcher dry-run evidence, selected media identity, native command shape, process result, and stop boundary evidence.
 - Do not kill arbitrary `mpv`, `vlc`, `node`, or system processes by name.
-- Native playback is disabled by default outside explicit proof/operator mode.
+- Native playback remains disabled by default outside explicit proof/operator mode.
 
 ### 4. Raspberry native fullscreen video playback
 
@@ -308,7 +309,7 @@ Future Raspberry proof artifacts should include:
 3. Raspberry path portability preflight.
 4. Raspberry project-owned launcher and evidence export scaffold.
 5. Raspberry generated fixture validation target proof.
-6. Raspberry native image playback proof.
+6. Raspberry native image playback proof. Implemented in v0.8.40 as a target-gated proof runner; run on Raspberry target for PASS evidence.
 7. Raspberry native video playback proof.
 8. Raspberry project-owned scheduler loop proof.
 9. Raspberry controlled process recovery proof.
@@ -320,7 +321,7 @@ Future Raspberry proof artifacts should include:
 
 This OpenSpec does not prove:
 
-- Raspberry playback.
+- Raspberry native video playback.
 - Raspberry display focus or monitor pixels.
 - Raspberry generated fixture validation on hardware.
 - Raspberry cron/systemd/autostart behavior.
