@@ -1,3 +1,10 @@
+## 0.8.33 — Project status analysis and endpoint inventory report
+
+- Added `docs/50_audits_and_migrations/PF_LOGIN_PROJECT_STATUS_ANALYSIS_20260611.md` with a structured status report for the v0.8.32 baseline.
+- Inventoried defined product goals, implementation coverage, OpenSpec/docs coverage, exposed HTTP endpoints/interfaces, command/proof runner interfaces, input/output contracts, proof status, documentation issues, boundary risks, and recommended next slices.
+- Preserved proof-honesty boundaries: Raspberry support remains documentation-only, Windows Task Scheduler remains out of scope, generated fixtures are not real iCloud continuation, and controlled recovery is not OS reboot/power-loss recovery.
+- No runtime behavior changed.
+
 ## 0.8.32 — Documentation consistency audit and stale proof reference cleanup
 
 - Removed the stale `proof:windows-task-scheduler-dry-run` instruction from `HOW_TO_RUN.md`; Windows Task Scheduler remains outside PF_login project scope.

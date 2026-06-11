@@ -1,6 +1,6 @@
 # Documentation Index
 
-Estonian timestamp: 30.05.2026, 21:04 EEST
+Estonian timestamp: 2026-06-11 18:30 EEST
 
 This index classifies non-skill documentation files and separates current truth candidates from status snapshots, specs, backlog, archive material, and tool-local docs. The 2026-05-30 update archived old documentation-refactor status logs out of active `docs/` root navigation.
 
@@ -17,6 +17,7 @@ This index classifies non-skill documentation files and separates current truth 
 
 ## Recent additions
 
+- `docs/50_audits_and_migrations/PF_LOGIN_PROJECT_STATUS_ANALYSIS_20260611.md` — v0.8.33 structured project status, implementation coverage, OpenSpec coverage, endpoint/interface inventory, proof matrix, documentation issues, architecture risks, and next-slice plan.
 - `docs/proofs/dirty_shutdown_testing_proof.md` — deterministic proof for the Test Mode-only View C dirty-shutdown testing panel and guarded backend scaffold.
 - `docs/proofs/windows_cronemulator_proof.md` — deterministic proof workflow for Windows CronEmulator boundaries and duplicate-run behavior.
 
@@ -50,7 +51,7 @@ This index classifies non-skill documentation files and separates current truth 
 | 05_vision_and_target_specs | 8 | 534 | Target architecture/product specs; includes Slice 13 canonical specs plus compatibility pointers. |
 | 06_backlog_and_active_task_prompts | 15 | 758 | TODOs, backlog, active task prompts, including Slice 9 TODO docs and Slice 10 category backlog docs with compatibility pointers. |
 | 07_historical_task_docs_archive | 38 | 2606 | Historical task archive, archived documentation-refactor status logs, plus compatibility pointers. |
-| 08_audits_and_migration_reports | 3 | 753 | Audits and migration snapshots. |
+| 08_audits_and_migration_reports | 4+ | 1142+ | Audits, migration snapshots, documentation consistency reports, and current project status inventory. |
 | 09_documentation_indexes_and_reference | 9 | 918+ | Legacy indexes/reference docs, including compatibility pointers and the A/B/D card-button audit pointer. |
 | 13_operator_runbooks | 1 | 115 | Operator-facing runbooks moved into docs/10_runbooks. |
 | 10_tool_docs_cronemulator | 5 | 319 | CronEmulator tool docs. |
@@ -134,6 +135,7 @@ This index classifies non-skill documentation files and separates current truth 
 | docs/90_archive/task_docs_2026-04-20/2026-04-20_view-e-database-viewer.md | 445 | Task Doc — View E Database Viewer | historical_task_archive | historical_reference | historical_reference_only | 07_historical_task_docs_archive | auth, view_a, view_d | Historical task doc; canonical archive path; provenance only. |
 | docs/90_archive/task_docs_2026-04-20/README.md | 44 | Task Docs | historical_task_archive | historical_reference | historical_reference_only | 07_historical_task_docs_archive | auth | Historical task doc; canonical archive path; provenance only. |
 | docs/90_archive/task_docs_2026-04-20/_TABLE_OF_CONTENTS.md | 42 | Task Docs Table of Contents | historical_task_archive | historical_reference | historical_reference_only | 07_historical_task_docs_archive | auth, view_a, real_vs_mock | Historical task doc; canonical archive path; provenance only. |
+| docs/50_audits_and_migrations/PF_LOGIN_PROJECT_STATUS_ANALYSIS_20260611.md | 389 | PF_login project status, implementation coverage, OpenSpec coverage, and endpoint inventory — 2026-06-11 | audit_or_migration_report | current_status_analysis | current_latest_baseline | 08_audits_and_migration_reports | status, goals, implementation, openspec, endpoints, commands, proofs, risks | Current v0.8.33 structured analysis report for the v0.8.32 baseline; documentation-only, no runtime behavior changed. |
 | docs/50_audits_and_migrations/TYPE_FUNCTION_AUDIT_AND_MIGRATION_PLAN.md | 320 | Type Function Audit and Migration Plan | audit_or_migration_report | historical_reference | medium_recent_reference | 08_audits_and_migration_reports | auth, icloudpd, provider, runtime_truth, cron, download | Canonical audit/migration doc moved in Slice 15; recheck before using as implementation truth. |
 | docs/TYPE_FUNCTION_AUDIT_AND_MIGRATION_PLAN.md | 9 | Compatibility pointer — audit/migration doc moved | audit_or_migration_report | historical_reference | recent_verify_against_code | 08_audits_and_migration_reports | auth, icloudpd, provider, runtime_truth, cron, download | Compatibility pointer only; canonical file is in docs/50_audits_and_migrations/. |
 | docs/50_audits_and_migrations/TYPE_FUNCTION_MIGRATION_CLOSURE_AUDIT.md | 52 | Type Function Migration Closure Audit | audit_or_migration_report | historical_reference | medium_recent_reference | 08_audits_and_migration_reports | auth, provider, view_d | Canonical audit/migration doc moved in Slice 15; recheck before using as implementation truth. |

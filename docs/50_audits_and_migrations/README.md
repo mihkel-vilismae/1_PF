@@ -1,6 +1,6 @@
 # Audits and Migrations
 
-Estonian timestamp: 2026-05-24 23:31 EEST
+Estonian timestamp: 2026-06-11 18:30 EEST
 
 ## Purpose
 
@@ -27,6 +27,7 @@ These audit/migration documents are now canonical in this folder:
 - [Type Function Migration Closure Audit](TYPE_FUNCTION_MIGRATION_CLOSURE_AUDIT.md)
 - [Placeholder Implementation Audit](placeholder_implementations.md)
 - [Documentation Consistency Audit — 2026-06-11](DOC_CONSISTENCY_AUDIT_20260611.md)
+- [PF_login Project Status Analysis — 2026-06-11](PF_LOGIN_PROJECT_STATUS_ANALYSIS_20260611.md)
 
 Their old paths remain as compatibility pointers only. These documents are planning/review artifacts and must be rechecked against current code, tests, and generated evidence before being used as implementation truth.
 

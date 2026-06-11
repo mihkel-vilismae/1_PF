@@ -1,6 +1,6 @@
 # PF_login documentation table of contents
 
-Estonian timestamp: 2026-06-11 17:00 EEST
+Estonian timestamp: 2026-06-11 18:30 EEST
 
 ## Purpose
 
@@ -117,6 +117,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/50_audits_and_migrations/GATE_A_DOCUMENTATION_AUDIT_20260531.md` | Gate A documentation audit and inventory (2026‑05‑31). |
 | `docs/50_audits_and_migrations/MAIN_GOAL_IMPLEMENTATION_STATUS_VERIFICATION_20260531.md` | Corrective main-goal implementation-status verification (2026‑05‑31). |
 | `docs/50_audits_and_migrations/DOC_CONSISTENCY_AUDIT_20260611.md` | Current documentation consistency audit, stale-reference cleanup, and next-slice recommendations. |
+| `docs/50_audits_and_migrations/PF_LOGIN_PROJECT_STATUS_ANALYSIS_20260611.md` | Current v0.8.33 project status, implementation coverage, OpenSpec coverage, endpoint/interface inventory, proof matrix, issues, and next slices. |
 
 ## Archive and compatibility pointers
 
