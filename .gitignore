@@ -34,9 +34,16 @@ pnpm-debug.log*
 # Local runtime data
 # conf/runtime-truth.json is written during dashboard/runtime use.
 # Keep conf/runtime-truth.seed.json tracked as the committed startup template.
+# runtime_data/proofs contains timestamped local proof JSON/log/archive evidence.
+# Those artifacts are copied into operator-uploaded evidence ZIPs, not committed to Git.
 runtime_data/
-test_runtime_data/
+runtime_data/**
+runtime_data/proofs/
+runtime_data/proofs/**
 runtime_data/private_logs/
+runtime_data/private_logs/**
+test_runtime_data/
+test_runtime_data/**
 runtime-truth.json
 conf/runtime-truth.json
 tools/CronEmulator/crontab_emulated.txt

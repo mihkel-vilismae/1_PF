@@ -1,3 +1,9 @@
+## 0.8.34 — Runtime proof artifact ignore guard
+
+- Made the `.gitignore` runtime-proof boundary explicit for `runtime_data/proofs/**`, `runtime_data/private_logs/**`, and `test_runtime_data/**` so timestamped local proof JSON/log/archive evidence remains uploadable but not trackable.
+- Added `tests/gitignoreRuntimeProofArtifacts.test.js` to guard the ignore contract with representative proof JSON, log, ZIP, private log, and test-runtime paths.
+- No runtime behavior changed; proof runners still write local evidence to `runtime_data/proofs`, and operator proof ZIPs remain the evidence exchange mechanism.
+
 ## 0.8.33 — Project status analysis and endpoint inventory report
 
 - Added `docs/50_audits_and_migrations/PF_LOGIN_PROJECT_STATUS_ANALYSIS_20260611.md` with a structured status report for the v0.8.32 baseline.
