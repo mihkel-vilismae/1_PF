@@ -50,6 +50,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/10_runbooks/gps_metadata_sources.md` | GPS metadata source formats for EXIF, sidecars, filename tokens, and path tokens. |
 | `docs/10_runbooks/geocode_provider_activation.md` | Safe geocode provider activation and cache-first verification. |
 | `docs/10_runbooks/documentation_workflow_and_inventory.md` | Documentation workflow and inventory rules. |
+| `docs/10_runbooks/raspberry_project_owned_launcher.md` | Raspberry project-owned launcher skeleton runbook. |
 
 
 ## Proof artifacts
@@ -89,6 +90,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/20_architecture_and_specs/runtime_truth_local_state.md` | Runtime-truth seed vs local mutable file contract. |
 | `docs/20_architecture_and_specs/openspec/raspberry_os_missing_features_openspec.md` | Raspberry OS OpenSpec for missing launcher, tooling, playback, scheduler, recovery, power-loss, and evidence-export features. |
 | `docs/20_architecture_and_specs/openspec/raspberry_local_tool_checker_openspec.md` | Raspberry tool-readiness preflight contract and non-claims. |
+| `docs/20_architecture_and_specs/openspec/raspberry_project_owned_launcher_openspec.md` | Raspberry project-owned launcher skeleton contract and non-claims. |
 | `docs/20_architecture_and_specs/openspec/endpoint_contract_inventory_openspec.md` | Same-origin HTTP API endpoint contract inventory and drift guard. |
 | `docs/20_architecture_and_specs/openspec/README.md` | OpenSpec area overview and documentation-only boundary. |
 | `docs/20_architecture_and_specs/reference/LOGGING_STANDARD_CONTRACT.md` | Logging standard contract. |
@@ -135,6 +137,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | Path | Use |
 | --- | --- |
 | `start_win_full.cmd` / `start_scripts/start_win_full.ps1` | Full Windows launcher with API, frontend, and component-status monitor tabs/windows. |
+| `start_raspberry_full.sh` / `start_scripts/start_raspberry_full.sh` | Raspberry project-owned launcher skeleton; dry-run by default, optional API start only. |
 | `start_win.cmd` | Lighter Windows startup path with API, frontend, and component-status monitor terminals. |
 | `start_scripts/start_component_status.ps1` | API/dashboard running-status and version monitor for Windows launchers. |
 | `conf/runtime-truth.seed.json` | Committed neutral runtime-truth seed used at dashboard boot. |

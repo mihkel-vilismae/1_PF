@@ -11,3 +11,5 @@ Current OpenSpec entries:
 - [Endpoint contract inventory OpenSpec](endpoint_contract_inventory_openspec.md) — static inventory of PF_login `METHOD /api/...` routes and boundary notes.
 
 - [Raspberry local tool checker OpenSpec](raspberry_local_tool_checker_openspec.md) — implemented preflight for `mpv`, `ffmpeg`, and `ffprobe` readiness without playback/recovery claims.
+
+- [Raspberry project-owned launcher OpenSpec](raspberry_project_owned_launcher_openspec.md) — launcher skeleton for dry-run evidence and optional API ownership without playback/scheduler/recovery claims.

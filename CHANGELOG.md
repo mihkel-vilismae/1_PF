@@ -1,3 +1,10 @@
+## 0.8.38 — Raspberry project-owned launcher skeleton
+
+- Added `start_raspberry_full.sh` as a thin Raspberry launcher entrypoint delegating to `start_scripts/start_raspberry_full.sh`.
+- Added a conservative project-owned launcher skeleton that writes ignored launch-plan evidence under `runtime_data/raspberry_launcher/` and starts the API only when `--start-api` is explicitly passed.
+- Added `docs/20_architecture_and_specs/openspec/raspberry_project_owned_launcher_openspec.md`, `docs/10_runbooks/raspberry_project_owned_launcher.md`, and `tests/raspberryProjectOwnedLauncher.test.js` to guard launcher ownership boundaries and non-claims.
+- No Raspberry native playback, scheduler loop, boot autostart, reboot recovery, power-loss recovery, or generated fixture proof is claimed by this slice.
+
 ## 0.8.37 — Raspberry local tool checker preflight
 
 - Added `docs/20_architecture_and_specs/openspec/raspberry_local_tool_checker_openspec.md` to define the Raspberry tool-readiness contract for `mpv`, `ffmpeg`, and `ffprobe`.
