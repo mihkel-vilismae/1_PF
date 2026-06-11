@@ -27,17 +27,27 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Real geocode provider chain | `npm run proof:real-geocode-provider-chain` | opt-in real network provider |
 | GPS fallback parsing | `npm run proof:gps-fallback` | deterministic local |
 | Deterministic media pipeline | `npm run proof:deterministic-media-pipeline` | deterministic local |
+| Real download continuation | `npm run proof:real-download-continuation` | opt-in real provider |
 | Address display | `npm run proof:address-display` | deterministic local |
 | Address display UI | `npm run proof:address-display-ui` | deterministic local UI render |
-| Native / fullscreen playback | `npm run proof:native-fullscreen-playback` | deterministic local |
-| Windows CronEmulator | `npm run proof:windows-cronemulator` | windows emulator |
-| Real download continuation | `npm run proof:real-download-continuation` | opt-in real provider |
-| Raspberry power-loss recovery | `npm run proof:raspberry-recovery` | hardware/operator proof |
-| Windows native proof milestone | `docs/proofs/windows_native_proof_milestone_v0.8.26.md` | target-machine evidence summary |
+| Native / fullscreen playback | `npm run proof:native-fullscreen-playback` | deterministic local/browser boundary |
+| Dirty-shutdown testing panel | `npm run proof:dirty-shutdown-testing` | deterministic Test Mode |
+| Windows CronEmulator | `npm run proof:windows-cronemulator` | deterministic Windows CronEmulator |
+| E2E local photo frame | `npm run proof:e2e-local-photo-frame` | deterministic local end-to-end |
+| Test Mode whole-logic emulator | `npm run proof:test-mode-whole-logic-emulator` | deterministic Test Mode controller |
+| Live Windows native playback | `npm run proof:live-windows-native-playback` | opt-in Windows native proof |
+| Live Windows native playback wrapper | `npm run proof:live-windows-native-playback:windows` | Windows launcher wrapper |
+| Live Windows native video playback | `npm run proof:live-windows-native-video-playback` | opt-in Windows native video proof |
+| Live Windows native video playback wrapper | `npm run proof:live-windows-native-video-playback:windows` | Windows launcher wrapper |
+| Live Windows native recovery | `npm run proof:live-windows-native-recovery` | opt-in Windows controlled recovery proof |
+| Live Windows native recovery wrapper | `npm run proof:live-windows-native-recovery:windows` | Windows launcher wrapper |
+| Live Windows scheduler loop | `npm run proof:live-windows-scheduler` | proof-owned scheduler loop |
+| Live Windows scheduler wrapper | `npm run proof:live-windows-scheduler:windows` | Windows launcher wrapper |
+| Generated fixture validation | `npm run proof:verify-generated-test-data` | deterministic fixture validation |
 | Windows reboot/restart recovery preflight | `npm run proof:windows-reboot-recovery-preflight` | safe preflight, no reboot |
+| Raspberry recovery evidence collector | `npm run proof:raspberry-recovery` | hardware/operator collector; not current Raspberry proof |
 
-- `dirty_shutdown_testing_proof.md` — deterministic proof for the Test Mode-only View C dirty-shutdown testing panel and backend guard scaffold.
-- `windows_cronemulator_proof.md` — deterministic proof for Windows CronEmulator parsing, scheduling, executor boundaries, and Python tests.
+The table above is intentionally complete for current `proof:*` package scripts. `tests/docsNpmScriptReferences.test.js` guards active documentation against stale `npm run ...` script references.
 
 ## Real geocode provider-chain proof
 

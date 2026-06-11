@@ -1,3 +1,12 @@
+## 0.8.32 — Documentation consistency audit and stale proof reference cleanup
+
+- Removed the stale `proof:windows-task-scheduler-dry-run` instruction from `HOW_TO_RUN.md`; Windows Task Scheduler remains outside PF_login project scope.
+- Refreshed `docs/DOC_FRESHNESS_MATRIX.md` for the v0.8.24-v0.8.32 proof/documentation milestones.
+- Added `docs/50_audits_and_migrations/DOC_CONSISTENCY_AUDIT_20260611.md` as the current documentation issue/audit registry.
+- Expanded `docs/proofs/README.md` so the proof-command index covers every current `proof:*` npm script.
+- Added `tests/docsNpmScriptReferences.test.js` to fail when active docs reference missing `npm run ...` scripts.
+- No runtime behavior changed; Raspberry runtime behavior remains unimplemented/not proven, and local-only media tool boundaries remain preserved.
+
 ## 0.8.31 — Raspberry OS OpenSpec missing feature documentation
 
 - Added `docs/20_architecture_and_specs/openspec/` as the OpenSpec documentation area.
@@ -5,20 +14,29 @@
 - Added documentation regression coverage to keep Raspberry features marked not implemented/not proven, preserve Windows proof milestone claims, preserve local-only `tools/mpv/` and `tools/ffmpeg/` boundaries, and keep Windows Task Scheduler out of scope.
 - No runtime behavior was changed and no Raspberry target-machine proof is claimed.
 
-### v0.8.27 - Windows native proof milestone documentation
-
 ## 0.8.30 — Windows reboot/restart recovery preflight
 
 - Added `proof:windows-reboot-recovery-preflight` as a safe preflight for future manual Windows reboot/restart recovery proof work.
 - Added a proof library, runner, documentation, and regression tests that validate project-owned launcher/proof prerequisites, ignored local media-tool boundaries, cleanup expectations, and explicit non-claims.
 - Preserved the project decision that Windows Task Scheduler is not part of PF_login scope; the preflight does not call `schtasks.exe`, does not reboot Windows, and does not claim reboot, Raspberry, monitor-pixel, or production iCloud continuation proof.
 
+## 0.8.29 — Remove Windows Task Scheduler project scope
+
+- Removed the Windows Task Scheduler-only dry-run proof files, script, test, documentation, and package script from active scope.
+- Preserved the project-owned scheduler-loop / CronEmulator-style Windows evidence path.
+- Added scheduler-scope documentation coverage so Windows Task Scheduler is not recommended as a future PF_login path.
+
+## 0.8.28 — Superseded Windows Task Scheduler dry-run proof contract
+
+- Superseded by v0.8.29 after the project decision that Windows Task Scheduler is not part of PF_login scope.
+- Do not reintroduce Task Scheduler-only proof paths unless the project scope is explicitly reversed.
+
+## 0.8.27 — Windows native proof milestone documentation
+
 - Added `docs/proofs/windows_native_proof_milestone_v0.8.26.md` to consolidate the v0.8.26 Windows target-machine proof checkpoint.
 - Documented PASSED evidence boundaries for generated video fixture validation, native Windows image playback, worker-autostart image playback, native Windows video playback, controlled API-restart native recovery, and proof-owned live Windows scheduler loop.
 - Preserved explicit non-claims for Windows Task Scheduler, full Windows reboot, Raspberry cron/reboot/power-loss recovery, monitor-pixel proof, production iCloud continuation, and vendored media tooling.
 - Added documentation regression coverage for the proof milestone and non-claim boundaries.
-
-
 
 ### v0.8.26 - Proof-owned live Windows scheduler evidence collection
 

@@ -296,6 +296,10 @@ This slice has been superseded by v0.8.29. Windows Task Scheduler is no longer p
 ### v0.8.30 — Windows reboot/restart recovery preflight
 
 Added `proof:windows-reboot-recovery-preflight` as a safe project-owned recovery preflight. It verifies launcher, proof command, ignored local media-tool, cleanup, and non-claim boundaries before any future manual Windows reboot proof. It does not reboot Windows, does not use Windows Task Scheduler, and does not change runtime behavior.
+### v0.8.32 — documentation consistency audit and stale proof reference cleanup
+
+Added a documentation consistency audit, refreshed current-document freshness guidance, expanded the proof command index, removed the stale Windows Task Scheduler dry-run command from run instructions, and added a regression test that checks documented `npm run ...` references against `package.json`. This is documentation/test-only cleanup; no runtime behavior is changed.
+
 ### v0.8.31 — Raspberry OS OpenSpec missing feature documentation
 
 Added `docs/20_architecture_and_specs/openspec/raspberry_os_missing_features_openspec.md` as a documentation-only OpenSpec for Raspberry OS support. It defines missing launcher, local tool checker, native image/video playback, address overlay, path portability, project-owned scheduler loop, worker autostart, screen on/off, generated fixture validation on Raspberry, controlled recovery, manual reboot recovery, power-loss recovery, evidence export, and operator-guide contracts. It does not implement or prove Raspberry runtime behavior, does not reintroduce Windows Task Scheduler, and preserves local-only `tools/mpv/` / `tools/ffmpeg/` boundaries.

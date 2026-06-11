@@ -1,6 +1,6 @@
 # PF_login documentation table of contents
 
-Estonian timestamp: 30.05.2026, 21:04 EEST
+Estonian timestamp: 2026-06-11 17:00 EEST
 
 ## Purpose
 
@@ -70,6 +70,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/proofs/dirty_shutdown_testing_proof.md` | Test Mode-only dirty-shutdown testing panel and backend guard proof. |
 | `docs/proofs/windows_cronemulator_proof.md` | Windows CronEmulator boundary and duplicate-run proof. |
 | `docs/proofs/windows_native_proof_milestone_v0.8.26.md` | Consolidated v0.8.26 Windows native proof milestone and non-claim boundary. |
+| `docs/proofs/windows_reboot_recovery_preflight.md` | Safe Windows reboot/restart recovery preflight contract; no reboot and no Windows Task Scheduler. |
 
 ## Architecture and specs
 
@@ -86,6 +87,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/20_architecture_and_specs/playback_resume_checkpoint_spec.md` | Playback checkpoint save/read/clear contract. |
 | `docs/20_architecture_and_specs/runtime_truth_local_state.md` | Runtime-truth seed vs local mutable file contract. |
 | `docs/20_architecture_and_specs/openspec/raspberry_os_missing_features_openspec.md` | Raspberry OS OpenSpec for missing launcher, tooling, playback, scheduler, recovery, power-loss, and evidence-export features. |
+| `docs/20_architecture_and_specs/openspec/README.md` | OpenSpec area overview and documentation-only boundary. |
 | `docs/20_architecture_and_specs/reference/LOGGING_STANDARD_CONTRACT.md` | Logging standard contract. |
 | `docs/20_architecture_and_specs/reference/default_project_settings_and_elements_checklist.md` | Default project settings and reusable UI/runtime elements. |
 
@@ -114,6 +116,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/50_audits_and_migrations/TYPE_FUNCTION_MIGRATION_CLOSURE_AUDIT.md` | Type/function migration closure audit. |
 | `docs/50_audits_and_migrations/GATE_A_DOCUMENTATION_AUDIT_20260531.md` | Gate A documentation audit and inventory (2026‑05‑31). |
 | `docs/50_audits_and_migrations/MAIN_GOAL_IMPLEMENTATION_STATUS_VERIFICATION_20260531.md` | Corrective main-goal implementation-status verification (2026‑05‑31). |
+| `docs/50_audits_and_migrations/DOC_CONSISTENCY_AUDIT_20260611.md` | Current documentation consistency audit, stale-reference cleanup, and next-slice recommendations. |
 
 ## Archive and compatibility pointers
 
@@ -138,5 +141,3 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `generated_test_data/README.md` | Proof-only generated media fixture inventory, including repaired synthetic video fixtures. |
 | `tools/verify_generated_test_data.py` | Deterministic generated fixture validation script. |
 | `docs/VIDEO_FIXTURE_REPAIR_HANDOFF_20260603.md` | Handoff and repair context for generated video fixture mismatch. |
-
-| `docs/proofs/windows_reboot_recovery_preflight.md` | Safe Windows reboot/restart recovery preflight contract; no reboot and no Windows Task Scheduler. |
