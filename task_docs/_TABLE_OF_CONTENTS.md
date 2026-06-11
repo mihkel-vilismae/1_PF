@@ -17,14 +17,14 @@ Rules:
 
 | Path | Title | Purpose | Status | Created | Last Updated | Latest Commit | Notes |
 |---|---|---|---|---|---|---|---|
-| `2026-04-20_dashboard-transit-terminal.md` | `Archived Task Doc Pointer` | Estonian timestamp: 2026-05-25 00:03 EEST | `archived` | `2026-04-20` | `2026-05-24` | `f4a4acf` | — |
-| `2026-04-20_explain-controls-inspect-mode.md` | `Archived Task Doc Pointer` | Estonian timestamp: 2026-05-25 00:03 EEST | `archived` | `2026-04-20` | `2026-05-24` | `f4a4acf` | — |
-| `2026-04-20_explain-values-source-mode.md` | `Archived Task Doc Pointer` | Estonian timestamp: 2026-05-25 00:03 EEST | `archived` | `2026-04-20` | `2026-05-24` | `f4a4acf` | — |
-| `2026-04-20_runtime-backend-foundation.md` | `Archived Task Doc Pointer` | Estonian timestamp: 2026-05-25 00:03 EEST | `archived` | `2026-04-20` | `2026-05-24` | `f4a4acf` | — |
-| `2026-04-20_show-backend-status-mode.md` | `Archived Task Doc Pointer` | Estonian timestamp: 2026-05-25 00:03 EEST | `archived` | `2026-04-20` | `2026-05-24` | `f4a4acf` | — |
-| `2026-04-20_show-real-vs-mock-mode.md` | `Archived Task Doc Pointer` | Estonian timestamp: 2026-05-25 00:03 EEST | `archived` | `2026-04-20` | `2026-05-24` | `f4a4acf` | — |
-| `2026-04-20_view-e-database-viewer.md` | `Archived Task Doc Pointer` | Estonian timestamp: 2026-05-25 00:03 EEST | `archived` | `2026-04-20` | `2026-05-24` | `f4a4acf` | — |
-| `README.md` | `Archived Task Doc Pointer` | Estonian timestamp: 2026-05-25 00:03 EEST | `reference` | `2026-04-20` | `2026-05-24` | `f4a4acf` | Companion process doc for task_docs/ maintenance. |
+| `2026-04-20_dashboard-transit-terminal.md` | `Archived Task Doc Pointer` | Estonian timestamp: 2026-05-25 00:03 EEST | `archived` | `2026-04-20` | `2026-05-24` | `3133909` | — |
+| `2026-04-20_explain-controls-inspect-mode.md` | `Archived Task Doc Pointer` | Estonian timestamp: 2026-05-25 00:03 EEST | `archived` | `2026-04-20` | `2026-05-24` | `3133909` | — |
+| `2026-04-20_explain-values-source-mode.md` | `Archived Task Doc Pointer` | Estonian timestamp: 2026-05-25 00:03 EEST | `archived` | `2026-04-20` | `2026-05-24` | `3133909` | — |
+| `2026-04-20_runtime-backend-foundation.md` | `Archived Task Doc Pointer` | Estonian timestamp: 2026-05-25 00:03 EEST | `archived` | `2026-04-20` | `2026-05-24` | `3133909` | — |
+| `2026-04-20_show-backend-status-mode.md` | `Archived Task Doc Pointer` | Estonian timestamp: 2026-05-25 00:03 EEST | `archived` | `2026-04-20` | `2026-05-24` | `3133909` | — |
+| `2026-04-20_show-real-vs-mock-mode.md` | `Archived Task Doc Pointer` | Estonian timestamp: 2026-05-25 00:03 EEST | `archived` | `2026-04-20` | `2026-05-24` | `3133909` | — |
+| `2026-04-20_view-e-database-viewer.md` | `Archived Task Doc Pointer` | Estonian timestamp: 2026-05-25 00:03 EEST | `archived` | `2026-04-20` | `2026-05-24` | `3133909` | — |
+| `README.md` | `Archived Task Doc Pointer` | Estonian timestamp: 2026-05-25 00:03 EEST | `reference` | `2026-04-20` | `2026-05-24` | `3133909` | Companion process doc for task_docs/ maintenance. |
 
 ## Maintenance Check
 

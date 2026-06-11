@@ -1,3 +1,8 @@
+## 0.8.35 — Task docs TOC drift repair
+
+- Regenerated `task_docs/_TABLE_OF_CONTENTS.md` so `npm run task-docs:check` passes again after recent Git history changes updated the latest task-doc commit fingerprint.
+- Preserved the archived task-doc pointer status and did not change runtime behavior, OpenSpec scope, proof runners, or generated fixtures.
+
 ## 0.8.34 — Runtime proof artifact ignore guard
 
 - Made the `.gitignore` runtime-proof boundary explicit for `runtime_data/proofs/**`, `runtime_data/private_logs/**`, and `test_runtime_data/**` so timestamped local proof JSON/log/archive evidence remains uploadable but not trackable.
