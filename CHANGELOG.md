@@ -1,3 +1,10 @@
+## 0.8.41 — Hermetic View E validation
+
+- Updated `scripts/validate-view-e.mjs` so `npm run validate:view-e` always uses a proof-owned temporary env file and database instead of any ignored local `.env`, ambient `DB_PATH`, `LOG_DIR`, download directory, or cookie directory.
+- Added `VALIDATE_VIEW_E_PORT` support for isolated validation/test runs and records sanitized env-isolation metadata in the validation output.
+- Added `tests/viewEValidationHermetic.test.js` to reproduce the hostile existing-DB `.env` case and guard against secret leakage or local `.env` mutation.
+- Preserved View E validation behavior: verify/connect fail before DB creation, recreate-empty succeeds, table/row/logging paths are exercised, and temporary proof state is cleaned up after the run.
+
 ## 0.8.40 — Raspberry native image playback proof
 
 - Added `proof:raspberry-native-image-playback` for the first target-gated Raspberry native playback proof.

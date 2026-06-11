@@ -88,6 +88,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/20_architecture_and_specs/media_pipeline_geocode_provider_chain.md` | Reverse-geocode provider registry/config behavior. |
 | `docs/20_architecture_and_specs/native_playback_runner_spec.md` | Native playback runner contract. |
 | `docs/20_architecture_and_specs/test_mode_whole_logic_emulator_contract.md` | Test Mode whole-logic emulator UI and safety contract. |
+| `docs/20_architecture_and_specs/view_e_validation_hermetic_contract.md` | View E validation hermeticity contract for proof-owned temporary env/DB behavior. |
 | `docs/20_architecture_and_specs/playback_resume_checkpoint_spec.md` | Playback checkpoint save/read/clear contract. |
 | `docs/20_architecture_and_specs/runtime_truth_local_state.md` | Runtime-truth seed vs local mutable file contract. |
 | `docs/20_architecture_and_specs/openspec/raspberry_os_missing_features_openspec.md` | Raspberry OS OpenSpec for missing launcher, tooling, playback, scheduler, recovery, power-loss, and evidence-export features. |

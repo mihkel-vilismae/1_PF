@@ -10,7 +10,7 @@ This matrix is a navigation aid for deciding which PF_login documents can be tru
 |---|---|---|
 | `README.md` | current_latest_baseline | Current project overview, proof milestone summaries, and navigation entry point. |
 | `HOW_TO_RUN.md` | current_latest_baseline | Current run instructions; active `npm run ...` references are covered by `tests/docsNpmScriptReferences.test.js`. |
-| `CHANGELOG.md` | current_latest_baseline | Forward version log through v0.8.40; v0.8.28 is marked superseded by v0.8.29. |
+| `CHANGELOG.md` | current_latest_baseline | Forward version log through v0.8.41; v0.8.28 is marked superseded by v0.8.29. |
 | `docs/table_of_contents.md` | current_latest_baseline | Short operator-friendly map. |
 | `docs/proofs/README.md` | current_latest_baseline | Proof vocabulary and complete current `proof:*` npm script index. |
 | `docs/proofs/windows_native_proof_milestone_v0.8.26.md` | current_latest_baseline | Consolidated Windows target-machine proof milestone and non-claim boundary. |
@@ -24,6 +24,7 @@ This matrix is a navigation aid for deciding which PF_login documents can be tru
 | `docs/20_architecture_and_specs/openspec/raspberry_generated_fixture_proof_openspec.md` | current_latest_baseline | Raspberry target generated fixture proof contract; fixture validation only, no playback/scheduler/recovery claim. |
 | `docs/20_architecture_and_specs/openspec/raspberry_native_image_playback_proof_openspec.md` | current_latest_baseline | Raspberry target native image playback proof contract; no video/scheduler/recovery claim. |
 | `docs/20_architecture_and_specs/openspec/endpoint_contract_inventory_openspec.md` | current_latest_baseline | Same-origin HTTP API route inventory; guarded by `npm run contract:endpoints:check`. |
+| `docs/20_architecture_and_specs/view_e_validation_hermetic_contract.md` | current_latest_baseline | View E validation hermeticity contract; guarded by `tests/viewEValidationHermetic.test.js`. |
 | `docs/50_audits_and_migrations/DOC_CONSISTENCY_AUDIT_20260611.md` | current_latest_baseline | Latest documentation issue registry and recommended next doc/implementation slices. |
 | `docs/50_audits_and_migrations/PF_LOGIN_PROJECT_STATUS_ANALYSIS_20260611.md` | current_latest_baseline | Current v0.8.33 structured status report covering goals, implementation coverage, OpenSpec/docs coverage, endpoints/interfaces, proof matrix, issues, and next slices. |
 
@@ -48,6 +49,7 @@ This matrix is a navigation aid for deciding which PF_login documents can be tru
 | v0.8.38 | Raspberry project-owned launcher skeleton. | Adds conservative dry-run launcher and optional project-owned API start; no playback/scheduler/recovery proof claimed. |
 | v0.8.39 | Raspberry generated fixture proof. | Adds target-gated generated fixture validation proof runner; no playback/scheduler/recovery proof claimed. |
 | v0.8.40 | Raspberry native image playback proof. | Adds first target-gated native image playback proof; no video/scheduler/recovery proof claimed. |
+| v0.8.41 | Hermetic View E validation. | `npm run validate:view-e` uses proof-owned temp env/DB and ignores local `.env`/ambient DB paths. |
 
 ## Trust classes
 

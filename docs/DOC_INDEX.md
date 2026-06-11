@@ -4,8 +4,8 @@ Estonian timestamp: 2026-06-11 18:30 EEST
 
 This index classifies non-skill documentation files and separates current truth candidates from status snapshots, specs, backlog, archive material, and tool-local docs. The 2026-05-30 update archived old documentation-refactor status logs out of active `docs/` root navigation.
 
-- Included documentation files: 132
-- Included documentation LOC: 10624+
+- Included documentation files: 133
+- Included documentation LOC: 10658+
 
 
 ## 2026-05-30 navigation refresh
@@ -17,6 +17,7 @@ This index classifies non-skill documentation files and separates current truth 
 
 ## Recent additions
 
+- `docs/20_architecture_and_specs/view_e_validation_hermetic_contract.md` — v0.8.41 View E validation hermeticity contract for proof-owned temp env/DB behavior.
 - `docs/20_architecture_and_specs/openspec/raspberry_native_image_playback_proof_openspec.md` and `docs/proofs/raspberry_native_image_playback_proof.md` — v0.8.40 Raspberry target native image playback proof contract.
 - `docs/20_architecture_and_specs/openspec/raspberry_generated_fixture_proof_openspec.md` and `docs/proofs/raspberry_generated_fixture_proof.md` — v0.8.39 Raspberry target generated fixture validation proof contract.
 - `docs/20_architecture_and_specs/openspec/raspberry_project_owned_launcher_openspec.md` and `docs/10_runbooks/raspberry_project_owned_launcher.md` — v0.8.38 Raspberry launcher skeleton contract and operator runbook.
