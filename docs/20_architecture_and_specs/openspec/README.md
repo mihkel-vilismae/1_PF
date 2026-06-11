@@ -9,3 +9,5 @@ Current OpenSpec entries:
 - [Raspberry OS missing feature OpenSpec](raspberry_os_missing_features_openspec.md)
 
 - [Endpoint contract inventory OpenSpec](endpoint_contract_inventory_openspec.md) — static inventory of PF_login `METHOD /api/...` routes and boundary notes.
+
+- [Raspberry local tool checker OpenSpec](raspberry_local_tool_checker_openspec.md) — implemented preflight for `mpv`, `ffmpeg`, and `ffprobe` readiness without playback/recovery claims.

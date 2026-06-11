@@ -46,6 +46,7 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Generated fixture validation | `npm run proof:verify-generated-test-data` | deterministic fixture validation |
 | Windows reboot/restart recovery preflight | `npm run proof:windows-reboot-recovery-preflight` | safe preflight, no reboot |
 | Raspberry recovery evidence collector | `npm run proof:raspberry-recovery` | hardware/operator collector; not current Raspberry proof |
+| Raspberry tool checker | `npm run proof:raspberry-tool-checker` | Raspberry target readiness preflight |
 
 The table above is intentionally complete for current `proof:*` package scripts. `tests/docsNpmScriptReferences.test.js` guards active documentation against stale `npm run ...` script references.
 
@@ -87,3 +88,7 @@ Windows Task Scheduler is not part of PF_login project scope. Task Scheduler-onl
 The Raspberry OS implementation path is documented first as OpenSpec, not as a runtime proof claim: `docs/20_architecture_and_specs/openspec/raspberry_os_missing_features_openspec.md`. It marks Raspberry runtime launcher, local tool checker, native image/video playback, address overlay, path portability, project-owned scheduler loop, worker autostart, screen on/off behavior, generated fixture validation on Raspberry, controlled recovery, manual reboot recovery, power-loss recovery, evidence export, and operator guide work as not implemented/not proven unless later evidence says otherwise.
 
 Windows Task Scheduler is not part of PF_login project scope; the Raspberry OpenSpec does not reintroduce it as a project path.
+
+## Raspberry tool checker proof
+
+`npm run proof:raspberry-tool-checker` checks Raspberry target readiness for `mpv`, `ffmpeg`, and `ffprobe`. It returns `PASSED` only on a Raspberry-like target with all tools available, and returns `BLOCKED` for off-target or missing-tool runs. It does not prove Raspberry playback, scheduler behavior, reboot recovery, power-loss recovery, display focus, monitor pixels, or production iCloud continuation.

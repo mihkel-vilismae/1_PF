@@ -66,6 +66,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/proofs/gps_fallback_proof.md` | Deterministic local GPS fallback proof workflow. |
 | `docs/proofs/deterministic_media_pipeline_proof.md` | Deterministic local media pipeline proof workflow. |
 | `docs/proofs/raspberry_power_loss_recovery_proof.md` | Raspberry power-loss recovery proof workflow. |
+| `docs/proofs/raspberry_tool_checker_proof.md` | Raspberry `mpv`/`ffmpeg`/`ffprobe` target readiness proof workflow. |
 | `docs/proofs/native_fullscreen_playback_proof.md` | Native/fullscreen playback boundary proof workflow. |
 | `docs/proofs/dirty_shutdown_testing_proof.md` | Test Mode-only dirty-shutdown testing panel and backend guard proof. |
 | `docs/proofs/windows_cronemulator_proof.md` | Windows CronEmulator boundary and duplicate-run proof. |
@@ -87,6 +88,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/20_architecture_and_specs/playback_resume_checkpoint_spec.md` | Playback checkpoint save/read/clear contract. |
 | `docs/20_architecture_and_specs/runtime_truth_local_state.md` | Runtime-truth seed vs local mutable file contract. |
 | `docs/20_architecture_and_specs/openspec/raspberry_os_missing_features_openspec.md` | Raspberry OS OpenSpec for missing launcher, tooling, playback, scheduler, recovery, power-loss, and evidence-export features. |
+| `docs/20_architecture_and_specs/openspec/raspberry_local_tool_checker_openspec.md` | Raspberry tool-readiness preflight contract and non-claims. |
 | `docs/20_architecture_and_specs/openspec/endpoint_contract_inventory_openspec.md` | Same-origin HTTP API endpoint contract inventory and drift guard. |
 | `docs/20_architecture_and_specs/openspec/README.md` | OpenSpec area overview and documentation-only boundary. |
 | `docs/20_architecture_and_specs/reference/LOGGING_STANDARD_CONTRACT.md` | Logging standard contract. |

@@ -292,3 +292,7 @@ Use these documents when investigating result payload / JSON panel scroll resets
 - `docs/20_architecture_and_specs/runtime_truth_local_state.md` — current contract for tracked runtime-truth seed vs ignored local mutable `conf/runtime-truth.json`.
 
 - `docs/20_architecture_and_specs/openspec/endpoint_contract_inventory_openspec.md` — current same-origin HTTP API endpoint contract inventory and route-drift guard.
+
+- `docs/20_architecture_and_specs/openspec/raspberry_local_tool_checker_openspec.md` — Raspberry target `mpv`/`ffmpeg`/`ffprobe` readiness preflight contract and non-claims.
+
+- `docs/proofs/raspberry_tool_checker_proof.md` — proof workflow for `npm run proof:raspberry-tool-checker`.

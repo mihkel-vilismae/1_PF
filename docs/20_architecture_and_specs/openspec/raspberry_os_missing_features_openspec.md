@@ -31,7 +31,7 @@ Those Windows results do not prove Raspberry OS behavior. They provide reusable 
 Raspberry OS support must eventually provide a target-machine path for:
 
 1. Raspberry OS runtime launcher.
-2. Raspberry local tool checker/installer for `mpv`, `ffmpeg`, and `ffprobe`.
+2. Raspberry local tool checker/installer preflight for `mpv`, `ffmpeg`, and `ffprobe` (implemented in v0.8.37; installer remains operator-managed).
 3. Raspberry native fullscreen image playback.
 4. Raspberry native fullscreen video playback.
 5. Raspberry address/location overlay strategy.
@@ -90,9 +90,9 @@ Expected future artifacts:
 - setup/run documentation
 - smoke/preflight proof JSON
 
-### 2. Raspberry local tool checker/installer
+### 2. Raspberry local tool checker/installer preflight
 
-Status: `NOT_IMPLEMENTED`
+Status: `IMPLEMENTED_PREFLIGHT` as of v0.8.37; target-machine PASS still requires Raspberry-like hardware/OS and available tools. Installer behavior remains operator-managed and is not implemented.
 
 Contract:
 
@@ -100,8 +100,10 @@ Contract:
 - Never commit downloaded system binaries to Git.
 - Preserve `tools/mpv/` and `tools/ffmpeg/` as local-only ignored tool bundles if present on a developer machine.
 - Report missing tools as `BLOCKED`, not `FAILED`, unless an install/check command itself errors unexpectedly.
+- Use `npm run proof:raspberry-tool-checker` for the implemented preflight.
+- Do not treat a non-Raspberry or override-based run as Raspberry target proof.
 
-Expected future commands:
+Implemented command:
 
 ```bash
 mpv --version
@@ -264,7 +266,7 @@ Contract:
 | Feature | Current OpenSpec status | Proof state | Next proof slice |
 |---|---|---:|---|
 | Runtime launcher | Contract defined | NOT_IMPLEMENTED | Launcher/preflight |
-| Tool checker/installer | Contract defined | NOT_IMPLEMENTED | Tool checker proof |
+| Tool checker/installer preflight | Implemented preflight | NOT_RUN on Raspberry / BLOCKED off-target | Run `npm run proof:raspberry-tool-checker` on target |
 | Native image playback | Contract defined | NOT_IMPLEMENTED | Target playback proof |
 | Native video playback | Contract defined | NOT_IMPLEMENTED | Target video proof |
 | Address overlay strategy | Contract defined | NOT_IMPLEMENTED | Design/proof preflight |
@@ -302,16 +304,17 @@ Future Raspberry proof artifacts should include:
 ## Recommended implementation slice order
 
 1. Raspberry OpenSpec docs and status guards. This document.
-2. Raspberry local tool checker and path portability preflight.
-3. Raspberry project-owned launcher and evidence export scaffold.
-4. Raspberry generated fixture validation target proof.
-5. Raspberry native image playback proof.
-6. Raspberry native video playback proof.
-7. Raspberry project-owned scheduler loop proof.
-8. Raspberry controlled process recovery proof.
-9. Raspberry manual reboot recovery proof.
-10. Raspberry power-loss recovery proof.
-11. Raspberry address overlay/display proof refinement.
+2. Raspberry local tool checker preflight. Implemented in v0.8.37; run on Raspberry target for target evidence.
+3. Raspberry path portability preflight.
+4. Raspberry project-owned launcher and evidence export scaffold.
+5. Raspberry generated fixture validation target proof.
+6. Raspberry native image playback proof.
+7. Raspberry native video playback proof.
+8. Raspberry project-owned scheduler loop proof.
+9. Raspberry controlled process recovery proof.
+10. Raspberry manual reboot recovery proof.
+11. Raspberry power-loss recovery proof.
+12. Raspberry address overlay/display proof refinement.
 
 ## Explicit non-claims
 

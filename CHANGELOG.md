@@ -1,3 +1,10 @@
+## 0.8.37 — Raspberry local tool checker preflight
+
+- Added `docs/20_architecture_and_specs/openspec/raspberry_local_tool_checker_openspec.md` to define the Raspberry tool-readiness contract for `mpv`, `ffmpeg`, and `ffprobe`.
+- Added `proof:raspberry-tool-checker` with `tools/run-raspberry-tool-checker-proof.mjs` and `tools/raspberry-tool-checker-lib.mjs`; it writes sanitized runtime evidence and returns `BLOCKED` rather than `FAILED` when run off-target or when tools are missing.
+- Added `docs/proofs/raspberry_tool_checker_proof.md` and `tests/raspberryToolCheckerProof.test.js` to guard PASS criteria, install boundaries, and non-claims.
+- No Raspberry playback, scheduler, reboot, or power-loss proof is claimed by this slice.
+
 ## 0.8.36 — Endpoint contract OpenSpec extraction
 
 - Added `docs/20_architecture_and_specs/openspec/endpoint_contract_inventory_openspec.md` as the same-origin HTTP API route-surface contract for dashboard, proof-runner, and local operator callers.
