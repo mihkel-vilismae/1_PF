@@ -1,6 +1,6 @@
 # Documentation Freshness Matrix
 
-Estonian timestamp: 2026-06-11 23:10 EEST
+Estonian timestamp: 2026-06-11 23:25 EEST
 
 This matrix is a navigation aid for deciding which PF_login documents can be trusted first. Code, tests, generated evidence, and target-machine runtime output remain stronger than prose documentation.
 
@@ -16,9 +16,11 @@ This matrix is a navigation aid for deciding which PF_login documents can be tru
 | `docs/proofs/windows_native_proof_milestone_v0.8.26.md` | current_latest_baseline | Consolidated Windows target-machine proof milestone and non-claim boundary. |
 | `docs/proofs/windows_reboot_recovery_preflight.md` | current_latest_baseline | Safe preflight contract for future manual Windows reboot/restart proof; no reboot, no Windows Task Scheduler. |
 | `docs/proofs/raspberry_tool_checker_proof.md` | current_latest_baseline | Implemented Raspberry tool-checker proof workflow; PASS requires Raspberry-like target and tools. |
+| `docs/proofs/raspberry_generated_fixture_proof.md` | current_latest_baseline | Implemented Raspberry generated fixture proof workflow; PASS requires Raspberry-like target, `python3`, `ffprobe`, and validator success. |
 | `docs/20_architecture_and_specs/openspec/raspberry_os_missing_features_openspec.md` | current_latest_baseline | Raspberry OS missing-feature OpenSpec; documentation only, no Raspberry runtime proof. |
 | `docs/20_architecture_and_specs/openspec/raspberry_local_tool_checker_openspec.md` | current_latest_baseline | Raspberry `mpv`/`ffmpeg`/`ffprobe` readiness preflight contract; no playback/recovery claim. |
 | `docs/20_architecture_and_specs/openspec/raspberry_project_owned_launcher_openspec.md` | current_latest_baseline | Raspberry project-owned launcher skeleton contract; optional API ownership only, no playback/scheduler/recovery claim. |
+| `docs/20_architecture_and_specs/openspec/raspberry_generated_fixture_proof_openspec.md` | current_latest_baseline | Raspberry target generated fixture proof contract; fixture validation only, no playback/scheduler/recovery claim. |
 | `docs/20_architecture_and_specs/openspec/endpoint_contract_inventory_openspec.md` | current_latest_baseline | Same-origin HTTP API route inventory; guarded by `npm run contract:endpoints:check`. |
 | `docs/50_audits_and_migrations/DOC_CONSISTENCY_AUDIT_20260611.md` | current_latest_baseline | Latest documentation issue registry and recommended next doc/implementation slices. |
 | `docs/50_audits_and_migrations/PF_LOGIN_PROJECT_STATUS_ANALYSIS_20260611.md` | current_latest_baseline | Current v0.8.33 structured status report covering goals, implementation coverage, OpenSpec/docs coverage, endpoints/interfaces, proof matrix, issues, and next slices. |
@@ -42,6 +44,7 @@ This matrix is a navigation aid for deciding which PF_login documents can be tru
 | v0.8.36 | Endpoint contract OpenSpec extraction. | Static same-origin API route inventory plus docs drift guard; no runtime route behavior changed. |
 | v0.8.37 | Raspberry local tool checker preflight. | Implemented target-readiness proof runner for `mpv`, `ffmpeg`, and `ffprobe`; no playback/recovery proof claimed. |
 | v0.8.38 | Raspberry project-owned launcher skeleton. | Adds conservative dry-run launcher and optional project-owned API start; no playback/scheduler/recovery proof claimed. |
+| v0.8.39 | Raspberry generated fixture proof. | Adds target-gated generated fixture validation proof runner; no playback/scheduler/recovery proof claimed. |
 
 ## Trust classes
 

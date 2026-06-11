@@ -1,3 +1,10 @@
+## 0.8.39 — Raspberry generated fixture proof
+
+- Added `proof:raspberry-generated-fixtures` with `tools/run-raspberry-generated-fixture-proof.mjs` and `tools/raspberry-generated-fixture-proof-lib.mjs`.
+- Added `docs/20_architecture_and_specs/openspec/raspberry_generated_fixture_proof_openspec.md` and `docs/proofs/raspberry_generated_fixture_proof.md` to define Raspberry target gating, `python3`/`ffprobe` prerequisites, evidence shape, and non-claims.
+- Added `tests/raspberryGeneratedFixtureProof.test.js` to guard PASS/BLOCKED/FAILED status semantics and proof documentation wiring.
+- No Raspberry native playback, scheduler loop, reboot recovery, power-loss recovery, or production iCloud continuation is claimed by this proof.
+
 ## 0.8.38 — Raspberry project-owned launcher skeleton
 
 - Added `start_raspberry_full.sh` as a thin Raspberry launcher entrypoint delegating to `start_scripts/start_raspberry_full.sh`.

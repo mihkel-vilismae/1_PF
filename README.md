@@ -31,6 +31,7 @@ Start here:
 - [`docs/table_of_contents.md`](docs/table_of_contents.md) for the short documentation map.
 - [`docs/20_architecture_and_specs/openspec/raspberry_os_missing_features_openspec.md`](docs/20_architecture_and_specs/openspec/raspberry_os_missing_features_openspec.md) for the Raspberry OS OpenSpec that lists missing launcher, tooling, playback, scheduler, recovery, and evidence-export contracts before implementation.
 - [`docs/20_architecture_and_specs/openspec/raspberry_project_owned_launcher_openspec.md`](docs/20_architecture_and_specs/openspec/raspberry_project_owned_launcher_openspec.md) and [`docs/10_runbooks/raspberry_project_owned_launcher.md`](docs/10_runbooks/raspberry_project_owned_launcher.md) for the conservative Raspberry launcher skeleton and non-claims.
+- [`docs/20_architecture_and_specs/openspec/raspberry_generated_fixture_proof_openspec.md`](docs/20_architecture_and_specs/openspec/raspberry_generated_fixture_proof_openspec.md) and [`docs/proofs/raspberry_generated_fixture_proof.md`](docs/proofs/raspberry_generated_fixture_proof.md) for Raspberry target generated fixture validation.
 - [`docs/DOC_INDEX.md`](docs/DOC_INDEX.md) for the full documentation inventory.
 - [`docs/00_current_truth/`](docs/00_current_truth/) for current evidence-backed guides.
 - [`docs/10_runbooks/operator_setup_and_auth_notes.md`](docs/10_runbooks/operator_setup_and_auth_notes.md) for operator setup and auth notes.

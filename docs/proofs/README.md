@@ -47,6 +47,7 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Windows reboot/restart recovery preflight | `npm run proof:windows-reboot-recovery-preflight` | safe preflight, no reboot |
 | Raspberry recovery evidence collector | `npm run proof:raspberry-recovery` | hardware/operator collector; not current Raspberry proof |
 | Raspberry tool checker | `npm run proof:raspberry-tool-checker` | Raspberry target readiness preflight |
+| Raspberry generated fixture validation | `npm run proof:raspberry-generated-fixtures` | Raspberry target fixture validation |
 
 The table above is intentionally complete for current `proof:*` package scripts. `tests/docsNpmScriptReferences.test.js` guards active documentation against stale `npm run ...` script references.
 
@@ -92,3 +93,9 @@ Windows Task Scheduler is not part of PF_login project scope; the Raspberry Open
 ## Raspberry tool checker proof
 
 `npm run proof:raspberry-tool-checker` checks Raspberry target readiness for `mpv`, `ffmpeg`, and `ffprobe`. It returns `PASSED` only on a Raspberry-like target with all tools available, and returns `BLOCKED` for off-target or missing-tool runs. It does not prove Raspberry playback, scheduler behavior, reboot recovery, power-loss recovery, display focus, monitor pixels, or production iCloud continuation.
+
+- `npm run proof:raspberry-generated-fixtures` — Raspberry target generated fixture validation; see `raspberry_generated_fixture_proof.md`.
+
+## Raspberry generated fixture proof
+
+`npm run proof:raspberry-generated-fixtures` validates `generated_test_data/` on a Raspberry-like target using `python3` and `ffprobe`. It returns `BLOCKED` off-target or when prerequisites are missing, and does not prove native playback, scheduler behavior, recovery, display focus, or production iCloud continuation. See [`raspberry_generated_fixture_proof.md`](raspberry_generated_fixture_proof.md).

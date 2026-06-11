@@ -17,6 +17,7 @@ This index classifies non-skill documentation files and separates current truth 
 
 ## Recent additions
 
+- `docs/20_architecture_and_specs/openspec/raspberry_generated_fixture_proof_openspec.md` and `docs/proofs/raspberry_generated_fixture_proof.md` — v0.8.39 Raspberry target generated fixture validation proof contract.
 - `docs/20_architecture_and_specs/openspec/raspberry_project_owned_launcher_openspec.md` and `docs/10_runbooks/raspberry_project_owned_launcher.md` — v0.8.38 Raspberry launcher skeleton contract and operator runbook.
 - `docs/50_audits_and_migrations/PF_LOGIN_PROJECT_STATUS_ANALYSIS_20260611.md` — v0.8.33 structured project status, implementation coverage, OpenSpec coverage, endpoint/interface inventory, proof matrix, documentation issues, architecture risks, and next-slice plan.
 - `docs/proofs/dirty_shutdown_testing_proof.md` — deterministic proof for the Test Mode-only View C dirty-shutdown testing panel and guarded backend scaffold.
