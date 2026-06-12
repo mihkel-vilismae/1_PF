@@ -49,6 +49,7 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Raspberry tool checker | `npm run proof:raspberry-tool-checker` | Raspberry target readiness preflight |
 | Raspberry generated fixture validation | `npm run proof:raspberry-generated-fixtures` | Raspberry target fixture validation |
 | Raspberry native image playback | `npm run proof:raspberry-native-image-playback` | Raspberry target native image playback |
+| Raspberry native video playback | `npm run proof:raspberry-native-video-playback` | Raspberry target native video playback |
 
 The table above is intentionally complete for current `proof:*` package scripts. `tests/docsNpmScriptReferences.test.js` guards active documentation against stale `npm run ...` script references.
 
@@ -104,3 +105,6 @@ Windows Task Scheduler is not part of PF_login project scope; the Raspberry Open
 ## Raspberry native image playback proof
 
 `npm run proof:raspberry-native-image-playback` is the first target-gated Raspberry native playback proof. It selects `generated_test_data/gps_valid/gps_valid_01.jpg`, records the project-owned Raspberry launcher dry-run boundary, and starts a bounded `mpv` fullscreen image command only on a non-override Raspberry-like display target with `mpv` available. Off-target, explicit-override, missing-display, missing-tool, or missing-fixture runs return `BLOCKED`. See [`raspberry_native_image_playback_proof.md`](raspberry_native_image_playback_proof.md).
+## Raspberry native video playback proof
+
+`npm run proof:raspberry-native-video-playback` is the target-gated Raspberry native video playback proof. It selects `generated_test_data/videos_with_gps/apple_like_h264_mp4_gps_new_york.mp4`, records the project-owned Raspberry launcher dry-run boundary, records duration/media metadata with `ffprobe`, and starts a bounded `mpv` fullscreen video command only on a non-override Raspberry-like display target with `mpv` and `ffprobe` available. Off-target, explicit-override, missing-display, missing-tool, or missing-fixture runs return `BLOCKED`. See [`raspberry_native_video_playback_proof.md`](raspberry_native_video_playback_proof.md).

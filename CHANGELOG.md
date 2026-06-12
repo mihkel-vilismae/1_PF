@@ -1,3 +1,11 @@
+## 0.8.42 — Raspberry native video playback proof
+
+- Added `proof:raspberry-native-video-playback` for the target-gated Raspberry deterministic video playback proof.
+- Added a proof library/runner, OpenSpec, proof documentation, and regression tests for deterministic video playback using `generated_test_data/videos_with_gps/apple_like_h264_mp4_gps_new_york.mp4`.
+- Proof returns `BLOCKED` off-target, on explicit override runs, without a display session, without `mpv`/`ffprobe`, or without the deterministic video fixture.
+- Proof can return `PASSED` only on a non-override Raspberry-like display target after the project-owned launcher dry-run boundary succeeds, `ffprobe` records video metadata, and bounded `mpv` video playback evidence is collected.
+- Preserved non-claims for scheduler behavior, systemd/cron/autostart, reboot/power-loss recovery, monitor-pixel observation, native address overlay equivalence, and production iCloud continuation.
+
 ## 0.8.41 — Hermetic View E validation
 
 - Updated `scripts/validate-view-e.mjs` so `npm run validate:view-e` always uses a proof-owned temporary env file and database instead of any ignored local `.env`, ambient `DB_PATH`, `LOG_DIR`, download directory, or cookie directory.

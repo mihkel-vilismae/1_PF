@@ -17,3 +17,5 @@ Current OpenSpec entries:
 - [Raspberry generated fixture proof OpenSpec](raspberry_generated_fixture_proof_openspec.md) — target-gated generated fixture validation using `python3` and `ffprobe` without playback/recovery claims.
 
 - [Raspberry native image playback proof OpenSpec](raspberry_native_image_playback_proof_openspec.md) — first target-gated Raspberry native image playback proof using the launcher dry-run boundary and bounded `mpv` command.
+
+- [Raspberry native video playback proof OpenSpec](raspberry_native_video_playback_proof_openspec.md) — target-gated Raspberry native video playback proof using launcher dry-run, `ffprobe` metadata, and bounded `mpv` video playback.

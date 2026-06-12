@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.8.41",
+  "version": "0.8.42",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -42,7 +42,8 @@
     "proof:verify-generated-test-data": "python tools/verify_generated_test_data.py",
     "proof:windows-reboot-recovery-preflight": "node tools/run-windows-reboot-recovery-preflight-proof.mjs",
     "proof:raspberry-generated-fixtures": "node tools/run-raspberry-generated-fixture-proof.mjs",
-    "proof:raspberry-native-image-playback": "node tools/run-raspberry-native-image-playback-proof.mjs"
+    "proof:raspberry-native-image-playback": "node tools/run-raspberry-native-image-playback-proof.mjs",
+    "proof:raspberry-native-video-playback": "node tools/run-raspberry-native-video-playback-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
