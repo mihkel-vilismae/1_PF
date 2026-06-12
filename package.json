@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.8.45",
+  "version": "0.8.46",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -44,7 +44,8 @@
     "proof:raspberry-generated-fixtures": "node tools/run-raspberry-generated-fixture-proof.mjs",
     "proof:raspberry-native-image-playback": "node tools/run-raspberry-native-image-playback-proof.mjs",
     "proof:raspberry-native-video-playback": "node tools/run-raspberry-native-video-playback-proof.mjs",
-    "proof:raspberry-cron-worker-runtime": "node tools/run-raspberry-cron-worker-runtime-proof.mjs"
+    "proof:raspberry-cron-worker-runtime": "node tools/run-raspberry-cron-worker-runtime-proof.mjs",
+    "proof:raspberry-app-running-status": "node tools/run-raspberry-app-running-status-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

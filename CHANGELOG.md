@@ -1,3 +1,9 @@
+## 0.8.46 — Raspberry app-running status summary
+
+- Added `proof:raspberry-app-running-status` to summarize whether the Raspberry app is running under the three-worker cron definition.
+- Added operator-facing status evidence for cron rows, worker lane evidence, blocking reasons, and failed reasons.
+- Extended `start_raspberry_full.sh` with `--app-status` so launcher evidence can include the app-running status result without claiming reboot or power-loss recovery.
+
 ## 0.8.45 — Raspberry cron three-worker runtime proof
 
 - Added `proof:raspberry-cron-worker-runtime` with a target-gated proof runner for the Raspberry app-running contract.

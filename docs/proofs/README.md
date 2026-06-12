@@ -51,6 +51,7 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Raspberry native image playback | `npm run proof:raspberry-native-image-playback` | Raspberry target native image playback |
 | Raspberry native video playback | `npm run proof:raspberry-native-video-playback` | Raspberry target native video playback |
 | Raspberry cron worker runtime | `npm run proof:raspberry-cron-worker-runtime` | Raspberry target cron app-running proof |
+| Raspberry app-running status | `npm run proof:raspberry-app-running-status` | Operator-facing Raspberry app-running status summary |
 | Raspberry cron worker singleton/recovery proof plan | planned; no runtime command in v0.8.44 | documentation-only Raspberry app-running proof contract |
 
 The table above is intentionally complete for current `proof:*` package scripts. `tests/docsNpmScriptReferences.test.js` guards active documentation against stale `npm run ...` script references.
@@ -121,3 +122,7 @@ The plan requires same-worker singleton checks, duplicate same-worker skip evide
 ## Raspberry cron worker runtime proof
 
 `npm run proof:raspberry-cron-worker-runtime` implements the target-gated Raspberry app-running proof runner. It requires active managed cron rows and an operator evidence file proving invocation, same-worker singleton duplicate-skip, cross-worker independence, and stale-lock reclaim for `regular_stage_worker`, `playback_worker`, and `screen_on_off_worker`. See [`raspberry_cron_worker_runtime_proof.md`](raspberry_cron_worker_runtime_proof.md).
+
+## Raspberry app-running status proof
+
+`npm run proof:raspberry-app-running-status` converts cron worker runtime proof evidence into an app-running status summary. See [`raspberry_app_running_status_proof.md`](raspberry_app_running_status_proof.md).
