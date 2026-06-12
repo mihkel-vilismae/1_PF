@@ -53,6 +53,7 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Raspberry cron worker runtime | `npm run proof:raspberry-cron-worker-runtime` | Raspberry target cron app-running proof |
 | Raspberry app-running status | `npm run proof:raspberry-app-running-status` | Operator-facing Raspberry app-running status summary |
 | Raspberry reboot recovery | `npm run proof:raspberry-reboot-recovery` | Manual pre/post reboot recovery proof |
+| Raspberry physical power-loss recovery | `npm run proof:raspberry-power-loss-recovery` | Manual physical power-loss/restored-power proof |
 | Raspberry cron worker singleton/recovery proof plan | planned; no runtime command in v0.8.44 | documentation-only Raspberry app-running proof contract |
 
 The table above is intentionally complete for current `proof:*` package scripts. `tests/docsNpmScriptReferences.test.js` guards active documentation against stale `npm run ...` script references.
@@ -131,3 +132,7 @@ The plan requires same-worker singleton checks, duplicate same-worker skip evide
 ## Raspberry reboot recovery proof
 
 `npm run proof:raspberry-reboot-recovery` validates manual pre/post reboot evidence and requires the three-worker app-running status to pass after reboot. See [`raspberry_reboot_recovery_proof.md`](raspberry_reboot_recovery_proof.md).
+
+## Raspberry physical power-loss recovery proof
+
+`npm run proof:raspberry-power-loss-recovery` validates explicit physical power-loss/restored-power evidence and requires the three-worker app-running status to pass after restored power. It never uses Windows CronEmulator evidence as hardware proof. See [`raspberry_power_loss_recovery_v2_proof.md`](raspberry_power_loss_recovery_v2_proof.md).

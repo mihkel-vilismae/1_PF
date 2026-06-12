@@ -1,3 +1,9 @@
+## 0.8.48 — Raspberry physical power-loss recovery proof
+
+- Added `proof:raspberry-power-loss-recovery` for explicit physical power-loss/restored-power evidence.
+- The proof requires pre/post power-loss markers, restored-power/boot evidence, active cron, all three workers resumed, app-running status passed, stale locks reclaimed, and playback state safe.
+- The runner refuses to pass without a real physical power-loss event and never treats Windows CronEmulator evidence as Raspberry hardware proof.
+
 ## 0.8.47 — Raspberry reboot recovery proof
 
 - Added `proof:raspberry-reboot-recovery` for manual pre/post Raspberry reboot evidence.
