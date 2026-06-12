@@ -55,7 +55,7 @@ The table above is intentionally complete for current `proof:*` package scripts.
 
 ## Real geocode provider-chain proof
 
-`npm run proof:real-geocode-provider-chain` is blocked by default. To run it, set `PF_PROOF_ENABLE_REAL_GEOCODE_CHAIN=true` and choose a real provider with `PF_GEOCODE_CHAIN_PROOF_PROVIDER`, for example `nominatim_osm`. The proof uses the existing Python reverse-geocode provider interfaces, disables deterministic placeholder fallback for the subprocess, checks cache miss -> network provider -> cache hit behavior, and verifies that the returned address is human-readable and contains expected terms.
+`npm run proof:real-geocode-provider-chain` is blocked by default. To run it, set `PF_PROOF_ENABLE_REAL_GEOCODE_CHAIN=true` and choose a real provider with `PF_GEOCODE_CHAIN_PROOF_PROVIDER`, for example `nominatim_osm`. The proof uses the existing Python reverse-geocode provider interfaces, disables deterministic placeholder fallback for the subprocess, checks cache miss -> network provider -> cache hit behavior, and verifies that the returned address is human-readable and contains expected terms. For v1.0 production acceptance, placeholder geocoding is forbidden as success.
 
 Example PowerShell setup for the no-key Nominatim path:
 

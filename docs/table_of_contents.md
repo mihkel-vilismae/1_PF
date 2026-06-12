@@ -98,6 +98,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/20_architecture_and_specs/openspec/raspberry_generated_fixture_proof_openspec.md` | Raspberry target generated fixture validation contract and non-claims. |
 | `docs/20_architecture_and_specs/openspec/raspberry_native_image_playback_proof_openspec.md` | Raspberry target native image playback contract and non-claims. |
 | `docs/20_architecture_and_specs/openspec/raspberry_native_video_playback_proof_openspec.md` | Raspberry target native video playback contract and non-claims. |
+| `docs/20_architecture_and_specs/openspec/production_gps_geocode_placeholder_rules_openspec.md` | v1.0 production GPS/geocode acceptance boundary: real GPS extraction, cache-first real geocoding, and placeholder rejection. |
 | `docs/20_architecture_and_specs/openspec/endpoint_contract_inventory_openspec.md` | Same-origin HTTP API endpoint contract inventory and drift guard. |
 | `docs/20_architecture_and_specs/openspec/README.md` | OpenSpec area overview and documentation-only boundary. |
 | `docs/20_architecture_and_specs/reference/LOGGING_STANDARD_CONTRACT.md` | Logging standard contract. |

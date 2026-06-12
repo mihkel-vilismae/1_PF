@@ -2,8 +2,8 @@
 
 ## Status
 
-Version: 0.7.32  
-Date: 29.05.2026, 22:20:00 EEST  
+Version: 0.7.32
+Date: 29.05.2026, 22:20:00 EEST
 Scope: backend-only Python reverse-geocoding provider adapters and standardized provider account inputs.
 
 ## Provider order
@@ -23,6 +23,15 @@ Runtime behavior remains safe by default:
 3. The existing deterministic placeholder remains enabled by default to preserve current worker behavior.
 4. `GEOCODE_ALLOW_PLACEHOLDER_FALLBACK=false` can disable the placeholder when Real Mode should fail honestly instead of using placeholder text.
 
+## v1.0 production acceptance overlay
+
+The default worker behavior above is preserved for compatibility and deterministic Test Mode flows. For **v1.0 production acceptance**, the tighter OpenSpec in `docs/20_architecture_and_specs/openspec/production_gps_geocode_placeholder_rules_openspec.md` applies:
+
+- `deterministic_placeholder` is test/dev only and must not count as production geocoding success.
+- Placeholder-looking address text such as `Lat: 58.37763, Lon: 26.72901` must not count as a production address.
+- `address_cache` is required, but cache hits are production evidence only when the cached value has real-provider provenance and is not placeholder-looking.
+- Production geocode proof must set or prove `GEOCODE_ALLOW_PLACEHOLDER_FALLBACK=false`, use a real provider, and record sanitized cache miss -> provider -> cache hit evidence.
+
 ## Providers
 
 | Provider ID | Account/API key needed | Default state | Purpose |
@@ -36,7 +45,7 @@ Runtime behavior remains safe by default:
 | `geoapify` | API key/account | Disabled | Geoapify reverse geocoding. |
 | `mapbox` | access token/account | Disabled | Mapbox reverse geocoding. |
 | `google_geocoding` | API key/account/billing setup | Disabled | Google Geocoding reverse lookup. |
-| `deterministic_placeholder` | No | Enabled | Existing placeholder fallback, not a real address provider. |
+| `deterministic_placeholder` | No | Enabled for compatibility/test flows | Existing placeholder fallback, not a real address provider; forbidden as v1.0 production success. |
 
 ## Standardized provider input keys
 
@@ -80,6 +89,7 @@ Do not commit real credentials. Keep `.env` local.
 - Network providers are disabled by default to avoid behavior shifts and unexpected API calls.
 - Cache hits stop the chain before network providers.
 - Placeholder geocoding must stay clearly labeled as placeholder behavior.
+- For v1.0 production acceptance, placeholder geocoding and coordinate-echo address text must be rejected as success.
 
 
 ## Operator activation runbook

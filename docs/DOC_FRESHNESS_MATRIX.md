@@ -82,3 +82,5 @@ This matrix is a navigation aid for deciding which PF_login documents can be tru
 - No monitor-pixel proof is claimed yet.
 - No production iCloud continuation proof is claimed by the Windows proof milestone.
 - `tools/mpv/` and `tools/ffmpeg/` are local-only ignored tool bundles and must not be vendored or re-tracked.
+
+| `docs/20_architecture_and_specs/openspec/production_gps_geocode_placeholder_rules_openspec.md` | `current_truth` | v0.8.43 OpenSpec acceptance contract for v1.0 GPS/geocode placeholder rejection; docs/test only until runtime proofs satisfy it. |

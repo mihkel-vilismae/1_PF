@@ -2,8 +2,8 @@
 
 ## Status
 
-Version: 0.7.32  
-Date: 29.05.2026, 22:20:00 EEST  
+Version: 0.7.32
+Date: 29.05.2026, 22:20:00 EEST
 Scope: backend-only Python provider foundation for GPS parsing and reverse geocoding.
 
 ## Purpose
@@ -15,7 +15,7 @@ The media pipeline has separate worker stages for GPS parsing and reverse geocod
 | Stage | Contract | Default provider | Current behavior |
 |---|---|---|---|
 | GPS parsing | `GpsProvider` in `server/scripts/media_pipeline/provider_contracts.py` | EXIF first, then offline sidecar/path fallbacks | Reads embedded EXIF GPS via Pillow first, then tries explicit local coordinate metadata without network calls |
-| Reverse geocoding | `ReverseGeocodeProvider` in `server/scripts/media_pipeline/provider_contracts.py` | Cache-first registry ending in `DeterministicPlaceholderGeocodeProvider` by default | Checks `address_cache` first, keeps network/account providers disabled by default, and preserves the existing placeholder address format `Lat: 58.37763, Lon: 26.72901` |
+| Reverse geocoding | `ReverseGeocodeProvider` in `server/scripts/media_pipeline/provider_contracts.py` | Cache-first registry ending in `DeterministicPlaceholderGeocodeProvider` by default | Checks `address_cache` first, keeps network/account providers disabled by default, and preserves the existing test/dev placeholder address format `Lat: 58.37763, Lon: 26.72901` |
 
 ## Provider-chain rule
 
@@ -64,6 +64,12 @@ path_coordinates
 | `path_coordinates` | `PATH_COORDINATES` | Explicit coordinate tokens in parent folder names | Last fallback; useful for album folders named with coordinates. |
 
 These providers do not call external services, do not require credentials, and validate coordinate bounds before returning success. Missing or malformed metadata remains an honest `NO_RESULT`, so the existing queue behavior for files without GPS is preserved.
+
+## v1.0 production placeholder boundary
+
+For v1.0 acceptance, GPS extraction must record a real provider/parser ID from the GPS provider chain or a future documented real metadata provider. Reverse geocoding must use cache-first real-provider evidence. `deterministic_placeholder` and coordinate-echo address strings such as `Lat: 58.37763, Lon: 26.72901` are allowed only for deterministic test/dev flows and must not be accepted as production geocode success.
+
+See `docs/20_architecture_and_specs/openspec/production_gps_geocode_placeholder_rules_openspec.md` for the production GPS/geocode acceptance contract.
 
 ## Adding a future GPS provider
 
@@ -130,3 +136,4 @@ See `docs/20_architecture_and_specs/media_pipeline_geocode_provider_chain.md` fo
 - Do not use placeholder geocoding as a real address provider.
 - Keep missing GPS as an honest no-result state.
 - Add regression coverage for fallback order whenever a provider is added.
+- Treat `deterministic_placeholder` and `Lat: ..., Lon: ...` output as test/dev-only unless a future scope decision explicitly changes v1.0 acceptance.

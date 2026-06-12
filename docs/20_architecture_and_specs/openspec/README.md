@@ -19,3 +19,4 @@ Current OpenSpec entries:
 - [Raspberry native image playback proof OpenSpec](raspberry_native_image_playback_proof_openspec.md) — first target-gated Raspberry native image playback proof using the launcher dry-run boundary and bounded `mpv` command.
 
 - [Raspberry native video playback proof OpenSpec](raspberry_native_video_playback_proof_openspec.md) — target-gated Raspberry native video playback proof using launcher dry-run, `ffprobe` metadata, and bounded `mpv` video playback.
+- [Production GPS/geocode placeholder rules OpenSpec](production_gps_geocode_placeholder_rules_openspec.md) — v1.0 acceptance boundary requiring real GPS extraction, cache-first real geocoding, and explicit rejection of deterministic placeholder geocoding as production success.

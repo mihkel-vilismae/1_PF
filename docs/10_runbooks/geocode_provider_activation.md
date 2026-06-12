@@ -8,6 +8,10 @@ This runbook explains how to safely activate and verify one reverse-geocode prov
 
 Use this only after the deterministic Test Mode media pipeline still passes. Do not commit real credentials, account IDs, API keys, access tokens, cookies, raw provider responses, or authorization headers.
 
+## v1.0 production acceptance rule
+
+For v1.0, placeholder geocoding is not acceptable as production behavior. `deterministic_placeholder` and address text shaped like `Lat: ..., Lon: ...` are allowed only for deterministic test/dev proofs. Production geocode evidence must show `address_cache` first, placeholder fallback disabled, and a real provider result with sanitized cache-hit evidence. See `docs/20_architecture_and_specs/openspec/production_gps_geocode_placeholder_rules_openspec.md`.
+
 ## Current default behavior
 
 Default provider order:
@@ -21,7 +25,7 @@ Default safety model:
 1. `address_cache` is checked first.
 2. Network providers are registered but disabled by default.
 3. A network provider requires the global network gate and that provider's own enable flag.
-4. `deterministic_placeholder` preserves existing safe behavior unless placeholder fallback is disabled.
+4. `deterministic_placeholder` preserves existing deterministic/test behavior unless placeholder fallback is disabled; it is not production v1.0 geocode success.
 5. Secrets and raw authorization data must not appear in logs, UI payloads, or docs.
 
 ## Provider summary
@@ -37,7 +41,7 @@ Default safety model:
 | `geoapify` | API key/account | Disabled | Paid/free-tier limits may apply. |
 | `mapbox` | Access token/account | Disabled | Billing/token scope may apply. |
 | `google_geocoding` | API key/account/billing | Disabled | Billing setup likely required. |
-| `deterministic_placeholder` | No | Enabled | Not a real address provider. |
+| `deterministic_placeholder` | No | Enabled for compatibility/test flows | Not a real address provider; forbidden as v1.0 production success. |
 
 ## Environment keys
 
@@ -50,6 +54,12 @@ GEOCODE_PROVIDER_ORDER=address_cache,nominatim_osm,photon_komoot,postcodes_io_uk
 GEOCODE_NETWORK_PROVIDERS_ENABLED=false
 GEOCODE_ALLOW_NETWORK_PROVIDERS=false
 GEOCODE_ALLOW_PLACEHOLDER_FALLBACK=true
+```
+
+For production acceptance or v1.0 release proof, override the placeholder flag:
+
+```text
+GEOCODE_ALLOW_PLACEHOLDER_FALLBACK=false
 ```
 
 Provider-specific pattern:
@@ -112,15 +122,15 @@ GEOCODE_OPENCAGE_TIMEOUT_SECONDS=10
 
 Never paste the real API key into chat, docs, screenshots, logs, or committed files.
 
-## Placeholder fallback testing
+## Placeholder fallback testing and v1.0 production behavior
 
-To verify that Real Mode fails honestly instead of using placeholder text, temporarily use:
+To verify that Real Mode fails honestly instead of using placeholder text, and for any v1.0 production geocode proof, use:
 
 ```text
 GEOCODE_ALLOW_PLACEHOLDER_FALLBACK=false
 ```
 
-Expected result: when no cache entry and no enabled/working real provider exists, geocoding should not silently produce placeholder address text. Restore this setting after the test unless that behavior is intentionally desired.
+Expected result: when no cache entry and no enabled/working real provider exists, geocoding should not silently produce placeholder address text. For deterministic development runs you may restore the previous value, but a v1.0 production acceptance proof must keep placeholder fallback disabled and must reject coordinate-echo addresses as production success.
 
 ## Cache-first verification
 

@@ -301,3 +301,5 @@ Use these documents when investigating result payload / JSON panel scroll resets
 - `docs/20_architecture_and_specs/openspec/raspberry_local_tool_checker_openspec.md` — Raspberry target `mpv`/`ffmpeg`/`ffprobe` readiness preflight contract and non-claims.
 
 - `docs/proofs/raspberry_tool_checker_proof.md` — proof workflow for `npm run proof:raspberry-tool-checker`.
+
+| docs/20_architecture_and_specs/openspec/production_gps_geocode_placeholder_rules_openspec.md | current_truth | OpenSpec acceptance contract for v1.0 GPS/geocode placeholder rejection. | architecture_or_spec | current_requirements | current | gps, geocode, placeholders, v1.0, production_acceptance | Defines real GPS extraction, address cache provenance, real provider geocode, and deterministic placeholder non-acceptance for v1.0. |

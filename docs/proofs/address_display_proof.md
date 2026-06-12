@@ -34,4 +34,4 @@ The proof passes when the expected address string appears both in the Stage 6 se
 
 ## Limitations
 
-This proof uses the current deterministic placeholder geocoder, so it proves address propagation through repository contracts rather than production-quality human address resolution. A separate real geocode provider proof is still required for network/provider address quality.
+This proof uses the current deterministic placeholder geocoder, so it proves address propagation through repository contracts rather than production-quality human address resolution. It must not count as v1.0 production geocoding acceptance. A separate real geocode provider proof is required, with `deterministic_placeholder` disabled/rejected and cache-first real-provider evidence recorded.

@@ -1,3 +1,10 @@
+## 0.8.43 — Production GPS/geocode placeholder OpenSpec
+
+- Added `docs/20_architecture_and_specs/openspec/production_gps_geocode_placeholder_rules_openspec.md` to define the v1.0 acceptance boundary for real GPS extraction, address-cache provenance, real reverse geocoding, and placeholder rejection.
+- Updated geocode provider, provider-interface, geocode activation, real-geocode proof, address-display proof, and proof README docs so `deterministic_placeholder` and `Lat: ..., Lon: ...` output remain deterministic test/dev behavior only and cannot count as production v1.0 geocode success.
+- Added `tests/productionGpsGeocodePlaceholderOpenSpec.test.js` to guard the new OpenSpec and related documentation labels against drift.
+- No runtime behavior changed; this is documentation/OpenSpec/test coverage for the production acceptance rule.
+
 ## 0.8.42 — Raspberry native video playback proof
 
 - Added `proof:raspberry-native-video-playback` for the target-gated Raspberry deterministic video playback proof.
