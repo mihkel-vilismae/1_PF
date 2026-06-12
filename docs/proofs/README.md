@@ -50,6 +50,7 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Raspberry generated fixture validation | `npm run proof:raspberry-generated-fixtures` | Raspberry target fixture validation |
 | Raspberry native image playback | `npm run proof:raspberry-native-image-playback` | Raspberry target native image playback |
 | Raspberry native video playback | `npm run proof:raspberry-native-video-playback` | Raspberry target native video playback |
+| Raspberry worker evidence generator | `npm run proof:raspberry-worker-evidence` | Generates `PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE` for cron runtime proof |
 | Raspberry cron worker runtime | `npm run proof:raspberry-cron-worker-runtime` | Raspberry target cron app-running proof |
 | Raspberry app-running status | `npm run proof:raspberry-app-running-status` | Operator-facing Raspberry app-running status summary |
 | Raspberry reboot recovery | `npm run proof:raspberry-reboot-recovery` | Manual pre/post reboot recovery proof |
@@ -136,3 +137,7 @@ The plan requires same-worker singleton checks, duplicate same-worker skip evide
 ## Raspberry physical power-loss recovery proof
 
 `npm run proof:raspberry-power-loss-recovery` validates explicit physical power-loss/restored-power evidence and requires the three-worker app-running status to pass after restored power. It never uses Windows CronEmulator evidence as hardware proof. See [`raspberry_power_loss_recovery_v2_proof.md`](raspberry_power_loss_recovery_v2_proof.md).
+
+## Raspberry worker evidence generator
+
+`npm run proof:raspberry-worker-evidence` generates the `PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE` consumed by `npm run proof:raspberry-cron-worker-runtime`. It reads worker status/lock evidence for all three Raspberry worker lanes and remains `BLOCKED` rather than faking missing regular/screen worker evidence. See [`raspberry_worker_evidence_generator_proof.md`](raspberry_worker_evidence_generator_proof.md).

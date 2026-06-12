@@ -125,3 +125,8 @@ The Raspberry project-owned launcher dry-run may write a launch plan without pro
 ## Recommended next implementation slice
 
 The next implementation slice after v0.8.44 should add a proof-owned Raspberry cron worker runtime proof that validates all three lanes and exports sanitized evidence without claiming reboot or power-loss recovery unless separately observed.
+
+
+## v0.8.49 worker evidence generator
+
+`npm run proof:raspberry-worker-evidence` generates the evidence file consumed by `proof:raspberry-cron-worker-runtime`. The generator does not fabricate missing worker facts; incomplete regular, playback, or screen worker evidence keeps the proof blocked.

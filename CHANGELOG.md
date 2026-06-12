@@ -1,3 +1,9 @@
+## 0.8.49 — Raspberry worker evidence generator
+
+- Added `proof:raspberry-worker-evidence` to generate the `PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE` consumed by the Raspberry cron worker runtime proof.
+- The generator reads worker status/lock evidence for `regular_stage_worker`, `playback_worker`, and `screen_on_off_worker` without fabricating missing worker facts.
+- Incomplete/off-target evidence returns `BLOCKED`; no cron install, reboot, power-loss, monitor-pixel, production iCloud, or real-provider proof is claimed.
+
 ## 0.8.48 — Raspberry physical power-loss recovery proof
 
 - Added `proof:raspberry-power-loss-recovery` for explicit physical power-loss/restored-power evidence.

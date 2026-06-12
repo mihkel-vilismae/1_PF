@@ -160,3 +160,5 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/20_architecture_and_specs/openspec/raspberry_cron_worker_runtime_openspec.md` | Raspberry cron worker app-running contract and proof boundary. |
 
 | `docs/proofs/raspberry_cron_worker_singleton_recovery_proof.md` | Planned three-worker singleton/recovery proof contract for Raspberry app-running. |
+
+| `docs/proofs/raspberry_worker_evidence_generator_proof.md` | Raspberry worker evidence generator proof docs. |

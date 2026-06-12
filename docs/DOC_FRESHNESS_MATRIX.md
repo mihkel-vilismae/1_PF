@@ -88,3 +88,7 @@ This matrix is a navigation aid for deciding which PF_login documents can be tru
 - `tools/mpv/` and `tools/ffmpeg/` are local-only ignored tool bundles and must not be vendored or re-tracked.
 
 | `docs/20_architecture_and_specs/openspec/production_gps_geocode_placeholder_rules_openspec.md` | `current_truth` | v0.8.43 OpenSpec acceptance contract for v1.0 GPS/geocode placeholder rejection; docs/test only until runtime proofs satisfy it. |
+
+| v0.8.49 | Raspberry worker evidence generator. | Generates the evidence file consumed by cron worker runtime proof; incomplete evidence remains blocked. |
+
+| `docs/proofs/raspberry_worker_evidence_generator_proof.md` | current_latest_baseline | Worker evidence generator documentation; no fake worker evidence claims. |
