@@ -50,6 +50,7 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Raspberry generated fixture validation | `npm run proof:raspberry-generated-fixtures` | Raspberry target fixture validation |
 | Raspberry native image playback | `npm run proof:raspberry-native-image-playback` | Raspberry target native image playback |
 | Raspberry native video playback | `npm run proof:raspberry-native-video-playback` | Raspberry target native video playback |
+| Raspberry cron worker runtime | `npm run proof:raspberry-cron-worker-runtime` | Raspberry target cron app-running proof |
 | Raspberry cron worker singleton/recovery proof plan | planned; no runtime command in v0.8.44 | documentation-only Raspberry app-running proof contract |
 
 The table above is intentionally complete for current `proof:*` package scripts. `tests/docsNpmScriptReferences.test.js` guards active documentation against stale `npm run ...` script references.
@@ -116,3 +117,7 @@ Windows Task Scheduler is not part of PF_login project scope; the Raspberry Open
 `docs/proofs/raspberry_cron_worker_singleton_recovery_proof.md` defines the proof evidence required before PhotoFrame can honestly claim the Raspberry app is running through cron. The required app-running definition is active cron plus all three worker lanes: `regular_stage_worker` every 10 minutes, `playback_worker` every 1 minute, and `screen_on_off_worker` every 3 minutes.
 
 The plan requires same-worker singleton checks, duplicate same-worker skip evidence, cross-worker independence, stale-lock reclaim, and separate reboot/restored-power evidence. It is documentation-only in v0.8.44 and does not prove Raspberry cron, reboot recovery, power-loss recovery, monitor-pixel proof, production iCloud continuation, or real provider chains.
+
+## Raspberry cron worker runtime proof
+
+`npm run proof:raspberry-cron-worker-runtime` implements the target-gated Raspberry app-running proof runner. It requires active managed cron rows and an operator evidence file proving invocation, same-worker singleton duplicate-skip, cross-worker independence, and stale-lock reclaim for `regular_stage_worker`, `playback_worker`, and `screen_on_off_worker`. See [`raspberry_cron_worker_runtime_proof.md`](raspberry_cron_worker_runtime_proof.md).

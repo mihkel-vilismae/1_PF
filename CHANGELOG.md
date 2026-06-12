@@ -1,3 +1,10 @@
+## 0.8.45 — Raspberry cron three-worker runtime proof
+
+- Added `proof:raspberry-cron-worker-runtime` with a target-gated proof runner for the Raspberry app-running contract.
+- Added proof evidence validation for all three worker lanes: `regular_stage_worker`, `playback_worker`, and `screen_on_off_worker`.
+- The proof requires managed cron rows and operator evidence for invocation, same-worker singleton duplicate-skip, cross-worker independence, and stale-lock reclaim.
+- Off-target or incomplete evidence returns `BLOCKED`/`FAILED`; no cron install, reboot, power-loss, monitor-pixel, production iCloud, or real-provider proof is claimed.
+
 ## 0.8.44 — Raspberry cron worker runtime OpenSpec
 
 - Added `docs/20_architecture_and_specs/openspec/raspberry_cron_worker_runtime_openspec.md` to define Raspberry app-running as active cron plus all three worker lanes: `regular_stage_worker` every 10 minutes, `playback_worker` every 1 minute, and `screen_on_off_worker` every 3 minutes.
