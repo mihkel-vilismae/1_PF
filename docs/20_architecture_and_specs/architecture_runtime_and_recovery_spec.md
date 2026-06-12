@@ -37,6 +37,8 @@ Worker classes:
 2. Playback worker
 3. Screen on/off worker
 
+For Raspberry app-running claims, the three worker classes are not optional background details. The runtime claim requires active cron plus all three operational lanes: `regular_stage_worker` every 10 minutes, `playback_worker` every 1 minute, and `screen_on_off_worker` every 3 minutes. Each lane must enforce same-worker singleton behavior, duplicate same-worker skip behavior, cross-worker independence, and stale-lock recovery before reboot or power-loss claims can be made.
+
 Lock files are active-instance truth. Logs are evidence/history. SQLite stores durable pipeline and playback state.
 
 ### Scheduler and platform behavior

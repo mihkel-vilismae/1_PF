@@ -203,3 +203,9 @@ The preflight does not reboot Windows. Windows Task Scheduler is not part of PF_
 Raspberry OS support is currently documented as an OpenSpec planning contract at `docs/20_architecture_and_specs/openspec/raspberry_os_missing_features_openspec.md`. The OpenSpec lists missing Raspberry launcher, local media tool checks, native image/video playback, address overlay, path portability, project-owned scheduler loop, worker autostart, screen on/off, generated fixture validation on Raspberry, controlled recovery, manual reboot recovery, power-loss recovery, evidence export, and HOW_TO_RUN/operator guide work.
 
 This is documentation only. It does not add Raspberry runtime commands, does not prove Raspberry playback/reboot/power-loss behavior, does not use Windows Task Scheduler, and does not vendor `tools/mpv/` or `tools/ffmpeg/` binaries.
+
+## Raspberry app-running definition
+
+For Raspberry OS, PhotoFrame “app is running” means cron is active and all three worker lanes are operational: `regular_stage_worker` every 10 minutes, `playback_worker` every 1 minute, and `screen_on_off_worker` every 3 minutes. The v0.8.44 OpenSpec records this requirement at [`docs/20_architecture_and_specs/openspec/raspberry_cron_worker_runtime_openspec.md`](docs/20_architecture_and_specs/openspec/raspberry_cron_worker_runtime_openspec.md).
+
+This runbook note is documentation only. It does not prove Raspberry cron, reboot recovery, or power-loss recovery.

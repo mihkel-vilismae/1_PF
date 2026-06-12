@@ -1,3 +1,11 @@
+## 0.8.44 — Raspberry cron worker runtime OpenSpec
+
+- Added `docs/20_architecture_and_specs/openspec/raspberry_cron_worker_runtime_openspec.md` to define Raspberry app-running as active cron plus all three worker lanes: `regular_stage_worker` every 10 minutes, `playback_worker` every 1 minute, and `screen_on_off_worker` every 3 minutes.
+- Added `docs/proofs/raspberry_cron_worker_singleton_recovery_proof.md` to define planned proof evidence for same-worker singleton checks, duplicate-skip behavior, cross-worker independence, stale-lock reclaim, reboot continuation, and restored-power recovery.
+- Updated Raspberry architecture/OpenSpec/proof navigation docs so Raspberry native playback success is not confused with cron app-running, reboot recovery, or power-loss proof.
+- Added `tests/raspberryCronWorkerRuntimeOpenSpec.test.js` to guard the three-worker app-running definition, proof-plan links, and non-claims.
+- No runtime behavior changed; this is documentation/OpenSpec/test coverage for the next Raspberry runtime proof slice.
+
 ## 0.8.43 — Production GPS/geocode placeholder OpenSpec
 
 - Added `docs/20_architecture_and_specs/openspec/production_gps_geocode_placeholder_rules_openspec.md` to define the v1.0 acceptance boundary for real GPS extraction, address-cache provenance, real reverse geocoding, and placeholder rejection.

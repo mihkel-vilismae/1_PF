@@ -4,6 +4,12 @@ This repository contains a dashboard-driven photo-frame system for managing stag
 
 The system documentation is organized in canonical numbered folders under `docs/`: `00_current_truth`, `10_runbooks`, `20_architecture_and_specs`, `30_status_snapshots`, `40_backlog_and_tasks`, `50_audits_and_migrations`, and `90_archive`. Implementation status in documentation is not current runtime truth unless the document cites current code, tests, generated evidence, or runtime output.
 
+## v0.8.44 Raspberry cron worker runtime OpenSpec
+
+This baseline adds documentation/OpenSpec/test coverage for the Raspberry app-running definition. Raspberry PhotoFrame may only be called running when cron is active and all three worker lanes are operational: `regular_stage_worker` every 10 minutes, `playback_worker` every 1 minute, and `screen_on_off_worker` every 3 minutes. See [`docs/20_architecture_and_specs/openspec/raspberry_cron_worker_runtime_openspec.md`](docs/20_architecture_and_specs/openspec/raspberry_cron_worker_runtime_openspec.md) and [`docs/proofs/raspberry_cron_worker_singleton_recovery_proof.md`](docs/proofs/raspberry_cron_worker_singleton_recovery_proof.md).
+
+This is not a runtime proof. Raspberry cron, reboot recovery, power-loss recovery, monitor-pixel proof, and production iCloud continuation remain non-claims until target evidence exists.
+
 ## Windows full launcher
 
 Run `start_win_full.cmd` from the repository root for the full Windows startup workflow. It installs dependencies, runs tests, builds the frontend, opens API, frontend, and component-status monitor tabs/windows when available, and opens `http://localhost:5173` in the default browser.

@@ -39,6 +39,7 @@ Raspberry OS support must eventually provide a target-machine path for:
 7. Raspberry project-owned scheduler loop.
 8. Raspberry worker autostart after boot.
 9. Raspberry screen on/off worker behavior.
+10. Raspberry cron worker runtime contract for app-running: active cron plus `regular_stage_worker` every 10 minutes, `playback_worker` every 1 minute, and `screen_on_off_worker` every 3 minutes, with singleton, duplicate-skip, cross-worker independence, and stale-lock recovery proof requirements.
 10. Raspberry generated fixture validation proof.
 11. Raspberry controlled process recovery proof.
 12. Raspberry manual reboot recovery proof.
@@ -175,6 +176,20 @@ Contract:
 - Preserve duplicate-lock protection for playback workers.
 - Do not conflate this loop with system cron/systemd proof.
 
+### 7a. Raspberry cron worker runtime contract
+
+Status: `OPENSPEC_DEFINED` as of v0.8.44; runtime proof not implemented
+
+Contract:
+
+- Do not call the Raspberry PhotoFrame app running unless cron is active and all three worker lanes are operational.
+- The required worker lanes are `regular_stage_worker` every 10 minutes, `playback_worker` every 1 minute, and `screen_on_off_worker` every 3 minutes.
+- Each worker lane must prove same-worker singleton behavior before real work.
+- Duplicate invocations of the same worker must skip safely and leave evidence.
+- Different worker types must not block each other merely because one worker lane is active.
+- Stale locks after dirty shutdown, reboot, or restored power must be reclaimed or invalidated safely.
+- See `raspberry_cron_worker_runtime_openspec.md` and `docs/proofs/raspberry_cron_worker_singleton_recovery_proof.md`.
+
 ### 8. Raspberry worker autostart after boot
 
 Status: `NOT_IMPLEMENTED`
@@ -273,6 +288,7 @@ Contract:
 | Address overlay strategy | Contract defined | NOT_IMPLEMENTED | Design/proof preflight |
 | Path/env portability | Contract defined | NOT_IMPLEMENTED | Portability preflight |
 | Project-owned scheduler loop | Contract defined | NOT_IMPLEMENTED | Scheduler loop proof |
+| Cron three-worker runtime | Contract defined in v0.8.44 | NOT_IMPLEMENTED / NOT_RUN | App-running cron worker proof |
 | Worker autostart after boot | Contract defined | NOT_IMPLEMENTED | Boot-start preflight |
 | Screen on/off worker | Contract defined | NOT_IMPLEMENTED | Display control proof |
 | Generated fixture validation | Contract defined | NOT_RUN | Run on Raspberry target |
@@ -319,12 +335,15 @@ Future Raspberry proof artifacts should include:
 
 ## Explicit non-claims
 
+This OpenSpec now defines the Raspberry app-running cron worker requirement, but it still does not prove runtime cron behavior.
+
 This OpenSpec does not prove:
 
 - Raspberry native video playback.
 - Raspberry display focus or monitor pixels.
 - Raspberry generated fixture validation on hardware.
 - Raspberry cron/systemd/autostart behavior.
+- Raspberry app-running through all three worker lanes.
 - Raspberry controlled recovery.
 - Raspberry manual reboot recovery.
 - Raspberry power-loss recovery.
