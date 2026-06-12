@@ -52,6 +52,7 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Raspberry native video playback | `npm run proof:raspberry-native-video-playback` | Raspberry target native video playback |
 | Raspberry cron worker runtime | `npm run proof:raspberry-cron-worker-runtime` | Raspberry target cron app-running proof |
 | Raspberry app-running status | `npm run proof:raspberry-app-running-status` | Operator-facing Raspberry app-running status summary |
+| Raspberry reboot recovery | `npm run proof:raspberry-reboot-recovery` | Manual pre/post reboot recovery proof |
 | Raspberry cron worker singleton/recovery proof plan | planned; no runtime command in v0.8.44 | documentation-only Raspberry app-running proof contract |
 
 The table above is intentionally complete for current `proof:*` package scripts. `tests/docsNpmScriptReferences.test.js` guards active documentation against stale `npm run ...` script references.
@@ -126,3 +127,7 @@ The plan requires same-worker singleton checks, duplicate same-worker skip evide
 ## Raspberry app-running status proof
 
 `npm run proof:raspberry-app-running-status` converts cron worker runtime proof evidence into an app-running status summary. See [`raspberry_app_running_status_proof.md`](raspberry_app_running_status_proof.md).
+
+## Raspberry reboot recovery proof
+
+`npm run proof:raspberry-reboot-recovery` validates manual pre/post reboot evidence and requires the three-worker app-running status to pass after reboot. See [`raspberry_reboot_recovery_proof.md`](raspberry_reboot_recovery_proof.md).

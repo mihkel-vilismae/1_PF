@@ -1,3 +1,9 @@
+## 0.8.47 — Raspberry reboot recovery proof
+
+- Added `proof:raspberry-reboot-recovery` for manual pre/post Raspberry reboot evidence.
+- The proof requires app-running status after reboot, active cron, all three workers resumed, stale locks safe, and playback state safe.
+- The runner does not reboot automatically and does not claim physical sudden power-loss recovery.
+
 ## 0.8.46 — Raspberry app-running status summary
 
 - Added `proof:raspberry-app-running-status` to summarize whether the Raspberry app is running under the three-worker cron definition.
