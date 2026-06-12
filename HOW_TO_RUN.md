@@ -209,19 +209,3 @@ This is documentation only. It does not add Raspberry runtime commands, does not
 For Raspberry OS, PhotoFrame “app is running” means cron is active and all three worker lanes are operational: `regular_stage_worker` every 10 minutes, `playback_worker` every 1 minute, and `screen_on_off_worker` every 3 minutes. The v0.8.44 OpenSpec records this requirement at [`docs/20_architecture_and_specs/openspec/raspberry_cron_worker_runtime_openspec.md`](docs/20_architecture_and_specs/openspec/raspberry_cron_worker_runtime_openspec.md).
 
 This runbook note is documentation only. It does not prove Raspberry cron, reboot recovery, or power-loss recovery.
-
-## Raspberry worker evidence generator
-
-Use this before the Raspberry cron worker runtime proof when target worker status/lock evidence exists:
-
-```bash
-npm run proof:raspberry-worker-evidence
-```
-
-The command prints a `PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE=...` assignment that can be used with:
-
-```bash
-PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE=<generated file> npm run proof:raspberry-cron-worker-runtime
-```
-
-If regular or screen worker evidence has not been implemented yet, the generator returns `BLOCKED` and must not be treated as app-running proof.

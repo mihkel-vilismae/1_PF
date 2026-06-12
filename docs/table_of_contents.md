@@ -162,3 +162,5 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/proofs/raspberry_cron_worker_singleton_recovery_proof.md` | Planned three-worker singleton/recovery proof contract for Raspberry app-running. |
 
 | `docs/proofs/raspberry_worker_evidence_generator_proof.md` | Raspberry worker evidence generator proof docs. |
+
+| `docs/proofs/raspberry_app_running_chain_proof.md` | Raspberry app-running PASS chain proof docs. |

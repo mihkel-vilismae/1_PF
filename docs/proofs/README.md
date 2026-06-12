@@ -53,6 +53,7 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Raspberry worker evidence generator | `npm run proof:raspberry-worker-evidence` | Generates `PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE` for cron runtime proof |
 | Raspberry cron worker runtime | `npm run proof:raspberry-cron-worker-runtime` | Raspberry target cron app-running proof |
 | Raspberry app-running status | `npm run proof:raspberry-app-running-status` | Operator-facing Raspberry app-running status summary |
+| Raspberry app-running PASS chain | `npm run proof:raspberry-app-running-chain` | Worker evidence -> cron runtime -> app-running status chain |
 | Raspberry reboot recovery | `npm run proof:raspberry-reboot-recovery` | Manual pre/post reboot recovery proof |
 | Raspberry physical power-loss recovery | `npm run proof:raspberry-power-loss-recovery` | Manual physical power-loss/restored-power proof |
 | Raspberry cron worker singleton/recovery proof plan | planned; no runtime command in v0.8.44 | documentation-only Raspberry app-running proof contract |
@@ -141,3 +142,7 @@ The plan requires same-worker singleton checks, duplicate same-worker skip evide
 ## Raspberry worker evidence generator
 
 `npm run proof:raspberry-worker-evidence` generates the `PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE` consumed by `npm run proof:raspberry-cron-worker-runtime`. It reads worker status/lock evidence for all three Raspberry worker lanes and remains `BLOCKED` rather than faking missing regular/screen worker evidence. See [`raspberry_worker_evidence_generator_proof.md`](raspberry_worker_evidence_generator_proof.md).
+
+## Raspberry app-running PASS chain proof
+
+`npm run proof:raspberry-app-running-chain` runs worker evidence generation, cron worker runtime proof, and app-running status proof in one chain. See [`raspberry_app_running_chain_proof.md`](raspberry_app_running_chain_proof.md).

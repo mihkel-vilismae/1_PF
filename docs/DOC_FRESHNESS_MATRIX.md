@@ -92,3 +92,6 @@ This matrix is a navigation aid for deciding which PF_login documents can be tru
 | v0.8.49 | Raspberry worker evidence generator. | Generates the evidence file consumed by cron worker runtime proof; incomplete evidence remains blocked. |
 
 | `docs/proofs/raspberry_worker_evidence_generator_proof.md` | current_latest_baseline | Worker evidence generator documentation; no fake worker evidence claims. |
+
+| v0.8.50 | Raspberry app-running PASS chain. | Chains worker evidence generation, cron runtime proof, and app-running status without faking missing target evidence. |
+| `docs/proofs/raspberry_app_running_chain_proof.md` | current_latest_baseline | App-running chain proof documentation; target evidence required. |
