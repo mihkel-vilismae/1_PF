@@ -50,6 +50,7 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Raspberry generated fixture validation | `npm run proof:raspberry-generated-fixtures` | Raspberry target fixture validation |
 | Raspberry native image playback | `npm run proof:raspberry-native-image-playback` | Raspberry target native image playback |
 | Raspberry native video playback | `npm run proof:raspberry-native-video-playback` | Raspberry target native video playback |
+| Raspberry cron preflight | `npm run proof:raspberry-cron-preflight` | Checks/installs PF_login managed cron worker rows |
 | Raspberry worker evidence generator | `npm run proof:raspberry-worker-evidence` | Generates `PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE` for cron runtime proof |
 | Raspberry cron worker runtime | `npm run proof:raspberry-cron-worker-runtime` | Raspberry target cron app-running proof |
 | Raspberry app-running status | `npm run proof:raspberry-app-running-status` | Operator-facing Raspberry app-running status summary |
@@ -156,3 +157,7 @@ The plan requires same-worker singleton checks, duplicate same-worker skip evide
 ## Raspberry reboot evidence generator
 
 `npm run proof:raspberry-reboot-evidence -- --prepare` writes the pre-reboot marker. After a manual reboot, `npm run proof:raspberry-reboot-evidence -- --collect` writes the evidence file consumed by `proof:raspberry-reboot-recovery`. See [`raspberry_reboot_evidence_generator_proof.md`](raspberry_reboot_evidence_generator_proof.md).
+
+## Raspberry managed cron preflight
+
+`npm run proof:raspberry-cron-preflight` checks whether the PF_login managed three-worker cron rows exist. `npm run proof:raspberry-cron-preflight -- --install` installs/replaces only the PF_login managed block. See [`raspberry_cron_preflight_proof.md`](raspberry_cron_preflight_proof.md).

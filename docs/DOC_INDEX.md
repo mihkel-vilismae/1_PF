@@ -313,3 +313,5 @@ Use these documents when investigating result payload / JSON panel scroll resets
 | `docs/proofs/raspberry_app_running_pass_harness_proof.md` | Raspberry app-running PASS harness proof docs. |
 
 | `docs/proofs/raspberry_reboot_evidence_generator_proof.md` | Raspberry reboot evidence generator prepare/collect flow. |
+
+| `docs/proofs/raspberry_cron_preflight_proof.md` | Raspberry managed cron preflight/check/install helper. |

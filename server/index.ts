@@ -627,6 +627,20 @@ const routes: Record<string, RouteHandler> = {
 };
 
 // Handles every backend HTTP request and mirrors auth/login diagnostics when applicable.
+class HttpError extends Error {
+  statusCode: number;
+  code: string;
+  details: unknown;
+
+  constructor(statusCode: number, code: string, message: string, details?: unknown) {
+    super(message);
+    this.name = 'HttpError';
+    this.statusCode = statusCode;
+    this.code = code;
+    this.details = details;
+  }
+}
+
 const server = createServer(async (request: IncomingMessage, response: ServerResponse) => {
   const startedAt = Date.now();
   const dashboardRequestId = readDashboardRequestId(request);
@@ -707,7 +721,6 @@ if (schedulerWorkerName) {
 // Dispatches the scheduler CLI worker mode used by cron/crontab commands.
 async function runSchedulerWorker(workerName: SchedulerWorkerName): Promise<void> {
   // Runs the supported scheduler worker entrypoint without starting the HTTP server.
-  const context = await buildRequestContext();
   await logger.info('Scheduler worker invoked by cron/crontab.', {
     worker: workerName,
     invokedAt: new Date().toISOString(),
@@ -715,6 +728,7 @@ async function runSchedulerWorker(workerName: SchedulerWorkerName): Promise<void
     source: 'scheduler-worker-cli',
   });
   if (workerName === SCHEDULER_WORKER_NAMES.playback) {
+    const context = await buildRequestContext();
     const result = await runPlaybackWorker({
       context,
       databaseService: getDatabaseService(),
@@ -4246,19 +4260,5 @@ async function fileExists(targetPath: string): Promise<boolean> {
     return true;
   } catch {
     return false;
-  }
-}
-
-class HttpError extends Error {
-  statusCode: number;
-  code: string;
-  details: unknown;
-
-  constructor(statusCode: number, code: string, message: string, details?: unknown) {
-    super(message);
-    this.name = 'HttpError';
-    this.statusCode = statusCode;
-    this.code = code;
-    this.details = details;
   }
 }

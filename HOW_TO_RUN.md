@@ -247,3 +247,19 @@ npm run proof:raspberry-reboot-evidence -- --collect
 ```
 
 This does not reboot automatically and does not prove physical power-loss recovery.
+
+## Raspberry managed cron preflight
+
+Check whether the PF_login managed three-worker cron rows are installed:
+
+```bash
+npm run proof:raspberry-cron-preflight
+```
+
+Install or replace only the PF_login managed block:
+
+```bash
+npm run proof:raspberry-cron-preflight -- --install
+```
+
+The command preserves crontab rows outside the PF_login managed block.

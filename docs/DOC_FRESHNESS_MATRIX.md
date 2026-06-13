@@ -101,3 +101,5 @@ This matrix is a navigation aid for deciding which PF_login documents can be tru
 | v0.8.52 | Raspberry app-running PASS harness. | Adds proof-owned app-running harness; off-target remains blocked and reboot/power-loss remain non-claims. |
 
 | v0.8.53 | Raspberry reboot evidence generator. | Adds prepare/collect evidence flow for manual reboot recovery; no automatic reboot or power-loss claim. |
+
+| v0.8.54 | Scheduler CLI bootstrap repair and Raspberry cron preflight. | Fixes HttpError TDZ/env bootstrap blocker and adds managed cron preflight/install helper. |

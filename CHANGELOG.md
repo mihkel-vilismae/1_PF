@@ -1,3 +1,9 @@
+## 0.8.54 — Scheduler CLI bootstrap repair and Raspberry cron preflight
+
+- Fixed scheduler CLI bootstrap so regular/screen instrumentation workers do not fail with `ReferenceError: Cannot access 'HttpError' before initialization` when env loading fails.
+- Moved playback-only request context loading into the playback worker branch so instrumentation-only regular/screen workers can write status/lock evidence without requiring `.env`.
+- Added `proof:raspberry-cron-preflight` with optional `--install` to check/install the PF_login managed cron block for the three Raspberry worker lanes.
+
 ## 0.8.53 — Raspberry reboot evidence generator
 
 - Added `proof:raspberry-reboot-evidence` with `--prepare` and `--collect` modes for manual reboot recovery evidence.
