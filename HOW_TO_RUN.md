@@ -209,3 +209,15 @@ This is documentation only. It does not add Raspberry runtime commands, does not
 For Raspberry OS, PhotoFrame “app is running” means cron is active and all three worker lanes are operational: `regular_stage_worker` every 10 minutes, `playback_worker` every 1 minute, and `screen_on_off_worker` every 3 minutes. The v0.8.44 OpenSpec records this requirement at [`docs/20_architecture_and_specs/openspec/raspberry_cron_worker_runtime_openspec.md`](docs/20_architecture_and_specs/openspec/raspberry_cron_worker_runtime_openspec.md).
 
 This runbook note is documentation only. It does not prove Raspberry cron, reboot recovery, or power-loss recovery.
+
+## v0.8.51 worker status/lock instrumentation
+
+The scheduler CLI entrypoints now write status/lock evidence for all three worker lanes:
+
+```bash
+npm run api -- --scheduler regular-stage-worker
+npm run api -- --scheduler playback-worker
+npm run api -- --scheduler screen-on-off-worker
+```
+
+The regular and screen workers are instrumentation-only in this slice; they do not claim real download/index/GPS/geocode/queue product work or physical screen hardware control.

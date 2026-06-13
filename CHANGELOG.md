@@ -1,3 +1,10 @@
+## 0.8.51 — Real worker status/lock instrumentation
+
+- Added instrumentation-only runtime status/lock workers for `regular_stage_worker` and `screen_on_off_worker` behind the existing scheduler CLI entrypoints.
+- The regular and screen workers now write lane-specific status/lock evidence without claiming product pipeline or physical screen-control behavior.
+- Added evidence-compatible fields to `playback_worker` status output so the worker evidence generator can read all three lane status files consistently.
+- Preserved non-claims for cron PASS, reboot recovery, power-loss recovery, monitor-pixel proof, production iCloud continuation, and real provider chains unless target evidence exists.
+
 ## 0.8.48 — Raspberry physical power-loss recovery proof
 
 - Added `proof:raspberry-power-loss-recovery` for explicit physical power-loss/restored-power evidence.

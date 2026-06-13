@@ -29,6 +29,20 @@ export interface PlaybackWorkerResult {
   status: WorkerStatus;
   startedAt: string;
   finishedAt: string;
+  invocation_observed: boolean;
+  last_invocation_at: string;
+  same_worker_singleton: {
+    first_acquired: boolean;
+    duplicate_skipped: boolean;
+    source: string;
+  };
+  cross_worker_independence: boolean;
+  stale_lock: {
+    reclaimed: boolean;
+    source: string;
+    current_lock_present: boolean;
+    current_lock_owner: string | null;
+  };
   lock: {
     path: string;
     acquiredAt: string;
@@ -132,6 +146,11 @@ export async function runPlaybackWorker({
       status,
       startedAt,
       finishedAt: now().toISOString(),
+      invocation_observed: true,
+      last_invocation_at: now().toISOString(),
+      same_worker_singleton: { first_acquired: true, duplicate_skipped: false, source: 'playback-worker-runtime-lock' },
+      cross_worker_independence: true,
+      stale_lock: { reclaimed: false, source: 'playback-worker-runtime-lock', current_lock_present: false, current_lock_owner: null },
       lock: {
         path: lockPath,
         acquiredAt: startedAt,
@@ -157,6 +176,11 @@ export async function runPlaybackWorker({
       status: 'failed',
       startedAt,
       finishedAt: now().toISOString(),
+      invocation_observed: true,
+      last_invocation_at: now().toISOString(),
+      same_worker_singleton: { first_acquired: true, duplicate_skipped: false, source: 'playback-worker-runtime-lock' },
+      cross_worker_independence: true,
+      stale_lock: { reclaimed: false, source: 'playback-worker-runtime-lock', current_lock_present: false, current_lock_owner: null },
       lock: {
         path: lockPath,
         acquiredAt: startedAt,

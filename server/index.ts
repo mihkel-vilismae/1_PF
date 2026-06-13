@@ -44,6 +44,7 @@ import {
 import { selectCurrentPlayableItem } from './playback/playbackSelectionService.ts';
 import { buildPlaybackContract, normalizePlaybackContractLimit, resolvePlaybackAssetMediaPath } from './playback/playbackContractService.ts';
 import { runPlaybackWorker } from './workers/playbackWorker.ts';
+import { runInstrumentedSchedulerWorker } from './workers/instrumentedSchedulerWorker.ts';
 import {
   detectNativePlayback,
   getNativePlaybackStatus,
@@ -713,26 +714,30 @@ async function runSchedulerWorker(workerName: SchedulerWorkerName): Promise<void
     command: process.argv.join(' '),
     source: 'scheduler-worker-cli',
   });
-  if (workerName !== SCHEDULER_WORKER_NAMES.playback) {
-    const message = `Scheduler worker ${workerName} is not implemented in this slice.`;
-    console.error(message);
-    await logger.error('Scheduler worker invocation failed.', {
-      worker: workerName,
-      failureReason: message,
-      source: 'scheduler-worker-cli',
+  if (workerName === SCHEDULER_WORKER_NAMES.playback) {
+    const result = await runPlaybackWorker({
+      context,
+      databaseService: getDatabaseService(),
+      repoRoot,
     });
-    process.exitCode = 2;
+    console.log(JSON.stringify(result, null, 2));
+    await logger.info('playback_worker completed.', {
+      status: result.status,
+      startedAt: result.startedAt,
+      finishedAt: result.finishedAt,
+      skippedReason: result.skippedReason,
+      failureReason: result.failureReason,
+    });
+    process.exitCode = result.status === 'failed' ? 1 : 0;
     return;
   }
 
-  const result = await runPlaybackWorker({
-    context,
-    databaseService: getDatabaseService(),
-    repoRoot,
-  });
+  const result = await runInstrumentedSchedulerWorker({ workerName, repoRoot });
   console.log(JSON.stringify(result, null, 2));
-  await logger.info('playback_worker completed.', {
+  await logger.info(`${result.worker} instrumentation completed.`, {
+    worker: result.worker,
     status: result.status,
+    implementationStatus: result.implementationStatus,
     startedAt: result.startedAt,
     finishedAt: result.finishedAt,
     skippedReason: result.skippedReason,

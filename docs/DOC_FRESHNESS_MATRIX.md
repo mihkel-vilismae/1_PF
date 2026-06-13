@@ -95,3 +95,5 @@ This matrix is a navigation aid for deciding which PF_login documents can be tru
 
 | v0.8.50 | Raspberry app-running PASS chain. | Chains worker evidence generation, cron runtime proof, and app-running status without faking missing target evidence. |
 | `docs/proofs/raspberry_app_running_chain_proof.md` | current_latest_baseline | App-running chain proof documentation; target evidence required. |
+
+| v0.8.51 | Real worker status/lock instrumentation. | Adds status/lock evidence for regular and screen workers without claiming product work or screen hardware behavior. |
