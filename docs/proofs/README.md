@@ -54,6 +54,7 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Raspberry cron worker runtime | `npm run proof:raspberry-cron-worker-runtime` | Raspberry target cron app-running proof |
 | Raspberry app-running status | `npm run proof:raspberry-app-running-status` | Operator-facing Raspberry app-running status summary |
 | Raspberry app-running PASS chain | `npm run proof:raspberry-app-running-chain` | Worker evidence -> cron runtime -> app-running status chain |
+| Raspberry app-running PASS harness | `npm run proof:raspberry-app-running-pass` | Proof-owned all-worker evidence harness feeding app-running chain |
 | Raspberry reboot recovery | `npm run proof:raspberry-reboot-recovery` | Manual pre/post reboot recovery proof |
 | Raspberry physical power-loss recovery | `npm run proof:raspberry-power-loss-recovery` | Manual physical power-loss/restored-power proof |
 | Raspberry cron worker singleton/recovery proof plan | planned; no runtime command in v0.8.44 | documentation-only Raspberry app-running proof contract |
@@ -146,3 +147,7 @@ The plan requires same-worker singleton checks, duplicate same-worker skip evide
 ## Raspberry app-running PASS chain proof
 
 `npm run proof:raspberry-app-running-chain` runs worker evidence generation, cron worker runtime proof, and app-running status proof in one chain. See [`raspberry_app_running_chain_proof.md`](raspberry_app_running_chain_proof.md).
+
+## Raspberry app-running PASS harness
+
+`npm run proof:raspberry-app-running-pass` runs the proof-owned app-running harness and feeds generated evidence into the app-running chain. See [`raspberry_app_running_pass_harness_proof.md`](raspberry_app_running_pass_harness_proof.md).

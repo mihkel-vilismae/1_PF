@@ -159,29 +159,63 @@ test('playback_worker reports no READY row as an honest skipped state', async ()
   }
 });
 
-test('playback_worker rejects concurrent lock holders before selecting playback', async () => {
+test('playback_worker skips duplicate lock holders before selecting playback', async () => {
   const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'playback-worker-locked-'));
   try {
     const runtimeDirectory = path.join(repoRoot, 'runtime_data', 'scheduler');
     await import('node:fs/promises').then(({ mkdir }) => mkdir(runtimeDirectory, { recursive: true }));
     await writeFile(
       path.join(runtimeDirectory, 'playback-worker-lock.json'),
-      `${JSON.stringify({ worker: 'playback_worker', acquiredAt: '2026-05-10T12:59:00.000Z', pid: 999999 })}\n`,
+      `${JSON.stringify({ worker: 'playback_worker', acquiredAt: '2026-05-10T12:59:00.000Z', pid: 999999 })}
+`,
       'utf8',
     );
 
-    await assert.rejects(
-      () => runPlaybackWorker({
-        context: { envValues: {} },
-        databaseService: buildDatabaseService({
-          playback: { outcome: 'selected', selected: { mediaAssetId: 1 }, failedCandidateCount: 0 },
-        }),
-        repoRoot,
-        now: buildClock(),
-        workerId: 'test-worker-locked',
+    const result = await runPlaybackWorker({
+      context: { envValues: {} },
+      databaseService: buildDatabaseService({
+        playback: { outcome: 'selected', selected: { mediaAssetId: 1 }, failedCandidateCount: 0 },
       }),
-      /playback_worker is already running/,
+      repoRoot,
+      now: buildClock(),
+      workerId: 'test-worker-locked',
+    });
+
+    assert.equal(result.status, 'skipped');
+    assert.equal(result.skippedReason, 'same_worker_instance_already_running');
+    assert.equal(result.same_worker_singleton.duplicate_skipped, true);
+    assert.equal(result.selection, null);
+  } finally {
+    await rm(repoRoot, { recursive: true, force: true });
+  }
+});
+
+test('playback_worker reclaims stale lock before selecting playback', async () => {
+  const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'playback-worker-stale-'));
+  try {
+    const runtimeDirectory = path.join(repoRoot, 'runtime_data', 'scheduler');
+    await import('node:fs/promises').then(({ mkdir }) => mkdir(runtimeDirectory, { recursive: true }));
+    await writeFile(
+      path.join(runtimeDirectory, 'playback-worker-lock.json'),
+      `${JSON.stringify({ worker: 'playback_worker', acquiredAt: '2026-05-10T12:00:00.000Z', pid: 999999 })}
+`,
+      'utf8',
     );
+
+    const result = await runPlaybackWorker({
+      context: { envValues: {} },
+      databaseService: buildDatabaseService({
+        playback: { outcome: 'selected', selected: { mediaAssetId: 1 }, failedCandidateCount: 0 },
+      }),
+      repoRoot,
+      now: buildClock(),
+      workerId: 'test-worker-stale',
+      staleLockSeconds: 1,
+    });
+
+    assert.equal(result.status, 'succeeded');
+    assert.equal(result.stale_lock.reclaimed, true);
+    assert.equal(result.lock.released, true);
   } finally {
     await rm(repoRoot, { recursive: true, force: true });
   }

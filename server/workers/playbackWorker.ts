@@ -22,6 +22,7 @@ export interface PlaybackWorkerOptions {
   repoRoot: string;
   now?: () => Date;
   workerId?: string;
+  staleLockSeconds?: number;
 }
 
 export interface PlaybackWorkerResult {
@@ -45,7 +46,7 @@ export interface PlaybackWorkerResult {
   };
   lock: {
     path: string;
-    acquiredAt: string;
+    acquiredAt: string | null;
     released: boolean;
   };
   statusPath: string;
@@ -70,6 +71,14 @@ interface WorkerLockFile {
   workerId: string;
 }
 
+interface LockOutcome {
+  acquired: boolean;
+  duplicateSkipped: boolean;
+  staleLockReclaimed: boolean;
+  acquiredAt: string | null;
+  currentLockPresent: boolean;
+  currentLockOwner: string | null;
+}
 
 // Starts native playback only when the native worker auto-start gate is explicitly enabled.
 async function maybeStartNativePlaybackFromWorker({
@@ -114,6 +123,7 @@ export async function runPlaybackWorker({
   repoRoot,
   now = () => new Date(),
   workerId = `playback-worker-${process.pid}`,
+  staleLockSeconds = resolveStaleLockSeconds(process.env.PF_RASPBERRY_WORKER_STALE_LOCK_SECONDS),
 }: PlaybackWorkerOptions): Promise<PlaybackWorkerResult> {
   const runtimeDirectory = path.join(repoRoot, 'runtime_data', 'scheduler');
   const lockPath = path.join(runtimeDirectory, 'playback-worker-lock.json');
@@ -127,7 +137,33 @@ export async function runPlaybackWorker({
   };
 
   await fs.mkdir(runtimeDirectory, { recursive: true });
-  await acquireWorkerLock(lockPath, lockPayload);
+  const lockOutcome = await acquireOrClassifyWorkerLock({ lockPath, payload: lockPayload, now, staleLockSeconds });
+
+  if (lockOutcome.duplicateSkipped) {
+    const result = buildResult({
+      status: 'skipped',
+      startedAt,
+      finishedAt: now().toISOString(),
+      lockPath,
+      statusPath,
+      acquiredAt: null,
+      released: false,
+      firstAcquired: false,
+      duplicateSkipped: true,
+      staleLockReclaimed: false,
+      currentLockPresent: true,
+      currentLockOwner: lockOutcome.currentLockOwner,
+      selection: null,
+      selectedItemSummary: null,
+      skippedReason: 'same_worker_instance_already_running',
+      failureReason: null,
+      rendering: { claimed: false, note: 'playback_worker duplicate invocation skipped before playback selection because a same-worker lock is active.' },
+      nativePlayback: null,
+      messages: ['playback_worker duplicate invocation skipped because a same-worker lock is active.'],
+    });
+    await writeWorkerStatus(statusPath, result);
+    return result;
+  }
 
   let result: PlaybackWorkerResult;
   try {
@@ -141,67 +177,51 @@ export async function runPlaybackWorker({
         nativePlayback: null,
         messages: [],
       };
-    result = {
-      worker: 'playback_worker',
+    result = buildResult({
       status,
       startedAt,
       finishedAt: now().toISOString(),
-      invocation_observed: true,
-      last_invocation_at: now().toISOString(),
-      same_worker_singleton: { first_acquired: true, duplicate_skipped: false, source: 'playback-worker-runtime-lock' },
-      cross_worker_independence: true,
-      stale_lock: { reclaimed: false, source: 'playback-worker-runtime-lock', current_lock_present: false, current_lock_owner: null },
-      lock: {
-        path: lockPath,
-        acquiredAt: startedAt,
-        released: false,
-      },
+      lockPath,
       statusPath,
+      acquiredAt: lockOutcome.acquiredAt,
+      released: false,
+      firstAcquired: true,
+      duplicateSkipped: false,
+      staleLockReclaimed: lockOutcome.staleLockReclaimed,
+      currentLockPresent: false,
+      currentLockOwner: null,
       selection,
       selectedItemSummary: selection.selectedItemSummary,
       skippedReason: selection.skippedReason,
       failureReason: null,
-      rendering: {
-        claimed: nativeResult.claimed,
-        note: nativeResult.note,
-      },
+      rendering: { claimed: nativeResult.claimed, note: nativeResult.note },
       nativePlayback: nativeResult.nativePlayback,
-      pipelineStagesRun: [],
       messages: [...selection.messages, ...nativeResult.messages],
-      schemaVersion: 1,
-    };
+    });
   } catch (error) {
-    result = {
-      worker: 'playback_worker',
+    result = buildResult({
       status: 'failed',
       startedAt,
       finishedAt: now().toISOString(),
-      invocation_observed: true,
-      last_invocation_at: now().toISOString(),
-      same_worker_singleton: { first_acquired: true, duplicate_skipped: false, source: 'playback-worker-runtime-lock' },
-      cross_worker_independence: true,
-      stale_lock: { reclaimed: false, source: 'playback-worker-runtime-lock', current_lock_present: false, current_lock_owner: null },
-      lock: {
-        path: lockPath,
-        acquiredAt: startedAt,
-        released: false,
-      },
+      lockPath,
       statusPath,
+      acquiredAt: lockOutcome.acquiredAt,
+      released: false,
+      firstAcquired: true,
+      duplicateSkipped: false,
+      staleLockReclaimed: lockOutcome.staleLockReclaimed,
+      currentLockPresent: false,
+      currentLockOwner: null,
       selection: null,
       selectedItemSummary: null,
       skippedReason: null,
       failureReason: getErrorMessage(error),
-      rendering: {
-        claimed: false,
-        note: 'playback_worker failed before selecting a current item and did not perform native fullscreen/screen control.',
-      },
+      rendering: { claimed: false, note: 'playback_worker failed before selecting a current item and did not perform native fullscreen/screen control.' },
       nativePlayback: null,
-      pipelineStagesRun: [],
       messages: [`playback_worker failed: ${getErrorMessage(error)}`],
-      schemaVersion: 1,
-    };
+    });
   } finally {
-    await fs.rm(lockPath, { force: true }).catch(() => undefined);
+    if (lockOutcome.acquired) await fs.rm(lockPath, { force: true }).catch(() => undefined);
   }
 
   result.lock.released = true;
@@ -209,16 +229,85 @@ export async function runPlaybackWorker({
   return result;
 }
 
-// Acquires the worker lock and rejects concurrent playback_worker executions.
-async function acquireWorkerLock(lockPath: string, payload: WorkerLockFile): Promise<void> {
+function buildResult({
+  status,
+  startedAt,
+  finishedAt,
+  lockPath,
+  statusPath,
+  acquiredAt,
+  released,
+  firstAcquired,
+  duplicateSkipped,
+  staleLockReclaimed,
+  currentLockPresent,
+  currentLockOwner,
+  selection,
+  selectedItemSummary,
+  skippedReason,
+  failureReason,
+  rendering,
+  nativePlayback,
+  messages,
+}: {
+  status: WorkerStatus;
+  startedAt: string;
+  finishedAt: string;
+  lockPath: string;
+  statusPath: string;
+  acquiredAt: string | null;
+  released: boolean;
+  firstAcquired: boolean;
+  duplicateSkipped: boolean;
+  staleLockReclaimed: boolean;
+  currentLockPresent: boolean;
+  currentLockOwner: string | null;
+  selection: unknown | null;
+  selectedItemSummary: unknown | null;
+  skippedReason: string | null;
+  failureReason: string | null;
+  rendering: PlaybackWorkerResult['rendering'];
+  nativePlayback: unknown | null;
+  messages: string[];
+}): PlaybackWorkerResult {
+  return {
+    worker: 'playback_worker',
+    status,
+    startedAt,
+    finishedAt,
+    invocation_observed: true,
+    last_invocation_at: finishedAt,
+    same_worker_singleton: { first_acquired: firstAcquired, duplicate_skipped: duplicateSkipped, source: 'playback-worker-runtime-lock' },
+    cross_worker_independence: true,
+    stale_lock: { reclaimed: staleLockReclaimed, source: 'playback-worker-runtime-lock', current_lock_present: currentLockPresent, current_lock_owner: currentLockOwner },
+    lock: { path: lockPath, acquiredAt, released },
+    statusPath,
+    selection,
+    selectedItemSummary,
+    skippedReason,
+    failureReason,
+    rendering,
+    nativePlayback,
+    pipelineStagesRun: [],
+    messages,
+    schemaVersion: 1,
+  };
+}
+
+async function acquireOrClassifyWorkerLock({ lockPath, payload, now, staleLockSeconds }: { lockPath: string; payload: WorkerLockFile; now: () => Date; staleLockSeconds: number; }): Promise<LockOutcome> {
   try {
     await fs.writeFile(lockPath, `${JSON.stringify(payload, null, 2)}\n`, { encoding: 'utf8', flag: 'wx' });
+    return { acquired: true, duplicateSkipped: false, staleLockReclaimed: false, acquiredAt: payload.acquiredAt, currentLockPresent: false, currentLockOwner: null };
   } catch (error) {
-    if (isNodeErrorWithCode(error, 'EEXIST')) {
-      const existing = await readJsonObject(lockPath);
-      throw new Error(`playback_worker is already running${formatExistingLock(existing)}.`);
+    if (!isNodeErrorWithCode(error, 'EEXIST')) throw error;
+    const existing = await readJsonObject(lockPath);
+    const currentLockOwner = formatLockOwner(existing);
+    if (isStaleLock(existing, now, staleLockSeconds)) {
+      await fs.rm(lockPath, { force: true });
+      await fs.writeFile(lockPath, `${JSON.stringify(payload, null, 2)}\n`, { encoding: 'utf8', flag: 'wx' });
+      return { acquired: true, duplicateSkipped: false, staleLockReclaimed: true, acquiredAt: payload.acquiredAt, currentLockPresent: false, currentLockOwner };
     }
-    throw error;
+    return { acquired: false, duplicateSkipped: true, staleLockReclaimed: false, acquiredAt: null, currentLockPresent: true, currentLockOwner };
   }
 }
 
@@ -238,12 +327,24 @@ async function readJsonObject(filePath: string): Promise<JsonObject | null> {
   }
 }
 
-// Formats existing lock evidence without exposing unrelated file contents.
-function formatExistingLock(existing: JsonObject | null): string {
+function isStaleLock(existing: JsonObject | null, now: () => Date, staleLockSeconds: number): boolean {
   const acquiredAt = typeof existing?.acquiredAt === 'string' ? existing.acquiredAt : null;
-  const pid = typeof existing?.pid === 'number' ? existing.pid : null;
-  const details = [pid ? `pid ${pid}` : null, acquiredAt ? `acquired at ${acquiredAt}` : null].filter(Boolean).join(', ');
-  return details ? ` (${details})` : '';
+  if (!acquiredAt) return false;
+  const acquiredMs = Date.parse(acquiredAt);
+  if (!Number.isFinite(acquiredMs)) return false;
+  return Math.floor((now().getTime() - acquiredMs) / 1000) > staleLockSeconds;
+}
+
+// Formats existing lock evidence without exposing unrelated file contents.
+function formatLockOwner(existing: JsonObject | null): string | null {
+  const workerId = typeof existing?.workerId === 'string' ? existing.workerId : null;
+  const pid = typeof existing?.pid === 'number' ? String(existing.pid) : null;
+  return workerId ?? pid;
+}
+
+function resolveStaleLockSeconds(value: string | undefined): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 900;
 }
 
 // Checks Node filesystem errors by code.

@@ -97,3 +97,5 @@ This matrix is a navigation aid for deciding which PF_login documents can be tru
 | `docs/proofs/raspberry_app_running_chain_proof.md` | current_latest_baseline | App-running chain proof documentation; target evidence required. |
 
 | v0.8.51 | Real worker status/lock instrumentation. | Adds status/lock evidence for regular and screen workers without claiming product work or screen hardware behavior. |
+
+| v0.8.52 | Raspberry app-running PASS harness. | Adds proof-owned app-running harness; off-target remains blocked and reboot/power-loss remain non-claims. |

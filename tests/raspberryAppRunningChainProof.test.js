@@ -17,6 +17,7 @@ test('app-running chain can pass with complete generated evidence and target ove
   const generatedEvidence = { generated_at: '2026-06-13T00:00:00Z', worker_lanes: ['regular_stage_worker','playback_worker','screen_on_off_worker'].map((name) => ({
     name,
     last_invocation_at: '2026-06-13T00:00:00Z',
+    invocation_observed: true,
     same_worker_singleton: { first_acquired: true, duplicate_skipped: true },
     cross_worker_independence: true,
     stale_lock: { reclaimed: true },

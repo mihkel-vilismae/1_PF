@@ -221,3 +221,13 @@ npm run api -- --scheduler screen-on-off-worker
 ```
 
 The regular and screen workers are instrumentation-only in this slice; they do not claim real download/index/GPS/geocode/queue product work or physical screen hardware control.
+
+## Raspberry app-running PASS harness
+
+On Raspberry with managed cron rows, run:
+
+```bash
+npm run proof:raspberry-app-running-pass
+```
+
+The command remains `BLOCKED` off-target and does not claim reboot or power-loss recovery.

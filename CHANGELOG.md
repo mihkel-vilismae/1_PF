@@ -1,3 +1,9 @@
+## 0.8.52 — Raspberry app-running PASS harness
+
+- Added `proof:raspberry-app-running-pass` to run a proof-owned harness for all three worker lanes and feed generated evidence into the app-running chain.
+- Updated `playback_worker` duplicate-lock handling to skip safely and added stale-lock reclaim evidence, aligning playback with the regular/screen worker instrumentation contract.
+- The harness remains `BLOCKED` off-target and does not claim reboot, physical power-loss recovery, monitor-pixel proof, production iCloud continuation, or real regular/screen product work.
+
 ## 0.8.51 — Real worker status/lock instrumentation
 
 - Added instrumentation-only runtime status/lock workers for `regular_stage_worker` and `screen_on_off_worker` behind the existing scheduler CLI entrypoints.

@@ -309,3 +309,5 @@ Use these documents when investigating result payload / JSON panel scroll resets
 | `docs/proofs/raspberry_worker_evidence_generator_proof.md` | Raspberry worker evidence generator for `PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE`; target evidence required. |
 
 | `docs/proofs/raspberry_app_running_chain_proof.md` | Raspberry app-running chain proof: worker evidence -> cron runtime -> app-running status. |
+
+| `docs/proofs/raspberry_app_running_pass_harness_proof.md` | Raspberry app-running PASS harness proof docs. |
