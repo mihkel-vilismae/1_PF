@@ -231,3 +231,19 @@ npm run proof:raspberry-app-running-pass
 ```
 
 The command remains `BLOCKED` off-target and does not claim reboot or power-loss recovery.
+
+## Raspberry reboot evidence generator
+
+Prepare before manual reboot:
+
+```bash
+npm run proof:raspberry-reboot-evidence -- --prepare
+```
+
+After reboot, collect evidence:
+
+```bash
+npm run proof:raspberry-reboot-evidence -- --collect
+```
+
+This does not reboot automatically and does not prove physical power-loss recovery.

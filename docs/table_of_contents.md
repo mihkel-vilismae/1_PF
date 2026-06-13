@@ -166,3 +166,5 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/proofs/raspberry_app_running_chain_proof.md` | Raspberry app-running PASS chain proof docs. |
 
 | `docs/proofs/raspberry_app_running_pass_harness_proof.md` | Raspberry app-running PASS harness proof docs. |
+
+| `docs/proofs/raspberry_reboot_evidence_generator_proof.md` | Raspberry reboot evidence generator proof docs. |

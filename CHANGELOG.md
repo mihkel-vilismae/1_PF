@@ -1,3 +1,9 @@
+## 0.8.53 — Raspberry reboot evidence generator
+
+- Added `proof:raspberry-reboot-evidence` with `--prepare` and `--collect` modes for manual reboot recovery evidence.
+- Collect mode writes the `PF_RASPBERRY_REBOOT_RECOVERY_EVIDENCE_FILE` consumed by `proof:raspberry-reboot-recovery` and depends on app-running PASS evidence after reboot.
+- The generator does not reboot automatically and does not claim physical power-loss recovery.
+
 ## 0.8.52 — Raspberry app-running PASS harness
 
 - Added `proof:raspberry-app-running-pass` to run a proof-owned harness for all three worker lanes and feed generated evidence into the app-running chain.

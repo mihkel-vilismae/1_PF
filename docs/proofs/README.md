@@ -55,6 +55,7 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Raspberry app-running status | `npm run proof:raspberry-app-running-status` | Operator-facing Raspberry app-running status summary |
 | Raspberry app-running PASS chain | `npm run proof:raspberry-app-running-chain` | Worker evidence -> cron runtime -> app-running status chain |
 | Raspberry app-running PASS harness | `npm run proof:raspberry-app-running-pass` | Proof-owned all-worker evidence harness feeding app-running chain |
+| Raspberry reboot evidence generator | `npm run proof:raspberry-reboot-evidence` | Prepare/collect evidence for manual reboot recovery proof |
 | Raspberry reboot recovery | `npm run proof:raspberry-reboot-recovery` | Manual pre/post reboot recovery proof |
 | Raspberry physical power-loss recovery | `npm run proof:raspberry-power-loss-recovery` | Manual physical power-loss/restored-power proof |
 | Raspberry cron worker singleton/recovery proof plan | planned; no runtime command in v0.8.44 | documentation-only Raspberry app-running proof contract |
@@ -151,3 +152,7 @@ The plan requires same-worker singleton checks, duplicate same-worker skip evide
 ## Raspberry app-running PASS harness
 
 `npm run proof:raspberry-app-running-pass` runs the proof-owned app-running harness and feeds generated evidence into the app-running chain. See [`raspberry_app_running_pass_harness_proof.md`](raspberry_app_running_pass_harness_proof.md).
+
+## Raspberry reboot evidence generator
+
+`npm run proof:raspberry-reboot-evidence -- --prepare` writes the pre-reboot marker. After a manual reboot, `npm run proof:raspberry-reboot-evidence -- --collect` writes the evidence file consumed by `proof:raspberry-reboot-recovery`. See [`raspberry_reboot_evidence_generator_proof.md`](raspberry_reboot_evidence_generator_proof.md).
