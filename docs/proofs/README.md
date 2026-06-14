@@ -200,3 +200,5 @@ The plan requires same-worker singleton checks, duplicate same-worker skip evide
 | Local/generated media pipeline rehearsal | `npm run proof:local-generated-media-pipeline-rehearsal` | Windows-safe generated-media rehearsal for product pipeline fixtures without iCloud/Raspberry claims. |
 
 | Docs reconciliation audit | `npm run proof:docs-reconciliation-audit` | Critical v1 docs audit pre-pass for missing docs and known contradictory claims. |
+
+| OpenSpec v1 audit | `npm run proof:openspec-v1-audit` | Static audit that critical Raspberry v1 OpenSpec docs exist and include status, purpose/goal, and non-claims sections. |

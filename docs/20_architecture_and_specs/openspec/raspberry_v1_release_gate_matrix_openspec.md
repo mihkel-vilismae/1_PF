@@ -1,6 +1,7 @@
 # OpenSpec — Raspberry v1.0 release-gate matrix
 
 Version: v0.8.56
+Status: active release-gate matrix
 
 ## Purpose
 
@@ -54,3 +55,10 @@ Manual reboot recovery, physical power-loss recovery, and Windows release proof 
 ## Proof runner
 
 `npm run proof:raspberry-v1-readiness` scans latest local proof artifacts under `runtime_data/proofs/` and evaluates them against this matrix. It returns `PASSED` only when all required v1.0 gates have latest `PASSED` evidence.
+
+
+## Non-claims
+
+- This matrix does not prove runtime behavior by itself.
+- This matrix does not replace individual proof artifacts.
+- Non-v1 blockers listed here must not be claimed as solved by v1 readiness.

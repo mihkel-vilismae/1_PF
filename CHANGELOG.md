@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.76 - 2026-06-14
+
+- Add `proof:openspec-v1-audit` static audit for critical Raspberry v1 OpenSpec docs.
+- Audit requires status, purpose/goal, and non-claims sections for the active v1 OpenSpec bundle.
+- Add tests for passing current docs and blocking missing/underspecified OpenSpec docs.
+
+
 ## 0.8.75 - 2026-06-14
 
 - Add Raspberry v1 OpenSpec traceability matrix linking release gates, question IDs, specs, proof commands, and current proof status.
