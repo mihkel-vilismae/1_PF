@@ -182,3 +182,8 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 
 - `docs/20_architecture_and_specs/openspec/raspberry_v1_release_gate_matrix_openspec.md` — answered matrix and required/non-blocking release gates.
 - `docs/proofs/raspberry_v1_readiness_proof.md` — proof-artifact evaluator for current Raspberry v1.0 readiness.
+
+
+## v0.8.57 Raspberry worker startup smoke docs
+
+- `docs/proofs/raspberry_worker_startup_smoke_proof.md` — proof that all three scheduler worker commands can start cleanly on Raspberry after preflight repair.

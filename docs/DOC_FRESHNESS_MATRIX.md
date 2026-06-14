@@ -113,3 +113,7 @@ This matrix is a navigation aid for deciding which PF_login documents can be tru
 | v0.8.56 | Raspberry v1.0 release-gate matrix. | Encodes answered matrix decisions and adds `proof:raspberry-v1-readiness`; no new target proof is claimed. |
 | `docs/20_architecture_and_specs/openspec/raspberry_v1_release_gate_matrix_openspec.md` | current_latest_baseline | Authoritative answered-matrix release-gate contract for Raspberry v1.0. |
 | `docs/proofs/raspberry_v1_readiness_proof.md` | current_latest_baseline | Describes the v1 readiness proof-artifact evaluator and its PASS/BLOCKED semantics. |
+
+
+| v0.8.57 | Raspberry three-worker startup smoke proof. | Adds `proof:raspberry-worker-startup-smoke`; proves command startup only when run on Raspberry, not cron timing or product pipeline work. |
+| `docs/proofs/raspberry_worker_startup_smoke_proof.md` | current_latest_baseline | v0.8.57 proof doc for startup checks of all three Raspberry scheduler worker commands. |

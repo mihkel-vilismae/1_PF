@@ -53,6 +53,7 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Raspberry executable-permission repair | `npm run proof:raspberry-executable-permissions` | Checks/repairs repo-owned executable bits after ZIP extraction |
 | Raspberry env preflight | `npm run proof:raspberry-env-preflight` | Checks/creates `.env` from `example.env` before playback worker runtime |
 | Raspberry v1.0 readiness | `npm run proof:raspberry-v1-readiness` | Evaluates latest proof artifacts against answered v1.0 release gates |
+| Raspberry worker startup smoke | `npm run proof:raspberry-worker-startup-smoke` | Starts all three scheduler worker commands after install/runtime preflights |
 | Raspberry cron preflight | `npm run proof:raspberry-cron-preflight` | Checks/installs PF_login managed cron worker rows |
 | Raspberry worker evidence generator | `npm run proof:raspberry-worker-evidence` | Generates `PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE` for cron runtime proof |
 | Raspberry cron worker runtime | `npm run proof:raspberry-cron-worker-runtime` | Raspberry target cron app-running proof |
@@ -178,3 +179,8 @@ The plan requires same-worker singleton checks, duplicate same-worker skip evide
 ## Raspberry v1.0 readiness
 
 `npm run proof:raspberry-v1-readiness` scans latest local proof artifacts and evaluates them against the answered v1.0 release-gate matrix. It is a gate evaluator, not a substitute for target proof execution. See [`raspberry_v1_readiness_proof.md`](raspberry_v1_readiness_proof.md).
+
+
+## Raspberry worker startup smoke
+
+`npm run proof:raspberry-worker-startup-smoke` starts the three scheduler worker commands and reports whether they exit cleanly after executable/env preflights. `-- --prepare` repairs executable bits and creates `.env` from `example.env` first. See [`raspberry_worker_startup_smoke_proof.md`](raspberry_worker_startup_smoke_proof.md).

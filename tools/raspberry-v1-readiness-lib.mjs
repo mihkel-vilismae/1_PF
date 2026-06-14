@@ -84,7 +84,7 @@ export const RASPBERRY_V1_RELEASE_GATES = Object.freeze([
     id: 'cron_app_running',
     title: 'Full cron workflow app-running status',
     requiredForV1: true,
-    proofKinds: ['raspberry_cron_preflight', 'raspberry_worker_evidence_generator', 'raspberry_cron_worker_runtime', 'raspberry_app_running_status', 'raspberry_app_running_chain', 'raspberry_app_running_pass_harness'],
+    proofKinds: ['raspberry_worker_startup_smoke', 'raspberry_cron_preflight', 'raspberry_worker_evidence_generator', 'raspberry_cron_worker_runtime', 'raspberry_app_running_status', 'raspberry_app_running_chain', 'raspberry_app_running_pass_harness'],
     passPolicy: 'all_passed',
   },
   {

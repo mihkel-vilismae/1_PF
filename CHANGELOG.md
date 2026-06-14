@@ -2316,3 +2316,11 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 - Added `proof:raspberry-v1-readiness`, a proof-artifact evaluator that scans latest `runtime_data/proofs/*.json` artifacts and reports which v1.0-required gates are still blocked.
 - Added `docs/proofs/raspberry_v1_readiness_proof.md` and regression tests for real iCloud/GPS/geocode requirements, non-v1 reboot/power-loss gates, regular worker product-pipeline requirement, dashboard status requirement, and latest-proof artifact selection.
 - Preserved proof honesty: this slice does not run real iCloud, GPS/geocode, native playback, dashboard, reboot, or power-loss proof commands by itself and does not claim Raspberry v1.0 readiness without target evidence.
+
+
+## 0.8.57 — Raspberry three-worker startup smoke proof
+
+- Added `proof:raspberry-worker-startup-smoke` to run executable/env/database preflights and start `regular_stage_worker`, `playback_worker`, and `screen_on_off_worker` as scheduler commands.
+- Added `--prepare` mode to repair executable permissions, create `.env`, and create/inspect the SQLite DB from `example.env` before worker startup checks on a fresh Raspberry extraction.
+- Added proof documentation and regression tests for the three-worker startup command sequence, off-target BLOCKED semantics, Raspberry PASS semantics, and Raspberry worker-failure FAILED semantics.
+- Preserved proof honesty: this slice does not claim cron timing, real regular worker product pipeline work, native display playback, dashboard status, reboot recovery, or physical power-loss recovery.

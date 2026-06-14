@@ -17,6 +17,7 @@ This index classifies non-skill documentation files and separates current truth 
 
 ## Recent additions
 
+- `docs/proofs/raspberry_worker_startup_smoke_proof.md` — v0.8.57 three-worker startup smoke proof for Raspberry scheduler worker commands.
 - `docs/20_architecture_and_specs/openspec/raspberry_v1_release_gate_matrix_openspec.md` — v0.8.56 answered question-matrix release gates for Raspberry v1.0.
 - `docs/proofs/raspberry_v1_readiness_proof.md` — v0.8.56 proof-artifact evaluator for Raspberry v1.0 release readiness.
 - `docs/proofs/raspberry_executable_permissions_proof.md` — v0.8.55 Raspberry executable-bit repair proof for ZIP extraction/launcher dry-run blockers.

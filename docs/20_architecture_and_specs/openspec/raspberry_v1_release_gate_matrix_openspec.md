@@ -42,7 +42,7 @@ This OpenSpec converts the answered v1.0 question matrix into release gates. It 
 | Regular worker product pipeline | `regular_stage_worker` must prove real download/index/GPS/geocode/queue work. |
 | Playback/native display | Native image and video playback must be `PASSED` on the Raspberry display target. |
 | Address overlay device display | Address overlay must be observed/proven on the Raspberry/device display. |
-| Cron app-running workflow | Cron preflight, worker evidence, cron runtime, app-running status, and app-running chain must be `PASSED`. |
+| Cron app-running workflow | Worker startup smoke, cron preflight, worker evidence, cron runtime, app-running status, and app-running chain must be `PASSED`. |
 | Dashboard status view | Dashboard must show proof-backed runtime/status truth for the Raspberry workflow. |
 | Screen worker non-blocking behavior | `screen_on_off_worker` must not block the v1.0 cron workflow. |
 | Docs/OpenSpec reconciliation | Current docs must match implementation and proof state. |

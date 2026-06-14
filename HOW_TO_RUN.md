@@ -297,3 +297,14 @@ npm run proof:raspberry-v1-readiness
 ```
 
 This command reads latest `runtime_data/proofs/*.json` artifacts and reports which v1.0 gates still block release. It does not run missing real iCloud, GPS/geocode, native playback, dashboard, reboot, or power-loss proofs by itself.
+
+
+## Raspberry three-worker startup smoke proof
+
+After extracting/installing dependencies, run the worker startup smoke proof:
+
+```bash
+npm run proof:raspberry-worker-startup-smoke -- --prepare
+```
+
+This does not install cron and does not prove the full cron workflow. It proves the three worker commands can start cleanly on Raspberry after executable, `.env`, and SQLite DB preflights.
