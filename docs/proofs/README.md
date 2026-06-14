@@ -188,3 +188,5 @@ The plan requires same-worker singleton checks, duplicate same-worker skip evide
 | Raspberry address overlay device display | `npm run proof:raspberry-address-overlay-device-display` | Operator/evidence gate for native device display address overlay. |
 
 | Raspberry regular worker product pipeline | `npm run proof:raspberry-regular-stage-worker-product-pipeline` | Evidence gate for real regular_stage_worker download/index/GPS/geocode/queue work. |
+
+| Raspberry app-running target pack | `npm run proof:raspberry-app-running-target-pack` | Runs the setup/startup/cron/app-running target chain and summarizes blockers. |

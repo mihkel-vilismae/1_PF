@@ -336,3 +336,13 @@ PF_RASPBERRY_REGULAR_STAGE_WORKER_PRODUCT_EVIDENCE_FILE=/path/to/regular_worker_
 ```
 
 This is a v1.0 gate for real download/import, indexing, GPS extraction, geocoding, and queue preparation.
+
+## Raspberry app-running target pack
+
+Run the current target app-running proof chain:
+
+```bash
+npm run proof:raspberry-app-running-target-pack
+```
+
+This is the fastest command to identify the first setup/startup/cron/app-running blocker after unpacking the repo on Raspberry.

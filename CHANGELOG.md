@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.8.62 - Raspberry app-running target pack
+
+- Add `proof:raspberry-app-running-target-pack` to run the app-running target chain in one ordered proof pack.
+- The pack summarizes executable/env repair, worker startup smoke, cron install, app-running pass, and v1 readiness without claiming non-v1 gates.
+
 ## v0.8.61 - Raspberry regular worker product pipeline proof gate
 
 - Add `proof:raspberry-regular-stage-worker-product-pipeline` as the v1.0 gate for real regular_stage_worker product work.
