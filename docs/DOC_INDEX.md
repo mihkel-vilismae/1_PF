@@ -17,6 +17,8 @@ This index classifies non-skill documentation files and separates current truth 
 
 ## Recent additions
 
+- `docs/proofs/raspberry_executable_permissions_proof.md` — v0.8.55 Raspberry executable-bit repair proof for ZIP extraction/launcher dry-run blockers.
+- `docs/proofs/raspberry_env_preflight_proof.md` — v0.8.55 Raspberry `.env` bootstrap/preflight proof for scheduler/playback runtime blockers.
 - `docs/20_architecture_and_specs/view_e_validation_hermetic_contract.md` — v0.8.41 View E validation hermeticity contract for proof-owned temp env/DB behavior.
 - `docs/20_architecture_and_specs/openspec/raspberry_native_image_playback_proof_openspec.md` and `docs/proofs/raspberry_native_image_playback_proof.md` — v0.8.40 Raspberry target native image playback proof contract.
 - `docs/20_architecture_and_specs/openspec/raspberry_native_video_playback_proof_openspec.md` and `docs/proofs/raspberry_native_video_playback_proof.md` — v0.8.42 Raspberry target native video playback proof contract.

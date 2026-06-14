@@ -103,3 +103,8 @@ This matrix is a navigation aid for deciding which PF_login documents can be tru
 | v0.8.53 | Raspberry reboot evidence generator. | Adds prepare/collect evidence flow for manual reboot recovery; no automatic reboot or power-loss claim. |
 
 | v0.8.54 | Scheduler CLI bootstrap repair and Raspberry cron preflight. | Fixes HttpError TDZ/env bootstrap blocker and adds managed cron preflight/install helper. |
+
+
+| v0.8.55 | Raspberry install/runtime blocker repair. | Adds stdin support for proof subprocesses, executable-bit repair proof, and `.env` bootstrap/preflight proof; target app-running PASS still requires Raspberry evidence. |
+| `docs/proofs/raspberry_executable_permissions_proof.md` | current_latest_baseline | v0.8.55 proof doc for checking/repairing known repo-owned executable boundaries after ZIP extraction. |
+| `docs/proofs/raspberry_env_preflight_proof.md` | current_latest_baseline | v0.8.55 proof doc for creating/checking `.env` from `example.env` before scheduler/playback runtime. |

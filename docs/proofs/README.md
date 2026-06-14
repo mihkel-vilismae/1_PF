@@ -50,6 +50,8 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Raspberry generated fixture validation | `npm run proof:raspberry-generated-fixtures` | Raspberry target fixture validation |
 | Raspberry native image playback | `npm run proof:raspberry-native-image-playback` | Raspberry target native image playback |
 | Raspberry native video playback | `npm run proof:raspberry-native-video-playback` | Raspberry target native video playback |
+| Raspberry executable-permission repair | `npm run proof:raspberry-executable-permissions` | Checks/repairs repo-owned executable bits after ZIP extraction |
+| Raspberry env preflight | `npm run proof:raspberry-env-preflight` | Checks/creates `.env` from `example.env` before playback worker runtime |
 | Raspberry cron preflight | `npm run proof:raspberry-cron-preflight` | Checks/installs PF_login managed cron worker rows |
 | Raspberry worker evidence generator | `npm run proof:raspberry-worker-evidence` | Generates `PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE` for cron runtime proof |
 | Raspberry cron worker runtime | `npm run proof:raspberry-cron-worker-runtime` | Raspberry target cron app-running proof |
@@ -161,3 +163,12 @@ The plan requires same-worker singleton checks, duplicate same-worker skip evide
 ## Raspberry managed cron preflight
 
 `npm run proof:raspberry-cron-preflight` checks whether the PF_login managed three-worker cron rows exist. `npm run proof:raspberry-cron-preflight -- --install` installs/replaces only the PF_login managed block. See [`raspberry_cron_preflight_proof.md`](raspberry_cron_preflight_proof.md).
+
+
+## Raspberry executable-permission repair
+
+`npm run proof:raspberry-executable-permissions` checks whether the project-owned Raspberry launcher/proof entrypoints are executable. `npm run proof:raspberry-executable-permissions -- --repair` repairs known repo-local executable bits after ZIP extraction, then writes proof evidence. See [`raspberry_executable_permissions_proof.md`](raspberry_executable_permissions_proof.md).
+
+## Raspberry env preflight
+
+`npm run proof:raspberry-env-preflight` checks for a parseable runtime `.env` with minimum scheduler/playback keys. `npm run proof:raspberry-env-preflight -- --create` creates `.env` from `example.env` if missing, then checks it. See [`raspberry_env_preflight_proof.md`](raspberry_env_preflight_proof.md).

@@ -170,3 +170,9 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/proofs/raspberry_reboot_evidence_generator_proof.md` | Raspberry reboot evidence generator proof docs. |
 
 | `docs/proofs/raspberry_cron_preflight_proof.md` | Raspberry managed cron preflight proof docs. |
+
+
+## v0.8.55 Raspberry install/runtime repair docs
+
+- `docs/proofs/raspberry_executable_permissions_proof.md` — checks/repairs repo-owned executable bits after ZIP extraction.
+- `docs/proofs/raspberry_env_preflight_proof.md` — creates/checks `.env` from `example.env` before playback worker runtime.

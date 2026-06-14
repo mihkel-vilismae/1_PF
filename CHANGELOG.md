@@ -2300,3 +2300,11 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 - Updated the Test Mode-only live Windows native video proof seed path so seeded generated video fixtures are promoted ahead of existing READY image rows for the proof database only.
 - Added diagnostic seed/current stage evidence to BLOCKED video proof envelopes.
 - Preserved normal production playback ordering and the guarded Test Mode-only seed route.
+
+## 0.8.55 — Raspberry install/runtime blocker repair
+
+- Fixed the shared proof `runCommand` helper so callers can pass stdin to child processes. This repairs the managed cron installer path that previously called `crontab -` without feeding the generated crontab text and timed out on Raspberry.
+- Added `proof:raspberry-executable-permissions` with optional `--repair` to check/restore executable bits for project-owned Raspberry launcher/proof entrypoints after ZIP extraction.
+- Added `proof:raspberry-env-preflight` with optional `--create` / `--create-from-example` to create `.env` from `example.env` when missing and verify minimum runtime keys before scheduler workers such as `playback_worker` run.
+- Added proof documentation and regression tests for stdin command input, executable-bit repair, and env bootstrap/preflight.
+- Preserved proof boundaries: no Raspberry app-running PASS, native playback PASS, cron install PASS, reboot recovery, power-loss recovery, production iCloud continuation, or real geocode provider behavior is claimed without target evidence.

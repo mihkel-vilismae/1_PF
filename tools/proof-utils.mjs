@@ -133,7 +133,14 @@ export function runCommand(command, args, options = {}) {
   return new Promise((resolve) => {
     const startedAt = Date.now();
     const detached = options.detached ?? process.platform !== 'win32';
-    const child = spawn(command, args, { cwd: options.cwd ?? repoRoot, env: options.env ?? process.env, shell: options.shell ?? false, detached });
+    const hasInput = Object.prototype.hasOwnProperty.call(options, 'input') && options.input !== undefined && options.input !== null;
+    const child = spawn(command, args, {
+      cwd: options.cwd ?? repoRoot,
+      env: options.env ?? process.env,
+      shell: options.shell ?? false,
+      detached,
+      stdio: [hasInput ? 'pipe' : 'ignore', 'pipe', 'pipe'],
+    });
     let stdout = '';
     let stderr = '';
     let timedOut = false;
@@ -161,6 +168,9 @@ export function runCommand(command, args, options = {}) {
     const timer = setTimeout(() => { timedOut = true; killChild('SIGTERM'); forceTimer = setTimeout(() => { killChild('SIGKILL'); finish(null, 'SIGKILL_TIMEOUT'); }, options.forceKillGraceMs ?? 2000); }, timeoutMs);
     child.stdout?.on('data', (chunk) => { stdout += chunk.toString(); });
     child.stderr?.on('data', (chunk) => { stderr += chunk.toString(); });
+    if (hasInput) {
+      child.stdin?.end(String(options.input));
+    }
     child.on('error', (error) => { stderr += `\n${error instanceof Error ? error.message : String(error)}`; finish(1, 'ERROR'); });
     child.on('close', (exitCode, signal) => finish(exitCode, signal));
   });

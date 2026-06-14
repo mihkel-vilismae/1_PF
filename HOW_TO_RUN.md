@@ -263,3 +263,26 @@ npm run proof:raspberry-cron-preflight -- --install
 ```
 
 The command preserves crontab rows outside the PF_login managed block.
+
+## Raspberry install/runtime blocker repair helpers
+
+After extracting a PF_login ZIP on Raspberry/Linux, repair/check project-owned executable bits before native playback proof:
+
+```bash
+npm run proof:raspberry-executable-permissions -- --repair
+```
+
+Before running scheduler workers that need runtime config, create/check `.env` from `example.env` when missing:
+
+```bash
+npm run proof:raspberry-env-preflight -- --create
+```
+
+Then install/check the PF_login managed cron block:
+
+```bash
+npm run proof:raspberry-cron-preflight -- --install
+npm run proof:raspberry-cron-preflight
+```
+
+These helpers do not prove app-running, reboot recovery, physical power-loss recovery, production iCloud continuation, or real geocode provider behavior by themselves. They remove known Raspberry install/runtime blockers observed in the v0.8.54 evidence pack.
