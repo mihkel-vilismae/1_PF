@@ -389,3 +389,12 @@ npm run proof:raspberry-app-running-target-pack
 The v0.8.66 target pack now collects the full current v1 readiness proof set that is available before future product/provider gates: target tooling, generated fixtures, executable/env preflights, worker startup, cron install, worker evidence, cron worker runtime, app-running status/chain/pass, native image/video playback, and the v1 readiness summary. Upload the printed `bundleZipPath`.
 
 This command still does not claim real iCloud/GPS/geocode, address overlay, regular product pipeline, dashboard status, reboot recovery, or power-loss recovery unless those individual proof artifacts pass.
+
+## Raspberry v1 question matrix docs
+
+The current v1 question-matrix decisions and derived roadmap live in:
+
+- `docs/20_architecture_and_specs/openspec/raspberry_v1_question_matrix_decisions_openspec.md`
+- `docs/40_backlog_and_tasks/raspberry_v1_plan_from_question_matrix.md`
+
+Unanswered matrix items are intentionally marked as open/defaulted. Do not treat them as confirmed v1 requirements until updated by the user.

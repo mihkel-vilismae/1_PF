@@ -320,3 +320,6 @@ Use these documents when investigating result payload / JSON panel scroll resets
 | `docs/proofs/raspberry_reboot_evidence_generator_proof.md` | Raspberry reboot evidence generator prepare/collect flow. |
 
 | `docs/proofs/raspberry_cron_preflight_proof.md` | Raspberry managed cron preflight/check/install helper. |
+
+- `docs/20_architecture_and_specs/openspec/raspberry_v1_question_matrix_decisions_openspec.md` — records confirmed/default/open v1 question-matrix decisions.
+- `docs/40_backlog_and_tasks/raspberry_v1_plan_from_question_matrix.md` — v1 plan derived from the question matrix and target-pack evidence.

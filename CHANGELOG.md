@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.67 - 2026-06-14
+
+- Add Raspberry v1 question-matrix decision OpenSpec documenting clarified answers and unresolved matrix items.
+- Add a v1 plan derived from the clarified answers and v0.8.66 target-pack evidence.
+- Keep unanswered items explicit as open/defaulted rather than treating them as confirmed requirements.
+
+
 ## 0.8.66 - 2026-06-14
 
 - Expand `proof:raspberry-app-running-target-pack` into a fuller v1 readiness evidence pack.
