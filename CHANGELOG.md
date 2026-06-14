@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.77 - 2026-06-14
+
+- Add Raspberry v1 OpenSpec implementation queue mapping improved specs to proof-gated implementation work items.
+- Queue separates Raspberry-required work from Windows-safe work and requires future runtime slices to reference a matching OpenSpec/proof queue item.
+- Add tests that verify the queue covers app-running, iCloud, regular worker, geocode, playback, overlay, dashboard, screen, and docs workstreams.
+
+
 ## 0.8.76 - 2026-06-14
 
 - Add `proof:openspec-v1-audit` static audit for critical Raspberry v1 OpenSpec docs.
