@@ -356,3 +356,13 @@ npm run proof:raspberry-address-overlay-template
 ```
 
 Only set the generated fields to `true` after a real device-display observation.
+
+## Raspberry regular worker product evidence template
+
+Create the regular worker product evidence template:
+
+```bash
+npm run proof:raspberry-regular-product-template
+```
+
+Only set generated fields to `true` after a real regular_stage_worker product pipeline run.

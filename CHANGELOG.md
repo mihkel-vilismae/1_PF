@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.8.64 - Raspberry regular product evidence template
+
+- Add `proof:raspberry-regular-product-template` to write a non-claiming operator evidence JSON template for regular_stage_worker product-pipeline proof.
+- The template defaults all product-stage claim fields to `false` until real worker evidence is observed.
+
 ## v0.8.63 - Raspberry address overlay evidence template
 
 - Add `proof:raspberry-address-overlay-template` to write a non-claiming operator evidence JSON template for the address overlay gate.

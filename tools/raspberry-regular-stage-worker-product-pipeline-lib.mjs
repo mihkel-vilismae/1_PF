@@ -14,6 +14,20 @@ export const REGULAR_STAGE_WORKER_PRODUCT_STAGES = Object.freeze([
   'worker_status_product_work_claimed',
 ]);
 
+export function buildRegularWorkerProductEvidenceTemplate() {
+  return {
+    media_source_observed: false,
+    download_or_import_completed: false,
+    index_completed: false,
+    gps_extraction_completed: false,
+    geocode_completed: false,
+    queue_prepared: false,
+    worker_status_product_work_claimed: false,
+    observed_at: new Date().toISOString(),
+    operator_note: 'Set required fields to true only after regular_stage_worker performs real product pipeline work on the Raspberry.',
+  };
+}
+
 export async function loadRegularWorkerProductEvidence({ env = process.env, evidence = null } = {}) {
   if (evidence) return { source: 'injected', data: evidence, load_error: null };
   const file = env.PF_RASPBERRY_REGULAR_STAGE_WORKER_PRODUCT_EVIDENCE_FILE;

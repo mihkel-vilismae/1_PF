@@ -23,3 +23,13 @@ To pass, provide `PF_RASPBERRY_REGULAR_STAGE_WORKER_PRODUCT_EVIDENCE_FILE` conta
 ```
 
 This command does not itself download iCloud media or run geocoding. It is an honest gate for real worker evidence until the product pipeline runner is implemented.
+
+## Evidence template helper
+
+Generate a non-claiming template:
+
+```bash
+npm run proof:raspberry-regular-product-template
+```
+
+Edit the generated JSON only after a real regular_stage_worker product run, then pass it via `PF_RASPBERRY_REGULAR_STAGE_WORKER_PRODUCT_EVIDENCE_FILE`.

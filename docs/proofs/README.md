@@ -192,3 +192,5 @@ The plan requires same-worker singleton checks, duplicate same-worker skip evide
 | Raspberry app-running target pack | `npm run proof:raspberry-app-running-target-pack` | Runs the setup/startup/cron/app-running target chain and summarizes blockers. |
 
 | Raspberry address overlay evidence template | `npm run proof:raspberry-address-overlay-template` | Writes a non-claiming operator evidence JSON template for the address overlay gate. |
+
+| Raspberry regular product evidence template | `npm run proof:raspberry-regular-product-template` | Writes a non-claiming operator evidence JSON template for regular_stage_worker product pipeline proof. |
