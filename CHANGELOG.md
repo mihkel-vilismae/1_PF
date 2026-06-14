@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.73 - 2026-06-14
+
+- Add dashboard status data contract helpers for a proof-backed, status-only v1 dashboard view.
+- Contract includes worker health, current playback, v1 readiness gates, latest proof artifacts, and provider status sections.
+- Add tests that reject incomplete status snapshots and preserve the no-controls default.
+
+
 ## 0.8.72 - 2026-06-14
 
 - Add `proof:local-generated-media-pipeline-rehearsal` as a Windows-safe generated-media rehearsal proof.
