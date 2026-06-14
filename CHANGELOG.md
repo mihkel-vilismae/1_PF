@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.72 - 2026-06-14
+
+- Add `proof:local-generated-media-pipeline-rehearsal` as a Windows-safe generated-media rehearsal proof.
+- The rehearsal validates generated media fixture availability and records the regular worker pipeline contract preview without iCloud, DB mutation, geocode, or Raspberry playback claims.
+- Add tests for missing and present generated-media rehearsal inputs.
+
+
 ## 0.8.71 - 2026-06-14
 
 - Add regular_stage_worker product pipeline contract helpers for source discovery, download/import, index, GPS extraction, geocode, and queue preparation.
