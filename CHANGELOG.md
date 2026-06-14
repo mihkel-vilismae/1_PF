@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.75 - 2026-06-14
+
+- Add Raspberry v1 OpenSpec traceability matrix linking release gates, question IDs, specs, proof commands, and current proof status.
+- Add tests that ensure every required v1 gate is represented and tied to proof/non-claim language.
+
+
 ## 0.8.74 - 2026-06-14
 
 - Add `proof:docs-reconciliation-audit` critical-docs pre-pass.
