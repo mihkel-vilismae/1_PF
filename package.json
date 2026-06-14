@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.8.60",
+  "version": "0.8.61",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -57,6 +57,7 @@
     "proof:raspberry-env-preflight": "node tools/run-raspberry-env-preflight.mjs",
     "proof:raspberry-v1-readiness": "node tools/run-raspberry-v1-readiness-proof.mjs",
     "proof:raspberry-address-overlay-device-display": "node tools/run-raspberry-address-overlay-device-display-proof.mjs",
+    "proof:raspberry-regular-stage-worker-product-pipeline": "node tools/run-raspberry-regular-stage-worker-product-pipeline-proof.mjs",
     "proof:raspberry-worker-startup-smoke": "node tools/run-raspberry-worker-startup-smoke.mjs"
   },
   "devDependencies": {

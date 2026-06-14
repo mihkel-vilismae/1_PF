@@ -326,3 +326,13 @@ PF_RASPBERRY_ADDRESS_OVERLAY_EVIDENCE_FILE=/path/to/address_overlay_evidence.jso
 ```
 
 The evidence file must explicitly state the native display path, address text, rendered overlay, and operator observation.
+
+## Raspberry regular worker product pipeline proof gate
+
+After a real regular_stage_worker product pipeline run, provide its evidence file and run:
+
+```bash
+PF_RASPBERRY_REGULAR_STAGE_WORKER_PRODUCT_EVIDENCE_FILE=/path/to/regular_worker_product_evidence.json npm run proof:raspberry-regular-stage-worker-product-pipeline
+```
+
+This is a v1.0 gate for real download/import, indexing, GPS extraction, geocoding, and queue preparation.

@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.8.61 - Raspberry regular worker product pipeline proof gate
+
+- Add `proof:raspberry-regular-stage-worker-product-pipeline` as the v1.0 gate for real regular_stage_worker product work.
+- The proof requires explicit stage evidence and does not claim real iCloud/GPS/geocode work by itself.
+
 ## v0.8.60 - Raspberry address overlay proof gate
 
 - Add `proof:raspberry-address-overlay-device-display` as the v1.0 evidence gate for native display address overlay.
