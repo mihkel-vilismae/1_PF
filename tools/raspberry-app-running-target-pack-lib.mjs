@@ -1,5 +1,8 @@
 /** Raspberry app-running target proof pack. */
 import process from 'node:process';
+import { cp, mkdir, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { basename, join } from 'node:path';
 import { createProofEnvelope, getProofEnvironment, runCommand, sanitizeEvidence } from './proof-utils.mjs';
 import { detectRaspberryTarget } from './raspberry-tool-checker-lib.mjs';
 import { parseRunnerStatus } from './raspberry-worker-startup-smoke-lib.mjs';
@@ -54,6 +57,81 @@ export function evaluateAppRunningTargetPack({ target, stepResults }) {
   if (blockReasons.length) return { proofStatus: 'BLOCKED', blockReasons, failedReasons, missingRequired, commandFailures };
   if (failedReasons.length) return { proofStatus: 'FAILED', blockReasons, failedReasons, missingRequired, commandFailures };
   return { proofStatus: 'PASSED', blockReasons, failedReasons, missingRequired: [], commandFailures: [] };
+}
+
+
+function safeTimestamp(date = new Date()) {
+  return date.toISOString().replace(/[:.]/g, '-');
+}
+
+async function copyDirectoryIfPresent({ repoRoot, relativePath, bundleRuntimeDir, included }) {
+  const source = join(repoRoot, relativePath);
+  if (!existsSync(source)) return;
+  const target = join(bundleRuntimeDir, relativePath.replace(/^runtime_data\//u, ''));
+  await mkdir(join(target, '..'), { recursive: true });
+  await cp(source, target, { recursive: true, force: true });
+  included.push(relativePath);
+}
+
+async function createZipFromDirectory({ bundleDir, zipPath, commandRunner }) {
+  const script = `
+from pathlib import Path
+import sys
+import zipfile
+source = Path(sys.argv[1])
+zip_path = Path(sys.argv[2])
+if zip_path.exists():
+    zip_path.unlink()
+with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as z:
+    for p in source.rglob('*'):
+        if p.is_file():
+            z.write(p, p.relative_to(source.parent))
+print(zip_path)
+`;
+  return commandRunner('python3', ['-c', script, bundleDir, zipPath], { cwd: bundleDir, timeoutMs: 120000, detached: false });
+}
+
+export async function buildAppRunningTargetPackEvidenceBundle({ repoRoot = process.cwd(), envelope, proofPath, commandRunner = runCommand, now = new Date() } = {}) {
+  const stamp = safeTimestamp(now);
+  const bundleDir = join(repoRoot, 'runtime_data', `raspberry_app_running_target_pack_${stamp}`);
+  const bundleRuntimeDir = join(bundleDir, 'runtime_data');
+  const zipPath = join(repoRoot, 'runtime_data', `raspberry_app_running_target_pack_${stamp}.zip`);
+  await mkdir(bundleRuntimeDir, { recursive: true });
+  const included = [];
+
+  for (const relativePath of [
+    'runtime_data/proofs',
+    'runtime_data/raspberry_worker_evidence',
+    'runtime_data/scheduler',
+    'runtime_data/cron',
+    'runtime_data/operator_evidence',
+    'runtime_data/raspberry_reboot_recovery',
+  ]) {
+    await copyDirectoryIfPresent({ repoRoot, relativePath, bundleRuntimeDir, included });
+  }
+
+  const manifest = sanitizeEvidence({
+    generated_at: now.toISOString(),
+    repo_root: repoRoot,
+    target_pack_proof_path: proofPath,
+    proof_status: envelope?.proof_status ?? null,
+    proof_kind: envelope?.proof_kind ?? 'raspberry_app_running_target_pack',
+    included_runtime_paths: included,
+    step_summary: envelope?.evidence?.step_results?.map((step) => ({ id: step.id, reported_status: step.reported_status, exit_code: step.exit_code, timed_out: step.timed_out })) ?? [],
+    non_claims: ['bundle creation does not add proof claims', 'bundle contents remain governed by individual proof statuses'],
+  });
+  await writeFile(join(bundleDir, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+  await writeFile(join(bundleDir, 'README.txt'), [
+    'PF_login Raspberry app-running target-pack evidence bundle',
+    '',
+    'Upload this ZIP for analysis. The bundle does not create extra proof claims; it packages logs/artifacts from the target-pack run.',
+    `Target pack proof status: ${envelope?.proof_status ?? 'unknown'}`,
+    `Target pack proof path: ${proofPath ?? 'unknown'}`,
+    '',
+  ].join('\n'), 'utf8');
+
+  const zipResult = await createZipFromDirectory({ bundleDir, zipPath, commandRunner });
+  return { bundleDir, zipPath, includedRuntimePaths: included, manifestPath: join(bundleDir, 'manifest.json'), zipResult: summarizeTargetPackResult({ id: 'bundle_zip', requiredStatus: null }, zipResult) };
 }
 
 export async function buildRaspberryAppRunningTargetPackProof({ metadata, env = process.env, repoRoot = process.cwd(), commandRunner = runCommand } = {}) {

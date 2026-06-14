@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.8.65 - App-running target-pack evidence ZIP
+
+- `proof:raspberry-app-running-target-pack` now creates an uploadable ZIP bundle under `runtime_data/`.
+- The bundle includes proof artifacts, worker evidence, scheduler/cron runtime evidence, operator evidence/templates when present, and a sanitized manifest.
+- Bundle creation does not add proof claims; each included artifact keeps its own PASS/BLOCKED/FAILED status.
+
 ## v0.8.64 - Raspberry regular product evidence template
 
 - Add `proof:raspberry-regular-product-template` to write a non-claiming operator evidence JSON template for regular_stage_worker product-pipeline proof.

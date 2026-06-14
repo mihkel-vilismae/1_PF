@@ -1,6 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { APP_RUNNING_TARGET_PACK_STEPS, evaluateAppRunningTargetPack, runAppRunningTargetPackSteps } from '../tools/raspberry-app-running-target-pack-lib.mjs';
+import { mkdtemp, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { APP_RUNNING_TARGET_PACK_STEPS, buildAppRunningTargetPackEvidenceBundle, evaluateAppRunningTargetPack, runAppRunningTargetPackSteps } from '../tools/raspberry-app-running-target-pack-lib.mjs';
 
 function commandResult({ command = 'npm', args = [], status = 'PASSED', exitCode = 0 } = {}) {
   return { command, args, exitCode, signal: null, timedOut: false, durationMs: 1, stdout: JSON.stringify({ status }), stderr: '' };
@@ -24,4 +28,21 @@ test('app-running target pack blocks when a required proof remains blocked', () 
   const evaluation = evaluateAppRunningTargetPack({ target: { raspberry_like: true, explicit_override_used: false }, stepResults });
   assert.equal(evaluation.proofStatus, 'BLOCKED');
   assert.match(evaluation.blockReasons.join('\n'), /app_running_pass/);
+});
+
+
+test('app-running target pack builds an uploadable evidence bundle manifest and zip path', async () => {
+  const repoRoot = await mkdtemp(join(tmpdir(), 'pf-target-pack-'));
+  await writeFile(join(repoRoot, 'dummy.txt'), 'x');
+  await writeFile(join(repoRoot, 'target-proof.json'), '{"proof_status":"BLOCKED"}');
+  const envelope = { proof_kind: 'raspberry_app_running_target_pack', proof_status: 'BLOCKED', evidence: { step_results: [{ id: 'app_running_pass', reported_status: 'BLOCKED', exit_code: 0, timed_out: false }] } };
+  const commandRunner = async (command, args) => {
+    assert.equal(command, 'python3');
+    await writeFile(args[3], 'zip-placeholder');
+    return commandResult({ command, args, status: 'PASSED' });
+  };
+  const bundle = await buildAppRunningTargetPackEvidenceBundle({ repoRoot, envelope, proofPath: join(repoRoot, 'target-proof.json'), commandRunner, now: new Date('2026-06-14T00:00:00.000Z') });
+  assert.ok(existsSync(bundle.manifestPath));
+  assert.ok(existsSync(bundle.zipPath));
+  assert.match(bundle.zipPath, /raspberry_app_running_target_pack_/);
 });

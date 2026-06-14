@@ -16,3 +16,7 @@ This proof runs the main app-running target chain in order:
 6. v1 readiness summary
 
 It passes only on a non-override Raspberry target when the required setup/startup/cron/app-running steps report `PASSED`. It does not prove real iCloud/GPS/geocode, address overlay, or regular worker product work.
+
+## Uploadable ZIP bundle
+
+As of v0.8.65, the command also creates a ZIP bundle and prints `bundleZipPath`. The ZIP includes proof artifacts and runtime evidence useful for analysis. The bundle itself is packaging only; the individual proof artifacts remain the source of proof truth.

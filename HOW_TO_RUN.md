@@ -366,3 +366,13 @@ npm run proof:raspberry-regular-product-template
 ```
 
 Only set generated fields to `true` after a real regular_stage_worker product pipeline run.
+
+## Uploadable app-running target-pack ZIP
+
+As of v0.8.65, this command writes an uploadable evidence ZIP path in its JSON output:
+
+```bash
+npm run proof:raspberry-app-running-target-pack
+```
+
+Upload the reported `bundleZipPath` for analysis. The ZIP packages existing proof artifacts and runtime evidence but does not create extra proof claims.
