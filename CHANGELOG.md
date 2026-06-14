@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.8.59 - App-running evidence crontab propagation repair
+
+- Carry the v0.8.58 raw-crontab evaluation repair into `proof:raspberry-worker-evidence` and `proof:raspberry-app-running-pass`.
+- Worker evidence generation now evaluates raw `crontab -l` rows internally before final proof-artifact sanitization.
+- Add regression coverage for managed cron rows using absolute Raspberry paths plus scheduler fragments.
+
 ## v0.8.58 - Raspberry proof false-negative repair
 
 - Fix worker startup smoke status parsing so nested npm proof output with redacted paths still counts `PASSED` preflights.

@@ -312,3 +312,7 @@ npm run proof:raspberry-worker-startup-smoke -- --prepare
 ```
 
 This does not install cron and does not prove the full cron workflow. It proves the three worker commands can start cleanly on Raspberry after executable, `.env`, and SQLite DB preflights.
+
+## v0.8.59 app-running evidence repair
+
+`proof:raspberry-worker-evidence` and `proof:raspberry-app-running-pass` now evaluate raw `crontab -l` output internally before writing sanitized proof artifacts. This keeps installed worker rows recognizable even when repo paths are redacted from final evidence.

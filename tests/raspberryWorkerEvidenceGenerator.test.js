@@ -48,3 +48,20 @@ test('generated evidence passes only with target, crontab rows, and complete all
   ] }, generatedEvidence: { worker_lanes } });
   assert.equal(evaluation.proofStatus, 'PASSED');
 });
+
+
+test('generated evidence recognizes managed cron rows with absolute Raspberry paths', () => {
+  const worker_lanes = ['regular_stage_worker', 'playback_worker', 'screen_on_off_worker'].map((name) => ({
+    name,
+    last_invocation_at: '2026-06-13T00:00:00Z',
+    same_worker_singleton: { first_acquired: true, duplicate_skipped: true },
+    cross_worker_independence: true,
+    stale_lock: { reclaimed: true },
+  }));
+  const evaluation = evaluateGeneratedEvidence({ target: { raspberry_like: true }, crontab: { available: true, rows: [
+    '*/10 * * * * cd "/home/mihkel/0.8.58-pf" && npm run api -- --scheduler regular-stage-worker >>"/home/mihkel/0.8.58-pf/runtime_data/cron/regular-stage-worker.log" 2>&1',
+    '* * * * * cd "/home/mihkel/0.8.58-pf" && npm run api -- --scheduler playback-worker >>"/home/mihkel/0.8.58-pf/runtime_data/cron/playback-worker.log" 2>&1',
+    '*/3 * * * * cd "/home/mihkel/0.8.58-pf" && npm run api -- --scheduler screen-on-off-worker >>"/home/mihkel/0.8.58-pf/runtime_data/cron/screen-on-off-worker.log" 2>&1',
+  ] }, generatedEvidence: { worker_lanes } });
+  assert.equal(evaluation.proofStatus, 'PASSED');
+});
