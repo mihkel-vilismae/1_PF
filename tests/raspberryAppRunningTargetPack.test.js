@@ -17,6 +17,26 @@ test('app-running target pack invokes required proof commands in order', async (
   assert.equal(results[0].reported_status, 'PASSED');
 });
 
+
+test('app-running target pack passes latest worker evidence env to dependent proof steps', async () => {
+  const repoRoot = await mkdtemp(join(tmpdir(), 'pf-target-pack-env-'));
+  const evidenceDir = join(repoRoot, 'runtime_data', 'raspberry_worker_evidence');
+  await (await import('node:fs/promises')).mkdir(evidenceDir, { recursive: true });
+  const evidencePath = join(evidenceDir, 'raspberry_cron_worker_evidence_2026-06-14T00-00-00-000Z.json');
+  await writeFile(evidencePath, '{}');
+  const envSeen = [];
+  await runAppRunningTargetPackSteps({
+    repoRoot,
+    commandRunner: async (command, args, options) => {
+      if (['proof:raspberry-cron-worker-runtime', 'proof:raspberry-app-running-status', 'proof:raspberry-app-running-chain'].some((script) => args.join(' ').includes(script))) {
+        envSeen.push(options.env?.PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE ?? null);
+      }
+      return commandResult({ command, args });
+    },
+  });
+  assert.deepEqual(envSeen, [evidencePath, evidencePath, evidencePath]);
+});
+
 test('app-running target pack passes only on Raspberry when required steps pass', () => {
   const stepResults = APP_RUNNING_TARGET_PACK_STEPS.map((step) => ({ id: step.id, required_status: step.requiredStatus, reported_status: step.requiredStatus ?? 'BLOCKED', exit_code: 0, timed_out: false, passed_required_status: true }));
   assert.equal(evaluateAppRunningTargetPack({ target: { raspberry_like: true, explicit_override_used: false }, stepResults }).proofStatus, 'PASSED');

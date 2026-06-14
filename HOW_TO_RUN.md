@@ -376,3 +376,16 @@ npm run proof:raspberry-app-running-target-pack
 ```
 
 Upload the reported `bundleZipPath` for analysis. The ZIP packages existing proof artifacts and runtime evidence but does not create extra proof claims.
+
+### Raspberry v1 readiness target pack (v0.8.66)
+
+Run on Raspberry from the repo root:
+
+```bash
+npm install --verbose
+npm run proof:raspberry-app-running-target-pack
+```
+
+The v0.8.66 target pack now collects the full current v1 readiness proof set that is available before future product/provider gates: target tooling, generated fixtures, executable/env preflights, worker startup, cron install, worker evidence, cron worker runtime, app-running status/chain/pass, native image/video playback, and the v1 readiness summary. Upload the printed `bundleZipPath`.
+
+This command still does not claim real iCloud/GPS/geocode, address overlay, regular product pipeline, dashboard status, reboot recovery, or power-loss recovery unless those individual proof artifacts pass.

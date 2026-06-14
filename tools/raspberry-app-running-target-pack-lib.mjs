@@ -1,8 +1,8 @@
 /** Raspberry app-running target proof pack. */
 import process from 'node:process';
-import { cp, mkdir, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readdir, stat, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
-import { basename, join } from 'node:path';
+import { join } from 'node:path';
 import { createProofEnvelope, getProofEnvironment, runCommand, sanitizeEvidence } from './proof-utils.mjs';
 import { detectRaspberryTarget } from './raspberry-tool-checker-lib.mjs';
 import { parseRunnerStatus } from './raspberry-worker-startup-smoke-lib.mjs';
@@ -10,11 +10,35 @@ import { parseRunnerStatus } from './raspberry-worker-startup-smoke-lib.mjs';
 export const APP_RUNNING_TARGET_PACK_STEPS = Object.freeze([
   { id: 'executable_permissions_repair', command: 'npm', args: ['run', 'proof:raspberry-executable-permissions', '--', '--repair'], requiredStatus: 'PASSED' },
   { id: 'env_preflight_create', command: 'npm', args: ['run', 'proof:raspberry-env-preflight', '--', '--create'], requiredStatus: 'PASSED' },
+  { id: 'raspberry_tool_checker', command: 'npm', args: ['run', 'proof:raspberry-tool-checker'], requiredStatus: 'PASSED' },
+  { id: 'raspberry_generated_fixtures', command: 'npm', args: ['run', 'proof:raspberry-generated-fixtures'], requiredStatus: 'PASSED' },
   { id: 'worker_startup_smoke_prepare', command: 'npm', args: ['run', 'proof:raspberry-worker-startup-smoke', '--', '--prepare'], requiredStatus: 'PASSED' },
   { id: 'cron_preflight_install', command: 'npm', args: ['run', 'proof:raspberry-cron-preflight', '--', '--install'], requiredStatus: 'PASSED' },
+  { id: 'worker_evidence_generator', command: 'npm', args: ['run', 'proof:raspberry-worker-evidence'], requiredStatus: 'PASSED' },
+  { id: 'cron_worker_runtime', command: 'npm', args: ['run', 'proof:raspberry-cron-worker-runtime'], requiredStatus: 'PASSED', usesLatestWorkerEvidence: true },
+  { id: 'app_running_status', command: 'npm', args: ['run', 'proof:raspberry-app-running-status'], requiredStatus: 'PASSED', usesLatestWorkerEvidence: true },
+  { id: 'app_running_chain', command: 'npm', args: ['run', 'proof:raspberry-app-running-chain'], requiredStatus: 'PASSED', usesLatestWorkerEvidence: true },
   { id: 'app_running_pass', command: 'npm', args: ['run', 'proof:raspberry-app-running-pass'], requiredStatus: 'PASSED' },
+  { id: 'native_image_playback', command: 'npm', args: ['run', 'proof:raspberry-native-image-playback'], requiredStatus: 'PASSED', timeoutMs: 180000 },
+  { id: 'native_video_playback', command: 'npm', args: ['run', 'proof:raspberry-native-video-playback'], requiredStatus: 'PASSED', timeoutMs: 180000 },
   { id: 'v1_readiness', command: 'npm', args: ['run', 'proof:raspberry-v1-readiness'], requiredStatus: null },
 ]);
+
+
+async function findLatestWorkerEvidenceFile({ repoRoot }) {
+  const evidenceDir = join(repoRoot, 'runtime_data', 'raspberry_worker_evidence');
+  if (!existsSync(evidenceDir)) return null;
+  const entries = await readdir(evidenceDir);
+  const candidates = [];
+  for (const entry of entries) {
+    if (!/^raspberry_cron_worker_evidence_.*\.json$/u.test(entry)) continue;
+    const fullPath = join(evidenceDir, entry);
+    const stats = await stat(fullPath);
+    candidates.push({ fullPath, mtimeMs: stats.mtimeMs });
+  }
+  candidates.sort((a, b) => a.mtimeMs - b.mtimeMs || a.fullPath.localeCompare(b.fullPath));
+  return candidates.at(-1)?.fullPath ?? null;
+}
 
 function tail(text, max = 1600) {
   return String(text ?? '').slice(-max);
@@ -39,8 +63,16 @@ export function summarizeTargetPackResult(step, result) {
 export async function runAppRunningTargetPackSteps({ repoRoot = process.cwd(), commandRunner = runCommand } = {}) {
   const results = [];
   for (const step of APP_RUNNING_TARGET_PACK_STEPS) {
-    const result = await commandRunner(step.command, step.args, { cwd: repoRoot, timeoutMs: step.id === 'app_running_pass' ? 180000 : 120000, detached: false });
-    results.push(summarizeTargetPackResult(step, result));
+    const env = { ...process.env };
+    if (step.usesLatestWorkerEvidence) {
+      const evidenceFile = await findLatestWorkerEvidenceFile({ repoRoot });
+      if (evidenceFile) env.PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE = evidenceFile;
+    }
+    const result = await commandRunner(step.command, step.args, { cwd: repoRoot, env, timeoutMs: step.timeoutMs ?? (step.id === 'app_running_pass' ? 180000 : 120000), detached: false });
+    results.push({
+      ...summarizeTargetPackResult(step, result),
+      worker_evidence_env_set: step.usesLatestWorkerEvidence ? Boolean(env.PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE) : null,
+    });
   }
   return results;
 }
@@ -149,7 +181,7 @@ export async function buildRaspberryAppRunningTargetPackProof({ metadata, env = 
       target_detection: target,
       step_results: stepResults,
       evaluation,
-      pass_criteria: 'PASSED only on a non-override Raspberry target when executable/env repair, worker startup smoke, cron install, and app-running pass all report PASSED.',
+      pass_criteria: 'PASSED only on a non-override Raspberry target when target tools/fixtures, executable/env repair, worker startup smoke, cron install, worker evidence/app-running chain, app-running pass, and native image/video playback all report PASSED.',
       non_claims: ['does not prove real iCloud/GPS/geocode', 'does not prove address overlay', 'does not prove regular_stage_worker real product work', 'does not reboot or power-cycle the Raspberry'],
     }),
     knownLimitations: evaluation.proofStatus === 'PASSED' ? ['This pack proves the current app-running target chain only.'] : ['Inspect step_results for the first required step that did not report PASSED.'],

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.8.66 - 2026-06-14
+
+- Expand `proof:raspberry-app-running-target-pack` into a fuller v1 readiness evidence pack.
+- Target pack now runs Raspberry tool checker, generated fixture proof, worker evidence generator, cron worker runtime, app-running status, app-running chain, native image playback, and native video playback before the v1 readiness summary.
+- Worker-evidence-dependent app-running steps receive the latest generated `PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE` automatically.
+- Preserve proof honesty: real iCloud/GPS/geocode, address overlay, regular product pipeline, dashboard status, reboot, and power-loss remain separate evidence gates.
+
+
 ## v0.8.65 - App-running target-pack evidence ZIP
 
 - `proof:raspberry-app-running-target-pack` now creates an uploadable ZIP bundle under `runtime_data/`.

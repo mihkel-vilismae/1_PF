@@ -189,7 +189,7 @@ The plan requires same-worker singleton checks, duplicate same-worker skip evide
 
 | Raspberry regular worker product pipeline | `npm run proof:raspberry-regular-stage-worker-product-pipeline` | Evidence gate for real regular_stage_worker download/index/GPS/geocode/queue work. |
 
-| Raspberry app-running target pack | `npm run proof:raspberry-app-running-target-pack` | Runs the setup/startup/cron/app-running target chain and summarizes blockers. |
+| Raspberry app-running target pack | `npm run proof:raspberry-app-running-target-pack` | Runs the setup/startup/cron/app-running/native-playback target chain, packages an uploadable ZIP, and summarizes v1 readiness blockers. |
 
 | Raspberry address overlay evidence template | `npm run proof:raspberry-address-overlay-template` | Writes a non-claiming operator evidence JSON template for the address overlay gate. |
 
