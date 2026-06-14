@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.70 - 2026-06-14
+
+- Add `proof:raspberry-icloudpd-preflight` scaffold for safe iCloudPD discovery without login/download claims.
+- Preflight checks Raspberry target status, required config presence, cookie directory existence, and usable iCloudPD version command candidates.
+- Add tests for missing config, passing preflight evaluation, and command-candidate fallback behavior.
+
+
 ## 0.8.69 - 2026-06-14
 
 - Add OpenSpec bundle for remaining Raspberry v1 gates while Raspberry access is unavailable.

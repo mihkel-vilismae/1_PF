@@ -194,3 +194,5 @@ The plan requires same-worker singleton checks, duplicate same-worker skip evide
 | Raspberry address overlay evidence template | `npm run proof:raspberry-address-overlay-template` | Writes a non-claiming operator evidence JSON template for the address overlay gate. |
 
 | Raspberry regular product evidence template | `npm run proof:raspberry-regular-product-template` | Writes a non-claiming operator evidence JSON template for regular_stage_worker product pipeline proof. |
+
+| Raspberry iCloudPD preflight | `npm run proof:raspberry-icloudpd-preflight` | Discovers local iCloudPD readiness without login/download claims. |
