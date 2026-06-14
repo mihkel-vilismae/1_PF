@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.74 - 2026-06-14
+
+- Add `proof:docs-reconciliation-audit` critical-docs pre-pass.
+- Audit checks critical v1 OpenSpec/planning docs exist and rejects known stale contradictory claims.
+- Add tests for current docs audit PASS and missing/stale-doc BLOCKED behavior.
+
+
 ## 0.8.73 - 2026-06-14
 
 - Add dashboard status data contract helpers for a proof-backed, status-only v1 dashboard view.

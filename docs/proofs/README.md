@@ -198,3 +198,5 @@ The plan requires same-worker singleton checks, duplicate same-worker skip evide
 | Raspberry iCloudPD preflight | `npm run proof:raspberry-icloudpd-preflight` | Discovers local iCloudPD readiness without login/download claims. |
 
 | Local/generated media pipeline rehearsal | `npm run proof:local-generated-media-pipeline-rehearsal` | Windows-safe generated-media rehearsal for product pipeline fixtures without iCloud/Raspberry claims. |
+
+| Docs reconciliation audit | `npm run proof:docs-reconciliation-audit` | Critical v1 docs audit pre-pass for missing docs and known contradictory claims. |
