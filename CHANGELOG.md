@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.71 - 2026-06-14
+
+- Add regular_stage_worker product pipeline contract helpers for source discovery, download/import, index, GPS extraction, geocode, and queue preparation.
+- Add tests that evaluate complete/incomplete product evidence without claiming runtime product work.
+
+
 ## 0.8.70 - 2026-06-14
 
 - Add `proof:raspberry-icloudpd-preflight` scaffold for safe iCloudPD discovery without login/download claims.
