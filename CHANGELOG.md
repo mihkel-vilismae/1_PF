@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.69 - 2026-06-14
+
+- Add OpenSpec bundle for remaining Raspberry v1 gates while Raspberry access is unavailable.
+- Specify iCloudPD discovery/preflight, iCloud-first regular worker product pipeline, GPS/geocode provider behavior, address overlay device proof, dashboard status view, and screen worker non-blocking proof boundaries.
+- Add tests that ensure the v1 OpenSpec bundle exists and records clarified question-matrix decisions without making runtime claims.
+
+
 ## 0.8.68 - 2026-06-14
 
 - Repair expanded Raspberry app-running target-pack ordering from v0.8.66 evidence.
