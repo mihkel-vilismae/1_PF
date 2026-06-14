@@ -346,3 +346,13 @@ npm run proof:raspberry-app-running-target-pack
 ```
 
 This is the fastest command to identify the first setup/startup/cron/app-running blocker after unpacking the repo on Raspberry.
+
+## Raspberry address overlay evidence template
+
+Create the operator evidence template:
+
+```bash
+npm run proof:raspberry-address-overlay-template
+```
+
+Only set the generated fields to `true` after a real device-display observation.

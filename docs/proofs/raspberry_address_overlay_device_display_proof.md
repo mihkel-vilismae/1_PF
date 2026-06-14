@@ -20,3 +20,13 @@ To pass, provide `PF_RASPBERRY_ADDRESS_OVERLAY_EVIDENCE_FILE` containing JSON wi
 ```
 
 The final proof artifact is sanitized before writing.
+
+## Evidence template helper
+
+Generate a non-claiming template:
+
+```bash
+npm run proof:raspberry-address-overlay-template
+```
+
+Edit the generated JSON only after observing the real Raspberry/device display overlay, then pass it via `PF_RASPBERRY_ADDRESS_OVERLAY_EVIDENCE_FILE`.

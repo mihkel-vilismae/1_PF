@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.8.63 - Raspberry address overlay evidence template
+
+- Add `proof:raspberry-address-overlay-template` to write a non-claiming operator evidence JSON template for the address overlay gate.
+- The template defaults all required claim fields to `false` so it cannot accidentally pass without operator editing.
+
 ## v0.8.62 - Raspberry app-running target pack
 
 - Add `proof:raspberry-app-running-target-pack` to run the app-running target chain in one ordered proof pack.

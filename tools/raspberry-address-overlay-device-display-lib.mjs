@@ -11,6 +11,17 @@ export const ADDRESS_OVERLAY_REQUIRED_FIELDS = Object.freeze([
   'operator_observed',
 ]);
 
+export function buildAddressOverlayEvidenceTemplate() {
+  return {
+    native_display_path_observed: false,
+    address_text_present: false,
+    overlay_rendered_on_device: false,
+    operator_observed: false,
+    observed_at: new Date().toISOString(),
+    operator_note: 'Set all required boolean fields to true only after observing the real Raspberry/device display overlay.',
+  };
+}
+
 export async function loadAddressOverlayEvidence({ env = process.env, evidence = null } = {}) {
   if (evidence) return { source: 'injected', data: evidence, load_error: null };
   const file = env.PF_RASPBERRY_ADDRESS_OVERLAY_EVIDENCE_FILE;
