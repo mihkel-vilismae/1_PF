@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.68 - 2026-06-14
+
+- Repair expanded Raspberry app-running target-pack ordering from v0.8.66 evidence.
+- Run `proof:raspberry-app-running-pass` before worker-evidence-dependent checks so the proof-owned duplicate-skip and stale-lock harness evidence exists first.
+- Keep worker evidence generator, cron worker runtime, app-running status, and app-running chain as required target-pack steps after the harness.
+
+
 ## 0.8.67 - 2026-06-14
 
 - Add Raspberry v1 question-matrix decision OpenSpec documenting clarified answers and unresolved matrix items.

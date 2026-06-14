@@ -18,6 +18,16 @@ test('app-running target pack invokes required proof commands in order', async (
 });
 
 
+
+test('target pack runs app-running pass before worker-evidence-dependent readiness checks', () => {
+  const ids = APP_RUNNING_TARGET_PACK_STEPS.map((step) => step.id);
+  assert.ok(ids.indexOf('app_running_pass') > ids.indexOf('cron_preflight_install'));
+  assert.ok(ids.indexOf('app_running_pass') < ids.indexOf('worker_evidence_generator'));
+  assert.ok(ids.indexOf('worker_evidence_generator') < ids.indexOf('cron_worker_runtime'));
+  assert.ok(ids.indexOf('cron_worker_runtime') < ids.indexOf('app_running_status'));
+  assert.ok(ids.indexOf('app_running_status') < ids.indexOf('app_running_chain'));
+});
+
 test('app-running target pack passes latest worker evidence env to dependent proof steps', async () => {
   const repoRoot = await mkdtemp(join(tmpdir(), 'pf-target-pack-env-'));
   const evidenceDir = join(repoRoot, 'runtime_data', 'raspberry_worker_evidence');

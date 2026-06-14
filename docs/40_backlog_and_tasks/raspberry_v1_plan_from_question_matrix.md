@@ -24,7 +24,7 @@ The first current blocker is proof ordering in the expanded target pack: complet
 
 | Version | Slice | Goal | Acceptance proof |
 |---|---|---|---|
-| v0.8.68 | Target-pack ordering repair | Run/reuse app-running PASS harness evidence before worker-evidence-dependent v1 readiness checks. | `proof:raspberry-app-running-target-pack` no longer blocks on early incomplete worker evidence when app-running harness later passes. |
+| v0.8.68 | Target-pack ordering repair | Implemented: run app-running PASS harness evidence before worker-evidence-dependent v1 readiness checks. | `proof:raspberry-app-running-target-pack` should no longer block on early incomplete worker evidence when app-running harness later passes. |
 | v0.8.69 | iCloudPD preflight/discovery | Determine whether real iCloudPD is installed/configured/ready on Raspberry without leaking secrets. | iCloudPD preflight proof PASSED or honest BLOCKED with exact missing setup. |
 | v0.8.70 | iCloud-first regular worker OpenSpec | Define iCloud-first regular worker product stages and safety boundaries. | OpenSpec/tests define source/download/import/index/GPS/geocode/queue evidence. |
 | v0.8.71 | iCloud media source proof scaffold | Add proof command for real iCloud media source using manual/operator 2FA. | Proof blocks unless real iCloudPD evidence exists; no 2FA automation claim. |
