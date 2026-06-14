@@ -27,7 +27,7 @@ export function replaceManagedCronBlock(existingCrontab, managedRows) {
 }
 
 export async function readCrontab() {
-  const result = await runCommand('crontab', ['-l'], { timeoutMs: 10000, detached: false });
+  const result = await runCommand('crontab', ['-l'], { timeoutMs: 10000, detached: false, sanitize: false });
   return { available: result.exitCode === 0, text: result.exitCode === 0 ? result.stdout : '', result };
 }
 

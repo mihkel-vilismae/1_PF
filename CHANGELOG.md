@@ -1,3 +1,11 @@
+# Changelog
+
+## v0.8.58 - Raspberry proof false-negative repair
+
+- Fix worker startup smoke status parsing so nested npm proof output with redacted paths still counts `PASSED` preflights.
+- Preserve unsanitized `crontab -l` stdout internally for cron row evaluation, while final proof artifacts remain sanitized.
+- Keep v0.8.57 worker-startup behavior unchanged; this slice repairs proof recognition/evaluator false negatives found in Raspberry evidence.
+
 ## 0.8.54 — Scheduler CLI bootstrap repair and Raspberry cron preflight
 
 - Fixed scheduler CLI bootstrap so regular/screen instrumentation workers do not fail with `ReferenceError: Cannot access 'HttpError' before initialization` when env loading fails.

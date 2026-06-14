@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { evaluateWorkerStartupSmoke, runWorkerStartupSmokeCommands, RASPBERRY_WORKER_STARTUP_LANES } from '../tools/raspberry-worker-startup-smoke-lib.mjs';
+import { evaluateWorkerStartupSmoke, parseRunnerStatus, runWorkerStartupSmokeCommands, RASPBERRY_WORKER_STARTUP_LANES } from '../tools/raspberry-worker-startup-smoke-lib.mjs';
 
 function result({ command = 'npm', args = [], exitCode = 0, stdout = '{"status":"PASSED"}', timedOut = false } = {}) {
   return { command, args, exitCode, signal: null, timedOut, durationMs: 1, stdout, stderr: '' };
@@ -55,4 +55,18 @@ test('startup smoke fails on Raspberry when a worker exits nonzero', () => {
   const evaluation = evaluateWorkerStartupSmoke({ target: { raspberry_like: true, explicit_override_used: false }, preflights, workers });
   assert.equal(evaluation.proofStatus, 'FAILED');
   assert.match(evaluation.failureReasons.join('\n'), /playback_worker/);
+});
+
+
+test('startup smoke parses PASSED status from npm proof output even after path redaction', () => {
+  const stdout = `
+> photo-frame-dashboard-frontend@0.8.57 proof:raspberry-env-preflight
+> node tools/run-raspberry-env-preflight.mjs --create
+{
+  "status": "PASSED",
+  "mode": "raspberry_env_preflight_create",
+  "outputPath": "[REDACTED]
+}
+`;
+  assert.equal(parseRunnerStatus(stdout), 'PASSED');
 });

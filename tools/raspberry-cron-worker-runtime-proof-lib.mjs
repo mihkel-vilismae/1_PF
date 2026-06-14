@@ -72,7 +72,7 @@ export function determineCronWorkerRuntimeStatus({ target, cronAvailable, cronRo
 }
 
 export async function readSystemCrontab() {
-  const result = await runCommand('crontab', ['-l'], { timeoutMs: 10000, detached: false });
+  const result = await runCommand('crontab', ['-l'], { timeoutMs: 10000, detached: false, sanitize: false });
   return { available: result.exitCode === 0, result, rows: parseCrontabRows(result.stdout) };
 }
 

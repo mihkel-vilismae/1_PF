@@ -299,6 +299,10 @@ npm run proof:raspberry-v1-readiness
 This command reads latest `runtime_data/proofs/*.json` artifacts and reports which v1.0 gates still block release. It does not run missing real iCloud, GPS/geocode, native playback, dashboard, reboot, or power-loss proofs by itself.
 
 
+## Raspberry proof false-negative repair note
+
+As of v0.8.58, Raspberry cron and worker-startup evaluators preserve raw command output internally for matching/parsing, then sanitize final proof artifacts. This avoids false `BLOCKED` results where cron rows were installed or preflight commands printed `PASSED`, but redaction removed scheduler fragments or broke JSON parsing in the evaluator.
+
 ## Raspberry three-worker startup smoke proof
 
 After extracting/installing dependencies, run the worker startup smoke proof:

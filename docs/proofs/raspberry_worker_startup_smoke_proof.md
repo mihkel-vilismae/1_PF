@@ -41,3 +41,7 @@ On a real Raspberry target with passing preflights, a worker startup non-zero ex
 ## Non-claims
 
 This proof does not prove cron timing, crontab installation, regular worker real product pipeline work, native display playback, dashboard status, reboot recovery, or physical power-loss recovery.
+
+## v0.8.58 parser repair
+
+The startup smoke proof now reads `PASSED` status from nested npm proof output using status-field matching before falling back to full JSON parsing. This prevents redacted output paths from turning successful executable/env preflights into false `BLOCKED` startup smoke results.

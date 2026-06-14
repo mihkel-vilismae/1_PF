@@ -152,7 +152,17 @@ export function runCommand(command, args, options = {}) {
       settled = true;
       clearTimeout(timer);
       if (forceTimer) clearTimeout(forceTimer);
-      resolve({ command, args, exitCode, signal, timedOut, durationMs: Date.now() - startedAt, stdout: sanitizeText(stdout).text, stderr: sanitizeText(stderr).text });
+      const sanitizeOutput = options.sanitize !== false;
+      resolve({
+        command,
+        args,
+        exitCode,
+        signal,
+        timedOut,
+        durationMs: Date.now() - startedAt,
+        stdout: sanitizeOutput ? sanitizeText(stdout).text : stdout,
+        stderr: sanitizeOutput ? sanitizeText(stderr).text : stderr,
+      });
     }
     function killChild(signal) {
       try {

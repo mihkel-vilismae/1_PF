@@ -16,13 +16,26 @@ function lastNonEmptyLines(text, count = 16) {
   return String(text ?? '').split(/\r?\n/u).map((line) => line.trim()).filter(Boolean).slice(-count).join('\n');
 }
 
-function parseRunnerStatus(stdout) {
-  try {
-    const parsed = JSON.parse(String(stdout ?? '').match(/\{[\s\S]*\}\s*$/u)?.[0] ?? '{}');
-    return parsed.status ?? parsed.proof_status ?? null;
-  } catch {
-    return null;
+export function parseRunnerStatus(stdout) {
+  const text = String(stdout ?? '');
+  const directStatus = text.match(/["'](?:status|proof_status|proofStatus)["']\s*:\s*["']([A-Z_]+)["']/u)?.[1];
+  if (directStatus) return directStatus;
+
+  const starts = [];
+  for (let index = text.indexOf('{'); index !== -1; index = text.indexOf('{', index + 1)) starts.push(index);
+  for (const start of starts.reverse()) {
+    const tail = text.slice(start).trim();
+    for (let end = tail.lastIndexOf('}'); end !== -1; end = tail.lastIndexOf('}', end - 1)) {
+      const candidate = tail.slice(0, end + 1);
+      try {
+        const parsed = JSON.parse(candidate);
+        return parsed.status ?? parsed.proof_status ?? parsed.proofStatus ?? null;
+      } catch {
+        // Try the next shorter candidate.
+      }
+    }
   }
+  return null;
 }
 
 export function summarizeCommandResult(result) {

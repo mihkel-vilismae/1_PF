@@ -22,3 +22,7 @@ The managed block adds the three expected worker lanes for the current repo path
 - `screen_on_off_worker` every 3 minutes.
 
 The helper preserves crontab content outside the PF_login managed block. It does not run workers, reboot the Raspberry, or prove power-loss recovery.
+
+## v0.8.58 cron row matching repair
+
+The cron preflight now preserves raw `crontab -l` output internally while evaluating managed worker rows, then sanitizes evidence before writing proof artifacts. This prevents path redaction from removing `--scheduler ...` fragments before row matching.
