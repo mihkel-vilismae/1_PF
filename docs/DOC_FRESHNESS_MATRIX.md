@@ -108,3 +108,8 @@ This matrix is a navigation aid for deciding which PF_login documents can be tru
 | v0.8.55 | Raspberry install/runtime blocker repair. | Adds stdin support for proof subprocesses, executable-bit repair proof, and `.env` bootstrap/preflight proof; target app-running PASS still requires Raspberry evidence. |
 | `docs/proofs/raspberry_executable_permissions_proof.md` | current_latest_baseline | v0.8.55 proof doc for checking/repairing known repo-owned executable boundaries after ZIP extraction. |
 | `docs/proofs/raspberry_env_preflight_proof.md` | current_latest_baseline | v0.8.55 proof doc for creating/checking `.env` from `example.env` before scheduler/playback runtime. |
+
+
+| v0.8.56 | Raspberry v1.0 release-gate matrix. | Encodes answered matrix decisions and adds `proof:raspberry-v1-readiness`; no new target proof is claimed. |
+| `docs/20_architecture_and_specs/openspec/raspberry_v1_release_gate_matrix_openspec.md` | current_latest_baseline | Authoritative answered-matrix release-gate contract for Raspberry v1.0. |
+| `docs/proofs/raspberry_v1_readiness_proof.md` | current_latest_baseline | Describes the v1 readiness proof-artifact evaluator and its PASS/BLOCKED semantics. |

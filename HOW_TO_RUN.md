@@ -286,3 +286,14 @@ npm run proof:raspberry-cron-preflight
 ```
 
 These helpers do not prove app-running, reboot recovery, physical power-loss recovery, production iCloud continuation, or real geocode provider behavior by themselves. They remove known Raspberry install/runtime blockers observed in the v0.8.54 evidence pack.
+
+
+## Raspberry v1.0 release-gate readiness
+
+After collecting Raspberry target proof artifacts, evaluate the answered v1.0 release gate matrix:
+
+```bash
+npm run proof:raspberry-v1-readiness
+```
+
+This command reads latest `runtime_data/proofs/*.json` artifacts and reports which v1.0 gates still block release. It does not run missing real iCloud, GPS/geocode, native playback, dashboard, reboot, or power-loss proofs by itself.

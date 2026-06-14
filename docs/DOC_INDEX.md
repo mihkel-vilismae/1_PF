@@ -17,6 +17,8 @@ This index classifies non-skill documentation files and separates current truth 
 
 ## Recent additions
 
+- `docs/20_architecture_and_specs/openspec/raspberry_v1_release_gate_matrix_openspec.md` — v0.8.56 answered question-matrix release gates for Raspberry v1.0.
+- `docs/proofs/raspberry_v1_readiness_proof.md` — v0.8.56 proof-artifact evaluator for Raspberry v1.0 release readiness.
 - `docs/proofs/raspberry_executable_permissions_proof.md` — v0.8.55 Raspberry executable-bit repair proof for ZIP extraction/launcher dry-run blockers.
 - `docs/proofs/raspberry_env_preflight_proof.md` — v0.8.55 Raspberry `.env` bootstrap/preflight proof for scheduler/playback runtime blockers.
 - `docs/20_architecture_and_specs/view_e_validation_hermetic_contract.md` — v0.8.41 View E validation hermeticity contract for proof-owned temp env/DB behavior.

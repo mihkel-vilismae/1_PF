@@ -176,3 +176,9 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 
 - `docs/proofs/raspberry_executable_permissions_proof.md` — checks/repairs repo-owned executable bits after ZIP extraction.
 - `docs/proofs/raspberry_env_preflight_proof.md` — creates/checks `.env` from `example.env` before playback worker runtime.
+
+
+## v0.8.56 Raspberry v1.0 release-gate docs
+
+- `docs/20_architecture_and_specs/openspec/raspberry_v1_release_gate_matrix_openspec.md` — answered matrix and required/non-blocking release gates.
+- `docs/proofs/raspberry_v1_readiness_proof.md` — proof-artifact evaluator for current Raspberry v1.0 readiness.

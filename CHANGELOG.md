@@ -2308,3 +2308,11 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 - Added `proof:raspberry-env-preflight` with optional `--create` / `--create-from-example` to create `.env` from `example.env` when missing and verify minimum runtime keys before scheduler workers such as `playback_worker` run.
 - Added proof documentation and regression tests for stdin command input, executable-bit repair, and env bootstrap/preflight.
 - Preserved proof boundaries: no Raspberry app-running PASS, native playback PASS, cron install PASS, reboot recovery, power-loss recovery, production iCloud continuation, or real geocode provider behavior is claimed without target evidence.
+
+
+## 0.8.56 — Raspberry v1.0 release-gate matrix
+
+- Added `docs/20_architecture_and_specs/openspec/raspberry_v1_release_gate_matrix_openspec.md` to encode the answered v1.0 question matrix as release gates.
+- Added `proof:raspberry-v1-readiness`, a proof-artifact evaluator that scans latest `runtime_data/proofs/*.json` artifacts and reports which v1.0-required gates are still blocked.
+- Added `docs/proofs/raspberry_v1_readiness_proof.md` and regression tests for real iCloud/GPS/geocode requirements, non-v1 reboot/power-loss gates, regular worker product-pipeline requirement, dashboard status requirement, and latest-proof artifact selection.
+- Preserved proof honesty: this slice does not run real iCloud, GPS/geocode, native playback, dashboard, reboot, or power-loss proof commands by itself and does not claim Raspberry v1.0 readiness without target evidence.
