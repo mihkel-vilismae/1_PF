@@ -184,3 +184,5 @@ The plan requires same-worker singleton checks, duplicate same-worker skip evide
 ## Raspberry worker startup smoke
 
 `npm run proof:raspberry-worker-startup-smoke` starts the three scheduler worker commands and reports whether they exit cleanly after executable/env preflights. `-- --prepare` repairs executable bits and creates `.env` from `example.env` first. See [`raspberry_worker_startup_smoke_proof.md`](raspberry_worker_startup_smoke_proof.md).
+
+| Raspberry address overlay device display | `npm run proof:raspberry-address-overlay-device-display` | Operator/evidence gate for native device display address overlay. |

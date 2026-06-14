@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.8.60 - Raspberry address overlay proof gate
+
+- Add `proof:raspberry-address-overlay-device-display` as the v1.0 evidence gate for native display address overlay.
+- The proof requires explicit operator/proof evidence and does not claim rendering by itself.
+
 ## v0.8.59 - App-running evidence crontab propagation repair
 
 - Carry the v0.8.58 raw-crontab evaluation repair into `proof:raspberry-worker-evidence` and `proof:raspberry-app-running-pass`.

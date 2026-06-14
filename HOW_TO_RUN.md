@@ -316,3 +316,13 @@ This does not install cron and does not prove the full cron workflow. It proves 
 ## v0.8.59 app-running evidence repair
 
 `proof:raspberry-worker-evidence` and `proof:raspberry-app-running-pass` now evaluate raw `crontab -l` output internally before writing sanitized proof artifacts. This keeps installed worker rows recognizable even when repo paths are redacted from final evidence.
+
+## Raspberry address overlay proof gate
+
+After a real display-overlay observation, run:
+
+```bash
+PF_RASPBERRY_ADDRESS_OVERLAY_EVIDENCE_FILE=/path/to/address_overlay_evidence.json npm run proof:raspberry-address-overlay-device-display
+```
+
+The evidence file must explicitly state the native display path, address text, rendered overlay, and operator observation.
