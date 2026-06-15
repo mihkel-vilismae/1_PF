@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.86.b - 2026-06-16
+
+- Add the documentation/OpenSpec coverage grading audit and navigation entries.
+- Mark Fedora/Linux rehearsal as paused while retaining existing scripts/docs.
+- Sync proof documentation with current proof script inventory.
+
 ## 0.8.86.a - 2026-06-15
 
 - Ignore root-level timestamped Windows proof and known-failure evidence folders so local proof outputs no longer appear as untracked Git status noise.
