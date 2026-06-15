@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.86.a - 2026-06-15
+
+- Ignore root-level timestamped Windows proof and known-failure evidence folders so local proof outputs no longer appear as untracked Git status noise.
+
 ## 0.8.86 - 2026-06-15
 
 - Update `tools/unzipper/unzip_latest_photoframe.sh` to hardcode `/home/mihkel/Download_chrome/Photoframe_proofing/.env` as the custom variables source.
