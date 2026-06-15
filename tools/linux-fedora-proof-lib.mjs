@@ -417,7 +417,7 @@ export function summarizeFedoraEnvPresence(env = process.env) {
 export const FEDORA_EXTENDED_TOOL_SET = Object.freeze([
   ...REQUIRED_FEDORA_TOOLS,
   { name: 'python3', args: ['--version'], purpose: 'Python helpers and iCloudPD module fallback' },
-  { name: 'crontab', args: ['-l'], purpose: 'Fedora/Linux cron rehearsal visibility', allowNoCrontab: true },
+  { name: 'crontab', args: ['-l'], purpose: 'Fedora/Linux cron rehearsal visibility', allowNoCrontab: true, optional: true },
   { name: 'bash', args: ['--version'], purpose: 'Linux shell launchers/proofs' },
   { name: 'zip', args: ['--version'], purpose: 'proof artifact export bundles' },
   ...OPTIONAL_FEDORA_MEDIA_TOOLS,
@@ -430,9 +430,21 @@ export async function checkFedoraExtendedTool(tool) {
   return { name: tool.name, purpose: tool.purpose, args: tool.args, required: !tool.optional, available: available && !result.timedOut, exit_code: result.exitCode, timed_out: result.timedOut, version_excerpt: firstNonEmptyLines(result.stdout || result.stderr, 3) };
 }
 
+
+export const FEDORA_ICLOUDPD_PREFLIGHT_REQUIRED_ENV_KEYS = Object.freeze(['user', 'pw', 'ICLOUDPD_COOKIE_DIR']);
+
+export function summarizeFedoraIcloudpdConfigPresence(env = process.env) {
+  return FEDORA_ICLOUDPD_PREFLIGHT_REQUIRED_ENV_KEYS.map((key) => ({
+    key,
+    present: typeof env[key] === 'string' && env[key].trim().length > 0,
+    kind: key === 'pw' ? 'secret' : key === 'user' ? 'account_identifier' : 'path',
+    redacted_value: redactPresenceValue(key, env[key]),
+  }));
+}
+
 export async function buildLinuxFedoraIcloudpdPreflightProof({ metadata, env = process.env, commandRunner = runCommand, cwd = process.cwd() } = {}) {
   const target = detectFedoraLinuxTarget({ env });
-  const config = summarizeConfigPresence(env);
+  const config = summarizeFedoraIcloudpdConfigPresence(env);
   const attempts = await runIcloudpdVersionCandidatesLocal({ commandRunner, cwd });
   const missingConfig = config.filter((entry) => !entry.present).map((entry) => entry.key);
   const usableAttempt = attempts.find((attempt) => attempt.usable) || null;

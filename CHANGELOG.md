@@ -2459,3 +2459,8 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 - Expanded Fedora env/tool reporting toward Raspberry-style preflight parity.
 - Added Fedora iCloudPD preflight, worker command inventory, proof artifact export, and readiness-gate coverage.
 - Preserved Raspberry v1 proof boundary: Fedora remains rehearsal evidence, not Raspberry display/playback proof.
+
+## 0.8.82 - Fedora parity proof repair
+
+- Repaired Fedora iCloudPD preflight to use Fedora-local config presence reporting.
+- Kept `crontab` as optional in the generic Fedora tool checker; dedicated cron readiness remains covered by `proof:linux-fedora-cron-preflight`.
