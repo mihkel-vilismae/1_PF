@@ -50,7 +50,12 @@ tools/CronEmulator/crontab_emulated.txt
 tools/CronEmulator/logs/
 tools/docs_labels/
 tools/ffmpeg/
-tools/mpv/
+# Runtime-installed mpv binaries stay local-only; keep Windows mpv docs/placeholders tracked.
+tools/mpv/*
+!tools/mpv/windows/
+tools/mpv/windows/*
+!tools/mpv/windows/.gitkeep
+!tools/mpv/windows/README.md
 found_devices_latest.txt
 *.log
 *.jsonl
