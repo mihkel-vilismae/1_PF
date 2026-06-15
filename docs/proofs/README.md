@@ -101,6 +101,11 @@ Use provider-specific API-key or token environment variables for providers that 
 
 The generated JSON artifact intentionally stores assertion results and markup length metrics, not full HTML snapshots. This keeps the proof stable across harmless layout/CSS changes while still proving the address evidence reaches the display-facing UI contract.
 
+
+## Raspberry runtime `.env` readiness
+
+`docs/proofs/raspberry-runtime-env.md` describes the minimum Raspberry `.env` keys required before worker startup, cron app-running, and v1 readiness proofs can pass honestly. `npm run proof:raspberry-env-preflight -- --create` may bootstrap `.env` from `example.env`, but generated artifacts must record only key names/presence and sanitized missing-key guidance, never values or secrets.
+
 ## Windows native proof milestone
 
 `docs/proofs/windows_native_proof_milestone_v0.8.26.md` is the consolidated proof-status snapshot for the v0.8.26 Windows target-machine checkpoint. It records the PASSED Windows native image/video/recovery/scheduler-loop evidence and states Windows Task Scheduler is out of scope and keeps non-claims explicit for full Windows reboot, Raspberry cron/reboot/power-loss recovery, monitor-pixel proof, production iCloud continuation, and vendored media tooling.
