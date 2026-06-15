@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.84 - Correct Fedora parity package version root
+
+- Bumped package metadata to 0.8.84 after the v0.8.83 Fedora parity proof package was extracted from a root folder still named v0.8.80.
+- Preserved Fedora proof behavior and Raspberry proof boundaries; this is a packaging/version consistency update only.
+
 ## 0.8.77 - 2026-06-14
 
 - Add Raspberry v1 OpenSpec implementation queue mapping improved specs to proof-gated implementation work items.
