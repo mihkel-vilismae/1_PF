@@ -63,9 +63,9 @@ async function resolveDatabasePathFromEnv({ repoRoot }) {
   }
 }
 
-async function runDatabasePreflight({ repoRoot, prepare, commandRunner }) {
+async function runDatabasePreflight({ repoRoot, prepare, commandRunner, touchFilesystem = true }) {
   const dbPath = await resolveDatabasePathFromEnv({ repoRoot });
-  await mkdir(dirname(dbPath), { recursive: true });
+  if (touchFilesystem) await mkdir(dirname(dbPath), { recursive: true });
   const args = prepare
     ? ['server/scripts/sqlite_admin.py', 'recreate', dbPath, 'schema.sql']
     : ['server/scripts/sqlite_admin.py', 'inspect', dbPath];
@@ -92,7 +92,7 @@ export async function runWorkerStartupSmokeCommands({ repoRoot = process.cwd(), 
     const result = await commandRunner(step.command, step.args, { cwd: repoRoot, timeoutMs: 30000, detached: false });
     preflights.push({ id: step.id, ...summarizeCommandResult(result) });
   }
-  preflights.push(await runDatabasePreflight({ repoRoot, prepare, commandRunner }));
+  preflights.push(await runDatabasePreflight({ repoRoot, prepare, commandRunner, touchFilesystem: commandRunner === runCommand }));
 
   const workers = [];
   for (const lane of RASPBERRY_WORKER_STARTUP_LANES) {
