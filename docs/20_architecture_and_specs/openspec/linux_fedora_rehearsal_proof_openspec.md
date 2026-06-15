@@ -45,3 +45,7 @@ A Fedora proof implementation passes this OpenSpec when:
 2. Fedora readiness explicitly reports Raspberry-only gates as `NOT_RASPBERRY_PROVEN`.
 3. Existing Raspberry proof commands and release-gate semantics are unchanged.
 4. Proof artifacts include non-claims explaining what Fedora cannot prove.
+
+## Readiness behavior
+
+`proof:linux-fedora-readiness` reads the latest proof artifacts from `runtime_data/proofs`. It may pass only Fedora rehearsal gates. Raspberry-only gates are reported as `NOT_RASPBERRY_PROVEN` even when Fedora gates pass, so the Raspberry v1.0 release boundary remains intact.

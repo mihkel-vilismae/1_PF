@@ -213,3 +213,115 @@ export async function buildLinuxFedoraWorkerSingletonPackProof({ metadata, env =
     knownLimitations: ['This is a deterministic singleton semantics rehearsal. It does not prove physical Raspberry app-running status.'],
   });
 }
+
+export const FEDORA_READINESS_GATES = Object.freeze([
+  { id: 'fedora_env', title: 'Fedora/Linux env preflight', proofKinds: ['linux_fedora_env_preflight'], raspberryOnly: false },
+  { id: 'fedora_tools', title: 'Fedora/Linux required tools', proofKinds: ['linux_fedora_tool_checker'], raspberryOnly: false },
+  { id: 'fedora_cron', title: 'Fedora/Linux scheduler rehearsal rows', proofKinds: ['linux_fedora_cron_preflight'], raspberryOnly: false },
+  { id: 'fedora_worker_singletons', title: 'Three worker singleton rehearsal', proofKinds: ['linux_fedora_worker_singleton_pack'], raspberryOnly: false },
+  { id: 'fedora_product_pipeline', title: 'Fedora product-pipeline rehearsal', proofKinds: ['linux_fedora_product_pipeline_rehearsal'], raspberryOnly: false },
+  { id: 'raspberry_native_playback', title: 'Raspberry native image/video playback', proofKinds: ['raspberry_native_image_playback', 'raspberry_native_video_playback'], raspberryOnly: true },
+  { id: 'raspberry_display_overlay', title: 'Raspberry/device address overlay', proofKinds: ['raspberry_address_overlay_device_display'], raspberryOnly: true },
+  { id: 'raspberry_v1_release_gate', title: 'Raspberry v1 readiness remains final gate', proofKinds: ['raspberry_v1_readiness'], raspberryOnly: true },
+]);
+
+export async function buildLinuxFedoraProductPipelineRehearsalProof({ metadata, env = process.env, repoRoot = process.cwd() } = {}) {
+  const target = detectFedoraLinuxTarget({ env });
+  const generated = await import('./local-generated-media-pipeline-rehearsal-lib.mjs');
+  const generatedEnvelope = generated.buildLocalGeneratedMediaPipelineRehearsalProof({ metadata, repoRoot });
+  const stageEvidence = [
+    { stage: 'media_source', classification: 'REHEARSED', evidence: 'generated media fixture inspection', source_status: generatedEnvelope.proof_status },
+    { stage: 'download_index', classification: 'REHEARSED', evidence: 'local/generated pipeline contract preview', source_status: generatedEnvelope.proof_status },
+    { stage: 'gps_extract', classification: 'REHEARSED', evidence: 'generated manifest GPS-like fixture count', source_status: generatedEnvelope.proof_status },
+    { stage: 'geocode', classification: 'REHEARSED', evidence: 'provider contract only unless real provider proof exists', source_status: generatedEnvelope.proof_status },
+    { stage: 'queue_prepare', classification: 'REHEARSED', evidence: 'pipeline contract preview only', source_status: generatedEnvelope.proof_status },
+    { stage: 'native_playback_display_overlay', classification: 'NOT_RASPBERRY_PROVEN', evidence: 'requires Raspberry/device proof', source_status: 'NOT_RASPBERRY_PROVEN' },
+  ];
+  const proofStatus = target.linux_like && generatedEnvelope.proof_status === 'PASSED' ? 'PASSED' : 'BLOCKED';
+  return createProofEnvelope({
+    proofKind: 'linux_fedora_product_pipeline_rehearsal',
+    baselineVersion: metadata.version,
+    gitCommit: metadata.gitCommit,
+    proofStatus,
+    runtimeMode: 'linux_fedora_product_pipeline_rehearsal',
+    evidence: sanitizeEvidence({
+      environment: getProofEnvironment(),
+      target_detection: target,
+      repo_root: repoRoot,
+      generated_media_rehearsal_status: generatedEnvelope.proof_status,
+      generated_media_rehearsal_evidence: generatedEnvelope.evidence,
+      stage_evidence: stageEvidence,
+      pass_criteria: 'PASSED when running on Linux/Fedora-like target and generated media pipeline rehearsal prerequisites are present.',
+      real_vs_staged_policy: 'Reports generated/local stages as REHEARSED. Real iCloud, real geocode, Raspberry playback, and display overlay still need their own target proofs.',
+      non_claims: FEDORA_NON_CLAIMS.concat(['does not download from iCloud unless separate real iCloud proof is run', 'does not mutate production database']),
+    }),
+    knownLimitations: ['Fedora product-pipeline rehearsal is not real Raspberry cron product proof.'],
+  });
+}
+
+export async function collectProofKinds({ repoRoot = process.cwd() } = {}) {
+  const { readdir, readFile } = await import('node:fs/promises');
+  const { existsSync } = await import('node:fs');
+  const { join } = await import('node:path');
+  const proofDir = join(repoRoot, 'runtime_data', 'proofs');
+  const latestByKind = {};
+  if (!existsSync(proofDir)) return { proofDir, latestByKind, filesRead: 0 };
+  let filesRead = 0;
+  for (const fileName of await readdir(proofDir)) {
+    if (!fileName.endsWith('.json')) continue;
+    try {
+      const parsed = JSON.parse(await readFile(join(proofDir, fileName), 'utf8'));
+      filesRead += 1;
+      const kind = parsed.proof_kind;
+      if (!kind) continue;
+      const timestamp = parsed.proof_timestamp || '';
+      if (!latestByKind[kind] || timestamp > (latestByKind[kind].proof_timestamp || '')) {
+        latestByKind[kind] = { proof_kind: kind, proof_status: parsed.proof_status || 'UNKNOWN', proof_timestamp: timestamp, runtime_mode: parsed.runtime_mode || null, source_file: fileName };
+      }
+    } catch {}
+  }
+  return { proofDir, latestByKind, filesRead };
+}
+
+export function evaluateFedoraReadinessGate(gate, latestByKind = {}) {
+  const proofs = gate.proofKinds.map((kind) => latestByKind[kind] || { proof_kind: kind, proof_status: gate.raspberryOnly ? 'NOT_RASPBERRY_PROVEN' : 'MISSING', proof_timestamp: null, runtime_mode: null, source_file: null });
+  if (gate.raspberryOnly) return { ...gate, gate_status: 'NOT_RASPBERRY_PROVEN', proofs };
+  const passed = proofs.every((proof) => proof.proof_status === 'PASSED');
+  return { ...gate, gate_status: passed ? 'PROVEN' : 'BLOCKED', proofs };
+}
+
+export async function buildLinuxFedoraReadinessProof({ metadata, env = process.env, repoRoot = process.cwd() } = {}) {
+  const target = detectFedoraLinuxTarget({ env });
+  const artifactIndex = await collectProofKinds({ repoRoot });
+  const gates = FEDORA_READINESS_GATES.map((gate) => evaluateFedoraReadinessGate(gate, artifactIndex.latestByKind));
+  const fedoraGates = gates.filter((gate) => !gate.raspberryOnly);
+  const proven = fedoraGates.filter((gate) => gate.gate_status === 'PROVEN');
+  const blocked = fedoraGates.filter((gate) => gate.gate_status === 'BLOCKED');
+  const proofStatus = target.linux_like && blocked.length === 0 ? 'PASSED' : 'BLOCKED';
+  return createProofEnvelope({
+    proofKind: 'linux_fedora_readiness',
+    baselineVersion: metadata.version,
+    gitCommit: metadata.gitCommit,
+    proofStatus,
+    runtimeMode: 'linux_fedora_rehearsal_readiness',
+    evidence: sanitizeEvidence({
+      environment: getProofEnvironment(),
+      target_detection: target,
+      repo_root: repoRoot,
+      gates,
+      summary: {
+        fedora_gate_count: fedoraGates.length,
+        fedora_proven_count: proven.length,
+        fedora_blocked_count: blocked.length,
+        raspberry_only_gate_count: gates.length - fedoraGates.length,
+        completion_percent: fedoraGates.length ? Math.round((proven.length / fedoraGates.length) * 100) : 0,
+      },
+      blocking_fedora_gate_ids: blocked.map((gate) => gate.id),
+      raspberry_only_gate_ids: gates.filter((gate) => gate.raspberryOnly).map((gate) => gate.id),
+      latest_proof_artifact_index: { proof_dir: artifactIndex.proofDir, files_read: artifactIndex.filesRead, available_proof_kinds: Object.keys(artifactIndex.latestByKind).sort() },
+      next_steps: blocked.length ? blocked.map((gate) => gate.id) : ['Run final Raspberry proof commands when device access is available.'],
+      non_claims: FEDORA_NON_CLAIMS,
+    }),
+    knownLimitations: ['Readiness is limited to Fedora/Linux rehearsal gates and intentionally leaves Raspberry-only gates separate.'],
+  });
+}

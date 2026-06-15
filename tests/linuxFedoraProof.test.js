@@ -31,3 +31,10 @@ test('Fedora worker singleton rehearsal skips duplicates and recovers stale lock
     assert.equal(evidence.pass, true);
   }
 });
+import { evaluateFedoraReadinessGate } from '../tools/linux-fedora-proof-lib.mjs';
+
+test('Fedora readiness marks Raspberry-only gates as not Raspberry proven', () => {
+  const gate = evaluateFedoraReadinessGate({ id: 'rpi', title: 'Raspberry display', proofKinds: ['raspberry_address_overlay_device_display'], raspberryOnly: true }, {});
+  assert.equal(gate.gate_status, 'NOT_RASPBERRY_PROVEN');
+  assert.equal(gate.proofs[0].proof_status, 'NOT_RASPBERRY_PROVEN');
+});
