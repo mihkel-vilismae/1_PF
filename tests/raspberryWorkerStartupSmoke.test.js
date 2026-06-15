@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
-import { evaluateWorkerStartupSmoke, parseRunnerStatus, runWorkerStartupSmokeCommands, RASPBERRY_WORKER_STARTUP_LANES } from '../tools/raspberry-worker-startup-smoke-lib.mjs';
+import { evaluateWorkerStartupSmoke, parseRunnerStatus, resolveDatabasePathFromEnv, runWorkerStartupSmokeCommands, RASPBERRY_WORKER_STARTUP_LANES } from '../tools/raspberry-worker-startup-smoke-lib.mjs';
 
 function result({ command = 'npm', args = [], exitCode = 0, stdout = '{"status":"PASSED"}', timedOut = false } = {}) {
   return { command, args, exitCode, signal: null, timedOut, durationMs: 1, stdout, stderr: '' };
@@ -21,6 +21,8 @@ test('startup smoke invokes setup preflights and all three worker lanes', async 
   assert.deepEqual(calls[1], ['npm', ['run', 'proof:raspberry-env-preflight', '--', '--create']]);
   assert.equal(calls[2][0], 'python3');
   assert.deepEqual(calls[2][1].slice(0, 3), ['server/scripts/sqlite_admin.py', 'recreate', path.normalize('/repo/runtime_data/photo_frame.sqlite')]);
+  assert.equal(evidence.preflights[2].database_path.configured_from_env, false);
+  assert.equal(evidence.preflights[2].database_path.source, 'fallback-runtime-data');
 });
 
 test('startup smoke passes only on Raspberry target with passing preflights and workers', () => {
@@ -70,4 +72,18 @@ test('startup smoke parses PASSED status from npm proof output even after path r
 }
 `;
   assert.equal(parseRunnerStatus(stdout), 'PASSED');
+});
+
+
+test('startup smoke resolves DB_PATH from env before database preflight', async () => {
+  const root = await (await import('node:fs/promises')).mkdtemp(path.join((await import('node:os')).tmpdir(), 'pf-startup-dbpath-'));
+  try {
+    await (await import('node:fs/promises')).writeFile(path.join(root, '.env'), 'DB_PATH=custom/photo_frame.sqlite\n', 'utf8');
+    const resolved = await resolveDatabasePathFromEnv({ repoRoot: root });
+    assert.equal(resolved.configured_from_env, true);
+    assert.equal(resolved.source, 'DB_PATH');
+    assert.equal(resolved.db_path, path.join(root, 'custom', 'photo_frame.sqlite'));
+  } finally {
+    await (await import('node:fs/promises')).rm(root, { recursive: true, force: true });
+  }
 });

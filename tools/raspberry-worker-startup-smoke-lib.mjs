@@ -53,24 +53,36 @@ export function summarizeCommandResult(result) {
 }
 
 
-async function resolveDatabasePathFromEnv({ repoRoot }) {
+export async function resolveDatabasePathFromEnv({ repoRoot }) {
   try {
     const parsed = parseEnvText(await readFile(join(repoRoot, '.env'), 'utf8'));
     const configured = parsed.values.DB_PATH || 'runtime_data/photo_frame.sqlite';
-    return configured.startsWith('/') ? configured : join(repoRoot, configured);
-  } catch {
-    return join(repoRoot, 'runtime_data', 'photo_frame.sqlite');
+    const resolved = configured.startsWith('/') ? configured : join(repoRoot, configured);
+    return {
+      db_path: resolved,
+      configured_from_env: Boolean(parsed.values.DB_PATH),
+      source: parsed.values.DB_PATH ? 'DB_PATH' : 'fallback-runtime-data',
+      read_error: null,
+    };
+  } catch (error) {
+    return {
+      db_path: join(repoRoot, 'runtime_data', 'photo_frame.sqlite'),
+      configured_from_env: false,
+      source: 'fallback-runtime-data',
+      read_error: error instanceof Error ? error.message : String(error),
+    };
   }
 }
 
 async function runDatabasePreflight({ repoRoot, prepare, commandRunner, touchFilesystem = true }) {
-  const dbPath = await resolveDatabasePathFromEnv({ repoRoot });
+  const databasePath = await resolveDatabasePathFromEnv({ repoRoot });
+  const dbPath = databasePath.db_path;
   if (touchFilesystem) await mkdir(dirname(dbPath), { recursive: true });
   const args = prepare
     ? ['server/scripts/sqlite_admin.py', 'recreate', dbPath, 'schema.sql']
     : ['server/scripts/sqlite_admin.py', 'inspect', dbPath];
   const result = await commandRunner('python3', args, { cwd: repoRoot, timeoutMs: 30000, detached: false });
-  return { id: 'database_preflight', db_path: dbPath, ...summarizeCommandResult(result) };
+  return { id: 'database_preflight', db_path: dbPath, database_path: databasePath, ...summarizeCommandResult(result) };
 }
 
 export async function runWorkerStartupSmokeCommands({ repoRoot = process.cwd(), prepare = false, commandRunner = runCommand } = {}) {
