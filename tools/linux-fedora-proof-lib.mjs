@@ -72,6 +72,8 @@ export async function buildLinuxFedoraEnvPreflightProof({ metadata, env = proces
       package_json_present: packageJsonPresent,
       version_file_present: versionPresent,
       required_tool_results: required,
+      env_presence: summarizeFedoraEnvPresence(env),
+      env_policy: 'Fedora env preflight reports optional real-data keys with secret redaction but does not require them for generic rehearsal.',
       block_reasons: blockReasons,
       proof_scope: 'Fedora/Linux rehearsal readiness only.',
       non_claims: FEDORA_NON_CLAIMS,
@@ -83,10 +85,9 @@ export async function buildLinuxFedoraEnvPreflightProof({ metadata, env = proces
 export async function buildLinuxFedoraToolCheckerProof({ metadata, env = process.env } = {}) {
   const target = detectFedoraLinuxTarget({ env });
   const required = [];
-  for (const tool of REQUIRED_FEDORA_TOOLS) required.push(await checkCommandTool(tool));
-  const optional = [];
-  for (const tool of OPTIONAL_FEDORA_MEDIA_TOOLS) optional.push(await checkCommandTool(tool));
-  const missingRequired = required.filter((tool) => !tool.available).map((tool) => tool.name);
+  for (const tool of FEDORA_EXTENDED_TOOL_SET) required.push(await checkFedoraExtendedTool(tool));
+  const optional = required.filter((tool) => !tool.required);
+  const missingRequired = required.filter((tool) => tool.required && !tool.available).map((tool) => tool.name);
   const proofStatus = target.linux_like && missingRequired.length === 0 ? 'PASSED' : 'BLOCKED';
   return createProofEnvelope({
     proofKind: 'linux_fedora_tool_checker',
@@ -97,8 +98,8 @@ export async function buildLinuxFedoraToolCheckerProof({ metadata, env = process
     evidence: sanitizeEvidence({
       environment: getProofEnvironment(),
       target_detection: target,
-      required_tool_results: required,
-      optional_media_tool_results: optional,
+      tool_results: required,
+      optional_tool_results: optional,
       missing_required_tools: missingRequired,
       media_tool_policy: 'Optional media tools improve rehearsal coverage, but do not convert Fedora into Raspberry display proof.',
       non_claims: FEDORA_NON_CLAIMS,
@@ -215,11 +216,15 @@ export async function buildLinuxFedoraWorkerSingletonPackProof({ metadata, env =
 }
 
 export const FEDORA_READINESS_GATES = Object.freeze([
+  { id: 'fedora_executable_permissions', title: 'Fedora/Linux executable permissions parity', proofKinds: ['linux_fedora_executable_permissions'], raspberryOnly: false },
   { id: 'fedora_env', title: 'Fedora/Linux env preflight', proofKinds: ['linux_fedora_env_preflight'], raspberryOnly: false },
   { id: 'fedora_tools', title: 'Fedora/Linux required tools', proofKinds: ['linux_fedora_tool_checker'], raspberryOnly: false },
   { id: 'fedora_cron', title: 'Fedora/Linux scheduler rehearsal rows', proofKinds: ['linux_fedora_cron_preflight'], raspberryOnly: false },
   { id: 'fedora_worker_singletons', title: 'Three worker singleton rehearsal', proofKinds: ['linux_fedora_worker_singleton_pack'], raspberryOnly: false },
+  { id: 'fedora_icloudpd_preflight', title: 'Fedora iCloudPD preflight', proofKinds: ['linux_fedora_icloudpd_preflight'], raspberryOnly: false },
+  { id: 'fedora_worker_command_inventory', title: 'Fedora worker command inventory', proofKinds: ['linux_fedora_worker_command_inventory'], raspberryOnly: false },
   { id: 'fedora_product_pipeline', title: 'Fedora product-pipeline rehearsal', proofKinds: ['linux_fedora_product_pipeline_rehearsal'], raspberryOnly: false },
+  { id: 'fedora_artifact_export', title: 'Fedora proof artifact export', proofKinds: ['linux_fedora_export_proof_artifacts'], raspberryOnly: false },
   { id: 'raspberry_native_playback', title: 'Raspberry native image/video playback', proofKinds: ['raspberry_native_image_playback', 'raspberry_native_video_playback'], raspberryOnly: true },
   { id: 'raspberry_display_overlay', title: 'Raspberry/device address overlay', proofKinds: ['raspberry_address_overlay_device_display'], raspberryOnly: true },
   { id: 'raspberry_v1_release_gate', title: 'Raspberry v1 readiness remains final gate', proofKinds: ['raspberry_v1_readiness'], raspberryOnly: true },
@@ -324,4 +329,144 @@ export async function buildLinuxFedoraReadinessProof({ metadata, env = process.e
     }),
     knownLimitations: ['Readiness is limited to Fedora/Linux rehearsal gates and intentionally leaves Raspberry-only gates separate.'],
   });
+}
+
+export const FEDORA_EXECUTABLE_PERMISSION_FILES = Object.freeze([
+  'start_raspberry_full.sh',
+  'start_scripts/start_raspberry_full.sh',
+  'tools/run-linux-fedora-env-preflight.mjs',
+  'tools/run-linux-fedora-tool-checker-proof.mjs',
+  'tools/run-linux-fedora-cron-preflight.mjs',
+  'tools/run-linux-fedora-worker-singleton-pack-proof.mjs',
+  'tools/run-linux-fedora-product-pipeline-rehearsal-proof.mjs',
+  'tools/run-linux-fedora-readiness-proof.mjs',
+]);
+
+export const FEDORA_ENV_KEYS = Object.freeze([
+  { key: 'PF_LINUX_FEDORA_ASSUME_TARGET', required: false, kind: 'proof_override', description: 'Explicit Fedora/Linux rehearsal override for non-Fedora hosts.' },
+  { key: 'user', required: false, kind: 'account_identifier', description: 'iCloudPD account; optional for generic Fedora preflight.' },
+  { key: 'pw', required: false, kind: 'secret', description: 'iCloudPD password/app password; optional and redacted.' },
+  { key: 'ICLOUDPD_COOKIE_DIR', required: false, kind: 'path', description: 'iCloudPD cookie/session directory.' },
+  { key: 'GEOCODE_PROVIDER', required: false, kind: 'provider', description: 'Optional geocode provider selector.' },
+]);
+
+function redactPresenceValue(key, value) {
+  if (value === undefined || value === null || String(value).trim() === '') return null;
+  if (/pw|pass|secret|token|key/i.test(key)) return '[REDACTED]';
+  if (/user/i.test(key) && String(value).includes('@')) return '[REDACTED_ACCOUNT]';
+  return '[SET]';
+}
+
+export async function inspectFedoraExecutablePermissions({ repoRoot = process.cwd(), repair = false, files = FEDORA_EXECUTABLE_PERMISSION_FILES } = {}) {
+  const { stat, chmod } = await import('node:fs/promises');
+  const { join } = await import('node:path');
+  const rows = [];
+  for (const relativePath of files) {
+    const absolutePath = join(repoRoot, relativePath);
+    const row = { relative_path: relativePath, exists: false, before_mode_octal: null, after_mode_octal: null, executable_before: false, executable_after: false, repaired: false, error: null };
+    try {
+      const before = await stat(absolutePath);
+      row.exists = before.isFile();
+      row.before_mode_octal = `0${(before.mode & 0o777).toString(8)}`;
+      row.executable_before = row.exists && Boolean(before.mode & 0o111);
+      if (row.exists && repair && !row.executable_before && process.platform !== 'win32') {
+        await chmod(absolutePath, (before.mode & 0o777) | 0o755);
+        row.repaired = true;
+      }
+      const after = await stat(absolutePath);
+      row.after_mode_octal = `0${(after.mode & 0o777).toString(8)}`;
+      row.executable_after = after.isFile() && Boolean(after.mode & 0o111);
+    } catch (error) {
+      row.error = error instanceof Error ? error.message : String(error);
+    }
+    rows.push(row);
+  }
+  return rows;
+}
+
+export function evaluateFedoraExecutablePermissionRows(rows) {
+  const missing = rows.filter((row) => !row.exists).map((row) => row.relative_path);
+  const notExecutable = rows.filter((row) => row.exists && !row.executable_after).map((row) => row.relative_path);
+  const blockReasons = [];
+  if (missing.length) blockReasons.push(`missing Fedora executable-boundary files: ${missing.join(', ')}`);
+  if (notExecutable.length) blockReasons.push(`files are not executable after repair/check: ${notExecutable.join(', ')}`);
+  return { proofStatus: blockReasons.length ? 'BLOCKED' : 'PASSED', missing, notExecutable, blockReasons };
+}
+
+export async function buildLinuxFedoraExecutablePermissionsProof({ metadata, env = process.env, repoRoot = process.cwd(), repair = false } = {}) {
+  const target = detectFedoraLinuxTarget({ env });
+  const inspected = await inspectFedoraExecutablePermissions({ repoRoot, repair });
+  const evaluation = evaluateFedoraExecutablePermissionRows(inspected);
+  const proofStatus = target.linux_like ? evaluation.proofStatus : 'BLOCKED';
+  if (!target.linux_like) evaluation.blockReasons.push('current machine is not Linux/Fedora-like; cannot prove Fedora executable parity');
+  return createProofEnvelope({
+    proofKind: 'linux_fedora_executable_permissions',
+    baselineVersion: metadata.version,
+    gitCommit: metadata.gitCommit,
+    proofStatus,
+    runtimeMode: repair ? 'linux_fedora_executable_permissions_repair' : 'linux_fedora_executable_permissions_check',
+    evidence: sanitizeEvidence({ environment: getProofEnvironment(), target_detection: target, repo_root: repoRoot, repair_requested: repair, executable_files: inspected, evaluation, non_claims: FEDORA_NON_CLAIMS }),
+    knownLimitations: ['Fedora executable permission parity does not prove Raspberry playback or display behavior.'],
+  });
+}
+
+export function summarizeFedoraEnvPresence(env = process.env) {
+  return FEDORA_ENV_KEYS.map((entry) => ({ ...entry, present: typeof env[entry.key] === 'string' && env[entry.key].trim().length > 0, redacted_value: redactPresenceValue(entry.key, env[entry.key]) }));
+}
+
+export const FEDORA_EXTENDED_TOOL_SET = Object.freeze([
+  ...REQUIRED_FEDORA_TOOLS,
+  { name: 'python3', args: ['--version'], purpose: 'Python helpers and iCloudPD module fallback' },
+  { name: 'crontab', args: ['-l'], purpose: 'Fedora/Linux cron rehearsal visibility', allowNoCrontab: true },
+  { name: 'bash', args: ['--version'], purpose: 'Linux shell launchers/proofs' },
+  { name: 'zip', args: ['--version'], purpose: 'proof artifact export bundles' },
+  ...OPTIONAL_FEDORA_MEDIA_TOOLS,
+  { name: 'icloudpd', args: ['--version'], purpose: 'iCloud Photos Downloader preflight; optional unless real iCloud proof is requested', optional: true },
+]);
+
+export async function checkFedoraExtendedTool(tool) {
+  const result = await runCommand(tool.name, tool.args, { timeoutMs: 8000, detached: false });
+  const available = result.exitCode === 0 || (tool.allowNoCrontab && /no crontab/i.test(result.stderr || ''));
+  return { name: tool.name, purpose: tool.purpose, args: tool.args, required: !tool.optional, available: available && !result.timedOut, exit_code: result.exitCode, timed_out: result.timedOut, version_excerpt: firstNonEmptyLines(result.stdout || result.stderr, 3) };
+}
+
+export async function buildLinuxFedoraIcloudpdPreflightProof({ metadata, env = process.env, commandRunner = runCommand, cwd = process.cwd() } = {}) {
+  const target = detectFedoraLinuxTarget({ env });
+  const config = summarizeConfigPresence(env);
+  const attempts = await runIcloudpdVersionCandidatesLocal({ commandRunner, cwd });
+  const missingConfig = config.filter((entry) => !entry.present).map((entry) => entry.key);
+  const usableAttempt = attempts.find((attempt) => attempt.usable) || null;
+  const blockReasons = [];
+  if (!target.linux_like) blockReasons.push('current machine is not Linux/Fedora-like');
+  if (!usableAttempt) blockReasons.push('no usable icloudpd command/version check was observed');
+  if (missingConfig.length) blockReasons.push(`missing optional-for-generic but required-for-real iCloud config keys: ${missingConfig.join(', ')}`);
+  const proofStatus = target.linux_like && usableAttempt && missingConfig.length === 0 ? 'PASSED' : 'BLOCKED';
+  return createProofEnvelope({ proofKind: 'linux_fedora_icloudpd_preflight', baselineVersion: metadata.version, gitCommit: metadata.gitCommit, proofStatus, runtimeMode: 'linux_fedora_icloudpd_preflight', evidence: sanitizeEvidence({ environment: getProofEnvironment(), target_detection: target, config_presence: config, version_attempts: attempts, evaluation: { proofStatus, blockReasons, missingConfig, usable_command: usableAttempt }, pass_criteria: 'PASSED only on Fedora/Linux-like target with required iCloudPD config present and a usable icloudpd version command.', non_claims: FEDORA_NON_CLAIMS.concat(['does not perform iCloud login', 'does not automate 2FA', 'does not download media']) }), knownLimitations: ['Checks iCloudPD availability/config only; real media download remains a separate proof.'] });
+}
+
+async function runIcloudpdVersionCandidatesLocal({ commandRunner = runCommand, cwd = process.cwd() } = {}) {
+  const candidates = [ { command: 'icloudpd', args: ['--version'] }, { command: 'python3', args: ['-m', 'icloudpd', '--version'] }, { command: 'python', args: ['-m', 'icloudpd', '--version'] } ];
+  const attempts = [];
+  for (const candidate of candidates) {
+    const result = await commandRunner(candidate.command, candidate.args, { cwd, timeoutMs: 15000, detached: false });
+    attempts.push({ command: candidate.command, args: candidate.args, exit_code: result.exitCode, timed_out: result.timedOut, stdout_tail: String(result.stdout ?? '').slice(-500), stderr_tail: String(result.stderr ?? '').slice(-500), usable: result.exitCode === 0 && !result.timedOut });
+    if (result.exitCode === 0 && !result.timedOut) break;
+  }
+  return attempts;
+}
+
+export const FEDORA_WORKER_COMMANDS = Object.freeze([
+  { lane: 'regular_stage_worker', npm_script: 'api', args: ['--', '--scheduler', 'regular-stage-worker'] },
+  { lane: 'playback_worker', npm_script: 'api', args: ['--', '--scheduler', 'playback-worker'] },
+  { lane: 'screen_on_off_worker', npm_script: 'api', args: ['--', '--scheduler', 'screen-on-off-worker'] },
+]);
+
+export async function buildLinuxFedoraWorkerCommandInventoryProof({ metadata, env = process.env, repoRoot = process.cwd() } = {}) {
+  const target = detectFedoraLinuxTarget({ env });
+  const { readFile } = await import('node:fs/promises');
+  const pkg = JSON.parse(await readFile('package.json', 'utf8'));
+  const rows = FEDORA_WORKER_COMMANDS.map((cmd) => ({ ...cmd, script_present: Boolean(pkg.scripts?.[cmd.npm_script]), command_preview: `npm run ${cmd.npm_script} ${cmd.args.join(' ')}` }));
+  const missing = rows.filter((row) => !row.script_present).map((row) => row.npm_script);
+  const proofStatus = target.linux_like && missing.length === 0 ? 'PASSED' : 'BLOCKED';
+  return createProofEnvelope({ proofKind: 'linux_fedora_worker_command_inventory', baselineVersion: metadata.version, gitCommit: metadata.gitCommit, proofStatus, runtimeMode: 'linux_fedora_worker_command_inventory', evidence: sanitizeEvidence({ environment: getProofEnvironment(), target_detection: target, repo_root: repoRoot, worker_commands: rows, missing_scripts: missing, pass_criteria: 'All three Fedora worker lane command mappings must reference an available npm script.', non_claims: FEDORA_NON_CLAIMS.concat(['does not run long-lived worker cron ticks']) }), knownLimitations: ['Inventory proves command visibility only; execution/timing remains covered by separate worker/scheduler proofs.'] });
 }

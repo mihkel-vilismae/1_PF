@@ -2452,3 +2452,10 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 - Added `--prepare` mode to repair executable permissions, create `.env`, and create/inspect the SQLite DB from `example.env` before worker startup checks on a fresh Raspberry extraction.
 - Added proof documentation and regression tests for the three-worker startup command sequence, off-target BLOCKED semantics, Raspberry PASS semantics, and Raspberry worker-failure FAILED semantics.
 - Preserved proof honesty: this slice does not claim cron timing, real regular worker product pipeline work, native display playback, dashboard status, reboot recovery, or physical power-loss recovery.
+
+## 0.8.81 - Fedora parity preflight proofs
+
+- Added Fedora executable-permission parity proof with optional `--repair`.
+- Expanded Fedora env/tool reporting toward Raspberry-style preflight parity.
+- Added Fedora iCloudPD preflight, worker command inventory, proof artifact export, and readiness-gate coverage.
+- Preserved Raspberry v1 proof boundary: Fedora remains rehearsal evidence, not Raspberry display/playback proof.

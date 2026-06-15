@@ -49,3 +49,14 @@ A Fedora proof implementation passes this OpenSpec when:
 ## Readiness behavior
 
 `proof:linux-fedora-readiness` reads the latest proof artifacts from `runtime_data/proofs`. It may pass only Fedora rehearsal gates. Raspberry-only gates are reported as `NOT_RASPBERRY_PROVEN` even when Fedora gates pass, so the Raspberry v1.0 release boundary remains intact.
+
+## Fedora parity proof expansion
+
+The Fedora rehearsal target also supports low-risk parity checks that mirror Raspberry proofs where no Raspberry hardware is required:
+
+- `proof:linux-fedora-executable-permissions -- --repair` checks/repairs POSIX executable bits for Linux shell/proof boundaries.
+- `proof:linux-fedora-icloudpd-preflight` checks iCloudPD command/config readiness without logging in or downloading media.
+- `proof:linux-fedora-worker-command-inventory` verifies the three worker lane command mappings remain visible.
+- `proof:linux-fedora-export-proof-artifacts` bundles current proof JSON artifacts for review.
+
+These commands improve Fedora confidence but still do not satisfy Raspberry-only gates.

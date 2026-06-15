@@ -398,3 +398,22 @@ The current v1 question-matrix decisions and derived roadmap live in:
 - `docs/40_backlog_and_tasks/raspberry_v1_plan_from_question_matrix.md`
 
 Unanswered matrix items are intentionally marked as open/defaulted. Do not treat them as confirmed v1 requirements until updated by the user.
+
+## Fedora/Linux rehearsal parity proofs
+
+When Raspberry hardware is unavailable, Fedora can run Linux rehearsal and parity checks:
+
+```bash
+npm run proof:linux-fedora-executable-permissions -- --repair
+npm run proof:linux-fedora-env-preflight
+npm run proof:linux-fedora-tool-checker
+npm run proof:linux-fedora-icloudpd-preflight
+npm run proof:linux-fedora-worker-command-inventory
+npm run proof:linux-fedora-cron-preflight
+npm run proof:linux-fedora-worker-singleton-pack
+npm run proof:linux-fedora-product-pipeline-rehearsal
+npm run proof:linux-fedora-export-proof-artifacts
+npm run proof:linux-fedora-readiness
+```
+
+Fedora proofs are Linux rehearsal evidence only. Final v1 still requires Raspberry-native playback, device display overlay, and Raspberry readiness proofs.

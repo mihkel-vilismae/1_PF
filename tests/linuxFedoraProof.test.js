@@ -38,3 +38,32 @@ test('Fedora readiness marks Raspberry-only gates as not Raspberry proven', () =
   assert.equal(gate.gate_status, 'NOT_RASPBERRY_PROVEN');
   assert.equal(gate.proofs[0].proof_status, 'NOT_RASPBERRY_PROVEN');
 });
+
+
+import { evaluateFedoraExecutablePermissionRows, summarizeFedoraEnvPresence, FEDORA_WORKER_COMMANDS, FEDORA_READINESS_GATES } from '../tools/linux-fedora-proof-lib.mjs';
+
+test('Fedora executable permission evaluation blocks missing or non-executable files', () => {
+  const evalResult = evaluateFedoraExecutablePermissionRows([
+    { relative_path: 'ok.sh', exists: true, executable_after: true },
+    { relative_path: 'missing.sh', exists: false, executable_after: false },
+    { relative_path: 'plain.mjs', exists: true, executable_after: false },
+  ]);
+  assert.equal(evalResult.proofStatus, 'BLOCKED');
+  assert.deepEqual(evalResult.missing, ['missing.sh']);
+  assert.deepEqual(evalResult.notExecutable, ['plain.mjs']);
+});
+
+test('Fedora env presence redacts secret/account-like values', () => {
+  const rows = summarizeFedoraEnvPresence({ user: 'person@example.com', pw: 'secret', ICLOUDPD_COOKIE_DIR: '/tmp/cookies' });
+  assert.equal(rows.find((row) => row.key === 'user').redacted_value, '[REDACTED_ACCOUNT]');
+  assert.equal(rows.find((row) => row.key === 'pw').redacted_value, '[REDACTED]');
+});
+
+test('Fedora readiness gates include parity proof kinds', () => {
+  const kinds = FEDORA_READINESS_GATES.flatMap((gate) => gate.proofKinds);
+  assert.ok(kinds.includes('linux_fedora_executable_permissions'));
+  assert.ok(kinds.includes('linux_fedora_icloudpd_preflight'));
+  assert.ok(kinds.includes('linux_fedora_worker_command_inventory'));
+  assert.ok(kinds.includes('linux_fedora_export_proof_artifacts'));
+  assert.equal(FEDORA_WORKER_COMMANDS.length, 3);
+});
