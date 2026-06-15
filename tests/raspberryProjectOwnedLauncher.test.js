@@ -5,6 +5,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, statSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import process from 'node:process';
 
 const rootWrapper = 'start_raspberry_full.sh';
 const launcher = 'start_scripts/start_raspberry_full.sh';
@@ -15,10 +17,20 @@ function read(path) {
   return readFileSync(path, 'utf8');
 }
 
+function gitIndexMarksExecutable(path) {
+  const output = execFileSync('git', ['ls-files', '-s', path], { encoding: 'utf8' }).trim();
+  return output.startsWith('100755 ');
+}
+
+function launcherExecutable(path) {
+  if (process.platform === 'win32') return gitIndexMarksExecutable(path);
+  return Boolean(statSync(path).mode & 0o111);
+}
+
 test('Raspberry launcher files and docs exist', () => {
   for (const path of [rootWrapper, launcher, openSpec, runbook]) assert.equal(existsSync(path), true, `${path} exists`);
-  assert.equal(Boolean(statSync(rootWrapper).mode & 0o111), true, 'root wrapper is executable');
-  assert.equal(Boolean(statSync(launcher).mode & 0o111), true, 'launcher script is executable');
+  assert.equal(launcherExecutable(rootWrapper), true, 'root wrapper is executable');
+  assert.equal(launcherExecutable(launcher), true, 'launcher script is executable');
 });
 
 test('root Raspberry launcher is a thin delegate', () => {
