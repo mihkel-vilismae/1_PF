@@ -26,3 +26,10 @@ npm run proof:raspberry-worker-startup-smoke -- --prepare
 ```
 
 If the env preflight reports missing keys, edit `.env` and rerun the preflight before retrying worker startup. The playback worker is expected to fail honestly when `DB_PATH` is missing.
+
+
+## Worker startup blocker interpretation
+
+`npm run proof:raspberry-worker-startup-smoke -- --prepare` first repairs executable bits, then runs env preflight, then prepares the SQLite database path from `DB_PATH`, then invokes all three scheduler workers. A startup-smoke `BLOCKED` result means setup evidence is missing or unsafe to continue. A Raspberry-target `FAILED` result means the proof attempted worker startup and observed a worker failure.
+
+The most common runtime blocker is a missing or invalid `DB_PATH`. Do not patch worker code to silently invent a production database path; fix `.env` and rerun the preflight instead.

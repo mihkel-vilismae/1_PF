@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
-import { evaluateWorkerStartupSmoke, parseRunnerStatus, resolveDatabasePathFromEnv, runWorkerStartupSmokeCommands, RASPBERRY_WORKER_STARTUP_LANES } from '../tools/raspberry-worker-startup-smoke-lib.mjs';
+import { buildWorkerStartupSmokeNextSteps, evaluateWorkerStartupSmoke, parseRunnerStatus, resolveDatabasePathFromEnv, runWorkerStartupSmokeCommands, RASPBERRY_WORKER_STARTUP_LANES } from '../tools/raspberry-worker-startup-smoke-lib.mjs';
 
 function result({ command = 'npm', args = [], exitCode = 0, stdout = '{"status":"PASSED"}', timedOut = false } = {}) {
   return { command, args, exitCode, signal: null, timedOut, durationMs: 1, stdout, stderr: '' };
@@ -86,4 +86,16 @@ test('startup smoke resolves DB_PATH from env before database preflight', async 
   } finally {
     await (await import('node:fs/promises')).rm(root, { recursive: true, force: true });
   }
+});
+
+
+test('startup smoke next steps call out env and DB_PATH blockers', () => {
+  const steps = buildWorkerStartupSmokeNextSteps({
+    proofStatus: 'BLOCKED',
+    blockReasons: ['preflight did not pass: env_preflight', 'preflight did not pass: database_preflight'],
+    failureReasons: ['worker did not start cleanly: playback_worker'],
+  });
+  assert.match(steps.join('\n'), /minimum runtime keys/);
+  assert.match(steps.join('\n'), /DB_PATH/);
+  assert.match(steps.join('\n'), /playback_worker/);
 });

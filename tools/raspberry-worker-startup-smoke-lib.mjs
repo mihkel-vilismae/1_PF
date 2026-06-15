@@ -148,6 +148,23 @@ export function evaluateWorkerStartupSmoke({ target, preflights, workers }) {
   return { proofStatus: 'PASSED', blockReasons, failureReasons };
 }
 
+
+export function buildWorkerStartupSmokeNextSteps(evaluation) {
+  if (evaluation.proofStatus === 'PASSED') return ['Run cron/app-running proof and native playback proof.'];
+  const steps = [];
+  if (evaluation.blockReasons.some((reason) => /env_preflight/.test(reason))) {
+    steps.push('Run npm run proof:raspberry-env-preflight -- --create, then edit .env until all minimum runtime keys are present.');
+  }
+  if (evaluation.blockReasons.some((reason) => /database_preflight/.test(reason))) {
+    steps.push('Confirm DB_PATH points to a writable SQLite path, then rerun npm run proof:raspberry-worker-startup-smoke -- --prepare.');
+  }
+  if (evaluation.failureReasons.some((reason) => /playback_worker/.test(reason))) {
+    steps.push('Check DB_PATH and playback runtime logs; playback_worker is expected to fail honestly when DB_PATH or runtime database setup is missing.');
+  }
+  steps.push('Fix blocked executable/env/database preflights or worker startup errors, then rerun this proof on Raspberry with --prepare if setup is fresh.');
+  return [...new Set(steps)];
+}
+
 export async function buildRaspberryWorkerStartupSmokeProof({ metadata, repoRoot = process.cwd(), env = process.env, prepare = false, commandRunner = runCommand } = {}) {
   const target = detectRaspberryTarget({ env });
   const { preflights, workers } = await runWorkerStartupSmokeCommands({ repoRoot, prepare, commandRunner });
@@ -169,9 +186,7 @@ export async function buildRaspberryWorkerStartupSmokeProof({ metadata, repoRoot
       workers,
       evaluation,
       pass_criteria: 'PASSED only on a non-override Raspberry-like target when executable/env/database preflights pass and all three scheduler worker commands exit cleanly.',
-      next_steps: evaluation.proofStatus === 'PASSED'
-        ? ['Run cron/app-running proof and native playback proof.']
-        : ['Fix blocked executable/env/database preflights or worker startup errors, then rerun this proof on Raspberry with --prepare if setup is fresh.'],
+      next_steps: buildWorkerStartupSmokeNextSteps(evaluation),
       non_claims: [
         'does not prove cron timing or crontab installation',
         'does not prove regular_stage_worker real product pipeline work',
