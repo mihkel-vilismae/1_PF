@@ -9,8 +9,9 @@
  * currently registered HTTP endpoints.
  */
 import { readFileSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import process from 'node:process';
+import { pathToFileURL } from 'node:url';
 
 const ROUTE_SOURCE_FILES = Object.freeze([
   'server/index.ts',
@@ -154,7 +155,12 @@ async function main() {
   throw new Error(`Unsupported format: ${format}`);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+function isDirectCliInvocation() {
+  if (!process.argv[1]) return false;
+  return pathToFileURL(resolve(process.argv[1])).href === import.meta.url;
+}
+
+if (isDirectCliInvocation()) {
   main().catch((error) => {
     console.error(error instanceof Error ? error.message : String(error));
     process.exit(1);
