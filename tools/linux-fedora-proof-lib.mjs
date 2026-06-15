@@ -420,7 +420,7 @@ export const FEDORA_EXTENDED_TOOL_SET = Object.freeze([
   { name: 'crontab', args: ['-l'], purpose: 'Fedora/Linux cron rehearsal visibility', allowNoCrontab: true, optional: true },
   { name: 'bash', args: ['--version'], purpose: 'Linux shell launchers/proofs' },
   { name: 'zip', args: ['--version'], purpose: 'proof artifact export bundles' },
-  ...OPTIONAL_FEDORA_MEDIA_TOOLS,
+  ...OPTIONAL_FEDORA_MEDIA_TOOLS.map((tool) => ({ ...tool, optional: true })),
   { name: 'icloudpd', args: ['--version'], purpose: 'iCloud Photos Downloader preflight; optional unless real iCloud proof is requested', optional: true },
 ]);
 

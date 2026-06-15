@@ -2464,3 +2464,8 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 
 - Repaired Fedora iCloudPD preflight to use Fedora-local config presence reporting.
 - Kept `crontab` as optional in the generic Fedora tool checker; dedicated cron readiness remains covered by `proof:linux-fedora-cron-preflight`.
+
+## 0.8.83 - Fedora tool parity optional media fix
+
+- Marked Fedora media/playback tools as optional in the generic tool checker.
+- Preserved separate playback/display proof boundaries; missing `mpv` does not block generic Fedora environment/tool readiness.
