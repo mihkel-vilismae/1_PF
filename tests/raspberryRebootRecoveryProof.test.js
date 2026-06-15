@@ -9,14 +9,16 @@ test('reboot recovery evaluation requires all pre/post reboot fields', () => {
 
 test('reboot recovery blocks off-target and fails incomplete target evidence', () => {
   const full = Object.fromEntries(['pre_reboot_marker_present','post_reboot_marker_present','boot_detected','cron_active_after_reboot','all_three_workers_resumed','app_running_status_passed_after_reboot','stale_locks_safe_after_reboot','playback_state_safe'].map((key) => [key, true]));
-  assert.equal(determineRebootRecoveryStatus({ target: { raspberry_like: false }, loadedEvidence: { load_error: null }, evaluation: full }).proofStatus, 'BLOCKED');
-  assert.equal(determineRebootRecoveryStatus({ target: { raspberry_like: true }, loadedEvidence: { load_error: null }, evaluation: { ...full, playback_state_safe: false } }).proofStatus, 'FAILED');
-  assert.equal(determineRebootRecoveryStatus({ target: { raspberry_like: true }, loadedEvidence: { load_error: null }, evaluation: full }).proofStatus, 'PASSED');
+  const incomplete = { ...full, playback_state_safe: false };
+  assert.equal(determineRebootRecoveryStatus({ target: { raspberry_like: false }, loadedEvidence: { load_error: null, data: full }, evaluation: full }).proofStatus, 'BLOCKED');
+  assert.equal(determineRebootRecoveryStatus({ target: { raspberry_like: true }, loadedEvidence: { load_error: null, data: incomplete }, evaluation: incomplete }).proofStatus, 'FAILED');
+  assert.equal(determineRebootRecoveryStatus({ target: { raspberry_like: true }, loadedEvidence: { load_error: null, data: full }, evaluation: full }).proofStatus, 'PASSED');
 });
 
 test('reboot recovery proof preserves no automatic reboot and no power-loss claims', () => {
   const envelope = buildRaspberryRebootRecoveryProof({ metadata: { version: '0.8.47', gitCommit: 'test' }, env: {}, evidence: {} });
   assert.equal(envelope.proof_status, 'BLOCKED');
+  assert.match(envelope.evidence.status_reasons.blockReasons.join('\n'), /no reboot recovery evidence supplied/);
   assert.match(envelope.evidence.non_claims.join('\n'), /does not reboot/);
   assert.match(envelope.evidence.non_claims.join('\n'), /power-loss/);
 });
