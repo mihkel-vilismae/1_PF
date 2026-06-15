@@ -45,6 +45,16 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Live Windows scheduler wrapper | `npm run proof:live-windows-scheduler:windows` | Windows launcher wrapper |
 | Generated fixture validation | `npm run proof:verify-generated-test-data` | deterministic fixture validation |
 | Windows reboot/restart recovery preflight | `npm run proof:windows-reboot-recovery-preflight` | safe preflight, no reboot |
+| Fedora executable-permission repair | `npm run proof:linux-fedora-executable-permissions` | Fedora/Linux target permission repair |
+| Fedora env preflight | `npm run proof:linux-fedora-env-preflight` | Fedora/Linux target `.env` preflight |
+| Fedora tool checker | `npm run proof:linux-fedora-tool-checker` | Fedora/Linux target readiness preflight |
+| Fedora iCloudPD preflight | `npm run proof:linux-fedora-icloudpd-preflight` | Fedora/Linux iCloudPD discovery preflight |
+| Fedora worker command inventory | `npm run proof:linux-fedora-worker-command-inventory` | Fedora/Linux worker command inventory |
+| Fedora cron preflight | `npm run proof:linux-fedora-cron-preflight` | Fedora/Linux cron readiness preflight |
+| Fedora worker singleton pack | `npm run proof:linux-fedora-worker-singleton-pack` | Fedora/Linux worker singleton proof pack |
+| Fedora product pipeline rehearsal | `npm run proof:linux-fedora-product-pipeline-rehearsal` | Fedora/Linux product pipeline rehearsal |
+| Fedora export proof artifacts | `npm run proof:linux-fedora-export-proof-artifacts` | Fedora/Linux proof artifact export |
+| Fedora readiness | `npm run proof:linux-fedora-readiness` | Fedora/Linux readiness summary |
 | Raspberry recovery evidence collector | `npm run proof:raspberry-recovery` | hardware/operator collector; not current Raspberry proof |
 | Raspberry tool checker | `npm run proof:raspberry-tool-checker` | Raspberry target readiness preflight |
 | Raspberry generated fixture validation | `npm run proof:raspberry-generated-fixtures` | Raspberry target fixture validation |
