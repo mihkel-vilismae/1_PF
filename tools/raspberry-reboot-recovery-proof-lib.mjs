@@ -25,12 +25,20 @@ export function evaluateRebootRecoveryEvidence(loadedEvidence) {
   };
 }
 
+function hasRebootRecoveryEvidencePayload(loadedEvidence) {
+  return Boolean(loadedEvidence?.data && Object.keys(loadedEvidence.data).length > 0);
+}
+
 export function determineRebootRecoveryStatus({ target, loadedEvidence, evaluation }) {
   const blockReasons = [];
   const failedReasons = [];
+  const hasEvidencePayload = hasRebootRecoveryEvidencePayload(loadedEvidence);
   if (!target.raspberry_like) blockReasons.push('current machine is not detected as Raspberry OS / Linux ARM target');
   if (loadedEvidence.load_error) blockReasons.push(loadedEvidence.load_error);
-  for (const [key, value] of Object.entries(evaluation)) if (!value) failedReasons.push(`missing reboot recovery evidence: ${key}`);
+  if (!hasEvidencePayload) blockReasons.push('no reboot recovery evidence supplied');
+  if (hasEvidencePayload) {
+    for (const [key, value] of Object.entries(evaluation)) if (!value) failedReasons.push(`missing reboot recovery evidence: ${key}`);
+  }
   if (blockReasons.length) return { proofStatus: 'BLOCKED', blockReasons, failedReasons };
   if (failedReasons.length) return { proofStatus: 'FAILED', blockReasons, failedReasons };
   return { proofStatus: 'PASSED', blockReasons, failedReasons };
