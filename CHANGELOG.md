@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.86 - 2026-06-15
+
+- Update `tools/unzipper/unzip_latest_photoframe.sh` to hardcode `/home/mihkel/Download_chrome/Photoframe_proofing/.env` as the custom variables source.
+- Copy that file into the extracted repository root as `.env` before publishing the target folder and before archiving the ZIP.
+- Document the custom variables copy behavior and add static proof coverage for the unzipper contract.
+
 ## 0.8.84 - Correct Fedora parity package version root
 
 - Bumped package metadata to 0.8.84 after the v0.8.83 Fedora parity proof package was extracted from a root folder still named v0.8.80.

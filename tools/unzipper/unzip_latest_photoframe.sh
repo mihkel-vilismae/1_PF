@@ -35,6 +35,7 @@ from pathlib import Path, PurePosixPath
 DEFAULT_DOWNLOAD_DIR = Path("/home/mihkel/Download_chrome")
 DEFAULT_TARGET_BASE = Path("/home/mihkel/Download_chrome/Photoframe_proofing")
 DEFAULT_ARCHIVE_DIR = Path("/home/mihkel/Download_chrome/zip_repo_archive")
+CUSTOM_VARIABLES_LOCATION = Path("/home/mihkel/Download_chrome/Photoframe_proofing/.env")
 
 FILENAME_RE = re.compile(
     r"^(?P<project>PF[^/]*)--(?P<version>v\d+(?:\.\d+)+)(?:--.*)?\.zip$",
@@ -243,6 +244,7 @@ def extract(parsed: ParsedZip, paths: PlannedPaths, target_base: Path, dry_run: 
         print("suffix: none")
     print(f"target: {paths.target_path}")
     print(f"archive target: {paths.archive_path}")
+    print(f"custom variables location: {CUSTOM_VARIABLES_LOCATION}")
 
     ensure_inside(target_base, paths.target_path)
     ensure_inside(target_base, staging_path)
@@ -280,6 +282,8 @@ def extract(parsed: ParsedZip, paths: PlannedPaths, target_base: Path, dry_run: 
             if not repo_marker_found(staging_path):
                 die("extracted files do not look like a repository root; expected package.json, VERSION, README.md, or .git")
 
+            copy_custom_variables_file(staging_path, display_repo_folder=paths.target_path)
+
             if replace and paths.target_path.exists():
                 archive_old_folder = target_base / f"{paths.folder_base_name}_superseded_{time.strftime('%Y%m%d_%H%M%S')}"
                 ensure_inside(target_base, archive_old_folder)
@@ -296,6 +300,21 @@ def extract(parsed: ParsedZip, paths: PlannedPaths, target_base: Path, dry_run: 
             shutil.rmtree(staging_path, ignore_errors=True)
             raise
 
+
+
+def copy_custom_variables_file(repo_folder: Path, source_path: Path = CUSTOM_VARIABLES_LOCATION, display_repo_folder: Path | None = None) -> Path:
+    source = source_path.expanduser().resolve()
+    if not source.exists():
+        die(f"custom variables file missing: {source}")
+    if not source.is_file():
+        die(f"custom variables path is not a file: {source}")
+
+    target = repo_folder / ".env"
+    ensure_inside(repo_folder, target)
+    shutil.copy2(source, target)
+    display_target = (display_repo_folder / ".env") if display_repo_folder is not None else target
+    print(f"copied custom variables: {source} -> {display_target}")
+    return target
 
 def archive_zip(zip_path: Path, archive_path: Path) -> Path:
     archive_path = archive_path.expanduser().resolve()
