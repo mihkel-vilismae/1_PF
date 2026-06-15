@@ -5,6 +5,7 @@ import {
   evaluateCronRows,
   evaluateWorkerEvidence,
   determineCronWorkerRuntimeStatus,
+  buildCronWorkerRuntimeNextSteps,
 } from '../tools/raspberry-cron-worker-runtime-proof-lib.mjs';
 
 test('cron worker proof defines the three required worker lanes and cadences', () => {
@@ -41,4 +42,17 @@ test('status blocks off-target or without operator evidence and passes complete 
   assert.equal(determineCronWorkerRuntimeStatus({ target: { raspberry_like: false }, cronAvailable: true, cronRows: presentRows, workerEvidence: completeEvidence, operatorEvidence: { load_error: null } }).proofStatus, 'BLOCKED');
   assert.equal(determineCronWorkerRuntimeStatus({ target: { raspberry_like: true }, cronAvailable: true, cronRows: presentRows, workerEvidence: completeEvidence, operatorEvidence: { load_error: 'missing file' } }).proofStatus, 'BLOCKED');
   assert.equal(determineCronWorkerRuntimeStatus({ target: { raspberry_like: true }, cronAvailable: true, cronRows: presentRows, workerEvidence: completeEvidence, operatorEvidence: { load_error: null } }).proofStatus, 'PASSED');
+});
+
+
+test('cron worker runtime next steps name missing worker evidence requirements', () => {
+  const steps = buildCronWorkerRuntimeNextSteps({
+    proofStatus: 'FAILED',
+    blockReasons: [],
+    missingRows: [],
+    incompleteEvidence: ['playback_worker'],
+  });
+  assert.match(steps.join('\n'), /playback_worker/);
+  assert.match(steps.join('\n'), /duplicate-skip/);
+  assert.match(steps.join('\n'), /stale-lock/);
 });

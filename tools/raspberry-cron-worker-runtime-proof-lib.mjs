@@ -71,6 +71,21 @@ export function determineCronWorkerRuntimeStatus({ target, cronAvailable, cronRo
   return { proofStatus: 'PASSED', blockReasons, failedReasons, missingRows, incompleteEvidence };
 }
 
+
+export function buildCronWorkerRuntimeNextSteps(status) {
+  if (status.proofStatus === 'PASSED') return ['Run npm run proof:raspberry-app-running-status and npm run proof:raspberry-v1-readiness.'];
+  const steps = [];
+  if (status.missingRows?.length) steps.push(`Install or repair managed cron rows for: ${status.missingRows.join(', ')}.`);
+  if (status.blockReasons?.some((reason) => /PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE/.test(reason))) {
+    steps.push('Run npm run proof:raspberry-worker-evidence, then export the generated PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE path before rerunning cron runtime proof.');
+  }
+  if (status.incompleteEvidence?.length) {
+    steps.push(`Complete worker evidence for: ${status.incompleteEvidence.join(', ')}; each lane needs invocation, duplicate-skip, cross-worker independence, and stale-lock reclaim evidence.`);
+  }
+  if (!steps.length) steps.push('Run on Raspberry with managed cron installed and complete operator evidence for all three worker lanes.');
+  return steps;
+}
+
 export async function readSystemCrontab() {
   const result = await runCommand('crontab', ['-l'], { timeoutMs: 10000, detached: false, sanitize: false });
   return { available: result.exitCode === 0, result, rows: parseCrontabRows(result.stdout) };
@@ -97,6 +112,7 @@ export async function buildRaspberryCronWorkerRuntimeProof({ metadata, env = pro
       operator_evidence: { source: loadedEvidence.source, load_error: loadedEvidence.load_error },
       worker_evidence: workerEvidence,
       status_reasons: status,
+      next_steps: buildCronWorkerRuntimeNextSteps(status),
       pass_criteria: 'PASSED only when target is Raspberry-like, managed cron rows exist for all three lanes, and operator evidence proves invocation, same-worker singleton duplicate-skip, cross-worker independence, and stale-lock reclaim for every lane.',
       non_claims: ['does not install cron', 'does not reboot the Raspberry', 'does not perform physical power-loss recovery', 'does not prove monitor pixels', 'does not prove production iCloud continuation'],
     }),
