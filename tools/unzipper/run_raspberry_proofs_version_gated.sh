@@ -188,7 +188,7 @@ FOLDER_VERSION="$(extract_folder_version "$FOLDER_NAME" 2>/dev/null)"
 FOLDER_VERSION="$(normalize_version "$FOLDER_VERSION")"
 
 if [ -z "$FOLDER_VERSION" ]; then
-  create_failure_archive_and_exit "repo folder name does not contain a version like v0.8.84"
+  create_failure_archive_and_exit "repo folder name does not contain a version like v0.8.9"
 fi
 
 say "Version sources:"

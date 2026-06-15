@@ -11,7 +11,7 @@ This script runs the Raspberry proof command sequence from a PF_login repository
 Run from the extracted repository root, for example:
 
 ```bash
-cd /home/mihkel/Download_chrome/Photoframe_proofing/PF_login_v0.8.84
+cd /home/mihkel/Download_chrome/Photoframe_proofing/PF_login_v0.8.9
 ./tools/unzipper/run_raspberry_proofs_version_gated.sh
 ```
 
@@ -21,9 +21,9 @@ Before any proof command runs, the script compares three version sources:
 
 | Source | Example |
 |---|---|
-| `VERSION` file | `0.8.84` |
-| `package.json` `version` | `0.8.84` |
-| Repository folder name | `PF_login_v0.8.84` |
+| `VERSION` file | `0.8.9` |
+| `package.json` `version` | `0.8.9` |
+| Repository folder name | `PF_login_v0.8.9` |
 
 If any version is missing or mismatched, the script stops immediately, writes a `VERSION_CHECK_FAILED_*` proof folder, zips that folder, and opens the proof log location when possible.
 
