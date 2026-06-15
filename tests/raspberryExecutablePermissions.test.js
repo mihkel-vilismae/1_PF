@@ -15,7 +15,7 @@ test('executable permission proof repairs known files when requested', async () 
     await chmod(absolute, 0o644);
     let before = await stat(absolute);
     assert.equal(isExecutableMode(before.mode), false);
-    const rows = await inspectRaspberryExecutablePermissions({ repoRoot: root, files: [rel], repair: true });
+    const rows = await inspectRaspberryExecutablePermissions({ repoRoot: root, files: [rel], repair: true, platform: 'linux' });
     assert.equal(rows[0].repaired, true);
     assert.equal(rows[0].executable_after, true);
     assert.equal(evaluateExecutablePermissionRows(rows).proofStatus, 'PASSED');

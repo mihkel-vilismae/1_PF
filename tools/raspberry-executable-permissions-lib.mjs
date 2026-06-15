@@ -17,7 +17,7 @@ export function isExecutableMode(mode) {
   return Boolean(mode & 0o111);
 }
 
-async function inspectExecutableFile({ repoRoot, relativePath, repair }) {
+async function inspectExecutableFile({ repoRoot, relativePath, repair, platform = process.platform }) {
   const absolutePath = join(repoRoot, relativePath);
   const entry = {
     relative_path: relativePath,
@@ -34,7 +34,7 @@ async function inspectExecutableFile({ repoRoot, relativePath, repair }) {
     entry.exists = before.isFile();
     entry.before_mode_octal = `0${(before.mode & 0o777).toString(8)}`;
     entry.executable_before = entry.exists && isExecutableMode(before.mode);
-    if (entry.exists && repair && !entry.executable_before && process.platform !== 'win32') {
+    if (entry.exists && repair && !entry.executable_before && platform !== 'win32') {
       await chmod(absolutePath, (before.mode & 0o777) | 0o755);
       entry.repaired = true;
     }
@@ -47,9 +47,9 @@ async function inspectExecutableFile({ repoRoot, relativePath, repair }) {
   return entry;
 }
 
-export async function inspectRaspberryExecutablePermissions({ repoRoot = process.cwd(), repair = false, files = RASPBERRY_EXECUTABLE_PERMISSION_FILES } = {}) {
+export async function inspectRaspberryExecutablePermissions({ repoRoot = process.cwd(), repair = false, files = RASPBERRY_EXECUTABLE_PERMISSION_FILES, platform = process.platform } = {}) {
   const inspected = [];
-  for (const relativePath of files) inspected.push(await inspectExecutableFile({ repoRoot, relativePath, repair }));
+  for (const relativePath of files) inspected.push(await inspectExecutableFile({ repoRoot, relativePath, repair, platform }));
   return inspected;
 }
 
