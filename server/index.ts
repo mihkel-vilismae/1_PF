@@ -3286,6 +3286,9 @@ async function resolveWindowsCronEmulatorOperation({
   const rawCrontab = await readTextIfExists(cronEmulatorDefaultCrontabPath);
   const messages = [
     buildCronEmulatorOperationMessage(operation),
+    context.platform !== 'win32' && crontabFileOnlyOperation
+      ? 'CronEmulator crontab file read/write is host-neutral; running the emulator process remains Windows-only.'
+      : null,
     operation === schedulerEmulatorOperations.installCrontab
       ? 'CronEmulator crontab file was written from the submitted textarea content.'
       : null,
