@@ -93,7 +93,7 @@ export async function buildRaspberryAppRunningPassHarnessProof({ metadata, env =
   const evidence = generatedEvidence ?? (shouldRunHarness ? await runProofOwnedWorkerHarness({ repoRoot, env }) : { generated_at: new Date().toISOString(), source: 'not-run-off-target', worker_lanes: [] });
   const evidenceFile = await writeWorkerEvidenceFile(evidence);
   const chainEnv = { ...env, PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE: evidenceFile };
-  const cronProof = await buildRaspberryCronWorkerRuntimeProof({ metadata, env: chainEnv, currentCrontab: crontab.rows.join('\n') });
+  const cronProof = await buildRaspberryCronWorkerRuntimeProof({ metadata, env: chainEnv, currentCrontab: crontab.rows.join('\n'), operatorEvidence: evidence });
   const appStatusProof = await buildRaspberryAppRunningStatusProof({ metadata, env: chainEnv, currentCrontab: crontab.rows.join('\n'), cronEnvelope: cronProof });
   const status = determineAppRunningPassStatus({ target, generatedEvidence: evidence, cronProof, appStatusProof });
   return createProofEnvelope({
