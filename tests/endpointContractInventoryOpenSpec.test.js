@@ -54,6 +54,15 @@ test('OpenSpec lists every discovered route key', () => {
   assert.match(result.stdout, /"status": "PASSED"/);
 });
 
+test('endpoint inventory helper emits structured JSON when run as a direct CLI', () => {
+  const result = spawnSync('node', ['tools/collect-endpoint-contract-inventory.mjs', '--format', 'json'], {
+    encoding: 'utf8',
+  });
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.match(result.stdout, /"endpoint_count"/);
+  assert.match(result.stdout, /"endpoints"/);
+});
+
 test('endpoint OpenSpec preserves architecture and proof-honesty boundaries', () => {
   const text = read(openSpecPath);
   assert.match(text, /same-origin API server/);
