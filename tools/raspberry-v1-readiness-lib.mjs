@@ -207,6 +207,41 @@ export function evaluateRaspberryV1Readiness({ latestByKind = {} } = {}) {
   };
 }
 
+
+export const RASPBERRY_V1_PROOF_COMMANDS = Object.freeze({
+  raspberry_tool_checker: 'npm run proof:raspberry-tool-checker',
+  raspberry_generated_fixture_validation: 'npm run proof:raspberry-generated-fixtures',
+  raspberry_executable_permissions: 'npm run proof:raspberry-executable-permissions -- --repair',
+  raspberry_env_preflight: 'npm run proof:raspberry-env-preflight -- --create',
+  real_icloudpd_pipeline: 'npm run proof:real-icloudpd',
+  real_download_continuation: 'npm run proof:real-download-continuation',
+  real_geocode_provider_chain: 'npm run proof:real-geocode-provider-chain',
+  raspberry_regular_stage_worker_product_pipeline: 'npm run proof:raspberry-regular-stage-worker-product-pipeline',
+  raspberry_native_image_playback: 'npm run proof:raspberry-native-image-playback',
+  raspberry_native_video_playback: 'npm run proof:raspberry-native-video-playback',
+  raspberry_address_overlay_device_display: 'npm run proof:raspberry-address-overlay-device-display',
+  raspberry_worker_startup_smoke: 'npm run proof:raspberry-worker-startup-smoke -- --prepare',
+  raspberry_cron_preflight: 'npm run proof:raspberry-cron-preflight',
+  raspberry_worker_evidence_generator: 'npm run proof:raspberry-worker-evidence',
+  raspberry_cron_worker_runtime: 'npm run proof:raspberry-cron-worker-runtime',
+  raspberry_app_running_status: 'npm run proof:raspberry-app-running-status',
+  raspberry_app_running_chain: 'npm run proof:raspberry-app-running-chain',
+  raspberry_app_running_pass_harness: 'npm run proof:raspberry-app-running-pass',
+  raspberry_dashboard_status_view: 'planned proof command not implemented yet',
+  raspberry_screen_worker_non_blocking: 'planned proof command not implemented yet',
+  raspberry_v1_docs_reconciliation: 'planned proof command not implemented yet',
+});
+
+export function buildReadinessGapReport(readiness) {
+  return readiness.gates.filter((gate) => gate.required_for_v1 && gate.gate_status !== 'PASSED').map((gate) => ({
+    gate_id: gate.id,
+    title: gate.title,
+    gate_status: gate.gate_status,
+    blocking_proofs: gate.blocking_proofs,
+    next_commands: gate.blocking_proofs.map((proofKind) => ({ proof_kind: proofKind, command: RASPBERRY_V1_PROOF_COMMANDS[proofKind] ?? 'no command mapped' })),
+  }));
+}
+
 export async function buildRaspberryV1ReadinessProof({ metadata, repoRoot = process.cwd() } = {}) {
   const artifactIndex = await collectLatestProofArtifacts({ repoRoot });
   const readiness = evaluateRaspberryV1Readiness({ latestByKind: artifactIndex.latestByKind });
@@ -223,6 +258,7 @@ export async function buildRaspberryV1ReadinessProof({ metadata, repoRoot = proc
       release_gates: readiness.gates,
       summary: readiness.summary,
       blocking_gate_ids: readiness.blocking_gate_ids,
+      readiness_gap_report: buildReadinessGapReport(readiness),
       latest_proof_artifact_index: {
         proof_dir: artifactIndex.proofDir,
         files_read: artifactIndex.filesRead,
@@ -232,7 +268,7 @@ export async function buildRaspberryV1ReadinessProof({ metadata, repoRoot = proc
       non_v1_blockers: ['manual reboot recovery', 'physical power-loss recovery', 'Windows release target'],
       next_steps: readiness.proofStatus === 'PASSED'
         ? ['Package v1.0 release candidate evidence.']
-        : readiness.blocking_gate_ids,
+        : buildReadinessGapReport(readiness).flatMap((gap) => gap.next_commands.map((entry) => entry.command)),
       non_claims: [
         'does not run missing proof commands by itself',
         'does not prove real iCloud/GPS/geocode without corresponding proof artifacts',

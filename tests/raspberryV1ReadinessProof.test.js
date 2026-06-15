@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { collectLatestProofArtifacts, evaluateRaspberryV1Readiness, RASPBERRY_V1_RELEASE_GATES } from '../tools/raspberry-v1-readiness-lib.mjs';
+import { buildReadinessGapReport, collectLatestProofArtifacts, evaluateRaspberryV1Readiness, RASPBERRY_V1_RELEASE_GATES } from '../tools/raspberry-v1-readiness-lib.mjs';
 
 function passArtifact(kind, timestamp = '2026-06-14T00:00:00.000Z') {
   return { proof_kind: kind, proof_status: 'PASSED', proof_timestamp: timestamp, runtime_mode: 'test' };
@@ -44,4 +44,15 @@ test('latest proof artifact collector keeps newest artifact per proof kind', asy
   } finally {
     await rm(root, { recursive: true, force: true });
   }
+});
+
+
+test('readiness gap report maps blocked required proofs to next commands', () => {
+  const latestByKind = latestPassedIndexForRequiredGates();
+  delete latestByKind.raspberry_env_preflight;
+  const readiness = evaluateRaspberryV1Readiness({ latestByKind });
+  const report = buildReadinessGapReport(readiness);
+  const envGap = report.find((gap) => gap.gate_id === 'install_runtime_preflight');
+  assert.ok(envGap);
+  assert.match(JSON.stringify(envGap.next_commands), /proof:raspberry-env-preflight/);
 });
