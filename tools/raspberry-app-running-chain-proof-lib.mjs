@@ -17,8 +17,9 @@ export function determineAppRunningChainStatus({ generatorProof, cronProof, appS
 export async function buildRaspberryAppRunningChainProof({ metadata, env = process.env, runtimeDirectory, generatedEvidence = null, currentCrontab = null } = {}) {
   const generatorProof = await buildRaspberryWorkerEvidenceGeneratorProof({ metadata, env, runtimeDirectory, generatedEvidence, currentCrontab });
   const evidenceFile = generatorProof.evidence?.generated_evidence_file;
+  const injectedOperatorEvidence = generatedEvidence ?? null;
   const chainEnv = { ...env, PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE: evidenceFile ?? env.PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE };
-  const cronProof = await buildRaspberryCronWorkerRuntimeProof({ metadata, env: chainEnv, currentCrontab });
+  const cronProof = await buildRaspberryCronWorkerRuntimeProof({ metadata, env: chainEnv, currentCrontab, operatorEvidence: injectedOperatorEvidence });
   const appStatusProof = await buildRaspberryAppRunningStatusProof({ metadata, env: chainEnv, currentCrontab, cronEnvelope: cronProof });
   const proofStatus = determineAppRunningChainStatus({ generatorProof, cronProof, appStatusProof });
   return createProofEnvelope({
