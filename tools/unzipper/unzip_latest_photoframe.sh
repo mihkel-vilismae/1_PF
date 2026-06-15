@@ -116,7 +116,7 @@ def parse_zip_filename(zip_path: Path) -> ParsedZip:
     if not match:
         die(
             "ZIP filename does not match expected PhotoFrame format. "
-            "Expected something like PF_login--v0.8.9--description-full_git.zip"
+            "Expected something like PF_login--v0.8.85--description-full_git.zip"
         )
     project = sanitize_folder_name(match.group("project"))
     version = match.group("version")

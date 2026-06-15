@@ -20,7 +20,7 @@ The script is meant to live in `/home/mihkel/Download_chrome` beside exactly one
 Example:
 
 ```text
-PF_login--v0.8.9--fedora-parity-version-root-fix-full_git.zip
+PF_login--v0.8.85--fedora-parity-version-root-fix-full_git.zip
 ```
 
 The filename is parsed as:
@@ -28,15 +28,15 @@ The filename is parsed as:
 | Part | Example |
 |---|---|
 | Project | `PF_login` |
-| Version | `v0.8.9` |
-| Target folder | `PF_login_v0.8.9` |
+| Version | `v0.8.85` |
+| Target folder | `PF_login_v0.8.85` |
 
 If the target folder already exists, the script selects the next integer suffix:
 
 ```text
-PF_login_v0.8.9
-PF_login_v0.8.9_1
-PF_login_v0.8.9_2
+PF_login_v0.8.85
+PF_login_v0.8.85_1
+PF_login_v0.8.85_2
 ```
 
 The same suffix is also applied to the archived ZIP name.
@@ -75,10 +75,10 @@ Skip opening terminal and file explorer:
 ```text
 1 zip found
 project: PF_login
-version: v0.8.9
+version: v0.8.85
 suffix: none
-target: /home/mihkel/Download_chrome/Photoframe_proofing/PF_login_v0.8.9
-archive target: /home/mihkel/Download_chrome/zip_repo_archive/PF_login--v0.8.9--fedora-parity-version-root-fix-full_git.zip
+target: /home/mihkel/Download_chrome/Photoframe_proofing/PF_login_v0.8.85
+archive target: /home/mihkel/Download_chrome/zip_repo_archive/PF_login--v0.8.85--fedora-parity-version-root-fix-full_git.zip
 ...
 done: extracted photoframe repo
 archived zip: ...
