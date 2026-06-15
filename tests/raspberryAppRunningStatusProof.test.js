@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { summarizeAppRunningStatus, buildRaspberryAppRunningStatusProof } from '../tools/raspberry-app-running-status-proof-lib.mjs';
+import { buildAppRunningStatusNextSteps, summarizeAppRunningStatus, buildRaspberryAppRunningStatusProof } from '../tools/raspberry-app-running-status-proof-lib.mjs';
 
 test('app-running summary passes only when cron worker runtime passes all three workers', () => {
   const cronEnvelope = { proof_status: 'PASSED', evidence: { cron: { row_evidence: [{ present: true }, { present: true }, { present: true }] }, worker_evidence: [
@@ -25,4 +25,12 @@ test('app-running proof envelope preserves non-claims', async () => {
   assert.equal(envelope.proof_status, 'BLOCKED');
   assert.match(envelope.evidence.non_claims.join('\n'), /does not reboot/);
   assert.match(envelope.evidence.non_claims.join('\n'), /power-loss/);
+});
+
+
+test('app-running status next steps point to cron worker runtime evidence', () => {
+  const summary = summarizeAppRunningStatus({ proof_status: 'BLOCKED', evidence: { worker_evidence: [], cron: { row_evidence: [] }, status_reasons: { blockReasons: ['missing managed cron rows for: playback_worker'], failedReasons: [] } } });
+  const steps = buildAppRunningStatusNextSteps(summary);
+  assert.match(steps.join('\n'), /cron-worker-runtime|cron worker runtime/);
+  assert.match(steps.join('\n'), /missing managed cron rows/);
 });

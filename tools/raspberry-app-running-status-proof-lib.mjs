@@ -26,6 +26,18 @@ export function summarizeAppRunningStatus(cronEnvelope) {
   };
 }
 
+
+export function buildAppRunningStatusNextSteps(summary) {
+  if (summary.app_running) return ['Run npm run proof:raspberry-v1-readiness to update release-gate status.'];
+  const missingWorkers = summary.worker_summary.filter((worker) => worker.status !== 'ok').map((worker) => worker.name);
+  const steps = [];
+  if (summary.cron_worker_runtime_status !== 'PASSED') steps.push('Make npm run proof:raspberry-cron-worker-runtime pass first; app-running status is downstream of cron worker runtime evidence.');
+  if (missingWorkers.length) steps.push(`Complete app-running worker evidence for: ${missingWorkers.join(', ')}.`);
+  if (summary.blocking_reasons.length) steps.push(`Blocked by: ${summary.blocking_reasons.join('; ')}`);
+  if (summary.failed_reasons.length) steps.push(`Failed because: ${summary.failed_reasons.join('; ')}`);
+  return steps.length ? steps : ['Provide complete cron worker runtime evidence for all three worker lanes.'];
+}
+
 export async function buildRaspberryAppRunningStatusProof({ metadata, env = process.env, currentCrontab = null, operatorEvidence = null, cronEnvelope = null } = {}) {
   const cronProof = cronEnvelope ?? await buildRaspberryCronWorkerRuntimeProof({ metadata, env, currentCrontab, operatorEvidence });
   const summary = summarizeAppRunningStatus(cronProof);
@@ -46,6 +58,7 @@ export async function buildRaspberryAppRunningStatusProof({ metadata, env = proc
         cron: cronProof.evidence?.cron,
         worker_evidence: cronProof.evidence?.worker_evidence,
       },
+      next_steps: buildAppRunningStatusNextSteps(summary),
       pass_criteria: 'PASSED only when the Raspberry cron worker runtime proof passes and all three worker lanes report complete evidence.',
       non_claims: ['does not start the API by itself', 'does not install cron', 'does not reboot the Raspberry', 'does not prove physical power-loss recovery', 'does not prove production iCloud continuation'],
     }),
