@@ -46,3 +46,16 @@ test('parseEnvText records malformed runtime env lines', () => {
   assert.equal(parsed.values.EMPTY, '');
   assert.equal(parsed.malformedLines.length, 1);
 });
+
+
+test('env preflight reports missing runtime key guidance without env values', async () => {
+  await withTempRepo(async (root) => {
+    await writeFile(path.join(root, '.env'), 'DOWNLOAD_DIR=/private/downloads\n', 'utf8');
+    const inspection = await inspectRaspberryEnv({ repoRoot: root, createFromExample: false });
+    assert.ok(inspection.missing_minimum_keys.includes('DB_PATH'));
+    const dbPathGuidance = inspection.missing_minimum_key_guidance.find((entry) => entry.key === 'DB_PATH');
+    assert.equal(dbPathGuidance.secret, false);
+    assert.match(dbPathGuidance.purpose, /SQLite database path/);
+    assert.equal(JSON.stringify(inspection.missing_minimum_key_guidance).includes('/private/downloads'), false);
+  });
+});

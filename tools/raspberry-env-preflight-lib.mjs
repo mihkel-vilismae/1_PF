@@ -14,6 +14,43 @@ export const RASPBERRY_ENV_MINIMUM_KEYS = Object.freeze([
   'NATIVE_PLAYBACK_ENABLED',
 ]);
 
+export const RASPBERRY_ENV_KEY_GUIDANCE = Object.freeze({
+  DOWNLOAD_DIR: {
+    purpose: 'Directory where downloaded iCloud/media files are staged on the Raspberry target.',
+    example: 'runtime_data/downloads',
+    secret: false,
+  },
+  DB_PATH: {
+    purpose: 'SQLite database path used by worker commands before database actions can run.',
+    example: 'runtime_data/photo_frame.sqlite',
+    secret: false,
+  },
+  LOG_DIR: {
+    purpose: 'Directory for worker/proof logs generated on the Raspberry target.',
+    example: 'runtime_data/logs',
+    secret: false,
+  },
+  FULL_LOG: {
+    purpose: 'Main full-log file path for scheduler and worker diagnostics.',
+    example: 'runtime_data/logs/full_log.log',
+    secret: false,
+  },
+  PLAYBACK_LEASE_SECONDS: {
+    purpose: 'Lease duration used by playback/app-running logic to decide whether playback state is fresh.',
+    example: '45',
+    secret: false,
+  },
+  NATIVE_PLAYBACK_ENABLED: {
+    purpose: 'Boolean switch that allows native Raspberry playback commands after operator setup.',
+    example: 'false',
+    secret: false,
+  },
+});
+
+export function buildRaspberryEnvKeyGuidance(keys = RASPBERRY_ENV_MINIMUM_KEYS) {
+  return keys.map((key) => ({ key, ...(RASPBERRY_ENV_KEY_GUIDANCE[key] ?? { purpose: 'Project runtime configuration key.', example: '', secret: true }) }));
+}
+
 export function parseEnvText(text) {
   const values = {};
   const malformedLines = [];
@@ -91,7 +128,9 @@ export async function inspectRaspberryEnv({ repoRoot = process.cwd(), createFrom
     size_bytes: sizeBytes,
     present_key_count: presentKeys.length,
     minimum_keys: RASPBERRY_ENV_MINIMUM_KEYS,
+    minimum_key_guidance: buildRaspberryEnvKeyGuidance(RASPBERRY_ENV_MINIMUM_KEYS),
     missing_minimum_keys: missingMinimumKeys,
+    missing_minimum_key_guidance: buildRaspberryEnvKeyGuidance(missingMinimumKeys),
     malformed_line_count: parse.malformedLines.length,
     malformed_lines: parse.malformedLines.slice(0, 10),
   };
@@ -123,7 +162,7 @@ export async function buildRaspberryEnvPreflightProof({ metadata, repoRoot = pro
       evaluation,
       next_steps: evaluation.proofStatus === 'PASSED'
         ? ['Run npm run api -- --scheduler playback-worker and app-running proofs.']
-        : ['Run npm run proof:raspberry-env-preflight -- --create from the repo root, then edit .env for real provider credentials if needed.'],
+        : ['Run npm run proof:raspberry-env-preflight -- --create from the repo root, then edit .env so every missing_minimum_key is present before worker startup proofs.'],
       non_claims: [
         'does not validate iCloud credentials',
         'does not enable real network geocode providers',
