@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import path from 'node:path';
 import { evaluateWorkerStartupSmoke, parseRunnerStatus, runWorkerStartupSmokeCommands, RASPBERRY_WORKER_STARTUP_LANES } from '../tools/raspberry-worker-startup-smoke-lib.mjs';
 
 function result({ command = 'npm', args = [], exitCode = 0, stdout = '{"status":"PASSED"}', timedOut = false } = {}) {
@@ -19,7 +20,7 @@ test('startup smoke invokes setup preflights and all three worker lanes', async 
   assert.deepEqual(calls[0], ['npm', ['run', 'proof:raspberry-executable-permissions', '--', '--repair']]);
   assert.deepEqual(calls[1], ['npm', ['run', 'proof:raspberry-env-preflight', '--', '--create']]);
   assert.equal(calls[2][0], 'python3');
-  assert.deepEqual(calls[2][1].slice(0, 3), ['server/scripts/sqlite_admin.py', 'recreate', '/repo/runtime_data/photo_frame.sqlite']);
+  assert.deepEqual(calls[2][1].slice(0, 3), ['server/scripts/sqlite_admin.py', 'recreate', path.normalize('/repo/runtime_data/photo_frame.sqlite')]);
 });
 
 test('startup smoke passes only on Raspberry target with passing preflights and workers', () => {
