@@ -3224,7 +3224,10 @@ async function resolveWindowsCronEmulatorOperation({
   operationSupportLevel,
   crontabText,
 }: SchedulerOperationInput) {
-  if (context.platform !== 'win32') {
+  const crontabFileOnlyOperation = operation === schedulerEmulatorOperations.installCrontab
+    || operation === schedulerEmulatorOperations.activeCrontab;
+
+  if (context.platform !== 'win32' && !crontabFileOnlyOperation) {
     return buildDeferredSchedulerPayload({
       context,
       capability,
