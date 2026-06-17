@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.131 - 2026-06-17
+
+- Add a Debug Page runbook for operator/developer use of the planned Debug page, crontab setup, worker panes, and safety checks.
+- Add a Debug Page goal registry so new implementation goals can be added regularly with status, proof, and risk notes.
+- Link the runbook and registry from documentation navigation without claiming runtime Debug page behavior.
+
 ## 0.8.130 - 2026-06-17
 
 - Add a Debug Page OpenSpec for the lightweight Debug route/sidebar/version tracker concept.

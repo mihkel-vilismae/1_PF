@@ -61,3 +61,5 @@ The old `docs/categorized/other_documentation/documentation_workflow_and_invento
 - [Native Playback Runner Setup Runbook](native_playback_runner_setup.md) — setup, detection, manual start/stop, worker auto-start, and power-outage notes for OS-native fullscreen playback.
 
 - [Raspberry Project-Owned Launcher](raspberry_project_owned_launcher.md) — conservative Raspberry launcher skeleton with dry-run evidence and optional project-owned API start.
+
+- [Debug Page Runbook](debug_page_runbook.md) — operator/developer guide for the planned Debug page, crontab setup, worker panes, and proof-honesty checks.

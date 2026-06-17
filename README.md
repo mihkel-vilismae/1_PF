@@ -13,6 +13,10 @@ This is not a runtime proof. Raspberry cron, reboot recovery, power-loss recover
 
 
 
+## v0.8.131 Debug Page runbook and goal registry
+
+The Debug page planning docs now include an operator/developer runbook plus an active goal registry for regularly adding Debug page implementation goals. The registry keeps route/sidebar/version tracker, pane template, Store/Restore, Test Playback, Add Images, Crontab Setup, worker telemetry, manual Run now, and proof/isolation goals separate from runtime proof claims. See [`docs/10_runbooks/debug_page_runbook.md`](docs/10_runbooks/debug_page_runbook.md) and [`docs/40_backlog_and_tasks/debug_page_goal_registry.md`](docs/40_backlog_and_tasks/debug_page_goal_registry.md).
+
 ## v0.8.130 Debug Page OpenSpec
 
 The Debug page now has a forward-looking OpenSpec contract covering the bottom sidebar `Debug` entry, nearby version tracker item, global top-right version tracker preservation, shared stacked pane template, store/restore state, test playback, add-images process testing, Crontab Setup, worker debug panes, safety boundaries, and future proof expectations. This is documentation only: no Debug route, crontab mutation, worker run, playback action, or Raspberry proof is claimed. See [`docs/20_architecture_and_specs/openspec/debug_page_openspec.md`](docs/20_architecture_and_specs/openspec/debug_page_openspec.md).

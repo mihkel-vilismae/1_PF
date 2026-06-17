@@ -52,6 +52,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/10_runbooks/documentation_workflow_and_inventory.md` | Documentation workflow and inventory rules. |
 | `docs/10_runbooks/improve_create_skills_flow_prompt.md` | Reusable 3x2 ACR prompt for extracting/upgrading workflow skills from the current chat. |
 | `docs/10_runbooks/voice_ai_transcript_intake.md` | Workflow for extracting safe requirements and proof notes from messy Voice AI transcripts. |
+| `docs/10_runbooks/debug_page_runbook.md` | Operator/developer runbook for the planned Debug page, crontab setup, worker debug panes, and safety checks. |
 | `docs/10_runbooks/raspberry_project_owned_launcher.md` | Raspberry project-owned launcher skeleton runbook. |
 
 
