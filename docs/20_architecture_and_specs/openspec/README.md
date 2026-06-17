@@ -24,3 +24,5 @@ Current OpenSpec entries:
 - [Production GPS/geocode placeholder rules OpenSpec](production_gps_geocode_placeholder_rules_openspec.md) — v1.0 acceptance boundary requiring real GPS extraction, cache-first real geocoding, and explicit rejection of deterministic placeholder geocoding as production success.
 
 - [Authentication checkpoint proof OpenSpec](auth_checkpoint_proof_openspec.md) — app-owned sanitized login/session state contract for manual real-provider authentication before downstream download proofs.
+
+- [Debug Page OpenSpec](debug_page_openspec.md) — lightweight Debug page, sidebar/version tracker, pane template, crontab setup, worker debug pane, safety, and proof-boundary contract.

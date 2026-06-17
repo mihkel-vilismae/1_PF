@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.130 - 2026-06-17
+
+- Add a Debug Page OpenSpec for the lightweight Debug route/sidebar/version tracker concept.
+- Document the shared debug pane template, Store/Restore, Test Playback, Add Images, Crontab Setup, and worker debug pane contracts.
+- Preserve proof honesty: the OpenSpec is documentation only and does not claim runtime Debug page, crontab, worker, playback, or Raspberry proof behavior.
+
 ## 0.8.129 - 2026-06-17
 
 - Add a Voice AI transcript intake runbook for converting messy spoken project notes into scoped requirements.

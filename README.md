@@ -13,6 +13,10 @@ This is not a runtime proof. Raspberry cron, reboot recovery, power-loss recover
 
 
 
+## v0.8.130 Debug Page OpenSpec
+
+The Debug page now has a forward-looking OpenSpec contract covering the bottom sidebar `Debug` entry, nearby version tracker item, global top-right version tracker preservation, shared stacked pane template, store/restore state, test playback, add-images process testing, Crontab Setup, worker debug panes, safety boundaries, and future proof expectations. This is documentation only: no Debug route, crontab mutation, worker run, playback action, or Raspberry proof is claimed. See [`docs/20_architecture_and_specs/openspec/debug_page_openspec.md`](docs/20_architecture_and_specs/openspec/debug_page_openspec.md).
+
 ## v0.8.129 Voice AI transcript intake
 
 Messy spoken transcript text is valid project input when it contains requirements, proof-stage ideas, or product goals. Use [`docs/10_runbooks/voice_ai_transcript_intake.md`](docs/10_runbooks/voice_ai_transcript_intake.md) to extract intent, mark uncertain fragments, and avoid treating transcription noise as exact implementation truth.
