@@ -13,6 +13,10 @@ This is not a runtime proof. Raspberry cron, reboot recovery, power-loss recover
 
 
 
+## v0.8.133 Debug Page docs coverage repair
+
+The Debug page documentation coverage test now uses direct text containment assertions for long Markdown contract phrases, and the documentation table of contents explicitly links the Debug Page Goal Registry. This is still documentation/test coverage only and makes no runtime Debug page, crontab, worker, playback, or Raspberry proof claim.
+
 ## v0.8.132 Debug Page docs coverage
 
 The Debug page documentation pass now includes a second-pass 2ACR review plus static docs coverage tests. The tests verify that the OpenSpec, runbook, goal registry, and navigation links carry the required route/sidebar/version tracker, pane, crontab, worker telemetry, safety, and non-claim language. This remains a documentation-only release: no Debug route, runtime pane, crontab mutation, worker invocation, or Raspberry proof is claimed. See [`docs/50_audits_and_migrations/DEBUG_PAGE_DOCS_2ACR_REVIEW_20260617.md`](docs/50_audits_and_migrations/DEBUG_PAGE_DOCS_2ACR_REVIEW_20260617.md).

@@ -124,6 +124,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/40_backlog_and_tasks/task_documentation_still_to_implement/active_implementation_backlog.md` | Backlog items; verify against current implementation before acting. |
 | `docs/40_backlog_and_tasks/task_documentation_still_to_implement/verification_and_reconciliation_tasks.md` | Verification/reconciliation tasks. |
 | `docs/40_backlog_and_tasks/task_documentation_still_to_implement/rejected_or_superseded_tasks.md` | Rejected/superseded items. |
+| `docs/40_backlog_and_tasks/debug_page_goal_registry.md` | Active Debug page goal registry for regularly adding implementation goals, proof expectations, and risk notes. |
 
 ## Audits and migrations
 

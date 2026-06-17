@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.133 - 2026-06-17
+
+- Repair Debug page documentation coverage assertions to use direct Markdown text containment for long contract phrases.
+- Link the Debug Page Goal Registry from the top-level documentation table of contents.
+- Preserve the documentation-only boundary and runtime non-claims from v0.8.132.
+
 ## 0.8.132 - 2026-06-17
 
 - Add a second-pass 2ACR review for the Debug Page OpenSpec/runbook/goal-registry documentation set.

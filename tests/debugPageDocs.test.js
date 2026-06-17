@@ -30,7 +30,7 @@ test('debug page openspec documents route, version, panes, crontab, worker, and 
     'Real Raspberry crontab',
     'NOT CLAIMED'
   ]) {
-    assert.match(doc, new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+    assert.ok(doc.includes(expected), `missing expected text: ${expected}`);
   }
 });
 
@@ -50,7 +50,7 @@ test('debug page runbook explains operator safety and required controls', () => 
     'Manual run',
     'Proof-honesty checklist'
   ]) {
-    assert.match(doc, new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+    assert.ok(doc.includes(expected), `missing expected text: ${expected}`);
   }
 });
 
@@ -67,7 +67,7 @@ test('debug page goal registry tracks stable goals and proof-risk status', () =>
     'proof',
     'Risk notes'
   ]) {
-    assert.match(doc, new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+    assert.ok(doc.includes(expected), `missing expected text: ${expected}`);
   }
 });
 
@@ -95,9 +95,9 @@ test('debug page 2ACR review records non-claims and slice guidance', () => {
     'no Debug page route implemented',
     'no crontab mutation implemented',
     'no Raspberry proof generated',
-    'fake-crontab parser/preview',
+    'Fake-crontab parser/preview',
     'Real Raspberry crontab proof gate'
   ]) {
-    assert.match(doc, new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+    assert.ok(doc.includes(expected), `missing expected text: ${expected}`);
   }
 });
