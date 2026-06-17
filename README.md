@@ -13,6 +13,10 @@ This is not a runtime proof. Raspberry cron, reboot recovery, power-loss recover
 
 
 
+## v0.8.132 Debug Page docs coverage
+
+The Debug page documentation pass now includes a second-pass 2ACR review plus static docs coverage tests. The tests verify that the OpenSpec, runbook, goal registry, and navigation links carry the required route/sidebar/version tracker, pane, crontab, worker telemetry, safety, and non-claim language. This remains a documentation-only release: no Debug route, runtime pane, crontab mutation, worker invocation, or Raspberry proof is claimed. See [`docs/50_audits_and_migrations/DEBUG_PAGE_DOCS_2ACR_REVIEW_20260617.md`](docs/50_audits_and_migrations/DEBUG_PAGE_DOCS_2ACR_REVIEW_20260617.md).
+
 ## v0.8.131 Debug Page runbook and goal registry
 
 The Debug page planning docs now include an operator/developer runbook plus an active goal registry for regularly adding Debug page implementation goals. The registry keeps route/sidebar/version tracker, pane template, Store/Restore, Test Playback, Add Images, Crontab Setup, worker telemetry, manual Run now, and proof/isolation goals separate from runtime proof claims. See [`docs/10_runbooks/debug_page_runbook.md`](docs/10_runbooks/debug_page_runbook.md) and [`docs/40_backlog_and_tasks/debug_page_goal_registry.md`](docs/40_backlog_and_tasks/debug_page_goal_registry.md).

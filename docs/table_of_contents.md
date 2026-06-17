@@ -192,3 +192,5 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 ## v0.8.57 Raspberry worker startup smoke docs
 
 - `docs/proofs/raspberry_worker_startup_smoke_proof.md` — proof that all three scheduler worker commands can start cleanly on Raspberry after preflight repair.
+
+| `docs/50_audits_and_migrations/DEBUG_PAGE_DOCS_2ACR_REVIEW_20260617.md` | Second-pass 2ACR review of Debug page OpenSpec/runbook/goal-registry coverage and non-claims. |

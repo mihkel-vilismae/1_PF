@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.132 - 2026-06-17
+
+- Add a second-pass 2ACR review for the Debug Page OpenSpec/runbook/goal-registry documentation set.
+- Add static docs coverage tests for Debug page route/sidebar/version tracker, pane, crontab, worker telemetry, safety, and non-claim language.
+- Preserve the documentation-only boundary: no Debug route, runtime pane, crontab mutation, worker invocation, or Raspberry proof is claimed.
+
 ## 0.8.131 - 2026-06-17
 
 - Add a Debug Page runbook for operator/developer use of the planned Debug page, crontab setup, worker panes, and safety checks.
