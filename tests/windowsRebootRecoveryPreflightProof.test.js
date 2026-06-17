@@ -46,6 +46,8 @@ test('preflight proof passes with current project-owned launcher and local-tool 
   assert.equal(envelope.evidence.localToolBoundaries.toolsMpvIgnored, true);
   assert.equal(envelope.evidence.localToolBoundaries.toolsFfmpegIgnored, true);
   assert.equal(envelope.evidence.trackedLocalTools.passed, true);
+  assert.deepEqual(envelope.evidence.trackedLocalTools.unexpectedTrackedEntries, []);
+  assert.ok(envelope.evidence.trackedLocalTools.allowedTrackedEntries.includes('tools/mpv/windows/README.md'));
 });
 
 test('docs expose preflight command and preserve non-claims', async () => {

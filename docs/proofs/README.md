@@ -224,3 +224,5 @@ The plan requires same-worker singleton checks, duplicate same-worker skip evide
 | Docs reconciliation audit | `npm run proof:docs-reconciliation-audit` | Critical v1 docs audit pre-pass for missing docs and known contradictory claims. |
 
 | OpenSpec v1 audit | `npm run proof:openspec-v1-audit` | Static audit that critical Raspberry v1 OpenSpec docs exist and include status, purpose/goal, and non-claims sections. |
+
+Tracked `tools/mpv/windows/.gitkeep` and `tools/mpv/windows/README.md` are allowed documentation/placeholders for the Windows mpv directory contract; runtime mpv binaries remain ignored and must not be vendored.

@@ -57,3 +57,5 @@ The future manual proof may clean only proof-owned paths:
 - `logs/`
 
 It must not delete user media, `tools/mpv/`, `tools/ffmpeg/`, or arbitrary system/application processes.
+
+Tracked `tools/mpv/windows/.gitkeep` and `tools/mpv/windows/README.md` are allowed documentation/placeholders for the Windows mpv directory contract; runtime mpv binaries remain ignored and must not be vendored.
