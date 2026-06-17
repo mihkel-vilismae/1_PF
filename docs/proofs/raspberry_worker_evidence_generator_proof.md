@@ -17,6 +17,8 @@ PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE=<generated file> npm run proof:raspberry-
 
 In v0.8.115+, downstream cron/app-running proofs also auto-load `runtime_data/raspberry_worker_evidence/latest.json` when `PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE` is not exported. Exporting the variable remains supported as an explicit override.
 
+In v0.8.121+, `latest.json` is a machine-readable handoff manifest with a portable evidence reference such as `runtime_data/raspberry_worker_evidence/raspberry_cron_worker_evidence_....json`. Proof artifacts and console summaries may still redact paths, but the runtime handoff file must not store `[REDACTED]` as the evidence path because standalone proof commands need to reopen the generated evidence file. The companion `latest.env` uses the same portable reference and does not contain `.env` values or provider secrets.
+
 The generator does not fabricate missing worker facts. On Raspberry, the default collection mode runs a proof-owned worker evidence harness that observes invocation, duplicate-skip, cross-worker independence, and stale-lock reclaim for `regular_stage_worker`, `playback_worker`, and `screen_on_off_worker`. Off-target or when `PF_RASPBERRY_WORKER_EVIDENCE_MODE=runtime-files` is set, it reads existing status/lock evidence. If complete evidence is not present, the generator writes an incomplete evidence file and returns `BLOCKED`.
 
 This command does not install cron, reboot the Raspberry, perform power-loss recovery, or prove monitor pixels/production iCloud continuation.

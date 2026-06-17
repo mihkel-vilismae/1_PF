@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.8.122 - 2026-06-17
+
+- Document the Batch 6 Slice 1 worker-evidence handoff repair.
+- Clarify that `latest.json` is a machine-readable portable handoff while proof artifacts/log summaries remain sanitized.
+- Preserve the proof-honesty rule that redacted or incomplete worker evidence remains `BLOCKED`, not `PASSED`.
+
+## 0.8.121 - 2026-06-17
+
+- Repair `proof:raspberry-worker-evidence` latest manifest output so standalone cron/app-running proof commands can reload generated evidence.
+- Add portable evidence-reference resolution for repo-relative, manifest-relative, legacy absolute, and explicit-env handoff paths.
+- Add regression coverage for redacted `[REDACTED]` runtime handoff paths and portable `runtime_data/...` evidence references.
+
 ## 0.8.86 - 2026-06-15
 
 - Update `tools/unzipper/unzip_latest_photoframe.sh` to hardcode `/home/mihkel/Download_chrome/Photoframe_proofing/.env` as the custom variables source.
