@@ -15,7 +15,10 @@ async function main() {
   console.log(JSON.stringify({
     status: envelope.proof_status,
     evidenceFile: envelope.evidence.generated_evidence_file,
+    latestManifest: envelope.evidence.latest_evidence_manifest,
+    latestEnvFile: envelope.evidence.latest_evidence_env_file,
     env: envelope.evidence.generated_evidence_env,
+    collectionMode: envelope.evidence.collection_mode,
     outputPath,
   }, null, 2));
   process.exit(['PASSED', 'BLOCKED'].includes(envelope.proof_status) ? 0 : 1);

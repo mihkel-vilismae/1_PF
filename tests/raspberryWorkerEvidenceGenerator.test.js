@@ -1,10 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { evaluateWorkerEvidence } from '../tools/raspberry-cron-worker-runtime-proof-lib.mjs';
 import {
   collectWorkerEvidenceFromRuntimeFiles,
   evaluateGeneratedEvidence,
   buildWorkerLaneEvidenceFromStatus,
+  getLatestWorkerEvidencePaths,
+  writeWorkerEvidenceFile,
 } from '../tools/raspberry-worker-evidence-generator-lib.mjs';
 
 test('worker evidence generator builds cron-runtime-compatible lane evidence', () => {
@@ -64,4 +69,31 @@ test('generated evidence recognizes managed cron rows with absolute Raspberry pa
     '*/3 * * * * cd "/home/mihkel/0.8.58-pf" && npm run api -- --scheduler screen-on-off-worker >>"/home/mihkel/0.8.58-pf/runtime_data/cron/screen-on-off-worker.log" 2>&1',
   ] }, generatedEvidence: { worker_lanes } });
   assert.equal(evaluation.proofStatus, 'PASSED');
+});
+
+
+test('worker evidence writer records latest manifest and env handoff files', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'pf-worker-evidence-'));
+  try {
+    const generatedEvidence = {
+      generated_at: '2026-06-17T00:00:00.000Z',
+      source: 'test-complete-evidence',
+      worker_lanes: ['regular_stage_worker', 'playback_worker', 'screen_on_off_worker'].map((name) => ({
+        name,
+        last_invocation_at: '2026-06-17T00:00:00Z',
+        same_worker_singleton: { first_acquired: true, duplicate_skipped: true },
+        cross_worker_independence: true,
+        stale_lock: { reclaimed: true },
+      })),
+    };
+    const evidenceFile = await writeWorkerEvidenceFile(generatedEvidence, { outputDirectory: dir });
+    const latest = getLatestWorkerEvidencePaths({ outputDirectory: dir });
+    const manifest = JSON.parse(await readFile(latest.manifestPath, 'utf8'));
+    const envText = await readFile(latest.envPath, 'utf8');
+    assert.equal(manifest.evidenceFile, evidenceFile);
+    assert.match(envText, /PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE=/);
+    assert.match(envText, /raspberry_cron_worker_evidence_/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
 });
