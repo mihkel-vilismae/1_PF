@@ -106,12 +106,17 @@ export function readLatestEvidenceFileFromManifest(manifestPath) {
   }
 }
 
+export function resolveLatestWorkerEvidenceManifestPath({ env = process.env, latestManifestPath = defaultLatestWorkerEvidenceManifestPath() } = {}) {
+  return firstNonEmptyString(env.PF_RASPBERRY_CRON_WORKER_EVIDENCE_MANIFEST_FILE, latestManifestPath);
+}
+
 export function loadOperatorEvidence({ env = process.env, evidence = null, latestManifestPath = defaultLatestWorkerEvidenceManifestPath() } = {}) {
   if (evidence) return { source: 'injected', data: evidence, load_error: null, auto_discovered: false, resolution: 'injected' };
   const explicitFile = env.PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE;
+  const manifestPath = resolveLatestWorkerEvidenceManifestPath({ env, latestManifestPath });
   const discovered = explicitFile
     ? { file: explicitFile, source: explicitFile, load_error: null, resolution: 'explicit-env' }
-    : readLatestEvidenceFileFromManifest(latestManifestPath);
+    : readLatestEvidenceFileFromManifest(manifestPath);
   if (discovered.load_error) return { source: discovered.source, data: null, load_error: discovered.load_error, auto_discovered: !explicitFile, file: discovered.file, resolution: discovered.resolution };
   if (!discovered.file) return { source: 'none', data: null, load_error: 'PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE is not set and no latest worker evidence manifest exists', auto_discovered: false, resolution: discovered.resolution ?? 'none' };
   try {

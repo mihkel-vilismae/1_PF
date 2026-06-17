@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.123 - 2026-06-17
+
+- Route standalone app-running status through the same resolved latest worker-evidence source used by the cron runtime proof.
+- Add an explicit latest-manifest override for proof/test harnesses without changing the default repo-local standalone command path.
+- Preserve the rule that app-running status passes only when cron runtime proof and all three worker lanes pass.
+
 ## 0.8.122 - 2026-06-17
 
 - Document the Batch 6 Slice 1 worker-evidence handoff repair.
