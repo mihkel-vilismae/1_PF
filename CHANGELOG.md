@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.127 - 2026-06-17
+
+- Add an auth checkpoint OpenSpec for manual/provider login stages before real iCloud/download proofs.
+- Document app-owned sanitized auth states and reject AI/console/browser-open markers as proof authority.
+- Link the auth checkpoint concept from README, NEW AUTH docs, OpenSpec index, and v1 traceability context.
+
 ## 0.8.126 - 2026-06-17
 
 - Document the Batch 6 standalone worker-evidence handoff and proof-queue status boundaries after the Slice 2-4 implementation.

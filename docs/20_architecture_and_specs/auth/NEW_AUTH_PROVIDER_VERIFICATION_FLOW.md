@@ -70,3 +70,9 @@ That action checks executable/config readiness only. It does not prove that the 
 ## Secret boundary
 
 Provider communication shown in the modal, event history, or logs must remain sanitized. Raw passwords, 2FA codes, cookies, session contents, tokens, authorization headers, and other secrets must not be displayed.
+
+## Auth checkpoint proof boundary
+
+For complex/manual provider authentication, use the auth checkpoint state contract in [`../openspec/auth_checkpoint_proof_openspec.md`](../openspec/auth_checkpoint_proof_openspec.md). The dashboard/backend may guide the operator into login, but login success must be represented by an app-owned sanitized checkpoint artifact such as `AUTH_SESSION_USABLE`, not by a browser console note, opened login page, or assistant interpretation.
+
+Later real iCloud/download proofs should consume the sanitized authenticated/session-usable state instead of re-inferring auth from local files alone.

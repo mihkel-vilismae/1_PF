@@ -10,6 +10,11 @@ This baseline adds documentation/OpenSpec/test coverage for the Raspberry app-ru
 
 This is not a runtime proof. Raspberry cron, reboot recovery, power-loss recovery, monitor-pixel proof, and production iCloud continuation remain non-claims until target evidence exists.
 
+
+## v0.8.127 auth checkpoint proof note
+
+Manual/provider login stages should use an app-owned authentication checkpoint proof contract before downstream real-provider proofs run. The intended state flow is `AUTH_REQUIRED` -> `AUTH_READY_FOR_OPERATOR` -> operator login -> `AUTH_SESSION_DETECTED` -> `AUTH_SESSION_USABLE` or `AUTH_BLOCKED`. The assistant may read sanitized proof artifacts, but it is not the proof authority; browser console text, an opened login page, or local session files alone are not enough. See [`docs/20_architecture_and_specs/openspec/auth_checkpoint_proof_openspec.md`](docs/20_architecture_and_specs/openspec/auth_checkpoint_proof_openspec.md).
+
 ## Windows full launcher
 
 Run `start_win_full.cmd` from the repository root for the full Windows startup workflow. It installs dependencies, runs tests, builds the frontend, opens API, frontend, and component-status monitor tabs/windows when available, and opens `http://localhost:5173` in the default browser.

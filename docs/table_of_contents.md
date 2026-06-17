@@ -85,6 +85,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/20_architecture_and_specs/architecture_runtime_and_recovery_spec.md` | Runtime/recovery architecture. |
 | `docs/20_architecture_and_specs/dashboard_auth_pipeline_spec.md` | Dashboard/auth pipeline architecture. |
 | `docs/20_architecture_and_specs/auth/NEW_AUTH_PROVIDER_VERIFICATION_FLOW.md` | NEW AUTH provider verification reference. |
+| `docs/20_architecture_and_specs/openspec/auth_checkpoint_proof_openspec.md` | Authentication checkpoint state contract for manual/provider login proof before downstream real-provider tests. |
 | `docs/20_architecture_and_specs/media_pipeline_provider_interfaces.md` | GPS/geocode provider contracts and chain rules. |
 | `docs/20_architecture_and_specs/media_pipeline_geocode_provider_chain.md` | Reverse-geocode provider registry/config behavior. |
 | `docs/20_architecture_and_specs/native_playback_runner_spec.md` | Native playback runner contract. |

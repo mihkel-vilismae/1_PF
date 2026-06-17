@@ -22,3 +22,5 @@ Current OpenSpec entries:
 
 - [Raspberry native video playback proof OpenSpec](raspberry_native_video_playback_proof_openspec.md) — target-gated Raspberry native video playback proof using launcher dry-run, `ffprobe` metadata, and bounded `mpv` video playback.
 - [Production GPS/geocode placeholder rules OpenSpec](production_gps_geocode_placeholder_rules_openspec.md) — v1.0 acceptance boundary requiring real GPS extraction, cache-first real geocoding, and explicit rejection of deterministic placeholder geocoding as production success.
+
+- [Authentication checkpoint proof OpenSpec](auth_checkpoint_proof_openspec.md) — app-owned sanitized login/session state contract for manual real-provider authentication before downstream download proofs.

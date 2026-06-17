@@ -23,6 +23,11 @@ This matrix links v1 release gates, question-matrix decisions, OpenSpec document
 | `screen_worker_non_blocking` | S1, S2 | `raspberry_screen_worker_non_blocking_openspec.md` | future non-blocking proof | CONTRACTED, dedicated proof NOT RUN |
 | `docs_reconciled` | DOC1, DOC2 | this matrix plus docs audit proof | `npm run proof:docs-reconciliation-audit` | PRE-PASS PROVEN, final v1 reconciliation NOT PROVEN |
 
+
+## Auth checkpoint dependency
+
+Real-provider v1 gates such as `real_icloud_media_source`, `real_gps_geocode`, and `regular_worker_product_pipeline` may require an operator-assisted authenticated/session-usable state before their proof commands can run honestly. The auth checkpoint contract is documented in `auth_checkpoint_proof_openspec.md`. It is a prerequisite pattern, not a v1 pass by itself: downstream gates still need their own latest `PASSED` proof artifacts.
+
 ## Required rule for future slices
 
 Every future v1 slice must update at least one of:
