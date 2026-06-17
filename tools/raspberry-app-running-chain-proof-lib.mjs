@@ -3,7 +3,7 @@
  * Runs worker evidence generation -> cron worker runtime -> app-running status.
  */
 import { createProofEnvelope, getProofEnvironment, sanitizeEvidence } from './proof-utils.mjs';
-import { buildRaspberryWorkerEvidenceGeneratorProof } from './raspberry-worker-evidence-generator-lib.mjs';
+import { RAW_GENERATED_EVIDENCE_FILE, RAW_GENERATED_WORKER_EVIDENCE, buildRaspberryWorkerEvidenceGeneratorProof } from './raspberry-worker-evidence-generator-lib.mjs';
 import { buildRaspberryCronWorkerRuntimeProof } from './raspberry-cron-worker-runtime-proof-lib.mjs';
 import { buildRaspberryAppRunningStatusProof } from './raspberry-app-running-status-proof-lib.mjs';
 
@@ -16,8 +16,8 @@ export function determineAppRunningChainStatus({ generatorProof, cronProof, appS
 
 export async function buildRaspberryAppRunningChainProof({ metadata, env = process.env, runtimeDirectory, generatedEvidence = null, currentCrontab = null } = {}) {
   const generatorProof = await buildRaspberryWorkerEvidenceGeneratorProof({ metadata, env, runtimeDirectory, generatedEvidence, currentCrontab });
-  const evidenceFile = generatorProof.evidence?.generated_evidence_file;
-  const injectedOperatorEvidence = generatedEvidence ?? null;
+  const evidenceFile = generatorProof[RAW_GENERATED_EVIDENCE_FILE] ?? generatorProof.evidence?.generated_evidence_file;
+  const injectedOperatorEvidence = generatedEvidence ?? generatorProof[RAW_GENERATED_WORKER_EVIDENCE] ?? null;
   const chainEnv = { ...env, PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE: evidenceFile ?? env.PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE };
   const cronProof = await buildRaspberryCronWorkerRuntimeProof({ metadata, env: chainEnv, currentCrontab, operatorEvidence: injectedOperatorEvidence });
   const appStatusProof = await buildRaspberryAppRunningStatusProof({ metadata, env: chainEnv, currentCrontab, cronEnvelope: cronProof });
@@ -31,6 +31,7 @@ export async function buildRaspberryAppRunningChainProof({ metadata, env = proce
     evidence: sanitizeEvidence({
       environment: getProofEnvironment(),
       generated_evidence_file: evidenceFile,
+      generated_evidence_source: generatorProof.evidence?.collection_mode ?? null,
       chain: [
         { step: 'worker_evidence_generator', status: generatorProof.proof_status, proof_kind: generatorProof.proof_kind },
         { step: 'cron_worker_runtime', status: cronProof.proof_status, proof_kind: cronProof.proof_kind },
