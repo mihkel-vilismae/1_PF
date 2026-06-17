@@ -85,6 +85,21 @@ test('cron worker runtime auto-loads latest generated evidence manifest', async 
   }
 });
 
+
+test('latest worker evidence manifest rejects redacted machine-readable paths', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'pf-redacted-worker-evidence-'));
+  try {
+    const manifestPath = join(dir, 'latest.json');
+    await writeFile(manifestPath, JSON.stringify({ evidenceFile: '[REDACTED]' }), 'utf8');
+    const loaded = loadOperatorEvidence({ env: {}, latestManifestPath: manifestPath });
+    assert.equal(loaded.data, null);
+    assert.equal(loaded.resolution, 'redacted');
+    assert.match(loaded.load_error, /redacted evidence path/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
 test('cron worker runtime treats incomplete loaded worker evidence as blocked not passed', () => {
   const presentRows = RASPBERRY_CRON_WORKER_LANES.map((lane) => ({ ...lane, present: true }));
   const incompleteEvidence = RASPBERRY_CRON_WORKER_LANES.map((lane) => ({ name: lane.name, complete: false }));

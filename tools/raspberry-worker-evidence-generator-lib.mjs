@@ -6,7 +6,7 @@
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { dirname, isAbsolute, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createProofEnvelope, getProofEnvironment, runCommand, sanitizeEvidence } from './proof-utils.mjs';
 import { detectRaspberryTarget } from './raspberry-tool-checker-lib.mjs';
@@ -195,6 +195,18 @@ export function getLatestWorkerEvidencePaths({ outputDirectory = join(repoRoot, 
   };
 }
 
+function toPortablePath(path) {
+  return path.split(sep).join('/');
+}
+
+export function buildWorkerEvidenceManifestReference(outputPath) {
+  const relativePath = relative(repoRoot, outputPath);
+  if (relativePath && !relativePath.startsWith('..') && !isAbsolute(relativePath)) {
+    return toPortablePath(relativePath);
+  }
+  return outputPath;
+}
+
 export async function writeWorkerEvidenceFile(generatedEvidence, { outputDirectory = join(repoRoot, 'runtime_data', 'raspberry_worker_evidence'), updateLatest = true } = {}) {
   await mkdir(outputDirectory, { recursive: true });
   const timestamp = String(generatedEvidence.generated_at ?? new Date().toISOString()).replace(/[:.]/g, '-');
@@ -202,9 +214,19 @@ export async function writeWorkerEvidenceFile(generatedEvidence, { outputDirecto
   await writeFile(outputPath, `${JSON.stringify(sanitizeEvidence(generatedEvidence), null, 2)}\n`, 'utf8');
   if (updateLatest) {
     const { manifestPath, envPath } = getLatestWorkerEvidencePaths({ outputDirectory });
-    const manifest = { evidenceFile: outputPath, generatedAt: new Date().toISOString(), evidenceSource: generatedEvidence.source ?? null };
-    await writeFile(manifestPath, `${JSON.stringify(sanitizeEvidence(manifest), null, 2)}\n`, 'utf8');
-    await writeFile(envPath, `export PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE=${JSON.stringify(outputPath)}\n`, 'utf8');
+    const evidenceReference = buildWorkerEvidenceManifestReference(outputPath);
+    const generatedAt = new Date().toISOString();
+    const manifest = {
+      schema_version: 1,
+      evidence_file: evidenceReference,
+      evidenceFile: evidenceReference,
+      generated_at: generatedAt,
+      generatedAt,
+      evidence_source: generatedEvidence.source ?? null,
+      evidenceSource: generatedEvidence.source ?? null,
+    };
+    await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
+    await writeFile(envPath, `export PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE=${JSON.stringify(evidenceReference)}\n`, 'utf8');
   }
   return outputPath;
 }

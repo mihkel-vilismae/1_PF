@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { evaluateWorkerEvidence } from '../tools/raspberry-cron-worker-runtime-proof-lib.mjs';
+import { isAbsolute, join } from 'node:path';
+import { evaluateWorkerEvidence, loadOperatorEvidence } from '../tools/raspberry-cron-worker-runtime-proof-lib.mjs';
 import {
   collectWorkerEvidenceFromRuntimeFiles,
   evaluateGeneratedEvidence,
@@ -90,9 +90,49 @@ test('worker evidence writer records latest manifest and env handoff files', asy
     const latest = getLatestWorkerEvidencePaths({ outputDirectory: dir });
     const manifest = JSON.parse(await readFile(latest.manifestPath, 'utf8'));
     const envText = await readFile(latest.envPath, 'utf8');
+    assert.equal(manifest.schema_version, 1);
+    assert.equal(manifest.evidence_file, evidenceFile);
     assert.equal(manifest.evidenceFile, evidenceFile);
+    assert.doesNotMatch(JSON.stringify(manifest), /\[REDACTED/);
     assert.match(envText, /PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE=/);
     assert.match(envText, /raspberry_cron_worker_evidence_/);
+
+    const loaded = loadOperatorEvidence({ env: {}, latestManifestPath: latest.manifestPath });
+    assert.equal(loaded.load_error, null);
+    assert.equal(loaded.resolution, 'absolute');
+    assert.equal(loaded.data.worker_lanes.length, 3);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('worker evidence writer uses repo-relative latest manifest paths under runtime_data', async () => {
+  const runtimeRoot = join(process.cwd(), 'runtime_data');
+  await mkdir(runtimeRoot, { recursive: true });
+  const dir = await mkdtemp(join(runtimeRoot, 'pf-worker-evidence-'));
+  try {
+    const generatedEvidence = {
+      generated_at: '2026-06-17T00:00:00.000Z',
+      source: 'test-repo-relative-evidence',
+      worker_lanes: ['regular_stage_worker', 'playback_worker', 'screen_on_off_worker'].map((name) => ({
+        name,
+        last_invocation_at: '2026-06-17T00:00:00Z',
+        same_worker_singleton: { first_acquired: true, duplicate_skipped: true },
+        cross_worker_independence: true,
+        stale_lock: { reclaimed: true },
+      })),
+    };
+    await writeWorkerEvidenceFile(generatedEvidence, { outputDirectory: dir });
+    const latest = getLatestWorkerEvidencePaths({ outputDirectory: dir });
+    const manifest = JSON.parse(await readFile(latest.manifestPath, 'utf8'));
+    assert.equal(isAbsolute(manifest.evidence_file), false);
+    assert.match(manifest.evidence_file, /^runtime_data\//);
+    assert.doesNotMatch(JSON.stringify(manifest), /\[REDACTED/);
+
+    const loaded = loadOperatorEvidence({ env: {}, latestManifestPath: latest.manifestPath });
+    assert.equal(loaded.load_error, null);
+    assert.equal(loaded.resolution, 'repo-relative');
+    assert.equal(loaded.data.source, 'test-repo-relative-evidence');
   } finally {
     await rm(dir, { recursive: true, force: true });
   }

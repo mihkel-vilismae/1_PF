@@ -3,7 +3,7 @@
  * Implements an honest app-running evidence collector for the three worker lanes.
  */
 import { existsSync, readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname, isAbsolute, join, normalize, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runCommand, createProofEnvelope, getProofEnvironment, sanitizeEvidence } from './proof-utils.mjs';
 import { detectRaspberryTarget } from './raspberry-tool-checker-lib.mjs';
@@ -32,29 +32,92 @@ function defaultLatestWorkerEvidenceManifestPath() {
   return join(repoRoot, 'runtime_data', 'raspberry_worker_evidence', 'latest.json');
 }
 
-function readLatestEvidenceFileFromManifest(manifestPath) {
-  if (!existsSync(manifestPath)) return { file: null, source: 'none', load_error: null };
+function firstNonEmptyString(...values) {
+  for (const value of values) {
+    if (typeof value === 'string' && value.trim()) return value.trim();
+  }
+  return null;
+}
+
+function isRedactedEvidenceReference(value) {
+  return /\[REDACTED(?:_PATH)?\]/u.test(String(value ?? ''));
+}
+
+function isInsideDirectory(parent, child) {
+  const relativePath = relative(parent, child);
+  return relativePath === '' || (!relativePath.startsWith('..') && !isAbsolute(relativePath));
+}
+
+function uniqueCandidates(candidates) {
+  const seen = new Set();
+  return candidates.filter((candidate) => {
+    const key = normalize(candidate.file);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+export function resolveLatestWorkerEvidenceReference({ manifestPath, evidenceReference }) {
+  if (!evidenceReference) return { file: null, resolution: 'missing', load_error: 'latest worker evidence manifest does not contain evidence_file or evidenceFile' };
+  if (isRedactedEvidenceReference(evidenceReference)) {
+    return { file: null, resolution: 'redacted', load_error: 'latest worker evidence manifest points to a redacted evidence path; rerun npm run proof:raspberry-worker-evidence with the portable manifest writer' };
+  }
+
+  const manifestDir = dirname(manifestPath);
+  const candidates = isAbsolute(evidenceReference)
+    ? [{ file: evidenceReference, resolution: 'absolute' }]
+    : uniqueCandidates([
+      { file: resolve(repoRoot, evidenceReference), resolution: 'repo-relative' },
+      { file: resolve(manifestDir, evidenceReference), resolution: 'manifest-relative' },
+      { file: resolve(manifestDir, evidenceReference.replace(/^runtime_data[\\/]+raspberry_worker_evidence[\\/]+/u, '')), resolution: 'manifest-dir-basename' },
+    ]);
+
+  const safeCandidates = candidates.filter((candidate) => isAbsolute(evidenceReference) || isInsideDirectory(repoRoot, candidate.file));
+  if (!safeCandidates.length) {
+    return { file: null, resolution: 'outside-repo', load_error: 'latest worker evidence manifest points outside the repository; use PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE for explicit external evidence' };
+  }
+
+  const existing = safeCandidates.find((candidate) => existsSync(candidate.file));
+  if (existing) return { file: existing.file, resolution: existing.resolution, load_error: null };
+
+  return {
+    file: safeCandidates[0]?.file ?? null,
+    resolution: 'not-found',
+    load_error: `latest worker evidence file could not be found for manifest reference: ${evidenceReference}`,
+  };
+}
+
+export function readLatestEvidenceFileFromManifest(manifestPath) {
+  if (!existsSync(manifestPath)) return { file: null, source: 'none', load_error: null, resolution: 'no-manifest' };
   try {
     const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
-    if (typeof manifest.evidenceFile === 'string' && manifest.evidenceFile.trim()) {
-      return { file: manifest.evidenceFile.trim(), source: `latest:${manifestPath}`, load_error: null };
-    }
-    return { file: null, source: `latest:${manifestPath}`, load_error: 'latest worker evidence manifest does not contain evidenceFile' };
+    const evidenceReference = firstNonEmptyString(manifest.evidence_file, manifest.evidenceFile, manifest.repo_relative_evidence_file);
+    const resolved = resolveLatestWorkerEvidenceReference({ manifestPath, evidenceReference });
+    return {
+      file: resolved.file,
+      source: `latest:${manifestPath}`,
+      load_error: resolved.load_error,
+      resolution: resolved.resolution,
+      manifest_evidence_reference: evidenceReference,
+    };
   } catch (error) {
-    return { file: null, source: `latest:${manifestPath}`, load_error: error instanceof Error ? error.message : String(error) };
+    return { file: null, source: `latest:${manifestPath}`, load_error: error instanceof Error ? error.message : String(error), resolution: 'manifest-read-error' };
   }
 }
 
 export function loadOperatorEvidence({ env = process.env, evidence = null, latestManifestPath = defaultLatestWorkerEvidenceManifestPath() } = {}) {
-  if (evidence) return { source: 'injected', data: evidence, load_error: null, auto_discovered: false };
+  if (evidence) return { source: 'injected', data: evidence, load_error: null, auto_discovered: false, resolution: 'injected' };
   const explicitFile = env.PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE;
-  const discovered = explicitFile ? { file: explicitFile, source: explicitFile, load_error: null } : readLatestEvidenceFileFromManifest(latestManifestPath);
-  if (discovered.load_error) return { source: discovered.source, data: null, load_error: discovered.load_error, auto_discovered: !explicitFile };
-  if (!discovered.file) return { source: 'none', data: null, load_error: 'PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE is not set and no latest worker evidence manifest exists', auto_discovered: false };
+  const discovered = explicitFile
+    ? { file: explicitFile, source: explicitFile, load_error: null, resolution: 'explicit-env' }
+    : readLatestEvidenceFileFromManifest(latestManifestPath);
+  if (discovered.load_error) return { source: discovered.source, data: null, load_error: discovered.load_error, auto_discovered: !explicitFile, file: discovered.file, resolution: discovered.resolution };
+  if (!discovered.file) return { source: 'none', data: null, load_error: 'PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE is not set and no latest worker evidence manifest exists', auto_discovered: false, resolution: discovered.resolution ?? 'none' };
   try {
-    return { source: discovered.source, data: JSON.parse(readFileSync(discovered.file, 'utf8')), load_error: null, auto_discovered: !explicitFile, file: discovered.file };
+    return { source: discovered.source, data: JSON.parse(readFileSync(discovered.file, 'utf8')), load_error: null, auto_discovered: !explicitFile, file: discovered.file, resolution: discovered.resolution };
   } catch (error) {
-    return { source: discovered.source, data: null, load_error: error instanceof Error ? error.message : String(error), auto_discovered: !explicitFile, file: discovered.file };
+    return { source: discovered.source, data: null, load_error: error instanceof Error ? error.message : String(error), auto_discovered: !explicitFile, file: discovered.file, resolution: discovered.resolution };
   }
 }
 
@@ -133,7 +196,7 @@ export async function buildRaspberryCronWorkerRuntimeProof({ metadata, env = pro
       target_detection: target,
       expected_worker_lanes: RASPBERRY_CRON_WORKER_LANES,
       cron: { available: crontab.available, rows: crontab.rows, row_evidence: cronRows, command_result: crontab.result },
-      operator_evidence: { source: loadedEvidence.source, load_error: loadedEvidence.load_error, auto_discovered: loadedEvidence.auto_discovered === true },
+      operator_evidence: { source: loadedEvidence.source, load_error: loadedEvidence.load_error, auto_discovered: loadedEvidence.auto_discovered === true, resolution: loadedEvidence.resolution ?? null },
       worker_evidence: workerEvidence,
       status_reasons: status,
       next_steps: buildCronWorkerRuntimeNextSteps(status),
