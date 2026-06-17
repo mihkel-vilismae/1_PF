@@ -31,6 +31,11 @@ const REQUIRED_PACKAGE_SCRIPTS = Object.freeze([
   'proof:live-windows-scheduler',
 ]);
 
+const ALLOWED_TRACKED_LOCAL_TOOL_DOCS = Object.freeze([
+  'tools/mpv/windows/.gitkeep',
+  'tools/mpv/windows/README.md',
+]);
+
 /** Builds the manual proof-owned restart/recovery sequence without executing it. */
 export function buildWindowsRebootRecoveryPreflightPlan() {
   return [
@@ -88,11 +93,15 @@ function checkLocalToolBoundaries(repoRoot) {
 /** Checks Git does not currently track local media-tool bundles when Git metadata is available. */
 async function checkTrackedLocalTools(repoRoot) {
   const result = await runCommand('git', ['ls-files', 'tools/mpv', 'tools/ffmpeg'], { cwd: repoRoot, timeoutMs: 10000, detached: false });
+  const trackedEntries = result.stdout.split(/\r?\n/).filter(Boolean);
+  const unexpectedTrackedEntries = trackedEntries.filter((entry) => !ALLOWED_TRACKED_LOCAL_TOOL_DOCS.includes(entry));
   return {
     command: 'git ls-files tools/mpv tools/ffmpeg',
     exitCode: result.exitCode,
-    trackedEntries: result.stdout.split(/\r?\n/).filter(Boolean),
-    passed: result.exitCode === 0 && result.stdout.trim() === '',
+    trackedEntries,
+    allowedTrackedEntries: trackedEntries.filter((entry) => ALLOWED_TRACKED_LOCAL_TOOL_DOCS.includes(entry)),
+    unexpectedTrackedEntries,
+    passed: result.exitCode === 0 && unexpectedTrackedEntries.length === 0,
   };
 }
 
