@@ -27,6 +27,8 @@ async function inspectExecutableFile({ repoRoot, relativePath, repair, platform 
     executable_before: false,
     executable_after: false,
     repaired: false,
+    repair_supported: platform !== 'win32',
+    repair_skipped_reason: null,
     error: null,
   };
   try {
@@ -37,6 +39,8 @@ async function inspectExecutableFile({ repoRoot, relativePath, repair, platform 
     if (entry.exists && repair && !entry.executable_before && platform !== 'win32') {
       await chmod(absolutePath, (before.mode & 0o777) | 0o755);
       entry.repaired = true;
+    } else if (entry.exists && repair && !entry.executable_before && platform === 'win32') {
+      entry.repair_skipped_reason = 'POSIX executable-bit repair is not supported on win32 filesystem checks';
     }
     const after = await stat(absolutePath);
     entry.after_mode_octal = `0${(after.mode & 0o777).toString(8)}`;
@@ -84,7 +88,7 @@ export async function buildRaspberryExecutablePermissionsProof({ metadata, repoR
       evaluation,
       next_steps: evaluation.proofStatus === 'PASSED'
         ? ['Run npm run proof:raspberry-native-image-playback and npm run proof:raspberry-native-video-playback.']
-        : ['Run npm run proof:raspberry-executable-permissions -- --repair from the repo root after extracting the ZIP.'],
+        : ['Run npm run proof:raspberry-executable-permissions -- --repair from the repo root after extracting the ZIP on Linux/Raspberry; Windows filesystem checks cannot prove POSIX executable-bit repair.'],
       non_claims: ['does not prove native playback by itself', 'does not run the dashboard', 'does not install cron', 'does not reboot or power-cycle the Raspberry'],
     }),
     knownLimitations: evaluation.proofStatus === 'PASSED'
