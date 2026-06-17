@@ -417,3 +417,44 @@ npm run proof:linux-fedora-readiness
 ```
 
 Fedora proofs are Linux rehearsal evidence only. Final v1 still requires Raspberry-native playback, device display overlay, and Raspberry readiness proofs.
+
+## One-copy-paste ZIP start: frontend + backend + SQLite DB
+
+Use this when you have a fresh PF_login repository ZIP and want a local Windows start without manually extracting, finding the repo root, installing dependencies, preparing the SQLite DB, and launching the two servers.
+
+PowerShell, from the folder containing the PF_login repository ZIP:
+
+```powershell
+$zip = Get-ChildItem -File -Filter "PF_login--v*.zip" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+if (-not $zip) { throw "No PF_login--v*.zip found in this folder." }
+$extractRoot = Join-Path (Get-Location) ([IO.Path]::GetFileNameWithoutExtension($zip.Name))
+if (Test-Path $extractRoot) { Remove-Item $extractRoot -Recurse -Force }
+Expand-Archive -LiteralPath $zip.FullName -DestinationPath $extractRoot -Force
+$repo = Get-ChildItem -Path $extractRoot -Recurse -File -Filter VERSION |
+  Where-Object { Test-Path (Join-Path $_.DirectoryName "package.json") } |
+  Select-Object -First 1
+if (-not $repo) { throw "Could not find PF_login repo root after extraction." }
+Set-Location $repo.DirectoryName
+Get-Content VERSION
+git rev-parse --short HEAD
+powershell -NoProfile -ExecutionPolicy Bypass -File .\START_WIN.PS1
+```
+
+`START_WIN.PS1` is the root-level Windows launcher. It installs dependencies, builds the frontend, creates the SQLite DB only when the configured `DB_PATH` file is missing, then opens the backend API and Vite frontend in separate PowerShell windows.
+
+RaspberryOS users should extract the repository ZIP, open a terminal in the repo root, then run:
+
+```bash
+chmod +x ./START_RASPBERRYOS.SH
+./START_RASPBERRYOS.SH
+```
+
+The Raspberry launcher performs the same startup intent for RaspberryOS: dependency install, frontend build, SQLite DB creation only when the configured `DB_PATH` file is missing, then background backend/frontend startup with logs and PID files under `runtime_data/start_launcher/`.
+
+Safety notes:
+
+- Existing `.env` files are preserved.
+- If `.env` is missing, the launchers first try a parent `../.env`; if that is missing, they create a local `.env` from `example.env` for local startup only.
+- Existing SQLite DB files are not recreated or deleted.
+- Real iCloud/provider/device proof is not claimed by these launchers.
+
