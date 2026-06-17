@@ -3,8 +3,13 @@
  * Implements an honest app-running evidence collector for the three worker lanes.
  */
 import { existsSync, readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { runCommand, createProofEnvelope, getProofEnvironment, sanitizeEvidence } from './proof-utils.mjs';
 import { detectRaspberryTarget } from './raspberry-tool-checker-lib.mjs';
+
+const __filename = fileURLToPath(import.meta.url);
+const repoRoot = dirname(dirname(__filename));
 
 export const RASPBERRY_CRON_WORKER_LANES = Object.freeze([
   { name: 'regular_stage_worker', cadence: '*/10 * * * *', scheduler: 'regular-stage-worker', requiredFragments: ['*/10', '--scheduler regular-stage-worker'] },
@@ -23,14 +28,33 @@ export function evaluateCronRows(rows = [], lanes = RASPBERRY_CRON_WORKER_LANES)
   });
 }
 
-export function loadOperatorEvidence({ env = process.env, evidence = null } = {}) {
-  if (evidence) return { source: 'injected', data: evidence, load_error: null };
-  const file = env.PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE;
-  if (!file) return { source: 'none', data: null, load_error: 'PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE is not set' };
+function defaultLatestWorkerEvidenceManifestPath() {
+  return join(repoRoot, 'runtime_data', 'raspberry_worker_evidence', 'latest.json');
+}
+
+function readLatestEvidenceFileFromManifest(manifestPath) {
+  if (!existsSync(manifestPath)) return { file: null, source: 'none', load_error: null };
   try {
-    return { source: file, data: JSON.parse(readFileSync(file, 'utf8')), load_error: null };
+    const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+    if (typeof manifest.evidenceFile === 'string' && manifest.evidenceFile.trim()) {
+      return { file: manifest.evidenceFile.trim(), source: `latest:${manifestPath}`, load_error: null };
+    }
+    return { file: null, source: `latest:${manifestPath}`, load_error: 'latest worker evidence manifest does not contain evidenceFile' };
   } catch (error) {
-    return { source: file, data: null, load_error: error instanceof Error ? error.message : String(error) };
+    return { file: null, source: `latest:${manifestPath}`, load_error: error instanceof Error ? error.message : String(error) };
+  }
+}
+
+export function loadOperatorEvidence({ env = process.env, evidence = null, latestManifestPath = defaultLatestWorkerEvidenceManifestPath() } = {}) {
+  if (evidence) return { source: 'injected', data: evidence, load_error: null, auto_discovered: false };
+  const explicitFile = env.PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE;
+  const discovered = explicitFile ? { file: explicitFile, source: explicitFile, load_error: null } : readLatestEvidenceFileFromManifest(latestManifestPath);
+  if (discovered.load_error) return { source: discovered.source, data: null, load_error: discovered.load_error, auto_discovered: !explicitFile };
+  if (!discovered.file) return { source: 'none', data: null, load_error: 'PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE is not set and no latest worker evidence manifest exists', auto_discovered: false };
+  try {
+    return { source: discovered.source, data: JSON.parse(readFileSync(discovered.file, 'utf8')), load_error: null, auto_discovered: !explicitFile, file: discovered.file };
+  } catch (error) {
+    return { source: discovered.source, data: null, load_error: error instanceof Error ? error.message : String(error), auto_discovered: !explicitFile, file: discovered.file };
   }
 }
 
@@ -65,7 +89,7 @@ export function determineCronWorkerRuntimeStatus({ target, cronAvailable, cronRo
   if (missingRows.length) blockReasons.push(`missing managed cron rows for: ${missingRows.join(', ')}`);
   if (operatorEvidence.load_error) blockReasons.push(operatorEvidence.load_error);
   const incompleteEvidence = workerEvidence.filter((row) => !row.complete).map((row) => row.name);
-  if (!operatorEvidence.load_error && incompleteEvidence.length) failedReasons.push(`incomplete worker evidence for: ${incompleteEvidence.join(', ')}`);
+  if (!operatorEvidence.load_error && incompleteEvidence.length) blockReasons.push(`incomplete worker evidence for: ${incompleteEvidence.join(', ')}`);
   if (blockReasons.length) return { proofStatus: 'BLOCKED', blockReasons, failedReasons, missingRows, incompleteEvidence };
   if (failedReasons.length) return { proofStatus: 'FAILED', blockReasons, failedReasons, missingRows, incompleteEvidence };
   return { proofStatus: 'PASSED', blockReasons, failedReasons, missingRows, incompleteEvidence };
@@ -77,7 +101,7 @@ export function buildCronWorkerRuntimeNextSteps(status) {
   const steps = [];
   if (status.missingRows?.length) steps.push(`Install or repair managed cron rows for: ${status.missingRows.join(', ')}.`);
   if (status.blockReasons?.some((reason) => /PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE/.test(reason))) {
-    steps.push('Run npm run proof:raspberry-worker-evidence, then export the generated PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE path before rerunning cron runtime proof.');
+    steps.push('Run npm run proof:raspberry-worker-evidence, then rerun this proof; it auto-loads runtime_data/raspberry_worker_evidence/latest.json. You may still export PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE explicitly to override the latest file.');
   }
   if (status.incompleteEvidence?.length) {
     steps.push(`Complete worker evidence for: ${status.incompleteEvidence.join(', ')}; each lane needs invocation, duplicate-skip, cross-worker independence, and stale-lock reclaim evidence.`);
@@ -109,7 +133,7 @@ export async function buildRaspberryCronWorkerRuntimeProof({ metadata, env = pro
       target_detection: target,
       expected_worker_lanes: RASPBERRY_CRON_WORKER_LANES,
       cron: { available: crontab.available, rows: crontab.rows, row_evidence: cronRows, command_result: crontab.result },
-      operator_evidence: { source: loadedEvidence.source, load_error: loadedEvidence.load_error },
+      operator_evidence: { source: loadedEvidence.source, load_error: loadedEvidence.load_error, auto_discovered: loadedEvidence.auto_discovered === true },
       worker_evidence: workerEvidence,
       status_reasons: status,
       next_steps: buildCronWorkerRuntimeNextSteps(status),

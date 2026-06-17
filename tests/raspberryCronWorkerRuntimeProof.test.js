@@ -1,11 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import {
   RASPBERRY_CRON_WORKER_LANES,
   evaluateCronRows,
   evaluateWorkerEvidence,
   determineCronWorkerRuntimeStatus,
   buildCronWorkerRuntimeNextSteps,
+  loadOperatorEvidence,
 } from '../tools/raspberry-cron-worker-runtime-proof-lib.mjs';
 
 test('cron worker proof defines the three required worker lanes and cadences', () => {
@@ -55,4 +59,42 @@ test('cron worker runtime next steps name missing worker evidence requirements',
   assert.match(steps.join('\n'), /playback_worker/);
   assert.match(steps.join('\n'), /duplicate-skip/);
   assert.match(steps.join('\n'), /stale-lock/);
+});
+
+
+test('cron worker runtime auto-loads latest generated evidence manifest', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'pf-latest-worker-evidence-'));
+  try {
+    const evidencePath = join(dir, 'evidence.json');
+    const latestPath = join(dir, 'latest.json');
+    const evidence = { worker_lanes: RASPBERRY_CRON_WORKER_LANES.map((lane) => ({
+      name: lane.name,
+      last_invocation_at: '2026-06-17T00:00:00Z',
+      same_worker_singleton: { first_acquired: true, duplicate_skipped: true },
+      cross_worker_independence: true,
+      stale_lock: { reclaimed: true },
+    })) };
+    await writeFile(evidencePath, `${JSON.stringify(evidence)}\n`, 'utf8');
+    await writeFile(latestPath, `${JSON.stringify({ evidenceFile: evidencePath })}\n`, 'utf8');
+    const loaded = loadOperatorEvidence({ env: {}, latestManifestPath: latestPath });
+    assert.equal(loaded.load_error, null);
+    assert.equal(loaded.auto_discovered, true);
+    assert.equal(loaded.data.worker_lanes.length, 3);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('cron worker runtime treats incomplete loaded worker evidence as blocked not passed', () => {
+  const presentRows = RASPBERRY_CRON_WORKER_LANES.map((lane) => ({ ...lane, present: true }));
+  const incompleteEvidence = RASPBERRY_CRON_WORKER_LANES.map((lane) => ({ name: lane.name, complete: false }));
+  const status = determineCronWorkerRuntimeStatus({
+    target: { raspberry_like: true },
+    cronAvailable: true,
+    cronRows: presentRows,
+    workerEvidence: incompleteEvidence,
+    operatorEvidence: { load_error: null },
+  });
+  assert.equal(status.proofStatus, 'BLOCKED');
+  assert.match(status.blockReasons.join('\n'), /incomplete worker evidence/);
 });
