@@ -47,6 +47,20 @@ test('app-running target pack passes latest worker evidence env to dependent pro
   assert.deepEqual(envSeen, [evidencePath, evidencePath, evidencePath]);
 });
 
+
+test('app-running target pack includes implemented v1 gate proof commands once', () => {
+  const commands = APP_RUNNING_TARGET_PACK_STEPS.map((step) => step.args.join(' '));
+  for (const command of [
+    'run proof:raspberry-tool-checker',
+    'run proof:raspberry-generated-fixtures',
+    'run proof:real-geocode-provider-chain',
+    'run proof:raspberry-native-image-playback',
+    'run proof:raspberry-native-video-playback',
+  ]) {
+    assert.equal(commands.filter((entry) => entry === command).length, 1, command);
+  }
+});
+
 test('app-running target pack passes only on Raspberry when required steps pass', () => {
   const stepResults = APP_RUNNING_TARGET_PACK_STEPS.map((step) => ({ id: step.id, required_status: step.requiredStatus, reported_status: step.requiredStatus ?? 'BLOCKED', exit_code: 0, timed_out: false, passed_required_status: true }));
   assert.equal(evaluateAppRunningTargetPack({ target: { raspberry_like: true, explicit_override_used: false }, stepResults }).proofStatus, 'PASSED');

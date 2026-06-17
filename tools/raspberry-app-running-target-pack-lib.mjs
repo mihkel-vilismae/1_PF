@@ -19,6 +19,7 @@ export const APP_RUNNING_TARGET_PACK_STEPS = Object.freeze([
   { id: 'cron_worker_runtime', command: 'npm', args: ['run', 'proof:raspberry-cron-worker-runtime'], requiredStatus: 'PASSED', usesLatestWorkerEvidence: true },
   { id: 'app_running_status', command: 'npm', args: ['run', 'proof:raspberry-app-running-status'], requiredStatus: 'PASSED', usesLatestWorkerEvidence: true },
   { id: 'app_running_chain', command: 'npm', args: ['run', 'proof:raspberry-app-running-chain'], requiredStatus: 'PASSED', usesLatestWorkerEvidence: true },
+  { id: 'real_geocode_provider_chain', command: 'npm', args: ['run', 'proof:real-geocode-provider-chain'], requiredStatus: 'PASSED', timeoutMs: 180000 },
   { id: 'native_image_playback', command: 'npm', args: ['run', 'proof:raspberry-native-image-playback'], requiredStatus: 'PASSED', timeoutMs: 180000 },
   { id: 'native_video_playback', command: 'npm', args: ['run', 'proof:raspberry-native-video-playback'], requiredStatus: 'PASSED', timeoutMs: 180000 },
   { id: 'v1_readiness', command: 'npm', args: ['run', 'proof:raspberry-v1-readiness'], requiredStatus: null },

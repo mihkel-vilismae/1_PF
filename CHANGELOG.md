@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.125 - 2026-06-17
+
+- Add `proof:real-geocode-provider-chain` to the Raspberry app-running target-pack queue alongside the already queued v1 target/tool/generated-fixture/native-playback proofs.
+- Guard the queue so each implemented v1 gate proof command appears once and still uses internal `proof_status` semantics.
+
 ## 0.8.124 - 2026-06-17
 
 - Add a standalone worker-evidence handoff regression test proving cron runtime and app-running status can pass after generated evidence is persisted.
