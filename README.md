@@ -11,6 +11,11 @@ This baseline adds documentation/OpenSpec/test coverage for the Raspberry app-ru
 This is not a runtime proof. Raspberry cron, reboot recovery, power-loss recovery, monitor-pixel proof, and production iCloud continuation remain non-claims until target evidence exists.
 
 
+
+## v0.8.128 reusable skill-check prompt
+
+For future chats that produce reusable proof, workflow, handoff, or documentation rules, use [`docs/10_runbooks/improve_create_skills_flow_prompt.md`](docs/10_runbooks/improve_create_skills_flow_prompt.md). The prompt runs a 3x2 ACR pass over the current chat, separates accepted/rejected/deferred skill candidates, and preserves the rule that prompts and memories are not runtime proof.
+
 ## v0.8.127 auth checkpoint proof note
 
 Manual/provider login stages should use an app-owned authentication checkpoint proof contract before downstream real-provider proofs run. The intended state flow is `AUTH_REQUIRED` -> `AUTH_READY_FOR_OPERATOR` -> operator login -> `AUTH_SESSION_DETECTED` -> `AUTH_SESSION_USABLE` or `AUTH_BLOCKED`. The assistant may read sanitized proof artifacts, but it is not the proof authority; browser console text, an opened login page, or local session files alone are not enough. See [`docs/20_architecture_and_specs/openspec/auth_checkpoint_proof_openspec.md`](docs/20_architecture_and_specs/openspec/auth_checkpoint_proof_openspec.md).

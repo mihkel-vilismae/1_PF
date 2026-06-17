@@ -50,6 +50,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/10_runbooks/gps_metadata_sources.md` | GPS metadata source formats for EXIF, sidecars, filename tokens, and path tokens. |
 | `docs/10_runbooks/geocode_provider_activation.md` | Safe geocode provider activation and cache-first verification. |
 | `docs/10_runbooks/documentation_workflow_and_inventory.md` | Documentation workflow and inventory rules. |
+| `docs/10_runbooks/improve_create_skills_flow_prompt.md` | Reusable 3x2 ACR prompt for extracting/upgrading workflow skills from the current chat. |
 | `docs/10_runbooks/raspberry_project_owned_launcher.md` | Raspberry project-owned launcher skeleton runbook. |
 
 

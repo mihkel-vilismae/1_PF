@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.128 - 2026-06-17
+
+- Add a reusable improve/create skills flow prompt for future chat-to-workflow extraction.
+- Document accepted/rejected/deferred skill update rules so future prompts do not duplicate memory or over-store sensitive context.
+- Link the prompt from README and documentation table of contents.
+
 ## 0.8.127 - 2026-06-17
 
 - Add an auth checkpoint OpenSpec for manual/provider login stages before real iCloud/download proofs.
