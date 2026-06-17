@@ -24,8 +24,16 @@ npm run proof:raspberry-cron-worker-runtime
 npm run proof:raspberry-app-running-status
 npm run proof:raspberry-app-running-chain
 npm run proof:raspberry-app-running-pass
+npm run proof:raspberry-tool-checker
+npm run proof:raspberry-generated-fixtures
+npm run proof:real-geocode-provider-chain
+npm run proof:raspberry-native-image-playback
+npm run proof:raspberry-native-video-playback
 npm run proof:raspberry-v1-readiness
 ```
+
+
+The app-running chain can pass by carrying freshly generated worker evidence internally. The direct standalone commands must also pass from the persisted latest worker-evidence handoff before the app-running gate is considered stable. When those standalone commands are repaired, any remaining readiness blockers should move to the still-missing or real-artifact gates rather than being hidden.
 
 Real-provider proofs such as iCloudPD and real geocode remain opt-in and must be run only with operator-approved credentials/configuration. Artifacts should prove status and sanitized facts, not secret values or raw provider output.
 

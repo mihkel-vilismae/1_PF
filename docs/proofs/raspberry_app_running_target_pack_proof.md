@@ -19,11 +19,12 @@ This proof runs the main app-running/v1-readiness target chain in order:
 9. cron worker runtime proof
 10. app-running status proof
 11. app-running chain proof
-12. native Raspberry image playback proof
-13. native Raspberry video playback proof
-14. v1 readiness summary
+12. real geocode provider-chain proof
+13. native Raspberry image playback proof
+14. native Raspberry video playback proof
+15. v1 readiness summary
 
-It passes only on a non-override Raspberry target when the required target/setup/startup/cron/app-running/native-playback steps report `PASSED`. It does not prove real iCloud/GPS/geocode, address overlay, regular worker product work, dashboard status, reboot recovery, or physical power-loss recovery.
+It passes only on a non-override Raspberry target when the required target/setup/startup/cron/app-running/geocode/native-playback steps report `PASSED` from their internal JSON `proof_status`. A shell exit code of `0` is not enough, because proof commands may exit successfully while writing an honest `BLOCKED` artifact. It does not prove real iCloud, address overlay, regular worker product work, dashboard status, reboot recovery, or physical power-loss recovery.
 
 ## Uploadable ZIP bundle
 
@@ -32,3 +33,7 @@ As of v0.8.65, the command also creates a ZIP bundle and prints `bundleZipPath`.
 As of v0.8.66, the target pack also includes the currently available v1-readiness proof artifacts so `proof:raspberry-v1-readiness` has the target/tool/native/app-running evidence it expects before future product/provider gates are implemented.
 
 As of v0.8.68, the app-running PASS harness intentionally runs before worker-evidence-dependent checks. This prevents the target pack from blocking on incomplete startup-smoke evidence when the later harness would generate complete duplicate-skip and stale-lock evidence.
+
+As of v0.8.125, the target pack also runs `proof:real-geocode-provider-chain` with the other implemented v1 gate proof commands. This improves queue coverage only; the geocode chain still needs operator-approved real-provider configuration and may honestly return `BLOCKED`.
+
+As of v0.8.126, the target pack documentation explicitly separates queue completion, command exit code, and internal proof truth. The uploadable bundle is useful for analysis, but each included artifact's `proof_status` remains authoritative.

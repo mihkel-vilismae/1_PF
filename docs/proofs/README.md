@@ -176,6 +176,12 @@ The plan requires same-worker singleton checks, duplicate same-worker skip evide
 
 `npm run proof:raspberry-app-running-chain` runs worker evidence generation, cron worker runtime proof, and app-running status proof in one chain. See [`raspberry_app_running_chain_proof.md`](raspberry_app_running_chain_proof.md).
 
+### Standalone versus chained app-running proof
+
+The chain proof carries freshly generated worker evidence in-process. The standalone commands use the portable latest handoff under `runtime_data/raspberry_worker_evidence/latest.json` unless `PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE` explicitly overrides it. These paths must remain machine-readable; human-facing artifacts and logs may sanitize paths, but the runtime handoff must not use `[REDACTED]` as a file reference.
+
+The standalone path is intentionally stricter than a successful shell exit: `proof_status` remains the proof truth, and incomplete or stale worker evidence remains `BLOCKED`.
+
 ## Raspberry app-running PASS harness
 
 `npm run proof:raspberry-app-running-pass` runs the proof-owned app-running harness and feeds generated evidence into the app-running chain. See [`raspberry_app_running_pass_harness_proof.md`](raspberry_app_running_pass_harness_proof.md).
@@ -200,7 +206,7 @@ The plan requires same-worker singleton checks, duplicate same-worker skip evide
 
 ## Raspberry v1.0 readiness
 
-`npm run proof:raspberry-v1-readiness` scans latest local proof artifacts and evaluates them against the answered v1.0 release-gate matrix. It is a gate evaluator, not a substitute for target proof execution. See [`raspberry_v1_readiness_proof.md`](raspberry_v1_readiness_proof.md).
+`npm run proof:raspberry-v1-readiness` scans latest local proof artifacts and evaluates them against the answered v1.0 release-gate matrix. It is a gate evaluator, not a substitute for target proof execution. A repaired standalone cron/app-running handoff can remove the app-running blocker, but readiness must still remain `BLOCKED` while required real-artifact gates are missing, planned, blocked, partial, timed out, failed, or unknown. See [`raspberry_v1_readiness_proof.md`](raspberry_v1_readiness_proof.md).
 
 
 ## Raspberry worker startup smoke
@@ -211,7 +217,7 @@ The plan requires same-worker singleton checks, duplicate same-worker skip evide
 
 | Raspberry regular worker product pipeline | `npm run proof:raspberry-regular-stage-worker-product-pipeline` | Evidence gate for real regular_stage_worker download/index/GPS/geocode/queue work. |
 
-| Raspberry app-running target pack | `npm run proof:raspberry-app-running-target-pack` | Runs the setup/startup/cron/app-running/native-playback target chain, packages an uploadable ZIP, and summarizes v1 readiness blockers. |
+| Raspberry app-running target pack | `npm run proof:raspberry-app-running-target-pack` | Runs the setup/startup/cron/app-running/geocode/native-playback target chain, packages an uploadable ZIP, and summarizes v1 readiness blockers. Interpret each step by its internal `proof_status`; shell exit code alone is not proof truth. |
 
 | Raspberry address overlay evidence template | `npm run proof:raspberry-address-overlay-template` | Writes a non-claiming operator evidence JSON template for the address overlay gate. |
 

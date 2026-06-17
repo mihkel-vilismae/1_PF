@@ -16,7 +16,7 @@ Required gates include Raspberry target tooling, install/runtime preflight, real
 
 ## PASS criteria
 
-The proof returns `PASSED` only when every v1.0-required gate has the latest required proof artifacts with `proof_status: "PASSED"`.
+The proof returns `PASSED` only when every v1.0-required gate has the latest required proof artifacts with `proof_status: "PASSED"`. Command exit code is not used as proof truth; the readiness evaluator reads the artifact status.
 
 ## BLOCKED criteria
 
@@ -24,4 +24,4 @@ The proof returns `BLOCKED` when a required gate has missing, planned, blocked, 
 
 ## Non-claims
 
-This proof does not run the missing product proofs by itself, does not validate real iCloud/GPS/geocode without corresponding proof artifacts, does not claim reboot or physical power-loss recovery for v1.0, and does not treat Windows evidence as Raspberry v1.0 evidence.
+This proof does not run the missing product proofs by itself, does not validate real iCloud/GPS/geocode without corresponding proof artifacts, does not claim reboot or physical power-loss recovery for v1.0, and does not treat Windows evidence as Raspberry v1.0 evidence. A repaired standalone app-running proof removes only that specific blocker; it does not imply v1 readiness while real provider, product-pipeline, display, dashboard, screen-worker, or planned proof gates remain blocked or missing.

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.126 - 2026-06-17
+
+- Document the Batch 6 standalone worker-evidence handoff and proof-queue status boundaries after the Slice 2-4 implementation.
+- Clarify that Raspberry target-pack queue results must be interpreted from internal `proof_status`, not shell exit code alone.
+- Preserve the v1 readiness non-claim: even with standalone cron/app-running handoff repaired, missing/planned/blocked real-artifact gates keep readiness `BLOCKED`.
+
 ## 0.8.125 - 2026-06-17
 
 - Add `proof:real-geocode-provider-chain` to the Raspberry app-running target-pack queue alongside the already queued v1 target/tool/generated-fixture/native-playback proofs.
