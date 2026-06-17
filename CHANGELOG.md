@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.124 - 2026-06-17
+
+- Add a standalone worker-evidence handoff regression test proving cron runtime and app-running status can pass after generated evidence is persisted.
+- Add negative coverage proving redacted latest handoff paths remain `BLOCKED`.
+
 ## 0.8.123 - 2026-06-17
 
 - Route standalone app-running status through the same resolved latest worker-evidence source used by the cron runtime proof.
