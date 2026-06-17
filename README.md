@@ -12,6 +12,11 @@ This is not a runtime proof. Raspberry cron, reboot recovery, power-loss recover
 
 
 
+
+## v0.8.129 Voice AI transcript intake
+
+Messy spoken transcript text is valid project input when it contains requirements, proof-stage ideas, or product goals. Use [`docs/10_runbooks/voice_ai_transcript_intake.md`](docs/10_runbooks/voice_ai_transcript_intake.md) to extract intent, mark uncertain fragments, and avoid treating transcription noise as exact implementation truth.
+
 ## v0.8.128 reusable skill-check prompt
 
 For future chats that produce reusable proof, workflow, handoff, or documentation rules, use [`docs/10_runbooks/improve_create_skills_flow_prompt.md`](docs/10_runbooks/improve_create_skills_flow_prompt.md). The prompt runs a 3x2 ACR pass over the current chat, separates accepted/rejected/deferred skill candidates, and preserves the rule that prompts and memories are not runtime proof.

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.129 - 2026-06-17
+
+- Add a Voice AI transcript intake runbook for converting messy spoken project notes into scoped requirements.
+- Document interruption handling for garbled transcript fragments during implementation work.
+- Link the transcript rule from README and documentation table of contents.
+
 ## 0.8.128 - 2026-06-17
 
 - Add a reusable improve/create skills flow prompt for future chat-to-workflow extraction.
