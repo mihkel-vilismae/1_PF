@@ -1,5 +1,11 @@
 # Changelog
 
+
+## 0.8.188
+
+- Added a secret-safe real download continuation readiness preflight proof.
+- Added `proof:real-download-readiness` to check opt-in, route-plan shape, mock-route avoidance, and download-directory resolution without calling the backend or downloading media.
+
 ## 0.8.187 - Real iCloudPD readiness preflight
 
 - Added `proof:real-icloudpd-readiness` as a no-download preflight for iCloudPD/auth readiness.
