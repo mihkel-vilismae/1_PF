@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.8.154",
+  "version": "0.8.155",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -80,7 +80,8 @@
     "proof:debug-page-runtime": "tsx --test tests/debugPageRuntime.test.js",
     "proof:runtime-status-projection": "tsx --test tests/runtimeStatusProjection.test.js",
     "proof:view-a-refresh-plan": "tsx --test tests/viewARefreshPlan.test.js",
-    "proof:view-a-mode-safety": "tsx --test tests/viewARefreshPlan.test.js"
+    "proof:view-a-mode-safety": "tsx --test tests/viewARefreshPlan.test.js",
+    "proof:view-c-readonly-wording": "tsx --test tests/viewCReadOnlyWording.test.js"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.155 - View C read-only wording cleanup
+
+- Reconciled View C restore wording so the current state is explicitly read-only.
+- Added proof that no enabled restore action is exposed from View C.
+
 ## 0.8.154 - View A mode safety proof
 
 - Added explicit Test/Real mode regression proof for View A preload/refresh behavior.

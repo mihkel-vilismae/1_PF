@@ -50,12 +50,11 @@ export function renderLastRunView(state, dashboardVisualMode = null) {
       <article class="card card--hybrid">
         <header class="card__header"><div><p class="card__code">C5</p><h3>Restore and evidence</h3></div><div class="card__header-tags">${renderSourceBadge('hybrid', 'PARTIAL')}</div></header>
         <p class="card__copy">
-          The “Refresh” control reads the backend orchestration summary. The “Resume” control stays visible for discoverability but
-          remains disabled as a placeholder and does not call any restore endpoint.
+          The “Refresh” control reads the backend orchestration summary. Restore is deliberately read-only here: the placeholder control stays visible for discoverability, remains disabled when no valid run exists, and does not call any restore endpoint.
         </p>
         <div class="button-row">
           <button class="button button--secondary" data-action="refresh-last-run">Refresh last run</button>
-          <button class="button button--primary" data-action="resume-last-run" ${detailsDisabled ? 'disabled' : ''}>Resume from saved state (placeholder)</button>
+          <button class="button button--primary" data-action="resume-last-run" data-restore-contract-status="not-implemented" disabled aria-disabled="true">Restore action not implemented</button>
         </div>
         <div class="log-surface" data-scroll-preserve="log-C">${renderLogEntries(state.logs.C, { sourceKey: 'C' })}</div>
       </article>
