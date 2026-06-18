@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.183 - Ordered proof-runner documentation
+
+- Documented the ordered proof-runner flow: proof-producing commands first, v1 readiness second, final summary last.
+- Updated the proof catalog for the proof-runner queue and final-summary commands.
+
 ## 0.8.182 - Proof runner final readiness summary
 
 - Added `proof:proof-runner-final-summary` to summarize the latest readiness artifact after proof-producing commands run.

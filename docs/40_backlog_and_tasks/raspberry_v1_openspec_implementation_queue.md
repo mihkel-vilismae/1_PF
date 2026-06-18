@@ -23,6 +23,11 @@ This queue converts the improved OpenSpec bundle into implementation-ready work 
 
 ## OpenSpec implementation rule
 
+### Proof-runner final summary rule
+
+Raspberry proof-report launchers should run proof-producing commands before `npm run proof:raspberry-v1-readiness`, and then run `npm run proof:proof-runner-final-summary` as the final summary marker. This keeps the uploaded evidence ZIP from reporting later provider artifacts as missing merely because the readiness summary ran too early.
+
+
 Every implementation slice after v0.8.77 must reference at least one `OSQ-*` item in its changelog entry or proof docs. If a slice changes runtime behavior without a matching queue/spec/proof update, it is incomplete.
 
 ## Next recommended slices
