@@ -16,6 +16,10 @@ export const REGULAR_STAGE_WORKER_PRODUCT_STAGES = Object.freeze([
 
 export function buildRegularWorkerProductEvidenceTemplate() {
   return {
+    evidence_schema_version: 1,
+    source_kind: 'unset',
+    staged_write_mode: true,
+    production_mutation_claimed: false,
     media_source_observed: false,
     download_or_import_completed: false,
     index_completed: false,
@@ -25,6 +29,7 @@ export function buildRegularWorkerProductEvidenceTemplate() {
     worker_status_product_work_claimed: false,
     observed_at: new Date().toISOString(),
     operator_note: 'Set required fields to true only after regular_stage_worker performs real product pipeline work on the Raspberry.',
+    required_proof_boundary: 'A later proof may pass only with real target/provider evidence; this template alone is not product proof.',
   };
 }
 

@@ -131,11 +131,12 @@
         "docs/20_architecture_and_specs/openspec/raspberry_v1_openspec_traceability_matrix.md",
         "docs/20_architecture_and_specs/openspec/raspberry_v1_release_gate_matrix_openspec.md",
         "tools/raspberry-v1-readiness-lib.mjs",
-        "tests/regularWorkerProductContract.test.js"
+        "tests/regularWorkerProductContract.test.js",
+        "tests/regularWorkerProductEvidenceTemplate.test.js"
       ],
       "next_action": "Implement/prove real download/index/GPS/geocode/queue worker path after staged product contract remains passing.",
       "runtime_implementation_claim": false,
-      "notes": "; Product contract proof added for staged-write/non-claim boundaries."
+      "notes": "; Product contract proof added for staged-write/non-claim boundaries.; Product evidence template now carries schema/staged-write/non-production fields."
     },
     {
       "id": "V1-GATE-006",

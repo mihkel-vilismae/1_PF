@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.163 - Regular worker product evidence envelope
+
+- Added staged-write and non-production defaults to the regular worker product evidence template.
+- Added proof that the template enables evidence collection but cannot pass product proof by itself.
+
 ## 0.8.162 - Regular worker product contract proof
 
 - Refined regular worker product pipeline OpenSpec around staged-write boundaries.
