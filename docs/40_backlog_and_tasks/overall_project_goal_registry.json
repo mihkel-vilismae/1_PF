@@ -237,324 +237,400 @@
       "id": "DBG-GOAL-001",
       "title": "Add Debug page route",
       "category": "debug_page",
-      "status_enum": "SPECIFIED",
-      "proof_command_state": "PLANNED_COMMAND",
-      "proof_command": "planned proof command not implemented yet",
-      "proof_status": "PLANNED",
+      "status_enum": "IMPLEMENTED",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:debug-page-runtime",
+      "proof_status": "PASSED",
       "source_paths": [
         "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/10_runbooks/debug_page_runbook.md"
+        "docs/10_runbooks/debug_page_runbook.md",
+        "dashboard/views/debugView.ts",
+        "dashboard/services/debugPageModel.ts",
+        "dashboard/app.ts",
+        "tests/debugPageRuntime.test.js"
       ],
-      "next_action": "UI/router proof later",
-      "runtime_implementation_claim": false,
-      "notes": "Area: Navigation"
+      "next_action": "Keep Debug route runtime proof passing; no Raspberry/provider proof implied.",
+      "runtime_implementation_claim": true,
+      "notes": "Area: Navigation; Runtime scope: browser-local/fake/mock only; no real crontab, production media/database, worker process, provider, Raspberry, or hardware proof."
     },
     {
       "id": "DBG-GOAL-002",
       "title": "Add bottom sidebar Debug entry",
       "category": "debug_page",
-      "status_enum": "SPECIFIED",
-      "proof_command_state": "PLANNED_COMMAND",
-      "proof_command": "planned proof command not implemented yet",
-      "proof_status": "PLANNED",
+      "status_enum": "IMPLEMENTED",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:debug-page-runtime",
+      "proof_status": "PASSED",
       "source_paths": [
         "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/10_runbooks/debug_page_runbook.md"
+        "docs/10_runbooks/debug_page_runbook.md",
+        "dashboard/views/debugView.ts",
+        "dashboard/services/debugPageModel.ts",
+        "dashboard/app.ts",
+        "tests/debugPageRuntime.test.js"
       ],
-      "next_action": "UI/static proof later",
-      "runtime_implementation_claim": false,
-      "notes": "Area: Navigation"
+      "next_action": "Keep sidebar Debug entry runtime proof passing.",
+      "runtime_implementation_claim": true,
+      "notes": "Area: Navigation; Runtime scope: browser-local/fake/mock only; no real crontab, production media/database, worker process, provider, Raspberry, or hardware proof."
     },
     {
       "id": "DBG-GOAL-003",
       "title": "Add sidebar version tracker near Debug",
       "category": "debug_page",
-      "status_enum": "SPECIFIED",
-      "proof_command_state": "PLANNED_COMMAND",
-      "proof_command": "planned proof command not implemented yet",
-      "proof_status": "PLANNED",
+      "status_enum": "IMPLEMENTED",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:debug-page-runtime",
+      "proof_status": "PASSED",
       "source_paths": [
         "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/10_runbooks/debug_page_runbook.md"
+        "docs/10_runbooks/debug_page_runbook.md",
+        "dashboard/views/debugView.ts",
+        "dashboard/services/debugPageModel.ts",
+        "dashboard/app.ts",
+        "tests/debugPageRuntime.test.js"
       ],
-      "next_action": "UI/static proof later",
-      "runtime_implementation_claim": false,
-      "notes": "Area: Version/UI"
+      "next_action": "Keep sidebar version tracker bound to the app version source.",
+      "runtime_implementation_claim": true,
+      "notes": "Area: Version/UI; Runtime scope: browser-local/fake/mock only; no real crontab, production media/database, worker process, provider, Raspberry, or hardware proof."
     },
     {
       "id": "DBG-GOAL-004",
       "title": "Preserve global top-right version tracker",
       "category": "debug_page",
-      "status_enum": "SPECIFIED",
-      "proof_command_state": "PLANNED_COMMAND",
-      "proof_command": "planned proof command not implemented yet",
-      "proof_status": "PLANNED",
+      "status_enum": "IMPLEMENTED",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:debug-page-runtime",
+      "proof_status": "PASSED",
       "source_paths": [
         "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/10_runbooks/debug_page_runbook.md"
+        "docs/10_runbooks/debug_page_runbook.md",
+        "dashboard/views/debugView.ts",
+        "dashboard/services/debugPageModel.ts",
+        "dashboard/app.ts",
+        "tests/debugPageRuntime.test.js"
       ],
-      "next_action": "UI/static proof later",
-      "runtime_implementation_claim": false,
-      "notes": "Area: Version/UI"
+      "next_action": "Keep global top-right version tracker preserved during later UI work.",
+      "runtime_implementation_claim": true,
+      "notes": "Area: Version/UI; Runtime scope: browser-local/fake/mock only; no real crontab, production media/database, worker process, provider, Raspberry, or hardware proof."
     },
     {
       "id": "DBG-GOAL-005",
       "title": "Add shared full-width pane template",
       "category": "debug_page",
-      "status_enum": "SPECIFIED",
-      "proof_command_state": "PLANNED_COMMAND",
-      "proof_command": "planned proof command not implemented yet",
-      "proof_status": "PLANNED",
+      "status_enum": "IMPLEMENTED",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:debug-page-runtime",
+      "proof_status": "PASSED",
       "source_paths": [
         "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/10_runbooks/debug_page_runbook.md"
+        "docs/10_runbooks/debug_page_runbook.md",
+        "dashboard/views/debugView.ts",
+        "dashboard/services/debugPageModel.ts",
+        "dashboard/app.ts",
+        "tests/debugPageRuntime.test.js"
       ],
-      "next_action": "Component/render proof later",
-      "runtime_implementation_claim": false,
-      "notes": "Area: UI layout"
+      "next_action": "Keep shared Debug pane render proof passing before backend wiring.",
+      "runtime_implementation_claim": true,
+      "notes": "Area: UI layout; Runtime scope: browser-local/fake/mock only; no real crontab, production media/database, worker process, provider, Raspberry, or hardware proof."
     },
     {
       "id": "DBG-GOAL-006",
       "title": "Add Store and restore state pane",
       "category": "debug_page",
-      "status_enum": "SPECIFIED",
-      "proof_command_state": "PLANNED_COMMAND",
-      "proof_command": "planned proof command not implemented yet",
-      "proof_status": "PLANNED",
+      "status_enum": "IMPLEMENTED",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:debug-page-runtime",
+      "proof_status": "PASSED",
       "source_paths": [
         "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/10_runbooks/debug_page_runbook.md"
+        "docs/10_runbooks/debug_page_runbook.md",
+        "dashboard/views/debugView.ts",
+        "dashboard/services/debugPageModel.ts",
+        "dashboard/app.ts",
+        "tests/debugPageRuntime.test.js"
       ],
-      "next_action": "State proof later",
-      "runtime_implementation_claim": false,
-      "notes": "Area: Recovery/state"
+      "next_action": "State pane is local/planned-safe only; backend restore contract remains future.",
+      "runtime_implementation_claim": true,
+      "notes": "Area: Recovery/state; Runtime scope: browser-local/fake/mock only; no real crontab, production media/database, worker process, provider, Raspberry, or hardware proof."
     },
     {
       "id": "DBG-GOAL-007",
       "title": "Add Test playback pane",
       "category": "debug_page",
-      "status_enum": "SPECIFIED",
-      "proof_command_state": "PLANNED_COMMAND",
-      "proof_command": "planned proof command not implemented yet",
-      "proof_status": "PLANNED",
+      "status_enum": "IMPLEMENTED",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:debug-page-runtime",
+      "proof_status": "PASSED",
       "source_paths": [
         "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/10_runbooks/debug_page_runbook.md"
+        "docs/10_runbooks/debug_page_runbook.md",
+        "dashboard/views/debugView.ts",
+        "dashboard/services/debugPageModel.ts",
+        "dashboard/app.ts",
+        "tests/debugPageRuntime.test.js"
       ],
-      "next_action": "Playback action proof later",
-      "runtime_implementation_claim": false,
-      "notes": "Area: Playback"
+      "next_action": "Test playback pane is local/planned-safe only; native playback remains future.",
+      "runtime_implementation_claim": true,
+      "notes": "Area: Playback; Runtime scope: browser-local/fake/mock only; no real crontab, production media/database, worker process, provider, Raspberry, or hardware proof."
     },
     {
       "id": "DBG-GOAL-008",
       "title": "Add plus-based image process test entry",
       "category": "debug_page",
-      "status_enum": "SPECIFIED",
-      "proof_command_state": "PLANNED_COMMAND",
-      "proof_command": "planned proof command not implemented yet",
-      "proof_status": "PLANNED",
+      "status_enum": "IMPLEMENTED",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:debug-page-runtime",
+      "proof_status": "PASSED",
       "source_paths": [
         "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/10_runbooks/debug_page_runbook.md"
+        "docs/10_runbooks/debug_page_runbook.md",
+        "dashboard/views/debugView.ts",
+        "dashboard/services/debugPageModel.ts",
+        "dashboard/app.ts",
+        "tests/debugPageRuntime.test.js"
       ],
-      "next_action": "Single-entry proof later",
-      "runtime_implementation_claim": false,
-      "notes": "Area: Test pipeline"
+      "next_action": "Keep plus-based isolated test-media proof passing; production media untouched.",
+      "runtime_implementation_claim": true,
+      "notes": "Area: Test pipeline; Runtime scope: browser-local/fake/mock only; no real crontab, production media/database, worker process, provider, Raspberry, or hardware proof."
     },
     {
       "id": "DBG-GOAL-009",
       "title": "Add Crontab Setup pane",
       "category": "debug_page",
-      "status_enum": "SPECIFIED",
-      "proof_command_state": "PLANNED_COMMAND",
-      "proof_command": "planned proof command not implemented yet",
-      "proof_status": "PLANNED",
+      "status_enum": "IMPLEMENTED",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:debug-page-runtime",
+      "proof_status": "PASSED",
       "source_paths": [
         "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/10_runbooks/debug_page_runbook.md"
+        "docs/10_runbooks/debug_page_runbook.md",
+        "dashboard/views/debugView.ts",
+        "dashboard/services/debugPageModel.ts",
+        "dashboard/app.ts",
+        "tests/debugPageRuntime.test.js"
       ],
-      "next_action": "Fake-crontab tests first",
-      "runtime_implementation_claim": false,
-      "notes": "Area: Scheduler"
+      "next_action": "Keep fake Crontab Setup pane proof passing; real crontab unavailable.",
+      "runtime_implementation_claim": true,
+      "notes": "Area: Scheduler; Runtime scope: browser-local/fake/mock only; no real crontab, production media/database, worker process, provider, Raspberry, or hardware proof."
     },
     {
       "id": "DBG-GOAL-010",
       "title": "Read current crontab content",
       "category": "debug_page",
-      "status_enum": "SPECIFIED",
-      "proof_command_state": "PLANNED_COMMAND",
-      "proof_command": "planned proof command not implemented yet",
-      "proof_status": "PLANNED",
+      "status_enum": "IMPLEMENTED",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:debug-page-runtime",
+      "proof_status": "PASSED",
       "source_paths": [
         "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/10_runbooks/debug_page_runbook.md"
+        "docs/10_runbooks/debug_page_runbook.md",
+        "dashboard/views/debugView.ts",
+        "dashboard/services/debugPageModel.ts",
+        "dashboard/app.ts",
+        "tests/debugPageRuntime.test.js"
       ],
-      "next_action": "Read-only parser proof later",
-      "runtime_implementation_claim": false,
-      "notes": "Area: Scheduler"
+      "next_action": "Keep read-only fake crontab parser proof passing.",
+      "runtime_implementation_claim": true,
+      "notes": "Area: Scheduler; Runtime scope: browser-local/fake/mock only; no real crontab, production media/database, worker process, provider, Raspberry, or hardware proof."
     },
     {
       "id": "DBG-GOAL-011",
       "title": "Pause/resume app-owned crontab entries",
       "category": "debug_page",
-      "status_enum": "SPECIFIED",
-      "proof_command_state": "PLANNED_COMMAND",
-      "proof_command": "planned proof command not implemented yet",
-      "proof_status": "PLANNED",
+      "status_enum": "IMPLEMENTED",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:debug-page-runtime",
+      "proof_status": "PASSED",
       "source_paths": [
         "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/10_runbooks/debug_page_runbook.md"
+        "docs/10_runbooks/debug_page_runbook.md",
+        "dashboard/views/debugView.ts",
+        "dashboard/services/debugPageModel.ts",
+        "dashboard/app.ts",
+        "tests/debugPageRuntime.test.js"
       ],
-      "next_action": "Fake-crontab mutation proof later",
-      "runtime_implementation_claim": false,
-      "notes": "Area: Scheduler"
+      "next_action": "Keep fake pause/resume mutation proof passing; unrelated rows preserved.",
+      "runtime_implementation_claim": true,
+      "notes": "Area: Scheduler; Runtime scope: browser-local/fake/mock only; no real crontab, production media/database, worker process, provider, Raspberry, or hardware proof."
     },
     {
       "id": "DBG-GOAL-012",
       "title": "Install worker crontab intervals",
       "category": "debug_page",
-      "status_enum": "SPECIFIED",
-      "proof_command_state": "PLANNED_COMMAND",
-      "proof_command": "planned proof command not implemented yet",
-      "proof_status": "PLANNED",
+      "status_enum": "IMPLEMENTED",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:debug-page-runtime",
+      "proof_status": "PASSED",
       "source_paths": [
         "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/10_runbooks/debug_page_runbook.md"
+        "docs/10_runbooks/debug_page_runbook.md",
+        "dashboard/views/debugView.ts",
+        "dashboard/services/debugPageModel.ts",
+        "dashboard/app.ts",
+        "tests/debugPageRuntime.test.js"
       ],
-      "next_action": "Fake-crontab install proof later",
-      "runtime_implementation_claim": false,
-      "notes": "Area: Scheduler"
+      "next_action": "Keep fake install proof passing; real install remains unavailable.",
+      "runtime_implementation_claim": true,
+      "notes": "Area: Scheduler; Runtime scope: browser-local/fake/mock only; no real crontab, production media/database, worker process, provider, Raspberry, or hardware proof."
     },
     {
       "id": "DBG-GOAL-013",
       "title": "Require double confirmation under 10 seconds",
       "category": "debug_page",
-      "status_enum": "SPECIFIED",
-      "proof_command_state": "PLANNED_COMMAND",
-      "proof_command": "planned proof command not implemented yet",
-      "proof_status": "PLANNED",
+      "status_enum": "IMPLEMENTED",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:debug-page-runtime",
+      "proof_status": "PASSED",
       "source_paths": [
         "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/10_runbooks/debug_page_runbook.md"
+        "docs/10_runbooks/debug_page_runbook.md",
+        "dashboard/views/debugView.ts",
+        "dashboard/services/debugPageModel.ts",
+        "dashboard/app.ts",
+        "tests/debugPageRuntime.test.js"
       ],
-      "next_action": "Validation/UI proof later",
-      "runtime_implementation_claim": false,
-      "notes": "Area: Scheduler safety"
+      "next_action": "Keep high-frequency/double-confirmation block proof passing.",
+      "runtime_implementation_claim": true,
+      "notes": "Area: Scheduler safety; Runtime scope: browser-local/fake/mock only; no real crontab, production media/database, worker process, provider, Raspberry, or hardware proof."
     },
     {
       "id": "DBG-GOAL-014",
       "title": "Add Regular Worker Debug Pane",
       "category": "debug_page",
-      "status_enum": "SPECIFIED",
-      "proof_command_state": "PLANNED_COMMAND",
-      "proof_command": "planned proof command not implemented yet",
-      "proof_status": "PLANNED",
+      "status_enum": "IMPLEMENTED",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:debug-page-runtime",
+      "proof_status": "PASSED",
       "source_paths": [
         "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/10_runbooks/debug_page_runbook.md"
+        "docs/10_runbooks/debug_page_runbook.md",
+        "dashboard/views/debugView.ts",
+        "dashboard/services/debugPageModel.ts",
+        "dashboard/app.ts",
+        "tests/debugPageRuntime.test.js"
       ],
-      "next_action": "Telemetry render proof later",
-      "runtime_implementation_claim": false,
-      "notes": "Area: Worker telemetry"
+      "next_action": "Keep Regular Worker mock telemetry render proof passing.",
+      "runtime_implementation_claim": true,
+      "notes": "Area: Worker telemetry; Runtime scope: browser-local/fake/mock only; no real crontab, production media/database, worker process, provider, Raspberry, or hardware proof."
     },
     {
       "id": "DBG-GOAL-015",
       "title": "Add Playback Worker Debug Pane",
       "category": "debug_page",
-      "status_enum": "SPECIFIED",
-      "proof_command_state": "PLANNED_COMMAND",
-      "proof_command": "planned proof command not implemented yet",
-      "proof_status": "PLANNED",
+      "status_enum": "IMPLEMENTED",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:debug-page-runtime",
+      "proof_status": "PASSED",
       "source_paths": [
         "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/10_runbooks/debug_page_runbook.md"
+        "docs/10_runbooks/debug_page_runbook.md",
+        "dashboard/views/debugView.ts",
+        "dashboard/services/debugPageModel.ts",
+        "dashboard/app.ts",
+        "tests/debugPageRuntime.test.js"
       ],
-      "next_action": "Telemetry render proof later",
-      "runtime_implementation_claim": false,
-      "notes": "Area: Worker telemetry"
+      "next_action": "Keep Playback Worker mock telemetry render proof passing.",
+      "runtime_implementation_claim": true,
+      "notes": "Area: Worker telemetry; Runtime scope: browser-local/fake/mock only; no real crontab, production media/database, worker process, provider, Raspberry, or hardware proof."
     },
     {
       "id": "DBG-GOAL-016",
       "title": "Add On/off Worker Debug Pane",
       "category": "debug_page",
-      "status_enum": "SPECIFIED",
-      "proof_command_state": "PLANNED_COMMAND",
-      "proof_command": "planned proof command not implemented yet",
-      "proof_status": "PLANNED",
+      "status_enum": "IMPLEMENTED",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:debug-page-runtime",
+      "proof_status": "PASSED",
       "source_paths": [
         "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/10_runbooks/debug_page_runbook.md"
+        "docs/10_runbooks/debug_page_runbook.md",
+        "dashboard/views/debugView.ts",
+        "dashboard/services/debugPageModel.ts",
+        "dashboard/app.ts",
+        "tests/debugPageRuntime.test.js"
       ],
-      "next_action": "Telemetry render proof later",
-      "runtime_implementation_claim": false,
-      "notes": "Area: Worker telemetry"
+      "next_action": "Keep On/off Worker mock telemetry render proof passing.",
+      "runtime_implementation_claim": true,
+      "notes": "Area: Worker telemetry; Runtime scope: browser-local/fake/mock only; no real crontab, production media/database, worker process, provider, Raspberry, or hardware proof."
     },
     {
       "id": "DBG-GOAL-017",
       "title": "Add worker manual Run now buttons",
       "category": "debug_page",
-      "status_enum": "SPECIFIED",
-      "proof_command_state": "PLANNED_COMMAND",
-      "proof_command": "planned proof command not implemented yet",
-      "proof_status": "PLANNED",
+      "status_enum": "IMPLEMENTED",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:debug-page-runtime",
+      "proof_status": "PASSED",
       "source_paths": [
         "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/10_runbooks/debug_page_runbook.md"
+        "docs/10_runbooks/debug_page_runbook.md",
+        "dashboard/views/debugView.ts",
+        "dashboard/services/debugPageModel.ts",
+        "dashboard/app.ts",
+        "tests/debugPageRuntime.test.js"
       ],
-      "next_action": "Safe invocation proof later",
-      "runtime_implementation_claim": false,
-      "notes": "Area: Worker actions"
+      "next_action": "Keep safe Run now mock proof passing; no worker process spawned.",
+      "runtime_implementation_claim": true,
+      "notes": "Area: Worker actions; Runtime scope: browser-local/fake/mock only; no real crontab, production media/database, worker process, provider, Raspberry, or hardware proof."
     },
     {
       "id": "DBG-GOAL-018",
       "title": "Add Estonian timestamp formatting",
       "category": "debug_page",
-      "status_enum": "SPECIFIED",
-      "proof_command_state": "PLANNED_COMMAND",
-      "proof_command": "planned proof command not implemented yet",
-      "proof_status": "PLANNED",
+      "status_enum": "IMPLEMENTED",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:debug-page-runtime",
+      "proof_status": "PASSED",
       "source_paths": [
         "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/10_runbooks/debug_page_runbook.md"
+        "docs/10_runbooks/debug_page_runbook.md",
+        "dashboard/views/debugView.ts",
+        "dashboard/services/debugPageModel.ts",
+        "dashboard/app.ts",
+        "tests/debugPageRuntime.test.js"
       ],
-      "next_action": "Deterministic formatting test later",
-      "runtime_implementation_claim": false,
-      "notes": "Area: Worker telemetry"
+      "next_action": "Keep deterministic Estonian timestamp formatting proof passing.",
+      "runtime_implementation_claim": true,
+      "notes": "Area: Worker telemetry; Runtime scope: browser-local/fake/mock only; no real crontab, production media/database, worker process, provider, Raspberry, or hardware proof."
     },
     {
       "id": "DBG-GOAL-019",
       "title": "Add test data/database isolation proof",
       "category": "debug_page",
-      "status_enum": "SPECIFIED",
-      "proof_command_state": "PLANNED_COMMAND",
-      "proof_command": "planned proof command not implemented yet",
-      "proof_status": "PLANNED",
+      "status_enum": "IMPLEMENTED",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:debug-page-runtime",
+      "proof_status": "PASSED",
       "source_paths": [
         "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/10_runbooks/debug_page_runbook.md"
+        "docs/10_runbooks/debug_page_runbook.md",
+        "dashboard/views/debugView.ts",
+        "dashboard/services/debugPageModel.ts",
+        "dashboard/app.ts",
+        "tests/debugPageRuntime.test.js"
       ],
-      "next_action": "Isolation proof later",
-      "runtime_implementation_claim": false,
-      "notes": "Area: Test safety"
+      "next_action": "Keep isolation proof passing; no production database/media mutation.",
+      "runtime_implementation_claim": true,
+      "notes": "Area: Test safety; Runtime scope: browser-local/fake/mock only; no real crontab, production media/database, worker process, provider, Raspberry, or hardware proof."
     },
     {
       "id": "DBG-GOAL-020",

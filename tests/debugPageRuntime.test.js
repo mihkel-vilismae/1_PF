@@ -16,15 +16,16 @@ test('debug runtime workflow starts from immutable v0.8.139 baseline', () => {
   assert.match(doc, /All Debug runtime actions in this batch are browser-local, fake\/test-backed, or mock-only/);
 });
 
-test('debug runtime proof command is available without marking planned rows runnable', () => {
+test('debug runtime proof command is available without leaving stale planned debug runtime rows runnable', () => {
   const packageJson = readJson('package.json');
   const registry = readJson('docs/40_backlog_and_tasks/overall_project_goal_registry.json');
   assert.equal(packageJson.scripts['proof:debug-page-runtime'], 'tsx --test tests/debugPageRuntime.test.js');
-  const plannedDebugRows = registry.goals.filter((goal) => goal.category === 'debug_page' && goal.proof_command_state === 'PLANNED_COMMAND');
-  assert.ok(plannedDebugRows.length >= 1);
-  for (const goal of plannedDebugRows) {
-    assert.doesNotMatch(goal.proof_command ?? '', /npm\s+run\s+proof:/);
-  }
+  const stalePlannedDebugRows = registry.goals.filter((goal) => goal.category === 'debug_page'
+    && goal.id !== 'DBG-GOAL-020'
+    && goal.proof_command_state === 'PLANNED_COMMAND');
+  assert.deepEqual(stalePlannedDebugRows, []);
+  const docsOnlyRow = registry.goals.find((goal) => goal.id === 'DBG-GOAL-020');
+  assert.equal(docsOnlyRow.proof_command_state, 'DOCS_AUDIT');
 });
 
 import { VIEW_ORDER } from '../dashboard/shared/constants.ts';
@@ -171,4 +172,35 @@ test('debug fake crontab mutation handlers are explicitly fake and safety-gated'
   assert.match(appSource, /unrelatedEntriesPreserved: true/);
   assert.match(appSource, /requiresDoubleConfirmation: true/);
   assert.match(appSource, /systemCrontabTouched: false/);
+});
+
+
+test('debug registry rows are upgraded to implemented only through local safe runtime proof', () => {
+  const registry = readJson('docs/40_backlog_and_tasks/overall_project_goal_registry.json');
+  const debugRuntimeRows = registry.goals.filter((goal) => /^DBG-GOAL-0(0[1-9]|1[0-9])$/.test(goal.id));
+  assert.equal(debugRuntimeRows.length, 19);
+  for (const goal of debugRuntimeRows) {
+    assert.equal(goal.status_enum, 'IMPLEMENTED');
+    assert.equal(goal.proof_command_state, 'IMPLEMENTED_COMMAND');
+    assert.equal(goal.proof_command, 'npm run proof:debug-page-runtime');
+    assert.equal(goal.proof_status, 'PASSED');
+    assert.equal(goal.runtime_implementation_claim, true);
+    assert.match(goal.notes, /browser-local\/fake\/mock only/);
+  }
+});
+
+test('debug manual Run now proof stays mock-only for all worker panes', () => {
+  let state = buildDefaultDebugPageState();
+  state = runMockDebugWorker(state, 'regular');
+  state = runMockDebugWorker(state, 'playback');
+  state = runMockDebugWorker(state, 'screen');
+  for (const key of ['regular', 'playback', 'screen']) {
+    assert.equal(state.workers[key].calledCount, 1);
+    assert.match(state.workers[key].evidence, /mock-only/);
+    assert.match(state.actionResults[`worker-${key}-run-now`].message, /No worker process was spawned/);
+  }
+  const markup = renderDebugView({ debugPage: state }, '0.8.149');
+  assert.match(markup, /data-debug-worker-run-now="regular"/);
+  assert.match(markup, /data-debug-worker-run-now="playback"/);
+  assert.match(markup, /data-debug-worker-run-now="screen"/);
 });

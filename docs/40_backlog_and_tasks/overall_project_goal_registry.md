@@ -26,7 +26,7 @@ This registry is the canonical active source for `print overall project complete
 ## Debug page separation rule
 
 - Debug page documentation/OpenSpec coverage is separate from runtime/UI completeness.
-- Do not count `DBG-GOAL-*` runtime/UI behavior as implemented until route/sidebar/panes/actions have code and tests.
+- Count `DBG-GOAL-001` through `DBG-GOAL-019` as implemented only through the local Debug runtime proof lane; this still does not imply real Raspberry, crontab, production media/database, provider, worker-process, or hardware proof.
 
 ## Goal table
 
@@ -43,25 +43,25 @@ This registry is the canonical active source for `print overall project complete
 | `V1-GATE-009` | Dashboard runtime/status view | raspberry_v1_gate | `CONTRACTED` | `PLANNED_COMMAND` | `PLANNED` | Implement proof-backed dashboard status projection and proof. |
 | `V1-GATE-010` | Screen worker non-blocking behavior | raspberry_v1_gate | `CONTRACTED` | `PLANNED_COMMAND` | `PLANNED` | Add dedicated screen worker non-blocking proof. |
 | `V1-GATE-011` | Docs/OpenSpec reconciliation | raspberry_v1_gate | `PRE_PASS` | `PLANNED_COMMAND` | `PRE_PASS` | Keep static docs audits passing; add final v1 reconciliation proof later. |
-| `DBG-GOAL-001` | Add Debug page route | debug_page | `SPECIFIED` | `PLANNED_COMMAND` | `PLANNED` | UI/router proof later |
-| `DBG-GOAL-002` | Add bottom sidebar Debug entry | debug_page | `SPECIFIED` | `PLANNED_COMMAND` | `PLANNED` | UI/static proof later |
-| `DBG-GOAL-003` | Add sidebar version tracker near Debug | debug_page | `SPECIFIED` | `PLANNED_COMMAND` | `PLANNED` | UI/static proof later |
-| `DBG-GOAL-004` | Preserve global top-right version tracker | debug_page | `SPECIFIED` | `PLANNED_COMMAND` | `PLANNED` | UI/static proof later |
-| `DBG-GOAL-005` | Add shared full-width pane template | debug_page | `SPECIFIED` | `PLANNED_COMMAND` | `PLANNED` | Component/render proof later |
-| `DBG-GOAL-006` | Add Store and restore state pane | debug_page | `SPECIFIED` | `PLANNED_COMMAND` | `PLANNED` | State proof later |
-| `DBG-GOAL-007` | Add Test playback pane | debug_page | `SPECIFIED` | `PLANNED_COMMAND` | `PLANNED` | Playback action proof later |
-| `DBG-GOAL-008` | Add plus-based image process test entry | debug_page | `SPECIFIED` | `PLANNED_COMMAND` | `PLANNED` | Single-entry proof later |
-| `DBG-GOAL-009` | Add Crontab Setup pane | debug_page | `SPECIFIED` | `PLANNED_COMMAND` | `PLANNED` | Fake-crontab tests first |
-| `DBG-GOAL-010` | Read current crontab content | debug_page | `SPECIFIED` | `PLANNED_COMMAND` | `PLANNED` | Read-only parser proof later |
-| `DBG-GOAL-011` | Pause/resume app-owned crontab entries | debug_page | `SPECIFIED` | `PLANNED_COMMAND` | `PLANNED` | Fake-crontab mutation proof later |
-| `DBG-GOAL-012` | Install worker crontab intervals | debug_page | `SPECIFIED` | `PLANNED_COMMAND` | `PLANNED` | Fake-crontab install proof later |
-| `DBG-GOAL-013` | Require double confirmation under 10 seconds | debug_page | `SPECIFIED` | `PLANNED_COMMAND` | `PLANNED` | Validation/UI proof later |
-| `DBG-GOAL-014` | Add Regular Worker Debug Pane | debug_page | `SPECIFIED` | `PLANNED_COMMAND` | `PLANNED` | Telemetry render proof later |
-| `DBG-GOAL-015` | Add Playback Worker Debug Pane | debug_page | `SPECIFIED` | `PLANNED_COMMAND` | `PLANNED` | Telemetry render proof later |
-| `DBG-GOAL-016` | Add On/off Worker Debug Pane | debug_page | `SPECIFIED` | `PLANNED_COMMAND` | `PLANNED` | Telemetry render proof later |
-| `DBG-GOAL-017` | Add worker manual Run now buttons | debug_page | `SPECIFIED` | `PLANNED_COMMAND` | `PLANNED` | Safe invocation proof later |
-| `DBG-GOAL-018` | Add Estonian timestamp formatting | debug_page | `SPECIFIED` | `PLANNED_COMMAND` | `PLANNED` | Deterministic formatting test later |
-| `DBG-GOAL-019` | Add test data/database isolation proof | debug_page | `SPECIFIED` | `PLANNED_COMMAND` | `PLANNED` | Isolation proof later |
+| `DBG-GOAL-001` | Add Debug page route | debug_page | `IMPLEMENTED` | `IMPLEMENTED_COMMAND` | `PASSED` | Keep Debug route runtime proof passing; no Raspberry/provider proof implied. |
+| `DBG-GOAL-002` | Add bottom sidebar Debug entry | debug_page | `IMPLEMENTED` | `IMPLEMENTED_COMMAND` | `PASSED` | Keep sidebar Debug entry runtime proof passing. |
+| `DBG-GOAL-003` | Add sidebar version tracker near Debug | debug_page | `IMPLEMENTED` | `IMPLEMENTED_COMMAND` | `PASSED` | Keep sidebar version tracker bound to the app version source. |
+| `DBG-GOAL-004` | Preserve global top-right version tracker | debug_page | `IMPLEMENTED` | `IMPLEMENTED_COMMAND` | `PASSED` | Keep global top-right version tracker preserved during later UI work. |
+| `DBG-GOAL-005` | Add shared full-width pane template | debug_page | `IMPLEMENTED` | `IMPLEMENTED_COMMAND` | `PASSED` | Keep shared Debug pane render proof passing before backend wiring. |
+| `DBG-GOAL-006` | Add Store and restore state pane | debug_page | `IMPLEMENTED` | `IMPLEMENTED_COMMAND` | `PASSED` | State pane is local/planned-safe only; backend restore contract remains future. |
+| `DBG-GOAL-007` | Add Test playback pane | debug_page | `IMPLEMENTED` | `IMPLEMENTED_COMMAND` | `PASSED` | Test playback pane is local/planned-safe only; native playback remains future. |
+| `DBG-GOAL-008` | Add plus-based image process test entry | debug_page | `IMPLEMENTED` | `IMPLEMENTED_COMMAND` | `PASSED` | Keep plus-based isolated test-media proof passing; production media untouched. |
+| `DBG-GOAL-009` | Add Crontab Setup pane | debug_page | `IMPLEMENTED` | `IMPLEMENTED_COMMAND` | `PASSED` | Keep fake Crontab Setup pane proof passing; real crontab unavailable. |
+| `DBG-GOAL-010` | Read current crontab content | debug_page | `IMPLEMENTED` | `IMPLEMENTED_COMMAND` | `PASSED` | Keep read-only fake crontab parser proof passing. |
+| `DBG-GOAL-011` | Pause/resume app-owned crontab entries | debug_page | `IMPLEMENTED` | `IMPLEMENTED_COMMAND` | `PASSED` | Keep fake pause/resume mutation proof passing; unrelated rows preserved. |
+| `DBG-GOAL-012` | Install worker crontab intervals | debug_page | `IMPLEMENTED` | `IMPLEMENTED_COMMAND` | `PASSED` | Keep fake install proof passing; real install remains unavailable. |
+| `DBG-GOAL-013` | Require double confirmation under 10 seconds | debug_page | `IMPLEMENTED` | `IMPLEMENTED_COMMAND` | `PASSED` | Keep high-frequency/double-confirmation block proof passing. |
+| `DBG-GOAL-014` | Add Regular Worker Debug Pane | debug_page | `IMPLEMENTED` | `IMPLEMENTED_COMMAND` | `PASSED` | Keep Regular Worker mock telemetry render proof passing. |
+| `DBG-GOAL-015` | Add Playback Worker Debug Pane | debug_page | `IMPLEMENTED` | `IMPLEMENTED_COMMAND` | `PASSED` | Keep Playback Worker mock telemetry render proof passing. |
+| `DBG-GOAL-016` | Add On/off Worker Debug Pane | debug_page | `IMPLEMENTED` | `IMPLEMENTED_COMMAND` | `PASSED` | Keep On/off Worker mock telemetry render proof passing. |
+| `DBG-GOAL-017` | Add worker manual Run now buttons | debug_page | `IMPLEMENTED` | `IMPLEMENTED_COMMAND` | `PASSED` | Keep safe Run now mock proof passing; no worker process spawned. |
+| `DBG-GOAL-018` | Add Estonian timestamp formatting | debug_page | `IMPLEMENTED` | `IMPLEMENTED_COMMAND` | `PASSED` | Keep deterministic Estonian timestamp formatting proof passing. |
+| `DBG-GOAL-019` | Add test data/database isolation proof | debug_page | `IMPLEMENTED` | `IMPLEMENTED_COMMAND` | `PASSED` | Keep isolation proof passing; no production database/media mutation. |
 | `DBG-GOAL-020` | Add documentation/proof coverage for Debug page | debug_page | `DOCS_ONLY` | `DOCS_AUDIT` | `PASSED` | Docs tests/audits |
 | `IMPL-A1` | Wire concrete pipeline/playback/screen/recovery services behind scheduler host | active_backlog | `DECISION_GATED` | `NONE` | `NOT_APPLICABLE` | Resolve decision gate or implement only after matching spec/proof update. |
 | `IMPL-A2` | Decide and implement View A preload/refresh behavior | active_backlog | `NOW` | `NONE` | `NOT_APPLICABLE` | Resolve decision gate or implement only after matching spec/proof update. |
@@ -80,7 +80,7 @@ This registry is the canonical active source for `print overall project complete
 | Category | Goal count | Strict proven count | Notes |
 |---|---:|---:|---|
 | active_backlog | 11 | 0 | Use source/proof fields before scoring. |
-| debug_page | 20 | 0 | Debug docs/runtime split required. |
+| debug_page | 20 | 0 | `DBG-GOAL-001`-`DBG-GOAL-019` are implemented with `proof:debug-page-runtime`; strict proven count remains 0 because live Raspberry/provider/hardware proof is separate. |
 | raspberry_v1_gate | 11 | 3 | Use source/proof fields before scoring. |
 
 ## Non-claims

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.149 - Debug runtime registry finalization
+
+- Marked Debug runtime goals `DBG-GOAL-001` through `DBG-GOAL-019` as implemented through the local safe Debug runtime proof lane.
+- Added registry assertions and all-worker Run now mock proof coverage.
+- Preserved proof boundaries: no real crontab, production media/database, worker process, provider, Raspberry, or hardware proof is claimed.
+
 ## 0.8.148 - Debug fake crontab mutation safety
 
 - Added fake-only pause/resume/install helpers for app-owned Debug crontab entries.
