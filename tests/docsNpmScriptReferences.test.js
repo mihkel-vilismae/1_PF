@@ -41,6 +41,7 @@ function referencedNpmRunScripts(text) {
     const script = match[1].replace(/[.,;:)]+$/g, '');
     if (!script || script === '...' || script === '…') continue;
     if (script.includes('<') || script.includes('>')) continue;
+    if (script.includes('*')) continue;
     refs.push(script);
   }
   return refs;

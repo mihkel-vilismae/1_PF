@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.172
+
+- test: ignore wildcard documentation references such as `npm run proof:*` in npm-script existence checks.
+- preserve: concrete `npm run <script>` documentation references are still required to exist in `package.json`.
+
 ## 0.8.171
 
 - fix: classify Windows CronEmulator pytest dependency absence as `BLOCKED` instead of `FAILED`, and keep the proof command exit-zero for honest blocked state.
