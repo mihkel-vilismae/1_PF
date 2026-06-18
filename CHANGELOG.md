@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.186 - Real geocode provider readiness preflight
+
+- Added `proof:real-geocode-provider-readiness` as a no-network preflight for real geocode provider configuration.
+- Added tests proving unsupported/missing provider configuration blocks honestly and supported provider setup can pass readiness without making a provider call.
+
 ## 0.8.185 - Proof-runner final-summary test repair
 
 - Updated the proof-runner queue test to expect `proof:raspberry-v1-readiness` before `proof:proof-runner-final-summary`.
