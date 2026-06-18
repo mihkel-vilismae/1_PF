@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.173
+
+- feat: add `proof:raspberry-dashboard-status-view` as a read-only dashboard status projection proof consumed by v1 readiness.
+- preserve: the proof does not start workers, mutate crontab, or claim real provider/hardware behavior.
+
 ## 0.8.172
 
 - test: ignore wildcard documentation references such as `npm run proof:*` in npm-script existence checks.
