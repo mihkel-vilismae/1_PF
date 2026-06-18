@@ -68,3 +68,8 @@ Example downstream gates:
 ## Non-claims
 
 This document does not implement a runtime proof command. It does not prove login, iCloud access, media download, GPS/geocode, or regular worker product behavior. It defines the state and evidence contract future implementation slices must satisfy.
+
+
+## Implementation note — v0.8.161
+
+`proof:auth-checkpoint-state` records a sanitized app-owned checkpoint envelope. The command may return `BLOCKED` when no usable provider session is present, and this is an honest outcome. A `PASSED` checkpoint requires `AUTH_SESSION_USABLE`, a passed provider check, and app-owned session detection. The artifact still does not prove media download or Raspberry v1 readiness.

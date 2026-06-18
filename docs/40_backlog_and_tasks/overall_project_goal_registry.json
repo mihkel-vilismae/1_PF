@@ -86,18 +86,21 @@
       "category": "raspberry_v1_gate",
       "status_enum": "SCAFFOLDED",
       "proof_command_state": "IMPLEMENTED_COMMAND",
-      "proof_command": "npm run proof:raspberry-icloudpd-preflight; later npm run proof:real-icloudpd",
+      "proof_command": "npm run proof:raspberry-icloudpd-preflight; npm run proof:auth-checkpoint-state; later npm run proof:real-icloudpd",
       "proof_status": "NOT_RUN",
       "source_paths": [
         "docs/20_architecture_and_specs/openspec/raspberry_v1_openspec_traceability_matrix.md",
         "docs/20_architecture_and_specs/openspec/raspberry_v1_release_gate_matrix_openspec.md",
         "tools/raspberry-v1-readiness-lib.mjs",
         "docs/20_architecture_and_specs/openspec/icloudpd_preflight_secret_boundary_openspec.md",
-        "tests/icloudpdPreflightBoundary.test.js"
+        "tests/icloudpdPreflightBoundary.test.js",
+        "tools/auth-checkpoint-state-lib.mjs",
+        "tools/run-auth-checkpoint-state-proof.mjs",
+        "tests/authCheckpointStateProof.test.js"
       ],
       "next_action": "Run/repair real target preflight without leaking secrets; local boundary proof now exists.",
       "runtime_implementation_claim": false,
-      "notes": "; iCloudPD preflight secret-boundary proof added locally; real provider run still NOT_RUN."
+      "notes": "; iCloudPD preflight secret-boundary proof added locally; real provider run still NOT_RUN.; Auth checkpoint proof command enabled for sanitized app-owned state."
     },
     {
       "id": "V1-GATE-004",

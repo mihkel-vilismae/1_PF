@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.8.160",
+  "version": "0.8.161",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -85,7 +85,9 @@
     "proof:controlled-restore-contract": "tsx --test tests/controlledRestoreContract.test.js",
     "proof:scheduler-host-boundary": "tsx --test tests/schedulerHostBoundary.test.js",
     "proof:scheduler-host-mock": "tsx --test tests/schedulerHostMock.test.js",
-    "proof:icloudpd-preflight-boundary": "tsx --test tests/icloudpdPreflightBoundary.test.js"
+    "proof:icloudpd-preflight-boundary": "tsx --test tests/icloudpdPreflightBoundary.test.js",
+    "proof:auth-checkpoint-state": "node tools/run-auth-checkpoint-state-proof.mjs",
+    "proof:auth-checkpoint-state:test": "tsx --test tests/authCheckpointStateProof.test.js"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

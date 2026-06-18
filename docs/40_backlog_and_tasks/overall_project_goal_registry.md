@@ -34,7 +34,7 @@ This registry is the canonical active source for `print overall project complete
 |---|---|---|---|---|---|---|
 | `V1-GATE-001` | Raspberry target tooling and generated fixtures | raspberry_v1_gate | `PROVEN` | `IMPLEMENTED_COMMAND` | `PASSED` | Keep latest Raspberry proof artifacts attached for current runs. |
 | `V1-GATE-002` | Install/runtime preflight | raspberry_v1_gate | `PROVEN` | `IMPLEMENTED_COMMAND` | `PASSED` | Keep executable/env preflight evidence current. |
-| `V1-GATE-003` | Real iCloud media source | raspberry_v1_gate | `SCAFFOLDED` | `IMPLEMENTED_COMMAND` | `NOT_RUN` | Run/repair real target preflight without leaking secrets; local boundary proof now exists. |
+| `V1-GATE-003` | Real iCloud media source | raspberry_v1_gate | `SCAFFOLDED` | `IMPLEMENTED_COMMAND` | `NOT_RUN` | Run/repair real target preflight without leaking secrets; local boundary and auth-checkpoint proofs now exist. |
 | `V1-GATE-004` | Real GPS/geocode provider chain | raspberry_v1_gate | `SCAFFOLDED` | `IMPLEMENTED_COMMAND` | `NOT_RUN` | Run with real provider configuration and cache-first evidence. |
 | `V1-GATE-005` | Regular worker product pipeline | raspberry_v1_gate | `CONTRACTED` | `IMPLEMENTED_COMMAND` | `NOT_RUN` | Implement/prove real download/index/GPS/geocode/queue worker path. |
 | `V1-GATE-006` | Playback/native display | raspberry_v1_gate | `PROVEN` | `IMPLEMENTED_COMMAND` | `PASSED` | Connect standalone playback proof to real queued media later. |

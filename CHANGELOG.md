@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.161 - Auth checkpoint proof state
+
+- Added `proof:auth-checkpoint-state` for sanitized app-owned auth/session checkpoint evidence.
+- Added tests proving usable state is required and account/session-like values are redacted.
+
 ## 0.8.160 - iCloudPD preflight secret boundary
 
 - Added iCloudPD preflight secret-boundary OpenSpec and local proof.
