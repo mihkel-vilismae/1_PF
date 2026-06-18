@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.170
+
+- test: make the Raspberry project-owned launcher executable-bit guard ZIP-extraction-safe by accepting Git-index `100755` as the canonical executable marker when filesystem mode bits are lost.
+- preserve: the launcher itself and project-owned process boundary are unchanged.
+
 ## 0.8.169
 
 - test: update the completeness-registry guard for the current registry shape where remaining future/backlog rows are `NONE` instead of runnable or planned commands.

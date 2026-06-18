@@ -24,7 +24,10 @@ function gitIndexMarksExecutable(path) {
 
 function launcherExecutable(path) {
   if (process.platform === 'win32') return gitIndexMarksExecutable(path);
-  return Boolean(statSync(path).mode & 0o111);
+  // ZIP extraction tools may drop executable mode bits even when Git tracks 100755.
+  // Treat the Git index as the canonical source for repo portability, while still
+  // accepting already-restored filesystem executable bits on Raspberry/Linux.
+  return Boolean(statSync(path).mode & 0o111) || gitIndexMarksExecutable(path);
 }
 
 test('Raspberry launcher files and docs exist', () => {
