@@ -5,9 +5,11 @@ import {
   type DebugPageState,
   type DebugWorkerKey,
 } from '../services/debugPageModel.ts';
+import { buildRuntimeStatusProjectionFromState, type RuntimeStatusProjection } from '../services/runtimeStatusProjection.ts';
 
 export function renderDebugView(state: Record<string, unknown>, frontendVersion: string): string {
   const debugState = normalizeDebugPageState(state.debugPage);
+  const statusProjection = buildRuntimeStatusProjectionFromState(state);
   return `
     <section class="view-grid debug-page" data-debug-page-route="${DEBUG_ROUTE}" aria-label="Debug Menu">
       <article class="card card--feature debug-page__hero">
@@ -30,9 +32,9 @@ export function renderDebugView(state: Record<string, unknown>, frontendVersion:
       ${renderPlaybackPane(debugState)}
       ${renderAddImagesPane(debugState)}
       ${renderCrontabPane(debugState)}
-      ${renderWorkerPane(debugState, 'regular')}
-      ${renderWorkerPane(debugState, 'playback')}
-      ${renderWorkerPane(debugState, 'screen')}
+      ${renderWorkerPane(debugState, 'regular', statusProjection)}
+      ${renderWorkerPane(debugState, 'playback', statusProjection)}
+      ${renderWorkerPane(debugState, 'screen', statusProjection)}
     </section>
   `;
 }
@@ -117,19 +119,22 @@ function renderCrontabPane(debugState: DebugPageState): string {
   });
 }
 
-function renderWorkerPane(debugState: DebugPageState, key: DebugWorkerKey): string {
+function renderWorkerPane(debugState: DebugPageState, key: DebugWorkerKey, statusProjection: RuntimeStatusProjection): string {
   const worker = debugState.workers[key];
+  const projectionWorker = statusProjection.workers[key];
   return renderDebugPane({
     code: key.toUpperCase(),
     title: worker.label,
     marker: `data-debug-worker-pane="${key}"`,
-    copy: 'Worker telemetry is mock/test data only. Manual run uses a safe local simulation and does not spawn a worker process.',
+    copy: 'Worker telemetry combines local mock/test data with the read-only runtime status projection. Manual run uses a safe local simulation and does not spawn a worker process.',
     body: `
       <dl class="definition-list">
         <div><dt>First called</dt><dd>${escapeHtml(worker.firstCalledAt ?? 'Never')}</dd></div>
         <div><dt>Last called</dt><dd>${escapeHtml(worker.lastCalledAt ?? 'Never')}</dd></div>
         <div><dt>Called count</dt><dd>${String(worker.calledCount)}</dd></div>
         <div><dt>Status</dt><dd>${escapeHtml(worker.currentStatus)}</dd></div>
+        <div><dt>Projection status</dt><dd data-debug-worker-projection-status="${key}">${escapeHtml(projectionWorker.status)}</dd></div>
+        <div><dt>Projection evidence</dt><dd>${escapeHtml(projectionWorker.evidence)}</dd></div>
         <div><dt>Evidence</dt><dd>${escapeHtml(worker.evidence)}</dd></div>
       </dl>
       <button class="button button--secondary" type="button" data-debug-worker-run-now="${key}">Run now</button>

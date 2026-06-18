@@ -204,3 +204,21 @@ test('debug manual Run now proof stays mock-only for all worker panes', () => {
   assert.match(markup, /data-debug-worker-run-now="playback"/);
   assert.match(markup, /data-debug-worker-run-now="screen"/);
 });
+
+
+test('debug worker panes render status projection without spawning workers', () => {
+  const state = buildDefaultDebugPageState();
+  const markup = renderDebugView({
+    debugPage: state,
+    truth: { realRunActive: false },
+    statusByKey: { D1: 'disabled', D2: 'disabled', D3: 'disabled' },
+    runningProcess: {
+      playbackWorker: { status: 'Inactive', heartbeat: 'Never', summary: 'No playback activity' },
+      screenWorker: { status: 'Inactive', heartbeat: 'Never', summary: 'No screen activity' },
+    },
+  }, '0.8.152');
+  assert.match(markup, /data-debug-worker-projection-status="regular"/);
+  assert.match(markup, /Projection evidence/);
+  assert.match(markup, /read-only runtime status projection/);
+  assert.match(markup, /does not spawn a worker process/);
+});

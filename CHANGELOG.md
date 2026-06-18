@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.152 - Debug worker status projection bridge
+
+- Connected Debug worker panes to the read-only runtime status projection while preserving local mock Run now behavior.
+- Expanded Debug runtime proof to show projected status does not spawn real workers.
+
 ## 0.8.151 - View D status-backed projection
 
 - Updated View D to render the read-only runtime status projection contract.
