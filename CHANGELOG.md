@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.140 - 2026-06-18
+
+- Add Debug runtime implementation 3X2ACR workflow guard for slices 0-9.
+- Reaffirm v0.8.139 HEAD 4842973 as the immutable implementation baseline.
+- Preserve non-claims for real crontab mutation, production media/database mutation, worker invocation, and Raspberry proof.
+
 ## 0.8.133 - 2026-06-17
 
 - Repair Debug page documentation coverage assertions to use direct Markdown text containment for long contract phrases.
