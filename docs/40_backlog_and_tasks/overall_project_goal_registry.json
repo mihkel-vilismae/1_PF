@@ -215,7 +215,7 @@
       "category": "raspberry_v1_gate",
       "status_enum": "CONTRACTED",
       "proof_command_state": "IMPLEMENTED_COMMAND",
-      "proof_command": "npm run proof:scheduler-host-boundary && npm run proof:scheduler-host-mock",
+      "proof_command": "npm run proof:scheduler-host-boundary && npm run proof:scheduler-host-mock && npm run proof:screen-worker-nonblocking-design",
       "proof_status": "PRE_PASS",
       "source_paths": [
         "docs/20_architecture_and_specs/openspec/raspberry_v1_openspec_traceability_matrix.md",
@@ -224,11 +224,13 @@
         "docs/20_architecture_and_specs/openspec/scheduler_host_boundary_openspec.md",
         "dashboard/services/schedulerHostMock.ts",
         "tests/schedulerHostBoundary.test.js",
-        "tests/schedulerHostMock.test.js"
+        "tests/schedulerHostMock.test.js",
+        "tools/screen-worker-nonblocking-design-lib.mjs",
+        "tests/screenWorkerNonBlockingDesign.test.js"
       ],
-      "next_action": "Use scheduler host boundary/mock as design pre-pass before real screen-worker non-blocking proof.",
+      "next_action": "Use scheduler host boundary/mock and screen-worker non-blocking design pre-pass before real target proof.",
       "runtime_implementation_claim": false,
-      "notes": "Scheduler host boundary and mock status exist; no real scheduler host/worker process/Raspberry proof."
+      "notes": "Scheduler host boundary and mock status exist; no real scheduler host/worker process/Raspberry proof.; Local screen-worker non-blocking design pre-pass enabled."
     },
     {
       "id": "V1-GATE-011",

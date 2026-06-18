@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.164 - Screen worker non-blocking design proof
+
+- Added local screen-worker non-blocking design model and proof.
+- Connected scheduler host mock lanes to the future Raspberry screen-worker non-blocking proof boundary.
+
 ## 0.8.163 - Regular worker product evidence envelope
 
 - Added staged-write and non-production defaults to the regular worker product evidence template.
