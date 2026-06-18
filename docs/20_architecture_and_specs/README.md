@@ -90,3 +90,5 @@ The old `docs/categorized/other_documentation/default_project_settings_and_eleme
 - [Endpoint contract inventory OpenSpec](openspec/endpoint_contract_inventory_openspec.md) — same-origin HTTP API route-surface map and drift guard.
 
 - [Raspberry local tool checker OpenSpec](openspec/raspberry_local_tool_checker_openspec.md) — implemented Raspberry tool-readiness preflight contract and non-claims.
+
+- [Project Completeness Reporting OpenSpec](openspec/project_completeness_reporting_openspec.md) — defines source priority, proof honesty, and percentage rules for `print overall project completeness` reports.

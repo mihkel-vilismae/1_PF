@@ -26,3 +26,5 @@ Current OpenSpec entries:
 - [Authentication checkpoint proof OpenSpec](auth_checkpoint_proof_openspec.md) — app-owned sanitized login/session state contract for manual real-provider authentication before downstream download proofs.
 
 - [Debug Page OpenSpec](debug_page_openspec.md) — lightweight Debug page, sidebar/version tracker, pane template, crontab setup, worker debug pane, safety, and proof-boundary contract.
+
+- [Project Completeness Reporting OpenSpec](project_completeness_reporting_openspec.md) — source priority, status enum, proof-artifact, planned-command, Debug docs/runtime split, and percentage rules for overall completeness reports.

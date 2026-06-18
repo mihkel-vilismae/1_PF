@@ -106,6 +106,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/20_architecture_and_specs/openspec/production_gps_geocode_placeholder_rules_openspec.md` | v1.0 production GPS/geocode acceptance boundary: real GPS extraction, cache-first real geocoding, and placeholder rejection. |
 | `docs/20_architecture_and_specs/openspec/endpoint_contract_inventory_openspec.md` | Same-origin HTTP API endpoint contract inventory and drift guard. |
 | `docs/20_architecture_and_specs/openspec/README.md` | OpenSpec area overview and documentation-only boundary. |
+| `docs/20_architecture_and_specs/openspec/project_completeness_reporting_openspec.md` | Source priority, status enum, proof-artifact, planned-command, Debug split, and percentage rules for overall project completeness reports. |
 | `docs/20_architecture_and_specs/reference/LOGGING_STANDARD_CONTRACT.md` | Logging standard contract. |
 | `docs/20_architecture_and_specs/reference/default_project_settings_and_elements_checklist.md` | Default project settings and reusable UI/runtime elements. |
 
