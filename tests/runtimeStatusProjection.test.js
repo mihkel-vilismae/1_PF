@@ -34,3 +34,14 @@ test('runtime status projection normalizes backend live projection without mutat
   assert.equal(projection.workers.screen.status, 'Active');
   assert.equal(projection.mutationAllowed, false);
 });
+
+import { renderRunningProcessView } from '../dashboard/views/runningProcessView.ts';
+
+test('View D renders status-backed projection without inactive simulated success', () => {
+  const markup = renderRunningProcessView(createInitialState());
+  assert.match(markup, /data-runtime-status-projection-source="state-derived"/);
+  assert.match(markup, /data-runtime-status-projection-status="inactive"/);
+  assert.match(markup, /Read-only projection/);
+  assert.match(markup, /inactive state-derived truth instead of simulated success/);
+  assert.doesNotMatch(markup, /Simulated runtime preview is now active/);
+});

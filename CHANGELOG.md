@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.151 - View D status-backed projection
+
+- Updated View D to render the read-only runtime status projection contract.
+- Added render proof that inactive View D state does not imply simulated success.
+
 ## 0.8.150 - Runtime status projection contract
 
 - Added a read-only runtime status projection contract shared by View D and Debug.
