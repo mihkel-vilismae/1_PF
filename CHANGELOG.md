@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.158 - Scheduler host boundary OpenSpec
+
+- Added scheduler host boundary OpenSpec for future pipeline/playback/screen/recovery coordination.
+- Added docs proof that no worker host, crontab mutation, or Raspberry proof is claimed.
+
 ## 0.8.157 - Debug fake restore preview
 
 - Added fake/local Debug save and restore-preview actions.
