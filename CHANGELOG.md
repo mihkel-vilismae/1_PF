@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.185 - Proof-runner final-summary test repair
+
+- Updated the proof-runner queue test to expect `proof:raspberry-v1-readiness` before `proof:proof-runner-final-summary`.
+- Preserved the final-summary-last queue contract introduced in v0.8.182.
+
 ## 0.8.184 - Proof-runner handoff instructions
 
 - Added operator-facing instructions for the ordered `2proofrunner 1repo` flow.

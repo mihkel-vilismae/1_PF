@@ -20,5 +20,6 @@ test('Raspberry proof runner queue excludes Windows-only aliases but keeps final
   assert.equal(plan.ordered_proofs.some((name) => name.endsWith(':windows')), false);
   assert.ok(plan.skipped_windows_aliases.length > 0);
   assert.equal(assertFinalSummaryProofsRunLast(plan.ordered_proofs).passed, true);
-  assert.equal(plan.ordered_proofs.at(-1), 'proof:raspberry-v1-readiness');
+  assert.equal(plan.ordered_proofs.at(-2), 'proof:raspberry-v1-readiness');
+  assert.equal(plan.ordered_proofs.at(-1), 'proof:proof-runner-final-summary');
 });
