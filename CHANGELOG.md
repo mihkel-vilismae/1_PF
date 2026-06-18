@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.165 - V1 readiness live-data requirements
+
+- Added v1 readiness live-proof data requirement helpers and proof.
+- Updated registry so final v1 readiness remains a pre-pass until live Raspberry proof artifacts exist.
+
 ## 0.8.164 - Screen worker non-blocking design proof
 
 - Added local screen-worker non-blocking design model and proof.

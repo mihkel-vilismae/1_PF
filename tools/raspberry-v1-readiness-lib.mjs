@@ -281,3 +281,16 @@ export async function buildRaspberryV1ReadinessProof({ metadata, repoRoot = proc
       : ['Readiness is blocked until each required v1.0 gate has latest PASSED target evidence.'],
   });
 }
+
+export function buildV1ReadinessLiveDataRequirements() {
+  const requiredGates = RASPBERRY_V1_RELEASE_GATES.filter((gate) => gate.requiredForV1);
+  const requiredProofKinds = [...new Set(requiredGates.flatMap((gate) => gate.proofKinds))].sort();
+  return {
+    live_data_status: 'NOT_ENOUGH_LIVE_PROOF_DATA',
+    required_gate_count: requiredGates.length,
+    required_proof_kinds: requiredProofKinds,
+    proof_artifact_directory: 'runtime_data/proofs',
+    proof_status_policy: 'Each required proof kind needs a latest PASSED artifact before v1 readiness may pass.',
+    local_prepass_policy: 'Local/docs/mock pre-pass proofs may unblock implementation, but they do not replace Raspberry target proof artifacts.',
+  };
+}

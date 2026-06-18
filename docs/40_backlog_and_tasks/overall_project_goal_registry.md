@@ -42,7 +42,7 @@ This registry is the canonical active source for `print overall project complete
 | `V1-GATE-008` | Cron app-running workflow | raspberry_v1_gate | `PARTIAL` | `IMPLEMENTED_COMMAND` | `PARTIAL` | Rerun repaired target pack on Raspberry. |
 | `V1-GATE-009` | Dashboard runtime/status view | raspberry_v1_gate | `PRE_PASS` | `IMPLEMENTED_COMMAND` | `PRE_PASS` | Local projection pre-pass exists; final Raspberry dashboard status proof still required. |
 | `V1-GATE-010` | Screen worker non-blocking behavior | raspberry_v1_gate | `CONTRACTED` | `IMPLEMENTED_COMMAND` | `PRE_PASS` | Use scheduler host boundary/mock and screen-worker non-blocking design pre-pass before real target proof. |
-| `V1-GATE-011` | Docs/OpenSpec reconciliation | raspberry_v1_gate | `PRE_PASS` | `PLANNED_COMMAND` | `PRE_PASS` | Keep static docs audits passing; add final v1 reconciliation proof later. |
+| `V1-GATE-011` | Docs/OpenSpec reconciliation | raspberry_v1_gate | `PRE_PASS` | `IMPLEMENTED_COMMAND` | `PRE_PASS` | Keep live-proof data requirements passing; final v1 readiness still needs Raspberry proof bundle. |
 | `DBG-GOAL-001` | Add Debug page route | debug_page | `IMPLEMENTED` | `IMPLEMENTED_COMMAND` | `PASSED` | Keep Debug route runtime proof passing; no Raspberry/provider proof implied. |
 | `DBG-GOAL-002` | Add bottom sidebar Debug entry | debug_page | `IMPLEMENTED` | `IMPLEMENTED_COMMAND` | `PASSED` | Keep sidebar Debug entry runtime proof passing. |
 | `DBG-GOAL-003` | Add sidebar version tracker near Debug | debug_page | `IMPLEMENTED` | `IMPLEMENTED_COMMAND` | `PASSED` | Keep sidebar version tracker bound to the app version source. |

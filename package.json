@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.8.164",
+  "version": "0.8.165",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -90,7 +90,8 @@
     "proof:auth-checkpoint-state:test": "tsx --test tests/authCheckpointStateProof.test.js",
     "proof:regular-worker-product-contract": "tsx --test tests/regularWorkerProductContract.test.js",
     "proof:regular-worker-product-evidence-template": "tsx --test tests/regularWorkerProductEvidenceTemplate.test.js",
-    "proof:screen-worker-nonblocking-design": "tsx --test tests/screenWorkerNonBlockingDesign.test.js"
+    "proof:screen-worker-nonblocking-design": "tsx --test tests/screenWorkerNonBlockingDesign.test.js",
+    "proof:v1-readiness-data-requirements": "tsx --test tests/v1ReadinessDataRequirements.test.js"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

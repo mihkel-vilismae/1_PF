@@ -237,17 +237,18 @@
       "title": "Docs/OpenSpec reconciliation",
       "category": "raspberry_v1_gate",
       "status_enum": "PRE_PASS",
-      "proof_command_state": "PLANNED_COMMAND",
-      "proof_command": "planned final v1 reconciliation proof command not implemented yet",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:v1-readiness-data-requirements && npm run proof:raspberry-v1-readiness",
       "proof_status": "PRE_PASS",
       "source_paths": [
         "docs/20_architecture_and_specs/openspec/raspberry_v1_openspec_traceability_matrix.md",
         "docs/20_architecture_and_specs/openspec/raspberry_v1_release_gate_matrix_openspec.md",
-        "tools/raspberry-v1-readiness-lib.mjs"
+        "tools/raspberry-v1-readiness-lib.mjs",
+        "tests/v1ReadinessDataRequirements.test.js"
       ],
-      "next_action": "Keep static docs audits passing; add final v1 reconciliation proof later.",
+      "next_action": "Keep live-proof data requirements passing; final v1 readiness still needs Raspberry proof bundle.",
       "runtime_implementation_claim": false,
-      "notes": ""
+      "notes": "; v1 readiness live-data requirements proof enabled."
     },
     {
       "id": "DBG-GOAL-001",
