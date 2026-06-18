@@ -2556,3 +2556,9 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 
 - Marked Fedora media/playback tools as optional in the generic tool checker.
 - Preserved separate playback/display proof boundaries; missing `mpv` does not block generic Fedora environment/tool readiness.
+
+## v0.8.134 - Project status enum registry
+
+- Added `docs/20_architecture_and_specs/reference/project_status_enum_registry.md` as the normalized status vocabulary for overall project completeness reports.
+- Defines proof-safe enum meanings for `PROVEN`, `PARTIAL`, `PRE_PASS`, `SPECIFIED`, `SCAFFOLDED`, `DOCS_ONLY`, `DECISION_GATED`, and planned proof command states.
+- No runtime behavior changed.
