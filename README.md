@@ -385,3 +385,7 @@ Safety notes:
 - Existing SQLite DB files are not recreated or deleted.
 - Real iCloud/provider/device proof is not claimed by these launchers.
 
+
+## v0.8.139 Overall project completeness workflow
+
+Adds a source-backed completeness reporting registry/runbook/proof path for `print overall project completeness` style analysis. This is governance/documentation/proof-support only; it does not implement new runtime PhotoFrame behavior.

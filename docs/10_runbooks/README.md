@@ -63,3 +63,7 @@ The old `docs/categorized/other_documentation/documentation_workflow_and_invento
 - [Raspberry Project-Owned Launcher](raspberry_project_owned_launcher.md) — conservative Raspberry launcher skeleton with dry-run evidence and optional project-owned API start.
 
 - [Debug Page Runbook](debug_page_runbook.md) — operator/developer guide for the planned Debug page, crontab setup, worker panes, and proof-honesty checks.
+
+## Overall project completeness reporting
+
+- [Overall Project Completeness Reporting Runbook](overall_project_completeness_reporting.md) defines the operator workflow for source-backed completeness tables, status handling, planned proof command separation, and Debug docs/runtime split.

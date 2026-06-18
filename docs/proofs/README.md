@@ -232,3 +232,7 @@ The standalone path is intentionally stricter than a successful shell exit: `pro
 | OpenSpec v1 audit | `npm run proof:openspec-v1-audit` | Static audit that critical Raspberry v1 OpenSpec docs exist and include status, purpose/goal, and non-claims sections. |
 
 Tracked `tools/mpv/windows/.gitkeep` and `tools/mpv/windows/README.md` are allowed documentation/placeholders for the Windows mpv directory contract; runtime mpv binaries remain ignored and must not be vendored.
+
+## Overall project completeness registry proof
+
+- [Overall Project Completeness Registry Proof](overall_project_completeness_registry_proof.md) validates the completeness registry, status enums, planned-vs-implemented proof command split, source paths, and Debug runtime non-claims.

@@ -2557,6 +2557,13 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 - Marked Fedora media/playback tools as optional in the generic tool checker.
 - Preserved separate playback/display proof boundaries; missing `mpv` does not block generic Fedora environment/tool readiness.
 
+## v0.8.139 - Overall completeness reporting runbook and 3X2ACR review
+
+- Added `docs/10_runbooks/overall_project_completeness_reporting.md`.
+- Added `docs/50_audits_and_migrations/OVERALL_COMPLETENESS_3X2ACR_REVIEW_20260617.md`.
+- Linked completeness reporting docs/proof entries from README, runbook index, proof index, and table of contents.
+- No runtime PhotoFrame behavior changed.
+
 ## v0.8.138 - Overall completeness docs tests
 
 - Added `tests/overallProjectCompletenessRegistry.test.js`.

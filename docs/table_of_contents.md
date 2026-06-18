@@ -54,6 +54,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/10_runbooks/voice_ai_transcript_intake.md` | Workflow for extracting safe requirements and proof notes from messy Voice AI transcripts. |
 | `docs/10_runbooks/debug_page_runbook.md` | Operator/developer runbook for the planned Debug page, crontab setup, worker debug panes, and safety checks. |
 | `docs/10_runbooks/raspberry_project_owned_launcher.md` | Raspberry project-owned launcher skeleton runbook. |
+| `docs/10_runbooks/overall_project_completeness_reporting.md` | Source-backed workflow for overall project completeness tables, status handling, and proof honesty. |
 
 
 ## Proof artifacts
@@ -79,6 +80,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/proofs/raspberry_generated_fixture_proof.md` | Raspberry target generated fixture validation proof contract. |
 | `docs/proofs/raspberry_native_image_playback_proof.md` | Raspberry target native image playback proof contract. |
 | `docs/proofs/raspberry_native_video_playback_proof.md` | Raspberry target native video playback proof contract. |
+| `docs/proofs/overall_project_completeness_registry_proof.md` | Static proof that the overall project goal registry is source-backed and proof-honest. |
 
 ## Architecture and specs
 
@@ -109,6 +111,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/20_architecture_and_specs/openspec/project_completeness_reporting_openspec.md` | Source priority, status enum, proof-artifact, planned-command, Debug split, and percentage rules for overall project completeness reports. |
 | `docs/20_architecture_and_specs/reference/LOGGING_STANDARD_CONTRACT.md` | Logging standard contract. |
 | `docs/20_architecture_and_specs/reference/default_project_settings_and_elements_checklist.md` | Default project settings and reusable UI/runtime elements. |
+| `docs/20_architecture_and_specs/reference/project_status_enum_registry.md` | Normalized status and proof-command-state vocabulary for completeness reporting. |
 
 ## Status snapshots
 
@@ -196,3 +199,5 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 - `docs/proofs/raspberry_worker_startup_smoke_proof.md` — proof that all three scheduler worker commands can start cleanly on Raspberry after preflight repair.
 
 | `docs/50_audits_and_migrations/DEBUG_PAGE_DOCS_2ACR_REVIEW_20260617.md` | Second-pass 2ACR review of Debug page OpenSpec/runbook/goal-registry coverage and non-claims. |
+
+| `docs/40_backlog_and_tasks/overall_project_goal_registry.md` | Canonical active registry for project-completeness reports across v1 gates, Debug goals, and active backlog items. |
