@@ -2557,6 +2557,12 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 - Marked Fedora media/playback tools as optional in the generic tool checker.
 - Preserved separate playback/display proof boundaries; missing `mpv` does not block generic Fedora environment/tool readiness.
 
+## v0.8.137 - Overall project completeness registry proof
+
+- Added `tools/run-overall-project-completeness-registry-proof.mjs` and package script `proof:overall-project-completeness-registry`.
+- Added `docs/proofs/overall_project_completeness_registry_proof.md`.
+- The proof validates registry source paths, normalized statuses, planned-vs-implemented proof command states, and Debug page runtime non-claims.
+
 ## v0.8.136 - Project completeness reporting OpenSpec
 
 - Added `docs/20_architecture_and_specs/openspec/project_completeness_reporting_openspec.md`.
