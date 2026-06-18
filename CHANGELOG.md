@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.181 - Proof runner queue ordering contract
+
+- Added `proof:proof-runner-queue` to prove final readiness summary proofs run after proof-producing commands.
+- Added queue helpers for Windows and Raspberry proof-runner handoffs to keep Raspberry aliases platform-safe.
+
 ## 0.8.180 - Raspberry queue docs test alignment
 
 - Updated the Raspberry v1 implementation queue test to accept the current final v1 docs reconciliation proof command.
