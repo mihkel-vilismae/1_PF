@@ -62,7 +62,7 @@ import { renderRunningProcessView } from './views/runningProcessView.ts';
 import { renderDatabaseViewerView } from './views/databaseViewerView.ts';
 import { renderOsPlaybackFullscreenOverlay, renderOsPlaybackView } from './views/osPlaybackView.ts';
 import { renderDebugView } from './views/debugView.ts';
-import { addIsolatedTestMediaItem, buildDefaultDebugPageState, type DebugPageState } from './services/debugPageModel.ts';
+import { addIsolatedTestMediaItem, buildDefaultDebugPageState, runMockDebugWorker, type DebugPageState, type DebugWorkerKey } from './services/debugPageModel.ts';
 import { buildOsPlaybackViewModel, OS_PLAYBACK_PLATFORMS, type OsPlaybackPlatform, type PlaybackLogEntryViewModel } from './services/osPlaybackViewModel.ts';
 import { requestJson, setDashboardRuntimeMode } from './services/apiClient.ts';
 import { captureScrollSnapshot, restoreScrollSnapshotAfterLayout } from './services/scrollPreservation.ts';
@@ -1127,6 +1127,12 @@ function patchDebugPage(mutator: (debugPage: DebugPageState) => DebugPageState):
   });
 }
 
+
+// Narrows rendered Debug worker ids to the three supported mock worker panes.
+function normalizeDebugWorkerKey(value: string | null | undefined): DebugWorkerKey | null {
+  return value === 'regular' || value === 'playback' || value === 'screen' ? value : null;
+}
+
 // Binds rendered controls to runtime-truth actions and local state updates.
 function bindEvents() {
   app.querySelectorAll<HTMLButtonElement>('[data-dashboard-visual-mode]').forEach((button) => {
@@ -1178,6 +1184,22 @@ function bindEvents() {
         });
         return;
       }
+    });
+  });
+
+  app.querySelectorAll<HTMLButtonElement>('[data-debug-worker-run-now]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const workerKey = normalizeDebugWorkerKey(button.dataset.debugWorkerRunNow);
+      if (!workerKey) {
+        return;
+      }
+      patchDebugPage((debugPage) => runMockDebugWorker(debugPage, workerKey));
+      pushHistory('DEBUG', 'success', `${workerKey} worker Run now simulated locally.`, {
+        action: 'debug-worker-run-now',
+        workerKey,
+        mockOnly: true,
+        spawnedProcess: false,
+      });
     });
   });
 

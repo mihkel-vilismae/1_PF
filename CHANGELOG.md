@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.146 - 2026-06-18
+
+- Add mock/test worker telemetry updates for the Debug Regular, Playback, and On/off worker panes.
+- Wire Debug Run now buttons to browser-local mock telemetry without spawning worker processes.
+- Add runtime proof coverage for worker telemetry and mock-only invocation boundaries.
+
 ## 0.8.145 - 2026-06-18
 
 - Add Debug add-images test entry behavior that registers isolated test-media placeholders only.

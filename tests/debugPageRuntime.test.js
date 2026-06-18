@@ -96,3 +96,23 @@ test('debug add-images event handler records no production mutation', () => {
   assert.match(appSource, /addIsolatedTestMediaItem/);
   assert.match(appSource, /productionMutation: false/);
 });
+
+import { runMockDebugWorker } from '../dashboard/services/debugPageModel.ts';
+
+test('debug worker telemetry updates from mock Run now without spawning workers', () => {
+  const next = runMockDebugWorker(buildDefaultDebugPageState(), 'regular');
+  assert.equal(next.workers.regular.calledCount, 1);
+  assert.equal(next.workers.regular.currentStatus, 'mock-succeeded');
+  assert.match(next.workers.regular.evidence, /mock-only/);
+  assert.match(next.actionResults['worker-regular-run-now'].message, /No worker process was spawned/);
+  const markup = renderDebugView({ debugPage: next }, '0.8.146');
+  assert.match(markup, /Called count<\/dt><dd>1/);
+  assert.match(markup, /mock-succeeded/);
+});
+
+test('debug worker Run now handler is marked mock-only in app source', () => {
+  const appSource = read('dashboard/app.ts');
+  assert.match(appSource, /data-debug-worker-run-now/);
+  assert.match(appSource, /runMockDebugWorker/);
+  assert.match(appSource, /spawnedProcess: false/);
+});

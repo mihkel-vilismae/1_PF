@@ -120,6 +120,35 @@ function createWorkerTelemetry(key: DebugWorkerKey, label: string): DebugWorkerT
 }
 
 
+
+export function runMockDebugWorker(state: DebugPageState, key: DebugWorkerKey): DebugPageState {
+  const worker = state.workers[key];
+  const now = formatTallinnDebugTimestamp();
+  return {
+    ...state,
+    workers: {
+      ...state.workers,
+      [key]: {
+        ...worker,
+        firstCalledAt: worker.firstCalledAt ?? now,
+        lastCalledAt: now,
+        calledCount: worker.calledCount + 1,
+        currentStatus: 'mock-succeeded',
+        evidence: `mock-only: ${worker.label} safe Run now simulated at ${now}`,
+      },
+    },
+    actionResults: {
+      ...state.actionResults,
+      [`worker-${key}-run-now`]: createDebugActionResult(
+        `worker-${key}-run-now`,
+        'succeeded',
+        `${worker.label} Run now simulated locally. No worker process was spawned.`,
+        'debug-page-mock-worker-run',
+      ),
+    },
+  };
+}
+
 export function addIsolatedTestMediaItem(state: DebugPageState, displayName = 'debug-test-image.jpg'): DebugPageState {
   const addedAt = formatTallinnDebugTimestamp();
   const id = `debug-media-${state.testMedia.length + 1}`;
