@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.8.174",
+  "version": "0.8.175",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -93,7 +93,8 @@
     "proof:screen-worker-nonblocking-design": "tsx --test tests/screenWorkerNonBlockingDesign.test.js",
     "proof:v1-readiness-data-requirements": "tsx --test tests/v1ReadinessDataRequirements.test.js",
     "proof:raspberry-dashboard-status-view": "node --import tsx tools/run-raspberry-dashboard-status-view-proof.mjs",
-    "proof:raspberry-screen-worker-non-blocking": "node --import tsx tools/run-raspberry-screen-worker-non-blocking-proof.mjs"
+    "proof:raspberry-screen-worker-non-blocking": "node --import tsx tools/run-raspberry-screen-worker-non-blocking-proof.mjs",
+    "proof:raspberry-v1-docs-reconciliation": "node tools/run-raspberry-v1-docs-reconciliation-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.175
+
+- feat: add `proof:raspberry-v1-docs-reconciliation` as the v1 readiness proof kind for documentation/OpenSpec reconciliation.
+- preserve: this is a docs/OpenSpec gate only and does not replace live provider, product, display, or hardware proof artifacts.
+
 ## 0.8.174
 
 - feat: add `proof:raspberry-screen-worker-non-blocking` as the v1 readiness proof kind for the non-blocking screen-worker lane design.
