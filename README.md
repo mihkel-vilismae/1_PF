@@ -167,6 +167,7 @@ Proof workflows document and collect sanitized evidence for behavior that cannot
 | `npm run proof:real-geocode-provider-chain` | Proves a configured real geocode provider, cache-first behavior, fallback from cache miss, human-readable address plausibility, and placeholder rejection. | Writes `BLOCKED` unless `PF_PROOF_ENABLE_REAL_GEOCODE_CHAIN=true` and provider config are supplied. |
 | `npm run proof:address-display-ui` | Proves selected playback address evidence renders into the dashboard/display-facing playback UI. | Deterministic local UI render; writes sanitized JSON under `runtime_data/proofs/`. |
 | `npm run proof:raspberry-recovery` | Collects Raspberry power-loss recovery proof from explicit hardware evidence. | Writes `BLOCKED` unless explicitly enabled. |
+| `npm run proof:proof-runner-final-summary` | Summarizes the latest proof-runner readiness artifact after proof-producing commands. | Writes `BLOCKED` if readiness is missing or stale. |
 
 Generated proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API keys, provider tokens, raw provider output, or private filesystem paths.
 

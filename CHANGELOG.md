@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.184 - Proof-runner handoff instructions
+
+- Added operator-facing instructions for the ordered `2proofrunner 1repo` flow.
+- Documented `proof:proof-runner-final-summary` in the root proof workflow table.
+
 ## 0.8.183 - Ordered proof-runner documentation
 
 - Documented the ordered proof-runner flow: proof-producing commands first, v1 readiness second, final summary last.

@@ -458,3 +458,15 @@ Safety notes:
 - Existing SQLite DB files are not recreated or deleted.
 - Real iCloud/provider/device proof is not claimed by these launchers.
 
+
+
+## 2proofrunner handoff order
+
+For Raspberry proof-report uploads, prefer the generated `2proofrunner 1repo` handoff. The launcher should run proof-producing commands first, then run:
+
+```bash
+npm run proof:raspberry-v1-readiness
+npm run proof:proof-runner-final-summary
+```
+
+This avoids a stale readiness report where later `real-*` provider artifacts are marked `MISSING` only because readiness ran too early. The final summary proof does not prove providers or hardware by itself; it only marks whether the uploaded proof bundle contains a readiness summary that was produced after the observed input proof artifacts.
