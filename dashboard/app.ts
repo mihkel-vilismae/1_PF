@@ -61,6 +61,7 @@ import { renderLastRunView } from './views/lastRunView.ts';
 import { renderRunningProcessView } from './views/runningProcessView.ts';
 import { renderDatabaseViewerView } from './views/databaseViewerView.ts';
 import { renderOsPlaybackFullscreenOverlay, renderOsPlaybackView } from './views/osPlaybackView.ts';
+import { renderDebugView } from './views/debugView.ts';
 import { buildOsPlaybackViewModel, OS_PLAYBACK_PLATFORMS, type OsPlaybackPlatform, type PlaybackLogEntryViewModel } from './services/osPlaybackViewModel.ts';
 import { requestJson, setDashboardRuntimeMode } from './services/apiClient.ts';
 import { captureScrollSnapshot, restoreScrollSnapshotAfterLayout } from './services/scrollPreservation.ts';
@@ -147,6 +148,7 @@ function render() {
     E: renderDatabaseViewerView(state),
     WIN: renderOsPlaybackView(state, OS_PLAYBACK_PLATFORMS.windows),
     RPI: renderOsPlaybackView(state, OS_PLAYBACK_PLATFORMS.raspberry),
+    DEBUG: renderDebugView(state, __APP_VERSION__),
   }[state.activeView] ?? renderInitView(state, dashboardVisualMode);
 
   document.body.classList.toggle('modal-open', Boolean(state.modal) || dashboardVisualMode === null);
@@ -186,6 +188,14 @@ function render() {
             `,
           ).join('')}
         </nav>
+
+        <article class="side-panel side-panel--debug-version" aria-label="Debug version tracker">
+          <div class="side-panel__header">
+            <h2>Debug</h2>
+            <span class="pill">v${escapeHtml(__APP_VERSION__)}</span>
+          </div>
+          <p class="card__copy">Debug Menu route: <code>/debug</code>. Uses the same repo version source as the top-right tracker.</p>
+        </article>
 
         <article class="side-panel">
           <div class="side-panel__header">

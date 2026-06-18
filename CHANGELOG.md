@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.142 - 2026-06-18
+
+- Add the Debug view id, navigation entry, and `/debug` Debug Menu renderer.
+- Render Debug through the existing dashboard shell without removing A-E or Windows/Raspberry playback views.
+- Keep Debug runtime claims limited to local route/sidebar UI with explicit non-claims for real scheduler/media/worker/Raspberry behavior.
+
 ## 0.8.141 - 2026-06-18
 
 - Add `proof:debug-page-runtime` as the Debug runtime proof lane for implementation slices.
