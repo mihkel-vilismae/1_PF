@@ -136,3 +136,39 @@ test('debug crontab read action records fake/read-only evidence', () => {
   assert.match(appSource, /systemCrontabTouched: false/);
   assert.match(appSource, /data-debug-crontab-input/);
 });
+
+
+import { pauseFakeDebugCrontab, resumeFakeDebugCrontab, stageFakeDebugCrontabInstall } from '../dashboard/services/debugPageModel.ts';
+
+test('debug fake crontab pause and resume mutate only app-owned rows', () => {
+  const content = ['# unrelated row', '# PF_LOGIN_DEBUG_FAKE_CRONTAB_BEGIN', '*/1 * * * * run # pf-login:regular', '# PF_LOGIN_DEBUG_FAKE_CRONTAB_END'].join('\n');
+  const state = setDebugCrontabContent(buildDefaultDebugPageState(), content);
+  const paused = pauseFakeDebugCrontab(state);
+  assert.match(paused.crontab.editableContent, /# \*\/1 \* \* \* \* run # pf-login:regular/);
+  assert.match(paused.crontab.editableContent, /# unrelated row/);
+  assert.equal(paused.crontab.parseResult.unrelatedLines.length, 1);
+  assert.match(paused.actionResults['pause-app-owned-crontab'].message, /Unrelated crontab rows were preserved/);
+  const resumed = resumeFakeDebugCrontab(paused);
+  assert.match(resumed.crontab.editableContent, /\n\*\/1 \* \* \* \* run # pf-login:regular/);
+  assert.match(resumed.actionResults['resume-app-owned-crontab'].message, /no system crontab was written/i);
+});
+
+test('debug fake crontab install is blocked until double confirmation for high-frequency rows', () => {
+  const blocked = stageFakeDebugCrontabInstall(buildDefaultDebugPageState());
+  assert.equal(blocked.actionResults['install-worker-crontab-intervals'].status, 'blocked');
+  assert.match(blocked.crontab.pendingWarning ?? '', /Double confirmation required/);
+  assert.match(blocked.actionResults['install-worker-crontab-intervals'].message, /No system crontab was written/);
+  const confirmed = stageFakeDebugCrontabInstall(buildDefaultDebugPageState(), { doubleConfirmed: true });
+  assert.equal(confirmed.actionResults['install-worker-crontab-intervals'].status, 'succeeded');
+  assert.match(confirmed.actionResults['install-worker-crontab-intervals'].message, /local Debug state only/);
+});
+
+test('debug fake crontab mutation handlers are explicitly fake and safety-gated', () => {
+  const appSource = read('dashboard/app.ts');
+  assert.match(appSource, /pauseFakeDebugCrontab/);
+  assert.match(appSource, /resumeFakeDebugCrontab/);
+  assert.match(appSource, /stageFakeDebugCrontabInstall/);
+  assert.match(appSource, /unrelatedEntriesPreserved: true/);
+  assert.match(appSource, /requiresDoubleConfirmation: true/);
+  assert.match(appSource, /systemCrontabTouched: false/);
+});

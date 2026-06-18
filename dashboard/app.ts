@@ -62,7 +62,7 @@ import { renderRunningProcessView } from './views/runningProcessView.ts';
 import { renderDatabaseViewerView } from './views/databaseViewerView.ts';
 import { renderOsPlaybackFullscreenOverlay, renderOsPlaybackView } from './views/osPlaybackView.ts';
 import { renderDebugView } from './views/debugView.ts';
-import { addIsolatedTestMediaItem, buildDefaultDebugPageState, readFakeDebugCrontab, runMockDebugWorker, setDebugCrontabContent, type DebugPageState, type DebugWorkerKey } from './services/debugPageModel.ts';
+import { addIsolatedTestMediaItem, buildDefaultDebugPageState, pauseFakeDebugCrontab, readFakeDebugCrontab, resumeFakeDebugCrontab, runMockDebugWorker, setDebugCrontabContent, stageFakeDebugCrontabInstall, type DebugPageState, type DebugWorkerKey } from './services/debugPageModel.ts';
 import { buildOsPlaybackViewModel, OS_PLAYBACK_PLATFORMS, type OsPlaybackPlatform, type PlaybackLogEntryViewModel } from './services/osPlaybackViewModel.ts';
 import { requestJson, setDashboardRuntimeMode } from './services/apiClient.ts';
 import { captureScrollSnapshot, restoreScrollSnapshotAfterLayout } from './services/scrollPreservation.ts';
@@ -1190,6 +1190,36 @@ function bindEvents() {
           action,
           fakeOnly: true,
           systemCrontabTouched: false,
+        });
+        return;
+      }
+      if (action === 'pause-crontab') {
+        patchDebugPage((debugPage) => pauseFakeDebugCrontab(debugPage));
+        pushHistory('DEBUG', 'success', 'Paused fake app-owned Debug crontab entries only.', {
+          action,
+          fakeOnly: true,
+          systemCrontabTouched: false,
+          unrelatedEntriesPreserved: true,
+        });
+        return;
+      }
+      if (action === 'resume-crontab') {
+        patchDebugPage((debugPage) => resumeFakeDebugCrontab(debugPage));
+        pushHistory('DEBUG', 'success', 'Resumed fake app-owned Debug crontab entries only.', {
+          action,
+          fakeOnly: true,
+          systemCrontabTouched: false,
+          unrelatedEntriesPreserved: true,
+        });
+        return;
+      }
+      if (action === 'install-crontab-pending') {
+        patchDebugPage((debugPage) => stageFakeDebugCrontabInstall(debugPage));
+        pushHistory('DEBUG', 'blocked', 'Fake Debug crontab install requires safety confirmation when high-frequency intervals are present.', {
+          action,
+          fakeOnly: true,
+          systemCrontabTouched: false,
+          requiresDoubleConfirmation: true,
         });
         return;
       }

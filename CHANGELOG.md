@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.148 - Debug fake crontab mutation safety
+
+- Added fake-only pause/resume/install helpers for app-owned Debug crontab entries.
+- Preserved unrelated crontab rows and blocked high-frequency fake installs until double confirmation.
+- Wired Debug UI actions with proof-honest history metadata that no system crontab is touched.
+
 ## 0.8.147 - 2026-06-18
 
 - Add a fake/read-only Debug crontab parser that separates app-owned and unrelated rows.

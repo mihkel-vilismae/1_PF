@@ -160,6 +160,86 @@ export function readFakeDebugCrontab(state: DebugPageState): DebugPageState {
   };
 }
 
+
+export function pauseFakeDebugCrontab(state: DebugPageState): DebugPageState {
+  const editableContent = mutateAppOwnedCrontabRows(state.crontab.editableContent, (line) => line.trimStart().startsWith('#') ? line : `# ${line}`);
+  const result = createDebugActionResult(
+    'pause-app-owned-crontab',
+    'succeeded',
+    'Paused fake app-owned crontab entries only. Unrelated crontab rows were preserved and no system crontab was written.',
+    'debug-page-fake-crontab-mutation',
+  );
+  return updateCrontabAfterFakeMutation(state, editableContent, result, DEBUG_CRONTAB_PENDING_WARNING);
+}
+
+export function resumeFakeDebugCrontab(state: DebugPageState): DebugPageState {
+  const editableContent = mutateAppOwnedCrontabRows(state.crontab.editableContent, (line) => line.replace(/^#\s*/, ''));
+  const result = createDebugActionResult(
+    'resume-app-owned-crontab',
+    'succeeded',
+    'Resumed fake app-owned crontab entries only. Unrelated crontab rows were preserved and no system crontab was written.',
+    'debug-page-fake-crontab-mutation',
+  );
+  return updateCrontabAfterFakeMutation(state, editableContent, result, DEBUG_CRONTAB_PENDING_WARNING);
+}
+
+export function stageFakeDebugCrontabInstall(state: DebugPageState, options: { doubleConfirmed?: boolean } = {}): DebugPageState {
+  const parseResult = parseDebugCrontab(state.crontab.editableContent);
+  const requiresDoubleConfirmation = parseResult.hasHighFrequencyInterval;
+  if (requiresDoubleConfirmation && !options.doubleConfirmed) {
+    const result = createDebugActionResult(
+      'install-worker-crontab-intervals',
+      'blocked',
+      'Fake install blocked until double confirmation is supplied for high-frequency worker intervals. No system crontab was written.',
+      'debug-page-fake-crontab-double-confirmation',
+    );
+    return {
+      ...state,
+      crontab: {
+        ...state.crontab,
+        parseResult,
+        pendingWarning: 'Double confirmation required before installing high-frequency app-owned crontab intervals. This remains fake/test-only.',
+        lastFakeMutation: result,
+      },
+      actionResults: {
+        ...state.actionResults,
+        'install-worker-crontab-intervals': result,
+      },
+    };
+  }
+  const result = createDebugActionResult(
+    'install-worker-crontab-intervals',
+    'succeeded',
+    'Staged fake worker crontab install in local Debug state only. No system crontab was written.',
+    'debug-page-fake-crontab-install',
+  );
+  return updateCrontabAfterFakeMutation(state, state.crontab.editableContent, result, 'Fake install staged locally. Real Raspberry crontab writes remain unavailable from this page.');
+}
+
+function updateCrontabAfterFakeMutation(state: DebugPageState, editableContent: string, result: DebugActionResult, pendingWarning: string | null): DebugPageState {
+  return {
+    ...state,
+    crontab: {
+      ...state.crontab,
+      editableContent,
+      parseResult: parseDebugCrontab(editableContent),
+      pendingWarning,
+      lastFakeMutation: result,
+    },
+    actionResults: {
+      ...state.actionResults,
+      [result.action]: result,
+    },
+  };
+}
+
+function mutateAppOwnedCrontabRows(content: string, mutator: (line: string) => string): string {
+  return content
+    .split(/\r?\n/)
+    .map((line) => line.includes('pf-login:') ? mutator(line) : line)
+    .join('\n');
+}
+
 export function runMockDebugWorker(state: DebugPageState, key: DebugWorkerKey): DebugPageState {
   const worker = state.workers[key];
   const now = formatTallinnDebugTimestamp();
