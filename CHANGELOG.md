@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.174
+
+- feat: add `proof:raspberry-screen-worker-non-blocking` as the v1 readiness proof kind for the non-blocking screen-worker lane design.
+- preserve: the proof is a design/scheduler-host pre-pass and does not claim physical monitor control or real worker process execution.
+
 ## 0.8.173
 
 - feat: add `proof:raspberry-dashboard-status-view` as a read-only dashboard status projection proof consumed by v1 readiness.
