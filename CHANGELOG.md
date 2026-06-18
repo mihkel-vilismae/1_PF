@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.177 - iCloud auth readiness diagnostics
+
+- Added secret-safe readiness hints to the real iCloudPD proof when the proof is intentionally blocked.
+- Documented the auth-checkpoint and preflight proof sequence without writing Apple IDs, passwords, cookies, tokens, or .env values into evidence.
+
 ## 0.8.176 - Geocode provider readiness diagnostics
 
 - Added secret-safe real geocode provider readiness hints to blocked proof artifacts.
