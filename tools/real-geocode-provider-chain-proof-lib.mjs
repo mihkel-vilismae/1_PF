@@ -43,6 +43,34 @@ export function readRealGeocodeProofProvider(env = process.env) {
   return String(env.PF_GEOCODE_CHAIN_PROOF_PROVIDER ?? env.PF_GEOCODE_PROOF_PROVIDER ?? '').trim();
 }
 
+
+/** Builds operator-facing readiness diagnostics without exposing provider secrets. */
+export function buildRealGeocodeProviderReadinessHints(env = process.env) {
+  const providerId = readRealGeocodeProofProvider(env);
+  return {
+    required_env: [
+      { key: 'PF_PROOF_ENABLE_REAL_GEOCODE_CHAIN', required_value: 'true', present: env.PF_PROOF_ENABLE_REAL_GEOCODE_CHAIN === 'true' },
+      { key: 'PF_GEOCODE_CHAIN_PROOF_PROVIDER', fallback_key: 'PF_GEOCODE_PROOF_PROVIDER', configured: Boolean(providerId), configured_provider_id: providerId || null, configured_provider_known: providerId ? REAL_PROVIDER_IDS.has(providerId) : false },
+    ],
+    supported_provider_ids: [...REAL_PROVIDER_IDS].sort(),
+    optional_fixture_env: [
+      'PF_GEOCODE_CHAIN_FIXTURE_NAME',
+      'PF_GEOCODE_CHAIN_PROOF_LATITUDE',
+      'PF_GEOCODE_CHAIN_PROOF_LONGITUDE',
+      'PF_GEOCODE_CHAIN_PROOF_LANGUAGE',
+      'PF_GEOCODE_CHAIN_EXPECTED_TERMS',
+    ],
+    placeholder_policy: 'deterministic placeholder or coordinate echo output is never accepted as real geocode proof success',
+    secret_boundary: 'provider API keys, access tokens, raw provider payloads, and .env values must not be written into proof artifacts',
+    next_steps: [
+      'Set PF_PROOF_ENABLE_REAL_GEOCODE_CHAIN=true only on the target environment that is allowed to call a real provider.',
+      'Set PF_GEOCODE_CHAIN_PROOF_PROVIDER to one supported provider id.',
+      'Configure the selected provider through its normal provider-specific environment variables outside proof artifacts.',
+      'Rerun npm run proof:real-geocode-provider-chain and upload the proof report.',
+    ],
+  };
+}
+
 /** Reads and normalizes the coordinate/address fixture used for plausibility checks. */
 export function readRealGeocodeProofFixture(env = process.env) {
   const latitude = Number.parseFloat(String(env.PF_GEOCODE_CHAIN_PROOF_LATITUDE ?? DEFAULT_FIXTURE.latitude));
@@ -228,7 +256,8 @@ export function allChecksPassed(checks) {
 export async function runRealGeocodeProviderChainProof({ metadata, env = process.env, runPython = runPythonScriptWithFallback }) {
   const providerId = readRealGeocodeProofProvider(env);
   const fixture = readRealGeocodeProofFixture(env);
-  const blockedEvidence = { provider_id: providerId || null, fixture, placeholder_is_not_success: true };
+  const readiness = buildRealGeocodeProviderReadinessHints(env);
+  const blockedEvidence = { provider_id: providerId || null, fixture, placeholder_is_not_success: true, readiness };
 
   if (!isRealGeocodeProviderChainProofEnabled(env)) {
     return createProofEnvelope({

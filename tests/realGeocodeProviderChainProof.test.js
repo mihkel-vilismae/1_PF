@@ -16,6 +16,7 @@ import {
   parseProviderChainPythonPayload,
   readRealGeocodeProofFixture,
   runRealGeocodeProviderChainProof,
+  buildRealGeocodeProviderReadinessHints,
 } from '../tools/real-geocode-provider-chain-proof-lib.mjs';
 
 const metadata = { version: '0.7.43', gitCommit: 'test' };
@@ -42,6 +43,21 @@ test('real geocode provider-chain proof is blocked by default', async () => {
   const envelope = await runRealGeocodeProviderChainProof({ metadata, env: {}, runPython: buildMockPythonResult({}) });
   assert.equal(envelope.proof_status, 'BLOCKED');
   assert.match(envelope.evidence.reason, /PF_PROOF_ENABLE_REAL_GEOCODE_CHAIN=true/);
+  assert.equal(envelope.evidence.readiness.required_env[0].key, 'PF_PROOF_ENABLE_REAL_GEOCODE_CHAIN');
+  assert.equal(envelope.evidence.readiness.required_env[0].present, false);
+  assert.ok(envelope.evidence.readiness.supported_provider_ids.includes('nominatim_osm'));
+});
+
+/** Verifies readiness hints are explicit while preserving provider secret boundaries. */
+test('real geocode provider-chain readiness hints describe required env without secrets', () => {
+  const readiness = buildRealGeocodeProviderReadinessHints({
+    PF_PROOF_ENABLE_REAL_GEOCODE_CHAIN: 'true',
+    PF_GEOCODE_CHAIN_PROOF_PROVIDER: 'nominatim_osm',
+  });
+  assert.equal(readiness.required_env[0].present, true);
+  assert.equal(readiness.required_env[1].configured_provider_id, 'nominatim_osm');
+  assert.equal(readiness.required_env[1].configured_provider_known, true);
+  assert.match(readiness.secret_boundary, /must not be written/);
 });
 
 /** Verifies cache/placeholder provider IDs are not accepted as real network proof targets. */

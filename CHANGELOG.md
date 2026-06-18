@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.176 - Geocode provider readiness diagnostics
+
+- Added secret-safe real geocode provider readiness hints to blocked proof artifacts.
+- Added tests proving required environment and supported-provider guidance is available without leaking provider secrets.
+
 ## 0.8.175
 
 - feat: add `proof:raspberry-v1-docs-reconciliation` as the v1 readiness proof kind for documentation/OpenSpec reconciliation.
