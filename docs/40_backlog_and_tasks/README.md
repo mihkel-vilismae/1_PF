@@ -57,3 +57,8 @@ Slice 17 moved this active workflow planning note into the canonical backlog/tas
 - [Runtime Gap Implementation Plan — 2026-05-30](active_workflow/runtime_gap_implementation_plan_20260530.md) turns current doc-audit findings into ordered proof/implementation slices.
 
 The old `docs/active_workflow_docs/slice_8_9_route_selection.md` path remains a compatibility pointer only. Treat this as planning/workflow context, not current implementation proof.
+
+## Overall project completeness registry
+
+- [Overall Project Goal Registry](overall_project_goal_registry.md) is the active source registry for project-completeness reports. It combines v1 gates, Debug page goals, and active backlog items while keeping proof states and source paths explicit.
+- [Overall Project Goal Registry JSON](overall_project_goal_registry.json) is the machine-readable companion used by proof/tests.

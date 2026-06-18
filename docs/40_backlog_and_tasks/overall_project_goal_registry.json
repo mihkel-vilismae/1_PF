@@ -1,0 +1,742 @@
+{
+  "schema_version": "1.0.0",
+  "project": "PF_login / PhotoFrame",
+  "introduced_version": "0.8.135",
+  "status_enum_source": "docs/20_architecture_and_specs/reference/project_status_enum_registry.md",
+  "allowed_status_enums": [
+    "PROVEN",
+    "PARTIAL",
+    "PRE_PASS",
+    "IMPLEMENTED",
+    "IMPLEMENTED_READ",
+    "SPECIFIED",
+    "CONTRACTED",
+    "SCAFFOLDED",
+    "PLANNED",
+    "NOT_RUN",
+    "BLOCKED",
+    "DECISION_GATED",
+    "DOCS_ONLY",
+    "NOW",
+    "CLEANUP_ONLY",
+    "NOT_APPLICABLE"
+  ],
+  "allowed_proof_command_states": [
+    "IMPLEMENTED_COMMAND",
+    "PLANNED_COMMAND",
+    "ARTIFACT_ONLY",
+    "DOCS_AUDIT",
+    "NONE"
+  ],
+  "source_priority": [
+    "VERSION, package.json, git HEAD",
+    "active OpenSpec docs under docs/20_architecture_and_specs/openspec/",
+    "machine-readable proof/gate evaluators under tools/",
+    "active queues/goal registries under docs/40_backlog_and_tasks/",
+    "README and table of contents for navigation only",
+    "audits/status snapshots as supporting context",
+    "archive docs only for history"
+  ],
+  "runtime_proof_artifact_policy": {
+    "missing_artifacts": "If runtime_data/proofs is absent or incomplete, print NOT_ENOUGH_LIVE_PROOF_DATA and keep documented-status estimates separate.",
+    "external_bundle": "Uploaded Raspberry proof bundles may support documented status, but must be named explicitly and not implied as present in the ZIP."
+  },
+  "debug_page_policy": {
+    "docs_open_spec_status": "documentation/OpenSpec only in v0.8.133+",
+    "runtime_ui_claim": "do not claim runtime Debug route/sidebar/panes until code/tests prove them"
+  },
+  "goals": [
+    {
+      "id": "V1-GATE-001",
+      "title": "Raspberry target tooling and generated fixtures",
+      "category": "raspberry_v1_gate",
+      "status_enum": "PROVEN",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:raspberry-tool-checker && npm run proof:raspberry-generated-fixtures",
+      "proof_status": "PASSED",
+      "source_paths": [
+        "docs/20_architecture_and_specs/openspec/raspberry_v1_openspec_traceability_matrix.md",
+        "docs/20_architecture_and_specs/openspec/raspberry_v1_release_gate_matrix_openspec.md",
+        "tools/raspberry-v1-readiness-lib.mjs"
+      ],
+      "next_action": "Keep latest Raspberry proof artifacts attached for current runs.",
+      "runtime_implementation_claim": true,
+      "notes": ""
+    },
+    {
+      "id": "V1-GATE-002",
+      "title": "Install/runtime preflight",
+      "category": "raspberry_v1_gate",
+      "status_enum": "PROVEN",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:raspberry-executable-permissions && npm run proof:raspberry-env-preflight",
+      "proof_status": "PASSED",
+      "source_paths": [
+        "docs/20_architecture_and_specs/openspec/raspberry_v1_openspec_traceability_matrix.md",
+        "docs/20_architecture_and_specs/openspec/raspberry_v1_release_gate_matrix_openspec.md",
+        "tools/raspberry-v1-readiness-lib.mjs"
+      ],
+      "next_action": "Keep executable/env preflight evidence current.",
+      "runtime_implementation_claim": true,
+      "notes": ""
+    },
+    {
+      "id": "V1-GATE-003",
+      "title": "Real iCloud media source",
+      "category": "raspberry_v1_gate",
+      "status_enum": "SCAFFOLDED",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:raspberry-icloudpd-preflight; later npm run proof:real-icloudpd",
+      "proof_status": "NOT_RUN",
+      "source_paths": [
+        "docs/20_architecture_and_specs/openspec/raspberry_v1_openspec_traceability_matrix.md",
+        "docs/20_architecture_and_specs/openspec/raspberry_v1_release_gate_matrix_openspec.md",
+        "tools/raspberry-v1-readiness-lib.mjs"
+      ],
+      "next_action": "Run/repair real target preflight without leaking secrets.",
+      "runtime_implementation_claim": false,
+      "notes": ""
+    },
+    {
+      "id": "V1-GATE-004",
+      "title": "Real GPS/geocode provider chain",
+      "category": "raspberry_v1_gate",
+      "status_enum": "SCAFFOLDED",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:real-geocode-provider-chain",
+      "proof_status": "NOT_RUN",
+      "source_paths": [
+        "docs/20_architecture_and_specs/openspec/raspberry_v1_openspec_traceability_matrix.md",
+        "docs/20_architecture_and_specs/openspec/raspberry_v1_release_gate_matrix_openspec.md",
+        "tools/raspberry-v1-readiness-lib.mjs"
+      ],
+      "next_action": "Run with real provider configuration and cache-first evidence.",
+      "runtime_implementation_claim": false,
+      "notes": ""
+    },
+    {
+      "id": "V1-GATE-005",
+      "title": "Regular worker product pipeline",
+      "category": "raspberry_v1_gate",
+      "status_enum": "CONTRACTED",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:raspberry-regular-stage-worker-product-pipeline",
+      "proof_status": "NOT_RUN",
+      "source_paths": [
+        "docs/20_architecture_and_specs/openspec/raspberry_v1_openspec_traceability_matrix.md",
+        "docs/20_architecture_and_specs/openspec/raspberry_v1_release_gate_matrix_openspec.md",
+        "tools/raspberry-v1-readiness-lib.mjs"
+      ],
+      "next_action": "Implement/prove real download/index/GPS/geocode/queue worker path.",
+      "runtime_implementation_claim": false,
+      "notes": ""
+    },
+    {
+      "id": "V1-GATE-006",
+      "title": "Playback/native display",
+      "category": "raspberry_v1_gate",
+      "status_enum": "PROVEN",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:raspberry-native-image-playback && npm run proof:raspberry-native-video-playback",
+      "proof_status": "PASSED",
+      "source_paths": [
+        "docs/20_architecture_and_specs/openspec/raspberry_v1_openspec_traceability_matrix.md",
+        "docs/20_architecture_and_specs/openspec/raspberry_v1_release_gate_matrix_openspec.md",
+        "tools/raspberry-v1-readiness-lib.mjs"
+      ],
+      "next_action": "Connect standalone playback proof to real queued media later.",
+      "runtime_implementation_claim": true,
+      "notes": ""
+    },
+    {
+      "id": "V1-GATE-007",
+      "title": "Address overlay device display",
+      "category": "raspberry_v1_gate",
+      "status_enum": "SCAFFOLDED",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:raspberry-address-overlay-device-display",
+      "proof_status": "NOT_RUN",
+      "source_paths": [
+        "docs/20_architecture_and_specs/openspec/raspberry_v1_openspec_traceability_matrix.md",
+        "docs/20_architecture_and_specs/openspec/raspberry_v1_release_gate_matrix_openspec.md",
+        "tools/raspberry-v1-readiness-lib.mjs"
+      ],
+      "next_action": "Collect real device display evidence.",
+      "runtime_implementation_claim": false,
+      "notes": ""
+    },
+    {
+      "id": "V1-GATE-008",
+      "title": "Cron app-running workflow",
+      "category": "raspberry_v1_gate",
+      "status_enum": "PARTIAL",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:raspberry-app-running-target-pack",
+      "proof_status": "PARTIAL",
+      "source_paths": [
+        "docs/20_architecture_and_specs/openspec/raspberry_v1_openspec_traceability_matrix.md",
+        "docs/20_architecture_and_specs/openspec/raspberry_v1_release_gate_matrix_openspec.md",
+        "tools/raspberry-v1-readiness-lib.mjs"
+      ],
+      "next_action": "Rerun repaired target pack on Raspberry.",
+      "runtime_implementation_claim": false,
+      "notes": ""
+    },
+    {
+      "id": "V1-GATE-009",
+      "title": "Dashboard runtime/status view",
+      "category": "raspberry_v1_gate",
+      "status_enum": "CONTRACTED",
+      "proof_command_state": "PLANNED_COMMAND",
+      "proof_command": "planned proof command not implemented yet",
+      "proof_status": "PLANNED",
+      "source_paths": [
+        "docs/20_architecture_and_specs/openspec/raspberry_v1_openspec_traceability_matrix.md",
+        "docs/20_architecture_and_specs/openspec/raspberry_v1_release_gate_matrix_openspec.md",
+        "tools/raspberry-v1-readiness-lib.mjs"
+      ],
+      "next_action": "Implement proof-backed dashboard status projection and proof.",
+      "runtime_implementation_claim": false,
+      "notes": ""
+    },
+    {
+      "id": "V1-GATE-010",
+      "title": "Screen worker non-blocking behavior",
+      "category": "raspberry_v1_gate",
+      "status_enum": "CONTRACTED",
+      "proof_command_state": "PLANNED_COMMAND",
+      "proof_command": "planned proof command not implemented yet",
+      "proof_status": "PLANNED",
+      "source_paths": [
+        "docs/20_architecture_and_specs/openspec/raspberry_v1_openspec_traceability_matrix.md",
+        "docs/20_architecture_and_specs/openspec/raspberry_v1_release_gate_matrix_openspec.md",
+        "tools/raspberry-v1-readiness-lib.mjs"
+      ],
+      "next_action": "Add dedicated screen worker non-blocking proof.",
+      "runtime_implementation_claim": false,
+      "notes": ""
+    },
+    {
+      "id": "V1-GATE-011",
+      "title": "Docs/OpenSpec reconciliation",
+      "category": "raspberry_v1_gate",
+      "status_enum": "PRE_PASS",
+      "proof_command_state": "PLANNED_COMMAND",
+      "proof_command": "planned final v1 reconciliation proof command not implemented yet",
+      "proof_status": "PRE_PASS",
+      "source_paths": [
+        "docs/20_architecture_and_specs/openspec/raspberry_v1_openspec_traceability_matrix.md",
+        "docs/20_architecture_and_specs/openspec/raspberry_v1_release_gate_matrix_openspec.md",
+        "tools/raspberry-v1-readiness-lib.mjs"
+      ],
+      "next_action": "Keep static docs audits passing; add final v1 reconciliation proof later.",
+      "runtime_implementation_claim": false,
+      "notes": ""
+    },
+    {
+      "id": "DBG-GOAL-001",
+      "title": "Add Debug page route",
+      "category": "debug_page",
+      "status_enum": "SPECIFIED",
+      "proof_command_state": "PLANNED_COMMAND",
+      "proof_command": "planned proof command not implemented yet",
+      "proof_status": "PLANNED",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/10_runbooks/debug_page_runbook.md"
+      ],
+      "next_action": "UI/router proof later",
+      "runtime_implementation_claim": false,
+      "notes": "Area: Navigation"
+    },
+    {
+      "id": "DBG-GOAL-002",
+      "title": "Add bottom sidebar Debug entry",
+      "category": "debug_page",
+      "status_enum": "SPECIFIED",
+      "proof_command_state": "PLANNED_COMMAND",
+      "proof_command": "planned proof command not implemented yet",
+      "proof_status": "PLANNED",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/10_runbooks/debug_page_runbook.md"
+      ],
+      "next_action": "UI/static proof later",
+      "runtime_implementation_claim": false,
+      "notes": "Area: Navigation"
+    },
+    {
+      "id": "DBG-GOAL-003",
+      "title": "Add sidebar version tracker near Debug",
+      "category": "debug_page",
+      "status_enum": "SPECIFIED",
+      "proof_command_state": "PLANNED_COMMAND",
+      "proof_command": "planned proof command not implemented yet",
+      "proof_status": "PLANNED",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/10_runbooks/debug_page_runbook.md"
+      ],
+      "next_action": "UI/static proof later",
+      "runtime_implementation_claim": false,
+      "notes": "Area: Version/UI"
+    },
+    {
+      "id": "DBG-GOAL-004",
+      "title": "Preserve global top-right version tracker",
+      "category": "debug_page",
+      "status_enum": "SPECIFIED",
+      "proof_command_state": "PLANNED_COMMAND",
+      "proof_command": "planned proof command not implemented yet",
+      "proof_status": "PLANNED",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/10_runbooks/debug_page_runbook.md"
+      ],
+      "next_action": "UI/static proof later",
+      "runtime_implementation_claim": false,
+      "notes": "Area: Version/UI"
+    },
+    {
+      "id": "DBG-GOAL-005",
+      "title": "Add shared full-width pane template",
+      "category": "debug_page",
+      "status_enum": "SPECIFIED",
+      "proof_command_state": "PLANNED_COMMAND",
+      "proof_command": "planned proof command not implemented yet",
+      "proof_status": "PLANNED",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/10_runbooks/debug_page_runbook.md"
+      ],
+      "next_action": "Component/render proof later",
+      "runtime_implementation_claim": false,
+      "notes": "Area: UI layout"
+    },
+    {
+      "id": "DBG-GOAL-006",
+      "title": "Add Store and restore state pane",
+      "category": "debug_page",
+      "status_enum": "SPECIFIED",
+      "proof_command_state": "PLANNED_COMMAND",
+      "proof_command": "planned proof command not implemented yet",
+      "proof_status": "PLANNED",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/10_runbooks/debug_page_runbook.md"
+      ],
+      "next_action": "State proof later",
+      "runtime_implementation_claim": false,
+      "notes": "Area: Recovery/state"
+    },
+    {
+      "id": "DBG-GOAL-007",
+      "title": "Add Test playback pane",
+      "category": "debug_page",
+      "status_enum": "SPECIFIED",
+      "proof_command_state": "PLANNED_COMMAND",
+      "proof_command": "planned proof command not implemented yet",
+      "proof_status": "PLANNED",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/10_runbooks/debug_page_runbook.md"
+      ],
+      "next_action": "Playback action proof later",
+      "runtime_implementation_claim": false,
+      "notes": "Area: Playback"
+    },
+    {
+      "id": "DBG-GOAL-008",
+      "title": "Add plus-based image process test entry",
+      "category": "debug_page",
+      "status_enum": "SPECIFIED",
+      "proof_command_state": "PLANNED_COMMAND",
+      "proof_command": "planned proof command not implemented yet",
+      "proof_status": "PLANNED",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/10_runbooks/debug_page_runbook.md"
+      ],
+      "next_action": "Single-entry proof later",
+      "runtime_implementation_claim": false,
+      "notes": "Area: Test pipeline"
+    },
+    {
+      "id": "DBG-GOAL-009",
+      "title": "Add Crontab Setup pane",
+      "category": "debug_page",
+      "status_enum": "SPECIFIED",
+      "proof_command_state": "PLANNED_COMMAND",
+      "proof_command": "planned proof command not implemented yet",
+      "proof_status": "PLANNED",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/10_runbooks/debug_page_runbook.md"
+      ],
+      "next_action": "Fake-crontab tests first",
+      "runtime_implementation_claim": false,
+      "notes": "Area: Scheduler"
+    },
+    {
+      "id": "DBG-GOAL-010",
+      "title": "Read current crontab content",
+      "category": "debug_page",
+      "status_enum": "SPECIFIED",
+      "proof_command_state": "PLANNED_COMMAND",
+      "proof_command": "planned proof command not implemented yet",
+      "proof_status": "PLANNED",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/10_runbooks/debug_page_runbook.md"
+      ],
+      "next_action": "Read-only parser proof later",
+      "runtime_implementation_claim": false,
+      "notes": "Area: Scheduler"
+    },
+    {
+      "id": "DBG-GOAL-011",
+      "title": "Pause/resume app-owned crontab entries",
+      "category": "debug_page",
+      "status_enum": "SPECIFIED",
+      "proof_command_state": "PLANNED_COMMAND",
+      "proof_command": "planned proof command not implemented yet",
+      "proof_status": "PLANNED",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/10_runbooks/debug_page_runbook.md"
+      ],
+      "next_action": "Fake-crontab mutation proof later",
+      "runtime_implementation_claim": false,
+      "notes": "Area: Scheduler"
+    },
+    {
+      "id": "DBG-GOAL-012",
+      "title": "Install worker crontab intervals",
+      "category": "debug_page",
+      "status_enum": "SPECIFIED",
+      "proof_command_state": "PLANNED_COMMAND",
+      "proof_command": "planned proof command not implemented yet",
+      "proof_status": "PLANNED",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/10_runbooks/debug_page_runbook.md"
+      ],
+      "next_action": "Fake-crontab install proof later",
+      "runtime_implementation_claim": false,
+      "notes": "Area: Scheduler"
+    },
+    {
+      "id": "DBG-GOAL-013",
+      "title": "Require double confirmation under 10 seconds",
+      "category": "debug_page",
+      "status_enum": "SPECIFIED",
+      "proof_command_state": "PLANNED_COMMAND",
+      "proof_command": "planned proof command not implemented yet",
+      "proof_status": "PLANNED",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/10_runbooks/debug_page_runbook.md"
+      ],
+      "next_action": "Validation/UI proof later",
+      "runtime_implementation_claim": false,
+      "notes": "Area: Scheduler safety"
+    },
+    {
+      "id": "DBG-GOAL-014",
+      "title": "Add Regular Worker Debug Pane",
+      "category": "debug_page",
+      "status_enum": "SPECIFIED",
+      "proof_command_state": "PLANNED_COMMAND",
+      "proof_command": "planned proof command not implemented yet",
+      "proof_status": "PLANNED",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/10_runbooks/debug_page_runbook.md"
+      ],
+      "next_action": "Telemetry render proof later",
+      "runtime_implementation_claim": false,
+      "notes": "Area: Worker telemetry"
+    },
+    {
+      "id": "DBG-GOAL-015",
+      "title": "Add Playback Worker Debug Pane",
+      "category": "debug_page",
+      "status_enum": "SPECIFIED",
+      "proof_command_state": "PLANNED_COMMAND",
+      "proof_command": "planned proof command not implemented yet",
+      "proof_status": "PLANNED",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/10_runbooks/debug_page_runbook.md"
+      ],
+      "next_action": "Telemetry render proof later",
+      "runtime_implementation_claim": false,
+      "notes": "Area: Worker telemetry"
+    },
+    {
+      "id": "DBG-GOAL-016",
+      "title": "Add On/off Worker Debug Pane",
+      "category": "debug_page",
+      "status_enum": "SPECIFIED",
+      "proof_command_state": "PLANNED_COMMAND",
+      "proof_command": "planned proof command not implemented yet",
+      "proof_status": "PLANNED",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/10_runbooks/debug_page_runbook.md"
+      ],
+      "next_action": "Telemetry render proof later",
+      "runtime_implementation_claim": false,
+      "notes": "Area: Worker telemetry"
+    },
+    {
+      "id": "DBG-GOAL-017",
+      "title": "Add worker manual Run now buttons",
+      "category": "debug_page",
+      "status_enum": "SPECIFIED",
+      "proof_command_state": "PLANNED_COMMAND",
+      "proof_command": "planned proof command not implemented yet",
+      "proof_status": "PLANNED",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/10_runbooks/debug_page_runbook.md"
+      ],
+      "next_action": "Safe invocation proof later",
+      "runtime_implementation_claim": false,
+      "notes": "Area: Worker actions"
+    },
+    {
+      "id": "DBG-GOAL-018",
+      "title": "Add Estonian timestamp formatting",
+      "category": "debug_page",
+      "status_enum": "SPECIFIED",
+      "proof_command_state": "PLANNED_COMMAND",
+      "proof_command": "planned proof command not implemented yet",
+      "proof_status": "PLANNED",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/10_runbooks/debug_page_runbook.md"
+      ],
+      "next_action": "Deterministic formatting test later",
+      "runtime_implementation_claim": false,
+      "notes": "Area: Worker telemetry"
+    },
+    {
+      "id": "DBG-GOAL-019",
+      "title": "Add test data/database isolation proof",
+      "category": "debug_page",
+      "status_enum": "SPECIFIED",
+      "proof_command_state": "PLANNED_COMMAND",
+      "proof_command": "planned proof command not implemented yet",
+      "proof_status": "PLANNED",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/10_runbooks/debug_page_runbook.md"
+      ],
+      "next_action": "Isolation proof later",
+      "runtime_implementation_claim": false,
+      "notes": "Area: Test safety"
+    },
+    {
+      "id": "DBG-GOAL-020",
+      "title": "Add documentation/proof coverage for Debug page",
+      "category": "debug_page",
+      "status_enum": "DOCS_ONLY",
+      "proof_command_state": "DOCS_AUDIT",
+      "proof_command": "node --test tests/debugPageDocs.test.js",
+      "proof_status": "PASSED",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/10_runbooks/debug_page_runbook.md"
+      ],
+      "next_action": "Docs tests/audits",
+      "runtime_implementation_claim": false,
+      "notes": "Area: Governance"
+    },
+    {
+      "id": "IMPL-A1",
+      "title": "Wire concrete pipeline/playback/screen/recovery services behind scheduler host",
+      "category": "active_backlog",
+      "status_enum": "DECISION_GATED",
+      "proof_command_state": "NONE",
+      "proof_command": "",
+      "proof_status": "NOT_APPLICABLE",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/task_documentation_still_to_implement/active_implementation_backlog.md"
+      ],
+      "next_action": "Resolve decision gate or implement only after matching spec/proof update.",
+      "runtime_implementation_claim": false,
+      "notes": ""
+    },
+    {
+      "id": "IMPL-A2",
+      "title": "Decide and implement View A preload/refresh behavior",
+      "category": "active_backlog",
+      "status_enum": "NOW",
+      "proof_command_state": "NONE",
+      "proof_command": "",
+      "proof_status": "NOT_APPLICABLE",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/task_documentation_still_to_implement/active_implementation_backlog.md"
+      ],
+      "next_action": "Resolve decision gate or implement only after matching spec/proof update.",
+      "runtime_implementation_claim": false,
+      "notes": ""
+    },
+    {
+      "id": "IMPL-B1",
+      "title": "Replace remaining View B simulated surfaces with backend-backed stage/test service flow",
+      "category": "active_backlog",
+      "status_enum": "DECISION_GATED",
+      "proof_command_state": "NONE",
+      "proof_command": "",
+      "proof_status": "NOT_APPLICABLE",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/task_documentation_still_to_implement/active_implementation_backlog.md"
+      ],
+      "next_action": "Resolve decision gate or implement only after matching spec/proof update.",
+      "runtime_implementation_claim": false,
+      "notes": ""
+    },
+    {
+      "id": "IMPL-B2",
+      "title": "Replace hard-coded playback/checkpoint/test values with backend projections",
+      "category": "active_backlog",
+      "status_enum": "DECISION_GATED",
+      "proof_command_state": "NONE",
+      "proof_command": "",
+      "proof_status": "NOT_APPLICABLE",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/task_documentation_still_to_implement/active_implementation_backlog.md"
+      ],
+      "next_action": "Resolve decision gate or implement only after matching spec/proof update.",
+      "runtime_implementation_claim": false,
+      "notes": ""
+    },
+    {
+      "id": "IMPL-C1",
+      "title": "Reconcile View C read-only last-run projection wording",
+      "category": "active_backlog",
+      "status_enum": "IMPLEMENTED_READ",
+      "proof_command_state": "NONE",
+      "proof_command": "",
+      "proof_status": "NOT_APPLICABLE",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/task_documentation_still_to_implement/active_implementation_backlog.md"
+      ],
+      "next_action": "Resolve decision gate or implement only after matching spec/proof update.",
+      "runtime_implementation_claim": true,
+      "notes": ""
+    },
+    {
+      "id": "IMPL-C2",
+      "title": "Define controlled restore action for View C",
+      "category": "active_backlog",
+      "status_enum": "DECISION_GATED",
+      "proof_command_state": "NONE",
+      "proof_command": "",
+      "proof_status": "NOT_APPLICABLE",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/task_documentation_still_to_implement/active_implementation_backlog.md"
+      ],
+      "next_action": "Resolve decision gate or implement only after matching spec/proof update.",
+      "runtime_implementation_claim": false,
+      "notes": ""
+    },
+    {
+      "id": "IMPL-D1",
+      "title": "Replace View D simulated runtime state with backend projections/worker health",
+      "category": "active_backlog",
+      "status_enum": "NOW",
+      "proof_command_state": "NONE",
+      "proof_command": "",
+      "proof_status": "NOT_APPLICABLE",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/task_documentation_still_to_implement/active_implementation_backlog.md"
+      ],
+      "next_action": "Resolve decision gate or implement only after matching spec/proof update.",
+      "runtime_implementation_claim": false,
+      "notes": ""
+    },
+    {
+      "id": "IMPL-D2",
+      "title": "Add runtime polling/refresh and start/stop alignment for View D",
+      "category": "active_backlog",
+      "status_enum": "DECISION_GATED",
+      "proof_command_state": "NONE",
+      "proof_command": "",
+      "proof_status": "NOT_APPLICABLE",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/task_documentation_still_to_implement/active_implementation_backlog.md"
+      ],
+      "next_action": "Resolve decision gate or implement only after matching spec/proof update.",
+      "runtime_implementation_claim": false,
+      "notes": ""
+    },
+    {
+      "id": "IMPL-S1",
+      "title": "Implement canonical schema migration order for 9-table baseline",
+      "category": "active_backlog",
+      "status_enum": "DECISION_GATED",
+      "proof_command_state": "NONE",
+      "proof_command": "",
+      "proof_status": "NOT_APPLICABLE",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/task_documentation_still_to_implement/active_implementation_backlog.md"
+      ],
+      "next_action": "Resolve decision gate or implement only after matching spec/proof update.",
+      "runtime_implementation_claim": false,
+      "notes": ""
+    },
+    {
+      "id": "IMPL-S2",
+      "title": "Implement backend-owned writes for stages 2-6 against canonical tables",
+      "category": "active_backlog",
+      "status_enum": "DECISION_GATED",
+      "proof_command_state": "NONE",
+      "proof_command": "",
+      "proof_status": "NOT_APPLICABLE",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/task_documentation_still_to_implement/active_implementation_backlog.md"
+      ],
+      "next_action": "Resolve decision gate or implement only after matching spec/proof update.",
+      "runtime_implementation_claim": false,
+      "notes": ""
+    },
+    {
+      "id": "IMPL-S3",
+      "title": "Introduce runtime_state key/value writes/reads as durable truth surface",
+      "category": "active_backlog",
+      "status_enum": "DECISION_GATED",
+      "proof_command_state": "NONE",
+      "proof_command": "",
+      "proof_status": "NOT_APPLICABLE",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/task_documentation_still_to_implement/active_implementation_backlog.md"
+      ],
+      "next_action": "Resolve decision gate or implement only after matching spec/proof update.",
+      "runtime_implementation_claim": false,
+      "notes": ""
+    }
+  ]
+}

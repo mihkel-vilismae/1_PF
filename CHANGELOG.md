@@ -2557,6 +2557,12 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 - Marked Fedora media/playback tools as optional in the generic tool checker.
 - Preserved separate playback/display proof boundaries; missing `mpv` does not block generic Fedora environment/tool readiness.
 
+## v0.8.135 - Overall project goal registry
+
+- Added `docs/40_backlog_and_tasks/overall_project_goal_registry.md` and `.json` as the active source registry for `print overall project completeness` reports.
+- Captures Raspberry v1 gates, Debug page goals, active backlog items, status enums, proof command states, source paths, and non-claim boundaries.
+- Keeps Debug page documentation separate from runtime/UI proof and marks planned proof commands separately from implemented commands.
+
 ## v0.8.134 - Project status enum registry
 
 - Added `docs/20_architecture_and_specs/reference/project_status_enum_registry.md` as the normalized status vocabulary for overall project completeness reports.
