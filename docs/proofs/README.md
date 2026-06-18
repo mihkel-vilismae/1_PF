@@ -138,6 +138,30 @@ Windows Task Scheduler is not part of PF_login project scope; the Raspberry Open
 
 `npm run proof:raspberry-generated-fixtures` validates `generated_test_data/` on a Raspberry-like target using `python3` and `ffprobe`. It returns `BLOCKED` off-target or when prerequisites are missing, and does not prove native playback, scheduler behavior, recovery, display focus, or production iCloud continuation. See [`raspberry_generated_fixture_proof.md`](raspberry_generated_fixture_proof.md).
 
+
+## Registry and runtime proof-enabler commands
+
+These commands are part of the active proof-enabler and local/runtime proof lanes. They may prove local contracts, produce honest `BLOCKED` target-provider state, or validate registry/readiness data requirements without claiming final Raspberry v1 readiness by themselves.
+
+| Proof | Command | Runtime mode |
+|---|---|---|
+| Overall project completeness registry | `npm run proof:overall-project-completeness-registry` | local registry validation |
+| Debug page runtime | `npm run proof:debug-page-runtime` | local Debug UI/runtime proof |
+| Runtime status projection | `npm run proof:runtime-status-projection` | local read-only status projection |
+| View A refresh plan | `npm run proof:view-a-refresh-plan` | local View A contract |
+| View A mode safety | `npm run proof:view-a-mode-safety` | local Test/Real mode guard |
+| View C read-only wording | `npm run proof:view-c-readonly-wording` | local UI wording guard |
+| Controlled restore contract | `npm run proof:controlled-restore-contract` | OpenSpec/contract proof |
+| Scheduler host boundary | `npm run proof:scheduler-host-boundary` | OpenSpec/contract proof |
+| Scheduler host mock | `npm run proof:scheduler-host-mock` | local mock scheduler status proof |
+| iCloudPD preflight secret boundary | `npm run proof:icloudpd-preflight-boundary` | local redaction/target-boundary proof |
+| Auth checkpoint state | `npm run proof:auth-checkpoint-state` | sanitized app-owned auth checkpoint proof |
+| Auth checkpoint state tests | `npm run proof:auth-checkpoint-state:test` | local auth checkpoint unit proof |
+| Regular worker product contract | `npm run proof:regular-worker-product-contract` | local product contract proof |
+| Regular worker product evidence template | `npm run proof:regular-worker-product-evidence-template` | local evidence template proof |
+| Screen worker nonblocking design | `npm run proof:screen-worker-nonblocking-design` | local nonblocking design pre-pass |
+| V1 readiness data requirements | `npm run proof:v1-readiness-data-requirements` | local live-data requirements proof |
+
 ## Raspberry native image playback proof
 
 `npm run proof:raspberry-native-image-playback` is the first target-gated Raspberry native playback proof. It selects `generated_test_data/gps_valid/gps_valid_01.jpg`, records the project-owned Raspberry launcher dry-run boundary, and starts a bounded `mpv` fullscreen image command only on a non-override Raspberry-like display target with `mpv` available. Off-target, explicit-override, missing-display, missing-tool, or missing-fixture runs return `BLOCKED`. See [`raspberry_native_image_playback_proof.md`](raspberry_native_image_playback_proof.md).

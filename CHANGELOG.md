@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.168
+
+- docs: list the v0.8.140+ registry/runtime/proof-enabler npm proof scripts in `docs/proofs/README.md`.
+- preserve: documentation-only update; no runtime behavior changed.
+
 ## 0.8.167
 
 - test: update the native playback navigation guard so Windows/Raspberry playback must stay directly after A-E while allowing the later Debug route.
