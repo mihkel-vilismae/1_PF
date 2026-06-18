@@ -19,9 +19,9 @@ This matrix links v1 release gates, question-matrix decisions, OpenSpec document
 | `playback_native_display` | A1 | `raspberry_native_image_playback_proof_openspec.md`, `raspberry_native_video_playback_proof_openspec.md` | `npm run proof:raspberry-native-image-playback`, `npm run proof:raspberry-native-video-playback` | PROVEN on latest Raspberry bundle |
 | `address_overlay_device_display` | A1, A2, A3 | `raspberry_address_overlay_device_proof_openspec.md` | `npm run proof:raspberry-address-overlay-device-display` | SCAFFOLDED, observation NOT RUN |
 | `cron_app_running` | S2 | `raspberry_cron_worker_runtime_openspec.md` | `npm run proof:raspberry-app-running-target-pack` | PARTIAL; v0.8.68 ordering repair needs Raspberry rerun |
-| `dashboard_status_view` | D1, D2 | `raspberry_dashboard_status_view_openspec.md` | status contract helpers; future dashboard proof | CONTRACTED, UI proof NOT RUN |
-| `screen_worker_non_blocking` | S1, S2 | `raspberry_screen_worker_non_blocking_openspec.md` | future non-blocking proof | CONTRACTED, dedicated proof NOT RUN |
-| `docs_reconciled` | DOC1, DOC2 | this matrix plus docs audit proof | `npm run proof:docs-reconciliation-audit` | PRE-PASS PROVEN, final v1 reconciliation NOT PROVEN |
+| `dashboard_status_view` | D1, D2 | `raspberry_dashboard_status_view_openspec.md` | `npm run proof:raspberry-dashboard-status-view` | IMPLEMENTED proof command; target/live status depends on latest artifact |
+| `screen_worker_non_blocking` | S1, S2 | `raspberry_screen_worker_non_blocking_openspec.md` | `npm run proof:raspberry-screen-worker-non-blocking` | IMPLEMENTED proof command; target/live status depends on latest artifact |
+| `docs_reconciled` | DOC1, DOC2 | this matrix plus docs audit proof | `npm run proof:raspberry-v1-docs-reconciliation` | IMPLEMENTED final v1 docs reconciliation proof command |
 
 
 ## Auth checkpoint dependency

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.179 - Proof runner queue and docs alignment
+
+- Updated proof catalog and v1 traceability docs for the new dashboard, screen-worker, and docs reconciliation proof commands.
+- Aligned implementation queue language so future Raspberry proof reports point at runnable commands instead of planned placeholders.
+
 ## 0.8.178 - V1 readiness proof command remap
 
 - Mapped Raspberry dashboard status, screen-worker non-blocking, and v1 docs reconciliation readiness gaps to implemented proof commands.

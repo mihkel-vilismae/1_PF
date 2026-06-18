@@ -17,9 +17,9 @@ This queue converts the improved OpenSpec bundle into implementation-ready work 
 | `OSQ-GEO-001` | `raspberry_gps_geocode_provider_chain_openspec.md` | Add/provider-proof Nominatim chain and missing GPS unknown policy | `npm run proof:real-geocode-provider-chain` | Existing proof command; real provider NOT RUN |
 | `OSQ-PLAY-001` | native playback specs + regular worker pipeline spec | Connect playback worker to real queued media | native playback + queue evidence | Native standalone proof PASSED; queue integration pending |
 | `OSQ-OVL-001` | `raspberry_address_overlay_device_proof_openspec.md` | Render address/unknown overlay on native/device display | `npm run proof:raspberry-address-overlay-device-display` | Gate/template exists; display evidence NOT RUN |
-| `OSQ-DASH-001` | `raspberry_dashboard_status_view_openspec.md` | Implement proof-backed dashboard status projection | future dashboard proof | Data contract exists; UI proof pending |
-| `OSQ-SCR-001` | `raspberry_screen_worker_non_blocking_openspec.md` | Add dedicated screen worker non-blocking proof | future screen non-blocking proof | Worker exists; dedicated gate pending |
-| `OSQ-DOC-001` | all v1 OpenSpec docs | Keep static OpenSpec/docs audits passing | `npm run proof:openspec-v1-audit`, `npm run proof:docs-reconciliation-audit` | Audit scaffolds PASSED locally |
+| `OSQ-DASH-001` | `raspberry_dashboard_status_view_openspec.md` | Implement proof-backed dashboard status projection | `npm run proof:raspberry-dashboard-status-view` | Proof command implemented; latest target artifact determines PASS/BLOCKED |
+| `OSQ-SCR-001` | `raspberry_screen_worker_non_blocking_openspec.md` | Add dedicated screen worker non-blocking proof | `npm run proof:raspberry-screen-worker-non-blocking` | Proof command implemented; no real scheduler-host process claim |
+| `OSQ-DOC-001` | all v1 OpenSpec docs | Keep static OpenSpec/docs audits passing | `npm run proof:raspberry-v1-docs-reconciliation` | Final v1 docs reconciliation proof command implemented |
 
 ## OpenSpec implementation rule
 
