@@ -22,11 +22,14 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Proof | Command | Runtime mode |
 |---|---|---|
 | Full test suite stability | `npm run proof:full-test` | local test |
+| Real iCloudPD readiness | `npm run proof:real-icloudpd-readiness` | local iCloud/auth readiness preflight |
 | Real iCloudPD pipeline | `npm run proof:real-icloudpd` | opt-in real provider |
 | Real geocode provider | `npm run proof:geocode-provider` | opt-in real provider |
+| Real geocode provider readiness | `npm run proof:real-geocode-provider-readiness` | local real-geocode readiness preflight |
 | Real geocode provider chain | `npm run proof:real-geocode-provider-chain` | opt-in real network provider |
 | GPS fallback parsing | `npm run proof:gps-fallback` | deterministic local |
 | Deterministic media pipeline | `npm run proof:deterministic-media-pipeline` | deterministic local |
+| Real download continuation readiness | `npm run proof:real-download-readiness` | local real-download readiness preflight |
 | Real download continuation | `npm run proof:real-download-continuation` | opt-in real provider |
 | Address display | `npm run proof:address-display` | deterministic local |
 | Address display UI | `npm run proof:address-display-ui` | deterministic local UI render |
@@ -82,7 +85,7 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Proof runner final readiness summary | `npm run proof:proof-runner-final-summary` | local proof-report summary guard |
 | Proof runner queue order | `npm run proof:proof-runner-queue` | local proof-runner ordering contract |
 
-The table above is intentionally complete for current `proof:*` package scripts. As of this repository version, `package.json` exposes 82 proof package scripts and every one must appear in this table. `tests/docsNpmScriptReferences.test.js` guards active documentation against stale `npm run ...` script references and against missing proof-runner inventory entries.
+The table above is intentionally complete for current `proof:*` package scripts. As of this repository version, `package.json` exposes 85 proof package scripts and every one must appear in this table. `tests/docsNpmScriptReferences.test.js` guards active documentation against stale `npm run ...` script references and against missing proof-runner inventory entries.
 
 When adding, renaming, or removing a `proof:*` script, update this table in the same change as the package script so the proof catalog does not drift from the runnable command surface. Keep runtime-mode wording conservative: table entries describe how to run a proof command, not that the underlying hardware/provider/runtime behavior is already proven.
 

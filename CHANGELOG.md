@@ -1,6 +1,12 @@
 # Changelog
 
 
+
+## 0.8.189
+
+- Added a provider proof order runbook covering auth checkpoint, iCloud readiness/preflight, real iCloud, real download readiness/continuation, real geocode readiness/chain, v1 readiness, and final summary order.
+- Added tests that enforce provider-proof command order and secret/mock boundaries.
+
 ## 0.8.188
 
 - Added a secret-safe real download continuation readiness preflight proof.
