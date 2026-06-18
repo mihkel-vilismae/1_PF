@@ -65,6 +65,7 @@ import { renderDebugView } from './views/debugView.ts';
 import { addIsolatedTestMediaItem, buildDefaultDebugPageState, pauseFakeDebugCrontab, readFakeDebugCrontab, resumeFakeDebugCrontab, runMockDebugWorker, setDebugCrontabContent, stageFakeDebugCrontabInstall, type DebugPageState, type DebugWorkerKey } from './services/debugPageModel.ts';
 import { buildOsPlaybackViewModel, OS_PLAYBACK_PLATFORMS, type OsPlaybackPlatform, type PlaybackLogEntryViewModel } from './services/osPlaybackViewModel.ts';
 import { requestJson, setDashboardRuntimeMode } from './services/apiClient.ts';
+import { buildViewARefreshPlan } from './services/viewARefreshPlan.ts';
 import { captureScrollSnapshot, restoreScrollSnapshotAfterLayout } from './services/scrollPreservation.ts';
 
 const app = document.getElementById('app');
@@ -1152,12 +1153,15 @@ function bindEvents() {
       setActiveView(id, `${id} — ${label?.name ?? ''}`);
       // Trigger safe preloads or refresh actions depending on the selected view.
       if (id === 'A') {
-        runAction('verify-env');
-        runAction('check-db');
-        runAction('check-cron');
-        if (dashboardVisualMode === 'real') {
-          runAction('new-auth-check-login');
-        }
+        const plan = buildViewARefreshPlan(dashboardVisualMode);
+        plan.actions.forEach((action) => runAction(action));
+        pushHistory('VIEW_A', 'info', 'View A preload/refresh plan executed.', {
+          actions: plan.actions,
+          mode: plan.mode,
+          safeRefreshOnly: plan.safeRefreshOnly,
+          productionMutation: plan.productionMutation,
+          nonClaim: plan.nonClaim,
+        });
       } else if (id === 'C') {
         runAction('refresh-last-run');
       } else if (id === 'D') {

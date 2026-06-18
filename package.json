@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.8.152",
+  "version": "0.8.153",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -78,7 +78,8 @@
     "proof:linux-fedora-export-proof-artifacts": "node tools/run-linux-fedora-export-proof-artifacts.mjs",
     "proof:overall-project-completeness-registry": "node tools/run-overall-project-completeness-registry-proof.mjs",
     "proof:debug-page-runtime": "tsx --test tests/debugPageRuntime.test.js",
-    "proof:runtime-status-projection": "tsx --test tests/runtimeStatusProjection.test.js"
+    "proof:runtime-status-projection": "tsx --test tests/runtimeStatusProjection.test.js",
+    "proof:view-a-refresh-plan": "tsx --test tests/viewARefreshPlan.test.js"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

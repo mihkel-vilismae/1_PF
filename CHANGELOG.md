@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.153 - View A refresh plan
+
+- Added an explicit View A preload/refresh plan with Test/Real mode boundaries.
+- Replaced hard-coded View A selection refreshes with the plan helper and added proof coverage.
+
 ## 0.8.152 - Debug worker status projection bridge
 
 - Connected Debug worker panes to the read-only runtime status projection while preserving local mock Run now behavior.
