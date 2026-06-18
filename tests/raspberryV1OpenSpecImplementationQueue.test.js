@@ -17,5 +17,6 @@ test('OpenSpec implementation queue separates Raspberry and non-Raspberry next w
   assert.match(doc, /With Raspberry access/);
   assert.match(doc, /Without Raspberry access/);
   assert.match(doc, /proof:raspberry-app-running-target-pack/);
-  assert.match(doc, /proof:openspec-v1-audit/);
+  assert.match(doc, /proof:raspberry-v1-docs-reconciliation/);
+  assert.match(doc, /proof:docs-reconciliation-audit|proof:openspec-v1-audit|proof:raspberry-v1-docs-reconciliation/);
 });

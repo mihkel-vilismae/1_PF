@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.180 - Raspberry queue docs test alignment
+
+- Updated the Raspberry v1 implementation queue test to accept the current final v1 docs reconciliation proof command.
+- Preserved the queue's proof-honesty split between static docs audits and final v1 readiness evidence.
+
 ## 0.8.179 - Proof runner queue and docs alignment
 
 - Updated proof catalog and v1 traceability docs for the new dashboard, screen-worker, and docs reconciliation proof commands.
