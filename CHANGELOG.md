@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.178 - V1 readiness proof command remap
+
+- Mapped Raspberry dashboard status, screen-worker non-blocking, and v1 docs reconciliation readiness gaps to implemented proof commands.
+- Added a regression test so readiness reports no longer point those gates at planned placeholder command text.
+
 ## 0.8.177 - iCloud auth readiness diagnostics
 
 - Added secret-safe readiness hints to the real iCloudPD proof when the proof is intentionally blocked.

@@ -227,9 +227,9 @@ export const RASPBERRY_V1_PROOF_COMMANDS = Object.freeze({
   raspberry_app_running_status: 'npm run proof:raspberry-app-running-status',
   raspberry_app_running_chain: 'npm run proof:raspberry-app-running-chain',
   raspberry_app_running_pass_harness: 'npm run proof:raspberry-app-running-pass',
-  raspberry_dashboard_status_view: 'planned proof command not implemented yet',
-  raspberry_screen_worker_non_blocking: 'planned proof command not implemented yet',
-  raspberry_v1_docs_reconciliation: 'planned proof command not implemented yet',
+  raspberry_dashboard_status_view: 'npm run proof:raspberry-dashboard-status-view',
+  raspberry_screen_worker_non_blocking: 'npm run proof:raspberry-screen-worker-non-blocking',
+  raspberry_v1_docs_reconciliation: 'npm run proof:raspberry-v1-docs-reconciliation',
 });
 
 export function buildReadinessGapReport(readiness) {
