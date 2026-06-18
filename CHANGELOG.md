@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.166
+
+- test: make the iCloudPD preflight secret-boundary proof test target-aware by using the explicit Raspberry override block path instead of assuming every Raspberry run must block.
+- preserve: the proof still requires redaction and still blocks override-based target claims.
+
 ## 0.8.165 - V1 readiness live-data requirements
 
 - Added v1 readiness live-proof data requirement helpers and proof.

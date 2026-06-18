@@ -12,10 +12,10 @@ test('iCloudPD preflight summarizes config without leaking values', () => {
   assert.equal(JSON.stringify(config).includes('/home/private/cookies'), false);
 });
 
-test('iCloudPD preflight proof redacts secret-like command output and blocks off target', async () => {
+test('iCloudPD preflight proof redacts secret-like command output and blocks explicit target override runs', async () => {
   const envelope = await buildRaspberryIcloudpdPreflightProof({
     metadata: { version: 'test', gitCommit: 'test' },
-    env: { user: 'person@example.com', pw: 'secret-password', ICLOUDPD_COOKIE_DIR: '/home/private/cookies' },
+    env: { user: 'person@example.com', pw: 'secret-password', ICLOUDPD_COOKIE_DIR: '/home/private/cookies', PF_RASPBERRY_TOOL_CHECK_ASSUME_TARGET: 'true' },
     commandRunner: async () => ({ exitCode: 0, timedOut: false, stdout: 'icloudpd 1.0 user=person@example.com token=abc123', stderr: '', args: [] }),
     cwd: process.cwd(),
   });
@@ -24,6 +24,7 @@ test('iCloudPD preflight proof redacts secret-like command output and blocks off
   assert.match(serialized, /\[REDACTED\]/);
   assert.doesNotMatch(serialized, /person@example.com/);
   assert.doesNotMatch(serialized, /secret-password/);
+  assert.match(serialized, /override runs cannot produce PASS/);
   assert.match(serialized, /does not perform iCloud login/);
 });
 
