@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.144 - 2026-06-18
+
+- Add the Debug page shared full-width pane shell for state, playback, add-images, crontab, and worker debug sections.
+- Keep pane actions local/planned-safe with explicit non-claims for backend/native/Raspberry behavior.
+- Add Debug pane shell styling and runtime proof coverage.
+
 ## 0.8.143 - 2026-06-18
 
 - Add explicit Debug sidebar and page version-tracker markers.

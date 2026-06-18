@@ -55,3 +55,24 @@ test('debug version tracker reuses the app version source in sidebar and page ma
   assert.match(markup, /data-debug-page-version>v0\.8\.143/);
   assert.match(markup, /data-debug-version-source/);
 });
+
+test('debug page renders required pane shell without backend side effects', () => {
+  const markup = renderDebugView(createInitialState(), '0.8.144');
+  for (const expected of [
+    'data-debug-pane="state"',
+    'Store and restore state',
+    'data-debug-pane="test-playback"',
+    'Test playback',
+    'data-debug-pane="add-images"',
+    '+ Add images here',
+    'data-debug-pane="crontab"',
+    'Crontab Setup',
+    'data-debug-worker-pane="regular"',
+    'data-debug-worker-pane="playback"',
+    'data-debug-worker-pane="screen"',
+  ]) {
+    assert.match(markup, new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
+  assert.match(markup, /Real Raspberry crontab mutation is not available/);
+  assert.match(markup, /does not spawn a worker process/);
+});
