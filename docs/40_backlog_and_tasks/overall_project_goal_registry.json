@@ -91,11 +91,13 @@
       "source_paths": [
         "docs/20_architecture_and_specs/openspec/raspberry_v1_openspec_traceability_matrix.md",
         "docs/20_architecture_and_specs/openspec/raspberry_v1_release_gate_matrix_openspec.md",
-        "tools/raspberry-v1-readiness-lib.mjs"
+        "tools/raspberry-v1-readiness-lib.mjs",
+        "docs/20_architecture_and_specs/openspec/icloudpd_preflight_secret_boundary_openspec.md",
+        "tests/icloudpdPreflightBoundary.test.js"
       ],
-      "next_action": "Run/repair real target preflight without leaking secrets.",
+      "next_action": "Run/repair real target preflight without leaking secrets; local boundary proof now exists.",
       "runtime_implementation_claim": false,
-      "notes": ""
+      "notes": "; iCloudPD preflight secret-boundary proof added locally; real provider run still NOT_RUN."
     },
     {
       "id": "V1-GATE-004",

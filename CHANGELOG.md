@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.160 - iCloudPD preflight secret boundary
+
+- Added iCloudPD preflight secret-boundary OpenSpec and local proof.
+- Proved config presence is summarized without leaking provider/account/session values.
+
 ## 0.8.159 - Scheduler host mock status surface
 
 - Added mock-only scheduler host status model and Debug pane surface.
