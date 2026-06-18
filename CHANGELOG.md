@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.182 - Proof runner final readiness summary
+
+- Added `proof:proof-runner-final-summary` to summarize the latest readiness artifact after proof-producing commands run.
+- Added tests proving the summary blocks when readiness is missing or stale and passes when readiness is the final observed summary.
+
 ## 0.8.181 - Proof runner queue ordering contract
 
 - Added `proof:proof-runner-queue` to prove final readiness summary proofs run after proof-producing commands.
