@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.167
+
+- test: update the native playback navigation guard so Windows/Raspberry playback must stay directly after A-E while allowing the later Debug route.
+- preserve: no runtime navigation order is changed by this slice.
+
 ## 0.8.166
 
 - test: make the iCloudPD preflight secret-boundary proof test target-aware by using the explicit Raspberry override block path instead of assuming every Raspberry run must block.

@@ -15,11 +15,12 @@ import { renderOsPlaybackView } from '../dashboard/views/osPlaybackView.ts';
 const appSource = readFileSync('dashboard/app.ts', 'utf8');
 const docsSource = readFileSync('docs/OS_PLAYBACK_VIEWS_SLICE_1.md', 'utf8');
 
-test('navigation adds Windows and Raspberry playback after existing A-E views', () => {
+test('navigation keeps Windows and Raspberry playback directly after existing A-E views', () => {
   const ids = VIEW_ORDER.map((view) => view.id);
 
   assert.deepEqual(ids.slice(0, 5), ['A', 'B', 'C', 'D', 'E']);
-  assert.deepEqual(ids.slice(5), ['WIN', 'RPI']);
+  assert.deepEqual(ids.slice(5, 7), ['WIN', 'RPI']);
+  assert.ok(ids.includes('DEBUG'), 'Debug route may be appended after the playback views');
 });
 
 test('Windows playback view renders required playback shell sections', () => {
