@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.154 - View A mode safety proof
+
+- Added explicit Test/Real mode regression proof for View A preload/refresh behavior.
+- Proved Test Mode excludes provider login/session actions while Real Mode uses only status refresh semantics.
+
 ## 0.8.153 - View A refresh plan
 
 - Added an explicit View A preload/refresh plan with Test/Real mode boundaries.

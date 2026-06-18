@@ -17,3 +17,19 @@ test('View A app binding uses the explicit refresh plan', () => {
   assert.match(source, /View A preload\/refresh plan executed/);
   assert.match(source, /productionMutation: plan\.productionMutation/);
 });
+
+test('View A Test Mode excludes provider login/session refresh actions', () => {
+  const plan = buildViewARefreshPlan('test');
+  assert.deepEqual(plan.actions, ['verify-env', 'check-db', 'check-cron']);
+  assert.equal(plan.productionMutation, false);
+  assert.match(plan.nonClaim, /Test Mode refresh excludes NEW AUTH/);
+  assert.equal(assertViewAPlanKeepsModeBoundary(plan), true);
+});
+
+test('View A Real Mode allows only provider session status refresh, not login proof', () => {
+  const plan = buildViewARefreshPlan('real');
+  assert.deepEqual(plan.actions, ['verify-env', 'check-db', 'check-cron', 'new-auth-check-login']);
+  assert.equal(plan.productionMutation, false);
+  assert.match(plan.nonClaim, /does not perform login or prove provider success/);
+  assert.equal(assertViewAPlanKeepsModeBoundary(plan), true);
+});
