@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.159 - Scheduler host mock status surface
+
+- Added mock-only scheduler host status model and Debug pane surface.
+- Proved the scheduler host mock is non-blocking and does not spawn worker processes or write crontab.
+
 ## 0.8.158 - Scheduler host boundary OpenSpec
 
 - Added scheduler host boundary OpenSpec for future pipeline/playback/screen/recovery coordination.

@@ -40,8 +40,8 @@ This registry is the canonical active source for `print overall project complete
 | `V1-GATE-006` | Playback/native display | raspberry_v1_gate | `PROVEN` | `IMPLEMENTED_COMMAND` | `PASSED` | Connect standalone playback proof to real queued media later. |
 | `V1-GATE-007` | Address overlay device display | raspberry_v1_gate | `SCAFFOLDED` | `IMPLEMENTED_COMMAND` | `NOT_RUN` | Collect real device display evidence. |
 | `V1-GATE-008` | Cron app-running workflow | raspberry_v1_gate | `PARTIAL` | `IMPLEMENTED_COMMAND` | `PARTIAL` | Rerun repaired target pack on Raspberry. |
-| `V1-GATE-009` | Dashboard runtime/status view | raspberry_v1_gate | `CONTRACTED` | `PLANNED_COMMAND` | `PLANNED` | Implement proof-backed dashboard status projection and proof. |
-| `V1-GATE-010` | Screen worker non-blocking behavior | raspberry_v1_gate | `CONTRACTED` | `PLANNED_COMMAND` | `PLANNED` | Add dedicated screen worker non-blocking proof. |
+| `V1-GATE-009` | Dashboard runtime/status view | raspberry_v1_gate | `PRE_PASS` | `IMPLEMENTED_COMMAND` | `PRE_PASS` | Local projection pre-pass exists; final Raspberry dashboard status proof still required. |
+| `V1-GATE-010` | Screen worker non-blocking behavior | raspberry_v1_gate | `CONTRACTED` | `IMPLEMENTED_COMMAND` | `PRE_PASS` | Use scheduler host boundary/mock as design pre-pass before real screen-worker non-blocking proof. |
 | `V1-GATE-011` | Docs/OpenSpec reconciliation | raspberry_v1_gate | `PRE_PASS` | `PLANNED_COMMAND` | `PRE_PASS` | Keep static docs audits passing; add final v1 reconciliation proof later. |
 | `DBG-GOAL-001` | Add Debug page route | debug_page | `IMPLEMENTED` | `IMPLEMENTED_COMMAND` | `PASSED` | Keep Debug route runtime proof passing; no Raspberry/provider proof implied. |
 | `DBG-GOAL-002` | Add bottom sidebar Debug entry | debug_page | `IMPLEMENTED` | `IMPLEMENTED_COMMAND` | `PASSED` | Keep sidebar Debug entry runtime proof passing. |
@@ -64,12 +64,12 @@ This registry is the canonical active source for `print overall project complete
 | `DBG-GOAL-019` | Add test data/database isolation proof | debug_page | `IMPLEMENTED` | `IMPLEMENTED_COMMAND` | `PASSED` | Keep isolation proof passing; no production database/media mutation. |
 | `DBG-GOAL-020` | Add documentation/proof coverage for Debug page | debug_page | `DOCS_ONLY` | `DOCS_AUDIT` | `PASSED` | Docs tests/audits |
 | `IMPL-A1` | Wire concrete pipeline/playback/screen/recovery services behind scheduler host | active_backlog | `DECISION_GATED` | `NONE` | `NOT_APPLICABLE` | Resolve decision gate or implement only after matching spec/proof update. |
-| `IMPL-A2` | Decide and implement View A preload/refresh behavior | active_backlog | `NOW` | `NONE` | `NOT_APPLICABLE` | Resolve decision gate or implement only after matching spec/proof update. |
+| `IMPL-A2` | Decide and implement View A preload/refresh behavior | active_backlog | `IMPLEMENTED` | `IMPLEMENTED_COMMAND` | `PASSED` | Keep View A Test/Real mode refresh safety proof passing. |
 | `IMPL-B1` | Replace remaining View B simulated surfaces with backend-backed stage/test service flow | active_backlog | `DECISION_GATED` | `NONE` | `NOT_APPLICABLE` | Resolve decision gate or implement only after matching spec/proof update. |
 | `IMPL-B2` | Replace hard-coded playback/checkpoint/test values with backend projections | active_backlog | `DECISION_GATED` | `NONE` | `NOT_APPLICABLE` | Resolve decision gate or implement only after matching spec/proof update. |
-| `IMPL-C1` | Reconcile View C read-only last-run projection wording | active_backlog | `IMPLEMENTED_READ` | `NONE` | `NOT_APPLICABLE` | Resolve decision gate or implement only after matching spec/proof update. |
-| `IMPL-C2` | Define controlled restore action for View C | active_backlog | `DECISION_GATED` | `NONE` | `NOT_APPLICABLE` | Resolve decision gate or implement only after matching spec/proof update. |
-| `IMPL-D1` | Replace View D simulated runtime state with backend projections/worker health | active_backlog | `NOW` | `NONE` | `NOT_APPLICABLE` | Resolve decision gate or implement only after matching spec/proof update. |
+| `IMPL-C1` | Reconcile View C read-only last-run projection wording | active_backlog | `CLEANUP_ONLY` | `IMPLEMENTED_COMMAND` | `PASSED` | Keep View C read-only restore wording proof passing. |
+| `IMPL-C2` | Define controlled restore action for View C | active_backlog | `CONTRACTED` | `IMPLEMENTED_COMMAND` | `PASSED` | Future real restore remains blocked until backend/proof mutation contract is implemented. |
+| `IMPL-D1` | Replace View D simulated runtime state with backend projections/worker health | active_backlog | `IMPLEMENTED_READ` | `IMPLEMENTED_COMMAND` | `PASSED` | Keep View D/status projection proof passing; Raspberry live scoring remains separate. |
 | `IMPL-D2` | Add runtime polling/refresh and start/stop alignment for View D | active_backlog | `DECISION_GATED` | `NONE` | `NOT_APPLICABLE` | Resolve decision gate or implement only after matching spec/proof update. |
 | `IMPL-S1` | Implement canonical schema migration order for 9-table baseline | active_backlog | `DECISION_GATED` | `NONE` | `NOT_APPLICABLE` | Resolve decision gate or implement only after matching spec/proof update. |
 | `IMPL-S2` | Implement backend-owned writes for stages 2-6 against canonical tables | active_backlog | `DECISION_GATED` | `NONE` | `NOT_APPLICABLE` | Resolve decision gate or implement only after matching spec/proof update. |
@@ -79,9 +79,9 @@ This registry is the canonical active source for `print overall project complete
 
 | Category | Goal count | Strict proven count | Notes |
 |---|---:|---:|---|
-| active_backlog | 11 | 0 | Use source/proof fields before scoring. |
+| active_backlog | 11 | 0 | Local status/View A/View C/restore-contract pre-passes are recorded; decision-gated product work remains separate. |
 | debug_page | 20 | 0 | `DBG-GOAL-001`-`DBG-GOAL-019` are implemented with `proof:debug-page-runtime`; strict proven count remains 0 because live Raspberry/provider/hardware proof is separate. |
-| raspberry_v1_gate | 11 | 3 | Use source/proof fields before scoring. |
+| raspberry_v1_gate | 11 | 3 | V1 dashboard/screen rows now have local pre-pass proof; strict Raspberry proof still requires live target artifacts. |
 
 ## Non-claims
 

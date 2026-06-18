@@ -186,35 +186,42 @@
       "id": "V1-GATE-009",
       "title": "Dashboard runtime/status view",
       "category": "raspberry_v1_gate",
-      "status_enum": "CONTRACTED",
-      "proof_command_state": "PLANNED_COMMAND",
-      "proof_command": "planned proof command not implemented yet",
-      "proof_status": "PLANNED",
+      "status_enum": "PRE_PASS",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:runtime-status-projection",
+      "proof_status": "PRE_PASS",
       "source_paths": [
         "docs/20_architecture_and_specs/openspec/raspberry_v1_openspec_traceability_matrix.md",
         "docs/20_architecture_and_specs/openspec/raspberry_v1_release_gate_matrix_openspec.md",
-        "tools/raspberry-v1-readiness-lib.mjs"
+        "tools/raspberry-v1-readiness-lib.mjs",
+        "dashboard/services/runtimeStatusProjection.ts",
+        "dashboard/views/runningProcessView.ts",
+        "tests/runtimeStatusProjection.test.js"
       ],
-      "next_action": "Implement proof-backed dashboard status projection and proof.",
+      "next_action": "Local projection pre-pass exists; final Raspberry dashboard status proof still required.",
       "runtime_implementation_claim": false,
-      "notes": ""
+      "notes": "Local read-only status projection only; no live Raspberry proof."
     },
     {
       "id": "V1-GATE-010",
       "title": "Screen worker non-blocking behavior",
       "category": "raspberry_v1_gate",
       "status_enum": "CONTRACTED",
-      "proof_command_state": "PLANNED_COMMAND",
-      "proof_command": "planned proof command not implemented yet",
-      "proof_status": "PLANNED",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:scheduler-host-boundary && npm run proof:scheduler-host-mock",
+      "proof_status": "PRE_PASS",
       "source_paths": [
         "docs/20_architecture_and_specs/openspec/raspberry_v1_openspec_traceability_matrix.md",
         "docs/20_architecture_and_specs/openspec/raspberry_v1_release_gate_matrix_openspec.md",
-        "tools/raspberry-v1-readiness-lib.mjs"
+        "tools/raspberry-v1-readiness-lib.mjs",
+        "docs/20_architecture_and_specs/openspec/scheduler_host_boundary_openspec.md",
+        "dashboard/services/schedulerHostMock.ts",
+        "tests/schedulerHostBoundary.test.js",
+        "tests/schedulerHostMock.test.js"
       ],
-      "next_action": "Add dedicated screen worker non-blocking proof.",
+      "next_action": "Use scheduler host boundary/mock as design pre-pass before real screen-worker non-blocking proof.",
       "runtime_implementation_claim": false,
-      "notes": ""
+      "notes": "Scheduler host boundary and mock status exist; no real scheduler host/worker process/Raspberry proof."
     },
     {
       "id": "V1-GATE-011",
@@ -668,16 +675,20 @@
       "id": "IMPL-A2",
       "title": "Decide and implement View A preload/refresh behavior",
       "category": "active_backlog",
-      "status_enum": "NOW",
-      "proof_command_state": "NONE",
-      "proof_command": "",
-      "proof_status": "NOT_APPLICABLE",
+      "status_enum": "IMPLEMENTED",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:view-a-mode-safety",
+      "proof_status": "PASSED",
       "source_paths": [
-        "docs/40_backlog_and_tasks/task_documentation_still_to_implement/active_implementation_backlog.md"
+        "docs/40_backlog_and_tasks/task_documentation_still_to_implement/active_implementation_backlog.md",
+        "dashboard/services/viewARefreshPlan.ts",
+        "dashboard/app.ts",
+        "tests/viewARefreshPlan.test.js",
+        "docs/20_architecture_and_specs/openspec/view_a_refresh_plan_openspec.md"
       ],
-      "next_action": "Resolve decision gate or implement only after matching spec/proof update.",
-      "runtime_implementation_claim": false,
-      "notes": ""
+      "next_action": "Keep View A Test/Real mode refresh safety proof passing.",
+      "runtime_implementation_claim": true,
+      "notes": "View A refresh plan implemented; Test Mode excludes provider login/session actions."
     },
     {
       "id": "IMPL-B1",
@@ -713,46 +724,56 @@
       "id": "IMPL-C1",
       "title": "Reconcile View C read-only last-run projection wording",
       "category": "active_backlog",
-      "status_enum": "IMPLEMENTED_READ",
-      "proof_command_state": "NONE",
-      "proof_command": "",
-      "proof_status": "NOT_APPLICABLE",
+      "status_enum": "CLEANUP_ONLY",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:view-c-readonly-wording",
+      "proof_status": "PASSED",
       "source_paths": [
-        "docs/40_backlog_and_tasks/task_documentation_still_to_implement/active_implementation_backlog.md"
+        "docs/40_backlog_and_tasks/task_documentation_still_to_implement/active_implementation_backlog.md",
+        "dashboard/views/lastRunView.ts",
+        "tests/viewCReadOnlyWording.test.js"
       ],
-      "next_action": "Resolve decision gate or implement only after matching spec/proof update.",
+      "next_action": "Keep View C read-only restore wording proof passing.",
       "runtime_implementation_claim": true,
-      "notes": ""
+      "notes": "Cleanup only; no restore action added."
     },
     {
       "id": "IMPL-C2",
       "title": "Define controlled restore action for View C",
       "category": "active_backlog",
-      "status_enum": "DECISION_GATED",
-      "proof_command_state": "NONE",
-      "proof_command": "",
-      "proof_status": "NOT_APPLICABLE",
+      "status_enum": "CONTRACTED",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:controlled-restore-contract && npm run proof:debug-page-runtime",
+      "proof_status": "PASSED",
       "source_paths": [
-        "docs/40_backlog_and_tasks/task_documentation_still_to_implement/active_implementation_backlog.md"
+        "docs/40_backlog_and_tasks/task_documentation_still_to_implement/active_implementation_backlog.md",
+        "docs/20_architecture_and_specs/openspec/controlled_restore_action_openspec.md",
+        "dashboard/services/debugPageModel.ts",
+        "dashboard/app.ts",
+        "tests/controlledRestoreContract.test.js",
+        "tests/debugPageRuntime.test.js"
       ],
-      "next_action": "Resolve decision gate or implement only after matching spec/proof update.",
+      "next_action": "Future real restore remains blocked until backend/proof mutation contract is implemented.",
       "runtime_implementation_claim": false,
-      "notes": ""
+      "notes": "Controlled restore contract and fake Debug preview exist; no production restore mutation implemented."
     },
     {
       "id": "IMPL-D1",
       "title": "Replace View D simulated runtime state with backend projections/worker health",
       "category": "active_backlog",
-      "status_enum": "NOW",
-      "proof_command_state": "NONE",
-      "proof_command": "",
-      "proof_status": "NOT_APPLICABLE",
+      "status_enum": "IMPLEMENTED_READ",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:runtime-status-projection",
+      "proof_status": "PASSED",
       "source_paths": [
-        "docs/40_backlog_and_tasks/task_documentation_still_to_implement/active_implementation_backlog.md"
+        "docs/40_backlog_and_tasks/task_documentation_still_to_implement/active_implementation_backlog.md",
+        "dashboard/services/runtimeStatusProjection.ts",
+        "dashboard/views/runningProcessView.ts",
+        "tests/runtimeStatusProjection.test.js"
       ],
-      "next_action": "Resolve decision gate or implement only after matching spec/proof update.",
-      "runtime_implementation_claim": false,
-      "notes": ""
+      "next_action": "Keep View D/status projection proof passing; Raspberry live scoring remains separate.",
+      "runtime_implementation_claim": true,
+      "notes": "Local read-only runtime status projection implemented; no worker start/stop or Raspberry proof claimed."
     },
     {
       "id": "IMPL-D2",

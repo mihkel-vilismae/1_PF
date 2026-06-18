@@ -6,6 +6,7 @@ import {
   type DebugWorkerKey,
 } from '../services/debugPageModel.ts';
 import { buildRuntimeStatusProjectionFromState, type RuntimeStatusProjection } from '../services/runtimeStatusProjection.ts';
+import { buildSchedulerHostMockStatus } from '../services/schedulerHostMock.ts';
 
 export function renderDebugView(state: Record<string, unknown>, frontendVersion: string): string {
   const debugState = normalizeDebugPageState(state.debugPage);
@@ -32,6 +33,7 @@ export function renderDebugView(state: Record<string, unknown>, frontendVersion:
       ${renderPlaybackPane(debugState)}
       ${renderAddImagesPane(debugState)}
       ${renderCrontabPane(debugState)}
+      ${renderSchedulerHostMockPane()}
       ${renderWorkerPane(debugState, 'regular', statusProjection)}
       ${renderWorkerPane(debugState, 'playback', statusProjection)}
       ${renderWorkerPane(debugState, 'screen', statusProjection)}
@@ -115,6 +117,27 @@ function renderCrontabPane(debugState: DebugPageState): string {
         <div><dt>Unrelated rows preserved</dt><dd>${String(parse.unrelatedLines.length)}</dd></div>
         <div><dt>High-frequency interval</dt><dd>${parse.hasHighFrequencyInterval ? 'requires double confirmation' : 'not detected'}</dd></div>
       </dl>
+    `,
+  });
+}
+
+
+function renderSchedulerHostMockPane(): string {
+  const status = buildSchedulerHostMockStatus();
+  return renderDebugPane({
+    code: 'SCHED',
+    title: 'Scheduler Host Mock Status',
+    marker: 'data-debug-pane="scheduler-host-mock"',
+    copy: 'Mock-only scheduler-host status surface for future non-blocking screen worker proof design. It does not start workers or write crontab.',
+    body: `
+      <dl class="definition-list" data-scheduler-host-mock-status>
+        <div><dt>Status</dt><dd>${escapeHtml(status.status)}</dd></div>
+        <div><dt>Evidence</dt><dd>${escapeHtml(status.evidence)}</dd></div>
+        <div><dt>Non-claim</dt><dd>${escapeHtml(status.nonClaim)}</dd></div>
+      </dl>
+      <ul class="debug-list">
+        ${status.lanes.map((lane) => `<li>${escapeHtml(lane.label)} — non-blocking=${String(lane.nonBlocking)} — processSpawned=${String(lane.processSpawned)}</li>`).join('')}
+      </ul>
     `,
   });
 }
