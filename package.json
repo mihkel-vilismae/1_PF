@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.8.186",
+  "version": "0.8.187",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -97,7 +97,8 @@
     "proof:raspberry-v1-docs-reconciliation": "node tools/run-raspberry-v1-docs-reconciliation-proof.mjs",
     "proof:proof-runner-queue": "node tools/run-proof-runner-queue-proof.mjs",
     "proof:proof-runner-final-summary": "node tools/run-proof-runner-final-summary-proof.mjs",
-    "proof:real-geocode-provider-readiness": "node tools/run-real-geocode-provider-readiness-proof.mjs"
+    "proof:real-geocode-provider-readiness": "node tools/run-real-geocode-provider-readiness-proof.mjs",
+    "proof:real-icloudpd-readiness": "node tools/run-real-icloudpd-readiness-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

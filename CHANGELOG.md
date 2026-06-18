@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.187 - Real iCloudPD readiness preflight
+
+- Added `proof:real-icloudpd-readiness` as a no-download preflight for iCloudPD/auth readiness.
+- Added tests proving missing config blocks honestly and configured readiness does not leak Apple IDs, passwords, cookies, tokens, or `.env` values.
+
 ## 0.8.186 - Real geocode provider readiness preflight
 
 - Added `proof:real-geocode-provider-readiness` as a no-network preflight for real geocode provider configuration.
