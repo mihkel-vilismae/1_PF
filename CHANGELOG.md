@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.169
+
+- test: update the completeness-registry guard for the current registry shape where remaining future/backlog rows are `NONE` instead of runnable or planned commands.
+- preserve: non-implemented proof rows still cannot masquerade as `npm run proof:*` commands.
+
 ## 0.8.168
 
 - docs: list the v0.8.140+ registry/runtime/proof-enabler npm proof scripts in `docs/proofs/README.md`.

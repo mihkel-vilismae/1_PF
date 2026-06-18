@@ -38,13 +38,13 @@ test('overall project goal registry keeps active source paths resolvable', () =>
   }
 });
 
-test('planned proof commands are not represented as runnable proof commands', () => {
+test('non-implemented proof command rows do not masquerade as runnable proof commands', () => {
   const registry = readJson('docs/40_backlog_and_tasks/overall_project_goal_registry.json');
-  const planned = registry.goals.filter((goal) => goal.proof_command_state === 'PLANNED_COMMAND');
+  const nonImplemented = registry.goals.filter((goal) => !['IMPLEMENTED_COMMAND', 'DOCS_AUDIT'].includes(goal.proof_command_state));
 
-  assert.ok(planned.length > 0, 'registry should explicitly include planned proof command rows');
-  for (const goal of planned) {
-    assert.doesNotMatch(goal.proof_command, /npm\s+run\s+proof:/, `${goal.id} planned command must not look runnable`);
+  assert.ok(nonImplemented.length > 0, 'registry should keep non-implemented/no-command rows explicit');
+  for (const goal of nonImplemented) {
+    assert.doesNotMatch(goal.proof_command, /npm\s+run\s+proof:/, `${goal.id} non-implemented command must not look runnable`);
   }
 });
 
