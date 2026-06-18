@@ -6,6 +6,7 @@
 
 export const FINAL_SUMMARY_PROOFS = Object.freeze([
   'proof:raspberry-v1-readiness',
+  'proof:proof-report-blocker-summary',
   'proof:proof-runner-final-summary',
 ]);
 

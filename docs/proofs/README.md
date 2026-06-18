@@ -82,16 +82,17 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Raspberry screen-worker non-blocking | `npm run proof:raspberry-screen-worker-non-blocking` | Raspberry target/design proof |
 | Raspberry v1 docs reconciliation | `npm run proof:raspberry-v1-docs-reconciliation` | docs/OpenSpec v1 reconciliation |
 
+| Proof report blocker summary | `npm run proof:proof-report-blocker-summary` | local proof-report blocker summary |
 | Proof runner final readiness summary | `npm run proof:proof-runner-final-summary` | local proof-report summary guard |
 | Proof runner queue order | `npm run proof:proof-runner-queue` | local proof-runner ordering contract |
 
-The table above is intentionally complete for current `proof:*` package scripts. As of this repository version, `package.json` exposes 85 proof package scripts and every one must appear in this table. `tests/docsNpmScriptReferences.test.js` guards active documentation against stale `npm run ...` script references and against missing proof-runner inventory entries.
+The table above is intentionally complete for current `proof:*` package scripts. As of this repository version, `package.json` exposes 86 proof package scripts and every one must appear in this table. `tests/docsNpmScriptReferences.test.js` guards active documentation against stale `npm run ...` script references and against missing proof-runner inventory entries.
 
 When adding, renaming, or removing a `proof:*` script, update this table in the same change as the package script so the proof catalog does not drift from the runnable command surface. Keep runtime-mode wording conservative: table entries describe how to run a proof command, not that the underlying hardware/provider/runtime behavior is already proven.
 
 ## Ordered proof-runner handoff flow
 
-The 2proofrunner handoff should not run release-readiness summaries too early. `npm run proof:proof-runner-queue` proves the intended queue order: proof-producing commands run first, then `npm run proof:raspberry-v1-readiness`, then `npm run proof:proof-runner-final-summary`.
+The 2proofrunner handoff should not run release-readiness summaries too early. `npm run proof:proof-runner-queue` proves the intended queue order: proof-producing commands run first, then `npm run proof:raspberry-v1-readiness`, then `npm run proof:proof-report-blocker-summary`, then `npm run proof:proof-runner-final-summary`.
 
 `npm run proof:proof-runner-final-summary` reads existing `runtime_data/proofs` artifacts and writes a compact final marker. It does not execute provider, product, overlay, or hardware proofs itself. It is `BLOCKED` when readiness has not been run yet or when a newer input artifact appears after the readiness summary.
 

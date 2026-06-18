@@ -13,6 +13,7 @@ const REQUIRED_COMMANDS = [
   'npm run proof:real-geocode-provider-readiness',
   'npm run proof:real-geocode-provider-chain',
   'npm run proof:raspberry-v1-readiness',
+  'npm run proof:proof-report-blocker-summary',
   'npm run proof:proof-runner-final-summary',
 ];
 

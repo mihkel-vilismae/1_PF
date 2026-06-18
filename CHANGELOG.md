@@ -2,6 +2,12 @@
 
 
 
+
+## 0.8.190
+
+- Added `proof:proof-report-blocker-summary` to group existing proof-report blockers by config/env, auth/session, provider/network, product evidence, operator evidence, docs/test, and platform-optional categories.
+- Updated proof-runner queue ordering so the final summary phase is readiness -> blocker summary -> final readiness summary.
+
 ## 0.8.189
 
 - Added a provider proof order runbook covering auth checkpoint, iCloud readiness/preflight, real iCloud, real download readiness/continuation, real geocode readiness/chain, v1 readiness, and final summary order.

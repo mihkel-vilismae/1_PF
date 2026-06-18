@@ -25,11 +25,12 @@ Run the following proof calls in this order when preparing a real-provider proof
 | 7 | `npm run proof:real-geocode-provider-readiness` | Check local geocode provider readiness inputs without network calls. | `BLOCKED` until opt-in/provider id are configured. |
 | 8 | `npm run proof:real-geocode-provider-chain` | Run the opt-in real geocode provider-chain proof. | `BLOCKED` until provider is enabled/configured. |
 | 9 | `npm run proof:raspberry-v1-readiness` | Summarize latest v1 gate artifacts after provider proofs. | `BLOCKED` until all required live evidence exists. |
-| 10 | `npm run proof:proof-runner-final-summary` | Confirm readiness summary was generated after observed inputs. | `PASSED` only when readiness is present and not stale. |
+| 10 | `npm run proof:proof-report-blocker-summary` | Group remaining blockers from the uploaded proof artifacts. | `PASSED` if artifacts exist, `BLOCKED` if no proof artifacts exist. |
+| 11 | `npm run proof:proof-runner-final-summary` | Confirm readiness summary was generated after observed inputs. | `PASSED` only when readiness is present and not stale. |
 
 ## Operator notes
 
 - Do not substitute mock download endpoints for `npm run proof:real-download-continuation`.
 - Do not treat `PASSED` readiness preflights as real provider/download proof; readiness preflights only prove local inputs and route plans.
 - Run the 2proofrunner handoff when possible because it enforces the repository queue order and collects uploadable logs and proof artifacts.
-- After each proof report upload, compare `proof:raspberry-v1-readiness` and `proof:proof-runner-final-summary` before deciding the next implementation slice.
+- After each proof report upload, compare `proof:raspberry-v1-readiness`, `proof:proof-report-blocker-summary`, and `proof:proof-runner-final-summary` before deciding the next implementation slice.
