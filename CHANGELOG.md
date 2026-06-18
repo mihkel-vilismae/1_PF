@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.150 - Runtime status projection contract
+
+- Added a read-only runtime status projection contract shared by View D and Debug.
+- Added projection tests proving no worker/crontab/production/Raspberry mutation authority is introduced.
+
 ## 0.8.149 - Debug runtime registry finalization
 
 - Marked Debug runtime goals `DBG-GOAL-001` through `DBG-GOAL-019` as implemented through the local safe Debug runtime proof lane.
