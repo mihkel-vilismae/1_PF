@@ -116,3 +116,23 @@ test('debug worker Run now handler is marked mock-only in app source', () => {
   assert.match(appSource, /runMockDebugWorker/);
   assert.match(appSource, /spawnedProcess: false/);
 });
+
+import { parseDebugCrontab, readFakeDebugCrontab, setDebugCrontabContent } from '../dashboard/services/debugPageModel.ts';
+
+test('debug fake crontab parser separates app-owned and unrelated rows read-only', () => {
+  const parse = parseDebugCrontab(['# unrelated row', '# PF_LOGIN_DEBUG_FAKE_CRONTAB_BEGIN', '*/1 * * * * run # pf-login:regular', '# PF_LOGIN_DEBUG_FAKE_CRONTAB_END'].join('\n'));
+  assert.equal(parse.status, 'active');
+  assert.equal(parse.appOwnedLines.length, 3);
+  assert.equal(parse.unrelatedLines.length, 1);
+  assert.equal(parse.hasHighFrequencyInterval, true);
+});
+
+test('debug crontab read action records fake/read-only evidence', () => {
+  const state = setDebugCrontabContent(buildDefaultDebugPageState(), '*/1 * * * * run # pf-login:regular');
+  const next = readFakeDebugCrontab(state);
+  assert.equal(next.crontab.parseResult.status, 'malformed');
+  assert.match(next.actionResults['read-current-crontab'].message, /No system crontab was read or written/);
+  const appSource = read('dashboard/app.ts');
+  assert.match(appSource, /systemCrontabTouched: false/);
+  assert.match(appSource, /data-debug-crontab-input/);
+});

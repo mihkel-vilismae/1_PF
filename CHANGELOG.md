@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.147 - 2026-06-18
+
+- Add a fake/read-only Debug crontab parser that separates app-owned and unrelated rows.
+- Wire the Debug crontab textarea and Read current crontab action to browser-local state only.
+- Add proof coverage that fake crontab parsing does not touch system crontab.
+
 ## 0.8.146 - 2026-06-18
 
 - Add mock/test worker telemetry updates for the Debug Regular, Playback, and On/off worker panes.

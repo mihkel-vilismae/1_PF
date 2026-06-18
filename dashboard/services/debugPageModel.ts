@@ -121,6 +121,45 @@ function createWorkerTelemetry(key: DebugWorkerKey, label: string): DebugWorkerT
 
 
 
+
+export function setDebugCrontabContent(state: DebugPageState, content: string): DebugPageState {
+  return {
+    ...state,
+    crontab: {
+      ...state.crontab,
+      editableContent: content,
+      parseResult: parseDebugCrontab(content),
+      pendingWarning: null,
+    },
+  };
+}
+
+export function readFakeDebugCrontab(state: DebugPageState): DebugPageState {
+  const parseResult = parseDebugCrontab(state.crontab.editableContent);
+  return {
+    ...state,
+    crontab: {
+      ...state.crontab,
+      parseResult,
+      lastFakeMutation: createDebugActionResult(
+        'read-current-crontab',
+        'succeeded',
+        'Parsed fake/app-owned crontab content read-only. No system crontab was read or written.',
+        'debug-page-fake-crontab-parser',
+      ),
+    },
+    actionResults: {
+      ...state.actionResults,
+      'read-current-crontab': createDebugActionResult(
+        'read-current-crontab',
+        'succeeded',
+        'Parsed fake/app-owned crontab content read-only. No system crontab was read or written.',
+        'debug-page-fake-crontab-parser',
+      ),
+    },
+  };
+}
+
 export function runMockDebugWorker(state: DebugPageState, key: DebugWorkerKey): DebugPageState {
   const worker = state.workers[key];
   const now = formatTallinnDebugTimestamp();

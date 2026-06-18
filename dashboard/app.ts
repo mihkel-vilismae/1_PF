@@ -62,7 +62,7 @@ import { renderRunningProcessView } from './views/runningProcessView.ts';
 import { renderDatabaseViewerView } from './views/databaseViewerView.ts';
 import { renderOsPlaybackFullscreenOverlay, renderOsPlaybackView } from './views/osPlaybackView.ts';
 import { renderDebugView } from './views/debugView.ts';
-import { addIsolatedTestMediaItem, buildDefaultDebugPageState, runMockDebugWorker, type DebugPageState, type DebugWorkerKey } from './services/debugPageModel.ts';
+import { addIsolatedTestMediaItem, buildDefaultDebugPageState, readFakeDebugCrontab, runMockDebugWorker, setDebugCrontabContent, type DebugPageState, type DebugWorkerKey } from './services/debugPageModel.ts';
 import { buildOsPlaybackViewModel, OS_PLAYBACK_PLATFORMS, type OsPlaybackPlatform, type PlaybackLogEntryViewModel } from './services/osPlaybackViewModel.ts';
 import { requestJson, setDashboardRuntimeMode } from './services/apiClient.ts';
 import { captureScrollSnapshot, restoreScrollSnapshotAfterLayout } from './services/scrollPreservation.ts';
@@ -1184,6 +1184,21 @@ function bindEvents() {
         });
         return;
       }
+      if (action === 'parse-crontab') {
+        patchDebugPage((debugPage) => readFakeDebugCrontab(debugPage));
+        pushHistory('DEBUG', 'success', 'Parsed fake/app-owned Debug crontab content read-only.', {
+          action,
+          fakeOnly: true,
+          systemCrontabTouched: false,
+        });
+        return;
+      }
+    });
+  });
+
+  app.querySelectorAll<HTMLTextAreaElement>('[data-debug-crontab-input]').forEach((textarea) => {
+    textarea.addEventListener('input', () => {
+      patchDebugPage((debugPage) => setDebugCrontabContent(debugPage, textarea.value));
     });
   });
 
