@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.162 - Regular worker product contract proof
+
+- Refined regular worker product pipeline OpenSpec around staged-write boundaries.
+- Added product contract proof for required stage keys and non-claims.
+
 ## 0.8.161 - Auth checkpoint proof state
 
 - Added `proof:auth-checkpoint-state` for sanitized app-owned auth/session checkpoint evidence.

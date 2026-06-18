@@ -38,3 +38,18 @@ Until R2/R3 are explicitly confirmed, real DB/queue writes should be staged or g
 - Starting the worker is not product pipeline proof.
 - Local/generated-media rehearsal is not real iCloud proof.
 - Product evidence cannot claim real geocode unless provider proof or cached real-provider data supports it.
+
+## Contract refinement — v0.8.162
+
+Before real product writes are implemented, the regular worker pipeline must keep these boundaries explicit:
+
+- source evidence must identify whether media came from real iCloudPD, an auth-checkpoint-gated provider, or an explicit staged source;
+- staged writes are the default until the proof runner confirms target/provider readiness;
+- product evidence must be written before any downstream playback/product success claim;
+- geocode completion may be true only when real provider proof or cache-backed real-provider evidence supports it;
+- queue preparation may be true only when the queue evidence names the source media and generated queue item count;
+- production database/media mutation requires an explicit implementation slice and must not be implied by this contract.
+
+## Product contract proof
+
+`proof:regular-worker-product-contract` validates that the required stage keys, staged-write boundaries, and non-claims stay in sync between this OpenSpec and the product-pipeline proof library.
