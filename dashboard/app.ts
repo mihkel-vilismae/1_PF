@@ -62,6 +62,7 @@ import { renderRunningProcessView } from './views/runningProcessView.ts';
 import { renderDatabaseViewerView } from './views/databaseViewerView.ts';
 import { renderOsPlaybackFullscreenOverlay, renderOsPlaybackView } from './views/osPlaybackView.ts';
 import { renderDebugView } from './views/debugView.ts';
+import { addIsolatedTestMediaItem, buildDefaultDebugPageState, type DebugPageState } from './services/debugPageModel.ts';
 import { buildOsPlaybackViewModel, OS_PLAYBACK_PLATFORMS, type OsPlaybackPlatform, type PlaybackLogEntryViewModel } from './services/osPlaybackViewModel.ts';
 import { requestJson, setDashboardRuntimeMode } from './services/apiClient.ts';
 import { captureScrollSnapshot, restoreScrollSnapshotAfterLayout } from './services/scrollPreservation.ts';
@@ -1116,6 +1117,16 @@ function syncOsPlaybackFullscreenStateFromBrowser(): void {
   queueOsPlaybackResumeCheckpointSave(OS_PLAYBACK_PLATFORMS.raspberry, 'browser-fullscreen-exit');
 }
 
+// Updates browser-local Debug page state without touching backend/runtime systems.
+function patchDebugPage(mutator: (debugPage: DebugPageState) => DebugPageState): void {
+  patchState((draft) => {
+    const current = draft.debugPage && typeof draft.debugPage === 'object' && !Array.isArray(draft.debugPage)
+      ? draft.debugPage as DebugPageState
+      : buildDefaultDebugPageState();
+    draft.debugPage = mutator(current);
+  });
+}
+
 // Binds rendered controls to runtime-truth actions and local state updates.
 function bindEvents() {
   app.querySelectorAll<HTMLButtonElement>('[data-dashboard-visual-mode]').forEach((button) => {
@@ -1151,6 +1162,21 @@ function bindEvents() {
         void loadOsPlaybackContract(osPlaybackPlatform);
         void loadOsPlaybackObservability(osPlaybackPlatform);
         void loadNativePlaybackStatus(osPlaybackPlatform);
+      }
+    });
+  });
+
+  app.querySelectorAll<HTMLButtonElement>('[data-debug-action]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const action = button.dataset.debugAction;
+      if (action === 'add-test-image') {
+        patchDebugPage((debugPage) => addIsolatedTestMediaItem(debugPage));
+        pushHistory('DEBUG', 'success', 'Registered isolated Debug test-media placeholder.', {
+          action,
+          storage: 'isolated-test-only',
+          productionMutation: false,
+        });
+        return;
       }
     });
   });

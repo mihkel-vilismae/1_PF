@@ -76,3 +76,23 @@ test('debug page renders required pane shell without backend side effects', () =
   assert.match(markup, /Real Raspberry crontab mutation is not available/);
   assert.match(markup, /does not spawn a worker process/);
 });
+
+import { addIsolatedTestMediaItem, buildDefaultDebugPageState } from '../dashboard/services/debugPageModel.ts';
+
+test('debug add-images process registers isolated test media only', () => {
+  const next = addIsolatedTestMediaItem(buildDefaultDebugPageState(), 'operator-selected.jpg');
+  assert.equal(next.testMedia.length, 1);
+  assert.equal(next.testMedia[0].displayName, 'operator-selected.jpg');
+  assert.equal(next.testMedia[0].storage, 'isolated-test-only');
+  assert.match(next.actionResults['add-test-image'].message, /Production media\/database state was not touched/);
+  const markup = renderDebugView({ debugPage: next }, '0.8.145');
+  assert.match(markup, /operator-selected\.jpg/);
+  assert.match(markup, /isolated-test-only/);
+});
+
+test('debug add-images event handler records no production mutation', () => {
+  const appSource = read('dashboard/app.ts');
+  assert.match(appSource, /data-debug-action/);
+  assert.match(appSource, /addIsolatedTestMediaItem/);
+  assert.match(appSource, /productionMutation: false/);
+});

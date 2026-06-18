@@ -119,6 +119,34 @@ function createWorkerTelemetry(key: DebugWorkerKey, label: string): DebugWorkerT
   };
 }
 
+
+export function addIsolatedTestMediaItem(state: DebugPageState, displayName = 'debug-test-image.jpg'): DebugPageState {
+  const addedAt = formatTallinnDebugTimestamp();
+  const id = `debug-media-${state.testMedia.length + 1}`;
+  return {
+    ...state,
+    testMedia: [
+      ...state.testMedia,
+      {
+        id,
+        displayName,
+        storage: 'isolated-test-only',
+        addedAt,
+        source: '+ Add images here',
+      },
+    ],
+    actionResults: {
+      ...state.actionResults,
+      'add-test-image': createDebugActionResult(
+        'add-test-image',
+        'succeeded',
+        'Registered isolated test-media placeholder. Production media/database state was not touched.',
+        'debug-page-isolated-test-media',
+      ),
+    },
+  };
+}
+
 export function buildDefaultFakeCrontab(): string {
   return [
     PHOTOFRAME_CRONTAB_BEGIN,

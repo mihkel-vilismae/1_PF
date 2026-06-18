@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.145 - 2026-06-18
+
+- Add Debug add-images test entry behavior that registers isolated test-media placeholders only.
+- Wire the Debug add-images action through browser-local state and history without production media/database mutation.
+- Add runtime proof coverage for test-media isolation.
+
 ## 0.8.144 - 2026-06-18
 
 - Add the Debug page shared full-width pane shell for state, playback, add-images, crontab, and worker debug sections.
