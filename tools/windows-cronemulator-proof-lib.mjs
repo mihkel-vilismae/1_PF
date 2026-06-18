@@ -84,6 +84,9 @@ export async function runCronEmulatorPytest(repoRoot) {
   const result = await runCommand(python, ['-m', 'pytest', 'tools/CronEmulator/tests'], { cwd: repoRoot, timeoutMs: 120000 });
   if (result.exitCode === 0 && !result.timedOut) return { status: 'PASSED', result };
   if (result.timedOut) return { status: 'TIMED_OUT', result };
+  const output = `${result.stdout ?? ''}
+${result.stderr ?? ''}`;
+  if (/No module named pytest|pytest: not found|No module named pytest/i.test(output)) return { status: 'BLOCKED', result, blockReason: 'pytest is not installed on this target' };
   return { status: 'FAILED', result };
 }
 
@@ -93,8 +96,13 @@ export async function buildWindowsCronEmulatorProof({ repoRoot, metadata, runPyt
   const crontab = files.missing.length === 0 ? await inspectCronEmulatorCrontab(repoRoot) : { activeRows: [], entrypointChecks: [], allEntrypointsReferenced: false };
   const scheduler = files.missing.length === 0 ? await inspectSchedulerDuplicateProtection(repoRoot) : { checks: {}, passed: false };
   const executor = files.missing.length === 0 ? await inspectCronExecutorBoundary(repoRoot) : { checks: {}, passed: false };
-  const pytest = runPytest ? await runCronEmulatorPytest(repoRoot) : { status: 'BLOCKED', result: { skipped: true, reason: 'runPytest=false' } };
-  const proofStatus = files.missing.length > 0 ? 'FAILED' : pytest.status === 'TIMED_OUT' ? 'TIMED_OUT' : (crontab.allEntrypointsReferenced && scheduler.passed && executor.passed && pytest.status === 'PASSED') ? 'PASSED' : 'FAILED';
+  const pytest = runPytest ? await runCronEmulatorPytest(repoRoot) : { status: 'BLOCKED', result: { skipped: true, reason: 'runPytest=false' }, blockReason: 'pytest execution disabled by caller' };
+  const staticChecksPassed = crontab.allEntrypointsReferenced && scheduler.passed && executor.passed;
+  const proofStatus = files.missing.length > 0 ? 'FAILED'
+    : pytest.status === 'TIMED_OUT' ? 'TIMED_OUT'
+    : staticChecksPassed && pytest.status === 'PASSED' ? 'PASSED'
+    : staticChecksPassed && pytest.status === 'BLOCKED' ? 'BLOCKED'
+    : 'FAILED';
 
   return createProofEnvelope({
     proofKind: 'windows_cronemulator',
@@ -110,6 +118,7 @@ export async function buildWindowsCronEmulatorProof({ repoRoot, metadata, runPyt
       scheduler_duplicate_run_protection: scheduler,
       executor_boundary: executor,
       python_tests: pytest,
+      block_reasons: proofStatus === 'BLOCKED' ? [pytest.blockReason ?? 'CronEmulator pytest run is blocked'] : [],
       separation_from_hardware_proof: {
         raspberry_power_loss_proven: false,
         windows_cronemulator_is_hardware_proof: false,

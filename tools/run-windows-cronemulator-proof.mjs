@@ -34,4 +34,4 @@ function readGitCommit() {
 const envelope = await buildWindowsCronEmulatorProof({ repoRoot, metadata: { version: await readVersion(), gitCommit: readGitCommit() } });
 const outputPath = await writeProofArtifact('windows_cronemulator', envelope);
 console.log(JSON.stringify({ proof_status: envelope.proof_status, artifact_path: outputPath, runtime_mode: envelope.runtime_mode }, null, 2));
-if (envelope.proof_status !== 'PASSED') process.exitCode = 1;
+if (['FAILED', 'TIMED_OUT'].includes(envelope.proof_status)) process.exitCode = 1;

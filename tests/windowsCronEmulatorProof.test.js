@@ -51,10 +51,11 @@ test('windows CronEmulator proof detects executor boundary', async () => {
 });
 
 /** Verifies proof envelope is explicit about not proving Raspberry hardware recovery. */
-test('windows CronEmulator proof envelope does not claim hardware proof', async () => {
+test('windows CronEmulator proof envelope blocks rather than fails when pytest execution is unavailable', async () => {
   const envelope = await buildWindowsCronEmulatorProof({ repoRoot, metadata: { version: '0.7.34', gitCommit: 'test' }, runPytest: false });
   assert.equal(envelope.runtime_mode, 'windows_emulator');
-  assert.equal(envelope.proof_status, 'FAILED');
+  assert.equal(envelope.proof_status, 'BLOCKED');
+  assert.match(envelope.evidence.block_reasons.join('\n'), /pytest execution disabled/);
   assert.equal(envelope.evidence.separation_from_hardware_proof.raspberry_power_loss_proven, false);
   assert.equal(envelope.evidence.separation_from_hardware_proof.windows_cronemulator_is_hardware_proof, false);
 });

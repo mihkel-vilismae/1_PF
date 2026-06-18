@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.171
+
+- fix: classify Windows CronEmulator pytest dependency absence as `BLOCKED` instead of `FAILED`, and keep the proof command exit-zero for honest blocked state.
+- preserve: missing CronEmulator files, real test failures, and timeouts still fail or time out; this does not turn Windows CronEmulator evidence into Raspberry hardware proof.
+
 ## 0.8.170
 
 - test: make the Raspberry project-owned launcher executable-bit guard ZIP-extraction-safe by accepting Git-index `100755` as the canonical executable marker when filesystem mode bits are lost.
