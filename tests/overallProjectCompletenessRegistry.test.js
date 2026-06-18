@@ -1,0 +1,80 @@
+import assert from 'node:assert/strict';
+import { existsSync, readFileSync } from 'node:fs';
+import { test } from 'node:test';
+
+function read(path) {
+  return readFileSync(path, 'utf8');
+}
+
+function readJson(path) {
+  return JSON.parse(read(path));
+}
+
+test('overall project goal registry exists and uses normalized proof-safe statuses', () => {
+  const registry = readJson('docs/40_backlog_and_tasks/overall_project_goal_registry.json');
+  const enumDoc = read('docs/20_architecture_and_specs/reference/project_status_enum_registry.md');
+
+  assert.equal(registry.schema_version, '1.0.0');
+  assert.ok(registry.allowed_status_enums.includes('PROVEN'));
+  assert.ok(registry.allowed_status_enums.includes('DOCS_ONLY'));
+  assert.ok(registry.allowed_status_enums.includes('PLANNED'));
+  assert.ok(enumDoc.includes('Do not convert `SPECIFIED`, `CONTRACTED`, `SCAFFOLDED`, `PLANNED`, or `DOCS_ONLY` into runtime implementation.'));
+
+  for (const goal of registry.goals) {
+    assert.ok(registry.allowed_status_enums.includes(goal.status_enum), `${goal.id} uses unknown status ${goal.status_enum}`);
+    assert.ok(registry.allowed_proof_command_states.includes(goal.proof_command_state), `${goal.id} uses unknown proof state ${goal.proof_command_state}`);
+  }
+});
+
+test('overall project goal registry keeps active source paths resolvable', () => {
+  const registry = readJson('docs/40_backlog_and_tasks/overall_project_goal_registry.json');
+
+  assert.ok(registry.goals.length >= 40, 'registry should include v1 gates, Debug page goals, and active backlog items');
+  for (const goal of registry.goals) {
+    assert.ok(Array.isArray(goal.source_paths) && goal.source_paths.length > 0, `${goal.id} must name source paths`);
+    for (const sourcePath of goal.source_paths) {
+      assert.ok(existsSync(sourcePath), `${goal.id} has missing source ${sourcePath}`);
+    }
+  }
+});
+
+test('planned proof commands are not represented as runnable proof commands', () => {
+  const registry = readJson('docs/40_backlog_and_tasks/overall_project_goal_registry.json');
+  const planned = registry.goals.filter((goal) => goal.proof_command_state === 'PLANNED_COMMAND');
+
+  assert.ok(planned.length > 0, 'registry should explicitly include planned proof command rows');
+  for (const goal of planned) {
+    assert.doesNotMatch(goal.proof_command, /npm\s+run\s+proof:/, `${goal.id} planned command must not look runnable`);
+  }
+});
+
+test('Debug page goals remain docs/spec separated from runtime implementation', () => {
+  const registry = readJson('docs/40_backlog_and_tasks/overall_project_goal_registry.json');
+  const debugGoals = registry.goals.filter((goal) => goal.category === 'debug_page');
+
+  assert.equal(debugGoals.length, 20);
+  for (const goal of debugGoals) {
+    if (goal.id !== 'DBG-GOAL-020') {
+      assert.equal(goal.runtime_implementation_claim, false, `${goal.id} must not claim runtime implementation`);
+      assert.notEqual(goal.status_enum, 'PROVEN', `${goal.id} must not claim proven runtime behavior`);
+    }
+  }
+});
+
+test('project completeness OpenSpec covers all known data-gap contracts', () => {
+  const doc = read('docs/20_architecture_and_specs/openspec/project_completeness_reporting_openspec.md');
+
+  for (const expected of [
+    'No single canonical overall goal registry',
+    'Runtime proof artifacts may be absent from ZIP',
+    'Older snapshots can conflict with active OpenSpec',
+    'Debug page is docs-only',
+    'Some proof commands are planned, not implemented',
+    'Partial statuses are not machine-normalized',
+    'NOT_ENOUGH_LIVE_PROOF_DATA',
+    'PLANNED_COMMAND',
+    'Strict proof completeness',
+  ]) {
+    assert.ok(doc.includes(expected), `missing expected contract text: ${expected}`);
+  }
+});
