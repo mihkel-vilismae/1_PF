@@ -122,6 +122,37 @@ function createWorkerTelemetry(key: DebugWorkerKey, label: string): DebugWorkerT
 
 
 
+
+export function saveFakeDebugStateSnapshot(state: DebugPageState): DebugPageState {
+  return {
+    ...state,
+    actionResults: {
+      ...state.actionResults,
+      'save-state': createDebugActionResult(
+        'save-state',
+        'succeeded',
+        'Saved fake/local Debug state snapshot preview. No production runtime state, media, database, or restore target was written.',
+        'debug-page-fake-restore-preview',
+      ),
+    },
+  };
+}
+
+export function previewFakeDebugStateRestore(state: DebugPageState): DebugPageState {
+  return {
+    ...state,
+    actionResults: {
+      ...state.actionResults,
+      'restore-state': createDebugActionResult(
+        'restore-state',
+        'blocked',
+        'Restore preview is fake/local only and blocked before production mutation. Controlled restore OpenSpec is required before real restore.',
+        'debug-page-fake-restore-preview',
+      ),
+    },
+  };
+}
+
 export function setDebugCrontabContent(state: DebugPageState, content: string): DebugPageState {
   return {
     ...state,

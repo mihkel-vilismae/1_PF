@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.157 - Debug fake restore preview
+
+- Added fake/local Debug save and restore-preview actions.
+- Proved restore preview remains blocked before any production runtime/media/database mutation.
+
 ## 0.8.156 - Controlled restore action OpenSpec
 
 - Added a controlled restore action OpenSpec before any restore mutation is implemented.

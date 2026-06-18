@@ -139,7 +139,7 @@ test('debug crontab read action records fake/read-only evidence', () => {
 });
 
 
-import { pauseFakeDebugCrontab, resumeFakeDebugCrontab, stageFakeDebugCrontabInstall } from '../dashboard/services/debugPageModel.ts';
+import { pauseFakeDebugCrontab, previewFakeDebugStateRestore, resumeFakeDebugCrontab, saveFakeDebugStateSnapshot, stageFakeDebugCrontabInstall } from '../dashboard/services/debugPageModel.ts';
 
 test('debug fake crontab pause and resume mutate only app-owned rows', () => {
   const content = ['# unrelated row', '# PF_LOGIN_DEBUG_FAKE_CRONTAB_BEGIN', '*/1 * * * * run # pf-login:regular', '# PF_LOGIN_DEBUG_FAKE_CRONTAB_END'].join('\n');
@@ -221,4 +221,17 @@ test('debug worker panes render status projection without spawning workers', () 
   assert.match(markup, /Projection evidence/);
   assert.match(markup, /read-only runtime status projection/);
   assert.match(markup, /does not spawn a worker process/);
+});
+
+
+test('debug fake restore preview never performs production restore mutation', () => {
+  const saved = saveFakeDebugStateSnapshot(buildDefaultDebugPageState());
+  assert.equal(saved.actionResults['save-state'].status, 'succeeded');
+  assert.match(saved.actionResults['save-state'].message, /No production runtime state/);
+  const blocked = previewFakeDebugStateRestore(saved);
+  assert.equal(blocked.actionResults['restore-state'].status, 'blocked');
+  assert.match(blocked.actionResults['restore-state'].message, /fake\/local only/);
+  const appSource = read('dashboard/app.ts');
+  assert.match(appSource, /restoreMutation: false/);
+  assert.match(appSource, /previewFakeDebugStateRestore/);
 });

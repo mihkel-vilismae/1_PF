@@ -62,7 +62,7 @@ import { renderRunningProcessView } from './views/runningProcessView.ts';
 import { renderDatabaseViewerView } from './views/databaseViewerView.ts';
 import { renderOsPlaybackFullscreenOverlay, renderOsPlaybackView } from './views/osPlaybackView.ts';
 import { renderDebugView } from './views/debugView.ts';
-import { addIsolatedTestMediaItem, buildDefaultDebugPageState, pauseFakeDebugCrontab, readFakeDebugCrontab, resumeFakeDebugCrontab, runMockDebugWorker, setDebugCrontabContent, stageFakeDebugCrontabInstall, type DebugPageState, type DebugWorkerKey } from './services/debugPageModel.ts';
+import { addIsolatedTestMediaItem, buildDefaultDebugPageState, pauseFakeDebugCrontab, previewFakeDebugStateRestore, readFakeDebugCrontab, resumeFakeDebugCrontab, runMockDebugWorker, saveFakeDebugStateSnapshot, setDebugCrontabContent, stageFakeDebugCrontabInstall, type DebugPageState, type DebugWorkerKey } from './services/debugPageModel.ts';
 import { buildOsPlaybackViewModel, OS_PLAYBACK_PLATFORMS, type OsPlaybackPlatform, type PlaybackLogEntryViewModel } from './services/osPlaybackViewModel.ts';
 import { requestJson, setDashboardRuntimeMode } from './services/apiClient.ts';
 import { buildViewARefreshPlan } from './services/viewARefreshPlan.ts';
@@ -1179,6 +1179,26 @@ function bindEvents() {
   app.querySelectorAll<HTMLButtonElement>('[data-debug-action]').forEach((button) => {
     button.addEventListener('click', () => {
       const action = button.dataset.debugAction;
+      if (action === 'save-state') {
+        patchDebugPage((debugPage) => saveFakeDebugStateSnapshot(debugPage));
+        pushHistory('DEBUG', 'success', 'Saved fake/local Debug restore preview snapshot.', {
+          action,
+          fakeOnly: true,
+          productionMutation: false,
+          restoreMutation: false,
+        });
+        return;
+      }
+      if (action === 'restore-state') {
+        patchDebugPage((debugPage) => previewFakeDebugStateRestore(debugPage));
+        pushHistory('DEBUG', 'blocked', 'Blocked fake/local Debug restore preview before production mutation.', {
+          action,
+          fakeOnly: true,
+          productionMutation: false,
+          restoreMutation: false,
+        });
+        return;
+      }
       if (action === 'add-test-image') {
         patchDebugPage((debugPage) => addIsolatedTestMediaItem(debugPage));
         pushHistory('DEBUG', 'success', 'Registered isolated Debug test-media placeholder.', {
