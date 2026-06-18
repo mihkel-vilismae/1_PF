@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.156 - Controlled restore action OpenSpec
+
+- Added a controlled restore action OpenSpec before any restore mutation is implemented.
+- Added docs proof for restore states, acceptance rules, and non-claims.
+
 ## 0.8.155 - View C read-only wording cleanup
 
 - Reconciled View C restore wording so the current state is explicitly read-only.
