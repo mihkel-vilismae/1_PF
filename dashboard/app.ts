@@ -189,10 +189,10 @@ function render() {
           ).join('')}
         </nav>
 
-        <article class="side-panel side-panel--debug-version" aria-label="Debug version tracker">
+        <article class="side-panel side-panel--debug-version" aria-label="Debug version tracker" data-debug-sidebar-version>
           <div class="side-panel__header">
             <h2>Debug</h2>
-            <span class="pill">v${escapeHtml(__APP_VERSION__)}</span>
+            <span class="pill" data-debug-sidebar-version-value>v${escapeHtml(__APP_VERSION__)}</span>
           </div>
           <p class="card__copy">Debug Menu route: <code>/debug</code>. Uses the same repo version source as the top-right tracker.</p>
         </article>

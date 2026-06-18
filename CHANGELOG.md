@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.143 - 2026-06-18
+
+- Add explicit Debug sidebar and page version-tracker markers.
+- Reuse `__APP_VERSION__` for Debug version display instead of duplicating a hard-coded version.
+- Add runtime proof coverage for the Debug version source boundary.
+
 ## 0.8.142 - 2026-06-18
 
 - Add the Debug view id, navigation entry, and `/debug` Debug Menu renderer.

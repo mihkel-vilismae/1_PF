@@ -14,12 +14,12 @@ export function renderDebugView(state: Record<string, unknown>, frontendVersion:
             <p class="card__code">DEBUG</p>
             <h2>Debug Menu</h2>
           </div>
-          <span class="pill">runtime UI • local safe</span>
+          <span class="pill" data-debug-page-version>v${escapeHtml(frontendVersion)}</span>
         </header>
         <p class="card__copy">Debug route <code>${DEBUG_ROUTE}</code> is available as a lightweight operator surface. This page is browser-local until a later slice wires proof-backed backend actions.</p>
         <dl class="definition-list">
           <div><dt>Route</dt><dd>${DEBUG_ROUTE}</dd></div>
-          <div><dt>Frontend version source</dt><dd>v${escapeHtml(frontendVersion)}</dd></div>
+          <div data-debug-version-source><dt>Frontend version source</dt><dd>v${escapeHtml(frontendVersion)}</dd></div>
           <div><dt>Runtime claim</dt><dd>Debug route/sidebar only; no real crontab, production media/database, worker process, provider, or Raspberry proof.</dd></div>
           <div><dt>Opened</dt><dd>${escapeHtml(debugState.openedAt ?? 'Not recorded yet')}</dd></div>
         </dl>

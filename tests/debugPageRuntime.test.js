@@ -46,3 +46,12 @@ test('debug page renders route and non-claim boundary', () => {
   assert.match(markup, /data-debug-page-route="\/debug"/);
   assert.match(markup, /no real crontab, production media\/database, worker process, provider, or Raspberry proof/);
 });
+
+test('debug version tracker reuses the app version source in sidebar and page markup', () => {
+  const appSource = read('dashboard/app.ts');
+  const markup = renderDebugView(createInitialState(), '0.8.143');
+  assert.match(appSource, /data-debug-sidebar-version/);
+  assert.match(appSource, /data-debug-sidebar-version-value>v\$\{escapeHtml\(__APP_VERSION__\)\}/);
+  assert.match(markup, /data-debug-page-version>v0\.8\.143/);
+  assert.match(markup, /data-debug-version-source/);
+});
