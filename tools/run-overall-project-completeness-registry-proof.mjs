@@ -52,6 +52,7 @@ async function main() {
   const missingScripts = [];
   const plannedCommandsPresentedAsRunnable = [];
   const debugRuntimeClaims = [];
+  const invalidDebugRuntimeClaims = [];
 
   for (const goal of registry.goals ?? []) {
     categoryCounts[goal.category] = (categoryCounts[goal.category] ?? 0) + 1;
@@ -76,7 +77,13 @@ async function main() {
     }
 
     if (goal.category === 'debug_page' && goal.id !== 'DBG-GOAL-020' && goal.runtime_implementation_claim) {
-      debugRuntimeClaims.push({ id: goal.id, title: goal.title });
+      debugRuntimeClaims.push({ id: goal.id, title: goal.title, status: goal.status_enum, proof_command_state: goal.proof_command_state, proof_status: goal.proof_status });
+      const validImplementedDebugClaim = ['IMPLEMENTED', 'PROVEN'].includes(goal.status_enum)
+        && goal.proof_command_state === 'IMPLEMENTED_COMMAND'
+        && goal.proof_status === 'PASSED';
+      if (!validImplementedDebugClaim) {
+        invalidDebugRuntimeClaims.push({ id: goal.id, title: goal.title, status: goal.status_enum, proof_command_state: goal.proof_command_state, proof_status: goal.proof_status });
+      }
     }
   }
 
@@ -87,7 +94,7 @@ async function main() {
   findings.push(assert(badProofStates.length === 0, 'registry contains proof command states outside allowed enum', { badProofStates }));
   findings.push(assert(missingScripts.length === 0, 'implemented npm proof commands are missing from package.json scripts', { missingScripts }));
   findings.push(assert(plannedCommandsPresentedAsRunnable.length === 0, 'planned proof commands are presented as runnable npm proof commands', { plannedCommandsPresentedAsRunnable }));
-  findings.push(assert(debugRuntimeClaims.length === 0, 'debug page runtime/UI goals claim runtime implementation before proof', { debugRuntimeClaims }));
+  findings.push(assert(invalidDebugRuntimeClaims.length === 0, 'debug page runtime/UI goals claim implementation without implemented status and passed proof', { invalidDebugRuntimeClaims }));
 
   const failures = findings.filter(Boolean).filter((finding) => !finding.ok);
   const proofStatus = failures.length === 0 ? 'PASSED' : 'FAILED';

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.141 - 2026-06-18
+
+- Add `proof:debug-page-runtime` as the Debug runtime proof lane for implementation slices.
+- Teach the overall completeness registry proof to allow Debug runtime claims only when backed by implemented status and passed proof.
+- Preserve planned Debug rows as non-runnable until their implementation slices update registry status honestly.
+
 ## 0.8.140 - 2026-06-18
 
 - Add Debug runtime implementation 3X2ACR workflow guard for slices 0-9.
