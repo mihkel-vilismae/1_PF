@@ -7,6 +7,7 @@
 [CmdletBinding()]
 param(
     [switch] $SkipEvidenceCleanup,
+    [switch] $RunLiveScheduler,
     [string] $RepoRoot = ""
 )
 
@@ -91,10 +92,15 @@ function Invoke-LiveSchedulerProof {
         PF_API_BASE_URL = $env:PF_API_BASE_URL
     }
     try {
-        $env:PF_LIVE_WINDOWS_SCHEDULER_PROOF = "1"
-        $env:PF_LIVE_WINDOWS_SCHEDULER_ORCHESTRATE = "1"
-        $env:PF_API_BASE_URL = "http://127.0.0.1:4301"
-        Invoke-RepoCommand -FilePath "npm" -Arguments @("run", "proof:live-windows-scheduler") -StepName "Run live Windows scheduler proof"
+        if ($RunLiveScheduler) {
+            $env:PF_LIVE_WINDOWS_SCHEDULER_PROOF = "1"
+            $env:PF_LIVE_WINDOWS_SCHEDULER_ORCHESTRATE = "1"
+            $env:PF_API_BASE_URL = "http://127.0.0.1:4301"
+            Invoke-RepoCommand -FilePath "npm" -Arguments @("run", "proof:live-windows-scheduler") -StepName "Run live Windows scheduler proof"
+        } else {
+            Write-ProofStep "RunLiveScheduler was not supplied; writing honest BLOCKED scheduler proof instead of forcing live orchestration." "Yellow"
+            Invoke-RepoCommand -FilePath "npm" -Arguments @("run", "proof:live-windows-scheduler") -StepName "Write honest BLOCKED proof for live Windows scheduler"
+        }
     }
     finally {
         foreach ($key in $previous.Keys) {

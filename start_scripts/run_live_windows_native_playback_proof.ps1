@@ -15,6 +15,7 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+$script:ProofBlockedByMissingEnv = $false
 
 if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
     $scriptRoot = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $PSCommandPath }
@@ -133,7 +134,9 @@ function New-ProofEnvironmentFile {
         if (Test-Path $parentEnvPath) {
             Copy-Item -Path $parentEnvPath -Destination $repoEnvPath -Force
         } else {
-            throw ".env not found in repo root or parent folder."
+            Write-ProofStep ".env not found in repo root or parent folder; writing honest BLOCKED proof instead of failing hard." "Yellow"
+            $script:ProofBlockedByMissingEnv = $true
+            return
         }
     }
 
@@ -334,6 +337,11 @@ try {
         Invoke-RepoCommand -FilePath "npm" -Arguments @("install", "--verbose") -StepName "Install dependencies"
         Ensure-RepoLocalMpv
         New-ProofEnvironmentFile
+        if ($script:ProofBlockedByMissingEnv) {
+            Invoke-RepoCommand -FilePath "npm" -Arguments @("run", "proof:live-windows-native-playback") -StepName "Write honest BLOCKED proof for missing .env"
+            Export-EvidenceZip
+            return
+        }
         $apiProcess = Start-ProofApiProcess
         Wait-ForNativeProofApi -Process $apiProcess | Out-Null
         $proofFailure = $null

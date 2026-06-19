@@ -2994,3 +2994,6 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 - Added `docs/20_architecture_and_specs/reference/project_status_enum_registry.md` as the normalized status vocabulary for overall project completeness reports.
 - Defines proof-safe enum meanings for `PROVEN`, `PARTIAL`, `PRE_PASS`, `SPECIFIED`, `SCAFFOLDED`, `DOCS_ONLY`, `DECISION_GATED`, and planned proof command states.
 - No runtime behavior changed.
+
+## 0.8.220
+- Fix Windows live proof wrappers to emit honest BLOCKED evidence for missing operator input instead of hard failing.
