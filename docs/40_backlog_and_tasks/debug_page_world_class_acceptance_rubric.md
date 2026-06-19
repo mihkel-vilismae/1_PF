@@ -16,3 +16,7 @@ This rubric turns “world-class Debug page” into measurable checkpoints. It i
 ## Scoring rule
 
 85% means the operator can understand, inspect, and safely use the Debug page without guessing what is real, fake, blocked, or planned. 95% means the page is also visually polished, accessible, and supported by stronger render/proof coverage.
+
+## v0.8.210 accessibility/responsive addendum
+
+The first 85% runtime implementation must support small screens by stacking visual toolbar controls and element-list rows. Keyboard users must be able to focus visual controls and `*` markers with a visible outline.

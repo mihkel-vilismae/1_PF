@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.210
+
+- Added responsive and accessibility polish for Debug page visual toolbar, element list rows, playback layout, and focus outlines.
+
 ## 0.8.209
 
 - Added Debug page visual polish CSS for topbar, three color schemas, and three major visual modes.
