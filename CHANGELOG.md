@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.218
+
+- Added Debug page world-class reconciliation doc and proof to align OpenSpec, slice plan, keybook, behavior, proof input, and style contracts.
+
 ## 0.8.217
 
 - Added Debug page style proof contract OpenSpec and source-level style contract proof for toolbar, schemas, modes, responsive/focus styling, status chips, marker, and modal CSS.
