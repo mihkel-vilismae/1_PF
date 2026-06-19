@@ -3003,3 +3003,6 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 
 ## 0.8.222
 - Add secret-safe auth/session snapshot contract for operator-assisted manual login proof.
+
+## 0.8.223
+- Add secret-safe iCloudPD session path validator for repo/parent `.env` and session boundary metadata.
