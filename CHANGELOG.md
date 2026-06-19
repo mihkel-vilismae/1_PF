@@ -3000,3 +3000,6 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 
 ## 0.8.221
 - Add prooflauncher timing/history helper, estimate priority, proof, tests, and runbook contract.
+
+## 0.8.222
+- Add secret-safe auth/session snapshot contract for operator-assisted manual login proof.
