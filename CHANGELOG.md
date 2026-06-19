@@ -3015,3 +3015,6 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 
 ## 0.8.226
 - Add durable runtime-state checkpoint contract with future recovery explicitly disabled.
+
+## 0.8.227
+- Add proof-run handoff triage helper, proof, tests, and runbook for shell exit vs proof JSON analysis.
