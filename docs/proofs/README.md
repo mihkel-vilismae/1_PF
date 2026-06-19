@@ -185,6 +185,15 @@ These commands are part of the active proof-enabler and local/runtime proof lane
 | V1 readiness data requirements | `npm run proof:v1-readiness-data-requirements` | local live-data requirements proof |
 | Proofrunner Windows launcher contract | `npm run proof:proofrunner-windows-launcher-contract` | local launcher contract validation |
 | Prooflauncher GUI selection | `npm run proof:prooflauncher-gui-selection` | local launcher GUI/mode-selection proof |
+| Windows live proof blocked contract | `npm run proof:windows-live-proof-blocked-contract` | local Windows optional-live BLOCKED contract proof |
+| Prooflauncher timing history | `npm run proof:prooflauncher-timing-history` | local prooflauncher timing/ETA contract proof |
+| Auth/session snapshot contract | `npm run proof:auth-session-snapshot-contract` | local secret-safe auth snapshot contract proof |
+| iCloudPD session path validator | `npm run proof:icloudpd-session-path-validator` | local secret-safe session path validator |
+| Real iCloud listing preflight | `npm run proof:real-icloud-listing-preflight` | opt-in real iCloud listing preflight |
+| Geocode dry run from sample | `npm run proof:geocode-dry-run-from-sample` | deterministic local sample GPS/geocode dry-run |
+| Runtime state durable checkpoint | `npm run proof:runtime-state-durable-checkpoint` | local durable runtime-state checkpoint contract proof |
+| Proof run handoff triage | `npm run proof:proof-run-handoff-triage` | local proof upload/summary triage proof |
+| Proofrunner PowerShell safe log name | `npm run proof:proofrunner-powershell-safe-log-name` | local Windows launcher safe-log-name regression proof |
 
 ## Raspberry native image playback proof
 
