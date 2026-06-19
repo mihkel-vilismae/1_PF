@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.195
+
+- Bridged real download readiness to iCloud readiness, real iCloudPD proof, and download-directory resolution without calling the backend or downloading media.
+- Added tests proving the bridge documents proof order and does not leak explicit proof download paths.
+
 ## 0.8.194
 
 - Added an auth checkpoint operator flow runbook for moving from `AUTH_REQUIRED` toward app-owned `AUTH_SESSION_USABLE` proof state.
