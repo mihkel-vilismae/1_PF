@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.204
+
+- Added Debug page behavior contract taxonomy for browser-local, mock-only, disabled, blocked, real-provider, and real-device actions.
+
 ## 0.8.203
 
 - Refined the Debug page visual toggle OpenSpec contract with exact proof text and DOM marker requirements.

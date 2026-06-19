@@ -119,3 +119,7 @@ The visual toolbar contract is fulfilled when rendered Debug page source contain
 - DOM markers for selected color schema and selected major visual mode.
 
 The first implementation may keep the visual state browser-local. It must not write user settings, mutate backend state, or claim permanent theme storage unless that behavior is separately specified.
+
+## 11. Behavior taxonomy source
+
+The behavior taxonomy is maintained in `docs/40_backlog_and_tasks/debug_page_behavior_contract.md`. Runtime UI work must use this taxonomy when displaying button/pane state.
