@@ -66,6 +66,36 @@ export function promptKindForResponseType(responseType: 'device_index' | 'verifi
 /*
  * Reads sanitized provider-output visibility from a response payload.
  */
+
+
+/*
+ * Operator-visible checkpoint marker for interactive 2FA proof runs.
+ * This is deliberately a log/event marker only: it does not automate 2FA,
+ * collect credentials, or change provider control flow.
+ */
+export const AUTH_OPERATOR_2FA_CHECKPOINT_LOG = 'AUTH_OPERATOR_CHECKPOINT: WAITING_FOR_OPERATOR_2FA_INPUT';
+
+export function buildOperatorTwoFactorCheckpointEvent(input: {
+  operation: string;
+  stateBefore?: string;
+  stateAfter?: string;
+  promptKind?: NewAuthTwoFactorPromptKind | 'none';
+  endpoint?: string;
+  requestedInput?: string;
+}): NewAuthStructuredEvent {
+  return buildStructuredEvent({
+    operation: input.operation,
+    phase: 'operator_2fa_checkpoint',
+    stateBefore: input.stateBefore,
+    stateAfter: input.stateAfter,
+    promptKind: input.promptKind ?? 'unknown',
+    responseType: 'none',
+    endpoint: input.endpoint,
+    message: `${AUTH_OPERATOR_2FA_CHECKPOINT_LOG}; requested_input=${input.requestedInput ?? 'unknown'}; operator_action=enter_2fa_outside_artifact_capture`,
+    providerOutputShown: 'classification_only',
+  });
+}
+
 export function providerOutputShownForPayload(payload: Record<string, unknown>): NewAuthProviderOutputShown {
   const details = payload.details && typeof payload.details === 'object' ? payload.details as Record<string, unknown> : {};
   const preview = details.providerOutputPreview;

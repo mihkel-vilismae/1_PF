@@ -88,7 +88,7 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Proof runner final readiness summary | `npm run proof:proof-runner-final-summary` | local proof-report summary guard |
 | Proof runner queue order | `npm run proof:proof-runner-queue` | local proof-runner ordering contract |
 
-The table above is intentionally complete for current `proof:*` package scripts. As of this repository version, `package.json` exposes 88 proof package scripts and every one must appear in this table. `tests/docsNpmScriptReferences.test.js` guards active documentation against stale `npm run ...` script references and against missing proof-runner inventory entries.
+The table above is intentionally complete for current `proof:*` package scripts. As of this repository version, `package.json` exposes 109 proof package scripts and every one must appear in this table. `tests/docsNpmScriptReferences.test.js` guards active documentation against stale `npm run ...` script references and against missing proof-runner inventory entries.
 
 When adding, renaming, or removing a `proof:*` script, update this table in the same change as the package script so the proof catalog does not drift from the runnable command surface. Keep runtime-mode wording conservative: table entries describe how to run a proof command, not that the underlying hardware/provider/runtime behavior is already proven.
 
@@ -179,6 +179,7 @@ These commands are part of the active proof-enabler and local/runtime proof lane
 | Auth checkpoint state | `npm run proof:auth-checkpoint-state` | sanitized app-owned auth checkpoint proof |
 | Auth checkpoint state tests | `npm run proof:auth-checkpoint-state:test` | local auth checkpoint unit proof |
 | Auth checkpoint operator flow | `npm run proof:auth-checkpoint-operator-flow` | local auth operator runbook proof |
+| Auth operator 2FA checkpoint | `npm run proof:auth-operator-2fa-checkpoint` | local secret-safe interactive-auth checkpoint proof |
 | Regular worker product contract | `npm run proof:regular-worker-product-contract` | local product contract proof |
 | Regular worker product evidence template | `npm run proof:regular-worker-product-evidence-template` | local evidence template proof |
 | Screen worker nonblocking design | `npm run proof:screen-worker-nonblocking-design` | local nonblocking design pre-pass |

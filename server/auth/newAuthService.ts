@@ -12,7 +12,7 @@ import { EMPTY_SESSION_EVIDENCE, ICLOUDPD_LOGIN_TIMEOUT_MS, ICLOUDPD_TIMEOUT_MS,
 import { resolveIcloudpdExecutableForContext, runCommand, extractVersion, summarizeCommandFailure } from './newAuth/newAuthCommandRunner.js';
 import { collectNewAuthSessionEvidence, flattenPathMetadata, getNewAuthPathCandidates, hasFreshNewAuthSessionEvidence, isSafeSessionCleanupPath } from './newAuth/newAuthPathMetadata.js';
 import { normalizeNewAuthPath, positiveNumber, redactEmail, sanitizeCommandOutput, sanitizePathForDisplay, sanitizePreview, sanitizeProviderProofArgForDisplay, stringValue, summarizeEnvPresence } from './newAuth/newAuthSanitization.js';
-import { appendStructuredEvents, buildStructuredEvent, classifyResponseType, promptKindForResponseType, providerOutputShownForPayload, readPromptKindFromPayload } from './newAuth/newAuthStructuredEvents.js';
+import { appendStructuredEvents, buildOperatorTwoFactorCheckpointEvent, buildStructuredEvent, classifyResponseType, promptKindForResponseType, providerOutputShownForPayload, readPromptKindFromPayload } from './newAuth/newAuthStructuredEvents.js';
 import type {
   CommandResult,
   NewAuthContext,
@@ -923,6 +923,14 @@ export function mapNewAuthCommandResult(
         responseType: 'none',
         message: 'Provider output classified as a two-factor prompt.',
         providerOutputShown: 'classification_only',
+      }),
+      buildOperatorTwoFactorCheckpointEvent({
+        operation: 'map_command_result',
+        stateBefore: 'logging_in',
+        stateAfter: 'pending_2fa',
+        promptKind: promptInfo.kind,
+        endpoint: 'POST /api/auth/new/login',
+        requestedInput: promptInfo.requestedInput,
       }),
     ]);
   }
