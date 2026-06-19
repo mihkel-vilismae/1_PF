@@ -12,6 +12,19 @@ export const FINAL_SUMMARY_PROOFS = Object.freeze([
 
 export const WINDOWS_ONLY_SUFFIX = ':windows';
 
+
+export const MINIMUM_PROOF_RUNNER_PROOFS = Object.freeze([
+  'proof:docs-reconciliation-audit',
+  'proof:full-test',
+  'proof:openspec-v1-audit',
+  'proof:overall-project-completeness-registry',
+  'proof:proof-runner-queue',
+  'proof:proofrunner-windows-launcher-contract',
+  'proof:raspberry-v1-readiness',
+  'proof:proof-report-blocker-summary',
+  'proof:proof-runner-final-summary',
+]);
+
 export function discoverProofScriptsFromPackage(pkg, { includeWindowsAliases = true } = {}) {
   const scripts = Object.keys(pkg?.scripts ?? {}).filter((name) => name.startsWith('proof:'));
   return scripts.filter((name) => includeWindowsAliases || !name.endsWith(WINDOWS_ONLY_SUFFIX)).sort();
@@ -52,4 +65,28 @@ export function assertFinalSummaryProofsRunLast(orderedProofs) {
     final_summary_proofs_present: presentFinals,
     non_final_proofs_after_summary: nonFinalAfter,
   };
+}
+
+
+export function buildMinimumProofRunnerQueuePlan(pkg, options = {}) {
+  const fullPlan = buildProofRunnerQueuePlan(pkg, options);
+  const available = new Set(fullPlan.ordered_proofs);
+  const selected = MINIMUM_PROOF_RUNNER_PROOFS.filter((name) => available.has(name));
+  const ordered = orderProofScriptsForEvidenceRun(selected, options);
+  return {
+    ...fullPlan,
+    run_mode: 'minimum',
+    minimum_required_proofs: MINIMUM_PROOF_RUNNER_PROOFS,
+    ordered_count: ordered.length,
+    ordered_proofs: ordered,
+    missing_minimum_proofs: MINIMUM_PROOF_RUNNER_PROOFS.filter((name) => !available.has(name)),
+    full_discovered_count: fullPlan.discovered_count,
+    full_ordered_count: fullPlan.ordered_count,
+  };
+}
+
+export function buildProofRunnerQueuePlanForMode(pkg, { runMode = 'all', ...options } = {}) {
+  return runMode === 'minimum'
+    ? buildMinimumProofRunnerQueuePlan(pkg, options)
+    : { ...buildProofRunnerQueuePlan(pkg, options), run_mode: 'all' };
 }

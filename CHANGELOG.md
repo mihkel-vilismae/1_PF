@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.198
+
+- Added prooflauncher GUI/mode-selection contract with all-proofs and minimum-proofs happy paths.
+- Added repo-owned minimum proof queue helpers, OpenSpec/runbook docs, and `proof:prooflauncher-gui-selection`.
+
 ## 0.8.197
 
 - Added a proofrunner Windows launcher contract after the v0.8.196 handoff baseline-verification failure.

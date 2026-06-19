@@ -184,6 +184,7 @@ These commands are part of the active proof-enabler and local/runtime proof lane
 | Screen worker nonblocking design | `npm run proof:screen-worker-nonblocking-design` | local nonblocking design pre-pass |
 | V1 readiness data requirements | `npm run proof:v1-readiness-data-requirements` | local live-data requirements proof |
 | Proofrunner Windows launcher contract | `npm run proof:proofrunner-windows-launcher-contract` | local launcher contract validation |
+| Prooflauncher GUI selection | `npm run proof:prooflauncher-gui-selection` | local launcher GUI/mode-selection proof |
 
 ## Raspberry native image playback proof
 
