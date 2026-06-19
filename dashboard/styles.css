@@ -2748,3 +2748,4 @@ body[data-dashboard-visual-mode="unselected"] {
 }
 
 .debug-status-chip--info { color: #bfdbfe; border-color: rgba(96, 165, 250, 0.35); }
+.debug-status-chip--blocked { color: #fde68a; border-color: rgba(251, 191, 36, 0.42); background: rgba(251, 191, 36, 0.12); }

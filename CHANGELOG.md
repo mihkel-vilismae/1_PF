@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.212
+
+- Added visible disabled/planned-safe Auth/Session behavior states on the Debug page.
+
 ## 0.8.211
 
 - Added Batch 2 XACR review and rendered a Debug page behavior registry pane that classifies pane/button reality levels.

@@ -229,6 +229,12 @@ function renderAuthSessionPane(): string {
         ${renderPlannedButton('Check login', 'pf.debug.auth_session.check_login_button')}
         ${renderPlannedButton('Verify provider session', 'pf.debug.auth_session.verify_provider_button')}
       </div>
+      <dl class="definition-list" data-debug-auth-session-status data-ui-element-id="pf.debug.auth_session.status_panel">
+        <div><dt>Login using .env</dt><dd><span class="debug-status-chip debug-status-chip--blocked">disabled-planned-safe</span></dd></div>
+        <div><dt>Check login</dt><dd><span class="debug-status-chip debug-status-chip--blocked">disabled-planned-safe</span></dd></div>
+        <div><dt>Verify provider session</dt><dd><span class="debug-status-chip debug-status-chip--blocked">disabled-planned-safe</span></dd></div>
+        <div><dt>Required next contract</dt><dd>Auth/session snapshot proof and secret-safe provider boundary.</dd></div>
+      </dl>
       <p class="debug-proof-note">Secret boundary: Debug page must not print Apple ID, password, 2FA, cookies, tokens, or session file contents. Future proof should report sanitized session presence/usability only.</p>
     `,
   });

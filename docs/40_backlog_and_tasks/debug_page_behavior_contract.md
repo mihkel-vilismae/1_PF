@@ -16,3 +16,7 @@ Every Debug page pane and button must be classified before or during implementat
 ## Enforcement
 
 The Debug page should render a behavior registry so the operator can see which category each action belongs to. Tests/proofs should reject new controls that lack a behavior status and non-claim.
+
+## v0.8.212 Auth / Session planned-safe state
+
+The Debug page Auth / Session pane may show login/check/verify-provider targets, but they must remain `disabled-planned-safe` until the auth/session snapshot and provider secret-boundary contracts are implemented. Visible disabled targets are useful for layout/proof planning, but they are not real login controls yet.
