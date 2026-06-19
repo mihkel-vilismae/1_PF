@@ -178,6 +178,7 @@ These commands are part of the active proof-enabler and local/runtime proof lane
 | iCloudPD preflight secret boundary | `npm run proof:icloudpd-preflight-boundary` | local redaction/target-boundary proof |
 | Auth checkpoint state | `npm run proof:auth-checkpoint-state` | sanitized app-owned auth checkpoint proof |
 | Auth checkpoint state tests | `npm run proof:auth-checkpoint-state:test` | local auth checkpoint unit proof |
+| Auth checkpoint operator flow | `npm run proof:auth-checkpoint-operator-flow` | local auth operator runbook proof |
 | Regular worker product contract | `npm run proof:regular-worker-product-contract` | local product contract proof |
 | Regular worker product evidence template | `npm run proof:regular-worker-product-evidence-template` | local evidence template proof |
 | Screen worker nonblocking design | `npm run proof:screen-worker-nonblocking-design` | local nonblocking design pre-pass |

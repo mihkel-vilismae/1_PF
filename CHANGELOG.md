@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.194
+
+- Added an auth checkpoint operator flow runbook for moving from `AUTH_REQUIRED` toward app-owned `AUTH_SESSION_USABLE` proof state.
+- Added `proof:auth-checkpoint-operator-flow` to prove the runbook documents allowed states, secret boundaries, and non-claims.
+
 ## 0.8.193
 
 - Improved iCloudPD config readiness diagnostics with explicit missing-key reporting, grouped readiness categories, and operator-safe env-key guidance.
