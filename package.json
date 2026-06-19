@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.8.235",
+  "version": "0.8.236",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -123,7 +123,8 @@
     "proof:proof-run-handoff-triage": "node tools/run-proof-run-handoff-triage-proof.mjs",
     "proof:proofrunner-powershell-safe-log-name": "node tools/run-proofrunner-powershell-safe-log-name-proof.mjs",
     "proof:proofrunner-handoff-artifact-export-contract": "node tools/run-proofrunner-handoff-artifact-export-contract-proof.mjs",
-    "proof:proofrunner-packaging-identity": "node tools/run-proofrunner-packaging-identity-proof.mjs"
+    "proof:proofrunner-packaging-identity": "node tools/run-proofrunner-packaging-identity-proof.mjs",
+    "proof:proofrunner-platform-filter-contract": "node tools/run-proofrunner-platform-filter-contract-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

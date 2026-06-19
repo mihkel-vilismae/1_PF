@@ -197,6 +197,7 @@ These commands are part of the active proof-enabler and local/runtime proof lane
 | Proofrunner PowerShell safe log name | `npm run proof:proofrunner-powershell-safe-log-name` | local Windows launcher safe-log-name regression proof |
 | Proofrunner handoff artifact export contract | `npm run proof:proofrunner-handoff-artifact-export-contract` | local handoff summary/export contract proof |
 | Proofrunner packaging identity | `npm run proof:proofrunner-packaging-identity` | local repo ZIP/handoff naming and version identity contract proof |
+| Proofrunner platform filter contract | `npm run proof:proofrunner-platform-filter-contract` | local handoff platform-filter contract proof |
 
 ## Raspberry native image playback proof
 
@@ -307,3 +308,10 @@ Tracked `tools/mpv/windows/.gitkeep` and `tools/mpv/windows/README.md` are allow
 | Debug page style contract | `npm run proof:debug-page-style-contract` | Source-level proof for visual toolbar/schema/mode/status/marker/modal CSS; not a screenshot proof. |
 | Debug page world-class reconciliation | `npm run proof:debug-page-world-class-reconciliation` | Reconciles world-class OpenSpec, sliceplan, keybook, behavior, proof input, and style contracts. |
 | Debug page world-class completion | `npm run proof:debug-page-world-class-completion` | Scores Debug View 85%+ local proof track and generates two next batches without claiming product v1 readiness. |
+
+
+## Proofrunner platform-filter contract
+
+`npm run proof:proofrunner-platform-filter-contract` validates the queue contract that prevented the v0.8.235 RaspberryOS proofrunner from being green: Raspberry/Linux handoff launchers must exclude package-script aliases ending in `:windows`, while Windows launchers must preserve them. The skipped Windows aliases remain listed in launcher logs so the omission is explicit and auditable, not silent.
+
+This proof does not remove the Windows wrapper proofs from `package.json`; it only prevents non-Windows launchers from executing PowerShell-only aliases such as `proof:live-windows-native-playback:windows` on RaspberryOS/Linux.
