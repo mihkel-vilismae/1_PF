@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildFinalProofRunnerSummary } from '../tools/proof-runner-final-summary-lib.mjs';
+import { buildFinalProofRunnerSummary, parseProofSummaryTable } from '../tools/proof-runner-final-summary-lib.mjs';
 
 function artifact(kind, status, timestamp) {
   return { proof_kind: kind, proof_status: status, proof_timestamp: timestamp, evidence: { summary: { required_passed_count: 7 }, blocking_gate_ids: ['real_icloud_media_source'] } };
@@ -31,4 +31,23 @@ test('final proof-runner summary blocks when a proof artifact is newer than read
   ] });
   assert.equal(summary.proof_status, 'BLOCKED');
   assert.equal(summary.stale_input_artifacts_after_readiness[0].proof_kind, 'real_download_continuation');
+});
+
+
+test('final proof-runner summary fails when shell proof summary has nonzero exits', () => {
+  const rows = parseProofSummaryTable('name,status,exit_code,log_file\nproof:full-test,FAIL,1,logs/019.log\nproof:raspberry-v1-readiness,PASS,0,logs/100.log\n');
+  const summary = buildFinalProofRunnerSummary({ artifacts: [
+    artifact('raspberry_v1_readiness', 'BLOCKED', '2026-06-18T10:02:00.000Z'),
+  ], shellSummaryRows: rows });
+  assert.equal(summary.proof_status, 'FAILED');
+  assert.equal(summary.readiness_proof_status, 'PASSED');
+  assert.equal(summary.shell_summary.failed_exit_nonzero_count, 1);
+  assert.equal(summary.shell_summary.failed_rows[0].name, 'proof:full-test');
+});
+
+test('proof summary parser accepts tsv summary format', () => {
+  const rows = parseProofSummaryTable('name\tstatus\texit_code\tlog_file\nproof:a\tPASS\t0\tlogs/a.log\nproof:b\tFAIL\t1\tlogs/b.log\n');
+  assert.equal(rows.length, 2);
+  assert.equal(rows[1].name, 'proof:b');
+  assert.equal(rows[1].exit_code, 1);
 });
