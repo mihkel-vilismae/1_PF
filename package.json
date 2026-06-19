@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.8.220",
+  "version": "0.8.221",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -112,7 +112,8 @@
     "proof:debug-page-style-contract": "node tools/run-debug-page-style-contract-proof.mjs",
     "proof:debug-page-world-class-reconciliation": "node tools/run-debug-page-world-class-reconciliation-proof.mjs",
     "proof:debug-page-world-class-completion": "node tools/run-debug-page-world-class-completion-proof.mjs",
-    "proof:windows-live-proof-blocked-contract": "node tools/run-windows-live-proof-blocked-contract-proof.mjs"
+    "proof:windows-live-proof-blocked-contract": "node tools/run-windows-live-proof-blocked-contract-proof.mjs",
+    "proof:prooflauncher-timing-history": "node tools/run-prooflauncher-timing-history-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

@@ -2997,3 +2997,6 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 
 ## 0.8.220
 - Fix Windows live proof wrappers to emit honest BLOCKED evidence for missing operator input instead of hard failing.
+
+## 0.8.221
+- Add prooflauncher timing/history helper, estimate priority, proof, tests, and runbook contract.

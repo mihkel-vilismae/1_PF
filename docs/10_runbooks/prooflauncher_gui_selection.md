@@ -36,3 +36,17 @@ Launcher output should show elapsed time, estimated finish time, estimated time 
 ## Non-claims
 
 The menu does not prove real provider login, real download, real geocode, product pipeline, display/hardware behavior, or final v1 readiness. It only selects which proof commands are run.
+
+
+## Timing history evidence contract
+
+Every generated prooflauncher iteration should write machine-readable timing observations with:
+
+- `started_at`
+- `ended_at`
+- `duration_seconds`
+- `category`
+- `estimate_seconds`
+- `estimate_source`
+
+The estimate priority is exact command history, then category history, then platform average, then global average. Launchers should also print elapsed time, estimated finish time, estimated time remaining, green PASS rows, red FAIL/TIMEOUT rows, and a final timing table.
