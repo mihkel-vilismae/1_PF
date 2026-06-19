@@ -75,3 +75,5 @@ When a new Debug page goal is discovered:
 
 The Debug page now renders Help, Stack/Status, Elements/Buttons list, and Auth/Session panes before the legacy debug controls. Implemented panes/buttons have stable `data-ui-element-id` attributes, and inspectable elements expose a `*` marker with hover tooltip and click-to-open local metadata dialog. This remains browser-local/proof-safe and does not claim real provider, crontab, worker, media/database, Raspberry, or recovery behavior.
 | DBG-GOAL-024 | Define Debug page world-class OpenSpec and 4-batch/18-slice plan | Debug page planning/OpenSpec | proven | World-class OpenSpec | `proof:debug-page-world-class-plan` | Planning proof only; does not implement all world-class runtime slices yet. |
+
+| DBG-GOAL-025 | Complete Debug page world-class local proof track and generate next batches | Debug page proof closure | proven | Completion report | `proof:debug-page-world-class-completion` | Debug View 85%+ local proof track only; does not claim product v1 readiness or real provider/device/recovery behavior. |

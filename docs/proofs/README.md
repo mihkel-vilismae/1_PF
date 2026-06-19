@@ -290,3 +290,8 @@ Tracked `tools/mpv/windows/.gitkeep` and `tools/mpv/windows/README.md` are allow
 
 | Debug page keybook | `npm run proof:debug-page-keybook` | Validates Debug Page Keybook entries, stable ID uniqueness, file/doc/test/proof references, runtime data-ui-element-id source markers, `*` inspector marker contract, and local metadata modal contract without claiming real provider/runtime behavior. |
 | Debug page world-class plan | `npm run proof:debug-page-world-class-plan` | Validates the Debug page world-class OpenSpec and max-scope 4-batch/18-slice plan without claiming the slices are implemented. |
+
+| Debug page keybook render | `npm run proof:debug-page-keybook-render` | Source-level proof for rendered Debug page keybook IDs, panes, toolbar, markers, modal, behavior registry, and proof input panel. |
+| Debug page style contract | `npm run proof:debug-page-style-contract` | Source-level proof for visual toolbar/schema/mode/status/marker/modal CSS; not a screenshot proof. |
+| Debug page world-class reconciliation | `npm run proof:debug-page-world-class-reconciliation` | Reconciles world-class OpenSpec, sliceplan, keybook, behavior, proof input, and style contracts. |
+| Debug page world-class completion | `npm run proof:debug-page-world-class-completion` | Scores Debug View 85%+ local proof track and generates two next batches without claiming product v1 readiness. |

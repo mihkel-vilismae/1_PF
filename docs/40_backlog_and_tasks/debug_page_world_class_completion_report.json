@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0.0",
+  "project": "PF_login / PhotoFrame",
+  "version": "0.8.219",
+  "debug_view_scope_only": true,
+  "world_class_track": {
+    "batches_planned": 4,
+    "batches_completed": 4,
+    "slices_planned": 18,
+    "slices_completed": 18,
+    "openspec_score_estimate": 90,
+    "implementation_score_estimate": 86,
+    "confidence": "medium",
+    "honest_status": "DEBUG_VIEW_85_PLUS_LOCAL_PROOF_TRACK_COMPLETE"
+  },
+  "remaining_non_claims": [
+    "browser screenshot/style proof not run",
+    "proof:debug-page-runtime not run in assistant container",
+    "typecheck/build not run in assistant container",
+    "no real auth/provider/crontab/worker/database/media/Raspberry/display/recovery behavior claimed"
+  ],
+  "next_batches": [
+    {
+      "id": "DBG-WC-BATCH-5",
+      "name": "Auth/session and snapshot bridge hardening",
+      "slice_count": 5,
+      "purpose": "Turn planned-safe Debug Auth/Session and SYSTEM_STATE surfaces into proof-ready contracts before real provider behavior."
+    },
+    {
+      "id": "DBG-WC-BATCH-6",
+      "name": "Operator evidence and target proof bridge",
+      "slice_count": 5,
+      "purpose": "Prepare browser/screenshot/operator evidence and later target proof inputs without claiming real hardware/provider behavior yet."
+    }
+  ]
+}

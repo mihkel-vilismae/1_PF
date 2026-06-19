@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.219
+
+- Added Debug page world-class completion report/proof, marked the 4-batch/18-slice local proof track complete, and generated two follow-up batches for auth/session snapshot bridge and operator/target evidence bridge.
+
 ## 0.8.218
 
 - Added Debug page world-class reconciliation doc and proof to align OpenSpec, slice plan, keybook, behavior, proof input, and style contracts.

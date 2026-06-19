@@ -922,6 +922,24 @@
       "next_action": "Run the world-class Debug page slices one batch at a time, with ACR and proof per slice.",
       "runtime_implementation_claim": false,
       "notes": "Planning/OpenSpec proof only; runtime implementation of the 18 slices is not claimed."
+    },
+    {
+      "id": "DBG-GOAL-025",
+      "title": "Complete Debug page world-class local proof track and generate next batches",
+      "category": "debug_page",
+      "status_enum": "PROVEN",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:debug-page-world-class-completion",
+      "proof_status": "PASSED",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/debug_page_world_class_completion_report.md",
+        "docs/40_backlog_and_tasks/debug_page_world_class_completion_report.json",
+        "tools/run-debug-page-world-class-completion-proof.mjs",
+        "tests/debugPageWorldClassCompletion.test.js"
+      ],
+      "next_action": "Choose whether to run DBG-WC-BATCH-5 auth/session bridge or return to proofrunner/v0.9 readiness work.",
+      "runtime_implementation_claim": false,
+      "notes": "Debug View 85%+ local proof track complete; real provider/device/recovery behavior remains unclaimed."
     }
   ]
 }
