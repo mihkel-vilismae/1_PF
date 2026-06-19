@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.211
+
+- Added Batch 2 XACR review and rendered a Debug page behavior registry pane that classifies pane/button reality levels.
+
 ## 0.8.210
 
 - Added responsive and accessibility polish for Debug page visual toolbar, element list rows, playback layout, and focus outlines.

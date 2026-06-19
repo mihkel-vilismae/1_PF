@@ -29,6 +29,7 @@ export const DEBUG_PAGE_ELEMENTS: DebugPageElementEntry[] = [
   { id: 'pf.debug.help.pane', type: 'pane', label: 'Help', section: 'Debug / Help', marker: 'data-debug-pane=help', reality: 'browser-local/help', nonClaim: 'Explains boundaries only; no production action.' },
   { id: 'pf.debug.stack_status.pane', type: 'pane', label: 'Stack / Status', section: 'Debug / Stack', marker: 'data-debug-pane=stack-status', reality: 'browser-local/status summary', nonClaim: 'Shows declared frontend/runtime proof context only.' },
   { id: 'pf.debug.elements_list.pane', type: 'pane', label: 'Elements / Buttons list', section: 'Debug / Element Inventory', marker: 'data-debug-pane=elements-list', reality: 'browser-local/keybook projection', nonClaim: 'Lists element IDs; does not prove real runtime behavior.' },
+  { id: 'pf.debug.behavior_registry.pane', type: 'pane', label: 'Behavior registry', section: 'Debug / Behavior', marker: 'data-debug-pane=behavior-registry', reality: 'browser-local/behavior map', nonClaim: 'Classifies controls; does not make planned controls real.' },
   { id: 'pf.debug.auth_session.pane', type: 'pane', label: 'Auth / Session', section: 'Debug / Auth', marker: 'data-debug-pane=auth-session', reality: 'planned-safe/auth bridge', nonClaim: 'Does not submit credentials or read session secrets.' },
   { id: 'pf.debug.auth_session.login_using_env_button', type: 'button', label: 'Login using .env values', section: 'Debug / Auth', action: 'planned:new-auth-login-using-env', reality: 'disabled/planned-safe', nonClaim: 'Shown as planned bridge only; does not trigger provider login from Debug page.' },
   { id: 'pf.debug.auth_session.check_login_button', type: 'button', label: 'Check login', section: 'Debug / Auth', action: 'planned:new-auth-check-login', reality: 'disabled/planned-safe', nonClaim: 'Shown as planned bridge only; does not inspect session contents.' },
@@ -68,6 +69,7 @@ export function renderDebugView(state: Record<string, unknown>, frontendVersion:
       ${renderHelpPane()}
       ${renderStackStatusPane(frontendVersion, statusProjection)}
       ${renderElementsListPane()}
+      ${renderBehaviorRegistryPane()}
       ${renderAuthSessionPane()}
       ${renderStatePane(debugState)}
       ${renderPlaybackPane(debugState)}
@@ -176,6 +178,37 @@ function renderElementsListPane(): string {
             <span>${escapeHtml(entry.type)}</span>
             <strong>${escapeHtml(entry.label)}</strong>
             <small>${escapeHtml(entry.reality)}</small>
+          </div>
+        `).join('')}
+      </div>
+    `,
+  });
+}
+
+
+function inferBehaviorStatus(entry: DebugPageElementEntry): string {
+  if (entry.reality.includes('disabled')) return 'disabled-planned-safe';
+  if (entry.reality.includes('mock')) return 'mock-only';
+  if (entry.reality.includes('browser-local')) return 'browser-local';
+  if (entry.reality.includes('planned-safe')) return 'disabled-planned-safe';
+  return 'blocked-needs-contract';
+}
+
+function renderBehaviorRegistryPane(): string {
+  return renderDebugPane({
+    elementId: 'pf.debug.behavior_registry.pane',
+    code: 'BEHAVIOR',
+    title: 'Behavior registry',
+    marker: 'data-debug-pane="behavior-registry"',
+    copy: 'Every Debug element must say whether it is browser-local, mock-only, disabled/planned-safe, blocked, real-provider, or real-device behavior.',
+    body: `
+      <div class="debug-elements-list" data-debug-behavior-registry>
+        ${DEBUG_PAGE_ELEMENTS.filter((entry) => entry.type === 'button' || entry.type === 'pane').map((entry) => `
+          <div class="debug-elements-list__row" data-debug-behavior-row="${escapeHtml(entry.id)}">
+            <code>${escapeHtml(entry.id)}</code>
+            <span class="debug-status-chip debug-status-chip--info">${escapeHtml(inferBehaviorStatus(entry))}</span>
+            <strong>${escapeHtml(entry.label)}</strong>
+            <small>${escapeHtml(entry.nonClaim)}</small>
           </div>
         `).join('')}
       </div>
