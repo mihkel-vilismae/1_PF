@@ -1,0 +1,52 @@
+# Proofrunner handoff Windows launcher contract
+
+Status: active handoff-launcher contract after the v0.8.196 Windows proofrunner baseline-verification failure.
+
+## Problem pattern
+
+A Windows handoff launcher must not read package metadata from the launcher folder when the repo has already been extracted elsewhere. It must not call methods such as `.Trim()` on possibly-null external command output.
+
+The failed pattern was equivalent to this:
+
+```powershell
+$PkgValue = (& node -e "console.log(require('./package.json').version)" 2>$null).Trim()
+```
+
+That can fail because `require('./package.json')` is scoped to the current PowerShell directory, not necessarily the extracted repo root, and because a failed external command may produce `$null` output.
+
+## Required Windows behavior
+
+The Windows proofrunner must:
+
+1. Extract the repo ZIP into a run-specific directory.
+2. Find the extracted repo root by locating `package.json`.
+3. Read `VERSION` from `$RepoRoot\VERSION`.
+4. Read package version from `$RepoRoot\package.json` with PowerShell JSON parsing, or use a repo-root-scoped command.
+5. Read Git HEAD with `git -C $RepoRoot rev-parse --short HEAD`.
+6. Check every baseline value for null/blank before comparing.
+7. Fail with an actionable launcher error instead of a raw PowerShell null-method exception.
+
+## Required validation before release
+
+For every future `2proofrunner 1repo` handoff containing both Windows and Raspberry launchers, handoff validation must include:
+
+| Launcher | Required validation |
+|---|---|
+| `PROOF_RASPBERRYOS.SH` | `bash -n`, expected version/head/repo basename markers |
+| `PROOF_WIN.PS1` | expected version/head/repo basename markers, null-safe package read, repo-root-scoped package read, actionable baseline failure messages |
+
+Bash-only validation is not sufficient for a Windows+Raspberry handoff.
+
+## Operator note
+
+Windows may show a security warning for downloaded PowerShell scripts. If the operator trusts the ZIP source, they may run:
+
+```powershell
+Unblock-File .\PROOF_WIN.PS1
+```
+
+This only removes the Windows downloaded-file warning. It does not bypass proof checks, baseline verification, or script trust decisions.
+
+## Non-claims
+
+This contract does not prove real iCloud login, provider download, Raspberry hardware behavior, product pipeline completion, address overlay device display, or final v1 readiness. It only defines launcher robustness and validation requirements.

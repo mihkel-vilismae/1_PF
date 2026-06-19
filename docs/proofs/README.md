@@ -183,6 +183,7 @@ These commands are part of the active proof-enabler and local/runtime proof lane
 | Regular worker product evidence template | `npm run proof:regular-worker-product-evidence-template` | local evidence template proof |
 | Screen worker nonblocking design | `npm run proof:screen-worker-nonblocking-design` | local nonblocking design pre-pass |
 | V1 readiness data requirements | `npm run proof:v1-readiness-data-requirements` | local live-data requirements proof |
+| Proofrunner Windows launcher contract | `npm run proof:proofrunner-windows-launcher-contract` | local launcher contract validation |
 
 ## Raspberry native image playback proof
 

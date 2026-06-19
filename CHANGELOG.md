@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.197
+
+- Added a proofrunner Windows launcher contract after the v0.8.196 handoff baseline-verification failure.
+- Added `proof:proofrunner-windows-launcher-contract` to guard null-safe, repo-root-scoped PowerShell baseline verification and document Windows+Raspberry handoff validation requirements.
+
 ## 0.8.196
 
 - Improved blocker summary classification so product evidence, operator evidence, auth/session, provider/network, and config/env blockers stay distinct.

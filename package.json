@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.8.196",
+  "version": "0.8.197",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -103,7 +103,8 @@
     "proof:real-geocode-provider-readiness": "node tools/run-real-geocode-provider-readiness-proof.mjs",
     "proof:geocode-provider-selection": "node tools/run-geocode-provider-selection-proof.mjs",
     "proof:real-icloudpd-readiness": "node tools/run-real-icloudpd-readiness-proof.mjs",
-    "proof:auth-checkpoint-operator-flow": "node --test tests/authCheckpointOperatorFlow.test.js"
+    "proof:auth-checkpoint-operator-flow": "node --test tests/authCheckpointOperatorFlow.test.js",
+    "proof:proofrunner-windows-launcher-contract": "node tools/run-proofrunner-windows-launcher-contract-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
