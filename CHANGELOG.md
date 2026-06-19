@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.200
+
+- Implemented Debug page keybook runtime UI: Help, Stack/Status, Elements/Buttons list, and Auth/Session planning panes.
+- Added stable `data-ui-element-id` attributes and `*` inspector markers with a local metadata modal for Debug page panes/buttons.
+- Added 3+2 XACR research handoff docs/data for the Debug page runtime keybook UI slice.
+- Preserved proof honesty: Auth/Session pane is disabled/planned-safe and does not submit credentials or read session secrets.
+
 ## 0.8.199
 
 - Added Debug Page Keybook skill and repo-local Debug page keybook seed.

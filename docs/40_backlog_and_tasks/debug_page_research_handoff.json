@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0.0",
+  "project": "PF_login / PhotoFrame",
+  "baseline_version": "0.8.199",
+  "target_version": "0.8.200",
+  "kind": "debug_page_runtime_keybook_ui_research_handoff",
+  "created_at": "2026-06-19",
+  "xacr_passes": [
+    {
+      "name": "page_shape",
+      "finding": "Add Help, Stack/Status, Elements/Buttons list, and Auth/Session before existing Debug panes."
+    },
+    {
+      "name": "element_inventory",
+      "finding": "Move seeded keybook IDs into rendered HTML with data-ui-element-id."
+    },
+    {
+      "name": "inspect_marker",
+      "finding": "Use * markers with hover tooltip and click metadata modal without triggering underlying actions."
+    }
+  ],
+  "implemented_divs": [
+    "pf.debug.page",
+    "pf.debug.help.pane",
+    "pf.debug.stack_status.pane",
+    "pf.debug.elements_list.pane",
+    "pf.debug.auth_session.pane",
+    "pf.debug.state.pane",
+    "pf.debug.playback_test.pane",
+    "pf.debug.media_test.pane",
+    "pf.debug.crontab.pane",
+    "pf.debug.scheduler_host_mock.pane",
+    "pf.debug.worker_regular.pane",
+    "pf.debug.worker_playback.pane",
+    "pf.debug.worker_screen.pane"
+  ],
+  "non_claims": [
+    "No real provider login is triggered from the Debug page in this slice.",
+    "No production crontab, worker, media, database, native playback, Raspberry, or recovery behavior is claimed."
+  ]
+}

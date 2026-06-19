@@ -235,3 +235,47 @@ test('debug fake restore preview never performs production restore mutation', ()
   assert.match(appSource, /restoreMutation: false/);
   assert.match(appSource, /previewFakeDebugStateRestore/);
 });
+
+test('debug page renders Help, Stack, Elements, and Auth panes before legacy controls', () => {
+  const markup = renderDebugView(createInitialState(), '0.8.200');
+  const helpIndex = markup.indexOf('data-debug-pane="help"');
+  const stackIndex = markup.indexOf('data-debug-pane="stack-status"');
+  const elementsIndex = markup.indexOf('data-debug-pane="elements-list"');
+  const authIndex = markup.indexOf('data-debug-pane="auth-session"');
+  const stateIndex = markup.indexOf('data-debug-pane="state"');
+  assert.ok(helpIndex > -1, 'Help pane missing');
+  assert.ok(stackIndex > helpIndex, 'Stack pane should follow Help');
+  assert.ok(elementsIndex > stackIndex, 'Elements list pane should follow Stack');
+  assert.ok(authIndex > elementsIndex, 'Auth pane should follow Elements list');
+  assert.ok(stateIndex > authIndex, 'Legacy State pane should follow top information panes');
+});
+
+test('debug page renders stable UI element IDs and asterisk markers', () => {
+  const markup = renderDebugView(createInitialState(), '0.8.200');
+  for (const expected of [
+    'data-ui-element-id="pf.debug.help.pane"',
+    'data-ui-element-id="pf.debug.stack_status.pane"',
+    'data-ui-element-id="pf.debug.elements_list.pane"',
+    'data-ui-element-id="pf.debug.auth_session.pane"',
+    'data-ui-element-id="pf.debug.state.save_button"',
+    'data-ui-element-id="pf.debug.crontab.install_button"',
+    'data-debug-element-marker="pf.debug.state.save_button"',
+    'title="pf.debug.state.save_button — Save state"',
+  ]) {
+    assert.match(markup, new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
+});
+
+test('debug element marker modal is browser-local and non-disruptive', () => {
+  const state = buildDefaultDebugPageState();
+  state.selectedElementId = 'pf.debug.state.save_button';
+  const markup = renderDebugView({ debugPage: state }, '0.8.200');
+  assert.match(markup, /data-debug-element-modal/);
+  assert.match(markup, /pf\.debug\.element_id_modal/);
+  assert.match(markup, /pf\.debug\.state\.save_button/);
+  assert.match(markup, /Does not create production recovery snapshot/);
+  const appSource = read('dashboard/app.ts');
+  assert.match(appSource, /data-debug-element-marker/);
+  assert.match(appSource, /event\.stopPropagation\(\)/);
+  assert.match(appSource, /underlyingActionTriggered: false/);
+});

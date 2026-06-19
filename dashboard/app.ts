@@ -62,7 +62,7 @@ import { renderRunningProcessView } from './views/runningProcessView.ts';
 import { renderDatabaseViewerView } from './views/databaseViewerView.ts';
 import { renderOsPlaybackFullscreenOverlay, renderOsPlaybackView } from './views/osPlaybackView.ts';
 import { renderDebugView } from './views/debugView.ts';
-import { addIsolatedTestMediaItem, buildDefaultDebugPageState, pauseFakeDebugCrontab, previewFakeDebugStateRestore, readFakeDebugCrontab, resumeFakeDebugCrontab, runMockDebugWorker, saveFakeDebugStateSnapshot, setDebugCrontabContent, stageFakeDebugCrontabInstall, type DebugPageState, type DebugWorkerKey } from './services/debugPageModel.ts';
+import { addIsolatedTestMediaItem, buildDefaultDebugPageState, clearDebugElementMetadata, pauseFakeDebugCrontab, previewFakeDebugStateRestore, readFakeDebugCrontab, resumeFakeDebugCrontab, runMockDebugWorker, saveFakeDebugStateSnapshot, selectDebugElementMetadata, setDebugCrontabContent, stageFakeDebugCrontabInstall, type DebugPageState, type DebugWorkerKey } from './services/debugPageModel.ts';
 import { buildOsPlaybackViewModel, OS_PLAYBACK_PLATFORMS, type OsPlaybackPlatform, type PlaybackLogEntryViewModel } from './services/osPlaybackViewModel.ts';
 import { requestJson, setDashboardRuntimeMode } from './services/apiClient.ts';
 import { buildViewARefreshPlan } from './services/viewARefreshPlan.ts';
@@ -1173,6 +1173,38 @@ function bindEvents() {
         void loadOsPlaybackObservability(osPlaybackPlatform);
         void loadNativePlaybackStatus(osPlaybackPlatform);
       }
+    });
+  });
+
+  app.querySelectorAll<HTMLButtonElement>('[data-debug-element-marker]').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const elementId = button.dataset.debugElementMarker;
+      if (!elementId) {
+        return;
+      }
+      patchDebugPage((debugPage) => selectDebugElementMetadata(debugPage, elementId));
+      pushHistory('DEBUG', 'info', `Opened Debug element metadata for ${elementId}.`, {
+        action: 'show-element-metadata',
+        elementId,
+        markerOnly: true,
+        productionMutation: false,
+        underlyingActionTriggered: false,
+      });
+    });
+  });
+
+  app.querySelectorAll<HTMLButtonElement>('[data-debug-element-modal-close]').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      patchDebugPage((debugPage) => clearDebugElementMetadata(debugPage));
+      pushHistory('DEBUG', 'info', 'Closed Debug element metadata dialog.', {
+        action: 'close-element-metadata',
+        markerOnly: true,
+        productionMutation: false,
+      });
     });
   });
 

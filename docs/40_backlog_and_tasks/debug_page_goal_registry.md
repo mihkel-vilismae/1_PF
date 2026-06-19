@@ -69,3 +69,8 @@ When a new Debug page goal is discovered:
 
 | DBG-GOAL-021 | Add Debug Page Keybook skill and repo inventory seed | Governance/keybook | specified | Keybook | `proof:debug-page-keybook` | Must map panes/buttons to files/docs/tests/proofs/non-claims. |
 | DBG-GOAL-022 | Add stable UI element IDs and `*` marker overlay | Element inventory | planned | Keybook follow-up | UI runtime proof later | Keybook seeds IDs now; rendered attributes and marker behavior come in a later slice. |
+| DBG-GOAL-023 | Render Debug Help, Stack/Status, Elements list, and Auth/Session planning panes | Debug page runtime/keybook | proven | Help/Stack/Element inventory | `proof:debug-page-runtime`, `proof:debug-page-keybook` | Auth/Session controls are visible as disabled/planned-safe targets only; no provider login/session read is performed. |
+
+## v0.8.200 runtime keybook UI update
+
+The Debug page now renders Help, Stack/Status, Elements/Buttons list, and Auth/Session panes before the legacy debug controls. Implemented panes/buttons have stable `data-ui-element-id` attributes, and inspectable elements expose a `*` marker with hover tooltip and click-to-open local metadata dialog. This remains browser-local/proof-safe and does not claim real provider, crontab, worker, media/database, Raspberry, or recovery behavior.

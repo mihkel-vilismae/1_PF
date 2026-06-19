@@ -52,6 +52,7 @@ export type DebugCrontabState = {
 export type DebugPageState = {
   route: '/debug';
   openedAt: string | null;
+  selectedElementId: string | null;
   actionResults: Record<string, DebugActionResult>;
   testMedia: DebugTestMediaItem[];
   workers: Record<DebugWorkerKey, DebugWorkerTelemetry>;
@@ -91,6 +92,7 @@ export function buildDefaultDebugPageState(): DebugPageState {
   return {
     route: DEBUG_ROUTE,
     openedAt: null,
+    selectedElementId: null,
     actionResults: {},
     testMedia: [],
     workers: {
@@ -122,6 +124,30 @@ function createWorkerTelemetry(key: DebugWorkerKey, label: string): DebugWorkerT
 
 
 
+
+
+export function selectDebugElementMetadata(state: DebugPageState, elementId: string): DebugPageState {
+  return {
+    ...state,
+    selectedElementId: elementId,
+    actionResults: {
+      ...state.actionResults,
+      'show-element-metadata': createDebugActionResult(
+        'show-element-metadata',
+        'succeeded',
+        `Opened local Debug element metadata dialog for ${elementId}. Underlying element behavior was not triggered.`,
+        'debug-page-element-id-modal',
+      ),
+    },
+  };
+}
+
+export function clearDebugElementMetadata(state: DebugPageState): DebugPageState {
+  return {
+    ...state,
+    selectedElementId: null,
+  };
+}
 
 export function saveFakeDebugStateSnapshot(state: DebugPageState): DebugPageState {
   return {

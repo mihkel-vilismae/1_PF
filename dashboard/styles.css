@@ -2574,3 +2574,79 @@ body[data-dashboard-visual-mode="unselected"] {
   margin: 0.5rem 0 0;
   padding-left: 1.25rem;
 }
+
+.debug-pane {
+  position: relative;
+}
+
+.debug-pane__badges,
+.debug-button-with-marker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.debug-element-marker {
+  appearance: none;
+  display: inline-grid;
+  place-items: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 999px;
+  border: 1px solid rgba(251, 191, 36, 0.42);
+  background: rgba(251, 191, 36, 0.16);
+  color: #fde68a;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1;
+  cursor: help;
+}
+
+.debug-element-marker:hover,
+.debug-element-marker:focus-visible {
+  background: rgba(251, 191, 36, 0.28);
+  border-color: rgba(251, 191, 36, 0.72);
+  outline: none;
+}
+
+.debug-elements-list {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 0.75rem;
+}
+
+.debug-elements-list__row {
+  display: grid;
+  grid-template-columns: minmax(13rem, 1.3fr) minmax(5rem, 0.45fr) minmax(10rem, 1fr) minmax(10rem, 1fr);
+  gap: 0.55rem;
+  align-items: center;
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.75rem;
+  background: rgba(15, 23, 42, 0.48);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.debug-elements-list__row code {
+  white-space: nowrap;
+}
+
+.debug-element-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 92;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background: rgba(2, 6, 23, 0.64);
+  backdrop-filter: blur(8px);
+}
+
+.debug-element-modal__panel {
+  width: min(680px, 100%);
+  border-radius: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(15, 23, 42, 0.98);
+  padding: 1rem;
+  box-shadow: 0 24px 72px rgba(0, 0, 0, 0.42);
+}

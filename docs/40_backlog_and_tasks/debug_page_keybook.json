@@ -1,121 +1,340 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "project": "PF_login / PhotoFrame",
   "introduced_version": "0.8.199",
-  "status": "active_debug_page_keybook_seed",
-  "purpose": "Map Debug page panes/buttons/planned IDs to source files, docs, tests, proofs, reality levels, and non-claims.",
+  "last_updated_version": "0.8.200",
+  "status": "active_debug_page_keybook_runtime_ids",
+  "purpose": "Map Debug page panes/buttons/stable IDs to rendered HTML, source files, docs, tests, proofs, reality levels, and non-claims.",
   "rules": [
     "Prefer this repo-local keybook over ChatGPT memory for detailed Debug page facts.",
-    "Stable IDs are planned/seeded until data-ui-element-id attributes are implemented in rendered HTML.",
+    "Stable IDs must be visible in rendered HTML with data-ui-element-id attributes for implemented entries.",
+    "Inspectable elements use an asterisk marker: hover shows the stable ID tooltip; click opens a non-disruptive metadata modal.",
     "Do not claim real backend/provider/crontab/worker/database/media/Raspberry behavior from browser-local Debug UI elements.",
     "Use proof:debug-page-keybook after changing this file or Debug page structure."
   ],
   "entries": [
     {
       "id": "pf.debug.page",
-      "implemented_id": false,
+      "implemented_id": true,
       "type": "page",
       "label": "Debug Menu",
+      "section": "Debug",
       "route": "/debug",
       "source_file": "dashboard/views/debugView.ts",
       "marker": "data-debug-page-route",
-      "current_marker_value": null,
+      "current_marker_value": "/debug",
       "docs": [
         "docs/10_runbooks/debug_page_runbook.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/40_backlog_and_tasks/debug_page_goal_registry.md"
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md"
       ],
       "tests": [
         "tests/debugPageRuntime.test.js",
-        "tests/debugPageDocs.test.js"
+        "tests/debugPageKeybook.test.js"
       ],
       "proofs": [
-        "proof:debug-page-runtime"
+        "proof:debug-page-runtime",
+        "proof:debug-page-keybook"
       ],
-      "reality": "real-ui/browser-local-safe",
-      "non_claim": "Does not prove real Raspberry/provider/worker/crontab/media/database behavior."
+      "reality": "browser-local/planned-safe",
+      "non_claim": "Does not prove backend/provider/worker/crontab/media/database behavior.",
+      "inspect_marker": "* hover tooltip + click metadata modal"
+    },
+    {
+      "id": "pf.debug.help.pane",
+      "implemented_id": true,
+      "type": "pane",
+      "label": "Help",
+      "section": "Debug / Help",
+      "route": "/debug",
+      "source_file": "dashboard/views/debugView.ts",
+      "marker": "data-debug-pane",
+      "current_marker_value": "help",
+      "docs": [
+        "docs/10_runbooks/debug_page_runbook.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md"
+      ],
+      "tests": [
+        "tests/debugPageRuntime.test.js",
+        "tests/debugPageKeybook.test.js"
+      ],
+      "proofs": [
+        "proof:debug-page-runtime",
+        "proof:debug-page-keybook"
+      ],
+      "reality": "browser-local/help",
+      "non_claim": "Explains boundaries only; no production action.",
+      "inspect_marker": "* hover tooltip + click metadata modal"
+    },
+    {
+      "id": "pf.debug.stack_status.pane",
+      "implemented_id": true,
+      "type": "pane",
+      "label": "Stack / Status",
+      "section": "Debug / Stack",
+      "route": "/debug",
+      "source_file": "dashboard/views/debugView.ts",
+      "marker": "data-debug-pane",
+      "current_marker_value": "stack-status",
+      "docs": [
+        "docs/10_runbooks/debug_page_runbook.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md"
+      ],
+      "tests": [
+        "tests/debugPageRuntime.test.js",
+        "tests/debugPageKeybook.test.js"
+      ],
+      "proofs": [
+        "proof:debug-page-runtime",
+        "proof:debug-page-keybook"
+      ],
+      "reality": "browser-local/status summary",
+      "non_claim": "Shows declared frontend/runtime proof context only.",
+      "inspect_marker": "* hover tooltip + click metadata modal"
+    },
+    {
+      "id": "pf.debug.elements_list.pane",
+      "implemented_id": true,
+      "type": "pane",
+      "label": "Elements / Buttons list",
+      "section": "Debug / Element Inventory",
+      "route": "/debug",
+      "source_file": "dashboard/views/debugView.ts",
+      "marker": "data-debug-pane",
+      "current_marker_value": "elements-list",
+      "docs": [
+        "docs/10_runbooks/debug_page_runbook.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md"
+      ],
+      "tests": [
+        "tests/debugPageRuntime.test.js",
+        "tests/debugPageKeybook.test.js"
+      ],
+      "proofs": [
+        "proof:debug-page-runtime",
+        "proof:debug-page-keybook"
+      ],
+      "reality": "browser-local/keybook projection",
+      "non_claim": "Lists element IDs; does not prove real runtime behavior.",
+      "inspect_marker": "* hover tooltip + click metadata modal"
+    },
+    {
+      "id": "pf.debug.auth_session.pane",
+      "implemented_id": true,
+      "type": "pane",
+      "label": "Auth / Session",
+      "section": "Debug / Auth",
+      "route": "/debug",
+      "source_file": "dashboard/views/debugView.ts",
+      "marker": "data-debug-pane",
+      "current_marker_value": "auth-session",
+      "docs": [
+        "docs/10_runbooks/debug_page_runbook.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md"
+      ],
+      "tests": [
+        "tests/debugPageRuntime.test.js",
+        "tests/debugPageKeybook.test.js"
+      ],
+      "proofs": [
+        "proof:debug-page-runtime",
+        "proof:debug-page-keybook"
+      ],
+      "reality": "planned-safe/auth bridge",
+      "non_claim": "Does not submit credentials or read session secrets.",
+      "inspect_marker": "* hover tooltip + click metadata modal"
+    },
+    {
+      "id": "pf.debug.auth_session.login_using_env_button",
+      "implemented_id": true,
+      "type": "button",
+      "label": "Login using .env values",
+      "section": "Debug / Auth",
+      "route": "/debug",
+      "source_file": "dashboard/views/debugView.ts",
+      "marker": "data-debug-auth-action",
+      "current_marker_value": "planned",
+      "docs": [
+        "docs/10_runbooks/debug_page_runbook.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md"
+      ],
+      "tests": [
+        "tests/debugPageRuntime.test.js",
+        "tests/debugPageKeybook.test.js"
+      ],
+      "proofs": [
+        "proof:debug-page-runtime",
+        "proof:debug-page-keybook"
+      ],
+      "reality": "disabled/planned-safe",
+      "non_claim": "Shown as planned bridge only; does not trigger provider login from Debug page.",
+      "inspect_marker": "* hover tooltip + click metadata modal",
+      "action": "planned:new-auth-login-using-env"
+    },
+    {
+      "id": "pf.debug.auth_session.check_login_button",
+      "implemented_id": true,
+      "type": "button",
+      "label": "Check login",
+      "section": "Debug / Auth",
+      "route": "/debug",
+      "source_file": "dashboard/views/debugView.ts",
+      "marker": "data-debug-auth-action",
+      "current_marker_value": "planned",
+      "docs": [
+        "docs/10_runbooks/debug_page_runbook.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md"
+      ],
+      "tests": [
+        "tests/debugPageRuntime.test.js",
+        "tests/debugPageKeybook.test.js"
+      ],
+      "proofs": [
+        "proof:debug-page-runtime",
+        "proof:debug-page-keybook"
+      ],
+      "reality": "disabled/planned-safe",
+      "non_claim": "Shown as planned bridge only; does not inspect session contents.",
+      "inspect_marker": "* hover tooltip + click metadata modal",
+      "action": "planned:new-auth-check-login"
+    },
+    {
+      "id": "pf.debug.auth_session.verify_provider_button",
+      "implemented_id": true,
+      "type": "button",
+      "label": "Verify provider session",
+      "section": "Debug / Auth",
+      "route": "/debug",
+      "source_file": "dashboard/views/debugView.ts",
+      "marker": "data-debug-auth-action",
+      "current_marker_value": "planned",
+      "docs": [
+        "docs/10_runbooks/debug_page_runbook.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md"
+      ],
+      "tests": [
+        "tests/debugPageRuntime.test.js",
+        "tests/debugPageKeybook.test.js"
+      ],
+      "proofs": [
+        "proof:debug-page-runtime",
+        "proof:debug-page-keybook"
+      ],
+      "reality": "disabled/planned-safe",
+      "non_claim": "Shown as planned bridge only; does not copy cookies or tokens.",
+      "inspect_marker": "* hover tooltip + click metadata modal",
+      "action": "planned:new-auth-verify-provider-session"
     },
     {
       "id": "pf.debug.state.pane",
-      "implemented_id": false,
+      "implemented_id": true,
       "type": "pane",
       "label": "Store and restore state",
+      "section": "Debug / State",
       "route": "/debug",
       "source_file": "dashboard/views/debugView.ts",
-      "model_file": "dashboard/services/debugPageModel.ts",
       "marker": "data-debug-pane",
       "current_marker_value": "state",
       "docs": [
         "docs/10_runbooks/debug_page_runbook.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/40_backlog_and_tasks/debug_page_goal_registry.md"
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md"
       ],
       "tests": [
-        "tests/debugPageRuntime.test.js"
+        "tests/debugPageRuntime.test.js",
+        "tests/debugPageKeybook.test.js"
       ],
       "proofs": [
-        "proof:debug-page-runtime"
+        "proof:debug-page-runtime",
+        "proof:debug-page-keybook"
       ],
       "reality": "browser-local/planned-safe",
-      "non_claim": "No production runtime state, media, database, or restore target is written."
+      "non_claim": "No production runtime state, media, database, or restore target is written.",
+      "inspect_marker": "* hover tooltip + click metadata modal",
+      "model_file": "dashboard/services/debugPageModel.ts"
     },
     {
       "id": "pf.debug.state.save_button",
-      "implemented_id": false,
+      "implemented_id": true,
       "type": "button",
       "label": "Save state",
+      "section": "Debug / State",
       "route": "/debug",
       "source_file": "dashboard/views/debugView.ts",
-      "model_file": "dashboard/services/debugPageModel.ts",
       "marker": "data-debug-action",
       "current_marker_value": "save-state",
-      "action": "save-state",
-      "function": "saveFakeDebugStateSnapshot",
       "docs": [
         "docs/10_runbooks/debug_page_runbook.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/40_backlog_and_tasks/debug_page_goal_registry.md"
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md"
       ],
       "tests": [
-        "tests/debugPageRuntime.test.js"
+        "tests/debugPageRuntime.test.js",
+        "tests/debugPageKeybook.test.js"
       ],
       "proofs": [
-        "proof:debug-page-runtime"
+        "proof:debug-page-runtime",
+        "proof:debug-page-keybook"
       ],
       "reality": "browser-local/fake snapshot preview",
-      "non_claim": "Does not create production recovery snapshot."
+      "non_claim": "Does not create production recovery snapshot.",
+      "inspect_marker": "* hover tooltip + click metadata modal",
+      "action": "save-state",
+      "model_file": "dashboard/services/debugPageModel.ts"
     },
     {
       "id": "pf.debug.state.restore_button",
-      "implemented_id": false,
+      "implemented_id": true,
       "type": "button",
       "label": "Restore state",
+      "section": "Debug / State",
       "route": "/debug",
       "source_file": "dashboard/views/debugView.ts",
-      "model_file": "dashboard/services/debugPageModel.ts",
       "marker": "data-debug-action",
       "current_marker_value": "restore-state",
-      "action": "restore-state",
-      "function": "previewFakeDebugStateRestore",
       "docs": [
         "docs/10_runbooks/debug_page_runbook.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/40_backlog_and_tasks/debug_page_goal_registry.md"
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md"
       ],
       "tests": [
-        "tests/debugPageRuntime.test.js"
+        "tests/debugPageRuntime.test.js",
+        "tests/debugPageKeybook.test.js"
       ],
       "proofs": [
-        "proof:debug-page-runtime"
+        "proof:debug-page-runtime",
+        "proof:debug-page-keybook"
       ],
       "reality": "browser-local/blocked preview",
-      "non_claim": "Does not mutate production restore target."
+      "non_claim": "Does not mutate production restore target.",
+      "inspect_marker": "* hover tooltip + click metadata modal",
+      "action": "restore-state",
+      "model_file": "dashboard/services/debugPageModel.ts"
     },
     {
       "id": "pf.debug.playback_test.pane",
-      "implemented_id": false,
+      "implemented_id": true,
       "type": "pane",
       "label": "Test playback",
+      "section": "Debug / Playback Test",
       "route": "/debug",
       "source_file": "dashboard/views/debugView.ts",
       "marker": "data-debug-pane",
@@ -123,531 +342,537 @@
       "docs": [
         "docs/10_runbooks/debug_page_runbook.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/40_backlog_and_tasks/debug_page_goal_registry.md"
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md"
       ],
       "tests": [
-        "tests/debugPageRuntime.test.js"
+        "tests/debugPageRuntime.test.js",
+        "tests/debugPageKeybook.test.js"
       ],
       "proofs": [
-        "proof:debug-page-runtime"
+        "proof:debug-page-runtime",
+        "proof:debug-page-keybook"
       ],
       "reality": "placeholder/local-ui",
-      "non_claim": "Does not start native playback or real workers."
+      "non_claim": "Does not start native playback or real workers.",
+      "inspect_marker": "* hover tooltip + click metadata modal"
     },
     {
       "id": "pf.debug.playback_test.run_button",
-      "implemented_id": false,
+      "implemented_id": true,
       "type": "button",
       "label": "Run",
+      "section": "Debug / Playback Test",
       "route": "/debug",
       "source_file": "dashboard/views/debugView.ts",
       "marker": "data-debug-action",
       "current_marker_value": "test-playback-run",
-      "action": "test-playback-run",
       "docs": [
         "docs/10_runbooks/debug_page_runbook.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/40_backlog_and_tasks/debug_page_goal_registry.md"
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md"
       ],
       "tests": [
-        "tests/debugPageRuntime.test.js"
+        "tests/debugPageRuntime.test.js",
+        "tests/debugPageKeybook.test.js"
       ],
       "proofs": [
-        "proof:debug-page-runtime"
+        "proof:debug-page-runtime",
+        "proof:debug-page-keybook"
       ],
       "reality": "placeholder/local-ui",
-      "non_claim": "Does not start native playback."
+      "non_claim": "Does not start native playback.",
+      "inspect_marker": "* hover tooltip + click metadata modal",
+      "action": "test-playback-run"
     },
     {
       "id": "pf.debug.playback_test.pause_button",
-      "implemented_id": false,
+      "implemented_id": true,
       "type": "button",
       "label": "Pause",
+      "section": "Debug / Playback Test",
       "route": "/debug",
       "source_file": "dashboard/views/debugView.ts",
       "marker": "data-debug-action",
       "current_marker_value": "test-playback-pause",
-      "action": "test-playback-pause",
       "docs": [
         "docs/10_runbooks/debug_page_runbook.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/40_backlog_and_tasks/debug_page_goal_registry.md"
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md"
       ],
       "tests": [
-        "tests/debugPageRuntime.test.js"
+        "tests/debugPageRuntime.test.js",
+        "tests/debugPageKeybook.test.js"
       ],
       "proofs": [
-        "proof:debug-page-runtime"
+        "proof:debug-page-runtime",
+        "proof:debug-page-keybook"
       ],
       "reality": "placeholder/local-ui",
-      "non_claim": "Does not pause native playback."
+      "non_claim": "Does not pause native playback.",
+      "inspect_marker": "* hover tooltip + click metadata modal",
+      "action": "test-playback-pause"
     },
     {
       "id": "pf.debug.playback_test.stop_button",
-      "implemented_id": false,
+      "implemented_id": true,
       "type": "button",
       "label": "Stop",
+      "section": "Debug / Playback Test",
       "route": "/debug",
       "source_file": "dashboard/views/debugView.ts",
       "marker": "data-debug-action",
       "current_marker_value": "test-playback-stop",
-      "action": "test-playback-stop",
       "docs": [
         "docs/10_runbooks/debug_page_runbook.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/40_backlog_and_tasks/debug_page_goal_registry.md"
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md"
       ],
       "tests": [
-        "tests/debugPageRuntime.test.js"
+        "tests/debugPageRuntime.test.js",
+        "tests/debugPageKeybook.test.js"
       ],
       "proofs": [
-        "proof:debug-page-runtime"
+        "proof:debug-page-runtime",
+        "proof:debug-page-keybook"
       ],
       "reality": "placeholder/local-ui",
-      "non_claim": "Does not stop native playback."
+      "non_claim": "Does not stop native playback.",
+      "inspect_marker": "* hover tooltip + click metadata modal",
+      "action": "test-playback-stop"
     },
     {
       "id": "pf.debug.media_test.pane",
-      "implemented_id": false,
+      "implemented_id": true,
       "type": "pane",
       "label": "Add images / process testing",
+      "section": "Debug / Media Test",
       "route": "/debug",
       "source_file": "dashboard/views/debugView.ts",
-      "model_file": "dashboard/services/debugPageModel.ts",
       "marker": "data-debug-pane",
       "current_marker_value": "add-images",
       "docs": [
         "docs/10_runbooks/debug_page_runbook.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/40_backlog_and_tasks/debug_page_goal_registry.md"
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md"
       ],
       "tests": [
-        "tests/debugPageRuntime.test.js"
+        "tests/debugPageRuntime.test.js",
+        "tests/debugPageKeybook.test.js"
       ],
       "proofs": [
-        "proof:debug-page-runtime"
+        "proof:debug-page-runtime",
+        "proof:debug-page-keybook"
       ],
       "reality": "browser-local isolated test records",
-      "non_claim": "Does not touch production media/database."
+      "non_claim": "Does not touch production media/database.",
+      "inspect_marker": "* hover tooltip + click metadata modal"
     },
     {
       "id": "pf.debug.media_test.add_images_button",
-      "implemented_id": false,
+      "implemented_id": true,
       "type": "button",
       "label": "+ Add images here",
+      "section": "Debug / Media Test",
       "route": "/debug",
       "source_file": "dashboard/views/debugView.ts",
-      "model_file": "dashboard/services/debugPageModel.ts",
       "marker": "data-debug-action",
       "current_marker_value": "add-test-image",
-      "action": "add-test-image",
-      "function": "addIsolatedTestMediaItem",
       "docs": [
         "docs/10_runbooks/debug_page_runbook.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/40_backlog_and_tasks/debug_page_goal_registry.md"
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md"
       ],
       "tests": [
-        "tests/debugPageRuntime.test.js"
+        "tests/debugPageRuntime.test.js",
+        "tests/debugPageKeybook.test.js"
       ],
       "proofs": [
-        "proof:debug-page-runtime"
+        "proof:debug-page-runtime",
+        "proof:debug-page-keybook"
       ],
       "reality": "isolated-test-only local record",
-      "non_claim": "Does not upload/copy production media."
+      "non_claim": "Does not upload/copy production media.",
+      "inspect_marker": "* hover tooltip + click metadata modal",
+      "action": "add-test-image"
     },
     {
       "id": "pf.debug.crontab.pane",
-      "implemented_id": false,
+      "implemented_id": true,
       "type": "pane",
       "label": "Crontab Setup",
+      "section": "Debug / Crontab",
       "route": "/debug",
       "source_file": "dashboard/views/debugView.ts",
-      "model_file": "dashboard/services/debugPageModel.ts",
       "marker": "data-debug-pane",
       "current_marker_value": "crontab",
       "docs": [
         "docs/10_runbooks/debug_page_runbook.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/40_backlog_and_tasks/debug_page_goal_registry.md"
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md"
       ],
       "tests": [
-        "tests/debugPageRuntime.test.js"
+        "tests/debugPageRuntime.test.js",
+        "tests/debugPageKeybook.test.js"
       ],
       "proofs": [
-        "proof:debug-page-runtime"
+        "proof:debug-page-runtime",
+        "proof:debug-page-keybook"
       ],
       "reality": "fake/read-only local crontab surface",
-      "non_claim": "Does not read or write system crontab."
+      "non_claim": "Does not read or write system crontab.",
+      "inspect_marker": "* hover tooltip + click metadata modal"
     },
     {
       "id": "pf.debug.crontab.read_button",
-      "implemented_id": false,
+      "implemented_id": true,
       "type": "button",
       "label": "Read current crontab",
+      "section": "Debug / Crontab",
       "route": "/debug",
       "source_file": "dashboard/views/debugView.ts",
-      "model_file": "dashboard/services/debugPageModel.ts",
       "marker": "data-debug-action",
       "current_marker_value": "parse-crontab",
-      "action": "parse-crontab",
-      "function": "readFakeDebugCrontab",
       "docs": [
         "docs/10_runbooks/debug_page_runbook.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/40_backlog_and_tasks/debug_page_goal_registry.md"
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md"
       ],
       "tests": [
-        "tests/debugPageRuntime.test.js"
+        "tests/debugPageRuntime.test.js",
+        "tests/debugPageKeybook.test.js"
       ],
       "proofs": [
-        "proof:debug-page-runtime"
+        "proof:debug-page-runtime",
+        "proof:debug-page-keybook"
       ],
       "reality": "fake/read-only parser",
-      "non_claim": "Does not read system crontab."
+      "non_claim": "Does not read system crontab.",
+      "inspect_marker": "* hover tooltip + click metadata modal",
+      "action": "parse-crontab"
     },
     {
       "id": "pf.debug.crontab.pause_button",
-      "implemented_id": false,
+      "implemented_id": true,
       "type": "button",
       "label": "Pause app-owned entries",
+      "section": "Debug / Crontab",
       "route": "/debug",
       "source_file": "dashboard/views/debugView.ts",
-      "model_file": "dashboard/services/debugPageModel.ts",
       "marker": "data-debug-action",
       "current_marker_value": "pause-crontab",
-      "action": "pause-crontab",
-      "function": "pauseFakeDebugCrontab",
       "docs": [
         "docs/10_runbooks/debug_page_runbook.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/40_backlog_and_tasks/debug_page_goal_registry.md"
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md"
       ],
       "tests": [
-        "tests/debugPageRuntime.test.js"
+        "tests/debugPageRuntime.test.js",
+        "tests/debugPageKeybook.test.js"
       ],
       "proofs": [
-        "proof:debug-page-runtime"
+        "proof:debug-page-runtime",
+        "proof:debug-page-keybook"
       ],
       "reality": "fake/local crontab mutation",
-      "non_claim": "Does not write system crontab."
+      "non_claim": "Does not write system crontab.",
+      "inspect_marker": "* hover tooltip + click metadata modal",
+      "action": "pause-crontab"
     },
     {
       "id": "pf.debug.crontab.resume_button",
-      "implemented_id": false,
+      "implemented_id": true,
       "type": "button",
       "label": "Resume app-owned entries",
+      "section": "Debug / Crontab",
       "route": "/debug",
       "source_file": "dashboard/views/debugView.ts",
-      "model_file": "dashboard/services/debugPageModel.ts",
       "marker": "data-debug-action",
       "current_marker_value": "resume-crontab",
-      "action": "resume-crontab",
-      "function": "resumeFakeDebugCrontab",
       "docs": [
         "docs/10_runbooks/debug_page_runbook.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/40_backlog_and_tasks/debug_page_goal_registry.md"
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md"
       ],
       "tests": [
-        "tests/debugPageRuntime.test.js"
+        "tests/debugPageRuntime.test.js",
+        "tests/debugPageKeybook.test.js"
       ],
       "proofs": [
-        "proof:debug-page-runtime"
+        "proof:debug-page-runtime",
+        "proof:debug-page-keybook"
       ],
       "reality": "fake/local crontab mutation",
-      "non_claim": "Does not write system crontab."
+      "non_claim": "Does not write system crontab.",
+      "inspect_marker": "* hover tooltip + click metadata modal",
+      "action": "resume-crontab"
     },
     {
       "id": "pf.debug.crontab.install_button",
-      "implemented_id": false,
+      "implemented_id": true,
       "type": "button",
       "label": "Install worker crontab intervals",
+      "section": "Debug / Crontab",
       "route": "/debug",
       "source_file": "dashboard/views/debugView.ts",
-      "model_file": "dashboard/services/debugPageModel.ts",
       "marker": "data-debug-action",
       "current_marker_value": "install-crontab-pending",
-      "action": "install-crontab-pending",
-      "function": "stageFakeDebugCrontabInstall",
       "docs": [
         "docs/10_runbooks/debug_page_runbook.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/40_backlog_and_tasks/debug_page_goal_registry.md"
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md"
       ],
       "tests": [
-        "tests/debugPageRuntime.test.js"
+        "tests/debugPageRuntime.test.js",
+        "tests/debugPageKeybook.test.js"
       ],
       "proofs": [
-        "proof:debug-page-runtime"
+        "proof:debug-page-runtime",
+        "proof:debug-page-keybook"
       ],
       "reality": "fake/staged local install",
-      "non_claim": "Does not install a real crontab."
+      "non_claim": "Does not install a real crontab.",
+      "inspect_marker": "* hover tooltip + click metadata modal",
+      "action": "install-crontab-pending"
     },
     {
       "id": "pf.debug.scheduler_host_mock.pane",
-      "implemented_id": false,
+      "implemented_id": true,
       "type": "pane",
       "label": "Scheduler Host Mock Status",
+      "section": "Debug / Scheduler",
       "route": "/debug",
       "source_file": "dashboard/views/debugView.ts",
-      "model_file": "dashboard/services/schedulerHostMock.ts",
       "marker": "data-debug-pane",
       "current_marker_value": "scheduler-host-mock",
       "docs": [
         "docs/10_runbooks/debug_page_runbook.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
         "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
-        "docs/20_architecture_and_specs/openspec/scheduler_host_boundary_openspec.md"
+        "docs/40_backlog_and_tasks/debug_page_keybook.md"
       ],
       "tests": [
-        "tests/debugPageRuntime.test.js"
+        "tests/debugPageRuntime.test.js",
+        "tests/debugPageKeybook.test.js"
       ],
       "proofs": [
         "proof:debug-page-runtime",
-        "proof:scheduler-host-mock"
+        "proof:debug-page-keybook"
       ],
       "reality": "mock-only scheduler host status",
-      "non_claim": "Does not start workers or write crontab."
+      "non_claim": "Does not start workers or write crontab.",
+      "inspect_marker": "* hover tooltip + click metadata modal"
     },
     {
       "id": "pf.debug.worker_regular.pane",
-      "implemented_id": false,
+      "implemented_id": true,
       "type": "pane",
       "label": "Regular Worker Debug Pane",
+      "section": "Debug / Workers",
       "route": "/debug",
       "source_file": "dashboard/views/debugView.ts",
-      "model_file": "dashboard/services/debugPageModel.ts",
       "marker": "data-debug-worker-pane",
-      "current_marker_value": null,
+      "current_marker_value": "regular",
       "docs": [
         "docs/10_runbooks/debug_page_runbook.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/40_backlog_and_tasks/debug_page_goal_registry.md"
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md"
       ],
       "tests": [
-        "tests/debugPageRuntime.test.js"
+        "tests/debugPageRuntime.test.js",
+        "tests/debugPageKeybook.test.js"
       ],
       "proofs": [
-        "proof:debug-page-runtime"
+        "proof:debug-page-runtime",
+        "proof:debug-page-keybook"
       ],
       "reality": "mock/local worker telemetry",
-      "non_claim": "Does not spawn regular worker process."
+      "non_claim": "Does not spawn regular worker process.",
+      "inspect_marker": "* hover tooltip + click metadata modal"
     },
     {
       "id": "pf.debug.worker_regular.run_button",
-      "implemented_id": false,
+      "implemented_id": true,
       "type": "button",
       "label": "Run now",
+      "section": "Debug / Workers / Regular",
       "route": "/debug",
       "source_file": "dashboard/views/debugView.ts",
-      "model_file": "dashboard/services/debugPageModel.ts",
       "marker": "data-debug-worker-run-now",
-      "current_marker_value": null,
-      "action": "worker-regular-run-now",
-      "function": "runMockDebugWorker",
+      "current_marker_value": "regular",
       "docs": [
         "docs/10_runbooks/debug_page_runbook.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/40_backlog_and_tasks/debug_page_goal_registry.md"
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md"
       ],
       "tests": [
-        "tests/debugPageRuntime.test.js"
+        "tests/debugPageRuntime.test.js",
+        "tests/debugPageKeybook.test.js"
       ],
       "proofs": [
-        "proof:debug-page-runtime"
+        "proof:debug-page-runtime",
+        "proof:debug-page-keybook"
       ],
       "reality": "mock/local run simulation",
-      "non_claim": "Does not spawn regular worker process."
+      "non_claim": "Does not spawn regular worker process.",
+      "inspect_marker": "* hover tooltip + click metadata modal",
+      "action": "worker-regular-run-now"
     },
     {
       "id": "pf.debug.worker_playback.pane",
-      "implemented_id": false,
+      "implemented_id": true,
       "type": "pane",
       "label": "Playback Worker Debug Pane",
+      "section": "Debug / Workers",
       "route": "/debug",
       "source_file": "dashboard/views/debugView.ts",
-      "model_file": "dashboard/services/debugPageModel.ts",
       "marker": "data-debug-worker-pane",
-      "current_marker_value": null,
+      "current_marker_value": "playback",
       "docs": [
         "docs/10_runbooks/debug_page_runbook.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/40_backlog_and_tasks/debug_page_goal_registry.md"
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md"
       ],
       "tests": [
-        "tests/debugPageRuntime.test.js"
+        "tests/debugPageRuntime.test.js",
+        "tests/debugPageKeybook.test.js"
       ],
       "proofs": [
-        "proof:debug-page-runtime"
+        "proof:debug-page-runtime",
+        "proof:debug-page-keybook"
       ],
       "reality": "mock/local worker telemetry",
-      "non_claim": "Does not spawn playback worker process."
+      "non_claim": "Does not spawn playback worker process.",
+      "inspect_marker": "* hover tooltip + click metadata modal"
     },
     {
       "id": "pf.debug.worker_playback.run_button",
-      "implemented_id": false,
+      "implemented_id": true,
       "type": "button",
       "label": "Run now",
+      "section": "Debug / Workers / Playback",
       "route": "/debug",
       "source_file": "dashboard/views/debugView.ts",
-      "model_file": "dashboard/services/debugPageModel.ts",
       "marker": "data-debug-worker-run-now",
-      "current_marker_value": null,
-      "action": "worker-playback-run-now",
-      "function": "runMockDebugWorker",
+      "current_marker_value": "playback",
       "docs": [
         "docs/10_runbooks/debug_page_runbook.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/40_backlog_and_tasks/debug_page_goal_registry.md"
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md"
       ],
       "tests": [
-        "tests/debugPageRuntime.test.js"
+        "tests/debugPageRuntime.test.js",
+        "tests/debugPageKeybook.test.js"
       ],
       "proofs": [
-        "proof:debug-page-runtime"
+        "proof:debug-page-runtime",
+        "proof:debug-page-keybook"
       ],
       "reality": "mock/local run simulation",
-      "non_claim": "Does not spawn playback worker process."
+      "non_claim": "Does not spawn playback worker process.",
+      "inspect_marker": "* hover tooltip + click metadata modal",
+      "action": "worker-playback-run-now"
     },
     {
       "id": "pf.debug.worker_screen.pane",
-      "implemented_id": false,
+      "implemented_id": true,
       "type": "pane",
       "label": "On/off Worker Debug Pane",
+      "section": "Debug / Workers",
       "route": "/debug",
       "source_file": "dashboard/views/debugView.ts",
-      "model_file": "dashboard/services/debugPageModel.ts",
       "marker": "data-debug-worker-pane",
-      "current_marker_value": null,
+      "current_marker_value": "screen",
       "docs": [
         "docs/10_runbooks/debug_page_runbook.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/40_backlog_and_tasks/debug_page_goal_registry.md"
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md"
       ],
       "tests": [
-        "tests/debugPageRuntime.test.js"
+        "tests/debugPageRuntime.test.js",
+        "tests/debugPageKeybook.test.js"
       ],
       "proofs": [
-        "proof:debug-page-runtime"
+        "proof:debug-page-runtime",
+        "proof:debug-page-keybook"
       ],
       "reality": "mock/local worker telemetry",
-      "non_claim": "Does not spawn screen/on-off worker process."
+      "non_claim": "Does not spawn screen/on-off worker process.",
+      "inspect_marker": "* hover tooltip + click metadata modal"
     },
     {
       "id": "pf.debug.worker_screen.run_button",
-      "implemented_id": false,
+      "implemented_id": true,
       "type": "button",
       "label": "Run now",
+      "section": "Debug / Workers / Screen",
       "route": "/debug",
       "source_file": "dashboard/views/debugView.ts",
-      "model_file": "dashboard/services/debugPageModel.ts",
       "marker": "data-debug-worker-run-now",
-      "current_marker_value": null,
-      "action": "worker-screen-run-now",
-      "function": "runMockDebugWorker",
+      "current_marker_value": "screen",
       "docs": [
         "docs/10_runbooks/debug_page_runbook.md",
         "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
-        "docs/40_backlog_and_tasks/debug_page_goal_registry.md"
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md"
       ],
       "tests": [
-        "tests/debugPageRuntime.test.js"
+        "tests/debugPageRuntime.test.js",
+        "tests/debugPageKeybook.test.js"
       ],
       "proofs": [
-        "proof:debug-page-runtime"
-      ],
-      "reality": "mock/local run simulation",
-      "non_claim": "Does not spawn screen/on-off worker process."
-    },
-    {
-      "id": "pf.debug.help.pane",
-      "implemented_id": false,
-      "type": "planned-pane",
-      "label": "Help",
-      "route": "/debug",
-      "source_file": "dashboard/views/debugView.ts",
-      "marker": "planned:data-ui-element-id",
-      "current_marker_value": null,
-      "docs": [
-        "docs/10_runbooks/debug_page_runbook.md",
-        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md"
-      ],
-      "tests": [
-        "planned:tests/debugPageRuntime.test.js"
-      ],
-      "proofs": [
-        "planned:proof:debug-page-runtime"
-      ],
-      "reality": "planned/future",
-      "non_claim": "Not implemented in v0.8.199; this keybook records the requirement only."
-    },
-    {
-      "id": "pf.debug.stack_status.pane",
-      "implemented_id": false,
-      "type": "planned-pane",
-      "label": "Stack / Status",
-      "route": "/debug",
-      "source_file": "dashboard/views/debugView.ts",
-      "marker": "planned:data-ui-element-id",
-      "current_marker_value": null,
-      "docs": [
-        "docs/10_runbooks/debug_page_runbook.md",
-        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md"
-      ],
-      "tests": [
-        "planned:tests/debugPageRuntime.test.js"
-      ],
-      "proofs": [
-        "planned:proof:debug-page-runtime"
-      ],
-      "reality": "planned/future",
-      "non_claim": "Not implemented in v0.8.199; this keybook records the requirement only."
-    },
-    {
-      "id": "pf.debug.elements_list.pane",
-      "implemented_id": false,
-      "type": "planned-pane",
-      "label": "Elements / Buttons list",
-      "route": "/debug",
-      "source_file": "dashboard/views/debugView.ts",
-      "marker": "planned:data-ui-element-id",
-      "current_marker_value": null,
-      "docs": [
-        "docs/40_backlog_and_tasks/debug_page_keybook.md",
-        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md"
-      ],
-      "tests": [
-        "planned:tests/debugPageKeybook.test.js"
-      ],
-      "proofs": [
+        "proof:debug-page-runtime",
         "proof:debug-page-keybook"
       ],
-      "reality": "planned/future",
-      "non_claim": "Keybook exists; rendered elist pane is not implemented yet."
+      "reality": "mock/local run simulation",
+      "non_claim": "Does not spawn screen/on-off worker process.",
+      "inspect_marker": "* hover tooltip + click metadata modal",
+      "action": "worker-screen-run-now"
     },
     {
-      "id": "pf.debug.auth_session.pane",
-      "implemented_id": false,
-      "type": "planned-pane",
-      "label": "Auth / Session",
+      "id": "pf.debug.element_id_modal",
+      "implemented_id": true,
+      "type": "modal",
+      "label": "Element ID modal",
+      "section": "Debug / Element Inventory",
       "route": "/debug",
       "source_file": "dashboard/views/debugView.ts",
-      "marker": "planned:data-ui-element-id",
+      "marker": "data-debug-element-modal",
       "current_marker_value": null,
       "docs": [
-        "docs/10_runbooks/auth_checkpoint_operator_flow.md",
-        "docs/20_architecture_and_specs/openspec/auth_checkpoint_proof_openspec.md"
+        "docs/10_runbooks/debug_page_runbook.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/40_backlog_and_tasks/debug_page_goal_registry.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md"
       ],
       "tests": [
-        "planned:tests/debugPageRuntime.test.js"
+        "tests/debugPageRuntime.test.js",
+        "tests/debugPageKeybook.test.js"
       ],
       "proofs": [
-        "planned:proof:auth-checkpoint-operator-flow",
-        "planned:proof:debug-page-runtime"
+        "proof:debug-page-runtime",
+        "proof:debug-page-keybook"
       ],
-      "reality": "planned/future",
-      "non_claim": "NEW AUTH controls exist elsewhere; Debug page Auth/Session pane is not implemented yet."
+      "reality": "browser-local inspector",
+      "non_claim": "Only displays metadata; does not trigger underlying element behavior.",
+      "inspect_marker": "* hover tooltip + click metadata modal",
+      "action": "show-element-metadata",
+      "model_file": "dashboard/services/debugPageModel.ts"
     }
   ]
 }

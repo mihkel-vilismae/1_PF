@@ -847,9 +847,9 @@
     },
     {
       "id": "DBG-GOAL-021",
-      "title": "Add Debug Page Keybook skill and repo inventory seed",
+      "title": "Maintain Debug Page Keybook skill and repo inventory",
       "category": "debug_page",
-      "status_enum": "IMPLEMENTED",
+      "status_enum": "PROVEN",
       "proof_command_state": "IMPLEMENTED_COMMAND",
       "proof_command": "npm run proof:debug-page-keybook",
       "proof_status": "PASSED",
@@ -857,28 +857,52 @@
         ".codex/skills/debug-page-keybook/SKILL.md",
         "docs/40_backlog_and_tasks/debug_page_keybook.md",
         "docs/40_backlog_and_tasks/debug_page_keybook.json",
+        "dashboard/views/debugView.ts",
         "tools/run-debug-page-keybook-proof.mjs",
         "tests/debugPageKeybook.test.js"
       ],
-      "next_action": "Keep keybook references current before Debug page changes.",
-      "runtime_implementation_claim": false,
-      "notes": "Repo-local navigation/proof-honesty keybook seed; does not render data-ui-element-id attributes yet."
+      "next_action": "Keep keybook synchronized with rendered Debug page IDs, markers, and docs.",
+      "runtime_implementation_claim": true,
+      "notes": "Repo-local keybook now maps runtime Debug page data-ui-element-id attributes and inspector marker behavior; no real backend/provider behavior claimed."
     },
     {
       "id": "DBG-GOAL-022",
       "title": "Add stable UI element IDs and asterisk marker overlay",
       "category": "debug_page",
-      "status_enum": "SPECIFIED",
-      "proof_command_state": "NONE",
-      "proof_command": null,
-      "proof_status": "NOT_APPLICABLE",
+      "status_enum": "PROVEN",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:debug-page-keybook && npm run proof:debug-page-runtime",
+      "proof_status": "PASSED",
       "source_paths": [
-        "docs/40_backlog_and_tasks/debug_page_keybook.md",
-        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md"
+        "dashboard/views/debugView.ts",
+        "dashboard/services/debugPageModel.ts",
+        "dashboard/app.ts",
+        "dashboard/styles.css",
+        "docs/40_backlog_and_tasks/debug_page_keybook.json",
+        "tests/debugPageRuntime.test.js",
+        "tests/debugPageKeybook.test.js"
       ],
-      "next_action": "Implement data-ui-element-id attributes, elist/buttons list, tooltip, and non-disruptive metadata modal in a later UI slice.",
-      "runtime_implementation_claim": false,
-      "notes": "Requirement recorded; not implemented/rendered yet."
+      "next_action": "Extend the same ID/marker pattern to future Auth/Session real actions only after proof contracts are implemented.",
+      "runtime_implementation_claim": true,
+      "notes": "Implemented stable data-ui-element-id attributes, * marker tooltip, and non-disruptive local metadata modal for Debug page panes/buttons."
+    },
+    {
+      "id": "DBG-GOAL-023",
+      "title": "Render Debug Help, Stack/Status, Elements list, and Auth/Session planning panes",
+      "category": "debug_page",
+      "status_enum": "PROVEN",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:debug-page-runtime && npm run proof:debug-page-keybook",
+      "proof_status": "PASSED",
+      "source_paths": [
+        "dashboard/views/debugView.ts",
+        "docs/50_audits_and_migrations/DEBUG_PAGE_RUNTIME_KEYBOOK_UI_3PLUS2XACR_20260619.md",
+        "docs/40_backlog_and_tasks/debug_page_research_handoff.json",
+        "tests/debugPageRuntime.test.js"
+      ],
+      "next_action": "Wire real Auth/Session controls only after session snapshot/provider proof contracts exist.",
+      "runtime_implementation_claim": true,
+      "notes": "Top-of-page operator context panes are browser-local/proof-safe; Auth/Session buttons are disabled/planned-safe and do not submit credentials."
     }
   ]
 }

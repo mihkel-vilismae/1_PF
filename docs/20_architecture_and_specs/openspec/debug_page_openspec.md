@@ -541,3 +541,16 @@ Canonical files:
 - `.codex/skills/debug-page-keybook/SKILL.md`
 
 Future `data-ui-element-id` rendering and `*` corner marker behavior must be reconciled with this keybook. Keybook coverage does not prove real backend/provider/crontab/worker/database/media/Raspberry behavior.
+
+## 15. Runtime keybook UI and element ID contract
+
+As of v0.8.200, the Debug page must render these top-of-page panes before deeper debug controls:
+
+1. **Help**
+2. **Stack / Status**
+3. **Elements / Buttons list**
+4. **Auth / Session**
+
+Implemented Debug panes/cards and buttons must expose stable globally unique PhotoFrame element IDs using `data-ui-element-id`. Inspectable elements must provide a `*` marker in debug/proof context. Hovering the marker shows the stable ID; clicking it opens a non-disruptive browser-local metadata dialog and must not trigger the underlying action.
+
+The Auth / Session pane in this slice is a planned-safe surface only. It may list future login/check-session/verify-session targets, but it must not submit credentials, print secrets, read session file contents, or claim real provider proof until separate auth/session proof contracts are implemented.

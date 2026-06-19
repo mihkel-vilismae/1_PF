@@ -62,3 +62,7 @@ When answering Debug page location questions, include:
 - reality level
 - non-claim
 - confidence and missing links
+
+## v0.8.200 Runtime ID Update
+
+The Debug page now renders Help, Stack/Status, Elements/Buttons list, and Auth/Session planning panes before the legacy controls. Implemented entries should have `implemented_id: true` in `debug_page_keybook.json` and a corresponding stable `data-ui-element-id` in `dashboard/views/debugView.ts`. The `*` marker is a runtime inspect affordance: hover shows the ID tooltip, click opens a local metadata modal, and marker clicks must call `event.stopPropagation()` so underlying actions are not triggered.

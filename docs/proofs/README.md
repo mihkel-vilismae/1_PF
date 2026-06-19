@@ -288,4 +288,4 @@ Tracked `tools/mpv/windows/.gitkeep` and `tools/mpv/windows/README.md` are allow
 
 ## Debug page keybook
 
-| Debug page keybook | `npm run proof:debug-page-keybook` | Validates Debug Page Keybook entries, stable ID uniqueness, file/doc/test/proof references, and current source markers without claiming real runtime/provider behavior. |
+| Debug page keybook | `npm run proof:debug-page-keybook` | Validates Debug Page Keybook entries, stable ID uniqueness, file/doc/test/proof references, runtime data-ui-element-id source markers, `*` inspector marker contract, and local metadata modal contract without claiming real provider/runtime behavior. |

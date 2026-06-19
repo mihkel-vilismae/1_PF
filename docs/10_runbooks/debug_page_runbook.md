@@ -275,3 +275,14 @@ Before calling any Debug page behavior proven, check:
 - Are unrelated crontab entries preserved?
 
 If any answer is no, the status remains planned, TODO, blocked, or not claimed.
+
+## v0.8.200 runtime keybook UI
+
+The Debug page now places these operator-context panes before deeper controls:
+
+1. **Help** — explains safety boundaries, `*` element marker behavior, and PASS/BLOCKED/FAILED wording.
+2. **Stack / Status** — shows project/version/route/mode/runtime projection context.
+3. **Elements / Buttons list** — lists stable Debug page pane/button IDs from the keybook.
+4. **Auth / Session** — shows disabled/planned-safe targets for future auth/session controls without submitting credentials or reading session secrets.
+
+Every implemented Debug pane/card and button listed in the keybook should expose a stable `data-ui-element-id`. The `*` marker is an inspect/proof affordance: hover shows the stable ID, and click opens a browser-local metadata dialog without triggering the underlying action.

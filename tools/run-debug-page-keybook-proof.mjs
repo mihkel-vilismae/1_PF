@@ -51,19 +51,41 @@ for (const entry of keybook.entries || []) {
   if (entry.marker && !entry.marker.startsWith('planned:') && entry.source_file) {
     const sourceText = read(entry.source_file);
     const markerText = entry.current_marker_value ? `${entry.marker}="${entry.current_marker_value}"` : entry.marker;
-    if (!sourceText.includes(markerText)) {
+    const hasLiteralMarker = sourceText.includes(markerText);
+    const hasDynamicMarker = sourceText.includes(entry.marker) && (!entry.current_marker_value || sourceText.includes(entry.current_marker_value));
+    if (!hasLiteralMarker && !hasDynamicMarker) {
       addError(`source marker not found for ${entry.id}: ${markerText} in ${entry.source_file}`);
     }
   }
   if (entry.implemented_id === true && entry.source_file) {
     const sourceText = read(entry.source_file);
-    if (!sourceText.includes(`data-ui-element-id="${entry.id}"`)) {
-      addError(`implemented_id true but data-ui-element-id missing for ${entry.id}`);
+    if (!sourceText.includes(entry.id)) {
+      addError(`implemented_id true but stable id literal missing from source for ${entry.id}`);
+    }
+    if (!sourceText.includes('data-ui-element-id')) {
+      addError(`implemented_id true but data-ui-element-id attribute contract missing in ${entry.source_file}`);
     }
   }
   if (entry.implemented_id === false) {
     addWarning(`stable UI id is seeded/planned, not rendered yet: ${entry.id}`);
   }
+}
+
+
+const debugViewSource = read('dashboard/views/debugView.ts');
+const debugModelSource = read('dashboard/services/debugPageModel.ts');
+const appSource = read('dashboard/app.ts');
+if (!debugViewSource.includes('data-debug-element-marker') || !debugViewSource.includes('>*</button>')) {
+  addError('Debug page must render * element ID markers with data-debug-element-marker.');
+}
+if (!debugViewSource.includes('data-debug-element-modal') || !debugViewSource.includes('pf.debug.element_id_modal')) {
+  addError('Debug page must render an element ID metadata modal.');
+}
+if (!debugModelSource.includes('selectedElementId') || !debugModelSource.includes('selectDebugElementMetadata')) {
+  addError('Debug page model must store selected element ID metadata state.');
+}
+if (!appSource.includes('underlyingActionTriggered: false') || !appSource.includes('event.stopPropagation()')) {
+  addError('Debug element marker click handling must not trigger underlying element behavior.');
 }
 
 const requiredDocs = [
@@ -85,7 +107,7 @@ const result = {
   errors,
   non_claims: [
     'This proof validates the repo-local Debug page keybook seed and references.',
-    'It does not prove data-ui-element-id attributes are rendered until implemented_id is true for entries.',
+    'For implemented entries, this proof validates source-level data-ui-element-id/marker contracts; runtime browser rendering is covered by debug-page-runtime tests.',
     'It does not prove real backend/provider/crontab/worker/database/media/Raspberry behavior.'
   ]
 };

@@ -11,7 +11,7 @@ test('debug page keybook has unique stable ids and required planned entries', ()
   const keybook = JSON.parse(fs.readFileSync(keybookPath, 'utf8'));
   assert.equal(keybook.project, 'PF_login / PhotoFrame');
   assert.ok(Array.isArray(keybook.entries));
-  assert.ok(keybook.entries.length >= 20);
+  assert.ok(keybook.entries.length >= 30);
   const ids = keybook.entries.map((entry) => entry.id);
   assert.equal(new Set(ids).size, ids.length);
   for (const requiredId of [
@@ -21,6 +21,9 @@ test('debug page keybook has unique stable ids and required planned entries', ()
     'pf.debug.worker_regular.run_button',
     'pf.debug.elements_list.pane',
     'pf.debug.auth_session.pane',
+    'pf.debug.help.pane',
+    'pf.debug.stack_status.pane',
+    'pf.debug.element_id_modal',
   ]) {
     assert.ok(ids.includes(requiredId), `missing ${requiredId}`);
   }
@@ -35,4 +38,21 @@ test('debug page keybook proof passes', () => {
   const proof = JSON.parse(result.stdout);
   assert.equal(proof.proof_status, 'PASSED');
   assert.ok(proof.entry_count >= 20);
+});
+
+
+test('debug page keybook marks runtime IDs implemented after v0.8.200 slice', () => {
+  const keybook = JSON.parse(fs.readFileSync(keybookPath, 'utf8'));
+  assert.equal(keybook.last_updated_version, '0.8.200');
+  const unimplemented = keybook.entries.filter((entry) => entry.implemented_id !== true);
+  assert.deepEqual(unimplemented.map((entry) => entry.id), []);
+  for (const requiredId of [
+    'pf.debug.help.pane',
+    'pf.debug.stack_status.pane',
+    'pf.debug.elements_list.pane',
+    'pf.debug.auth_session.pane',
+  ]) {
+    const entry = keybook.entries.find((candidate) => candidate.id === requiredId);
+    assert.equal(entry?.implemented_id, true);
+  }
 });
