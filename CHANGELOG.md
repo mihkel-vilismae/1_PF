@@ -3009,3 +3009,6 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 
 ## 0.8.224
 - Add no-download real iCloud listing preflight contract gated by session-path validation and explicit opt-in.
+
+## 0.8.225
+- Add redacted geocode dry-run proof contract from sample GPS metadata.
