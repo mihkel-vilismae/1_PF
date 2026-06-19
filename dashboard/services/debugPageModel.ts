@@ -5,6 +5,13 @@
  */
 
 export type DebugWorkerKey = 'regular' | 'playback' | 'screen';
+export type DebugVisualSchema = 1 | 2 | 3;
+export type DebugMajorVisualMode = 1 | 2 | 3;
+
+export type DebugVisualState = {
+  colorSchema: DebugVisualSchema;
+  majorVisualMode: DebugMajorVisualMode;
+};
 
 export type DebugActionStatus = 'planned' | 'blocked' | 'ready' | 'running' | 'succeeded' | 'failed';
 
@@ -53,6 +60,7 @@ export type DebugPageState = {
   route: '/debug';
   openedAt: string | null;
   selectedElementId: string | null;
+  visuals: DebugVisualState;
   actionResults: Record<string, DebugActionResult>;
   testMedia: DebugTestMediaItem[];
   workers: Record<DebugWorkerKey, DebugWorkerTelemetry>;
@@ -93,6 +101,7 @@ export function buildDefaultDebugPageState(): DebugPageState {
     route: DEBUG_ROUTE,
     openedAt: null,
     selectedElementId: null,
+    visuals: { colorSchema: 1, majorVisualMode: 1 },
     actionResults: {},
     testMedia: [],
     workers: {
@@ -146,6 +155,7 @@ export function clearDebugElementMetadata(state: DebugPageState): DebugPageState
   return {
     ...state,
     selectedElementId: null,
+    visuals: { colorSchema: 1, majorVisualMode: 1 },
   };
 }
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.206
+
+- Added Batch 1 XACR review and the initial Debug page top-right `TOGGLE VISUALS` toolbar shell next to the version display.
+
 ## 0.8.205
 
 - Added Debug page proof input/output contract for accepted proof ZIPs, forbidden secret inputs, and future proof input panel behavior.

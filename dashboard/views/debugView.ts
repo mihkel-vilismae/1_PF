@@ -23,6 +23,9 @@ export type DebugPageElementEntry = {
 
 export const DEBUG_PAGE_ELEMENTS: DebugPageElementEntry[] = [
   { id: 'pf.debug.page', type: 'page', label: 'Debug Menu', section: 'Debug', marker: 'data-debug-page-route=/debug', reality: 'browser-local/planned-safe', nonClaim: 'Does not prove backend/provider/worker/crontab/media/database behavior.' },
+  { id: 'pf.debug.visuals.toolbar', type: 'pane', label: 'TOGGLE VISUALS', section: 'Debug / Top bar', marker: 'data-debug-visuals-toolbar=true', reality: 'browser-local/visual state', nonClaim: 'Changes Debug page presentation only; does not change product/runtime behavior.' },
+  { id: 'pf.debug.visuals.color_schema_button', type: 'button', label: 'CLICK TO CHANGE COLOR SCHEMA [1,2,3]', section: 'Debug / Top bar', action: 'cycle-color-schema', reality: 'browser-local/visual state', nonClaim: 'Changes Debug page color schema only.' },
+  { id: 'pf.debug.visuals.major_visual_button', type: 'button', label: 'CLICK TO IMPROVE LOOK BY MAKING MAJOR VISUAL CHANGES [1,2,3]', section: 'Debug / Top bar', action: 'cycle-major-visual-mode', reality: 'browser-local/visual state', nonClaim: 'Changes Debug page visual mode only.' },
   { id: 'pf.debug.help.pane', type: 'pane', label: 'Help', section: 'Debug / Help', marker: 'data-debug-pane=help', reality: 'browser-local/help', nonClaim: 'Explains boundaries only; no production action.' },
   { id: 'pf.debug.stack_status.pane', type: 'pane', label: 'Stack / Status', section: 'Debug / Stack', marker: 'data-debug-pane=stack-status', reality: 'browser-local/status summary', nonClaim: 'Shows declared frontend/runtime proof context only.' },
   { id: 'pf.debug.elements_list.pane', type: 'pane', label: 'Elements / Buttons list', section: 'Debug / Element Inventory', marker: 'data-debug-pane=elements-list', reality: 'browser-local/keybook projection', nonClaim: 'Lists element IDs; does not prove real runtime behavior.' },
@@ -87,7 +90,10 @@ function renderHeroPane(debugState: DebugPageState, frontendVersion: string): st
           <p class="card__code">DEBUG</p>
           <h2>Debug Menu</h2>
         </div>
-        <span class="pill" data-debug-page-version>v${escapeHtml(frontendVersion)}</span>
+        <div class="debug-topbar">
+          <span class="pill" data-debug-page-version>v${escapeHtml(frontendVersion)}</span>
+          ${renderVisualToolbar(debugState)}
+        </div>
       </header>
       <p class="card__copy">Debug route <code>${DEBUG_ROUTE}</code> is available as a lightweight operator surface. This page is browser-local until a later slice wires proof-backed backend actions.</p>
       <dl class="definition-list">
@@ -97,6 +103,23 @@ function renderHeroPane(debugState: DebugPageState, frontendVersion: string): st
         <div><dt>Opened</dt><dd>${escapeHtml(debugState.openedAt ?? 'Not recorded yet')}</dd></div>
       </dl>
     </article>
+  `;
+}
+
+
+function renderVisualToolbar(debugState: DebugPageState): string {
+  return `
+    <div class="debug-visual-toolbar" data-debug-visuals-toolbar="true" data-ui-element-id="pf.debug.visuals.toolbar">
+      <span class="debug-visual-toolbar__label">TOGGLE VISUALS</span>
+      <span class="debug-button-with-marker">
+        <button class="button button--secondary" type="button" data-debug-visual-action="cycle-color-schema" data-ui-element-id="pf.debug.visuals.color_schema_button" aria-label="CLICK TO CHANGE COLOR SCHEMA [1,2,3]" title="CLICK TO CHANGE COLOR SCHEMA [1,2,3]">CLICK TO CHANGE COLOR SCHEMA [${debugState.visuals?.colorSchema ?? 1},2,3]</button>
+        ${renderElementMarker('pf.debug.visuals.color_schema_button')}
+      </span>
+      <span class="debug-button-with-marker">
+        <button class="button button--secondary" type="button" data-debug-visual-action="cycle-major-visual-mode" data-ui-element-id="pf.debug.visuals.major_visual_button" aria-label="CLICK TO IMPROVE LOOK BY MAKING MAJOR VISUAL CHANGES [1,2,3]" title="CLICK TO IMPROVE LOOK BY MAKING MAJOR VISUAL CHANGES [1,2,3]">CLICK TO IMPROVE LOOK BY MAKING MAJOR VISUAL CHANGES [${debugState.visuals?.majorVisualMode ?? 1},2,3]</button>
+        ${renderElementMarker('pf.debug.visuals.major_visual_button')}
+      </span>
+    </div>
   `;
 }
 
