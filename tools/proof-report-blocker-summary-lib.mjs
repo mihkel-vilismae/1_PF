@@ -25,15 +25,37 @@ function proofTimestampMs(artifact) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+const SPECIFIC_KIND_RULES = Object.freeze([
+  { category: 'product_evidence', patterns: [/regular_stage_worker_product/i, /regular_product/i, /product_pipeline/i] },
+  { category: 'operator_evidence', patterns: [/address_overlay/i, /device_display/i, /operator_evidence/i, /display_observation/i] },
+  { category: 'auth_or_session', patterns: [/auth_checkpoint/i, /session/i, /icloudpd_preflight/i] },
+  { category: 'platform_optional', patterns: [/windows/i, /fedora/i, /linux_fedora/i] },
+  { category: 'test_or_docs', patterns: [/full_test/i, /docs/i, /reconciliation/i, /openspec/i, /queue/i, /final_summary/i] },
+]);
+
 export function classifyBlocker(artifact) {
   const kind = artifact?.proof_kind ?? artifact?.proofKind ?? '';
   const status = artifact?.proof_status ?? artifact?.proofStatus ?? '';
   const reasonText = JSON.stringify(artifact?.evidence ?? {}).toLowerCase();
   const haystack = `${kind} ${status} ${reasonText}`;
-  if (/missing|required|not set|opt-in|opt_in|configured|config|env|cookie_dir|download_dir|provider id/.test(haystack)) return 'config_or_env';
+
+  // Strong proof-kind identity wins over generic wording such as "missing" or
+  // "not set" so product/operator/auth blockers are not swallowed by config/env.
+  for (const rule of SPECIFIC_KIND_RULES) {
+    if (rule.patterns.some((pattern) => pattern.test(kind))) return rule.category;
+  }
+
+  // Provider proof kinds are provider/network when a provider actually ran or failed,
+  // but remain config/env when the artifact clearly says no provider/config was set.
+  if (/real_icloudpd|real_download|real_geocode|geocode_provider/i.test(kind)) {
+    if (/missing|required|not set|opt-in|opt_in|configured|config|env|cookie_dir|download_dir|provider id/.test(haystack)) return 'config_or_env';
+    return 'provider_or_network';
+  }
+
   for (const rule of CATEGORY_RULES) {
     if (rule.patterns.some((pattern) => pattern.test(haystack))) return rule.category;
   }
+  if (/missing|required|not set|opt-in|opt_in|configured|config|env|cookie_dir|download_dir|provider id/.test(haystack)) return 'config_or_env';
   return 'config_or_env';
 }
 

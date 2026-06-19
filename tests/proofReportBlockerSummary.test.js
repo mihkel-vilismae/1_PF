@@ -29,3 +29,15 @@ test('blocker classifier recognizes operator evidence and product evidence', () 
   assert.equal(classifyBlocker(artifact('raspberry_address_overlay_device_display', 'BLOCKED', '2026-06-18T10:00:00.000Z')), 'operator_evidence');
   assert.equal(classifyBlocker(artifact('raspberry_regular_stage_worker_product_pipeline', 'BLOCKED', '2026-06-18T10:00:00.000Z')), 'product_evidence');
 });
+
+
+test('specific product and operator proof kinds win over generic missing-file wording', () => {
+  assert.equal(classifyBlocker(artifact('raspberry_regular_stage_worker_product_pipeline', 'BLOCKED', '2026-06-18T10:00:00.000Z', { reason: 'PF_RASPBERRY_REGULAR_STAGE_WORKER_PRODUCT_EVIDENCE_FILE not set' })), 'product_evidence');
+  assert.equal(classifyBlocker(artifact('raspberry_address_overlay_device_display', 'BLOCKED', '2026-06-18T10:00:00.000Z', { reason: 'PF_RASPBERRY_ADDRESS_OVERLAY_EVIDENCE_FILE missing' })), 'operator_evidence');
+});
+
+test('auth checkpoint and provider config blockers stay distinct', () => {
+  assert.equal(classifyBlocker(artifact('auth_checkpoint_state', 'BLOCKED', '2026-06-18T10:00:00.000Z', { reason: 'auth checkpoint state is AUTH_REQUIRED' })), 'auth_or_session');
+  assert.equal(classifyBlocker(artifact('real_geocode_provider_chain', 'BLOCKED', '2026-06-18T10:00:00.000Z', { reason: 'PF_GEOCODE_CHAIN_PROOF_PROVIDER provider id not configured' })), 'config_or_env');
+  assert.equal(classifyBlocker(artifact('real_geocode_provider_chain', 'FAILED', '2026-06-18T10:00:00.000Z', { reason: 'provider HTTP request failed' })), 'provider_or_network');
+});

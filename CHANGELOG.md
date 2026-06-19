@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.196
+
+- Improved blocker summary classification so product evidence, operator evidence, auth/session, provider/network, and config/env blockers stay distinct.
+- Added regression tests proving product and operator proof kinds are not swallowed by generic missing-config wording.
+
 ## 0.8.195
 
 - Bridged real download readiness to iCloud readiness, real iCloudPD proof, and download-directory resolution without calling the backend or downloading media.
