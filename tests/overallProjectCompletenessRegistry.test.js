@@ -52,15 +52,21 @@ test('Debug page goals separate planned rows from implemented runtime claims', (
   const registry = readJson('docs/40_backlog_and_tasks/overall_project_goal_registry.json');
   const debugGoals = registry.goals.filter((goal) => goal.category === 'debug_page');
 
-  assert.equal(debugGoals.length, 20);
+  assert.equal(debugGoals.length, 25);
+  const provenNonRuntimeLocalProofGoals = new Set(['DBG-GOAL-024', 'DBG-GOAL-025']);
   for (const goal of debugGoals) {
     if (goal.id === 'DBG-GOAL-020') continue;
     if (goal.runtime_implementation_claim) {
       assert.ok(['IMPLEMENTED', 'PROVEN'].includes(goal.status_enum), `${goal.id} runtime claim must be implemented/proven`);
       assert.equal(goal.proof_command_state, 'IMPLEMENTED_COMMAND', `${goal.id} runtime claim must use a runnable proof command`);
       assert.equal(goal.proof_status, 'PASSED', `${goal.id} runtime claim must have a passed proof`);
+    } else if (provenNonRuntimeLocalProofGoals.has(goal.id)) {
+      assert.equal(goal.status_enum, 'PROVEN', `${goal.id} local docs/proof-track row must stay proven without claiming runtime implementation`);
+      assert.equal(goal.proof_command_state, 'IMPLEMENTED_COMMAND', `${goal.id} local proof-track row must use its proof command`);
+      assert.equal(goal.proof_status, 'PASSED', `${goal.id} local proof-track row must have a passed proof`);
+      assert.match(goal.notes, /not claimed|not claim|unclaimed|Planning\/OpenSpec proof only|real provider\/device\/recovery behavior remains unclaimed/i, `${goal.id} must preserve explicit runtime non-claim wording`);
     } else {
-      assert.notEqual(goal.status_enum, 'PROVEN', `${goal.id} must not claim proven runtime behavior without runtime implementation`);
+      assert.notEqual(goal.status_enum, 'PROVEN', `${goal.id} must not claim proven runtime behavior without runtime implementation or local proof-track exception`);
     }
   }
 });
