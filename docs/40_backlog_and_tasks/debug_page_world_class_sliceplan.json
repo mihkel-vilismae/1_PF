@@ -1,0 +1,221 @@
+{
+  "schema_version": "1.0.0",
+  "project": "PF_login / PhotoFrame",
+  "baseline_version": "0.8.200",
+  "planning_version": "0.8.201",
+  "track": "debug_page_world_class",
+  "target": "Debug page fully world-class; OpenSpec 85%+ and implementation 85%+ before later real-provider/recovery behavior",
+  "batch_count": 4,
+  "slice_count": 18,
+  "confidence": "Medium",
+  "batches": [
+    {
+      "id": "DBG-WC-BATCH-1",
+      "name": "OpenSpec + behavior contract foundation",
+      "goal": "Raise Debug page OpenSpec to a precise 85%+ contract before more UI work.",
+      "slices": [
+        {
+          "order": 1,
+          "slice_id": "DBG-WC-001",
+          "title": "Define world-class Debug acceptance rubric",
+          "difficulty": 3,
+          "importance": 10,
+          "result": "Add measurable 85%/95% criteria for visuals, behavior, proof, non-claims.",
+          "acr_required": true,
+          "proof_required": true
+        },
+        {
+          "order": 2,
+          "slice_id": "DBG-WC-002",
+          "title": "Define visual toggle contract",
+          "difficulty": 4,
+          "importance": 9,
+          "result": "Specify top-right Toggle Visuals label and two [1,2,3] controls.",
+          "acr_required": true,
+          "proof_required": true
+        },
+        {
+          "order": 3,
+          "slice_id": "DBG-WC-003",
+          "title": "Define behavior state contract for every pane/button",
+          "difficulty": 6,
+          "importance": 10,
+          "result": "Every action must be local/mock/blocked/planned-safe/real-provider/runtime.",
+          "acr_required": true,
+          "proof_required": true
+        },
+        {
+          "order": 4,
+          "slice_id": "DBG-WC-004",
+          "title": "Define proof input/output contract",
+          "difficulty": 5,
+          "importance": 9,
+          "result": "Document proof-run inputs, expected artifacts, and what is safe to upload.",
+          "acr_required": true,
+          "proof_required": true
+        }
+      ]
+    },
+    {
+      "id": "DBG-WC-BATCH-2",
+      "name": "Visual system runtime polish",
+      "goal": "Implement a strong visual foundation with selectable color/visual modes while preserving proofability.",
+      "slices": [
+        {
+          "order": 5,
+          "slice_id": "DBG-WC-005",
+          "title": "Implement top-right Toggle Visuals toolbar",
+          "difficulty": 5,
+          "importance": 10,
+          "result": "Place label/buttons next to version without breaking existing version tracker.",
+          "acr_required": true,
+          "proof_required": true
+        },
+        {
+          "order": 6,
+          "slice_id": "DBG-WC-006",
+          "title": "Implement color schema cycle [1,2,3]",
+          "difficulty": 6,
+          "importance": 9,
+          "result": "Three color schemes, persisted in browser-local state, proofable by rendered attributes.",
+          "acr_required": true,
+          "proof_required": true
+        },
+        {
+          "order": 7,
+          "slice_id": "DBG-WC-007",
+          "title": "Implement major visual change cycle [1,2,3]",
+          "difficulty": 7,
+          "importance": 9,
+          "result": "Three layout/intensity modes that visibly improve hierarchy.",
+          "acr_required": true,
+          "proof_required": true
+        },
+        {
+          "order": 8,
+          "slice_id": "DBG-WC-008",
+          "title": "Polish cards, spacing, typography, badges",
+          "difficulty": 7,
+          "importance": 8,
+          "result": "Make panes clean, readable, and operator-friendly.",
+          "acr_required": true,
+          "proof_required": true
+        },
+        {
+          "order": 9,
+          "slice_id": "DBG-WC-009",
+          "title": "Polish responsive layout and accessibility",
+          "difficulty": 7,
+          "importance": 9,
+          "result": "Keyboard/focus, aria labels, small-screen behavior, readable contrast.",
+          "acr_required": true,
+          "proof_required": true
+        }
+      ]
+    },
+    {
+      "id": "DBG-WC-BATCH-3",
+      "name": "Behavior implementation and safe interaction contracts",
+      "goal": "Make defined local/planned-safe behaviors explicit and proofable without claiming real provider/runtime behavior.",
+      "slices": [
+        {
+          "order": 10,
+          "slice_id": "DBG-WC-010",
+          "title": "Implement behavior registry visible on page",
+          "difficulty": 6,
+          "importance": 9,
+          "result": "Every button shows what it does, reality level, and proof state.",
+          "acr_required": true,
+          "proof_required": true
+        },
+        {
+          "order": 11,
+          "slice_id": "DBG-WC-011",
+          "title": "Implement Auth/Session planned-safe control states",
+          "difficulty": 6,
+          "importance": 9,
+          "result": "Login/check/verify targets visible but safe until auth contract exists.",
+          "acr_required": true,
+          "proof_required": true
+        },
+        {
+          "order": 12,
+          "slice_id": "DBG-WC-012",
+          "title": "Implement snapshot controls as explicit local/system-state draft",
+          "difficulty": 7,
+          "importance": 9,
+          "result": "Pre/post manual-test state preview, no production recovery claim.",
+          "acr_required": true,
+          "proof_required": true
+        },
+        {
+          "order": 13,
+          "slice_id": "DBG-WC-013",
+          "title": "Implement proof input panel",
+          "difficulty": 6,
+          "importance": 8,
+          "result": "Shows what proofrunner needs and what operator should upload.",
+          "acr_required": true,
+          "proof_required": true
+        },
+        {
+          "order": 14,
+          "slice_id": "DBG-WC-014",
+          "title": "Implement error/blocked/pass visual language",
+          "difficulty": 5,
+          "importance": 9,
+          "result": "Consistent status chips for PASS/BLOCKED/FAILED and non-claim messages.",
+          "acr_required": true,
+          "proof_required": true
+        }
+      ]
+    },
+    {
+      "id": "DBG-WC-BATCH-4",
+      "name": "Proof closure, docs cleanup, and world-class hardening",
+      "goal": "Close the Debug page world-class track at 85%+ implementation with proofs/docs aligned.",
+      "slices": [
+        {
+          "order": 15,
+          "slice_id": "DBG-WC-015",
+          "title": "Strengthen keybook-render proof",
+          "difficulty": 5,
+          "importance": 10,
+          "result": "Prove keybook IDs, markers, modal, elements list, visual toolbar all match.",
+          "acr_required": true,
+          "proof_required": true
+        },
+        {
+          "order": 16,
+          "slice_id": "DBG-WC-016",
+          "title": "Add screenshot/style proof contract",
+          "difficulty": 7,
+          "importance": 8,
+          "result": "Optional browser/screenshot or source-level visual contract; honest if not run.",
+          "acr_required": true,
+          "proof_required": true
+        },
+        {
+          "order": 17,
+          "slice_id": "DBG-WC-017",
+          "title": "Run docs/OpenSpec/keybook reconciliation",
+          "difficulty": 4,
+          "importance": 9,
+          "result": "No stale planned claims or mismatched behavior statuses.",
+          "acr_required": true,
+          "proof_required": true
+        },
+        {
+          "order": 18,
+          "slice_id": "DBG-WC-018",
+          "title": "World-class Debug page completion report",
+          "difficulty": 4,
+          "importance": 10,
+          "result": "Score OpenSpec and implementation against 85% rubric, print blockers.",
+          "acr_required": true,
+          "proof_required": true
+        }
+      ]
+    }
+  ]
+}

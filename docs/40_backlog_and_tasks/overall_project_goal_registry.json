@@ -903,6 +903,25 @@
       "next_action": "Wire real Auth/Session controls only after session snapshot/provider proof contracts exist.",
       "runtime_implementation_claim": true,
       "notes": "Top-of-page operator context panes are browser-local/proof-safe; Auth/Session buttons are disabled/planned-safe and do not submit credentials."
+    },
+    {
+      "id": "DBG-GOAL-024",
+      "title": "Define Debug page world-class OpenSpec and 4-batch/18-slice plan",
+      "category": "debug_page",
+      "status_enum": "PROVEN",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:debug-page-world-class-plan",
+      "proof_status": "PASSED",
+      "source_paths": [
+        "docs/20_architecture_and_specs/openspec/debug_page_world_class_openspec.md",
+        "docs/40_backlog_and_tasks/debug_page_world_class_sliceplan.md",
+        "docs/40_backlog_and_tasks/debug_page_world_class_sliceplan.json",
+        "tools/run-debug-page-world-class-plan-proof.mjs",
+        "tests/debugPageWorldClassPlan.test.js"
+      ],
+      "next_action": "Run the world-class Debug page slices one batch at a time, with ACR and proof per slice.",
+      "runtime_implementation_claim": false,
+      "notes": "Planning/OpenSpec proof only; runtime implementation of the 18 slices is not claimed."
     }
   ]
 }

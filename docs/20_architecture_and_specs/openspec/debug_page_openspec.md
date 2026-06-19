@@ -554,3 +554,9 @@ As of v0.8.200, the Debug page must render these top-of-page panes before deeper
 Implemented Debug panes/cards and buttons must expose stable globally unique PhotoFrame element IDs using `data-ui-element-id`. Inspectable elements must provide a `*` marker in debug/proof context. Hovering the marker shows the stable ID; clicking it opens a non-disruptive browser-local metadata dialog and must not trigger the underlying action.
 
 The Auth / Session pane in this slice is a planned-safe surface only. It may list future login/check-session/verify-session targets, but it must not submit credentials, print secrets, read session file contents, or claim real provider proof until separate auth/session proof contracts are implemented.
+
+## 16. World-class Debug page track
+
+The world-class Debug page track is specified in [`debug_page_world_class_openspec.md`](debug_page_world_class_openspec.md). The slice plan is stored in [`../../40_backlog_and_tasks/debug_page_world_class_sliceplan.md`](../../40_backlog_and_tasks/debug_page_world_class_sliceplan.md).
+
+Use `npm run proof:debug-page-world-class-plan` to validate that the plan keeps the max requested 4-batch structure, 18 slice records, visual toggle terms, proof input contract, and non-claim boundaries.

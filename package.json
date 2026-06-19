@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.8.200",
+  "version": "0.8.201",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -106,7 +106,8 @@
     "proof:auth-checkpoint-operator-flow": "node --test tests/authCheckpointOperatorFlow.test.js",
     "proof:proofrunner-windows-launcher-contract": "node tools/run-proofrunner-windows-launcher-contract-proof.mjs",
     "proof:prooflauncher-gui-selection": "node tools/run-prooflauncher-gui-selection-proof.mjs",
-    "proof:debug-page-keybook": "node tools/run-debug-page-keybook-proof.mjs"
+    "proof:debug-page-keybook": "node tools/run-debug-page-keybook-proof.mjs",
+    "proof:debug-page-world-class-plan": "node tools/run-debug-page-world-class-plan-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.201
+
+- Added Debug Page World-Class OpenSpec for the 85%+ OpenSpec and implementation target.
+- Added max-scope 4-batch / 18-slice Debug page world-class batch plan.
+- Added `proof:debug-page-world-class-plan` and node regression tests to keep the plan structure, visual toggle requirements, proof input contract, and non-claims aligned.
+
 ## 0.8.200
 
 - Implemented Debug page keybook runtime UI: Help, Stack/Status, Elements/Buttons list, and Auth/Session planning panes.

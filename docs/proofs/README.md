@@ -289,3 +289,4 @@ Tracked `tools/mpv/windows/.gitkeep` and `tools/mpv/windows/README.md` are allow
 ## Debug page keybook
 
 | Debug page keybook | `npm run proof:debug-page-keybook` | Validates Debug Page Keybook entries, stable ID uniqueness, file/doc/test/proof references, runtime data-ui-element-id source markers, `*` inspector marker contract, and local metadata modal contract without claiming real provider/runtime behavior. |
+| Debug page world-class plan | `npm run proof:debug-page-world-class-plan` | Validates the Debug page world-class OpenSpec and max-scope 4-batch/18-slice plan without claiming the slices are implemented. |

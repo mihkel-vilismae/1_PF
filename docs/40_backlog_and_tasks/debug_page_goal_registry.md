@@ -74,3 +74,4 @@ When a new Debug page goal is discovered:
 ## v0.8.200 runtime keybook UI update
 
 The Debug page now renders Help, Stack/Status, Elements/Buttons list, and Auth/Session panes before the legacy debug controls. Implemented panes/buttons have stable `data-ui-element-id` attributes, and inspectable elements expose a `*` marker with hover tooltip and click-to-open local metadata dialog. This remains browser-local/proof-safe and does not claim real provider, crontab, worker, media/database, Raspberry, or recovery behavior.
+| DBG-GOAL-024 | Define Debug page world-class OpenSpec and 4-batch/18-slice plan | Debug page planning/OpenSpec | proven | World-class OpenSpec | `proof:debug-page-world-class-plan` | Planning proof only; does not implement all world-class runtime slices yet. |
