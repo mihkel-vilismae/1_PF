@@ -63,7 +63,7 @@ export function renderDebugView(state: Record<string, unknown>, frontendVersion:
   const debugState = normalizeDebugPageState(state.debugPage);
   const statusProjection = buildRuntimeStatusProjectionFromState(state);
   return `
-    <section class="view-grid debug-page" data-debug-page-route="${DEBUG_ROUTE}" data-ui-element-id="pf.debug.page" aria-label="Debug Menu">
+    <section class="view-grid debug-page debug-page--schema-${debugState.visuals?.colorSchema ?? 1} debug-page--visual-${debugState.visuals?.majorVisualMode ?? 1}" data-debug-page-route="${DEBUG_ROUTE}" data-ui-element-id="pf.debug.page" data-debug-color-schema="${debugState.visuals?.colorSchema ?? 1}" data-debug-visual-mode="${debugState.visuals?.majorVisualMode ?? 1}" aria-label="Debug Menu">
       ${renderHeroPane(debugState, frontendVersion)}
       ${renderHelpPane()}
       ${renderStackStatusPane(frontendVersion, statusProjection)}

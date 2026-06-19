@@ -135,6 +135,25 @@ function createWorkerTelemetry(key: DebugWorkerKey, label: string): DebugWorkerT
 
 
 
+
+export function cycleDebugColorSchema(state: DebugPageState): DebugPageState {
+  const current = state.visuals?.colorSchema ?? 1;
+  const next = ((current % 3) + 1) as DebugVisualSchema;
+  return {
+    ...state,
+    visuals: { ...(state.visuals ?? { majorVisualMode: 1 }), colorSchema: next },
+    actionResults: {
+      ...state.actionResults,
+      'cycle-color-schema': createDebugActionResult(
+        'cycle-color-schema',
+        'succeeded',
+        `Changed Debug page color schema to ${next}. Browser-local visual state only.`,
+        'debug-page-visuals-browser-local',
+      ),
+    },
+  };
+}
+
 export function selectDebugElementMetadata(state: DebugPageState, elementId: string): DebugPageState {
   return {
     ...state,

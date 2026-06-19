@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.207
+
+- Implemented browser-local Debug page color schema cycling with DOM markers for the selected schema.
+
 ## 0.8.206
 
 - Added Batch 1 XACR review and the initial Debug page top-right `TOGGLE VISUALS` toolbar shell next to the version display.

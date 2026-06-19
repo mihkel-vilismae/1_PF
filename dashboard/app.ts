@@ -62,7 +62,7 @@ import { renderRunningProcessView } from './views/runningProcessView.ts';
 import { renderDatabaseViewerView } from './views/databaseViewerView.ts';
 import { renderOsPlaybackFullscreenOverlay, renderOsPlaybackView } from './views/osPlaybackView.ts';
 import { renderDebugView } from './views/debugView.ts';
-import { addIsolatedTestMediaItem, buildDefaultDebugPageState, clearDebugElementMetadata, pauseFakeDebugCrontab, previewFakeDebugStateRestore, readFakeDebugCrontab, resumeFakeDebugCrontab, runMockDebugWorker, saveFakeDebugStateSnapshot, selectDebugElementMetadata, setDebugCrontabContent, stageFakeDebugCrontabInstall, type DebugPageState, type DebugWorkerKey } from './services/debugPageModel.ts';
+import { addIsolatedTestMediaItem, buildDefaultDebugPageState, clearDebugElementMetadata, cycleDebugColorSchema, pauseFakeDebugCrontab, previewFakeDebugStateRestore, readFakeDebugCrontab, resumeFakeDebugCrontab, runMockDebugWorker, saveFakeDebugStateSnapshot, selectDebugElementMetadata, setDebugCrontabContent, stageFakeDebugCrontabInstall, type DebugPageState, type DebugWorkerKey } from './services/debugPageModel.ts';
 import { buildOsPlaybackViewModel, OS_PLAYBACK_PLATFORMS, type OsPlaybackPlatform, type PlaybackLogEntryViewModel } from './services/osPlaybackViewModel.ts';
 import { requestJson, setDashboardRuntimeMode } from './services/apiClient.ts';
 import { buildViewARefreshPlan } from './services/viewARefreshPlan.ts';
@@ -1172,6 +1172,22 @@ function bindEvents() {
         void loadOsPlaybackContract(osPlaybackPlatform);
         void loadOsPlaybackObservability(osPlaybackPlatform);
         void loadNativePlaybackStatus(osPlaybackPlatform);
+      }
+    });
+  });
+
+  app.querySelectorAll<HTMLButtonElement>('[data-debug-visual-action]').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      const action = button.dataset.debugVisualAction;
+      if (action === 'cycle-color-schema') {
+        patchDebugPage((debugPage) => cycleDebugColorSchema(debugPage));
+        pushHistory('DEBUG', 'success', 'Changed Debug page color schema locally.', {
+          action,
+          browserLocal: true,
+          productionMutation: false,
+        });
+        return;
       }
     });
   });
