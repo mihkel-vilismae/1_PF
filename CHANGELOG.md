@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.216
+
+- Added Batch 4 ACR and a Debug page keybook-render proof for source-level render contracts covering panes, visual toolbar, markers, modal, behavior registry, and proof input panel.
+
 ## 0.8.215
 
 - Updated Debug page keybook/proof/docs for Batch 1–3 world-class runtime additions, including visual toolbar, behavior registry, proof input panel, SYSTEM_STATE controls, and PASS/BLOCKED/FAILED visual language.
