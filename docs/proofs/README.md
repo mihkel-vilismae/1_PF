@@ -194,6 +194,7 @@ These commands are part of the active proof-enabler and local/runtime proof lane
 | Runtime state durable checkpoint | `npm run proof:runtime-state-durable-checkpoint` | local durable runtime-state checkpoint contract proof |
 | Proof run handoff triage | `npm run proof:proof-run-handoff-triage` | local proof upload/summary triage proof |
 | Proofrunner PowerShell safe log name | `npm run proof:proofrunner-powershell-safe-log-name` | local Windows launcher safe-log-name regression proof |
+| Proofrunner handoff artifact export contract | `npm run proof:proofrunner-handoff-artifact-export-contract` | local handoff summary/export contract proof |
 
 ## Raspberry native image playback proof
 
