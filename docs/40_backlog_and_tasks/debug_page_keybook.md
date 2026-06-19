@@ -1,6 +1,6 @@
 # Debug Page Keybook
 
-Status: active runtime Debug page keybook for v0.8.200.
+Status: active runtime Debug page keybook for v0.8.215.
 
 This keybook maps Debug page panes/buttons/stable IDs to source files, docs, tests, proof commands, reality level, and non-claims.
 
@@ -44,6 +44,14 @@ This keybook maps Debug page panes/buttons/stable IDs to source files, docs, tes
 | `pf.debug.worker_screen.pane` | pane | On/off Worker Debug Pane | `data-debug-worker-pane=screen` | mock/local worker telemetry | Does not spawn screen/on-off worker process. |
 | `pf.debug.worker_screen.run_button` | button | Run now | `data-debug-worker-run-now=screen` | mock/local run simulation | Does not spawn screen/on-off worker process. |
 | `pf.debug.element_id_modal` | modal | Element ID modal | `data-debug-element-modal` | browser-local inspector | Only displays metadata; does not trigger underlying element behavior. |
+| `pf.debug.visuals.toolbar` | pane | TOGGLE VISUALS | `data-debug-visuals-toolbar=true` | browser-local/visual state | Changes Debug page presentation only; does not change product/runtime behavior. |
+| `pf.debug.visuals.color_schema_button` | button | CLICK TO CHANGE COLOR SCHEMA [1,2,3] | `data-debug-visual-action=cycle-color-schema` | browser-local/visual state | Changes Debug page color schema only. |
+| `pf.debug.visuals.major_visual_button` | button | CLICK TO IMPROVE LOOK BY MAKING MAJOR VISUAL CHANGES [1,2,3] | `data-debug-visual-action=cycle-major-visual-mode` | browser-local/visual state | Changes Debug page major visual mode only. |
+| `pf.debug.behavior_registry.pane` | pane | Behavior registry | `data-debug-pane=behavior-registry` | browser-local/behavior map | Classifies controls; does not make planned controls real. |
+| `pf.debug.proof_input.pane` | pane | Proof input / output | `data-debug-pane=proof-input` | browser-local/proof guidance | Explains proof inputs; does not run proof commands by itself. |
+| `pf.debug.state.pre_login_snapshot_button` | button | Save pre-login SYSTEM_STATE | `data-debug-action=save-pre-login-system-state` | browser-local/system-state draft | Does not create production recovery snapshot or copy session secrets. |
+| `pf.debug.state.post_login_snapshot_button` | button | Save post-login SYSTEM_STATE | `data-debug-action=save-post-login-system-state` | browser-local/system-state draft | Does not verify real provider session by itself. |
+| `pf.debug.state.recovery_snapshot_disabled_button` | button | Bare-minimum recovery snapshot disabled | `data-debug-auth-action=planned` | disabled-planned-safe | Recovery snapshot remains disabled until proofed later. |
 
 ## Proof
 
@@ -53,4 +61,4 @@ Run:
 npm run proof:debug-page-keybook
 ```
 
-This proof checks unique IDs, repo references, rendered-ID source markers, the asterisk marker contract, and the element metadata modal contract.
+This proof checks unique IDs, repo references, runtime source markers, visual toolbar terms, behavior/proof panes, SYSTEM_STATE controls, asterisk marker contract, and the element metadata modal contract.

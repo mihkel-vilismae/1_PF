@@ -71,3 +71,13 @@ Goal: Close the Debug page world-class track at 85%+ implementation with proofs/
 | 17 | `DBG-WC-017` | Run docs/OpenSpec/keybook reconciliation | 4/10 | 9/10 | No stale planned claims or mismatched behavior statuses. |
 | 18 | `DBG-WC-018` | World-class Debug page completion report | 4/10 | 10/10 | Score OpenSpec and implementation against 85% rubric, print blockers. |
 
+
+## Batch 1–3 implementation note
+
+Implemented through v0.8.215:
+
+- Batch 1: rubric, visual toggle contract, behavior taxonomy, proof input contract.
+- Batch 2: top-right Toggle Visuals toolbar, color schema cycle, major visual mode cycle, visual polish, responsive/focus polish.
+- Batch 3: behavior registry, Auth/Session planned-safe states, SYSTEM_STATE draft controls, proof input panel, PASS/BLOCKED/FAILED visual language.
+
+Batch 4 remains planned for stronger render proof, screenshot/style proof, reconciliation, and completion reporting.

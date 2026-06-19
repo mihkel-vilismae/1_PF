@@ -43,7 +43,7 @@ test('debug page keybook proof passes', () => {
 
 test('debug page keybook marks runtime IDs implemented after v0.8.200 slice', () => {
   const keybook = JSON.parse(fs.readFileSync(keybookPath, 'utf8'));
-  assert.equal(keybook.last_updated_version, '0.8.200');
+  assert.match(keybook.last_updated_version, /^0\.8\.(20[0-9]|21[0-9])$/);
   const unimplemented = keybook.entries.filter((entry) => entry.implemented_id !== true);
   assert.deepEqual(unimplemented.map((entry) => entry.id), []);
   for (const requiredId of [

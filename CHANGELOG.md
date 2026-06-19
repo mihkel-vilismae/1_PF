@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.215
+
+- Updated Debug page keybook/proof/docs for Batch 1–3 world-class runtime additions, including visual toolbar, behavior registry, proof input panel, SYSTEM_STATE controls, and PASS/BLOCKED/FAILED visual language.
+
 ## 0.8.214
 
 - Added Debug page proof input/output pane documenting accepted proof ZIPs, forbidden secret inputs, commands, and PASS/BLOCKED/FAILED language.

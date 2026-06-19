@@ -88,6 +88,25 @@ if (!appSource.includes('underlyingActionTriggered: false') || !appSource.includ
   addError('Debug element marker click handling must not trigger underlying element behavior.');
 }
 
+for (const required of [
+  'TOGGLE VISUALS',
+  'CLICK TO CHANGE COLOR SCHEMA [1,2,3]',
+  'CLICK TO IMPROVE LOOK BY MAKING MAJOR VISUAL CHANGES [1,2,3]',
+  'data-debug-color-schema',
+  'data-debug-visual-mode',
+  'data-debug-behavior-registry',
+  'data-debug-proof-input',
+  'save-pre-login-system-state',
+  'save-post-login-system-state',
+  'PASS',
+  'BLOCKED',
+  'FAILED'
+]) {
+  if (!debugViewSource.includes(required) && !read('docs/20_architecture_and_specs/openspec/debug_page_world_class_openspec.md').includes(required)) {
+    addError(`Debug world-class runtime/keybook required text missing: ${required}`);
+  }
+}
+
 const requiredDocs = [
   'docs/10_runbooks/debug_page_runbook.md',
   'docs/20_architecture_and_specs/openspec/debug_page_openspec.md',

@@ -2,7 +2,7 @@
   "schema_version": "1.1.0",
   "project": "PF_login / PhotoFrame",
   "introduced_version": "0.8.199",
-  "last_updated_version": "0.8.200",
+  "last_updated_version": "0.8.215",
   "status": "active_debug_page_keybook_runtime_ids",
   "purpose": "Map Debug page panes/buttons/stable IDs to rendered HTML, source files, docs, tests, proofs, reality levels, and non-claims.",
   "rules": [
@@ -873,6 +873,219 @@
       "inspect_marker": "* hover tooltip + click metadata modal",
       "action": "show-element-metadata",
       "model_file": "dashboard/services/debugPageModel.ts"
+    },
+    {
+      "id": "pf.debug.visuals.toolbar",
+      "implemented_id": true,
+      "type": "pane",
+      "label": "TOGGLE VISUALS",
+      "section": "Debug / Top bar",
+      "route": "/debug",
+      "source_file": "dashboard/views/debugView.ts",
+      "marker": "data-debug-visuals-toolbar",
+      "current_marker_value": "true",
+      "docs": [
+        "docs/10_runbooks/debug_page_runbook.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_world_class_openspec.md"
+      ],
+      "tests": [
+        "tests/debugPageKeybook.test.js"
+      ],
+      "proofs": [
+        "proof:debug-page-keybook"
+      ],
+      "reality": "browser-local/visual state",
+      "non_claim": "Changes Debug page presentation only; does not change product/runtime behavior.",
+      "inspect_marker": "* hover tooltip + click metadata modal"
+    },
+    {
+      "id": "pf.debug.visuals.color_schema_button",
+      "implemented_id": true,
+      "type": "button",
+      "label": "CLICK TO CHANGE COLOR SCHEMA [1,2,3]",
+      "section": "Debug / Top bar",
+      "route": "/debug",
+      "source_file": "dashboard/views/debugView.ts",
+      "marker": "data-debug-visual-action",
+      "current_marker_value": "cycle-color-schema",
+      "docs": [
+        "docs/10_runbooks/debug_page_runbook.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_world_class_openspec.md"
+      ],
+      "tests": [
+        "tests/debugPageKeybook.test.js"
+      ],
+      "proofs": [
+        "proof:debug-page-keybook"
+      ],
+      "reality": "browser-local/visual state",
+      "non_claim": "Changes Debug page color schema only.",
+      "inspect_marker": "* hover tooltip + click metadata modal",
+      "action": "cycle-color-schema"
+    },
+    {
+      "id": "pf.debug.visuals.major_visual_button",
+      "implemented_id": true,
+      "type": "button",
+      "label": "CLICK TO IMPROVE LOOK BY MAKING MAJOR VISUAL CHANGES [1,2,3]",
+      "section": "Debug / Top bar",
+      "route": "/debug",
+      "source_file": "dashboard/views/debugView.ts",
+      "marker": "data-debug-visual-action",
+      "current_marker_value": "cycle-major-visual-mode",
+      "docs": [
+        "docs/10_runbooks/debug_page_runbook.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_world_class_openspec.md"
+      ],
+      "tests": [
+        "tests/debugPageKeybook.test.js"
+      ],
+      "proofs": [
+        "proof:debug-page-keybook"
+      ],
+      "reality": "browser-local/visual state",
+      "non_claim": "Changes Debug page major visual mode only.",
+      "inspect_marker": "* hover tooltip + click metadata modal",
+      "action": "cycle-major-visual-mode"
+    },
+    {
+      "id": "pf.debug.behavior_registry.pane",
+      "implemented_id": true,
+      "type": "pane",
+      "label": "Behavior registry",
+      "section": "Debug / Behavior",
+      "route": "/debug",
+      "source_file": "dashboard/views/debugView.ts",
+      "marker": "data-debug-pane",
+      "current_marker_value": "behavior-registry",
+      "docs": [
+        "docs/10_runbooks/debug_page_runbook.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_world_class_openspec.md"
+      ],
+      "tests": [
+        "tests/debugPageKeybook.test.js"
+      ],
+      "proofs": [
+        "proof:debug-page-keybook"
+      ],
+      "reality": "browser-local/behavior map",
+      "non_claim": "Classifies controls; does not make planned controls real.",
+      "inspect_marker": "* hover tooltip + click metadata modal"
+    },
+    {
+      "id": "pf.debug.proof_input.pane",
+      "implemented_id": true,
+      "type": "pane",
+      "label": "Proof input / output",
+      "section": "Debug / Proof",
+      "route": "/debug",
+      "source_file": "dashboard/views/debugView.ts",
+      "marker": "data-debug-pane",
+      "current_marker_value": "proof-input",
+      "docs": [
+        "docs/10_runbooks/debug_page_runbook.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_world_class_openspec.md"
+      ],
+      "tests": [
+        "tests/debugPageKeybook.test.js"
+      ],
+      "proofs": [
+        "proof:debug-page-keybook"
+      ],
+      "reality": "browser-local/proof guidance",
+      "non_claim": "Explains proof inputs; does not run proof commands by itself.",
+      "inspect_marker": "* hover tooltip + click metadata modal"
+    },
+    {
+      "id": "pf.debug.state.pre_login_snapshot_button",
+      "implemented_id": true,
+      "type": "button",
+      "label": "Save pre-login SYSTEM_STATE",
+      "section": "Debug / State",
+      "route": "/debug",
+      "source_file": "dashboard/views/debugView.ts",
+      "marker": "data-debug-action",
+      "current_marker_value": "save-pre-login-system-state",
+      "docs": [
+        "docs/10_runbooks/debug_page_runbook.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_world_class_openspec.md"
+      ],
+      "tests": [
+        "tests/debugPageKeybook.test.js"
+      ],
+      "proofs": [
+        "proof:debug-page-keybook"
+      ],
+      "reality": "browser-local/system-state draft",
+      "non_claim": "Does not create production recovery snapshot or copy session secrets.",
+      "inspect_marker": "* hover tooltip + click metadata modal",
+      "action": "save-pre-login-system-state"
+    },
+    {
+      "id": "pf.debug.state.post_login_snapshot_button",
+      "implemented_id": true,
+      "type": "button",
+      "label": "Save post-login SYSTEM_STATE",
+      "section": "Debug / State",
+      "route": "/debug",
+      "source_file": "dashboard/views/debugView.ts",
+      "marker": "data-debug-action",
+      "current_marker_value": "save-post-login-system-state",
+      "docs": [
+        "docs/10_runbooks/debug_page_runbook.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_world_class_openspec.md"
+      ],
+      "tests": [
+        "tests/debugPageKeybook.test.js"
+      ],
+      "proofs": [
+        "proof:debug-page-keybook"
+      ],
+      "reality": "browser-local/system-state draft",
+      "non_claim": "Does not verify real provider session by itself.",
+      "inspect_marker": "* hover tooltip + click metadata modal",
+      "action": "save-post-login-system-state"
+    },
+    {
+      "id": "pf.debug.state.recovery_snapshot_disabled_button",
+      "implemented_id": true,
+      "type": "button",
+      "label": "Bare-minimum recovery snapshot disabled",
+      "section": "Debug / State",
+      "route": "/debug",
+      "source_file": "dashboard/views/debugView.ts",
+      "marker": "data-debug-auth-action",
+      "current_marker_value": "planned",
+      "docs": [
+        "docs/10_runbooks/debug_page_runbook.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_world_class_openspec.md"
+      ],
+      "tests": [
+        "tests/debugPageKeybook.test.js"
+      ],
+      "proofs": [
+        "proof:debug-page-keybook"
+      ],
+      "reality": "disabled-planned-safe",
+      "non_claim": "Recovery snapshot remains disabled until proofed later.",
+      "inspect_marker": "* hover tooltip + click metadata modal",
+      "action": "planned:bare-minimum-recovery-snapshot"
     }
   ]
 }
