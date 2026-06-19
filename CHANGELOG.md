@@ -4,6 +4,12 @@
 
 
 
+
+## 0.8.192
+
+- Added a geocode provider selection matrix with supported provider IDs, required env keys, and first-run guidance.
+- Added `proof:geocode-provider-selection` to keep the matrix aligned with real geocode readiness metadata without calling providers.
+
 ## 0.8.191
 
 - Added a safe provider proof environment template for geocode, iCloudPD, and real download readiness inputs.
