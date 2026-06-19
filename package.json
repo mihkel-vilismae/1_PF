@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.8.227",
+  "version": "0.8.228",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -119,7 +119,8 @@
     "proof:real-icloud-listing-preflight": "node tools/run-real-icloud-listing-preflight-proof.mjs",
     "proof:geocode-dry-run-from-sample": "node tools/run-geocode-dry-run-from-sample-proof.mjs",
     "proof:runtime-state-durable-checkpoint": "node tools/run-runtime-state-durable-checkpoint-proof.mjs",
-    "proof:proof-run-handoff-triage": "node tools/run-proof-run-handoff-triage-proof.mjs"
+    "proof:proof-run-handoff-triage": "node tools/run-proof-run-handoff-triage-proof.mjs",
+    "proof:proofrunner-powershell-safe-log-name": "node tools/run-proofrunner-powershell-safe-log-name-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

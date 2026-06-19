@@ -50,3 +50,16 @@ This only removes the Windows downloaded-file warning. It does not bypass proof 
 ## Non-claims
 
 This contract does not prove real iCloud login, provider download, Raspberry hardware behavior, product pipeline completion, address overlay device display, or final v1 readiness. It only defines launcher robustness and validation requirements.
+
+
+## Safe proof log filenames
+
+Windows proofrunner launchers must not use the invalid regex pattern `-replace '[:/\]','_'` when turning proof names into log filenames. The backslash makes that .NET regex character class invalid.
+
+Prefer literal replacement instead:
+
+```powershell
+$safe = $proof.Replace(':','_').Replace('/','_').Replace('\','_')
+```
+
+This prevents repeated `InvalidOperation: The regular expression pattern [:/\] is not valid` errors while the proof queue continues.
