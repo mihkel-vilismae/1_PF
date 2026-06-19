@@ -62,7 +62,7 @@ import { renderRunningProcessView } from './views/runningProcessView.ts';
 import { renderDatabaseViewerView } from './views/databaseViewerView.ts';
 import { renderOsPlaybackFullscreenOverlay, renderOsPlaybackView } from './views/osPlaybackView.ts';
 import { renderDebugView } from './views/debugView.ts';
-import { addIsolatedTestMediaItem, buildDefaultDebugPageState, clearDebugElementMetadata, cycleDebugColorSchema, pauseFakeDebugCrontab, previewFakeDebugStateRestore, readFakeDebugCrontab, resumeFakeDebugCrontab, runMockDebugWorker, saveFakeDebugStateSnapshot, selectDebugElementMetadata, setDebugCrontabContent, stageFakeDebugCrontabInstall, type DebugPageState, type DebugWorkerKey } from './services/debugPageModel.ts';
+import { addIsolatedTestMediaItem, buildDefaultDebugPageState, clearDebugElementMetadata, cycleDebugColorSchema, cycleDebugMajorVisualMode, pauseFakeDebugCrontab, previewFakeDebugStateRestore, readFakeDebugCrontab, resumeFakeDebugCrontab, runMockDebugWorker, saveFakeDebugStateSnapshot, selectDebugElementMetadata, setDebugCrontabContent, stageFakeDebugCrontabInstall, type DebugPageState, type DebugWorkerKey } from './services/debugPageModel.ts';
 import { buildOsPlaybackViewModel, OS_PLAYBACK_PLATFORMS, type OsPlaybackPlatform, type PlaybackLogEntryViewModel } from './services/osPlaybackViewModel.ts';
 import { requestJson, setDashboardRuntimeMode } from './services/apiClient.ts';
 import { buildViewARefreshPlan } from './services/viewARefreshPlan.ts';
@@ -1183,6 +1183,15 @@ function bindEvents() {
       if (action === 'cycle-color-schema') {
         patchDebugPage((debugPage) => cycleDebugColorSchema(debugPage));
         pushHistory('DEBUG', 'success', 'Changed Debug page color schema locally.', {
+          action,
+          browserLocal: true,
+          productionMutation: false,
+        });
+        return;
+      }
+      if (action === 'cycle-major-visual-mode') {
+        patchDebugPage((debugPage) => cycleDebugMajorVisualMode(debugPage));
+        pushHistory('DEBUG', 'success', 'Changed Debug page major visual mode locally.', {
           action,
           browserLocal: true,
           productionMutation: false,

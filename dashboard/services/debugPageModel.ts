@@ -154,6 +154,25 @@ export function cycleDebugColorSchema(state: DebugPageState): DebugPageState {
   };
 }
 
+
+export function cycleDebugMajorVisualMode(state: DebugPageState): DebugPageState {
+  const current = state.visuals?.majorVisualMode ?? 1;
+  const next = ((current % 3) + 1) as DebugMajorVisualMode;
+  return {
+    ...state,
+    visuals: { ...(state.visuals ?? { colorSchema: 1 }), majorVisualMode: next },
+    actionResults: {
+      ...state.actionResults,
+      'cycle-major-visual-mode': createDebugActionResult(
+        'cycle-major-visual-mode',
+        'succeeded',
+        `Changed Debug page major visual mode to ${next}. Browser-local visual state only.`,
+        'debug-page-visuals-browser-local',
+      ),
+    },
+  };
+}
+
 export function selectDebugElementMetadata(state: DebugPageState, elementId: string): DebugPageState {
   return {
     ...state,

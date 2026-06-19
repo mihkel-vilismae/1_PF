@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.208
+
+- Implemented browser-local Debug page major visual mode cycling with DOM markers for selected visual mode.
+
 ## 0.8.207
 
 - Implemented browser-local Debug page color schema cycling with DOM markers for the selected schema.
