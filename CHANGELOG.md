@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.205
+
+- Added Debug page proof input/output contract for accepted proof ZIPs, forbidden secret inputs, and future proof input panel behavior.
+
 ## 0.8.204
 
 - Added Debug page behavior contract taxonomy for browser-local, mock-only, disabled, blocked, real-provider, and real-device actions.
