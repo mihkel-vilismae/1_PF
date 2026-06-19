@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.202
+
+- Added Debug page world-class acceptance rubric with explicit 85%/95% checkpoints and non-claims.
+
 ## 0.8.201
 
 - Added Debug Page World-Class OpenSpec for the 85%+ OpenSpec and implementation target.
