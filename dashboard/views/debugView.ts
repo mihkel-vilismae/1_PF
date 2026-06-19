@@ -30,6 +30,7 @@ export const DEBUG_PAGE_ELEMENTS: DebugPageElementEntry[] = [
   { id: 'pf.debug.stack_status.pane', type: 'pane', label: 'Stack / Status', section: 'Debug / Stack', marker: 'data-debug-pane=stack-status', reality: 'browser-local/status summary', nonClaim: 'Shows declared frontend/runtime proof context only.' },
   { id: 'pf.debug.elements_list.pane', type: 'pane', label: 'Elements / Buttons list', section: 'Debug / Element Inventory', marker: 'data-debug-pane=elements-list', reality: 'browser-local/keybook projection', nonClaim: 'Lists element IDs; does not prove real runtime behavior.' },
   { id: 'pf.debug.behavior_registry.pane', type: 'pane', label: 'Behavior registry', section: 'Debug / Behavior', marker: 'data-debug-pane=behavior-registry', reality: 'browser-local/behavior map', nonClaim: 'Classifies controls; does not make planned controls real.' },
+  { id: 'pf.debug.proof_input.pane', type: 'pane', label: 'Proof input / output', section: 'Debug / Proof', marker: 'data-debug-pane=proof-input', reality: 'browser-local/proof guidance', nonClaim: 'Explains proof inputs; does not run proof commands by itself.' },
   { id: 'pf.debug.auth_session.pane', type: 'pane', label: 'Auth / Session', section: 'Debug / Auth', marker: 'data-debug-pane=auth-session', reality: 'planned-safe/auth bridge', nonClaim: 'Does not submit credentials or read session secrets.' },
   { id: 'pf.debug.auth_session.login_using_env_button', type: 'button', label: 'Login using .env values', section: 'Debug / Auth', action: 'planned:new-auth-login-using-env', reality: 'disabled/planned-safe', nonClaim: 'Shown as planned bridge only; does not trigger provider login from Debug page.' },
   { id: 'pf.debug.auth_session.check_login_button', type: 'button', label: 'Check login', section: 'Debug / Auth', action: 'planned:new-auth-check-login', reality: 'disabled/planned-safe', nonClaim: 'Shown as planned bridge only; does not inspect session contents.' },
@@ -73,6 +74,7 @@ export function renderDebugView(state: Record<string, unknown>, frontendVersion:
       ${renderStackStatusPane(frontendVersion, statusProjection)}
       ${renderElementsListPane()}
       ${renderBehaviorRegistryPane()}
+      ${renderProofInputPane()}
       ${renderAuthSessionPane()}
       ${renderStatePane(debugState)}
       ${renderPlaybackPane(debugState)}
@@ -215,6 +217,25 @@ function renderBehaviorRegistryPane(): string {
           </div>
         `).join('')}
       </div>
+    `,
+  });
+}
+
+
+function renderProofInputPane(): string {
+  return renderDebugPane({
+    elementId: 'pf.debug.proof_input.pane',
+    code: 'PROOF',
+    title: 'Proof input / output',
+    marker: 'data-debug-pane="proof-input"',
+    copy: 'Explains what proof evidence is useful, what proofrunner should produce, and what the operator must never upload.',
+    body: `
+      <dl class="definition-list" data-debug-proof-input>
+        <div><dt>Useful input</dt><dd>2proofrunner results ZIP, sanitized runtime_data/proofs JSON, screenshot/photo only when safe.</dd></div>
+        <div><dt>Forbidden input</dt><dd>No passwords, Apple IDs, 2FA codes, cookies, tokens, raw .env values, or session file contents.</dd></div>
+        <div><dt>Primary commands</dt><dd><code>proof:debug-page-keybook</code>, <code>proof:debug-page-world-class-plan</code>, future render/style proofs.</dd></div>
+        <div><dt>Status words</dt><dd><span class="debug-status-chip debug-status-chip--pass">PASS</span> <span class="debug-status-chip debug-status-chip--blocked">BLOCKED</span> <span class="debug-status-chip debug-status-chip--fail">FAILED</span></dd></div>
+      </dl>
     `,
   });
 }

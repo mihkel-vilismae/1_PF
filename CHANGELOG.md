@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.214
+
+- Added Debug page proof input/output pane documenting accepted proof ZIPs, forbidden secret inputs, commands, and PASS/BLOCKED/FAILED language.
+
 ## 0.8.213
 
 - Added browser-local Debug page SYSTEM_STATE draft controls for pre-login and post-login manual testing checkpoints, with recovery snapshot disabled.

@@ -2749,3 +2749,5 @@ body[data-dashboard-visual-mode="unselected"] {
 
 .debug-status-chip--info { color: #bfdbfe; border-color: rgba(96, 165, 250, 0.35); }
 .debug-status-chip--blocked { color: #fde68a; border-color: rgba(251, 191, 36, 0.42); background: rgba(251, 191, 36, 0.12); }
+.debug-status-chip--pass { color: #bbf7d0; border-color: rgba(34, 197, 94, 0.42); background: rgba(34, 197, 94, 0.12); }
+.debug-status-chip--fail { color: #fecaca; border-color: rgba(248, 113, 113, 0.42); background: rgba(248, 113, 113, 0.12); }
