@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.209
+
+- Added Debug page visual polish CSS for topbar, three color schemas, and three major visual modes.
+
 ## 0.8.208
 
 - Implemented browser-local Debug page major visual mode cycling with DOM markers for selected visual mode.
