@@ -3,6 +3,12 @@
 
 
 
+
+## 0.8.191
+
+- Added a safe provider proof environment template for geocode, iCloudPD, and real download readiness inputs.
+- Added `proof:provider-env-template` to prove required keys exist, real-provider opt-ins default to false, and no secret values are stored in the template.
+
 ## 0.8.190
 
 - Added `proof:proof-report-blocker-summary` to group existing proof-report blockers by config/env, auth/session, provider/network, product evidence, operator evidence, docs/test, and platform-optional categories.
