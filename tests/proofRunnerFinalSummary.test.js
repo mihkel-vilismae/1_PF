@@ -51,3 +51,16 @@ test('proof summary parser accepts tsv summary format', () => {
   assert.equal(rows[1].name, 'proof:b');
   assert.equal(rows[1].exit_code, 1);
 });
+
+
+test('proof summary parser accepts quoted Windows csv summary format', () => {
+  const rows = parseProofSummaryTable('name,status,exit_code,log_file\n"npm install","PASS","0","Z:\\run\\logs\\000_npm_install.log"\n"proof:proof-runner-final-summary","FAIL","1","Z:\\run\\logs\\110.log"\n');
+  assert.equal(rows.length, 2);
+  assert.equal(rows[0].name, 'npm install');
+  assert.equal(rows[0].status, 'PASS');
+  assert.equal(rows[0].exit_code, 0);
+  assert.equal(rows[1].name, 'proof:proof-runner-final-summary');
+  assert.equal(rows[1].status, 'FAIL');
+  assert.equal(rows[1].exit_code, 1);
+});
+

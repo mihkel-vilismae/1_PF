@@ -1,6 +1,6 @@
 /** Repo ZIP/handoff packaging identity helpers. */
 
-export function expectedRepoArchiveRoot({ project = 'PF_login', version, slug = 'raspberry-proofrunner-platform-filter' } = {}) {
+export function expectedRepoArchiveRoot({ project = 'PF_login', version, slug = 'windows-final-summary-csv-hotfix' } = {}) {
   if (!version) throw new Error('version is required');
   return `${project}--v${version}--${slug}-full_git`;
 }

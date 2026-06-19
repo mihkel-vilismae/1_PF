@@ -52,23 +52,52 @@ export function latestArtifactsByKind(artifacts) {
 }
 
 
+
+function parseDelimitedLine(line, delimiter) {
+  if (delimiter === '\t') return line.split('\t').map((cell) => cell.trim());
+  const cells = [];
+  let cell = '';
+  let inQuotes = false;
+  for (let index = 0; index < line.length; index += 1) {
+    const char = line[index];
+    const next = line[index + 1];
+    if (char === '"') {
+      if (inQuotes && next === '"') {
+        cell += '"';
+        index += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+    if (char === delimiter && !inQuotes) {
+      cells.push(cell.trim());
+      cell = '';
+      continue;
+    }
+    cell += char;
+  }
+  cells.push(cell.trim());
+  return cells;
+}
+
 export function parseProofSummaryTable(text) {
   const normalized = String(text ?? '').trim();
   if (!normalized) return [];
   const lines = normalized.split(/\r?\n/).filter(Boolean);
   if (lines.length < 2) return [];
   const delimiter = lines[0].includes('\t') ? '\t' : ',';
-  const headers = lines[0].split(delimiter).map((header) => header.trim());
+  const headers = parseDelimitedLine(lines[0], delimiter).map((header) => header.trim());
   const requiredHeaders = ['name', 'status', 'exit_code'];
   if (!requiredHeaders.every((header) => headers.includes(header))) return [];
   return lines.slice(1).map((line) => {
-    const cells = line.split(delimiter);
+    const cells = parseDelimitedLine(line, delimiter);
     const row = {};
     headers.forEach((header, index) => { row[header] = cells[index] ?? ''; });
     return {
       name: row.name,
-      status: row.status,
-      exit_code: Number.parseInt(row.exit_code, 10),
+      status: String(row.status ?? '').trim(),
+      exit_code: Number.parseInt(String(row.exit_code ?? '').trim(), 10),
       log_file: row.log_file ?? '',
     };
   });
