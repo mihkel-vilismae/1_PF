@@ -3006,3 +3006,6 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 
 ## 0.8.223
 - Add secret-safe iCloudPD session path validator for repo/parent `.env` and session boundary metadata.
+
+## 0.8.224
+- Add no-download real iCloud listing preflight contract gated by session-path validation and explicit opt-in.
