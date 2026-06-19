@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.217
+
+- Added Debug page style proof contract OpenSpec and source-level style contract proof for toolbar, schemas, modes, responsive/focus styling, status chips, marker, and modal CSS.
+
 ## 0.8.216
 
 - Added Batch 4 ACR and a Debug page keybook-render proof for source-level render contracts covering panes, visual toolbar, markers, modal, behavior registry, and proof input panel.

@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.8.216",
+  "version": "0.8.217",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -108,7 +108,8 @@
     "proof:prooflauncher-gui-selection": "node tools/run-prooflauncher-gui-selection-proof.mjs",
     "proof:debug-page-keybook": "node tools/run-debug-page-keybook-proof.mjs",
     "proof:debug-page-world-class-plan": "node tools/run-debug-page-world-class-plan-proof.mjs",
-    "proof:debug-page-keybook-render": "node tools/run-debug-page-keybook-render-proof.mjs"
+    "proof:debug-page-keybook-render": "node tools/run-debug-page-keybook-render-proof.mjs",
+    "proof:debug-page-style-contract": "node tools/run-debug-page-style-contract-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
