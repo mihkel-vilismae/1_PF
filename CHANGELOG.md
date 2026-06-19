@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.203
+
+- Refined the Debug page visual toggle OpenSpec contract with exact proof text and DOM marker requirements.
+
 ## 0.8.202
 
 - Added Debug page world-class acceptance rubric with explicit 85%/95% checkpoints and non-claims.

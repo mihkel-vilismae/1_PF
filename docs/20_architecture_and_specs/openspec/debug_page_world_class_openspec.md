@@ -107,3 +107,15 @@ Implementation 85%+ requires:
 ## 9. Non-claims
 
 This OpenSpec does not prove real iCloud login, provider session use, real crontab mutation, worker spawning, production database/media mutation, native playback, Raspberry display behavior, address overlay behavior, or recovery after power loss.
+
+## 10. Visual toggle proof contract
+
+The visual toolbar contract is fulfilled when rendered Debug page source contains:
+
+- visible or accessible text `TOGGLE VISUALS`;
+- exact proof text `CLICK TO CHANGE COLOR SCHEMA [1,2,3]`;
+- exact proof text `CLICK TO IMPROVE LOOK BY MAKING MAJOR VISUAL CHANGES [1,2,3]`;
+- stable IDs for the toolbar and both buttons;
+- DOM markers for selected color schema and selected major visual mode.
+
+The first implementation may keep the visual state browser-local. It must not write user settings, mutate backend state, or claim permanent theme storage unless that behavior is separately specified.
