@@ -30,3 +30,22 @@ test('Raspberry handoff launcher contract accepts platform-aware helper usage', 
   const analysis = analyzeRaspberryHandoffLauncherText(buildAcceptedRaspberryLauncherSnippet());
   assert.equal(analysis.status, 'PASSED');
 });
+
+
+test('Raspberry handoff launcher contract rejects helper import from handoff cwd', () => {
+  const wrongCwdLauncher = `PF_PROOF_QUEUE_PLAN_PATH="$QUEUE_PLAN" node --input-type=module <<'NODE_QUEUE' > "$LOG_DIR/proof_scripts.txt"
+import { buildProofRunnerQueuePlanForMode } from './tools/proof-runner-queue-lib.mjs';
+NODE_QUEUE
+mapfile -t PROOFS < "$LOG_DIR/proof_scripts.txt"`;
+  const analysis = analyzeRaspberryHandoffLauncherText(wrongCwdLauncher);
+  assert.equal(analysis.status, 'FAILED');
+  assert.equal(analysis.checks.find((check) => check.name === 'runs_queue_discovery_from_repo_root').passed, false);
+});
+
+test('Raspberry handoff launcher contract rejects empty queue success', () => {
+  const emptyQueueLauncher = `cd "$REPO_ROOT" && node --input-type=module
+mapfile -t PROOFS < "$LOG_DIR/proof_scripts.txt"`;
+  const analysis = analyzeRaspberryHandoffLauncherText(emptyQueueLauncher);
+  assert.equal(analysis.status, 'FAILED');
+  assert.equal(analysis.checks.find((check) => check.name === 'fails_on_empty_or_failed_queue_discovery').passed, false);
+});

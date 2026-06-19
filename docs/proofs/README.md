@@ -315,3 +315,6 @@ Tracked `tools/mpv/windows/.gitkeep` and `tools/mpv/windows/README.md` are allow
 `npm run proof:proofrunner-platform-filter-contract` validates the queue contract that prevented the v0.8.235 RaspberryOS proofrunner from being green: Raspberry/Linux handoff launchers must exclude package-script aliases ending in `:windows`, while Windows launchers must preserve them. The skipped Windows aliases remain listed in launcher logs so the omission is explicit and auditable, not silent.
 
 This proof does not remove the Windows wrapper proofs from `package.json`; it only prevents non-Windows launchers from executing PowerShell-only aliases such as `proof:live-windows-native-playback:windows` on RaspberryOS/Linux.
+
+
+The launcher must run queue discovery from the extracted repo root (`$REPO_ROOT`) because the queue helper imports `./tools/proof-runner-queue-lib.mjs`. If queue discovery fails or returns zero proofs, the launcher must stop with a nonzero exit instead of packaging an empty proof-result ZIP.
