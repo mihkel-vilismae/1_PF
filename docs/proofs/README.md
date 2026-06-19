@@ -195,6 +195,7 @@ These commands are part of the active proof-enabler and local/runtime proof lane
 | Proof run handoff triage | `npm run proof:proof-run-handoff-triage` | local proof upload/summary triage proof |
 | Proofrunner PowerShell safe log name | `npm run proof:proofrunner-powershell-safe-log-name` | local Windows launcher safe-log-name regression proof |
 | Proofrunner handoff artifact export contract | `npm run proof:proofrunner-handoff-artifact-export-contract` | local handoff summary/export contract proof |
+| Proofrunner packaging identity | `npm run proof:proofrunner-packaging-identity` | local repo ZIP/handoff naming and version identity contract proof |
 
 ## Raspberry native image playback proof
 
