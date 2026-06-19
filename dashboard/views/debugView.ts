@@ -37,6 +37,9 @@ export const DEBUG_PAGE_ELEMENTS: DebugPageElementEntry[] = [
   { id: 'pf.debug.state.pane', type: 'pane', label: 'Store and restore state', section: 'Debug / State', marker: 'data-debug-pane=state', reality: 'browser-local/planned-safe', nonClaim: 'No production runtime state, media, database, or restore target is written.' },
   { id: 'pf.debug.state.save_button', type: 'button', label: 'Save state', section: 'Debug / State', action: 'save-state', reality: 'browser-local/fake snapshot preview', nonClaim: 'Does not create production recovery snapshot.' },
   { id: 'pf.debug.state.restore_button', type: 'button', label: 'Restore state', section: 'Debug / State', action: 'restore-state', reality: 'browser-local/blocked preview', nonClaim: 'Does not mutate production restore target.' },
+  { id: 'pf.debug.state.pre_login_snapshot_button', type: 'button', label: 'Save pre-login SYSTEM_STATE', section: 'Debug / State', action: 'save-pre-login-system-state', reality: 'browser-local/system-state draft', nonClaim: 'Does not create production recovery snapshot or copy session secrets.' },
+  { id: 'pf.debug.state.post_login_snapshot_button', type: 'button', label: 'Save post-login SYSTEM_STATE', section: 'Debug / State', action: 'save-post-login-system-state', reality: 'browser-local/system-state draft', nonClaim: 'Does not verify real provider session by itself.' },
+  { id: 'pf.debug.state.recovery_snapshot_disabled_button', type: 'button', label: 'Bare-minimum recovery snapshot disabled', section: 'Debug / State', action: 'planned:bare-minimum-recovery-snapshot', reality: 'disabled-planned-safe', nonClaim: 'Recovery snapshot remains disabled until proofed later.' },
   { id: 'pf.debug.playback_test.pane', type: 'pane', label: 'Test playback', section: 'Debug / Playback Test', marker: 'data-debug-pane=test-playback', reality: 'placeholder/local-ui', nonClaim: 'Does not start native playback or real workers.' },
   { id: 'pf.debug.playback_test.run_button', type: 'button', label: 'Run', section: 'Debug / Playback Test', action: 'test-playback-run', reality: 'placeholder/local-ui', nonClaim: 'Does not start native playback.' },
   { id: 'pf.debug.playback_test.pause_button', type: 'button', label: 'Pause', section: 'Debug / Playback Test', action: 'test-playback-pause', reality: 'placeholder/local-ui', nonClaim: 'Does not pause native playback.' },
@@ -251,8 +254,11 @@ function renderStatePane(debugState: DebugPageState): string {
       <div class="debug-controls">
         ${renderDebugActionButton('Save state', 'save-state', 'pf.debug.state.save_button', 'button button--secondary')}
         ${renderDebugActionButton('Restore state', 'restore-state', 'pf.debug.state.restore_button', 'button button--secondary')}
+        ${renderDebugActionButton('Save pre-login SYSTEM_STATE', 'save-pre-login-system-state', 'pf.debug.state.pre_login_snapshot_button', 'button button--secondary')}
+        ${renderDebugActionButton('Save post-login SYSTEM_STATE', 'save-post-login-system-state', 'pf.debug.state.post_login_snapshot_button', 'button button--secondary')}
+        ${renderPlannedButton('Bare-minimum recovery snapshot disabled', 'pf.debug.state.recovery_snapshot_disabled_button')}
       </div>
-      ${renderActionResult(debugState.actionResults['save-state'] ?? debugState.actionResults['restore-state'])}
+      ${renderActionResult(debugState.actionResults['save-pre-login-system-state'] ?? debugState.actionResults['save-post-login-system-state'] ?? debugState.actionResults['save-state'] ?? debugState.actionResults['restore-state'])}
     `,
   });
 }

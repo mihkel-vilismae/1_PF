@@ -20,3 +20,7 @@ The Debug page should render a behavior registry so the operator can see which c
 ## v0.8.212 Auth / Session planned-safe state
 
 The Debug page Auth / Session pane may show login/check/verify-provider targets, but they must remain `disabled-planned-safe` until the auth/session snapshot and provider secret-boundary contracts are implemented. Visible disabled targets are useful for layout/proof planning, but they are not real login controls yet.
+
+## v0.8.213 SYSTEM_STATE draft controls
+
+Debug page SYSTEM_STATE buttons are browser-local drafts. They can model pre-login and post-login checkpoints for future manual testing, but they do not copy session files, verify provider auth, or create production recovery snapshots. The bare-minimum recovery snapshot remains disabled until later proof work.

@@ -197,6 +197,24 @@ export function clearDebugElementMetadata(state: DebugPageState): DebugPageState
   };
 }
 
+
+export function saveManualTestingSystemStateSnapshot(state: DebugPageState, checkpoint: 'pre-login' | 'post-login'): DebugPageState {
+  const action = checkpoint === 'pre-login' ? 'save-pre-login-system-state' : 'save-post-login-system-state';
+  const label = checkpoint === 'pre-login' ? 'pre-login SYSTEM_STATE' : 'post-login SYSTEM_STATE';
+  return {
+    ...state,
+    actionResults: {
+      ...state.actionResults,
+      [action]: createDebugActionResult(
+        action,
+        'succeeded',
+        `Saved browser-local ${label} draft. This is not a production recovery snapshot and does not copy session secrets.`,
+        'debug-page-system-state-draft',
+      ),
+    },
+  };
+}
+
 export function saveFakeDebugStateSnapshot(state: DebugPageState): DebugPageState {
   return {
     ...state,

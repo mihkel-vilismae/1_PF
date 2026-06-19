@@ -62,7 +62,7 @@ import { renderRunningProcessView } from './views/runningProcessView.ts';
 import { renderDatabaseViewerView } from './views/databaseViewerView.ts';
 import { renderOsPlaybackFullscreenOverlay, renderOsPlaybackView } from './views/osPlaybackView.ts';
 import { renderDebugView } from './views/debugView.ts';
-import { addIsolatedTestMediaItem, buildDefaultDebugPageState, clearDebugElementMetadata, cycleDebugColorSchema, cycleDebugMajorVisualMode, pauseFakeDebugCrontab, previewFakeDebugStateRestore, readFakeDebugCrontab, resumeFakeDebugCrontab, runMockDebugWorker, saveFakeDebugStateSnapshot, selectDebugElementMetadata, setDebugCrontabContent, stageFakeDebugCrontabInstall, type DebugPageState, type DebugWorkerKey } from './services/debugPageModel.ts';
+import { addIsolatedTestMediaItem, buildDefaultDebugPageState, clearDebugElementMetadata, cycleDebugColorSchema, cycleDebugMajorVisualMode, pauseFakeDebugCrontab, previewFakeDebugStateRestore, readFakeDebugCrontab, resumeFakeDebugCrontab, runMockDebugWorker, saveFakeDebugStateSnapshot, saveManualTestingSystemStateSnapshot, selectDebugElementMetadata, setDebugCrontabContent, stageFakeDebugCrontabInstall, type DebugPageState, type DebugWorkerKey } from './services/debugPageModel.ts';
 import { buildOsPlaybackViewModel, OS_PLAYBACK_PLATFORMS, type OsPlaybackPlatform, type PlaybackLogEntryViewModel } from './services/osPlaybackViewModel.ts';
 import { requestJson, setDashboardRuntimeMode } from './services/apiClient.ts';
 import { buildViewARefreshPlan } from './services/viewARefreshPlan.ts';
@@ -1253,6 +1253,26 @@ function bindEvents() {
           fakeOnly: true,
           productionMutation: false,
           restoreMutation: false,
+        });
+        return;
+      }
+      if (action === 'save-pre-login-system-state') {
+        patchDebugPage((debugPage) => saveManualTestingSystemStateSnapshot(debugPage, 'pre-login'));
+        pushHistory('DEBUG', 'success', 'Saved browser-local pre-login SYSTEM_STATE draft.', {
+          action,
+          browserLocal: true,
+          productionMutation: false,
+          sessionSecretsCopied: false,
+        });
+        return;
+      }
+      if (action === 'save-post-login-system-state') {
+        patchDebugPage((debugPage) => saveManualTestingSystemStateSnapshot(debugPage, 'post-login'));
+        pushHistory('DEBUG', 'success', 'Saved browser-local post-login SYSTEM_STATE draft.', {
+          action,
+          browserLocal: true,
+          productionMutation: false,
+          sessionSecretsCopied: false,
         });
         return;
       }

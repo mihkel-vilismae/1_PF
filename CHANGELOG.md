@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.213
+
+- Added browser-local Debug page SYSTEM_STATE draft controls for pre-login and post-login manual testing checkpoints, with recovery snapshot disabled.
+
 ## 0.8.212
 
 - Added visible disabled/planned-safe Auth/Session behavior states on the Debug page.
