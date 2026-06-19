@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.193
+
+- Improved iCloudPD config readiness diagnostics with explicit missing-key reporting, grouped readiness categories, and operator-safe env-key guidance.
+- Preserved secret boundaries: proof artifacts report only key names and booleans, never Apple IDs, passwords, cookies, tokens, raw `.env` values, or session files.
+
 
 
 
