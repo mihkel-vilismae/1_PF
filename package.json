@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.8.225",
+  "version": "0.8.226",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -117,7 +117,8 @@
     "proof:auth-session-snapshot-contract": "node tools/run-auth-session-snapshot-contract-proof.mjs",
     "proof:icloudpd-session-path-validator": "node tools/run-icloudpd-session-path-validator-proof.mjs",
     "proof:real-icloud-listing-preflight": "node tools/run-real-icloud-listing-preflight-proof.mjs",
-    "proof:geocode-dry-run-from-sample": "node tools/run-geocode-dry-run-from-sample-proof.mjs"
+    "proof:geocode-dry-run-from-sample": "node tools/run-geocode-dry-run-from-sample-proof.mjs",
+    "proof:runtime-state-durable-checkpoint": "node tools/run-runtime-state-durable-checkpoint-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

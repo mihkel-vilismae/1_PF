@@ -3012,3 +3012,6 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 
 ## 0.8.225
 - Add redacted geocode dry-run proof contract from sample GPS metadata.
+
+## 0.8.226
+- Add durable runtime-state checkpoint contract with future recovery explicitly disabled.
