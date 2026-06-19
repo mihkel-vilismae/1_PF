@@ -66,3 +66,6 @@ When a new Debug page goal is discovered:
 3. Link the OpenSpec section or write `TBD`.
 4. Add safety/proof notes before implementation.
 5. Do not mark `proven` without tests, generated artifacts, or target evidence.
+
+| DBG-GOAL-021 | Add Debug Page Keybook skill and repo inventory seed | Governance/keybook | specified | Keybook | `proof:debug-page-keybook` | Must map panes/buttons to files/docs/tests/proofs/non-claims. |
+| DBG-GOAL-022 | Add stable UI element IDs and `*` marker overlay | Element inventory | planned | Keybook follow-up | UI runtime proof later | Keybook seeds IDs now; rendered attributes and marker behavior come in a later slice. |

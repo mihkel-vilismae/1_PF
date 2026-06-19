@@ -844,6 +844,41 @@
       "next_action": "Resolve decision gate or implement only after matching spec/proof update.",
       "runtime_implementation_claim": false,
       "notes": ""
+    },
+    {
+      "id": "DBG-GOAL-021",
+      "title": "Add Debug Page Keybook skill and repo inventory seed",
+      "category": "debug_page",
+      "status_enum": "IMPLEMENTED",
+      "proof_command_state": "IMPLEMENTED_COMMAND",
+      "proof_command": "npm run proof:debug-page-keybook",
+      "proof_status": "PASSED",
+      "source_paths": [
+        ".codex/skills/debug-page-keybook/SKILL.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.md",
+        "docs/40_backlog_and_tasks/debug_page_keybook.json",
+        "tools/run-debug-page-keybook-proof.mjs",
+        "tests/debugPageKeybook.test.js"
+      ],
+      "next_action": "Keep keybook references current before Debug page changes.",
+      "runtime_implementation_claim": false,
+      "notes": "Repo-local navigation/proof-honesty keybook seed; does not render data-ui-element-id attributes yet."
+    },
+    {
+      "id": "DBG-GOAL-022",
+      "title": "Add stable UI element IDs and asterisk marker overlay",
+      "category": "debug_page",
+      "status_enum": "SPECIFIED",
+      "proof_command_state": "NONE",
+      "proof_command": null,
+      "proof_status": "NOT_APPLICABLE",
+      "source_paths": [
+        "docs/40_backlog_and_tasks/debug_page_keybook.md",
+        "docs/20_architecture_and_specs/openspec/debug_page_openspec.md"
+      ],
+      "next_action": "Implement data-ui-element-id attributes, elist/buttons list, tooltip, and non-disruptive metadata modal in a later UI slice.",
+      "runtime_implementation_claim": false,
+      "notes": "Requirement recorded; not implemented/rendered yet."
     }
   ]
 }

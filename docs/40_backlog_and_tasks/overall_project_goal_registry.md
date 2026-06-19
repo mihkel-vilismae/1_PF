@@ -75,12 +75,15 @@ This registry is the canonical active source for `print overall project complete
 | `IMPL-S2` | Implement backend-owned writes for stages 2-6 against canonical tables | active_backlog | `DECISION_GATED` | `NONE` | `NOT_APPLICABLE` | Resolve decision gate or implement only after matching spec/proof update. |
 | `IMPL-S3` | Introduce runtime_state key/value writes/reads as durable truth surface | active_backlog | `DECISION_GATED` | `NONE` | `NOT_APPLICABLE` | Resolve decision gate or implement only after matching spec/proof update. |
 
+| `DBG-GOAL-021` | Add Debug Page Keybook skill and repo inventory seed | debug_page | `IMPLEMENTED` | `IMPLEMENTED_COMMAND` | `PASSED` | Keep keybook references current before Debug page changes. |
+| `DBG-GOAL-022` | Add stable UI element IDs and asterisk marker overlay | debug_page | `SPECIFIED` | `NONE` | `NOT_APPLICABLE` | Implement `data-ui-element-id`, elist/buttons list, tooltip, and modal in a later UI slice. |
+
 ## Category summary
 
 | Category | Goal count | Strict proven count | Notes |
 |---|---:|---:|---|
 | active_backlog | 11 | 0 | Local status/View A/View C/restore-contract pre-passes are recorded; decision-gated product work remains separate. |
-| debug_page | 20 | 0 | `DBG-GOAL-001`-`DBG-GOAL-019` are implemented with `proof:debug-page-runtime`; strict proven count remains 0 because live Raspberry/provider/hardware proof is separate. |
+| debug_page | 22 | 0 | `DBG-GOAL-001`-`DBG-GOAL-019` are implemented with `proof:debug-page-runtime`; `DBG-GOAL-021` adds the keybook seed; `DBG-GOAL-022` records the future element-ID/asterisk marker requirement. Strict proven count remains 0 because live Raspberry/provider/hardware proof is separate. |
 | raspberry_v1_gate | 11 | 3 | V1 dashboard/screen rows now have local pre-pass proof; strict Raspberry proof still requires live target artifacts. |
 
 ## Non-claims

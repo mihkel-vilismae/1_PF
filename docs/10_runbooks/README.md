@@ -63,6 +63,7 @@ The old `docs/categorized/other_documentation/documentation_workflow_and_invento
 - [Raspberry Project-Owned Launcher](raspberry_project_owned_launcher.md) — conservative Raspberry launcher skeleton with dry-run evidence and optional project-owned API start.
 
 - [Debug Page Runbook](debug_page_runbook.md) — operator/developer guide for the planned Debug page, crontab setup, worker panes, and proof-honesty checks.
+- [Debug Page Keybook](../40_backlog_and_tasks/debug_page_keybook.md) — repo-local lookup map for Debug page elements, buttons, IDs, source files, docs, tests, proofs, and non-claims.
 
 ## Overall project completeness reporting
 

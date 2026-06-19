@@ -4,6 +4,17 @@ Status: operator/developer runbook for the planned Debug page.
 Version introduced: 0.8.131.  
 Related OpenSpec: [`debug_page_openspec.md`](../20_architecture_and_specs/openspec/debug_page_openspec.md).
 
+## Debug Page Keybook
+
+Use the repo-local keybook before changing or analyzing Debug page panes, buttons, element IDs, actions, tests, or proof claims:
+
+- [`../40_backlog_and_tasks/debug_page_keybook.md`](../40_backlog_and_tasks/debug_page_keybook.md)
+- [`../40_backlog_and_tasks/debug_page_keybook.json`](../40_backlog_and_tasks/debug_page_keybook.json)
+- `.codex/skills/debug-page-keybook/SKILL.md`
+
+The keybook maps each Debug page pane/button to source files, docs, tests, proof commands, reality level, and non-claims. It is a navigation and proof-honesty aid, not a runtime proof by itself.
+
+
 ## 1. Purpose
 
 Use the Debug page as a focused control surface for PhotoFrame debug actions. It should help inspect worker state, run controlled debug functions, and view proof/status output without mixing those actions into noisy normal logs.

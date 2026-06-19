@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.199
+
+- Added Debug Page Keybook skill and repo-local Debug page keybook seed.
+- Added `proof:debug-page-keybook` and regression test coverage for keybook references.
+- Referenced the keybook from Debug runbook, Debug OpenSpec, Debug goal registry, and proof docs.
+
+
 ## 0.8.198
 
 - Added prooflauncher GUI/mode-selection contract with all-proofs and minimum-proofs happy paths.

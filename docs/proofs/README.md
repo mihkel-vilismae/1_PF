@@ -284,3 +284,8 @@ Tracked `tools/mpv/windows/.gitkeep` and `tools/mpv/windows/README.md` are allow
 ## Overall project completeness registry proof
 
 - [Overall Project Completeness Registry Proof](overall_project_completeness_registry_proof.md) validates the completeness registry, status enums, planned-vs-implemented proof command split, source paths, and Debug runtime non-claims.
+
+
+## Debug page keybook
+
+| Debug page keybook | `npm run proof:debug-page-keybook` | Validates Debug Page Keybook entries, stable ID uniqueness, file/doc/test/proof references, and current source markers without claiming real runtime/provider behavior. |

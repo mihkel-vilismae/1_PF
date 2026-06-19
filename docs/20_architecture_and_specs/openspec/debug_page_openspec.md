@@ -529,3 +529,15 @@ Implementation-stage acceptance:
 - Image add flow single-entry test passes.
 - Test database isolation proof exists.
 - Real Raspberry crontab behavior is claimed only after Raspberry proof artifact.
+
+## Keybook and element inventory
+
+The Debug page must maintain a repo-local keybook/inventory for panes, buttons, planned stable UI element IDs, source files, docs, tests, proof commands, reality level, and non-claims.
+
+Canonical files:
+
+- `docs/40_backlog_and_tasks/debug_page_keybook.md`
+- `docs/40_backlog_and_tasks/debug_page_keybook.json`
+- `.codex/skills/debug-page-keybook/SKILL.md`
+
+Future `data-ui-element-id` rendering and `*` corner marker behavior must be reconciled with this keybook. Keybook coverage does not prove real backend/provider/crontab/worker/database/media/Raspberry behavior.
