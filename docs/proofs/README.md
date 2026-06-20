@@ -34,6 +34,7 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Auth session usable evidence | `npm run proof:auth-session-usable-evidence` | local auth evidence contract |
 | iCloud filter signature | `npm run proof:icloud-filter-signature` | local filter contract |
 | Download manifest safe schema | `npm run proof:download-manifest-safe-schema` | local manifest contract |
+| Download manifest overlap check | `npm run proof:download-manifest-overlap-check` | local no-loop manifest contract |
 | Real download continuation readiness | `npm run proof:real-download-readiness` | local real-download readiness preflight |
 | Real download continuation | `npm run proof:real-download-continuation` | opt-in real provider |
 | Address display | `npm run proof:address-display` | deterministic local |
@@ -92,7 +93,7 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Proof runner final readiness summary | `npm run proof:proof-runner-final-summary` | local proof-report summary guard |
 | Proof runner queue order | `npm run proof:proof-runner-queue` | local proof-runner ordering contract |
 
-The table above is intentionally complete for current `proof:*` package scripts. As of this repository version, `package.json` exposes 114 proof package scripts and every one must appear in this table. `tests/docsNpmScriptReferences.test.js` guards active documentation against stale `npm run ...` script references and against missing proof-runner inventory entries.
+The table above is intentionally complete for current `proof:*` package scripts. As of this repository version, `package.json` exposes 115 proof package scripts and every one must appear in this table. `tests/docsNpmScriptReferences.test.js` guards active documentation against stale `npm run ...` script references and against missing proof-runner inventory entries.
 
 When adding, renaming, or removing a `proof:*` script, update this table in the same change as the package script so the proof catalog does not drift from the runnable command surface. Keep runtime-mode wording conservative: table entries describe how to run a proof command, not that the underlying hardware/provider/runtime behavior is already proven.
 

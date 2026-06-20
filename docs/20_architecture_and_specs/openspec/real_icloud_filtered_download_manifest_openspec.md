@@ -85,3 +85,7 @@ The filtered download proof must call the normalized filter signature helper bef
 ## Download manifest schema proof contract
 
 The manifest schema proof must validate a safe, uploadable JSON manifest before any live provider proof can claim real downloads. The manifest records `safe_source_id_hash`, `file_sha256`, `extension`, `size_bytes`, and `downloaded_at`; it must reject raw media, raw provider output, private paths, credentials, tokens, cookies, and 2FA values.
+
+## Manifest overlap proof contract
+
+The no-loop proof must compare at least two batches with the same `filter_signature`. It must fail if batch 2 repeats batch 1 source IDs, file hashes, or filenames. This contract intentionally models the operator's target failure case: `1,2,3,4,5 -> 1,2,3,4,5`.
