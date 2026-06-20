@@ -3026,3 +3026,8 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 
 - Hardened the PowerShell prooflauncher regression proof to reject accidental carriage-return path strings caused by `\run_` in generated launcher text.
 - Documented the nested `Join-Path` rule for generated Windows launcher work directories.
+
+## 0.8.250 — Raspberry prooflauncher queue newline hotfix
+
+- Hardened the Raspberry/Linux prooflauncher contract to reject escape-sensitive `join('\n')` heredoc snippets.
+- Regenerated the launcher pattern to use `String.fromCharCode(10)` for proof queue output.

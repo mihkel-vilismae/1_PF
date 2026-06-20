@@ -71,6 +71,11 @@ export function analyzeRaspberryHandoffLauncherText(text = '') {
       passed: /proof:proof-runner-final-summary/.test(source) || /ordered_proofs/.test(source),
       detail: 'Final summary must still run after proof-producing commands.',
     },
+    {
+      name: 'no_escape_sensitive_newline_join_literal',
+      passed: !/join\('\n'\)/.test(source) && !/join\('\r?\n'\)/.test(source),
+      detail: 'Generated Bash heredoc Node snippets must avoid join(\'\\n\') because launcher generation can turn it into a broken multiline JavaScript string. Use String.fromCharCode(10).',
+    },
   ];
   return { status: checks.every((check) => check.passed) ? 'PASSED' : 'FAILED', checks };
 }
@@ -83,7 +88,7 @@ const pkg = JSON.parse(readFileSync('./package.json','utf8'));
 const plan = buildProofRunnerQueuePlanForMode(pkg, { runMode: 'all', includeWindowsAliases: false });
 writeFileSync(process.env.PF_PROOF_QUEUE_PLAN_PATH, JSON.stringify(plan, null, 2));
 console.error('skipped_windows_aliases=' + JSON.stringify(plan.skipped_windows_aliases));
-console.log(plan.ordered_proofs.join('\\n'));
+console.log(plan.ordered_proofs.join(String.fromCharCode(10)));
 NODE_QUEUE
 ); then echo "Proof queue discovery failed"; exit 5; fi
 mapfile -t PROOFS < "$LOG_DIR/proof_scripts.txt"

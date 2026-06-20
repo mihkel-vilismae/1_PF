@@ -1,6 +1,6 @@
 /** Repo ZIP/handoff packaging identity helpers. */
 
-export function expectedRepoArchiveRoot({ project = 'PF_login', version, slug = 'windows-prooflauncher-workdir-hotfix' } = {}) {
+export function expectedRepoArchiveRoot({ project = 'PF_login', version, slug = 'raspberry-prooflauncher-queue-newline-hotfix' } = {}) {
   if (!version) throw new Error('version is required');
   return `${project}--v${version}--${slug}-full_git`;
 }

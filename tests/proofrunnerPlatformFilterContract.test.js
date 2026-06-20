@@ -49,3 +49,17 @@ mapfile -t PROOFS < "$LOG_DIR/proof_scripts.txt"`;
   assert.equal(analysis.status, 'FAILED');
   assert.equal(analysis.checks.find((check) => check.name === 'fails_on_empty_or_failed_queue_discovery').passed, false);
 });
+
+
+test('Raspberry handoff launcher contract rejects escape-sensitive newline join literal', () => {
+  const brokenNewlineLauncher = `if ! (cd "$REPO_ROOT" && node --input-type=module <<'NODE_QUEUE'
+console.log(plan.ordered_proofs.join('\n'));
+NODE_QUEUE
+); then echo failed; fi
+includeWindowsAliases: false
+skipped_windows_aliases
+proof:proof-runner-final-summary`;
+  const analysis = analyzeRaspberryHandoffLauncherText(brokenNewlineLauncher);
+  assert.equal(analysis.status, 'FAILED');
+  assert.equal(analysis.checks.find((check) => check.name === 'no_escape_sensitive_newline_join_literal').passed, false);
+});

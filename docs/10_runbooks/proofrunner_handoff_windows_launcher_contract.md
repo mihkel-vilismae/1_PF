@@ -73,3 +73,8 @@ Generated PowerShell launchers must not use a double-quoted string containing `\
 $WorkRoot = Join-Path $RootDir '_pf_2proofrunner_work'
 $WorkDir = Join-Path $WorkRoot "run_${RunId}_win"
 ```
+
+
+## Bash heredoc Node queue output escaping
+
+Generated Raspberry/Linux launchers must avoid `join('\\n')` inside the embedded Node queue-discovery heredoc. Use `String.fromCharCode(10)` instead so Python or other launcher-generation code cannot turn `\n` into a real newline inside a JavaScript string literal.
