@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.8.244",
+  "version": "0.8.245",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -130,7 +130,8 @@
     "proof:icloud-filter-signature": "node tools/run-icloud-filter-signature-proof.mjs",
     "proof:download-manifest-safe-schema": "node tools/run-download-manifest-safe-schema-proof.mjs",
     "proof:download-manifest-overlap-check": "node tools/run-download-manifest-overlap-check-proof.mjs",
-    "proof:download-batch-ledger": "node tools/run-download-batch-ledger-proof.mjs"
+    "proof:download-batch-ledger": "node tools/run-download-batch-ledger-proof.mjs",
+    "proof:real-icloud-download-preflight": "node tools/run-real-icloud-download-preflight-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

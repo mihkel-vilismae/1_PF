@@ -36,6 +36,7 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Download manifest safe schema | `npm run proof:download-manifest-safe-schema` | local manifest contract |
 | Download manifest overlap check | `npm run proof:download-manifest-overlap-check` | local no-loop manifest contract |
 | Download batch ledger | `npm run proof:download-batch-ledger` | local ledger contract |
+| Real iCloud download preflight | `npm run proof:real-icloud-download-preflight` | real-provider preflight, blocked by default |
 | Real download continuation readiness | `npm run proof:real-download-readiness` | local real-download readiness preflight |
 | Real download continuation | `npm run proof:real-download-continuation` | opt-in real provider |
 | Address display | `npm run proof:address-display` | deterministic local |
