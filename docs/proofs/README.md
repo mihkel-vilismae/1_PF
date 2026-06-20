@@ -350,3 +350,5 @@ The launcher must run queue discovery from the extracted repo root (`$REPO_ROOT`
 | Real iCloud download report | `npm run proof:real-icloud-download-report` | Summarizes auth/filter/dir/batch/no-loop/redaction checks. |
 
 | Regular worker real download bridge | `npm run proof:regular-worker-real-download-bridge` | Gates worker bridge on real no-loop evidence and opt-in. |
+
+| Regular worker consumes download manifest | `npm run proof:regular-worker-consumes-download-manifest` | Gates worker manifest consumption on evidence and opt-in. |

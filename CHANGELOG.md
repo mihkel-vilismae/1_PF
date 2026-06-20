@@ -3064,3 +3064,6 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 
 ## 0.9.0
 - Add regular worker real-download bridge proof gate.
+
+## 0.9.1
+- Add regular worker manifest consumption proof gate.

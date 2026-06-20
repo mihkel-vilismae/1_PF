@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.9.0",
+  "version": "0.9.1",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -145,7 +145,8 @@
     "proof:real-provider-artifact-redaction": "node tools/run-real-provider-artifact-redaction-proof.mjs",
     "proof:download-partial-file-safety": "node tools/run-download-partial-file-safety-proof.mjs",
     "proof:real-icloud-download-report": "node tools/run-real-icloud-download-report-proof.mjs",
-    "proof:regular-worker-real-download-bridge": "node tools/run-regular-worker-real-download-bridge-proof.mjs"
+    "proof:regular-worker-real-download-bridge": "node tools/run-regular-worker-real-download-bridge-proof.mjs",
+    "proof:regular-worker-consumes-download-manifest": "node tools/run-regular-worker-consumes-download-manifest-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
