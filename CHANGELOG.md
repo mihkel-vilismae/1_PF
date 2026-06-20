@@ -3070,3 +3070,6 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 
 ## 0.9.2
 - Add regular worker filter signature bridge proof.
+
+## 0.9.3
+- Add operator status proof for real download evidence path.
