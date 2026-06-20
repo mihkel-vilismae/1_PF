@@ -3073,3 +3073,6 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 
 ## 0.9.3
 - Add operator status proof for real download evidence path.
+
+## 0.9.4
+- Add real download error classification proof and Batch C/D XACR audit.
