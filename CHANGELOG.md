@@ -3034,3 +3034,6 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 
 ## 0.8.251
 - Add real auth/session usable evidence producer proof gate.
+
+## 0.8.252
+- Add real iCloud filtered download operator runbook proof.

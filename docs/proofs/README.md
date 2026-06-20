@@ -330,3 +330,5 @@ This proof does not remove the Windows wrapper proofs from `package.json`; it on
 The launcher must run queue discovery from the extracted repo root (`$REPO_ROOT`) because the queue helper imports `./tools/proof-runner-queue-lib.mjs`. If queue discovery fails or returns zero proofs, the launcher must stop with a nonzero exit instead of packaging an empty proof-result ZIP.
 
 | Auth session usable evidence producer | `npm run proof:auth-session-usable-evidence-producer` | Validates redacted operator auth/session evidence for real-provider proof inputs. |
+
+| Real iCloud proof runbook | `npm run proof:real-icloud-proof-runbook` | Validates operator runbook and required env/artifact guidance. |
