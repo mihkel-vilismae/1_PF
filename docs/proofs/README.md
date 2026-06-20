@@ -348,3 +348,5 @@ The launcher must run queue discovery from the extracted repo root (`$REPO_ROOT`
 | Download partial file safety | `npm run proof:download-partial-file-safety` | Rejects zero-byte/temp/partial manifest items. |
 
 | Real iCloud download report | `npm run proof:real-icloud-download-report` | Summarizes auth/filter/dir/batch/no-loop/redaction checks. |
+
+| Regular worker real download bridge | `npm run proof:regular-worker-real-download-bridge` | Gates worker bridge on real no-loop evidence and opt-in. |
