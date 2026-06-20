@@ -3037,3 +3037,6 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 
 ## 0.8.252
 - Add real iCloud filtered download operator runbook proof.
+
+## 0.8.253
+- Add real iCloud filter config proof.
