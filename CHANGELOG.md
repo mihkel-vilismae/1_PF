@@ -3052,3 +3052,6 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 
 ## 0.8.257
 - Add real no-loop producer proof over batch artifacts.
+
+## 0.8.258
+- Add real-provider artifact redaction proof.
