@@ -3031,3 +3031,6 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 
 - Hardened the Raspberry/Linux prooflauncher contract to reject escape-sensitive `join('\n')` heredoc snippets.
 - Regenerated the launcher pattern to use `String.fromCharCode(10)` for proof queue output.
+
+## 0.8.251
+- Add real auth/session usable evidence producer proof gate.

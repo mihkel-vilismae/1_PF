@@ -1,0 +1,14 @@
+# Auth session usable evidence producer proof
+
+Command: `npm run proof:auth-session-usable-evidence-producer`
+
+Validates redacted operator auth/session evidence for real-provider proof inputs.
+
+Status semantics:
+- `PASSED` means the provided local/safe evidence validates.
+- `BLOCKED` means required opt-in or operator-machine artifact inputs are missing.
+- `FAILED` is reserved for malformed/contradictory evidence where safely detectable.
+
+Non-claims:
+- No credentials, 2FA codes, cookies, raw session files, raw provider logs, or private media contents are captured by this proof.
+- This proof does not by itself claim full Raspberry v1 readiness.
