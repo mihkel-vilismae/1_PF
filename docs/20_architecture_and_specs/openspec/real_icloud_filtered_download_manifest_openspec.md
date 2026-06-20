@@ -89,3 +89,16 @@ The manifest schema proof must validate a safe, uploadable JSON manifest before 
 ## Manifest overlap proof contract
 
 The no-loop proof must compare at least two batches with the same `filter_signature`. It must fail if batch 2 repeats batch 1 source IDs, file hashes, or filenames. This contract intentionally models the operator's target failure case: `1,2,3,4,5 -> 1,2,3,4,5`.
+
+
+## Batch B artifact-gated proof chain
+
+Status: implemented as local/artifact-consuming proof gates in v0.8.244-v0.8.248.
+
+- `proof:download-batch-ledger` validates append-only batch history.
+- `proof:real-icloud-download-preflight` checks explicit real-download opt-in, usable auth-session evidence, normalized filters, download directory, and ledger path without contacting iCloud.
+- `proof:real-icloud-filtered-download-batch1` validates a safe first-batch manifest artifact.
+- `proof:real-icloud-filtered-download-batch2` validates a safe second-batch manifest artifact.
+- `proof:real-icloud-download-no-loop` validates that batch 2 does not repeat batch 1 source ID hashes, file hashes, or safe filenames.
+
+These proofs stay `BLOCKED` by default when real operator-machine evidence is absent.

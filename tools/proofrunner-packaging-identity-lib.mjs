@@ -1,6 +1,6 @@
 /** Repo ZIP/handoff packaging identity helpers. */
 
-export function expectedRepoArchiveRoot({ project = 'PF_login', version, slug = 'real-icloud-proof-foundation-batch-a' } = {}) {
+export function expectedRepoArchiveRoot({ project = 'PF_login', version, slug = 'real-icloud-download-artifacts-batch-b' } = {}) {
   if (!version) throw new Error('version is required');
   return `${project}--v${version}--${slug}-full_git`;
 }

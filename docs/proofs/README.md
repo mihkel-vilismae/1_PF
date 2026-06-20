@@ -39,6 +39,7 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Real iCloud download preflight | `npm run proof:real-icloud-download-preflight` | real-provider preflight, blocked by default |
 | Real iCloud filtered download batch 1 | `npm run proof:real-icloud-filtered-download-batch1` | real-provider artifact proof, blocked by default |
 | Real iCloud filtered download batch 2 | `npm run proof:real-icloud-filtered-download-batch2` | real-provider artifact proof, blocked by default |
+| Real iCloud download no-loop | `npm run proof:real-icloud-download-no-loop` | real-provider artifact no-loop proof, blocked by default |
 | Real download continuation readiness | `npm run proof:real-download-readiness` | local real-download readiness preflight |
 | Real download continuation | `npm run proof:real-download-continuation` | opt-in real provider |
 | Address display | `npm run proof:address-display` | deterministic local |
