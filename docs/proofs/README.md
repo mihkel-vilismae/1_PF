@@ -346,3 +346,5 @@ The launcher must run queue discovery from the extracted repo root (`$REPO_ROOT`
 | Real provider artifact redaction | `npm run proof:real-provider-artifact-redaction` | Audits configured artifacts for secret-like values. |
 
 | Download partial file safety | `npm run proof:download-partial-file-safety` | Rejects zero-byte/temp/partial manifest items. |
+
+| Real iCloud download report | `npm run proof:real-icloud-download-report` | Summarizes auth/filter/dir/batch/no-loop/redaction checks. |

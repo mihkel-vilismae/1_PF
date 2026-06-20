@@ -3058,3 +3058,6 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 
 ## 0.8.259
 - Add partial download/temp file safety proof.
+
+## 0.8.260
+- Add real iCloud download evidence report proof.
