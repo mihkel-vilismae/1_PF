@@ -77,3 +77,7 @@ A later live proof may unlock real filtered download only after a sanitized auth
 - `safe_session_id_hash` with a SHA-256 digest.
 
 The evidence object must reject Apple IDs, passwords, 2FA codes, cookies, tokens, raw session paths, and raw provider output.
+
+## Filter signature proof contract
+
+The filtered download proof must call the normalized filter signature helper before any manifest comparison. Two batches may be compared only when the `filter_signature` is identical. The canonical filter JSON must exclude credentials, cookies, tokens, 2FA values, raw provider output, and private media paths.
