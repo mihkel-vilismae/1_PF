@@ -3049,3 +3049,6 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 
 ## 0.8.256
 - Add real filtered download batch 2 producer proof.
+
+## 0.8.257
+- Add real no-loop producer proof over batch artifacts.

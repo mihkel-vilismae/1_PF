@@ -340,3 +340,5 @@ The launcher must run queue discovery from the extracted repo root (`$REPO_ROOT`
 | Real iCloud batch 1 producer | `npm run proof:real-icloud-batch1-producer` | Validates first real batch manifest when supplied. |
 
 | Real iCloud batch 2 producer | `npm run proof:real-icloud-batch2-producer` | Validates second real batch manifest when supplied. |
+
+| Real iCloud no-loop producer | `npm run proof:real-icloud-no-loop-producer` | Validates batch1/batch2 no-overlap artifacts. |
