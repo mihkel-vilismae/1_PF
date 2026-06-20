@@ -64,3 +64,16 @@ The no-overlap proof must compare at least:
 ## Non-claims
 
 This OpenSpec does not claim live iCloud authentication, real download success, Raspberry display output, geocode, or v1 readiness. It defines the proof contract those later slices must satisfy.
+
+## Auth session usable evidence contract
+
+A later live proof may unlock real filtered download only after a sanitized auth evidence object validates these fields:
+
+- `session_state: usable`;
+- `operator_completed_2fa: true`;
+- `checkpoint_marker_seen: true`;
+- `redacted: true`;
+- `secret_fields_present: false`;
+- `safe_session_id_hash` with a SHA-256 digest.
+
+The evidence object must reject Apple IDs, passwords, 2FA codes, cookies, tokens, raw session paths, and raw provider output.
