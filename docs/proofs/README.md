@@ -336,3 +336,5 @@ The launcher must run queue discovery from the extracted repo root (`$REPO_ROOT`
 | Real iCloud filter config | `npm run proof:real-icloud-filter-config` | Validates normalized real download filter config/signature. |
 
 | Real iCloud controlled download dir | `npm run proof:real-icloud-controlled-download-dir` | Validates proof-owned download directory setup. |
+
+| Real iCloud batch 1 producer | `npm run proof:real-icloud-batch1-producer` | Validates first real batch manifest when supplied. |

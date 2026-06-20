@@ -3043,3 +3043,6 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 
 ## 0.8.254
 - Add controlled real iCloud download directory proof.
+
+## 0.8.255
+- Add real filtered download batch 1 producer proof.

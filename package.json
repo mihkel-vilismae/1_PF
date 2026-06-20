@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.8.254",
+  "version": "0.8.255",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -138,7 +138,8 @@
     "proof:auth-session-usable-evidence-producer": "node tools/run-auth-session-usable-evidence-producer-proof.mjs",
     "proof:real-icloud-proof-runbook": "node tools/run-real-icloud-proof-runbook-proof.mjs",
     "proof:real-icloud-filter-config": "node tools/run-real-icloud-filter-config-proof.mjs",
-    "proof:real-icloud-controlled-download-dir": "node tools/run-real-icloud-controlled-download-dir-proof.mjs"
+    "proof:real-icloud-controlled-download-dir": "node tools/run-real-icloud-controlled-download-dir-proof.mjs",
+    "proof:real-icloud-batch1-producer": "node tools/run-real-icloud-batch1-producer-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
