@@ -3021,3 +3021,8 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 
 ## 0.8.228
 - Add PowerShell proofrunner safe-log-name regression contract after invalid `-replace` regex failure in PROOF_WIN.PS1.
+
+## 0.8.249 — Windows prooflauncher workdir path hotfix
+
+- Hardened the PowerShell prooflauncher regression proof to reject accidental carriage-return path strings caused by `\run_` in generated launcher text.
+- Documented the nested `Join-Path` rule for generated Windows launcher work directories.

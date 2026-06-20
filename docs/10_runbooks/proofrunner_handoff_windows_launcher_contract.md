@@ -63,3 +63,13 @@ $safe = $proof.Replace(':','_').Replace('/','_').Replace('\','_')
 ```
 
 This prevents repeated `InvalidOperation: The regular expression pattern [:/\] is not valid` errors while the proof queue continues.
+
+
+## Work directory path escaping
+
+Generated PowerShell launchers must not use a double-quoted string containing `\run_` for the work directory. In Python-generated launcher text this can become a carriage return (`\r`) and produce paths like `_pf_2proofrunner_work un_...`. Use nested `Join-Path` calls instead:
+
+```powershell
+$WorkRoot = Join-Path $RootDir '_pf_2proofrunner_work'
+$WorkDir = Join-Path $WorkRoot "run_${RunId}_win"
+```

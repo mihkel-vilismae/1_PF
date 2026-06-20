@@ -1,6 +1,6 @@
 /** Repo ZIP/handoff packaging identity helpers. */
 
-export function expectedRepoArchiveRoot({ project = 'PF_login', version, slug = 'real-icloud-download-artifacts-batch-b' } = {}) {
+export function expectedRepoArchiveRoot({ project = 'PF_login', version, slug = 'windows-prooflauncher-workdir-hotfix' } = {}) {
   if (!version) throw new Error('version is required');
   return `${project}--v${version}--${slug}-full_git`;
 }

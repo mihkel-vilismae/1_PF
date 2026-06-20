@@ -204,7 +204,7 @@ These commands are part of the active proof-enabler and local/runtime proof lane
 | Geocode dry run from sample | `npm run proof:geocode-dry-run-from-sample` | deterministic local sample GPS/geocode dry-run |
 | Runtime state durable checkpoint | `npm run proof:runtime-state-durable-checkpoint` | local durable runtime-state checkpoint contract proof |
 | Proof run handoff triage | `npm run proof:proof-run-handoff-triage` | local proof upload/summary triage proof |
-| Proofrunner PowerShell safe log name | `npm run proof:proofrunner-powershell-safe-log-name` | local Windows launcher safe-log-name regression proof |
+| Proofrunner PowerShell safe log name/path | `npm run proof:proofrunner-powershell-safe-log-name` | local Windows launcher safe log-name and workdir path regression proof |
 | Proofrunner handoff artifact export contract | `npm run proof:proofrunner-handoff-artifact-export-contract` | local handoff summary/export contract proof |
 | Proofrunner packaging identity | `npm run proof:proofrunner-packaging-identity` | local repo ZIP/handoff naming and version identity contract proof |
 | Proofrunner platform filter contract | `npm run proof:proofrunner-platform-filter-contract` | local handoff platform-filter contract proof |
