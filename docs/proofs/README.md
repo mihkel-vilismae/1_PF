@@ -352,3 +352,5 @@ The launcher must run queue discovery from the extracted repo root (`$REPO_ROOT`
 | Regular worker real download bridge | `npm run proof:regular-worker-real-download-bridge` | Gates worker bridge on real no-loop evidence and opt-in. |
 
 | Regular worker consumes download manifest | `npm run proof:regular-worker-consumes-download-manifest` | Gates worker manifest consumption on evidence and opt-in. |
+
+| Regular worker filter signature | `npm run proof:regular-worker-filter-signature` | Checks worker filter signature alignment with manifest. |
