@@ -81,3 +81,7 @@ The evidence object must reject Apple IDs, passwords, 2FA codes, cookies, tokens
 ## Filter signature proof contract
 
 The filtered download proof must call the normalized filter signature helper before any manifest comparison. Two batches may be compared only when the `filter_signature` is identical. The canonical filter JSON must exclude credentials, cookies, tokens, 2FA values, raw provider output, and private media paths.
+
+## Download manifest schema proof contract
+
+The manifest schema proof must validate a safe, uploadable JSON manifest before any live provider proof can claim real downloads. The manifest records `safe_source_id_hash`, `file_sha256`, `extension`, `size_bytes`, and `downloaded_at`; it must reject raw media, raw provider output, private paths, credentials, tokens, cookies, and 2FA values.
