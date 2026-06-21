@@ -289,6 +289,7 @@ The standalone path is intentionally stricter than a successful shell exit: `pro
 | Raspberry address overlay device display | `npm run proof:raspberry-address-overlay-device-display` | Operator/evidence gate for native device display address overlay. |
 | Address overlay proof marker contract | `npm run proof:address-overlay-proof-marker-contract` | Generates the visible `PF_ADDR_<run_id>` marker used to link later visual evidence to a proof run. |
 | Raspberry address overlay display command | `npm run proof:raspberry-address-overlay-display-command` | Attempts configured Raspberry display command with rendered marker artifact; does not prove visual visibility. |
+| Raspberry address overlay device evidence | `npm run proof:raspberry-address-overlay-device-evidence` | Validates structured screenshot/framebuffer/operator-photo marker evidence without OCR. |
 
 | Raspberry regular worker product pipeline | `npm run proof:raspberry-regular-stage-worker-product-pipeline` | Evidence gate for real regular_stage_worker download/index/GPS/geocode/queue work. |
 

@@ -46,3 +46,20 @@ The first implementation slice for `address_overlay_device_display` adds support
 ### Readiness boundary
 
 The v1 `address_overlay_device_display` gate must remain blocked until D4-D5 collect and validate visual evidence containing the exact marker. Render-only and display-command-only proofs are insufficient.
+
+
+## v0.10.6 D4-D5 visual evidence boundary
+
+D4-D5 add operator-safe visual evidence metadata without OCR.
+
+### D4 visual evidence package
+
+`proof:raspberry-address-overlay-device-evidence` validates structured evidence for framebuffer capture, screenshot, mpv screenshot, browser capture, or operator photo. Required evidence includes a SHA-256 artifact hash, redacted path flag, expected marker, observed marker, and `marker_validation: matched`.
+
+### D5 device-display marker gate
+
+`proof:raspberry-address-overlay-device-display` now requires the same marker-matched visual evidence and Raspberry target context before passing. It must fail supplied-but-mismatched evidence and must block when evidence is absent or the target is not Raspberry-like.
+
+### OCR boundary
+
+No OCR or automatic pixel inspection is performed in this slice. The proof is structured/operator evidence only. Future work may add optional OCR/camera verification, but this slice intentionally keeps evidence upload-safe and deterministic.
