@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.8
+
+- Add prooflauncher progress contract for colorized output, more verbose proof status, per-proof heartbeat elapsed time, and ETA fallback wording.
+- Regenerate Windows and Raspberry prooflaunchers to show running elapsed time and previous-history ETA text while proof/test commands are still executing.
+- Preserve v0.9.7 flat-root handoff, short-workdir, output-root, and last_run_stats behavior.
+
 ## 0.9.7
 
 - Add repo-owned proofrunner handoff runtime helpers for `last_run_stats.json` generation, replacing fragile inline Python stats generation in launchers.

@@ -209,6 +209,7 @@ These commands are part of the active proof-enabler and local/runtime proof lane
 | Proofrunner packaging identity | `npm run proof:proofrunner-packaging-identity` | local repo ZIP/handoff naming and version identity contract proof |
 | Proofrunner platform filter contract | `npm run proof:proofrunner-platform-filter-contract` | local handoff platform-filter contract proof |
 | Proofrunner handoff runtime contract | `npm run proof:proofrunner-handoff-runtime-contract` | local handoff output-root and last-run-stats contract proof |
+| Proofrunner launcher progress contract | `npm run proof:proofrunner-launcher-progress-contract` | local launcher color, heartbeat, elapsed-time, and ETA contract proof |
 
 ## Raspberry native image playback proof
 
