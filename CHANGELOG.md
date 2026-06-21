@@ -1,3 +1,10 @@
+
+## 0.10.0 - Operator-safe iCloud readiness/session checkpoint
+
+- Require redacted auth session usable evidence in real iCloudPD readiness before claiming ready inputs.
+- Add `proof:operator-safe-icloud-session-checkpoint` for B1.1/B1.2 ordering, auth evidence, and secret-safety boundaries.
+- Preserve proofrunner launcher/runtime behavior from v0.9.8.
+
 # Changelog
 
 ## 0.9.8

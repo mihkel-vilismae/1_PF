@@ -364,3 +364,5 @@ The launcher must run queue discovery from the extracted repo root (`$REPO_ROOT`
 | Real iCloud evidence run package | `npm run proof:real-icloud-evidence-run-package` | Validates the grouped operator evidence package for auth/filter/download/manifests/no-loop/redaction. |
 
 | Real iCloud evidence ZIP contract | `npm run proof:real-icloud-evidence-zip-contract` | Validates the uploadable evidence ZIP/package manifest contract and secret-safety requirements. |
+
+| Operator-safe iCloud session checkpoint | `npm run proof:operator-safe-icloud-session-checkpoint` | Validates B1.1/B1.2 operator-safe real iCloud readiness ordering, auth-session evidence requirement, and secret-safety boundaries. |
