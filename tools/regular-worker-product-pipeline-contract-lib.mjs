@@ -1,4 +1,13 @@
 /** Contract helpers for the regular_stage_worker product pipeline evidence. */
+import {
+  REGULAR_WORKER_PRODUCT_ACCEPTED_SOURCE_KINDS,
+  REGULAR_WORKER_PRODUCT_ALL_FLAGS,
+  REGULAR_WORKER_PRODUCT_CORE_FLAGS,
+  REGULAR_WORKER_PRODUCT_ENRICHMENT_FLAGS,
+  deriveRegularWorkerProductEvidenceFlags,
+  evaluateRegularWorkerStructuredEvidence,
+} from './regular-worker-product-evidence-lib.mjs';
+
 export const REGULAR_WORKER_PRODUCT_PIPELINE_STAGES = Object.freeze([
   'source_discovery',
   'download_or_import',
@@ -23,18 +32,30 @@ export function buildRegularWorkerProductPipelineContract({ sourcePriority = 'ic
     sourcePriority,
     writesPolicy,
     missingGpsPolicy,
+    acceptedSourceKinds: REGULAR_WORKER_PRODUCT_ACCEPTED_SOURCE_KINDS,
+    coreEvidenceFlags: REGULAR_WORKER_PRODUCT_CORE_FLAGS,
+    enrichmentEvidenceFlags: REGULAR_WORKER_PRODUCT_ENRICHMENT_FLAGS,
     stages: REGULAR_WORKER_PRODUCT_PIPELINE_STAGES.map((stage, index) => ({ stage, order: index + 1, evidenceFlag: REGULAR_WORKER_PRODUCT_EVIDENCE_FLAGS[stage] })),
     finalEvidenceFlag: 'worker_status_product_work_claimed',
-    nonClaims: ['contract is not a runtime product proof', 'contract does not prove iCloud access', 'contract does not mutate database rows'],
+    nonClaims: ['contract is not a runtime product proof', 'contract does not prove iCloud access', 'contract does not prove real GPS/geocode provider output', 'contract does not mutate database rows'],
   };
 }
 
 export function evaluateRegularWorkerProductEvidenceAgainstContract(evidence = {}) {
-  const missingFlags = Object.values(REGULAR_WORKER_PRODUCT_EVIDENCE_FLAGS).filter((flag) => evidence[flag] !== true);
-  if (evidence.worker_status_product_work_claimed !== true) missingFlags.push('worker_status_product_work_claimed');
+  const flags = deriveRegularWorkerProductEvidenceFlags(evidence);
+  const missingFlags = REGULAR_WORKER_PRODUCT_ALL_FLAGS.filter((flag) => flags[flag] !== true);
+  const missingCoreFlags = REGULAR_WORKER_PRODUCT_CORE_FLAGS.filter((flag) => flags[flag] !== true);
+  const missingEnrichmentFlags = REGULAR_WORKER_PRODUCT_ENRICHMENT_FLAGS.filter((flag) => flags[flag] !== true);
+  const structured = evaluateRegularWorkerStructuredEvidence(evidence);
   return {
     complete: missingFlags.length === 0,
+    coreComplete: missingCoreFlags.length === 0,
+    structuredComplete: structured.complete,
+    enrichedComplete: structured.enrichedComplete,
     missingFlags,
-    stageResults: REGULAR_WORKER_PRODUCT_PIPELINE_STAGES.map((stage) => ({ stage, flag: REGULAR_WORKER_PRODUCT_EVIDENCE_FLAGS[stage], passed: evidence[REGULAR_WORKER_PRODUCT_EVIDENCE_FLAGS[stage]] === true })),
+    missingCoreFlags,
+    missingEnrichmentFlags,
+    structuredFailedReasons: structured.failedReasons,
+    stageResults: REGULAR_WORKER_PRODUCT_PIPELINE_STAGES.map((stage) => ({ stage, flag: REGULAR_WORKER_PRODUCT_EVIDENCE_FLAGS[stage], passed: flags[REGULAR_WORKER_PRODUCT_EVIDENCE_FLAGS[stage]] === true })),
   };
 }
