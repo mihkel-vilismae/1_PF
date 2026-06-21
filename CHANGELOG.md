@@ -3076,3 +3076,6 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 
 ## 0.9.4
 - Add real download error classification proof and Batch C/D XACR audit.
+
+## 0.9.5
+- Add grouped real iCloud evidence run package proof.

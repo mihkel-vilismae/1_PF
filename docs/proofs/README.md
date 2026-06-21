@@ -358,3 +358,5 @@ The launcher must run queue discovery from the extracted repo root (`$REPO_ROOT`
 | Operator status real download | `npm run proof:operator-status-real-download` | Reports real download sections without hiding blocked states. |
 
 | Real download error classification | `npm run proof:real-download-error-classification` | Classifies auth/filter/manifest/no-loop/secret blocked states. |
+
+| Real iCloud evidence run package | `npm run proof:real-icloud-evidence-run-package` | Validates the grouped operator evidence package for auth/filter/download/manifests/no-loop/redaction. |
