@@ -1,4 +1,11 @@
 
+## 0.10.2 - Proofrunner millisecond timing history
+
+- Store proof/test command runtime in `duration_milliseconds` while preserving `duration_seconds` for backward compatibility.
+- Add `wall_duration_milliseconds` and millisecond aggregate fields to `last_run_stats.json`.
+- Keep launcher ETA behavior based on previous per-proof timing history, now preferring millisecond data.
+
+
 ## 0.10.1 - Windows progress launcher npm executable hotfix
 
 - Update the proofrunner launcher progress contract to reject `Start-Process -FilePath 'npm'` on Windows.

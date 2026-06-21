@@ -16,45 +16,61 @@ function average(values) {
   return nums.length ? nums.reduce((sum, value) => sum + value, 0) / nums.length : null;
 }
 
+function durationToMilliseconds(entry = {}) {
+  const ms = Number(entry.duration_milliseconds ?? entry.durationMilliseconds ?? NaN);
+  if (Number.isFinite(ms) && ms >= 0) return ms;
+  const seconds = Number(entry.duration_seconds ?? entry.durationSeconds ?? entry.duration ?? NaN);
+  return Number.isFinite(seconds) && seconds >= 0 ? Math.round(seconds * 1000) : NaN;
+}
+
+function timingStats(values) {
+  const avgMs = average(values);
+  return { average_milliseconds: avgMs, average_seconds: Number.isFinite(avgMs) ? avgMs / 1000 : null, sample_count: values.length };
+}
+
 export function buildTimingHistorySummary(observations = []) {
   const byCommand = new Map();
   const byCategory = new Map();
   const byPlatform = new Map();
   const global = [];
   for (const entry of observations) {
-    const duration = Number(entry.duration_seconds ?? entry.durationSeconds ?? entry.duration ?? NaN);
-    if (!Number.isFinite(duration) || duration < 0) continue;
+    const durationMs = durationToMilliseconds(entry);
+    if (!Number.isFinite(durationMs) || durationMs < 0) continue;
     const command = String(entry.command ?? entry.name ?? '').trim();
     const category = String(entry.category ?? classifyProofCommand(command));
     const platform = String(entry.platform ?? 'unknown');
-    if (command) byCommand.set(command, [...(byCommand.get(command) ?? []), duration]);
-    byCategory.set(category, [...(byCategory.get(category) ?? []), duration]);
-    byPlatform.set(platform, [...(byPlatform.get(platform) ?? []), duration]);
-    global.push(duration);
+    if (command) byCommand.set(command, [...(byCommand.get(command) ?? []), durationMs]);
+    byCategory.set(category, [...(byCategory.get(category) ?? []), durationMs]);
+    byPlatform.set(platform, [...(byPlatform.get(platform) ?? []), durationMs]);
+    global.push(durationMs);
   }
+  const globalAverageMs = average(global);
   return {
-    commands: Object.fromEntries([...byCommand].map(([key, values]) => [key, { average_seconds: average(values), sample_count: values.length }])),
-    categories: Object.fromEntries([...byCategory].map(([key, values]) => [key, { average_seconds: average(values), sample_count: values.length }])),
-    platforms: Object.fromEntries([...byPlatform].map(([key, values]) => [key, { average_seconds: average(values), sample_count: values.length }])),
-    global_average_seconds: average(global),
+    commands: Object.fromEntries([...byCommand].map(([key, values]) => [key, timingStats(values)])),
+    categories: Object.fromEntries([...byCategory].map(([key, values]) => [key, timingStats(values)])),
+    platforms: Object.fromEntries([...byPlatform].map(([key, values]) => [key, timingStats(values)])),
+    global_average_milliseconds: globalAverageMs,
+    global_average_seconds: Number.isFinite(globalAverageMs) ? globalAverageMs / 1000 : null,
     global_sample_count: global.length,
   };
 }
 
-export function estimateProofDuration({ commandName, platform = 'unknown', historySummary = {}, fallbackSeconds = 30 }) {
+export function estimateProofDuration({ commandName, platform = 'unknown', historySummary = {}, fallbackMilliseconds = 30000, fallbackSeconds } = {}) {
   const category = classifyProofCommand(commandName);
-  const commandAverage = historySummary.commands?.[commandName]?.average_seconds;
-  if (Number.isFinite(commandAverage)) return { estimate_seconds: commandAverage, estimate_source: 'command_history', category };
-  const categoryAverage = historySummary.categories?.[category]?.average_seconds;
-  if (Number.isFinite(categoryAverage)) return { estimate_seconds: categoryAverage, estimate_source: 'category_history', category };
-  const platformAverage = historySummary.platforms?.[platform]?.average_seconds;
-  if (Number.isFinite(platformAverage)) return { estimate_seconds: platformAverage, estimate_source: 'platform_average', category };
-  const globalAverage = historySummary.global_average_seconds;
-  if (Number.isFinite(globalAverage)) return { estimate_seconds: globalAverage, estimate_source: 'global_average', category };
-  return { estimate_seconds: fallbackSeconds, estimate_source: 'fallback_default', category };
+  const fallbackMs = Number.isFinite(Number(fallbackMilliseconds)) ? Number(fallbackMilliseconds) : Math.round(Number(fallbackSeconds ?? 30) * 1000);
+  const commandAverage = historySummary.commands?.[commandName]?.average_milliseconds;
+  if (Number.isFinite(commandAverage)) return { estimate_milliseconds: commandAverage, estimate_seconds: commandAverage / 1000, estimate_source: 'command_history', category };
+  const categoryAverage = historySummary.categories?.[category]?.average_milliseconds;
+  if (Number.isFinite(categoryAverage)) return { estimate_milliseconds: categoryAverage, estimate_seconds: categoryAverage / 1000, estimate_source: 'category_history', category };
+  const platformAverage = historySummary.platforms?.[platform]?.average_milliseconds;
+  if (Number.isFinite(platformAverage)) return { estimate_milliseconds: platformAverage, estimate_seconds: platformAverage / 1000, estimate_source: 'platform_average', category };
+  const globalAverage = historySummary.global_average_milliseconds;
+  if (Number.isFinite(globalAverage)) return { estimate_milliseconds: globalAverage, estimate_seconds: globalAverage / 1000, estimate_source: 'global_average', category };
+  return { estimate_milliseconds: fallbackMs, estimate_seconds: fallbackMs / 1000, estimate_source: 'fallback_default', category };
 }
 
-export function buildTimingObservation({ commandName, status, exitCode, startedAt, endedAt, durationSeconds, platform = 'unknown' }) {
+export function buildTimingObservation({ commandName, status, exitCode, startedAt, endedAt, durationMilliseconds, durationSeconds, platform = 'unknown' }) {
+  const durationMs = Number.isFinite(Number(durationMilliseconds)) ? Number(durationMilliseconds) : Math.round(Number(durationSeconds ?? 0) * 1000);
   return {
     command: commandName,
     category: classifyProofCommand(commandName),
@@ -63,6 +79,7 @@ export function buildTimingObservation({ commandName, status, exitCode, startedA
     exit_code: exitCode,
     started_at: startedAt,
     ended_at: endedAt,
-    duration_seconds: Number(durationSeconds),
+    duration_milliseconds: durationMs,
+    duration_seconds: durationMs / 1000,
   };
 }

@@ -57,11 +57,14 @@ export function buildLastRunStats({
   passedExitZero, failedExitNonzero, discovered, summaryRows = [], timingRows = [],
   summaryFile, timingHistoryFile = 'logs/proof_timing_history.jsonl', queuePlanFile = 'logs/proof_queue_plan.json',
 }) {
-  const proofTimings = timingRows.filter((row) => row?.category === 'proof' && Number.isFinite(Number(row.duration_seconds)));
-  const durations = proofTimings.map((row) => Number(row.duration_seconds));
+  const proofTimings = timingRows.filter((row) => row?.category === 'proof' && (Number.isFinite(Number(row.duration_milliseconds)) || Number.isFinite(Number(row.duration_seconds))));
+  const durationMilliseconds = proofTimings.map((row) => Number.isFinite(Number(row.duration_milliseconds)) ? Number(row.duration_milliseconds) : Math.round(Number(row.duration_seconds) * 1000));
+  const durations = durationMilliseconds.map((value) => value / 1000);
   const started = parseDate(startedAt);
   const ended = parseDate(endedAt);
-  const wallDuration = started && ended ? Math.max(0, Math.round((ended.getTime() - started.getTime()) / 1000)) : null;
+  const wallDurationMilliseconds = started && ended ? Math.max(0, ended.getTime() - started.getTime()) : null;
+  const wallDuration = wallDurationMilliseconds !== null ? Number((wallDurationMilliseconds / 1000).toFixed(3)) : null;
+  const totalProofMilliseconds = durationMilliseconds.reduce((sum, value) => sum + value, 0);
   const totalProofSeconds = durations.reduce((sum, value) => sum + value, 0);
   return {
     project,
@@ -71,6 +74,7 @@ export function buildLastRunStats({
     platform_runner: platformRunner,
     started_at: startedAt,
     ended_at: endedAt,
+    wall_duration_milliseconds: wallDurationMilliseconds,
     wall_duration_seconds: wallDuration,
     proof_scripts_discovered: Number(discovered),
     proof_scripts_passed_exit_zero: Number(passedExitZero),
@@ -80,7 +84,12 @@ export function buildLastRunStats({
     queue_plan_file: queuePlanFile,
     duration_stats: {
       proof_count_with_duration: durations.length,
-      total_proof_seconds: totalProofSeconds,
+      total_proof_milliseconds: totalProofMilliseconds,
+      average_proof_milliseconds: durationMilliseconds.length ? Math.round(totalProofMilliseconds / durationMilliseconds.length) : null,
+      median_proof_milliseconds: median(durationMilliseconds),
+      max_proof_milliseconds: durationMilliseconds.length ? Math.max(...durationMilliseconds) : null,
+      min_proof_milliseconds: durationMilliseconds.length ? Math.min(...durationMilliseconds) : null,
+      total_proof_seconds: Number(totalProofSeconds.toFixed(3)),
       average_proof_seconds: durations.length ? Number((totalProofSeconds / durations.length).toFixed(3)) : null,
       median_proof_seconds: median(durations),
       max_proof_seconds: durations.length ? Math.max(...durations) : null,
@@ -90,7 +99,7 @@ export function buildLastRunStats({
     summary_rows: summaryRows,
     eta_seed: {
       source: 'last_run_stats.json',
-      recommended_use: 'Use per_command proof durations by command name for future remaining-time estimation.',
+      recommended_use: 'Use per_command duration_milliseconds by command name for future proof/test/runtime estimation; fall back to duration_seconds only for older histories.',
     },
   };
 }

@@ -10,10 +10,13 @@ test('buildLastRunStatsFromFiles parses TSV without inline Python newline hazard
   const summary = join(dir, 'proof_summary.tsv');
   const timing = join(dir, 'proof_timing_history.jsonl');
   await writeFile(summary, 'name\tstatus\texit_code\tlog_file\nproof:a\tPASS\t0\t/tmp/a.log\nproof:b\tFAIL\t1\t/tmp/b.log\n', 'utf8');
-  await writeFile(timing, '{"command":"proof:a","category":"proof","duration_seconds":2,"exit_code":0}\n{"command":"proof:b","category":"proof","duration_seconds":4,"exit_code":1}\n', 'utf8');
+  await writeFile(timing, '{"command":"proof:a","category":"proof","duration_milliseconds":2500,"duration_seconds":2.5,"exit_code":0}\n{"command":"proof:b","category":"proof","duration_milliseconds":4750,"duration_seconds":4.75,"exit_code":1}\n', 'utf8');
   const stats = await buildLastRunStatsFromFiles({ summaryPath: summary, timingPath: timing, version: '0.9.7', head: 'abc', runId: 'run', platformRunner: 'raspberryos_bash', startedAt: '2026-06-21T17:00:00+03:00', endedAt: '2026-06-21T17:00:06+03:00', passedExitZero: 1, failedExitNonzero: 1, discovered: 2, summaryFile: 'logs/proof_summary.tsv' });
   assert.equal(stats.summary_rows.length, 2);
-  assert.equal(stats.duration_stats.average_proof_seconds, 3);
+  assert.equal(stats.duration_stats.average_proof_milliseconds, 3625);
+  assert.equal(stats.duration_stats.total_proof_milliseconds, 7250);
+  assert.equal(stats.duration_stats.average_proof_seconds, 3.625);
+  assert.equal(stats.wall_duration_milliseconds, 6000);
   assert.equal(stats.wall_duration_seconds, 6);
 });
 
@@ -22,7 +25,7 @@ test('buildLastRunStatsFromFiles parses quoted Windows CSV paths', async () => {
   const summary = join(dir, 'proof_summary.csv');
   const timing = join(dir, 'proof_timing_history.jsonl');
   await writeFile(summary, 'name,status,exit_code,log_file\n"proof:a","PASS","0","F:\\CODEX-F-FORMAT\\PhotoFrame\\a.log"\n', 'utf8');
-  await writeFile(timing, '{"command":"proof:a","category":"proof","duration_seconds":5,"exit_code":0}\n', 'utf8');
+  await writeFile(timing, '{"command":"proof:a","category":"proof","duration_milliseconds":5234,"duration_seconds":5.234,"exit_code":0}\n', 'utf8');
   const stats = await buildLastRunStatsFromFiles({ summaryPath: summary, timingPath: timing, version: '0.9.7', head: 'abc', runId: 'run', platformRunner: 'windows_powershell', startedAt: '2026-06-21T17:00:00+03:00', endedAt: '2026-06-21T17:00:05+03:00', passedExitZero: 1, failedExitNonzero: 0, discovered: 1, summaryFile: 'logs/proof_summary.csv' });
   assert.equal(stats.summary_rows[0].log_file, 'F:\\CODEX-F-FORMAT\\PhotoFrame\\a.log');
 });
