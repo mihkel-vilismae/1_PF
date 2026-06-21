@@ -16,6 +16,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 $script:ProofBlockedByMissingEnv = $false
+$script:ProofBlockedByMpvInstall = $false
 
 if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
     $scriptRoot = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $PSCommandPath }
@@ -112,7 +113,9 @@ function Ensure-RepoLocalMpv {
     try {
         & powershell -NoProfile -ExecutionPolicy Bypass -File $installerScript -RepoRoot $RepoRoot
         if ($LASTEXITCODE -ne 0) {
-            throw "mpv installer failed or was blocked with exit code $LASTEXITCODE."
+            Write-ProofStep "mpv installer was blocked or unavailable; writing honest BLOCKED proof instead of failing the wrapper." "Yellow"
+            $script:ProofBlockedByMpvInstall = $true
+            return
         }
     }
     finally {
@@ -120,7 +123,9 @@ function Ensure-RepoLocalMpv {
     }
 
     if (-not (Test-Path $MpvPath)) {
-        throw "mpv.exe was not found after installer completed: $MpvPath"
+        Write-ProofStep "mpv.exe was not found after installer completed; writing honest BLOCKED proof instead of failing the wrapper." "Yellow"
+        $script:ProofBlockedByMpvInstall = $true
+        return
     }
 }
 
@@ -342,6 +347,11 @@ try {
         Clear-GeneratedEvidence
         Invoke-RepoCommand -FilePath "npm" -Arguments @("install", "--verbose") -StepName "Install dependencies"
         Ensure-RepoLocalMpv
+        if ($script:ProofBlockedByMpvInstall) {
+            Invoke-RepoCommand -FilePath "npm" -Arguments @("run", "proof:live-windows-native-recovery") -StepName "Write honest BLOCKED proof for blocked mpv install"
+            Export-EvidenceZip
+            return
+        }
         New-ProofEnvironmentFile
         if ($script:ProofBlockedByMissingEnv) {
             Invoke-RepoCommand -FilePath "npm" -Arguments @("run", "proof:live-windows-native-recovery") -StepName "Write honest BLOCKED proof for missing .env"

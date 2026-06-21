@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.7
+
+- Add repo-owned proofrunner handoff runtime helpers for `last_run_stats.json` generation, replacing fragile inline Python stats generation in launchers.
+- Add `proof:proofrunner-handoff-runtime-contract` and tests for Raspberry TSV stats, Windows CSV stats, and proof-results ZIP output rooted in the extraction parent folder.
+- Harden Windows native proof wrappers so mpv auto-install/network blockage can be reported as an honest BLOCKED proof path instead of a shell-level failure.
+
 ## 0.8.219
 
 - Added Debug page world-class completion report/proof, marked the 4-batch/18-slice local proof track complete, and generated two follow-up batches for auth/session snapshot bridge and operator/target evidence bridge.
