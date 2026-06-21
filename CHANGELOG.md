@@ -1,4 +1,11 @@
 
+## 0.10.1 - Windows progress launcher npm executable hotfix
+
+- Update the proofrunner launcher progress contract to reject `Start-Process -FilePath 'npm'` on Windows.
+- Regenerate Windows launcher behavior to use a Win32-safe npm executable path.
+- Preserve v0.10.0 operator-safe iCloud readiness/session checkpoint behavior.
+
+
 ## 0.10.0 - Operator-safe iCloud readiness/session checkpoint
 
 - Require redacted auth session usable evidence in real iCloudPD readiness before claiming ready inputs.

@@ -23,7 +23,8 @@ const powershellExample = `
 function Write-Status { param([string]$Level,[string]$Message,[string]$Color='Cyan') Write-Host "[$Level] $Message" -ForegroundColor $Color }
 function Format-Duration { param([int]$Seconds) return "$Seconds sec" }
 function Get-ProofEtaText { param([string]$Proof) return 'previous data unavailable' }
-$job = Start-Job -ScriptBlock { }
+$NpmCommand = Get-Command npm.cmd -ErrorAction Stop
+$process = Start-Process -FilePath $NpmCommand.Source -ArgumentList @('run', 'proof:a') -PassThru
 Write-Status 'INFO' "still running proof elapsed=$(Format-Duration 10) eta=$(Get-ProofEtaText 'proof:a')" 'Cyan'
 `;
 const analysis = analyzeLauncherProgressContract({ bashSource: bashExample, powershellSource: powershellExample });
