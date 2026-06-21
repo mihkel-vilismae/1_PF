@@ -34,8 +34,7 @@ export function evaluateRealIcloudEvidenceZipContract(env = process.env, { cwd =
     requirements.push(requirement('evidence_package_dir_exists', existsSync(dir), 'Optional evidence package directory must exist when configured.'));
     for (const entry of REQUIRED_ENTRIES) requirements.push(requirement(`dir_contains:${entry}`, existsSync(resolve(dir, entry)), `Evidence package directory must contain ${entry}.`));
     try {
-      const text = REQUIRED_ENTRIES.map((entry) => existsSync(resolve(dir, entry)) ? readFileSync(resolve(dir, entry), 'utf8') : '').join('
-');
+      const text = REQUIRED_ENTRIES.map((entry) => existsSync(resolve(dir, entry)) ? readFileSync(resolve(dir, entry), 'utf8') : '').join(String.fromCharCode(10));
       requirements.push(requirement('evidence_package_dir_secret_safe', !hasSecretLikeText(text), 'Evidence package directory files must not contain secret-like values.'));
     } catch { requirements.push(requirement('evidence_package_dir_secret_safe', false, 'Could not audit evidence package directory files.')); }
   }
