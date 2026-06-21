@@ -28,6 +28,7 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Geocode provider selection | `npm run proof:geocode-provider-selection` | local provider matrix guard |
 | Real geocode provider readiness | `npm run proof:real-geocode-provider-readiness` | local real-geocode readiness preflight |
 | Real geocode provider chain | `npm run proof:real-geocode-provider-chain` | opt-in real network provider |
+| Real GPS/geocode product bridge evidence pack | `npm run proof:real-gps-geocode-product-bridge-evidence-pack` | operator evidence template/env preflight |
 | Real GPS/geocode product bridge | `npm run proof:real-gps-geocode-product-bridge` | opt-in GPS/geocode-to-product evidence bridge |
 | GPS fallback parsing | `npm run proof:gps-fallback` | deterministic local |
 | Deterministic media pipeline | `npm run proof:deterministic-media-pipeline` | deterministic local |

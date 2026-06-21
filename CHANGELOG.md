@@ -1,3 +1,9 @@
+## v0.10.11 — GPS/geocode product bridge evidence pack
+
+- Added `proof:real-gps-geocode-product-bridge-evidence-pack` to generate media GPS and normalized address templates plus `latest.env` for the bridge proof.
+- Added evidence-pack preflight validation so missing or inconsistent bridge evidence reports `BLOCKED` without shell failure.
+- Documented operator next steps and preserved non-claims for iCloud auth/download, native playback, and address overlay visibility.
+
 ## v0.10.10 — real GPS/geocode product bridge
 
 - Added `proof:real-gps-geocode-product-bridge` to bridge accepted media GPS evidence and normalized geocode address evidence into structured v2 regular worker product evidence.

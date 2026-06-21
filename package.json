@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.10.10",
+  "version": "0.10.11",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -160,7 +160,8 @@
     "proof:operator-safe-icloud-session-checkpoint": "node tools/run-operator-safe-icloud-session-checkpoint-proof.mjs",
     "proof:regular-worker-product-evidence-producer": "node tools/run-regular-worker-product-evidence-producer-proof.mjs",
     "proof:proofrunner-tiered-queues": "node tools/run-proofrunner-tiered-queues-proof.mjs",
-    "proof:real-gps-geocode-product-bridge": "node tools/run-real-gps-geocode-product-bridge-proof.mjs"
+    "proof:real-gps-geocode-product-bridge": "node tools/run-real-gps-geocode-product-bridge-proof.mjs",
+    "proof:real-gps-geocode-product-bridge-evidence-pack": "node tools/run-real-gps-geocode-product-bridge-evidence-pack-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

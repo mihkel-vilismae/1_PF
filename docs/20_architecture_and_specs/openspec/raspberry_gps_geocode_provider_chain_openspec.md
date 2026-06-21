@@ -83,3 +83,10 @@ The bridge validates that:
 ### Non-claims
 
 This bridge does not prove iCloud authentication, real iCloud download, native playback, or address overlay visibility. Those remain owned by `real_icloud_media_source`, native playback proofs, and `address_overlay_device_display`.
+
+
+## v0.10.11 GPS/geocode evidence pack helper
+
+`proof:real-gps-geocode-product-bridge-evidence-pack` generates the operator evidence templates, `latest.env`, and next-step report needed to run `proof:real-gps-geocode-product-bridge`. It reports missing GPS/address evidence as `BLOCKED` while still packaging actionable diagnostics.
+
+The helper does not prove iCloud authentication, real iCloud download, native playback, or address overlay visibility. It only prepares or validates the GPS/geocode-to-product bridge evidence inputs.

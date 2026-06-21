@@ -155,3 +155,10 @@ The generated evidence may set:
 - `product_record.overlay_status: "ready"`.
 
 It must still keep `address_overlay_visibility_satisfied: false` until a marker-matched visual device proof passes.
+
+
+## v0.10.11 GPS/geocode evidence pack helper
+
+`proof:real-gps-geocode-product-bridge-evidence-pack` generates the operator evidence templates, `latest.env`, and next-step report needed to run `proof:real-gps-geocode-product-bridge`. It reports missing GPS/address evidence as `BLOCKED` while still packaging actionable diagnostics.
+
+The helper does not prove iCloud authentication, real iCloud download, native playback, or address overlay visibility. It only prepares or validates the GPS/geocode-to-product bridge evidence inputs.
