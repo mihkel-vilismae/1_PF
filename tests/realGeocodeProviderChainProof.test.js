@@ -53,10 +53,12 @@ test('real geocode provider-chain readiness hints describe required env without 
   const readiness = buildRealGeocodeProviderReadinessHints({
     PF_PROOF_ENABLE_REAL_GEOCODE_CHAIN: 'true',
     PF_GEOCODE_CHAIN_PROOF_PROVIDER: 'nominatim_osm',
+    GEOCODE_NOMINATIM_OSM_USER_AGENT: 'PF_login-test/0.10.4 contact@example.invalid',
   });
   assert.equal(readiness.required_env[0].present, true);
   assert.equal(readiness.required_env[1].configured_provider_id, 'nominatim_osm');
   assert.equal(readiness.required_env[1].configured_provider_known, true);
+  assert.equal(readiness.provider_safety.proof_status, 'PASSED');
   assert.match(readiness.secret_boundary, /must not be written/);
 });
 
@@ -69,6 +71,23 @@ test('real geocode provider-chain proof requires a known real provider id', asyn
   });
   assert.equal(envelope.proof_status, 'BLOCKED');
   assert.ok(envelope.evidence.supported_provider_ids.includes('nominatim_osm'));
+});
+
+
+/** Verifies provider-chain proof blocks before subprocess when selected provider safety env is missing. */
+test('real geocode provider-chain proof blocks when provider safety config is incomplete', async () => {
+  let pythonCalled = false;
+  const envelope = await runRealGeocodeProviderChainProof({
+    metadata,
+    env: { PF_PROOF_ENABLE_REAL_GEOCODE_CHAIN: 'true', PF_GEOCODE_CHAIN_PROOF_PROVIDER: 'nominatim_osm' },
+    runPython: () => {
+      pythonCalled = true;
+      return buildMockPythonResult({})();
+    },
+  });
+  assert.equal(envelope.proof_status, 'BLOCKED');
+  assert.equal(pythonCalled, false);
+  assert.equal(envelope.evidence.provider_safety.required_env[0].configured, false);
 });
 
 /** Verifies placeholder-like coordinate echo addresses are rejected. */
@@ -107,7 +126,11 @@ test('real geocode provider-chain proof fails on placeholder-only successful pro
   };
   const envelope = await runRealGeocodeProviderChainProof({
     metadata,
-    env: { PF_PROOF_ENABLE_REAL_GEOCODE_CHAIN: 'true', PF_GEOCODE_CHAIN_PROOF_PROVIDER: 'nominatim_osm' },
+    env: {
+      PF_PROOF_ENABLE_REAL_GEOCODE_CHAIN: 'true',
+      PF_GEOCODE_CHAIN_PROOF_PROVIDER: 'nominatim_osm',
+      GEOCODE_NOMINATIM_OSM_USER_AGENT: 'PF_login-test/0.10.4 contact@example.invalid',
+    },
     runPython: buildMockPythonResult(payload),
   });
   assert.equal(envelope.proof_status, 'FAILED');
@@ -132,13 +155,20 @@ test('real geocode provider-chain proof passes with mocked real provider and cac
   };
   const envelope = await runRealGeocodeProviderChainProof({
     metadata,
-    env: { PF_PROOF_ENABLE_REAL_GEOCODE_CHAIN: 'true', PF_GEOCODE_CHAIN_PROOF_PROVIDER: 'nominatim_osm' },
+    env: {
+      PF_PROOF_ENABLE_REAL_GEOCODE_CHAIN: 'true',
+      PF_GEOCODE_CHAIN_PROOF_PROVIDER: 'nominatim_osm',
+      GEOCODE_NOMINATIM_OSM_USER_AGENT: 'PF_login-test/0.10.4 contact@example.invalid',
+    },
     runPython: buildMockPythonResult(payload),
   });
   assert.equal(envelope.proof_status, 'PASSED');
   assert.equal(envelope.evidence.provider_evidence.network_call_made, true);
   assert.equal(envelope.evidence.provider_evidence.cache_first_verified, true);
   assert.equal(envelope.evidence.provider_evidence.fallback_verified, true);
+  assert.equal(envelope.evidence.normalized_address.artifact_kind, 'normalized_real_geocode_address');
+  assert.equal(envelope.evidence.normalized_address.source_level, 'provider_coordinate_fixture');
+  assert.equal(envelope.evidence.normalized_address_validation.status, 'PASSED');
 });
 
 /** Verifies parser reads the JSON payload from subprocess stdout with extra output. */

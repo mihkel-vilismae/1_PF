@@ -6,6 +6,12 @@
  * Keeps secrets and raw provider payloads out of generated artifacts.
  */
 import { createProofEnvelope, runPythonScriptWithFallback, sanitizeEvidence } from './proof-utils.mjs';
+import {
+  REAL_GEOCODE_PROVIDER_ADAPTERS,
+  buildProviderSafetyReadiness,
+  normalizeGeocodeAddressArtifact,
+  validateNormalizedGeocodeAddressArtifact,
+} from './real-geocode-provider-adapter-lib.mjs';
 
 const DEFAULT_FIXTURE = Object.freeze({
   name: 'tallinn_known_point',
@@ -14,16 +20,7 @@ const DEFAULT_FIXTURE = Object.freeze({
   languageCode: 'en',
   expectedTerms: ['Tallinn', 'Estonia'],
 });
-const REAL_PROVIDER_IDS = new Set([
-  'nominatim_osm',
-  'photon_komoot',
-  'postcodes_io_uk',
-  'pelias_self_hosted',
-  'opencage',
-  'geoapify',
-  'mapbox',
-  'google_geocoding',
-]);
+const REAL_PROVIDER_IDS = new Set(Object.keys(REAL_GEOCODE_PROVIDER_ADAPTERS));
 const BLOCKED_FAILURE_CODES = new Set([
   'provider_disabled',
   'network_providers_disabled',
@@ -47,12 +44,14 @@ export function readRealGeocodeProofProvider(env = process.env) {
 /** Builds operator-facing readiness diagnostics without exposing provider secrets. */
 export function buildRealGeocodeProviderReadinessHints(env = process.env) {
   const providerId = readRealGeocodeProofProvider(env);
+  const providerSafety = buildProviderSafetyReadiness({ providerId, env });
   return {
     required_env: [
       { key: 'PF_PROOF_ENABLE_REAL_GEOCODE_CHAIN', required_value: 'true', present: env.PF_PROOF_ENABLE_REAL_GEOCODE_CHAIN === 'true' },
       { key: 'PF_GEOCODE_CHAIN_PROOF_PROVIDER', fallback_key: 'PF_GEOCODE_PROOF_PROVIDER', configured: Boolean(providerId), configured_provider_id: providerId || null, configured_provider_known: providerId ? REAL_PROVIDER_IDS.has(providerId) : false },
     ],
     supported_provider_ids: [...REAL_PROVIDER_IDS].sort(),
+    provider_safety: providerSafety,
     optional_fixture_env: [
       'PF_GEOCODE_CHAIN_FIXTURE_NAME',
       'PF_GEOCODE_CHAIN_PROOF_LATITUDE',
@@ -66,6 +65,7 @@ export function buildRealGeocodeProviderReadinessHints(env = process.env) {
       'Set PF_PROOF_ENABLE_REAL_GEOCODE_CHAIN=true only on the target environment that is allowed to call a real provider.',
       'Set PF_GEOCODE_CHAIN_PROOF_PROVIDER to one supported provider id.',
       'Configure the selected provider through its normal provider-specific environment variables outside proof artifacts.',
+      'For public Nominatim, configure GEOCODE_NOMINATIM_OSM_USER_AGENT explicitly; do not rely on proof defaults.',
       'Rerun npm run proof:real-geocode-provider-chain and upload the proof report.',
     ],
   };
@@ -139,7 +139,6 @@ os.environ['GEOCODE_NETWORK_PROVIDERS_ENABLED'] = 'true'
 os.environ['GEOCODE_ALLOW_PLACEHOLDER_FALLBACK'] = 'false'
 os.environ['GEOCODE_PROVIDER_ORDER'] = f'address_cache,{provider_id}'
 os.environ[f'{prefix}_ENABLED'] = 'true'
-os.environ.setdefault(f'{prefix}_USER_AGENT', 'PF_login-real-geocode-provider-chain-proof/0.7.43')
 
 connection = sqlite3.connect(':memory:')
 connection.row_factory = sqlite3.Row
@@ -283,6 +282,19 @@ export async function runRealGeocodeProviderChainProof({ metadata, env = process
     });
   }
 
+  const providerSafety = buildProviderSafetyReadiness({ providerId, env });
+  if (providerSafety.proof_status !== 'PASSED') {
+    return createProofEnvelope({
+      proofKind: 'real_geocode_provider_chain',
+      baselineVersion: metadata.version,
+      gitCommit: metadata.gitCommit,
+      proofStatus: 'BLOCKED',
+      runtimeMode: 'real_network_geocode',
+      evidence: { ...blockedEvidence, reason: 'Provider safety config is incomplete; configure required provider env outside proof artifacts.', provider_safety: providerSafety },
+      knownLimitations: ['The proof did not call a real provider because required provider-specific safety/configuration was incomplete.'],
+    });
+  }
+
   const commandResult = runPython({ script: buildProviderChainPythonScript({ providerId, fixture }), scriptLabel: 'REAL_GEOCODE_PROVIDER_CHAIN_PROOF_SCRIPT', timeoutMs: 120000 }).commandResult;
   if (commandResult.exitCode !== 0 || commandResult.timedOut) {
     return createProofEnvelope({
@@ -313,7 +325,14 @@ export async function runRealGeocodeProviderChainProof({ metadata, env = process
 
   const checks = buildRealGeocodeChainChecks(payload, providerId, fixture);
   const providerOutcome = payload?.network_result ?? {};
-  const proofStatus = allChecksPassed(checks) ? 'PASSED' : isBlockedProviderOutcome(providerOutcome) ? 'BLOCKED' : 'FAILED';
+  const normalizedAddress = normalizeGeocodeAddressArtifact({ providerId, fixture, providerResult: providerOutcome, payload });
+  const normalizedAddressValidation = validateNormalizedGeocodeAddressArtifact(normalizedAddress);
+  const normalizedChecks = [
+    { name: 'normalized_address_artifact_valid', status: normalizedAddressValidation.status, detail: normalizedAddressValidation.errors },
+    { name: 'normalized_address_is_provider_coordinate_fixture', status: normalizedAddress.source_level === 'provider_coordinate_fixture' ? 'PASSED' : 'FAILED', detail: normalizedAddress.source_level },
+  ];
+  const allProofChecks = [...checks, ...normalizedChecks];
+  const proofStatus = allChecksPassed(allProofChecks) ? 'PASSED' : isBlockedProviderOutcome(providerOutcome) ? 'BLOCKED' : 'FAILED';
 
   return createProofEnvelope({
     proofKind: 'real_geocode_provider_chain',
@@ -326,7 +345,10 @@ export async function runRealGeocodeProviderChainProof({ metadata, env = process
       provider_id: providerId,
       command_result: commandResult,
       provider_chain: sanitizeEvidence(payload),
-      checks,
+      provider_safety: providerSafety,
+      checks: allProofChecks,
+      normalized_address: normalizedAddress,
+      normalized_address_validation: normalizedAddressValidation,
       provider_evidence: {
         network_call_made: providerOutcome.provider_id === providerId,
         placeholder_used: providerOutcome.provider_id === 'deterministic_placeholder' || isPlaceholderAddress(providerOutcome.address_text),
