@@ -1,4 +1,11 @@
 
+## 0.10.5 - Upstream documentation audit reconciliation
+
+- Merge the upstream documentation/OpenSpec coverage grading audit and canonical navigation entries.
+- Retain the Fedora/Linux rehearsal pause guidance and local proof-evidence ignore rules.
+- Preserve current executable-bit, mpv placeholder, proof documentation, and version-history contracts.
+
+
 ## 0.10.2 - Proofrunner millisecond timing history
 
 - Store proof/test command runtime in `duration_milliseconds` while preserving `duration_seconds` for backward compatibility.
