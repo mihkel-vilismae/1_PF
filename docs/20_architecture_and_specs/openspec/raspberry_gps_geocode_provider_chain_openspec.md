@@ -59,3 +59,27 @@ The provider-chain proof emits `normalized_real_geocode_address` with `source_le
 ### Readiness boundary
 
 G1/G2 must not close `real_gps_geocode` in `raspberry_v1_readiness` by itself. The gate remains blocked until later work proves a real or accepted GPS source and attaches the normalized address to the regular worker product output.
+
+## v0.10.10 G3/G4/G5 product bridge
+
+`proof:real-gps-geocode-product-bridge` connects accepted media GPS evidence to normalized geocode address evidence and structured v2 regular worker product evidence.
+
+Accepted GPS source evidence may come from:
+
+- a redacted real/download manifest item with `gps_evidence`;
+- a readiness-approved media GPS evidence file;
+- operator-confirmed media GPS metadata;
+- a provider coordinate fixture used only as bridge/readiness evidence.
+
+The bridge validates that:
+
+1. the GPS source is explicit and accepted;
+2. the normalized geocode address artifact is valid;
+3. the normalized address coordinate matches the accepted GPS evidence;
+4. raw provider payloads and provider secrets are not included;
+5. the generated product evidence marks `gps_status` and `geocode_status` as `present`;
+6. overlay readiness may be marked `ready`, but device visibility remains unclaimed.
+
+### Non-claims
+
+This bridge does not prove iCloud authentication, real iCloud download, native playback, or address overlay visibility. Those remain owned by `real_icloud_media_source`, native playback proofs, and `address_overlay_device_display`.

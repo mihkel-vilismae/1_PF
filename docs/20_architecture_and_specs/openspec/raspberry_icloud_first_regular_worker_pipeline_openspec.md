@@ -137,3 +137,21 @@ The generated `.env` line can be used by:
 ```bash
 npm run proof:raspberry-regular-stage-worker-product-pipeline
 ```
+
+## v0.10.10 GPS/geocode product enrichment bridge
+
+`proof:real-gps-geocode-product-bridge` may generate an enriched structured v2 product evidence file when supplied with:
+
+- a redacted real/download or readiness-approved media GPS source;
+- a normalized geocode address artifact from a provider-chain or accepted cache output;
+- explicit product-work confirmation.
+
+The generated evidence may set:
+
+- `gps_extraction_completed: true`;
+- `geocode_completed: true`;
+- `product_record.gps_status: "present"`;
+- `product_record.geocode_status: "present"`;
+- `product_record.overlay_status: "ready"`.
+
+It must still keep `address_overlay_visibility_satisfied: false` until a marker-matched visual device proof passes.

@@ -60,6 +60,7 @@ export const BLOCKER_PROOF_RUNNER_PROOFS = Object.freeze([
   'proof:raspberry-regular-stage-worker-product-pipeline',
   'proof:real-geocode-provider-readiness',
   'proof:real-geocode-provider-chain',
+  'proof:real-gps-geocode-product-bridge',
   'proof:raspberry-address-overlay-template',
   'proof:raspberry-address-overlay-display-command',
   'proof:raspberry-address-overlay-device-evidence',

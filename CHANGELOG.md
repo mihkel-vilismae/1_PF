@@ -1,3 +1,10 @@
+## v0.10.10 — real GPS/geocode product bridge
+
+- Added `proof:real-gps-geocode-product-bridge` to bridge accepted media GPS evidence and normalized geocode address evidence into structured v2 regular worker product evidence.
+- Supports redacted real/download manifests with GPS evidence or standalone readiness-approved media GPS evidence files.
+- Keeps non-claims explicit: no iCloud auth/download claim and no address overlay device-visibility claim.
+- Added docs/OpenSpec updates and targeted tests for GPS/address/product bridge behavior.
+
 
 ## v0.10.9 — full-test docs reconciliation and artifact detail packaging
 
