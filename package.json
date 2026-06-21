@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.9.6",
+  "version": "0.9.7",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -151,7 +151,8 @@
     "proof:operator-status-real-download": "node tools/run-operator-status-real-download-proof.mjs",
     "proof:real-download-error-classification": "node tools/run-real-download-error-classification-proof.mjs",
     "proof:real-icloud-evidence-run-package": "node tools/run-real-icloud-evidence-run-package-proof.mjs",
-    "proof:real-icloud-evidence-zip-contract": "node tools/run-real-icloud-evidence-zip-contract-proof.mjs"
+    "proof:real-icloud-evidence-zip-contract": "node tools/run-real-icloud-evidence-zip-contract-proof.mjs",
+    "proof:proofrunner-handoff-runtime-contract": "node tools/run-proofrunner-handoff-runtime-contract-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
