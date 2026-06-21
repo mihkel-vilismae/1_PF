@@ -29,3 +29,33 @@ The provider chain must:
 - Generated fixture GPS proof is not real iCloud media proof.
 - Placeholder geocode is not a real provider proof.
 - Network/provider proof remains opt-in and evidence-gated.
+
+
+## v0.10.4 G1/G2 provider-chain implementation boundary
+
+The first implementation slice for `real_gps_geocode` is intentionally limited to provider readiness and controlled-coordinate provider-chain proof.
+
+### Provider readiness
+
+`proof:real-geocode-provider-readiness` validates explicit operator opt-in, supported provider id, and provider-specific safety configuration. For public Nominatim, `GEOCODE_NOMINATIM_OSM_USER_AGENT` must be configured explicitly. Proof artifacts record only redacted configured/missing env state.
+
+### Provider-chain proof
+
+`proof:real-geocode-provider-chain` validates:
+
+1. explicit opt-in;
+2. supported provider adapter;
+3. cache-first miss behavior;
+4. fallback past a forced no-result proof provider;
+5. real provider result;
+6. deterministic placeholder rejection;
+7. cache hit after provider success;
+8. normalized address artifact generation.
+
+### Normalized artifact
+
+The provider-chain proof emits `normalized_real_geocode_address` with `source_level: provider_coordinate_fixture`. This makes the proof useful for later product integration while preventing readiness overclaiming.
+
+### Readiness boundary
+
+G1/G2 must not close `real_gps_geocode` in `raspberry_v1_readiness` by itself. The gate remains blocked until later work proves a real or accepted GPS source and attaches the normalized address to the regular worker product output.
