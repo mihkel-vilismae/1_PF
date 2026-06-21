@@ -25,6 +25,7 @@
     "proof:real-download-continuation": "node tools/run-real-download-continuation-proof.mjs",
     "proof:real-download-readiness": "node tools/run-real-download-readiness-proof.mjs",
     "proof:address-display": "node tools/run-address-display-proof.mjs",
+    "proof:address-overlay-proof-marker-contract": "node tools/run-address-overlay-proof-marker-contract-proof.mjs",
     "proof:address-display-ui": "node --import tsx tools/run-address-display-ui-proof.mjs",
     "proof:native-fullscreen-playback": "node tools/run-native-fullscreen-playback-proof.mjs",
     "proof:dirty-shutdown-testing": "node tools/run-dirty-shutdown-testing-proof.mjs",
