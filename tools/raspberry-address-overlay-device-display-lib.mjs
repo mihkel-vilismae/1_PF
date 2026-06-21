@@ -2,6 +2,7 @@
 import { readFile } from 'node:fs/promises';
 import process from 'node:process';
 import { createProofEnvelope, getProofEnvironment, sanitizeEvidence } from './proof-utils.mjs';
+import { buildAddressOverlayEvidenceTemplate as buildMarkerAddressOverlayEvidenceTemplate } from './address-overlay-proof-marker-lib.mjs';
 import { detectRaspberryTarget } from './raspberry-tool-checker-lib.mjs';
 
 export const ADDRESS_OVERLAY_REQUIRED_FIELDS = Object.freeze([
@@ -12,14 +13,7 @@ export const ADDRESS_OVERLAY_REQUIRED_FIELDS = Object.freeze([
 ]);
 
 export function buildAddressOverlayEvidenceTemplate() {
-  return {
-    native_display_path_observed: false,
-    address_text_present: false,
-    overlay_rendered_on_device: false,
-    operator_observed: false,
-    observed_at: new Date().toISOString(),
-    operator_note: 'Set all required boolean fields to true only after observing the real Raspberry/device display overlay.',
-  };
+  return buildMarkerAddressOverlayEvidenceTemplate();
 }
 
 export async function loadAddressOverlayEvidence({ env = process.env, evidence = null } = {}) {
