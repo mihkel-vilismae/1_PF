@@ -59,6 +59,7 @@
     "proof:raspberry-env-preflight": "node tools/run-raspberry-env-preflight.mjs",
     "proof:raspberry-v1-readiness": "node tools/run-raspberry-v1-readiness-proof.mjs",
     "proof:raspberry-address-overlay-device-display": "node tools/run-raspberry-address-overlay-device-display-proof.mjs",
+    "proof:raspberry-address-overlay-display-command": "node tools/run-raspberry-address-overlay-display-command-proof.mjs",
     "proof:raspberry-regular-stage-worker-product-pipeline": "node tools/run-raspberry-regular-stage-worker-product-pipeline-proof.mjs",
     "proof:raspberry-app-running-target-pack": "node tools/run-raspberry-app-running-target-pack-proof.mjs",
     "proof:raspberry-address-overlay-template": "node tools/run-raspberry-address-overlay-evidence-template.mjs",
