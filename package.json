@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.10.7",
+  "version": "0.10.8",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -158,7 +158,8 @@
     "proof:proofrunner-handoff-runtime-contract": "node tools/run-proofrunner-handoff-runtime-contract-proof.mjs",
     "proof:proofrunner-launcher-progress-contract": "node tools/run-proofrunner-launcher-progress-contract-proof.mjs",
     "proof:operator-safe-icloud-session-checkpoint": "node tools/run-operator-safe-icloud-session-checkpoint-proof.mjs",
-    "proof:regular-worker-product-evidence-producer": "node tools/run-regular-worker-product-evidence-producer-proof.mjs"
+    "proof:regular-worker-product-evidence-producer": "node tools/run-regular-worker-product-evidence-producer-proof.mjs",
+    "proof:proofrunner-tiered-queues": "node tools/run-proofrunner-tiered-queues-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

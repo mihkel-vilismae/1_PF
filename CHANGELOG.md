@@ -1,4 +1,11 @@
 
+## v0.10.8 — proofrunner tiered queues
+
+- Added `PF_PROOF_MODE=quick|changed|blockers|failed-last|platform|full` queue selection.
+- Added `proof:proofrunner-tiered-queues` contract proof.
+- Documented tiered proofrunner workflow and timing-history packaging expectations.
+
+
 ## 0.10.2 - Proofrunner millisecond timing history
 
 - Store proof/test command runtime in `duration_milliseconds` while preserving `duration_seconds` for backward compatibility.
