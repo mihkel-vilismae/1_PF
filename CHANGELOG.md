@@ -3079,3 +3079,6 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 
 ## 0.9.5
 - Add grouped real iCloud evidence run package proof.
+
+## 0.9.6
+- Add real iCloud evidence ZIP/package contract proof.
