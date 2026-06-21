@@ -340,6 +340,8 @@ The launcher must run queue discovery from the extracted repo root (`$REPO_ROOT`
 
 | Auth session usable evidence producer | `npm run proof:auth-session-usable-evidence-producer` | Validates redacted operator auth/session evidence for real-provider proof inputs. |
 
+| Real iCloud media source evidence pack | `npm run proof:real-icloud-media-source-evidence-pack` | Generates redacted auth/download/manifest/continuation templates, latest.env, and BLOCKED-safe operator next steps for real iCloud media source evidence. See [`real_icloud_media_source_evidence_pack_proof.md`](real_icloud_media_source_evidence_pack_proof.md). |
+
 | Real iCloud proof runbook | `npm run proof:real-icloud-proof-runbook` | Validates operator runbook and required env/artifact guidance. |
 
 | Real iCloud filter config | `npm run proof:real-icloud-filter-config` | Validates normalized real download filter config/signature. |

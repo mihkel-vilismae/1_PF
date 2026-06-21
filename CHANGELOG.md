@@ -1,3 +1,9 @@
+## v0.10.12 — real iCloud media source evidence pack
+
+- Added `proof:real-icloud-media-source-evidence-pack` to generate redacted usable-session, download, manifest, and continuation evidence templates plus `latest.env`.
+- Added BLOCKED-safe preflight evaluation that distinguishes missing auth/session, download, manifest, continuation, and unsafe evidence without shell failure.
+- Documented secret boundaries and downstream handoff variables for worker product and GPS/geocode bridge proofs.
+
 ## v0.10.11 — GPS/geocode product bridge evidence pack
 
 - Added `proof:real-gps-geocode-product-bridge-evidence-pack` to generate media GPS and normalized address templates plus `latest.env` for the bridge proof.

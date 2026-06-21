@@ -51,6 +51,7 @@ export const BLOCKER_PROOF_RUNNER_PROOFS = Object.freeze([
   'proof:operator-safe-icloud-session-checkpoint',
   'proof:auth-checkpoint-state',
   'proof:auth-session-usable-evidence-producer',
+  'proof:real-icloud-media-source-evidence-pack',
   'proof:real-icloudpd-readiness',
   'proof:real-icloudpd',
   'proof:real-download-continuation',

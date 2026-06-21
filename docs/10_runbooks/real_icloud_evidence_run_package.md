@@ -12,3 +12,14 @@ Required inputs:
 - `PF_REAL_ICLOUD_BATCH2_MANIFEST_FILE`
 
 The run package is PASSED only when auth, filter, download dir, both manifests, no-loop, redaction, and partial-file safety pass.
+
+## v0.10.12 evidence pack helper
+
+Before manually assembling uploadable real iCloud evidence, operators may run:
+
+```bash
+npm run proof:real-icloud-media-source-evidence-pack
+```
+
+This writes redacted templates and `latest.env` under `runtime_data/operator_evidence/real_icloud_media_source_evidence_pack/`.
+The helper is BLOCKED-safe when real evidence is missing and does not claim Apple authentication, real download, GPS/geocode, worker product output, or display visibility.
