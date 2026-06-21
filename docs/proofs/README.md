@@ -287,6 +287,8 @@ The standalone path is intentionally stricter than a successful shell exit: `pro
 `npm run proof:raspberry-worker-startup-smoke` starts the three scheduler worker commands and reports whether they exit cleanly after executable/env preflights. `-- --prepare` repairs executable bits and creates `.env` from `example.env` first. See [`raspberry_worker_startup_smoke_proof.md`](raspberry_worker_startup_smoke_proof.md).
 
 | Raspberry address overlay device display | `npm run proof:raspberry-address-overlay-device-display` | Operator/evidence gate for native device display address overlay. |
+| Address overlay proof marker contract | `npm run proof:address-overlay-proof-marker-contract` | Generates the visible `PF_ADDR_<run_id>` marker used to link later visual evidence to a proof run. |
+| Raspberry address overlay display command | `npm run proof:raspberry-address-overlay-display-command` | Attempts configured Raspberry display command with rendered marker artifact; does not prove visual visibility. |
 
 | Raspberry regular worker product pipeline | `npm run proof:raspberry-regular-stage-worker-product-pipeline` | Evidence gate for real regular_stage_worker download/index/GPS/geocode/queue work. |
 
