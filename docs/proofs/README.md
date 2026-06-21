@@ -292,6 +292,7 @@ The standalone path is intentionally stricter than a successful shell exit: `pro
 | Raspberry address overlay device evidence | `npm run proof:raspberry-address-overlay-device-evidence` | Validates structured screenshot/framebuffer/operator-photo marker evidence without OCR. |
 
 | Raspberry regular worker product pipeline | `npm run proof:raspberry-regular-stage-worker-product-pipeline` | Evidence gate for real regular_stage_worker download/index/GPS/geocode/queue work. |
+| Regular worker product evidence producer | `npm run proof:regular-worker-product-evidence-producer` | Converts safe manifest plus explicit product-work confirmation into redacted structured v2 regular worker product evidence. See [`regular_worker_product_evidence_producer_proof.md`](regular_worker_product_evidence_producer_proof.md). |
 
 | Raspberry app-running target pack | `npm run proof:raspberry-app-running-target-pack` | Runs the setup/startup/cron/app-running/geocode/native-playback target chain, packages an uploadable ZIP, and summarizes v1 readiness blockers. Interpret each step by its internal `proof_status`; shell exit code alone is not proof truth. |
 
@@ -304,6 +305,7 @@ The standalone path is intentionally stricter than a successful shell exit: `pro
 | Local/generated media pipeline rehearsal | `npm run proof:local-generated-media-pipeline-rehearsal` | Windows-safe generated-media rehearsal for product pipeline fixtures without iCloud/Raspberry claims. |
 
 | Docs reconciliation audit | `npm run proof:docs-reconciliation-audit` | Critical v1 docs audit pre-pass for missing docs and known contradictory claims. |
+| Proofrunner tiered queues | `npm run proof:proofrunner-tiered-queues` | Validates `PF_PROOF_MODE=quick|changed|blockers|failed-last|platform|full` queue selection. See [`proofrunner_tiered_queues_proof.md`](proofrunner_tiered_queues_proof.md). |
 
 | OpenSpec v1 audit | `npm run proof:openspec-v1-audit` | Static audit that critical Raspberry v1 OpenSpec docs exist and include status, purpose/goal, and non-claims sections. |
 

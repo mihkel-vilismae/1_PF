@@ -1,4 +1,11 @@
 
+## v0.10.9 — full-test docs reconciliation and artifact detail packaging
+
+- Reconciled `docs/proofs/README.md` with current `proof:*` scripts.
+- Updated regular worker product pipeline tests to use structured v2 evidence and current operator-note wording.
+- Strengthened proofrunner artifact export contract for `full_test_suite_stability_*.json` diagnostics.
+
+
 ## v0.10.8 — proofrunner tiered queues
 
 - Added `PF_PROOF_MODE=quick|changed|blockers|failed-last|platform|full` queue selection.

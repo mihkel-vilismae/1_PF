@@ -23,6 +23,11 @@ export function analyzeHandoffLauncherArtifactExportText(text = '') {
       passed: /continue after failures|always package|package even when|failed_exit_nonzero/i.test(source),
       detail: 'Packaging must continue after failed proof commands so diagnostics are uploadable.',
     },
+    {
+      name: 'explicitly_collects_full_test_detail_artifacts',
+      passed: /full_test_suite_stability_\*/.test(source) || /full_test_suite_stability_.*\.json/.test(source),
+      detail: 'Launchers should explicitly collect full_test_suite_stability_*.json into packaged logs/runtime diagnostics, because failed full-test detail is needed for failed-last triage.',
+    },
   ];
   return { status: checks.every((check) => check.passed) ? 'PASSED' : 'FAILED', checks };
 }
@@ -31,5 +36,6 @@ export function buildAcceptedArtifactExportSnippet() {
   return `# continue after failures; always package runtime_data/proofs diagnostics
 PF_PROOF_SUMMARY_PATH="$SUMMARY" npm run proof:proof-runner-final-summary
 proof_scripts_failed_exit_nonzero="$FAILED"
+cp runtime_data/proofs/full_test_suite_stability_*.json logs/ 2>/dev/null || true
 zip -r "$EVIDENCE_ZIP" logs repo_identity.json runtime_data/proofs`;
 }
