@@ -152,6 +152,16 @@ export function buildAddressOverlayEvidenceTemplate(markerInput = readAddressOve
     overlay_rendered_on_device: false,
     operator_observed: false,
     marker_visible_in_device_evidence: false,
+    visual_evidence: {
+      kind: 'operator_photo|framebuffer_capture|screenshot|mpv_screenshot|browser_capture',
+      artifact_sha256: null,
+      artifact_path_redacted: true,
+      expected_marker: markerInput.marker,
+      observed_marker: null,
+      marker_validation: 'manual_pending',
+      operator_confirmation: false,
+      source_note: 'Populate after collecting visual evidence that shows overlay_marker on the Raspberry/device display.',
+    },
     observed_at: new Date().toISOString(),
     operator_note: 'Set all required boolean fields to true only after observing real Raspberry/device display evidence containing overlay_marker.',
   };
