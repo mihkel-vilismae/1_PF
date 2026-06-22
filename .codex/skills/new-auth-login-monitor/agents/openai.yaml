@@ -1,4 +1,4 @@
 interface:
   display_name: "New Auth Login Monitor"
   short_description: "Observe NEW AUTH login logs and session metadata safely."
-  default_prompt: "Use this skill to monitor NEW AUTH login attempts, sanitized logs, and iCloudPD cookie metadata without exposing secrets."
+  default_prompt: "Use $new-auth-login-monitor to monitor NEW AUTH attempts, sanitized logs, and iCloudPD session metadata safely."

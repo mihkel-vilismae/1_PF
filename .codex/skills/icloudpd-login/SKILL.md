@@ -35,6 +35,7 @@ Do not ask the user to reveal Apple passwords, 2FA codes, cookies, or session fi
    - `--auth-only` should only authenticate and save/reuse session data.
    - Do not tell the user photos should download from an auth-only run.
    - After authentication succeeds, run a separate download command that reuses the same `--cookie-directory`.
+   - When the task continues into repository proof/readiness work, hand off to `real-icloud-proof-ladder`; authentication success alone is not media-source or v1 readiness.
 
 4. Verify cookies without exposing secrets.
    - It is safe to inspect whether files exist in the cookie directory.

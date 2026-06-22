@@ -1,0 +1,4 @@
+interface:
+  display_name: "Real iCloud Proof Ladder"
+  short_description: "Run real iCloud proof stages without false claims"
+  default_prompt: "Use $real-icloud-proof-ladder to plan the next safe real iCloud proof stage from current artifacts."

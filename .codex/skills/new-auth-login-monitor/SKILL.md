@@ -9,6 +9,8 @@ description: Safely monitor the 12_PF/1234_PF NEW AUTH iCloudPD login flow while
 
 Observe the live NEW AUTH flow and classify what happened from sanitized runtime evidence. This skill is read-only unless the user explicitly asks for implementation work.
 
+When authentication is sufficiently evidenced and the task moves to real download, continuation, pipeline, or readiness artifacts, hand off to `real-icloud-proof-ladder`.
+
 ## Privacy Boundary
 
 - Do not ask for, print, or inspect Apple passwords, 2FA codes, raw cookie/session contents, tokens, auth headers, or provider secrets.

@@ -47,6 +47,15 @@
 - `conf/runtime-truth.json` is ignored local runtime state created or updated during runs; do not commit it into future baselines unless the user explicitly reverses this rule.
 - When a mutable runtime file is needed for app operation, prefer a committed `.seed`, `.example`, or template file plus documentation over tracking changing local state.
 
+## Missing GPS Playback and Address Overlay Rule
+
+- Otherwise valid, playable media must not be excluded from the playback queue solely because GPS metadata, geocoding, or resolved address text is unavailable.
+- Represent missing GPS or unresolved location honestly as an explicit unknown, missing, or equivalent non-success state; do not manufacture coordinates or accept deterministic placeholder geocoding as production success.
+- Treat address data as optional playback enrichment. Show the address overlay only when accepted real-provider or approved cache evidence supplies usable address text; otherwise hide or omit the overlay cleanly.
+- Continue rejecting media for independent playback-safety reasons such as a missing variant, empty or missing file path, unsupported or corrupt media, or another existing invalid playback state.
+- Preserve queue idempotency, existing playback selection boundaries, real/mock separation, provider redaction rules, and separate v1.0 proof ownership for iCloud source, GPS/geocode, worker product output, native playback, and device-visible overlay evidence.
+- Any change to queue eligibility, missing-location handling, or overlay visibility must update focused tests and the canonical queue/GPS/geocode documentation together.
+
 ## Source File Comment Discipline
 
 - Every source file edited from now on must start with a short comment block, about five lines maximum, describing what the file does.

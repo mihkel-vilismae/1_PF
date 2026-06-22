@@ -1,0 +1,4 @@
+interface:
+  display_name: "Proof Bundle Export Audit"
+  short_description: "Package and audit sanitized proof bundles safely"
+  default_prompt: "Use $proof-bundle-export-audit to inspect this proof bundle for completeness, identity, and secret safety."

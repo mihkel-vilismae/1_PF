@@ -1,0 +1,4 @@
+interface:
+  display_name: "Operator Terminal Recovery"
+  short_description: "Recover blocked UI actions through safe local APIs"
+  default_prompt: "Use $operator-terminal-recovery to give the smallest safe localhost fallback for this blocked dashboard action."

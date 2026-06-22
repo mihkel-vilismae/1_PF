@@ -1,0 +1,4 @@
+interface:
+  display_name: "Readiness Gate Analyzer"
+  short_description: "Explain exact proof blockers and readiness truth"
+  default_prompt: "Use $readiness-gate-analyzer to explain why the current v1 readiness gate is blocked."
