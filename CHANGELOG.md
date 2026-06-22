@@ -1,8 +1,31 @@
-## v0.10.14 — reconcile GitHub documentation audit history
+## 2026-06-22 07:01 EEST — v0.10.15
 
-- Merged the remote documentation/OpenSpec coverage audit and canonical navigation updates.
-- Retained local proof-evidence ignore rules and Fedora rehearsal pause guidance.
-- Preserved the v0.10.13 playable-media queue and playback behavior.
+### Added
+- Added a project rule requiring orchestrator prompts to derive version, HEAD, readiness mappings, and latest proof state from the live repository.
+
+### Changed
+- Updated ACR/readiness skills to remove stale slices and dynamically prioritize executable exact proof blockers.
+- Updated the reusable skill-improvement runbook with live-baseline and stale-assumption reporting.
+
+### Fixed
+- Prevented copied stale orchestrator baselines and completed slices from being treated as current execution truth.
+
+### Removed
+- None.
+
+## 2026-06-22 06:48 EEST — v0.10.14
+
+### Added
+- Added the merged remote documentation/OpenSpec coverage audit and canonical navigation entries.
+
+### Changed
+- Retained local proof-evidence ignore rules and Fedora rehearsal pause guidance while reconciling repository history.
+
+### Fixed
+- Preserved the v0.10.13 playable-media queue and playback behavior across the history merge.
+
+### Removed
+- None.
 
 ## v0.10.13 — queue prep keeps playable media eligible
 

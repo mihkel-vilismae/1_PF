@@ -16,9 +16,18 @@ Scan the current chat and recent project context for reusable workflow, proof, a
 
 Use 3x2 ACR:
 
-1. Analyze candidate skills/workflows.
-2. Criticize whether each is reusable, safe, non-duplicative, and scoped correctly.
-3. Refine into accepted, rejected, and deferred updates.
+1. Derive the live repository baseline before trusting the prompt:
+   - current branch and clean/dirty state
+   - VERSION and package/component versions
+   - HEAD
+   - current evaluator/proof mapping
+   - latest exact proof_kind artifacts by proof_timestamp
+   - stale readiness summaries or artifact identity mismatches
+2. Analyze candidate skills/workflows.
+3. Criticize whether each is reusable, safe, non-duplicative, and scoped correctly.
+4. Refine into accepted, rejected, and deferred updates.
+
+For orchestrator prompts, remove or rewrite stale version/HEAD/proof claims, skip already-complete slices, defer unavailable target/operator work, and reorder remaining slices by highest honest readiness impact and executable confidence.
 
 Respect active project baseline and proof-honesty rules.
 
@@ -35,6 +44,7 @@ Do not modify code unless explicitly asked.
 Do not create duplicate memories.
 Do not store sensitive data.
 Print a before/after-style table of accepted changes.
+Print the verified live baseline and the stale prompt assumptions removed.
 ```
 
 ## Evaluation rules
@@ -53,6 +63,7 @@ Print a before/after-style table of accepted changes.
 - Do not store duplicate memories when an existing canonical memory already covers the behavior.
 - Do not let a workflow skill override the active immutable baseline.
 - Do not claim runtime proof from a prompt, plan, or assistant summary.
+- Do not preserve a copied slice order when live artifacts show that slices are complete, obsolete, stale, or unavailable on the current platform.
 
 ## Expected output
 
@@ -62,8 +73,9 @@ The result should include:
 2. rejected candidates and why;
 3. scope for each accepted item;
 4. before/after table;
-5. any memory updates made;
-6. any repo-documentation updates deferred for a later explicit implementation slice.
+5. verified live baseline and stale assumptions removed;
+6. any memory updates made;
+7. any repo-documentation updates deferred for a later explicit implementation slice.
 
 ## Non-claims
 

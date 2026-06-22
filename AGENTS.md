@@ -34,6 +34,16 @@
 - Do not force a skill if none fits, and do not let any skill override the active immutable baseline, explicit user instructions, or the current repo/baseline.
 - Prefer repo-local skill files as source of truth when present; preserve architecture boundaries, Test/Real separation, existing behavior, and regression safety.
 
+## Live Orchestrator Baseline Rule
+
+- Before refining or executing any multi-slice, readiness, proof, release, or v1 orchestrator prompt, derive the baseline from the live repository instead of trusting version, HEAD, proof status, blocker lists, or slice order copied into the prompt.
+- At minimum, verify the current branch, clean/dirty state, `VERSION`, package version, HEAD, current readiness evaluator mapping, and latest artifact for every relevant exact `proof_kind`.
+- Select latest proof artifacts by `proof_timestamp`, preserve unreadable-artifact and identity-mismatch findings, and mark a readiness summary stale when relevant input artifacts are newer.
+- Rewrite or skip prompt slices that are already complete, obsolete, unavailable on the current platform, dependent on operator-held secrets, or blocked on target hardware.
+- Reorder remaining slices by highest honest readiness impact and executable confidence. Prefer exact required proof kinds and local implementation defects before hardware-only or operator-only gates.
+- Do not change readiness mappings merely to match an old prompt, and do not rerun passing proofs without a freshness, identity, regression, or dependency reason.
+- In the refined prompt, state the verified live baseline, stale prompt assumptions removed, current passed/blocked gates, selected next slices, deferred target/operator work, and `Skills / rules to apply`.
+
 ## VERSION Output Rule
 
 - When the user says `VERSION`, print the full repository version block.
