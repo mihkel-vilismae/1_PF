@@ -1,3 +1,9 @@
+## v0.10.14 — reconcile GitHub documentation audit history
+
+- Merged the remote documentation/OpenSpec coverage audit and canonical navigation updates.
+- Retained local proof-evidence ignore rules and Fedora rehearsal pause guidance.
+- Preserved the v0.10.13 playable-media queue and playback behavior.
+
 ## v0.10.13 — queue prep keeps playable media eligible
 
 - Updated slideshow queue preparation and current-item selection to accept otherwise playable assets even when GPS, geocode, or address text is missing.
@@ -35,6 +41,13 @@
 - Added `PF_PROOF_MODE=quick|changed|blockers|failed-last|platform|full` queue selection.
 - Added `proof:proofrunner-tiered-queues` contract proof.
 - Documented tiered proofrunner workflow and timing-history packaging expectations.
+
+
+## 0.10.5 - Upstream documentation audit reconciliation
+
+- Merge the upstream documentation/OpenSpec coverage grading audit and canonical navigation entries.
+- Retain the Fedora/Linux rehearsal pause guidance and local proof-evidence ignore rules.
+- Preserve current executable-bit, mpv placeholder, proof documentation, and version-history contracts.
 
 
 ## 0.10.2 - Proofrunner millisecond timing history

@@ -81,6 +81,13 @@
 - If other distinct components connect at runtime, such as transient ESP32 devices, add a version line for each connected component while it is present.
 - Transient component version lines must be visually distinguishable from persistent component lines, for example with a more muted, secondary, or status-like style.
 
+## Fedora Rehearsal Pause Rule
+
+- As of 2026-06-16, Fedora/Linux rehearsal code and specs are paused again.
+- Keep existing Fedora code, proof scripts, and docs; do not delete them only because the Fedora path is paused.
+- Do not develop new Fedora behavior, add Fedora-first tests, or use Fedora rehearsal as a design target unless the user explicitly resumes Fedora work.
+- Treat Fedora artifacts as retained reference/rehearsal material, not active v1 scope and not Raspberry proof.
+
 ## GIT WORK Artifact Confirmation Rule
 
 - During `GIT WORK`, do not auto-commit a dirty tree that appears to contain an obvious artifact regression snapshot without first asking for explicit confirmation.

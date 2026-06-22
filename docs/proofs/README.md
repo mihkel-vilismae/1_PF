@@ -375,3 +375,22 @@ The launcher must run queue discovery from the extracted repo root (`$REPO_ROOT`
 | Real iCloud evidence ZIP contract | `npm run proof:real-icloud-evidence-zip-contract` | Validates the uploadable evidence ZIP/package manifest contract and secret-safety requirements. |
 
 | Operator-safe iCloud session checkpoint | `npm run proof:operator-safe-icloud-session-checkpoint` | Validates B1.1/B1.2 operator-safe real iCloud readiness ordering, auth-session evidence requirement, and secret-safety boundaries. |
+
+| Regular worker product evidence producer | `npm run proof:regular-worker-product-evidence-producer` | Validates proof-safe regular-worker product evidence production without replacing target-machine proof. |
+
+## Linux Fedora rehearsal proofs
+
+Status as of 2026-06-16: paused. Keep the existing Fedora/Linux proof commands and code, but do not develop new Fedora behavior or use Fedora rehearsal as an active design target unless the user explicitly resumes it. These commands remain listed so documentation stays aligned with `package.json`; they do not replace Raspberry target proof, real iCloud proof, or physical display/recovery evidence.
+
+| Proof | Command | Runtime mode |
+|---|---|---|
+| Fedora env preflight | `npm run proof:linux-fedora-env-preflight` | Checks Linux/Fedora environment readiness without claiming Raspberry runtime success. |
+| Fedora tool checker | `npm run proof:linux-fedora-tool-checker` | Checks local Linux media-tool readiness without vendoring tools or proving playback. |
+| Fedora cron preflight | `npm run proof:linux-fedora-cron-preflight` | Checks rehearsal scheduler prerequisites without proving active cron execution. |
+| Fedora worker singleton pack | `npm run proof:linux-fedora-worker-singleton-pack` | Checks rehearsal worker singleton/lock behavior without Raspberry target claims. |
+| Fedora product pipeline rehearsal | `npm run proof:linux-fedora-product-pipeline-rehearsal` | Runs the retained rehearsal path without proving real production media behavior. |
+| Fedora readiness | `npm run proof:linux-fedora-readiness` | Summarizes Fedora rehearsal readiness and remaining non-claims. |
+| Fedora executable permissions | `npm run proof:linux-fedora-executable-permissions` | Checks Linux executable-bit readiness for repo-owned scripts. |
+| Fedora iCloudPD preflight | `npm run proof:linux-fedora-icloudpd-preflight` | Discovers local iCloudPD readiness without login/download claims. |
+| Fedora worker command inventory | `npm run proof:linux-fedora-worker-command-inventory` | Inventories worker commands and boundaries for Linux rehearsal. |
+| Fedora proof artifact export | `npm run proof:linux-fedora-export-proof-artifacts` | Exports sanitized Fedora rehearsal proof artifacts for review. |
