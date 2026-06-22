@@ -1,4 +1,8 @@
-/** Raspberry v1.0 release-gate readiness proof based on the answered question matrix. */
+/**
+ * Evaluates Raspberry v1 readiness from the latest local proof artifacts.
+ * Keeps gate status separate from artifact baseline/commit identity reporting.
+ * Produces sanitized evidence and exact follow-up proof commands.
+ */
 import { readdir, readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
@@ -127,6 +131,7 @@ export const RASPBERRY_V1_RELEASE_GATES = Object.freeze([
   },
 ]);
 
+/** Collects the newest readable artifact for each exact proof kind. */
 export async function collectLatestProofArtifacts({ repoRoot = process.cwd() } = {}) {
   const proofDir = join(repoRoot, 'runtime_data', 'proofs');
   if (!existsSync(proofDir)) return { proofDir, latestByKind: {}, filesRead: 0, readErrors: [] };
@@ -149,6 +154,8 @@ export async function collectLatestProofArtifacts({ repoRoot = process.cwd() } =
           proof_status: parsed.proof_status ?? 'UNKNOWN',
           proof_timestamp: timestamp,
           runtime_mode: parsed.runtime_mode ?? null,
+          baseline_version: parsed.baseline_version ?? null,
+          git_commit: parsed.git_commit ?? null,
           source_file: fileName,
         };
       }
@@ -159,6 +166,125 @@ export async function collectLatestProofArtifacts({ repoRoot = process.cwd() } =
   return { proofDir, latestByKind, filesRead, readErrors };
 }
 
+/** Treats full and short Git hashes as the same identity when one prefixes the other. */
+function gitCommitMatches(expectedCommit, actualCommit) {
+  if (!expectedCommit || !actualCommit) return false;
+  const expected = String(expectedCommit).trim().toLowerCase();
+  const actual = String(actualCommit).trim().toLowerCase();
+  return expected.startsWith(actual) || actual.startsWith(expected);
+}
+
+/** Returns missing and mismatched identity fields for one selected proof artifact. */
+function compareProofIdentity(artifact, expectedBaselineVersion, expectedGitCommit) {
+  const mismatchFields = [];
+  const missingFields = [];
+  if (!artifact.baseline_version) missingFields.push('baseline_version');
+  else if (expectedBaselineVersion && artifact.baseline_version !== expectedBaselineVersion) mismatchFields.push('baseline_version');
+  if (!artifact.git_commit) missingFields.push('git_commit');
+  else if (expectedGitCommit && !gitCommitMatches(expectedGitCommit, artifact.git_commit)) mismatchFields.push('git_commit');
+  return { mismatchFields, missingFields };
+}
+
+/** Reports selected proof artifacts whose baseline version or commit differs from the live repository. */
+export function buildProofIdentityReport({ latestByKind = {}, expectedBaselineVersion = null, expectedGitCommit = null } = {}) {
+  const mappedProofKinds = [...new Set(RASPBERRY_V1_RELEASE_GATES.flatMap((gate) => gate.proofKinds))].sort();
+  const selectedArtifacts = mappedProofKinds.map((proofKind) => latestByKind[proofKind]).filter(Boolean);
+  const mismatches = [];
+  const missingIdentity = [];
+
+  for (const artifact of selectedArtifacts) {
+    const { mismatchFields, missingFields } = compareProofIdentity(artifact, expectedBaselineVersion, expectedGitCommit);
+
+    const gateIds = RASPBERRY_V1_RELEASE_GATES
+      .filter((gate) => gate.proofKinds.includes(artifact.proof_kind))
+      .map((gate) => gate.id);
+    const identityEvidence = {
+      proof_kind: artifact.proof_kind,
+      proof_status: artifact.proof_status,
+      source_file: artifact.source_file,
+      gate_ids: gateIds,
+      expected_baseline_version: expectedBaselineVersion,
+      actual_baseline_version: artifact.baseline_version,
+      expected_git_commit: expectedGitCommit,
+      actual_git_commit: artifact.git_commit,
+    };
+    if (mismatchFields.length > 0) mismatches.push({ ...identityEvidence, mismatch_fields: mismatchFields });
+    if (missingFields.length > 0) missingIdentity.push({ ...identityEvidence, missing_fields: missingFields });
+  }
+
+  return {
+    policy: 'report_only',
+    gate_status_impact: 'none',
+    identity_scope: 'selected_mapped_artifacts',
+    expected_baseline_version: expectedBaselineVersion,
+    expected_git_commit: expectedGitCommit,
+    selected_artifact_count: selectedArtifacts.length,
+    mismatch_count: mismatches.length,
+    missing_identity_count: missingIdentity.length,
+    identity_matches_current_baseline: selectedArtifacts.length > 0 && mismatches.length === 0 && missingIdentity.length === 0,
+    mismatches,
+    missing_identity: missingIdentity,
+  };
+}
+
+/** Classifies required gates as current-baseline refreshed, passed-but-stale, or not passed. */
+export function buildGateFormalRefreshReport({ readiness, expectedBaselineVersion = null, expectedGitCommit = null } = {}) {
+  const requiredGates = readiness.gates.filter((gate) => gate.required_for_v1);
+  const gates = requiredGates.map((gate) => {
+    const identityIssues = gate.proofs.flatMap((proof) => {
+      if (!proof.source_file) return [];
+      const { mismatchFields, missingFields } = compareProofIdentity(proof, expectedBaselineVersion, expectedGitCommit);
+      if (mismatchFields.length === 0 && missingFields.length === 0) return [];
+      return [{
+        proof_kind: proof.proof_kind,
+        source_file: proof.source_file,
+        mismatch_fields: mismatchFields,
+        missing_fields: missingFields,
+        actual_baseline_version: proof.baseline_version ?? null,
+        actual_git_commit: proof.git_commit ?? null,
+      }];
+    });
+    let formalRefreshStatus = 'NOT_PASSED';
+    if (gate.gate_status === 'PASSED') {
+      formalRefreshStatus = identityIssues.length === 0 ? 'FORMALLY_REFRESHED' : 'PASSED_NOT_FORMALLY_REFRESHED';
+    }
+    return {
+      gate_id: gate.id,
+      title: gate.title,
+      gate_status: gate.gate_status,
+      formal_refresh_status: formalRefreshStatus,
+      expected_baseline_version: expectedBaselineVersion,
+      expected_git_commit: expectedGitCommit,
+      identity_issues: identityIssues,
+      refresh_commands: formalRefreshStatus === 'PASSED_NOT_FORMALLY_REFRESHED'
+        ? identityIssues.map((issue) => ({
+          proof_kind: issue.proof_kind,
+          command: RASPBERRY_V1_PROOF_COMMANDS[issue.proof_kind] ?? 'no command mapped',
+        }))
+        : [],
+    };
+  });
+  const formallyRefreshed = gates.filter((gate) => gate.formal_refresh_status === 'FORMALLY_REFRESHED');
+  const passedNotRefreshed = gates.filter((gate) => gate.formal_refresh_status === 'PASSED_NOT_FORMALLY_REFRESHED');
+  const notPassed = gates.filter((gate) => gate.formal_refresh_status === 'NOT_PASSED');
+  return {
+    policy: 'passed_and_current_version_commit_required',
+    gate_status_impact: 'none',
+    expected_baseline_version: expectedBaselineVersion,
+    expected_git_commit: expectedGitCommit,
+    required_gate_count: gates.length,
+    formally_refreshed_count: formallyRefreshed.length,
+    passed_not_formally_refreshed_count: passedNotRefreshed.length,
+    not_passed_count: notPassed.length,
+    release_baseline_formally_refreshed: gates.length > 0 && formallyRefreshed.length === gates.length,
+    formally_refreshed_gate_ids: formallyRefreshed.map((gate) => gate.gate_id),
+    passed_not_formally_refreshed_gate_ids: passedNotRefreshed.map((gate) => gate.gate_id),
+    not_passed_gate_ids: notPassed.map((gate) => gate.gate_id),
+    gates,
+  };
+}
+
+/** Evaluates one release gate from its exact mapped proof artifacts. */
 export function evaluateReleaseGate(gate, latestByKind = {}) {
   const proofs = gate.proofKinds.map((kind) => latestByKind[kind] ?? {
     proof_kind: kind,
@@ -188,6 +314,7 @@ export function evaluateReleaseGate(gate, latestByKind = {}) {
   };
 }
 
+/** Evaluates all Raspberry v1 gates without changing proof-artifact status semantics. */
 export function evaluateRaspberryV1Readiness({ latestByKind = {} } = {}) {
   const gates = RASPBERRY_V1_RELEASE_GATES.map((gate) => evaluateReleaseGate(gate, latestByKind));
   const required = gates.filter((gate) => gate.required_for_v1);
@@ -242,9 +369,20 @@ export function buildReadinessGapReport(readiness) {
   }));
 }
 
+/** Builds the readiness proof envelope and explicit artifact identity diagnostics. */
 export async function buildRaspberryV1ReadinessProof({ metadata, repoRoot = process.cwd() } = {}) {
   const artifactIndex = await collectLatestProofArtifacts({ repoRoot });
   const readiness = evaluateRaspberryV1Readiness({ latestByKind: artifactIndex.latestByKind });
+  const proofIdentityReport = buildProofIdentityReport({
+    latestByKind: artifactIndex.latestByKind,
+    expectedBaselineVersion: metadata.version,
+    expectedGitCommit: metadata.gitCommit,
+  });
+  const gateFormalRefreshReport = buildGateFormalRefreshReport({
+    readiness,
+    expectedBaselineVersion: metadata.version,
+    expectedGitCommit: metadata.gitCommit,
+  });
   return createProofEnvelope({
     proofKind: 'raspberry_v1_readiness',
     baselineVersion: metadata.version,
@@ -259,6 +397,8 @@ export async function buildRaspberryV1ReadinessProof({ metadata, repoRoot = proc
       summary: readiness.summary,
       blocking_gate_ids: readiness.blocking_gate_ids,
       readiness_gap_report: buildReadinessGapReport(readiness),
+      proof_identity_report: proofIdentityReport,
+      gate_formal_refresh_report: gateFormalRefreshReport,
       latest_proof_artifact_index: {
         proof_dir: artifactIndex.proofDir,
         files_read: artifactIndex.filesRead,
@@ -272,6 +412,8 @@ export async function buildRaspberryV1ReadinessProof({ metadata, repoRoot = proc
       non_claims: [
         'does not run missing proof commands by itself',
         'does not prove real iCloud/GPS/geocode without corresponding proof artifacts',
+        'reports baseline/commit identity mismatches but does not change gate status from identity alone',
+        'does not call a passed gate formally refreshed unless every mapped proof matches the current version and commit',
         'does not claim reboot or power-loss recovery for v1.0',
         'does not treat Windows proof as Raspberry v1.0 proof',
       ],
@@ -282,6 +424,7 @@ export async function buildRaspberryV1ReadinessProof({ metadata, repoRoot = proc
   });
 }
 
+/** Describes the exact live proof data required before readiness can pass. */
 export function buildV1ReadinessLiveDataRequirements() {
   const requiredGates = RASPBERRY_V1_RELEASE_GATES.filter((gate) => gate.requiredForV1);
   const requiredProofKinds = [...new Set(requiredGates.flatMap((gate) => gate.proofKinds))].sort();

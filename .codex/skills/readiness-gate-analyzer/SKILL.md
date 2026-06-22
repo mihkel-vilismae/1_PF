@@ -29,11 +29,14 @@ Do not infer one layer from another.
    - Scan `runtime_data/proofs/*.json`.
    - Group by exact `proof_kind`.
    - Select the latest artifact by `proof_timestamp`.
-   - Preserve unreadable-file errors and identity mismatches.
+   - Compare each selected artifact's `baseline_version` and `git_commit` with the live repository identity.
+   - Preserve unreadable-file errors, missing identity fields, and identity mismatches.
 4. Evaluate each required gate exactly as code does.
    - A required gate passes only when every mapped proof has `proof_status: PASSED`.
    - `BLOCKED`, `FAILED`, `PARTIAL`, `TIMED_OUT`, `UNKNOWN`, `MISSING`, and `PLANNED` remain blocking when the evaluator says so.
    - A semantically related proof does not substitute for an unmapped exact `proof_kind`.
+   - Keep gate pass status separate from formal refresh status.
+   - Declare a required gate formally refreshed only when it is passed and every mapped selected proof matches the live `VERSION` and HEAD.
 5. Check freshness.
    - Flag a readiness artifact as stale when relevant input proofs are newer.
    - Do not report an old readiness percentage as current after later proof runs.
@@ -64,5 +67,9 @@ Provide:
 - required gate count, passed count, blocked count, and percentage;
 - one row per blocked gate with exact proof kinds and latest statuses;
 - stale, missing, unreadable, or identity-mismatched artifacts;
+- for every identity mismatch, expected and actual version/commit, source file, proof kind, and affected gate;
+- whether identity mismatches are report-only or gate-blocking under the current evaluator policy;
+- required gates that are formally refreshed, passed but not formally refreshed, or not passed;
+- exact rerun commands for passed gates whose proof identity is not current;
 - smallest next command;
 - explicit product-readiness non-claim.

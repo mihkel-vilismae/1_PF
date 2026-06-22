@@ -44,6 +44,17 @@
 - Do not change readiness mappings merely to match an old prompt, and do not rerun passing proofs without a freshness, identity, regression, or dependency reason.
 - In the refined prompt, state the verified live baseline, stale prompt assumptions removed, current passed/blocked gates, selected next slices, deferred target/operator work, and `Skills / rules to apply`.
 
+## Readiness Proof Identity Reporting Rule
+
+- Readiness output must compare each selected mapped proof artifact's `baseline_version` and `git_commit` with the live repository version and HEAD.
+- Report every mismatch with the proof kind, source file, affected gate, expected identity, and actual identity.
+- Report missing identity fields separately from explicit mismatches.
+- State whether identity findings are report-only or gate-blocking under the current evaluator policy; do not silently change gate pass/fail semantics.
+- A passed gate backed by an older baseline must not be described as proof of the current release without an explicit identity warning.
+- Declare a release-baseline gate `FORMALLY_REFRESHED` only when the gate is passed and every mapped selected proof artifact matches both the current `VERSION` and HEAD.
+- Classify a passed gate with mismatched or missing identity as `PASSED_NOT_FORMALLY_REFRESHED`; preserve its gate pass status while requiring current-baseline proof before making a refreshed-release claim.
+- Readiness summaries must count formally refreshed gates separately from passed gates and provide exact rerun commands for passed-but-not-refreshed gates.
+
 ## VERSION Output Rule
 
 - When the user says `VERSION`, print the full repository version block.

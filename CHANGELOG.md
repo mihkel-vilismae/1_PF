@@ -1,3 +1,33 @@
+## 2026-06-22 14:52 EEST — v0.10.17
+
+### Added
+- Added per-gate formal refresh classification for current release-baseline proof identity.
+- Added rerun commands for gates that pass but are not proven against the current version and commit.
+
+### Changed
+- Readiness output now counts formally refreshed gates separately from passed gates.
+
+### Fixed
+- Prevented already-passing older-baseline gates from being described as freshly verified for the current release.
+
+### Removed
+- None.
+
+## 2026-06-22 14:49 EEST — v0.10.16
+
+### Added
+- Added explicit readiness proof baseline-version and Git-commit identity mismatch reporting.
+- Added a project rule and readiness skill guidance requiring expected/actual identity evidence.
+
+### Changed
+- Readiness CLI output now lists identity mismatch counts and affected proof artifacts.
+
+### Fixed
+- Prevented older-baseline passing artifacts from being presented without an explicit current-release identity warning.
+
+### Removed
+- None.
+
 ## 2026-06-22 07:01 EEST — v0.10.15
 
 ### Added
