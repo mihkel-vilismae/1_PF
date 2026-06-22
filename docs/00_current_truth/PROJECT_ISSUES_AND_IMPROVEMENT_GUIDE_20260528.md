@@ -22,9 +22,9 @@ The top issues are:
 |---:|---|---|---|---|
 | 1 | Real-provider gaps in the five regular worker stages | Architecture / pipeline | High | Keep deterministic behavior; add provider boundaries and PC/runtime proof before claiming production readiness. |
 | 2 | Test Mode vs Real Mode must remain strictly separated | Safety / runtime | High | Keep one `.env` source and use explicit Test Mode projection; never let mock paths silently overlap real paths. |
-| 3 | Real geocoding is still placeholder-only | Core functionality | High | Add a real geocoder adapter later, but keep deterministic placeholder as the Test Mode default. |
+| 3 | Real geocoding is still placeholder-only, but address resolution is optional enrichment | Core functionality | High | Add a real geocoder adapter later, keep deterministic placeholder as the Test Mode default, and do not block otherwise playable media when GPS/address enrichment is missing. |
 | 4 | Real iCloudPD download is gated but not fully proven as Stage 1 input | Core functionality | Medium/High | Run a documented PC/runtime proof from real download through Queue before expanding behavior. |
-| 5 | GPS parser breadth is limited compared with real media libraries | Core functionality | Medium | Design parser/fallback providers before adding many ad-hoc parsing branches. |
+| 5 | GPS parser breadth is limited compared with real media libraries | Core functionality | Medium | Design parser/fallback providers before adding many ad-hoc parsing branches, and keep missing GPS as non-blocking optional enrichment for otherwise playable media. |
 | 6 | UI live updates can interfere with inspection, focus, and scroll state | UI / operability | Medium | Preserve pause-live-updates behavior and continue treating re-render stability as a regression-sensitive area. |
 | 7 | View B activity detection and fullscreen playback reuse need careful boundaries | UI / hardware integration | Medium | Reuse the proven detection source model without coupling fullscreen playback to View B UI internals. |
 | 8 | Documentation can overclaim or drift from code | Documentation / process | Medium | Keep status tables evidence-backed and separate docs claims from runtime-verified facts. |
@@ -46,10 +46,10 @@ The top issues are:
 | Issue | Category | Evidence/source | Why it matters | Likely root cause | Severity | Dependencies | High-level solution | Preserve | Verify |
 |---|---|---|---|---|---|---|---|---|---|
 | Deterministic pipeline can look production-ready | Pipeline / product truth | Goal 4 docs and prior repo-backed worker analysis | Operators may trust mock/placeholder behavior as real behavior. | Worker shells are implemented before all real providers are ready. | High | Provider design; PC/runtime tests | Label each stage by real maturity and add provider boundaries before production claims. | Existing deterministic tests and Test Mode flow. | Stage-by-stage PC/runtime report. |
-| Real geocoding missing | Core functionality | Geocode stage uses deterministic placeholder in prior analysis. | Resolved addresses are not true reverse-geocoded addresses. | Placeholder was intentionally used for deterministic pipeline progress. | High | Provider config, rate limits, cache policy | Add geocoder adapter with placeholder default and real provider gated by Real Mode/config. | Placeholder Test Mode behavior. | Known-coordinate real-provider tests and failure tests. |
+| Real geocoding missing | Core functionality | Geocode stage uses deterministic placeholder in prior analysis. | Resolved addresses are not true reverse-geocoded addresses. | Placeholder was intentionally used for deterministic pipeline progress. Missing or unresolved address should stay optional enrichment rather than blocking otherwise playable media. | High | Provider config, rate limits, cache policy | Add geocoder adapter with placeholder default and real provider gated by Real Mode/config. Keep unresolved address hidden/unknown unless a usable address exists. | Placeholder Test Mode behavior and playable-media queue behavior. | Known-coordinate real-provider tests and failure tests. |
 | Real download needs full pipeline proof | Core functionality | Real download route/auth boundary exists, but full real run remains a runtime concern. | Real files may expose indexing/GPS/queue gaps that fixtures do not. | Auth provider and deterministic pipeline were implemented separately. | Medium/High | iCloudPD session, real media source, PC run | Create a documented real-download-through-Queue verification run. | Auth gating and no-secret logging. | Manual PC run plus DB/status evidence. |
-| GPS parser may be too narrow | Core functionality | EXIF fixture success does not prove all iCloud/phone/video cases. | Real media often uses HEIC, video metadata, sidecars, or variant encodings. | Single parser path is enough for current deterministic tests. | Medium | Real media fixtures | Design metadata parser providers/fallbacks before broadening. | Existing EXIF parser behavior. | Fixture matrix and real media samples. |
-| Queue policy is simple and strict | Product policy | Queue stage inserts eligible geocoded media and skips others. | Future UX may require prioritization, retention, unresolved-media handling, or requeue rules. | Current queue is a preparer, not a full playback policy engine. | Low/Medium | Product decisions | Keep strict eligibility until queue policy is designed separately. | Existing idempotent queue behavior. | Queue policy tests if changed. |
+| GPS parser may be too narrow | Core functionality | EXIF fixture success does not prove all iCloud/phone/video cases. | Real media often uses HEIC, video metadata, sidecars, or variant encodings. | Single parser path is enough for current deterministic tests. Missing GPS should stay non-blocking unless the media is independently invalid. | Medium | Real media fixtures | Design metadata parser providers/fallbacks before broadening. | Existing EXIF parser behavior and playable-media fallback rules. | Fixture matrix and real media samples. |
+| Queue policy is simple and strict | Product policy | Queue stage inserts otherwise playable media and treats GPS/address as optional enrichment. | Future UX may require prioritization, retention, unresolved-media handling, or requeue rules. | Current queue is a preparer, not a full playback policy engine. | Low/Medium | Product decisions | Keep independent playback-safety exclusions strict while allowing missing location enrichment. | Existing idempotent queue behavior. | Queue policy tests if changed. |
 | Test Mode and Real Mode can drift | Safety / environment | Single `.env` fix and `test.env` removal are recent. | Overlap or hidden env sources can corrupt real/test separation. | Multiple env sources and path projection were previously confusing. | High | Runtime mode env rules | Keep one `.env` file and make Test Mode projection explicit and test-covered. | Real DB and Test DB isolation. | Verify-env tests plus manual env review. |
 | UI re-renders can break operator work | UI / operability | User reported Inspect Element refresh/focus/scroll issues; recent pause and scroll fixes exist. | Operators cannot inspect/copy/type reliably when background polling re-renders the root. | Polling and full-root rendering can reset DOM state. | Medium | Dashboard render architecture | Maintain pause-live-updates; preserve scroll/focus markers; avoid unnecessary full-root replacements. | Existing card actions and live updates when not paused. | Browser manual tests and targeted render tests. |
 | View B detection reuse can become coupled | Architecture / UI | Goal 2 and Goal 3 split work. | Fullscreen wake behavior should reuse detection logic, not View B UI state. | Activity detection started as a View B test surface. | Medium | Adapter boundaries | Keep source adapters separate from UI cards and fullscreen consumers. | View B/B5 test behavior. | Mouse/keyboard/PIR source tests and fullscreen HUD checks. |
@@ -74,7 +74,7 @@ A good solution is to keep Test Mode as a safe projection from `.env`, not as a 
 
 ### 3. Geocode provider gap
 
-Geocode is the clearest example of an implemented shell that is not production-ready. The stage can process GPS rows and write address-like output, but current behavior is deterministic placeholder address generation. That is valuable for tests but not equivalent to real reverse geocoding.
+Geocode is the clearest example of an implemented shell that is not production-ready. The stage can process GPS rows and write address-like output, but current behavior is deterministic placeholder address generation. That is valuable for tests but not equivalent to real reverse geocoding. Missing GPS or unresolved address is an optional enrichment outcome and should not block otherwise playable media.
 
 A good solution is to introduce a geocoder adapter model later:
 
@@ -140,7 +140,7 @@ The project should use provider/adapter boundaries where real behavior varies by
 |---|---|
 | Download | Mock/generated provider vs iCloudPD provider vs possible future providers. |
 | GPS parser | EXIF provider vs JSON/XMP/text sidecar providers vs filename/path token providers vs future HEIC/video/tool-specific providers. |
-| Geocode | Address-cache provider vs disabled-by-default network providers vs deterministic placeholder fallback. |
+| Geocode | Address-cache provider vs disabled-by-default network providers vs deterministic placeholder fallback; unresolved address stays optional enrichment and should not block otherwise playable media. |
 | Queue | Strict default policy vs future ordering/retention/requeue policy. |
 | Runtime status | Observed logs/status vs actual scheduler/worker control. |
 
@@ -161,7 +161,7 @@ The database-centered stage handoffs are a strength. Preserve them:
 | Download → Index | Files in configured download directory. |
 | Index → GPS parser | `parse_files_for_gps_queue`. |
 | GPS parser → Geocode | `geocode_queue`. |
-| Geocode → Queue | `GEOCODE_FOUND` plus address text/cache. |
+| Geocode → Queue | `GEOCODE_FOUND` plus address text/cache when available; otherwise unknown/unresolved address stays non-blocking for otherwise playable media. |
 | Queue → Playback | `slideshow_queue` / playback selection contract. |
 
 ### Runtime observability

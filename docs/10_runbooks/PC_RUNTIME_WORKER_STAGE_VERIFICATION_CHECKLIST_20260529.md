@@ -54,9 +54,9 @@ Run the deterministic Test Mode flow first, then Real Mode download only after T
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Download | View B Download control or `POST /api/runtime/download/run` for Test Mode. For Real Mode use the separate real download control/`POST /api/runtime/download/real-run` only after auth proof. | Test Mode copies/generated files into `DOWNLOAD_DIR`. Real Mode downloads via authenticated iCloudPD boundary. | View B stage result shows stage 1 payload, counts, and clear Test/Real wording. | Download directory file count changes; backend log shows source, target, count, and no secret leakage. | UI payload, copied endpoint response, before/after file counts, sanitized backend log. | Missing source, auth failure, wrong mode, no files copied, secret leakage, unexpected path overlap. | Pending Mihkel PC test. |
 | Index | View B Index control or `POST /api/runtime/index/run`. | Media files in `DOWNLOAD_DIR` are registered as canonical assets/variants and GPS work is seeded. | View B result reports indexed/inserted/updated counts. | DB tables: `canonical_media_assets`, `media_asset_variants`, `parse_files_for_gps_queue`. Logs show index command success/failure. | Counts from UI, DB row counts, sample asset/variant row, log excerpt. | Zero assets when files exist, missing variants, unsupported format surprise, DB error, path mismatch. | Pending Mihkel PC test. |
-| GPS parser | View B GPS parser control or `POST /api/runtime/gps/run`. | GPS queue rows are processed. Assets with GPS get coordinates and geocode work; no-GPS assets get clear no-GPS status. | View B result shows processed/found/not-found/failure counts. | DB tables/fields: `parse_files_for_gps_queue`, GPS latitude/longitude/status on canonical assets, `geocode_queue` rows for GPS-found assets. | Counts, one GPS-found row, one no-GPS row if available, log excerpt. | Real photo GPS not detected, video/HEIC unsupported without clear reason, queue row stuck, failure status unclear. | Pending Mihkel PC test. |
-| Geocode | View B Geocode control or `POST /api/runtime/geocode/run`. | Current baseline uses deterministic placeholder geocoding only and writes Lat/Lon-style address text/cache rows. | UI must make the placeholder boundary visible; do not treat it as production address proof. | DB tables/fields: `geocode_queue`, `address_cache`, `geocode_status`, `address_text`. Logs show provider `deterministic_placeholder` or equivalent bounded wording. | Placeholder provider label, sample address cache row, geocode status update, copied warning text. | UI implies production geocoding, no address row for GPS-found asset, stuck queue, unclear provider label. | Pending Mihkel PC test. |
-| Queue | View B Queue control or `POST /api/runtime/queue/prepare`. | Eligible geocoded media enters `slideshow_queue`; ineligible media is skipped with clear reasons. Re-running remains idempotent. | View B result shows inserted/skipped counts and skip reasons. | DB table: `slideshow_queue`. Check duplicate prevention and skip reasons such as `already_queued`, `geocode_not_ready`, `missing_variant`, `missing_file_path`. | Queue row count, sample queued item, second-run idempotency evidence, skip reason sample. | Duplicate rows, eligible media not queued, unresolved media queued unexpectedly, missing or unclear skip reasons. | Pending Mihkel PC test. |
+| GPS parser | View B GPS parser control or `POST /api/runtime/gps/run`. | GPS queue rows are processed. Assets with GPS get coordinates and geocode work; no-GPS assets keep an explicit unknown/no-GPS enrichment state and remain playable if they are otherwise valid. | View B result shows processed/found/not-found/failure counts. | DB tables/fields: `parse_files_for_gps_queue`, GPS latitude/longitude/status on canonical assets, `geocode_queue` rows for GPS-found assets. | Counts, one GPS-found row, one no-GPS row if available, log excerpt. | Real photo GPS not detected, video/HEIC unsupported without clear reason, queue row stuck, failure status unclear. | Pending Mihkel PC test. |
+| Geocode | View B Geocode control or `POST /api/runtime/geocode/run`. | Current baseline uses deterministic placeholder geocoding only. Usable address text/cache rows are written when available; missing or unresolved address stays honest and must not block otherwise playable media. | UI must make the placeholder/unknown boundary visible; do not treat it as production address proof. | DB tables/fields: `geocode_queue`, `address_cache`, `geocode_status`, `address_text`. Logs show provider `deterministic_placeholder` or equivalent bounded wording. | Placeholder provider label, sample address cache row, geocode status update, copied warning text. | UI implies production geocoding, no usable address for a playable asset is treated as a failure, stuck queue, unclear provider label. | Pending Mihkel PC test. |
+| Queue | View B Queue control or `POST /api/runtime/queue/prepare`. | Eligible playable media enters `slideshow_queue`; address enrichment is carried only when available. Ineligible media is skipped for independent invalid states such as missing variant or missing file path. Re-running remains idempotent. | View B result shows inserted/skipped counts and skip reasons. | DB table: `slideshow_queue`. Check duplicate prevention and skip reasons such as `already_queued`, `missing_variant`, `missing_file_path`, or another independent invalid state. | Queue row count, sample queued item, second-run idempotency evidence, skip reason sample. | Duplicate rows, playable media not queued, unresolved address treated as a blocker, missing or unclear skip reasons. | Pending Mihkel PC test. |
 
 ## Detailed operator steps
 
@@ -81,7 +81,7 @@ Expected outcome: the app clearly shows which mode is active, `.env` is the runt
 7. Verify backend logs after each stage.
 8. Verify DB state after Index, GPS parser, Geocode, and Queue.
 
-Expected outcome: the regular pipeline works in order and the final Queue stage has eligible rows in `slideshow_queue`.
+Expected outcome: the regular pipeline works in order and the final Queue stage has eligible playable rows in `slideshow_queue`, with address enrichment present only when usable address data exists.
 
 ### 3. Test orchestration after individual stage checks
 
@@ -106,7 +106,7 @@ Expected outcome: real iCloudPD download remains auth-gated and produces files t
 
 1. With real downloaded files present, run Index.
 2. Run GPS parser.
-3. Run Geocode, remembering it is still placeholder-only.
+3. Run Geocode, remembering that address enrichment is optional and should not block otherwise playable media.
 4. Run Queue.
 5. Save one success example and one failure/skip example if available.
 
@@ -132,8 +132,8 @@ Copy this table into the current-truth implementation status doc after testing, 
 | Real download fails with auth/session message | Real download/auth boundary | Provider proof status, NEW AUTH status, iCloudPD output, sanitized auth logs. |
 | Index sees no files | Download → Index handoff | Actual download directory, path projection, file extensions, mode-specific DB/path config. |
 | GPS parser finds no GPS in expected GPS photos | GPS parser/provider breadth | EXIF availability, file format, HEIC/video support, parser logs, sample fixture. |
-| Geocode produces only Lat/Lon text | Expected current behavior | This is correct for v0.7.17; production geocoder is not implemented yet. |
-| Queue inserts nothing | Geocode → Queue handoff | `GEOCODE_FOUND`, non-empty `address_text`, variant row, file path, skip reasons. |
+| Geocode produces only Lat/Lon text or no usable address | Expected current behavior | This is correct for the current placeholder baseline; missing address is optional enrichment and should not block otherwise playable media. |
+| Queue inserts nothing for otherwise playable media | Queue / invalid-state check | `missing_variant`, `missing_file_path`, or another independent invalid-state reason. Do not treat unresolved address alone as a blocker. |
 | UI says stage passed but DB/logs disagree | Observability mismatch | Compare endpoint response, backend log, DB state, and docs claim. Treat runtime evidence as stronger. |
 
 ## How to update the current-truth status table after PC testing
@@ -143,7 +143,7 @@ Update `docs/00_current_truth/MEDIA_PIPELINE_IMPLEMENTATION_STATUS_20260528.md` 
 For each row, fill the subjective assessment with a compact statement such as:
 
 - `PC-tested in Test Mode on 2026-05-29; stage behaved as expected; evidence: View B payload + DB row count.`
-- `PC-tested in Real Mode on 2026-05-29; real download auth gate worked, but no files were downloaded because provider proof failed.`
+- `PC-tested in Real Mode on 2026-05-29; real download auth gate worked, but no files were downloaded because provider proof failed. Missing address was treated as optional enrichment, not a blocker.`
 - `Not yet PC-tested with real media; deterministic Test Mode only.`
 
 ## What this checklist does not prove

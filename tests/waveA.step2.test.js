@@ -1,3 +1,6 @@
+// Wave A step 2 queue regression coverage for playable media selection.
+// Keeps the queue-preparation contract focused on playable assets only.
+// Also preserves the existing playback selection check in this file.
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
@@ -14,8 +17,70 @@ const serverEntryPath = path.join(repoRoot, 'server', 'index.ts');
 const schemaPath = path.join(repoRoot, 'schema.sql');
 const fixedTimestamp = '2026-04-21T12:34:56.000Z';
 
-test('POST /api/runtime/queue/prepare inserts slideshow rows once for eligible assets only', async () => {
-  await withWaveAServer(async ({ port, dbPath, assets }) => {
+// Verifies queue preparation accepts playable assets without GPS/geocode/address data
+// while still skipping missing-variant and missing-path cases and remaining idempotent.
+test('POST /api/runtime/queue/prepare inserts slideshow rows for playable assets even when GPS data is missing', async () => {
+  await withWaveAServer(async ({ port, dbPath, workspaceRoot, assets }) => {
+    const mediaDir = path.join(workspaceRoot, 'media');
+    const supplementalAssets = {
+      missingGeocode: {
+        assetKey: 'wavea-missing-geocode',
+        fileName: 'missing-geocode.jpg',
+        canonicalPath: path.join(mediaDir, 'missing-geocode.jpg'),
+        gpsStatus: 'GPS_NOT_FOUND',
+        geocodeStatus: 'GEOCODE_PENDING',
+        addressText: null,
+      },
+      missingAddress: {
+        assetKey: 'wavea-missing-address',
+        fileName: 'missing-address.jpg',
+        canonicalPath: path.join(mediaDir, 'missing-address.jpg'),
+        gpsStatus: 'GPS_FOUND',
+        geocodeStatus: 'GEOCODE_FOUND',
+        addressText: '',
+      },
+      missingVariant: {
+        assetKey: 'wavea-missing-variant',
+        fileName: 'missing-variant.jpg',
+        canonicalPath: path.join(mediaDir, 'missing-variant.jpg'),
+        gpsStatus: 'GPS_FOUND',
+        geocodeStatus: 'GEOCODE_FOUND',
+        addressText: '123 Variant Street, Tallinn',
+      },
+      missingFilePath: {
+        assetKey: 'wavea-missing-file-path',
+        fileName: 'missing-file-path.jpg',
+        canonicalPath: path.join(mediaDir, 'missing-file-path.jpg'),
+        gpsStatus: 'GPS_FOUND',
+        geocodeStatus: 'GEOCODE_FOUND',
+        addressText: '123 File Path Street, Tallinn',
+      },
+    };
+
+    await Promise.all(
+      Object.values(supplementalAssets).map((asset) => writeFile(asset.canonicalPath, `${asset.assetKey} asset`, 'utf8')),
+    );
+
+    await execSql(dbPath, insertCanonicalAssetSql(supplementalAssets.missingGeocode));
+    await execSql(dbPath, insertVariantSql(supplementalAssets.missingGeocode));
+    await execSql(dbPath, insertCanonicalAssetSql(supplementalAssets.missingAddress));
+    await execSql(dbPath, insertVariantSql(supplementalAssets.missingAddress));
+    await execSql(dbPath, insertCanonicalAssetSql(supplementalAssets.missingVariant));
+    await execSql(dbPath, insertCanonicalAssetSql(supplementalAssets.missingFilePath));
+    await execSql(dbPath, insertVariantSql(supplementalAssets.missingFilePath));
+    await execSql(
+      dbPath,
+      `UPDATE media_asset_variants
+       SET file_path = ''
+       WHERE media_asset_id = (
+         SELECT media_asset_id
+         FROM canonical_media_assets
+         WHERE asset_key = ?
+         LIMIT 1
+       )`,
+      [supplementalAssets.missingFilePath.assetKey],
+    );
+
     const firstResponse = await requestJson(port, '/api/runtime/queue/prepare', {
       method: 'POST',
       body: {},
@@ -32,9 +97,15 @@ test('POST /api/runtime/queue/prepare inserts slideshow rows once for eligible a
        ORDER BY sq.slideshow_queue_id`,
     );
 
-    assert.deepEqual(firstQueueRows.map((row) => row.asset_key), [assets.eligible.assetKey]);
-    assert.equal(firstQueueRows.length, 1);
-    assert.equal(firstQueueRows[0].status, 'READY');
+    assert.deepEqual(firstQueueRows.map((row) => row.asset_key), [
+      assets.eligible.assetKey,
+      assets.ineligible.assetKey,
+      assets.invalid.assetKey,
+      supplementalAssets.missingGeocode.assetKey,
+      supplementalAssets.missingAddress.assetKey,
+    ]);
+    assert.equal(firstQueueRows.length, 5);
+    assert.deepEqual(firstQueueRows.map((row) => row.status), ['READY', 'READY', 'READY', 'READY', 'READY']);
 
     const secondResponse = await requestJson(port, '/api/runtime/queue/prepare', {
       method: 'POST',
@@ -52,21 +123,65 @@ test('POST /api/runtime/queue/prepare inserts slideshow rows once for eligible a
        ORDER BY sq.slideshow_queue_id`,
     );
 
-    assert.equal(secondQueueRows.length, 1);
-    assert.deepEqual(secondQueueRows.map((row) => row.asset_key), [assets.eligible.assetKey]);
-    assert.equal(secondQueueRows[0].status, 'READY');
+    assert.equal(secondQueueRows.length, 5);
+    assert.deepEqual(secondQueueRows.map((row) => row.asset_key), [
+      assets.eligible.assetKey,
+      assets.ineligible.assetKey,
+      assets.invalid.assetKey,
+      supplementalAssets.missingGeocode.assetKey,
+      supplementalAssets.missingAddress.assetKey,
+    ]);
+    assert.deepEqual(secondQueueRows.map((row) => row.status), ['READY', 'READY', 'READY', 'READY', 'READY']);
+
+    const missingGpsAssetId = await getAssetId(dbPath, supplementalAssets.missingGeocode.assetKey);
+    await execSql(
+      dbPath,
+      `UPDATE slideshow_queue
+       SET status = 'FAILED', failure_reason = 'test_focus', updated_at = ?
+       WHERE media_asset_id <> ?`,
+      [fixedTimestamp, missingGpsAssetId],
+    );
+
+    const playbackResponse = await requestJson(port, '/api/runtime/playback/select-current', {
+      method: 'POST',
+      body: {},
+    });
+
+    assert.equal(playbackResponse.status, 200);
+    assert.equal(String(playbackResponse.json.playback.selected.mediaAssetId), String(missingGpsAssetId));
+    assert.equal(playbackResponse.json.playback.selected.addressText, '');
   });
 });
 
+// Verifies select-current still fails a READY row whose media stays invalid on disk.
 test('POST /api/runtime/playback/select-current commits pointer/history and fails invalid READY rows', async () => {
-  await withWaveAServer(async ({ port, dbPath, assets }) => {
+  await withWaveAServer(async ({ port, dbPath, workspaceRoot, assets }) => {
     await requestJson(port, '/api/runtime/queue/prepare', {
       method: 'POST',
       body: {},
     });
 
     const eligibleAssetId = await getAssetId(dbPath, assets.eligible.assetKey);
-    const invalidAssetId = await getAssetId(dbPath, assets.invalid.assetKey);
+    const mediaDir = path.join(workspaceRoot, 'media');
+    const manualInvalidAsset = {
+      assetKey: 'wavea-manual-invalid',
+      fileName: 'manual-invalid.jpg',
+      canonicalPath: path.join(mediaDir, 'manual-invalid.jpg'),
+      gpsStatus: 'GPS_FOUND',
+      geocodeStatus: 'GEOCODE_FOUND',
+      addressText: '',
+    };
+
+    await execSql(dbPath, insertCanonicalAssetSql(manualInvalidAsset));
+
+    const invalidAssetId = await getAssetId(dbPath, manualInvalidAsset.assetKey);
+    await execSql(
+      dbPath,
+      `UPDATE slideshow_queue
+       SET status = 'FAILED', failure_reason = 'test_focus', updated_at = ?
+       WHERE media_asset_id <> ?`,
+      [fixedTimestamp, eligibleAssetId],
+    );
     await execSql(
       dbPath,
       `UPDATE slideshow_queue
@@ -129,7 +244,7 @@ test('POST /api/runtime/playback/select-current commits pointer/history and fail
     );
 
     assert.equal(invalidRows.length, 1);
-    assert.equal(invalidRows[0].asset_key, assets.invalid.assetKey);
+    assert.equal(invalidRows[0].asset_key, manualInvalidAsset.assetKey);
     assert.equal(invalidRows[0].status, 'FAILED');
     assert.ok(
       invalidRows[0].failure_reason === null ||

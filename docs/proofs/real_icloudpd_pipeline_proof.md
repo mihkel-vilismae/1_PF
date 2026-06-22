@@ -22,4 +22,4 @@ PF_PROOF_ENABLE_REAL_ICLOUDPD=true PF_API_BASE_URL=http://127.0.0.1:8787 node to
 
 Output is written under ignored `runtime_data/proofs/real_icloudpd_pipeline_<timestamp>.json`.
 
-The proof must use `/api/runtime/download/real-run`, not mock download. Missing session, missing provider, or failed route must be `BLOCKED` or `FAILED`, not success.
+The proof must use `/api/runtime/download/real-run`, not mock download. Missing session, missing provider, or failed route must be `BLOCKED` or `FAILED`, not success. Missing GPS or unresolved address in otherwise playable media is optional enrichment and should be recorded honestly, not treated as a proof failure by itself.

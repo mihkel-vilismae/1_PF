@@ -916,6 +916,9 @@ def stage4_process_geocode_queue(path: str, executed_at: str, schema_path: str) 
         connection.close()
 
 
+# Stage 5 prepares slideshow rows for playable assets with a usable variant.
+# Missing GPS, geocode, or address text must not block queue preparation here.
+# Independent exclusions stay in place for missing variants, empty paths, and duplicates.
 def prepare_slideshow_queue(path: str, executed_at: str, schema_path: str) -> dict:
     schema_bootstrap = ensure_canonical_schema(
         path,
@@ -933,7 +936,6 @@ def prepare_slideshow_queue(path: str, executed_at: str, schema_path: str) -> di
             """
             SELECT
                 c.media_asset_id,
-                c.geocode_status,
                 COALESCE(v.file_path, '') AS variant_file_path,
                 q.media_asset_id AS queued_media_asset_id
             FROM canonical_media_assets c
@@ -955,20 +957,12 @@ def prepare_slideshow_queue(path: str, executed_at: str, schema_path: str) -> di
         # Stage 5 eligibility contract is intentionally strict and derived from
         # repo evidence plus Stage 6 expectations. Insert a slideshow row only
         # when the asset exists canonically, has at least one media variant, the
-        # chosen variant has a non-empty usable file path, the asset is not
-        # already queued, and geocode_status is GEOCODE_FOUND.
+        # chosen variant has a non-empty usable file path, and the asset is not
+        # already queued.
         for row in candidate_rows:
             asset_id = int(row["media_asset_id"])
             variant_file_path = (row["variant_file_path"] or "").strip()
             already_queued = row["queued_media_asset_id"] is not None
-            geocode_status = row["geocode_status"]
-            address_text = (
-                cursor.execute(
-                    "SELECT COALESCE(address_text, '') AS address_text FROM canonical_media_assets WHERE media_asset_id = ? LIMIT 1",
-                    (asset_id,),
-                ).fetchone()["address_text"]
-                or ""
-            ).strip()
 
             reason = None
             if not asset_id:
@@ -981,8 +975,6 @@ def prepare_slideshow_queue(path: str, executed_at: str, schema_path: str) -> di
                 reason = "missing_file_path" if variant_exists else "missing_variant"
             elif already_queued:
                 reason = "already_queued"
-            elif geocode_status != "GEOCODE_FOUND" or address_text == "":
-                reason = "geocode_not_ready"
 
             if reason is not None:
                 skipped.append({"asset_id": str(asset_id), "reason": reason})
@@ -1411,6 +1403,11 @@ def playback_asset_media_path(path: str, media_asset_id: str, repo_root: str) ->
         }
     finally:
         connection.close()
+
+
+# Stage 6 selects the next file-backed READY asset and records it as current.
+# Address text is optional playback enrichment and may remain empty/unknown.
+# Missing canonical paths or files remain independent playback failures.
 def select_current_item(path: str, executed_at: str, repo_root: str) -> dict:
     connection = connect_read_write(path)
     try:
@@ -1455,8 +1452,6 @@ def select_current_item(path: str, executed_at: str, repo_root: str) -> dict:
             resolved_path = resolve_canonical_path(candidate["canonical_path"], repo_root)
             if resolved_path is None:
                 reason = "canonical_path_missing"
-            elif address_text == "":
-                reason = "empty_address_text"
             elif not os.path.exists(resolved_path):
                 reason = "canonical_file_missing"
 

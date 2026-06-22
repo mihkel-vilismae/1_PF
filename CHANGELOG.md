@@ -1,3 +1,8 @@
+## v0.10.13 — queue prep keeps playable media eligible
+
+- Updated slideshow queue preparation and current-item selection to accept otherwise playable assets even when GPS, geocode, or address text is missing.
+- Preserved the existing exclusions for missing variants, empty file paths, and already queued rows.
+
 ## v0.10.12 — real iCloud media source evidence pack
 
 - Added `proof:real-icloud-media-source-evidence-pack` to generate redacted usable-session, download, manifest, and continuation evidence templates plus `latest.env`.
