@@ -307,9 +307,21 @@ export function stopOsPlaybackActivityMonitoring(platform: string): void {
   pushHistory('PLAYBACK', 'info', `${normalizedPlatform} fullscreen activity monitoring stopped.`, { platform: normalizedPlatform });
 }
 
+// Returns true when a browser activity event can affect at least one active fullscreen playback monitor.
+function hasActiveOsPlaybackActivitySource(source: OsPlaybackActivitySource): boolean {
+  const activityState = getState().osPlaybackActivity ?? {};
+  return Object.values(activityState).some((value) => {
+    const normalized = normalizeOsPlaybackActivityState(value);
+    return normalized.monitoring && normalized.selectedSources[source] === true;
+  });
+}
+
 // Marks a browser activity event for any fullscreen playback platform currently monitoring activity.
 export function markOsPlaybackActivityDetected(source: OsPlaybackActivitySource | string): void {
   if (!isB5ActivitySource(source)) {
+    return;
+  }
+  if (!hasActiveOsPlaybackActivitySource(source)) {
     return;
   }
 
@@ -319,7 +331,7 @@ export function markOsPlaybackActivityDetected(source: OsPlaybackActivitySource 
     const activityState = draft.osPlaybackActivity ?? {};
     Object.entries(activityState).forEach(([platform, value]) => {
       const before = normalizeOsPlaybackActivityState(value);
-      if (!before.monitoring) {
+      if (!before.monitoring || before.selectedSources[source] !== true) {
         return;
       }
       const after = applyOsPlaybackActivityEvent(before, { nowIso, source });
