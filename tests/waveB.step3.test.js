@@ -11,7 +11,7 @@ import test from 'node:test';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const serverEntryPath = path.join(repoRoot, 'server', 'index.ts');
-const schemaPath = path.join(repoRoot, 'schema.sql');
+const schemaPath = path.join(repoRoot, 'database', 'schema.sql');
 
 test('POST /api/runtime/download/run copies mock download files from configured source directory', async () => {
   await withRuntimeServer(

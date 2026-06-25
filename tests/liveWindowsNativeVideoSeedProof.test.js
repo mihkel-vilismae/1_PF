@@ -12,7 +12,7 @@ import test from 'node:test';
 
 const repoRoot = process.cwd();
 const sqliteAdmin = path.join(repoRoot, 'server', 'scripts', 'sqlite_admin.py');
-const schemaPath = path.join(repoRoot, 'schema.sql');
+const schemaPath = path.join(repoRoot, 'database', 'schema.sql');
 const fixturePath = 'generated_test_data/videos_with_gps/apple_like_h264_mp4_gps_new_york.mp4';
 
 /** Runs sqlite_admin.py and returns the parsed JSON stdout. */

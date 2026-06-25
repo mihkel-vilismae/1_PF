@@ -1,5 +1,12 @@
 # How to Run
 
+## Current launcher and database paths
+
+- Windows launcher: `start_scripts/windows/START_WIN.PS1`.
+- Raspberry launcher: `start_scripts/raspberry/START_RASPBERRYOS.SH`.
+- Canonical SQLite schema: `database/schema.sql`.
+- Existing `.env` and SQLite DB files are preserved by the launchers; the DB is created only when the configured `DB_PATH` does not exist.
+
 
 ## Documentation navigation
 
@@ -437,10 +444,10 @@ if (-not $repo) { throw "Could not find PF_login repo root after extraction." }
 Set-Location $repo.DirectoryName
 Get-Content VERSION
 git rev-parse --short HEAD
-powershell -NoProfile -ExecutionPolicy Bypass -File .\START_WIN.PS1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\start_scripts\windows\START_WIN.PS1
 ```
 
-`START_WIN.PS1` is the root-level Windows launcher. It installs dependencies, builds the frontend, creates the SQLite DB only when the configured `DB_PATH` file is missing, then opens the backend API and Vite frontend in separate PowerShell windows.
+`start_scripts/windows/START_WIN.PS1` is the Windows launcher. It installs dependencies, builds the frontend, creates the SQLite DB from `database/schema.sql` only when the configured `DB_PATH` file is missing, then opens the backend API and Vite frontend in separate PowerShell windows.
 
 RaspberryOS users should extract the repository ZIP, open a terminal in the repo root, then run:
 

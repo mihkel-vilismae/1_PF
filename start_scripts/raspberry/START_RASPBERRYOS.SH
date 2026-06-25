@@ -69,7 +69,7 @@ init_db() {
   fi
   need_cmd python3 "Install Python 3 so the SQLite DB can be initialized."
   log "Creating SQLite DB: $db_path"
-  python3 server/scripts/sqlite_admin.py recreate "$db_path" schema.sql
+  python3 server/scripts/sqlite_admin.py recreate "$db_path" database/schema.sql
 }
 
 run_step() {

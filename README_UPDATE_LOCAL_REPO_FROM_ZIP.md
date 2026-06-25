@@ -31,3 +31,15 @@ git status
 npm install
 npm test
 ```
+
+## Current repository layout reminders
+
+After applying an updated ZIP, the current launcher and database layout is:
+
+```text
+start_scripts/windows/START_WIN.PS1
+start_scripts/raspberry/START_RASPBERRYOS.SH
+database/schema.sql
+```
+
+The updater preserves local `.git` metadata and local runtime/build folders. It does not recreate or delete an existing SQLite DB. Run launcher/database checks after updating if the ZIP changed schema or startup files.

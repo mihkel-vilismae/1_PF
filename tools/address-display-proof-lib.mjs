@@ -59,7 +59,7 @@ with tempfile.TemporaryDirectory() as temp_dir:
     media_dir = root / 'downloads'
     media_dir.mkdir()
     db_path = root / 'proof.sqlite'
-    schema_path = os.path.join(repo_root, 'schema.sql')
+    schema_path = os.path.join(repo_root, 'database', 'schema.sql')
     media_path = media_dir / 'address_display_photo.jpg'
     media_path.write_text('not a real image; JSON sidecar proves fallback path', encoding='utf-8')
     sidecar_payload = {'latitude': 58.37762, 'longitude': 26.72901, 'altitude': 55.5}

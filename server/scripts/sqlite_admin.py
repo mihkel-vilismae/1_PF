@@ -1577,7 +1577,7 @@ def runtime_state_set(
     connection = connect_read_write(path)
     try:
         # Create the runtime_state table if it does not already exist. This mirrors the
-        # definition in schema.sql but omits the initial INSERT OR IGNORE seeds. The
+        # definition in database/schema.sql but omits the initial INSERT OR IGNORE seeds. The
         # initial seeds will be applied later when the canonical schema is loaded via
         # ensure_canonical_schema (stage2_index_register). Creating the table here
         # enables orchestration state to be persisted before Stage 2 runs.

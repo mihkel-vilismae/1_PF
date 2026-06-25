@@ -204,7 +204,7 @@ export function createDatabaseService({ repoRoot, createHttpError }: DatabaseSer
 
   const serverRoot = path.join(repoRoot, 'server');
   const sqliteScriptPath = path.join(serverRoot, 'scripts', 'sqlite_admin.py');
-  const schemaPath = path.join(repoRoot, 'schema.sql');
+  const schemaPath = path.join(repoRoot, 'database', 'schema.sql');
 
   function resolveRepoPath(relativeOrAbsolutePath: string): string {
     if (path.isAbsolute(relativeOrAbsolutePath)) {

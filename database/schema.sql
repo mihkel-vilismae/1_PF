@@ -184,15 +184,15 @@ ON action_runs(stage_name, status);
 
 INSERT OR IGNORE INTO runtime_state (state_key, state_value, value_type, updated_at, updated_by)
 VALUES
-  ('current_media_asset_id', NULL, 'text', CURRENT_TIMESTAMP, 'schema.sql'),
-  ('playback_runner_owner', NULL, 'text', CURRENT_TIMESTAMP, 'schema.sql'),
-  ('playback_runner_lease_until', NULL, 'text', CURRENT_TIMESTAMP, 'schema.sql'),
-  ('playback_runner_last_heartbeat', NULL, 'text', CURRENT_TIMESTAMP, 'schema.sql'),
-  ('screen_power_state', NULL, 'text', CURRENT_TIMESTAMP, 'schema.sql'),
-  ('screen_state_updated_at', NULL, 'text', CURRENT_TIMESTAMP, 'schema.sql'),
-  ('screen_state_source', NULL, 'text', CURRENT_TIMESTAMP, 'schema.sql'),
-  ('screen_worker_heartbeat_at', NULL, 'text', CURRENT_TIMESTAMP, 'schema.sql'),
-  ('pipeline_stage', NULL, 'text', CURRENT_TIMESTAMP, 'schema.sql'),
-  ('pipeline_stage_state', NULL, 'text', CURRENT_TIMESTAMP, 'schema.sql');
+  ('current_media_asset_id', NULL, 'text', CURRENT_TIMESTAMP, 'database/schema.sql'),
+  ('playback_runner_owner', NULL, 'text', CURRENT_TIMESTAMP, 'database/schema.sql'),
+  ('playback_runner_lease_until', NULL, 'text', CURRENT_TIMESTAMP, 'database/schema.sql'),
+  ('playback_runner_last_heartbeat', NULL, 'text', CURRENT_TIMESTAMP, 'database/schema.sql'),
+  ('screen_power_state', NULL, 'text', CURRENT_TIMESTAMP, 'database/schema.sql'),
+  ('screen_state_updated_at', NULL, 'text', CURRENT_TIMESTAMP, 'database/schema.sql'),
+  ('screen_state_source', NULL, 'text', CURRENT_TIMESTAMP, 'database/schema.sql'),
+  ('screen_worker_heartbeat_at', NULL, 'text', CURRENT_TIMESTAMP, 'database/schema.sql'),
+  ('pipeline_stage', NULL, 'text', CURRENT_TIMESTAMP, 'database/schema.sql'),
+  ('pipeline_stage_state', NULL, 'text', CURRENT_TIMESTAMP, 'database/schema.sql');
 
 COMMIT;

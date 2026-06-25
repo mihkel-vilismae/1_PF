@@ -30,7 +30,7 @@ test('validate:view-e ignores repo .env and ambient DB_PATH by using proof-owned
   try {
     const hostileDbPath = path.join(tempRoot, 'hostile-existing.sqlite');
     const hostileLogDir = path.join(tempRoot, 'hostile-logs');
-    const recreate = spawnSync('python', ['server/scripts/sqlite_admin.py', 'recreate', hostileDbPath, 'schema.sql'], {
+    const recreate = spawnSync('python', ['server/scripts/sqlite_admin.py', 'recreate', hostileDbPath, 'database/schema.sql'], {
       cwd: repoRoot,
       encoding: 'utf8',
     });

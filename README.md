@@ -2,6 +2,19 @@
 
 This repository contains a dashboard-driven photo-frame system for managing staged media processing, runtime monitoring, and playback surfaces.
 
+## Current baseline quick truth
+
+- Repository/package version: `0.10.20`.
+- Dashboard: Vite frontend under `dashboard/`, served by `npm run dev`.
+- Backend API: TypeScript server entrypoint `server/index.ts`, started by `npm run api`.
+- SQLite schema source: `database/schema.sql`; generated/local SQLite DB files remain runtime data and are not the schema source.
+- Windows launcher: `start_scripts/windows/START_WIN.PS1`.
+- Raspberry launcher: `start_scripts/raspberry/START_RASPBERRYOS.SH`.
+- Regular worker product path: implemented as the B3 stage-state-machine path for download, index, GPS, geocode, and queue preparation.
+- Dashboard DOM-stability guard: inactive mouse/keyboard OS-playback activity events are ignored before state emission, so ordinary pointer movement should not trigger full-root dashboard renders unless an OS playback activity monitor is active for that source.
+
+Proof/readiness claims still require current proof artifacts. Historical docs and imported proof JSON are context, not automatic current-runtime proof.
+
 The system documentation is organized in canonical numbered folders under `docs/`: `00_current_truth`, `10_runbooks`, `20_architecture_and_specs`, `30_status_snapshots`, `40_backlog_and_tasks`, `50_audits_and_migrations`, and `90_archive`. Implementation status in documentation is not current runtime truth unless the document cites current code, tests, generated evidence, or runtime output.
 
 ## v0.8.44 Raspberry cron worker runtime OpenSpec
@@ -199,11 +212,15 @@ Local validation is documented in `docs/10_runbooks/operator_setup_and_auth_note
 ## Repository structure
 
 ```text
-dashboard/        frontend views and inspect system
+dashboard/        frontend views, playback surfaces, and inspect system
+database/         canonical SQLite schema source (`database/schema.sql`)
 docs/             consolidated documentation
 scripts/          helper scripts and repo tooling
-.githooks/        repo-local Git hooks
+server/           backend API, database, runtime, scheduler, workers, and playback services
+shared/           shared TypeScript contracts
+start_scripts/    Windows/Raspberry launchers and packaging helpers
 tests/            test suite
+tools/            proof runners and local utilities
 VERSION           canonical repo version
 CHANGELOG.md      forward-only changelog
 ```
@@ -365,10 +382,10 @@ if (-not $repo) { throw "Could not find PF_login repo root after extraction." }
 Set-Location $repo.DirectoryName
 Get-Content VERSION
 git rev-parse --short HEAD
-powershell -NoProfile -ExecutionPolicy Bypass -File .\START_WIN.PS1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\start_scripts\windows\START_WIN.PS1
 ```
 
-`START_WIN.PS1` is the root-level Windows launcher. It installs dependencies, builds the frontend, creates the SQLite DB only when the configured `DB_PATH` file is missing, then opens the backend API and Vite frontend in separate PowerShell windows.
+`start_scripts/windows/START_WIN.PS1` is the Windows launcher. It installs dependencies, builds the frontend, creates the SQLite DB from `database/schema.sql` only when the configured `DB_PATH` file is missing, then opens the backend API and Vite frontend in separate PowerShell windows.
 
 RaspberryOS users should extract the repository ZIP, open a terminal in the repo root, then run:
 

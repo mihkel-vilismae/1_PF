@@ -63,7 +63,7 @@ export const ACTION_INSPECT_COPY = {
   },
   "recreate-db": {
     "label": "Recreate database",
-    "description": "Deletes the current SQLite file if needed, recreates it, and bootstraps canonical schema tables from schema.sql after confirmation."
+    "description": "Deletes the current SQLite file if needed, recreates it, and bootstraps canonical schema tables from database/schema.sql after confirmation."
   },
   "select-scheduler-target-windows": {
     "label": "Select Windows scheduler target",

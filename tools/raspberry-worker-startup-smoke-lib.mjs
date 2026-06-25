@@ -79,7 +79,7 @@ async function runDatabasePreflight({ repoRoot, prepare, commandRunner, touchFil
   const dbPath = databasePath.db_path;
   if (touchFilesystem) await mkdir(dirname(dbPath), { recursive: true });
   const args = prepare
-    ? ['server/scripts/sqlite_admin.py', 'recreate', dbPath, 'schema.sql']
+    ? ['server/scripts/sqlite_admin.py', 'recreate', dbPath, 'database/schema.sql']
     : ['server/scripts/sqlite_admin.py', 'inspect', dbPath];
   const result = await commandRunner('python3', args, { cwd: repoRoot, timeoutMs: 30000, detached: false });
   return { id: 'database_preflight', db_path: dbPath, database_path: databasePath, ...summarizeCommandResult(result) };

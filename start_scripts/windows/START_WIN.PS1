@@ -90,7 +90,7 @@ function Initialize-Database {
 
     $python = Get-PythonCommand
     $sqliteAdmin = Join-Path $RepoRoot "server\scripts\sqlite_admin.py"
-    $schema = Join-Path $RepoRoot "schema.sql"
+    $schema = Join-Path $RepoRoot "database/schema.sql"
     Write-Step "Creating SQLite DB: $dbPath"
     Push-Location $RepoRoot
     try {

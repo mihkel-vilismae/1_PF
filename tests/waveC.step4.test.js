@@ -10,7 +10,7 @@ import test from 'node:test';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const serverEntryPath = path.join(repoRoot, 'server', 'index.ts');
-const schemaPath = path.join(repoRoot, 'schema.sql');
+const schemaPath = path.join(repoRoot, 'database', 'schema.sql');
 const pythonCommand = process.platform === 'win32' ? 'python' : 'python3';
 
 test('POST /api/runtime/gps/run processes queued EXIF GPS work and seeds geocode queue', async () => {
@@ -195,7 +195,7 @@ function buildEnvFile({ downloadDir, dbPath, logDir, cookieDir }) {
 async function execSqlFile(dbPath, sqlFilePath) {
   const sql = await readFile(sqlFilePath, 'utf8');
   const result = spawnSync(pythonCommand, ['-c', `import sqlite3, sys; con=sqlite3.connect(sys.argv[1]); con.executescript(sys.stdin.read()); con.commit(); con.close()`, dbPath], { input: sql, encoding: 'utf8' });
-  if (result.status !== 0) throw new Error(result.stderr || result.stdout || 'Failed to apply schema.sql');
+  if (result.status !== 0) throw new Error(result.stderr || result.stdout || 'Failed to apply database/schema.sql');
 }
 
 async function insertIndexedAsset(dbPath, filePath, originalFilename) {

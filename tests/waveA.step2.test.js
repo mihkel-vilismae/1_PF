@@ -14,7 +14,7 @@ import test from 'node:test';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const serverEntryPath = path.join(repoRoot, 'server', 'index.ts');
-const schemaPath = path.join(repoRoot, 'schema.sql');
+const schemaPath = path.join(repoRoot, 'database', 'schema.sql');
 const fixedTimestamp = '2026-04-21T12:34:56.000Z';
 
 // Verifies queue preparation accepts playable assets without GPS/geocode/address data
