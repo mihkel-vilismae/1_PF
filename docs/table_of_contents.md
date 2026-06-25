@@ -13,7 +13,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | Path | Use |
 | --- | --- |
 | `README.md` | Project overview, run entry points, architecture summary, documentation navigation. |
-| `HOW_TO_RUN.md` | Short run instructions. |
+| `HOW_TO_RUN.md` | Short quickstart only; long run guidance belongs in linked runbooks. |
 | `CHANGELOG.md` | Forward-only version/history notes. |
 | `AGENTS.md` | Repository instructions for automated agents. |
 | `VERSION` | Canonical repository version. |
@@ -43,6 +43,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | Path | Use |
 | --- | --- |
 | `docs/10_runbooks/operator_setup_and_auth_notes.md` | Operator setup, auth, session, and iCloudPD notes. |
+| `docs/10_runbooks/how_to_run_full_reference.md` | Preserved full run reference moved out of root HOW_TO_RUN. |
 | `docs/10_runbooks/windows_full_launcher.md` | Full Windows startup workflow. |
 | `docs/10_runbooks/PC_RUNTIME_WORKER_STAGE_VERIFICATION_CHECKLIST_20260529.md` | PC/runtime evidence checklist for Download, Index, GPS parser, Geocode, and Queue. |
 | `docs/10_runbooks/POWER_OUTAGE_PLAYBACK_RECOVERY_CHECKLIST_20260529.md` | Power-outage recovery verification checklist. |

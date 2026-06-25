@@ -8,11 +8,12 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
 
-const START_CMD = new URL('../start_win_full.cmd', import.meta.url);
+const START_CMD = new URL('../start_scripts/windows/start_win_full.cmd', import.meta.url);
 const START_PS1 = new URL('../start_scripts/start_win_full.ps1', import.meta.url);
 const INSTALLER = new URL('../scripts/install_mpv_windows.ps1', import.meta.url);
 const GITIGNORE = new URL('../.gitignore', import.meta.url);
 const HOW_TO_RUN = new URL('../HOW_TO_RUN.md', import.meta.url);
+const HOW_TO_RUN_FULL_REFERENCE = new URL('../docs/10_runbooks/how_to_run_full_reference.md', import.meta.url);
 const LIVE_PROOF_DOC = new URL('../docs/proofs/live_windows_native_playback_proof.md', import.meta.url);
 const MPV_README = new URL('../tools/mpv/windows/README.md', import.meta.url);
 
@@ -61,10 +62,12 @@ test('runtime-installed mpv binaries are ignored while directory docs remain tra
 
 test('operator docs explain auto-install and proof boundary', () => {
   const howToRun = fs.readFileSync(HOW_TO_RUN, 'utf8');
+  const fullReference = fs.readFileSync(HOW_TO_RUN_FULL_REFERENCE, 'utf8');
   const proofDoc = fs.readFileSync(LIVE_PROOF_DOC, 'utf8');
-  assert.match(howToRun, /scripts\\install_mpv_windows\.ps1/);
-  assert.match(howToRun, /tools\/mpv\/windows\/mpv\.exe/);
-  assert.match(howToRun, /runtime-installed and ignored by Git/);
+  assert.match(howToRun, /how_to_run_full_reference\.md/);
+  assert.match(fullReference, /scripts\\install_mpv_windows\.ps1/);
+  assert.match(fullReference, /tools\/mpv\/windows\/mpv\.exe/);
+  assert.match(fullReference, /runtime-installed and ignored by Git/);
   assert.match(proofDoc, /## mpv availability/);
   assert.match(proofDoc, /start_win_full\.cmd/);
   assert.match(proofDoc, /should remain `BLOCKED`/);

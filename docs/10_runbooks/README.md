@@ -35,6 +35,7 @@ Do not physically move files into this folder until the move is covered by a lin
 
 ## Current runbooks
 
+- [Full HOW_TO_RUN Reference](how_to_run_full_reference.md) — preserved expanded operator/run guidance moved out of the short root `HOW_TO_RUN.md`.
 - [Operator Setup and Auth Notes](operator_setup_and_auth_notes.md) — operator-facing setup, auth, iCloudPD, session, and NEW AUTH usage notes.
 
 ## Documentation workflow runbook moved in Slice 17

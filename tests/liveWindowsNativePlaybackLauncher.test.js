@@ -8,12 +8,13 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
 
-const PROOF_CMD = new URL('../start_live_windows_native_playback_proof.cmd', import.meta.url);
+const PROOF_CMD = new URL('../start_scripts/windows/proofs/start_live_windows_native_playback_proof.cmd', import.meta.url);
 const PROOF_PS1 = new URL('../start_scripts/run_live_windows_native_playback_proof.ps1', import.meta.url);
 const START_PS1 = new URL('../start_scripts/start_win_full.ps1', import.meta.url);
 const INSTALLER = new URL('../scripts/install_mpv_windows.ps1', import.meta.url);
 const PACKAGE_JSON = new URL('../package.json', import.meta.url);
 const HOW_TO_RUN = new URL('../HOW_TO_RUN.md', import.meta.url);
+const HOW_TO_RUN_FULL_REFERENCE = new URL('../docs/10_runbooks/how_to_run_full_reference.md', import.meta.url);
 const LIVE_PROOF_DOC = new URL('../docs/proofs/live_windows_native_playback_proof.md', import.meta.url);
 
 test('live Windows native playback proof cmd is thin and delegates to PowerShell', () => {
@@ -67,9 +68,11 @@ test('package and docs expose the dedicated proof launcher', () => {
   const packageJson = JSON.parse(fs.readFileSync(PACKAGE_JSON, 'utf8'));
   assert.equal(packageJson.scripts['proof:live-windows-native-playback:windows'], 'powershell -NoProfile -ExecutionPolicy Bypass -File start_scripts/run_live_windows_native_playback_proof.ps1');
   const howToRun = fs.readFileSync(HOW_TO_RUN, 'utf8');
+  const fullReference = fs.readFileSync(HOW_TO_RUN_FULL_REFERENCE, 'utf8');
   const proofDoc = fs.readFileSync(LIVE_PROOF_DOC, 'utf8');
-  assert.match(howToRun, /start_live_windows_native_playback_proof\.cmd/);
-  assert.match(howToRun, /proof-only env file/);
+  assert.match(howToRun, /how_to_run_full_reference\.md/);
+  assert.match(fullReference, /start_live_windows_native_playback_proof\.cmd/);
+  assert.match(fullReference, /proof-only env file/);
   assert.match(proofDoc, /start_live_windows_native_playback_proof\.cmd/);
-  assert.match(proofDoc, /normal `start_win_full\.cmd` does not enable native playback by default/);
+  assert.match(proofDoc, /normal `start_scripts\/windows\/start_win_full\.cmd` does not enable native playback by default/);
 });

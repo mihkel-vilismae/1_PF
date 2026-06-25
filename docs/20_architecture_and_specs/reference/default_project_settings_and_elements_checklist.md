@@ -30,10 +30,14 @@ project-root/
 ├─ HOW_TO_RUN.md
 ├─ CHANGELOG.md
 ├─ main-goal-readme.md
-├─ start_win.cmd
-├─ start_gui.cmd
+├─ full_windows_runner_status.cmd
 ├─ start_scripts/
-│  └─ start_win.ps1
+│  ├─ windows/
+│  │  ├─ start_win.cmd
+│  │  ├─ START_WIN.PS1
+│  │  └─ FULL_WINDOWS_RUNNER_STATUS.PS1
+│  └─ raspberry/
+│     └─ START_RASPBERRYOS.SH
 ├─ logs/
 │  ├─ error.log
 │  ├─ debug.log
@@ -65,15 +69,15 @@ The README should include:
 
 ### HOW_TO_RUN.md
 
-The HOW_TO_RUN file should provide practical run instructions, preferably Windows-first when relevant. It should include:
+The root HOW_TO_RUN file must stay short and quickstart-oriented. It should include only:
 
-- Prerequisites.
-- Install commands.
-- Start commands.
-- Test commands.
-- Expected console output or UI result.
-- Common failures and fixes.
-- Linux/macOS instructions only when applicable, preferably after the Windows section.
+- The preferred one-command or double-click quickstart.
+- Current launcher paths.
+- Canonical database/schema paths when relevant.
+- The shortest manual install/build/start commands.
+- Links to deeper runbooks for proof, auth, platform, and troubleshooting details.
+
+Do not turn root `HOW_TO_RUN.md` into a long operator manual. Move long run guidance into `docs/10_runbooks/` and link it from the root quickstart.
 
 ### CHANGELOG.md
 
@@ -84,20 +88,18 @@ Recommended structure:
 ```markdown
 # Changelog
 
-## [0.1.0] - YYYY-MM-DD
+## YYYY-MM-DD HH:mm EEST
+## v0.1.0 - Short change title
 
-### Added
 - Initial project structure.
-
-### Changed
-- None.
-
-### Fixed
-- None.
-
-### Removed
-- None.
+- Added the first runnable launcher/status helper.
 ```
+
+Rules:
+
+- Preserve existing changelog data when reformatting.
+- Use a paired date heading plus version/title heading for each entry.
+- If an old entry has no recorded date, mark the date as `DATE_NOT_RECORDED` rather than inventing one.
 
 ### main-goal-readme.md
 
@@ -125,20 +127,23 @@ YYYY-MM-DD
 
 Each project should include a suitable `.gitignore` for its technology stack. It should exclude generated files, dependency folders, caches, local environment files, and packaged archives.
 
-### start_win.cmd / start_gui.cmd
+### full_windows_runner_status.cmd / root runner-status helper
 
-At least one simple root-level Windows launcher should exist when the project is intended to be run on Windows.
+Every default project that has multiple runtime components should include one root-level runner/status helper similar to `full_windows_runner_status.cmd`.
 
 Expected behavior:
 
-- Easy double-click startup.
+- Easy double-click startup from the repository root.
+- Starts the main components/dependencies through scripts under `start_scripts/`.
+- Provides a visible status view for key components.
+- Provides safe stop/refresh actions when applicable.
 - Clear error output if prerequisites are missing.
-- Does not silently fail.
-- Delegates more complex logic to scripts inside `start_scripts/`.
+- Does not silently fail or hide component startup errors.
+- Delegates complex logic to scripts inside `start_scripts/`.
 
-### start_scripts/start_win.ps1
+### start_scripts/windows and start_scripts/raspberry
 
-PowerShell startup logic should live here when needed. The root `.cmd` file should remain simple and user-friendly.
+Platform-specific startup logic should live under `start_scripts/windows/` and `start_scripts/raspberry/` when needed. Root scripts should remain minimal operator entry points.
 
 ### logs/
 
@@ -387,7 +392,7 @@ When code changes are implemented, provide:
 - [ ] `README.md` includes expected command results.
 - [x] `README.md` summarizes visible screens or flows.
 - [x] `HOW_TO_RUN.md` created.
-- [ ] `HOW_TO_RUN.md` is Windows-first when relevant.
+- [ ] `HOW_TO_RUN.md` is short, quickstart-oriented, and links to deeper runbooks instead of embedding them.
 - [ ] Linux/macOS instructions are included only when applicable.
 - [x] `CHANGELOG.md` created.
 - [ ] `main-goal-readme.md` created.
@@ -406,8 +411,8 @@ When code changes are implemented, provide:
 
 ### D. Start Scripts
 
-- [ ] `start_scripts/windows/start_win.cmd` or `start_gui.cmd` exists when Windows startup is needed.
-- [ ] `start_scripts/start_win.ps1` exists when PowerShell startup logic is needed.
+- [ ] A root runner/status helper such as `full_windows_runner_status.cmd` exists when multi-component startup is needed.
+- [ ] Platform-specific startup logic lives under `start_scripts/windows/` or `start_scripts/raspberry/` when needed.
 - [ ] Startup scripts print clear errors when prerequisites are missing.
 - [ ] Startup scripts do not silently fail.
 - [x] Startup commands are documented in `README.md` and `HOW_TO_RUN.md`.
