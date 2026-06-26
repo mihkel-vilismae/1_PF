@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-06-26 07:05 EEST
+## v0.10.28 - Root README rebuild
+
+- Bumped repository/package version from `0.10.27` to `0.10.28` for the README rebuild baseline.
+- Rebuilt root `README.md` from the ground up as a concise project landing page instead of a release-log style document.
+- Moved historical/release-detail responsibility back to `CHANGELOG.md` and kept README focused on project purpose, current UI state, run commands, docs entry points, proof boundaries, and development rules.
+- Preserved runtime behavior: no dashboard, backend, worker, auth, DB, crontab, playback, troubleshooting, or recovery behavior changed.
+
 ## 2026-06-26 06:55 EEST
 ## v0.10.27 - V2 startup mode and six-item sidebar shell
 
