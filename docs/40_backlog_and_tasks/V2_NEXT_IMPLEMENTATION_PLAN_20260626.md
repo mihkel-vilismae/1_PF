@@ -4,7 +4,7 @@ Estonian timestamp: 2026-06-26 18:53 EEST
 
 ## Status
 
-Planning/status document for the implementation sequence through `v0.10.66`. It is not proof that live target-machine playback or recovery has passed.
+Planning/status document for the implementation sequence through `v0.10.67`. It is not proof that live target-machine playback or recovery has passed.
 
 ## Current completed baseline
 
@@ -28,7 +28,7 @@ The previous B6-B12 implementation sequence is complete as code/tests/docs slice
 | 4 | `SEC.1` | Audit dependency vulnerabilities | Existing npm audit warnings remain | Low-regression fix or documented deferral with exact dependency/risk. |
 | 5 | `DOCS.3` | Post-live-proof docs reconciliation | Needed only after live proofs change truth | Update B12 gate status and current-truth docs from actual evidence. |
 
-## Completed sequence through v0.10.66
+## Completed sequence through v0.10.67
 
 | Slice | Delivered in | Current reality |
 | --- | --- | --- |
@@ -54,3 +54,4 @@ The previous B6-B12 implementation sequence is complete as code/tests/docs slice
 ## Immediate recommendation
 
 Run `LIVE.1` and `LIVE.2` on the target machine before changing the B12 gate status. If target hardware is not available, run `SEC.1` or a docs-only proof-runbook cleanup slice instead.
+| `PROOF.1` | `v0.10.67` | Added a target live proof readiness manifest generator for autonomous playback, abrupt restart recovery, and PIR hardware evidence without marking the B12 gate live-passed. |

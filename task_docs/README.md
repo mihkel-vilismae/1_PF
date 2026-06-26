@@ -1,6 +1,6 @@
 # Archived Task Doc Pointer
 
-> Current checkpoint: `v0.10.66`. This README is historical/provenance or compatibility material; use the root README, current OpenSpec docs, and current proof evidence for live implementation truth.
+> Current checkpoint: `v0.10.67`. This README is historical/provenance or compatibility material; use the root README, current OpenSpec docs, and current proof evidence for live implementation truth.
 
 Estonian timestamp: 2026-05-25 00:03 EEST
 

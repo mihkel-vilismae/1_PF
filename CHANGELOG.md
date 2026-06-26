@@ -1,3 +1,9 @@
+## 2026-06-26 19:34 EEST — v0.10.67
+
+- Ran ACR on the remaining hardware/live-proof unresolved risks after the dependency audit cleanup.
+- Added `proof:v2-target-live-readiness`, a JSON readiness manifest generator for autonomous playback, abrupt restart recovery, and PIR hardware proof evidence.
+- Added target live proof readiness docs and tests while keeping the B12 live victory claim blocked until target-machine evidence exists.
+
 ## 2026-06-26 19:26 EEST — v0.10.66
 
 - Ran 2x ACR over unresolved risks and fixed the sandbox-fixable dependency audit issue.

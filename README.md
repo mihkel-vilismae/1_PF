@@ -1,6 +1,6 @@
 # PF_login / PhotoFrame
 
-> Current checkpoint: `v0.10.66` after DOCS.2 OpenSpec/status reconciliation on top of the v0.10.64 recovery wiring and B12 autonomous playback/recovery proof gate. Code, focused tests, generated proof artifacts, and runtime evidence remain stronger than prose when they conflict.
+> Current checkpoint: `v0.10.67` after DOCS.2 OpenSpec/status reconciliation on top of the v0.10.64 recovery wiring and B12 autonomous playback/recovery proof gate. Code, focused tests, generated proof artifacts, and runtime evidence remain stronger than prose when they conflict.
 
 PF_login / PhotoFrame is a local dashboard-driven photo-frame system for staged media processing, operator inspection, and Raspberry/Windows playback workflows.
 
@@ -10,7 +10,7 @@ The project is intentionally proof-heavy. Source code, tests, OpenSpec documents
 
 | Field | Value |
 |---|---|
-| Version | `0.10.66` |
+| Version | `0.10.67` |
 | Main dashboard | Vite frontend in `dashboard/` |
 | Backend API | TypeScript server entrypoint at `server/index.ts` |
 | Database schema source | `database/schema.sql` |

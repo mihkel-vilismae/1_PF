@@ -1,6 +1,6 @@
 # Audits and Migrations
 
-> Current checkpoint: `v0.10.66`. This README was refreshed in the docs/launcher reconciliation pass; code, focused tests, proof artifacts, and runtime evidence override stale prose.
+> Current checkpoint: `v0.10.67`. This README was refreshed in the docs/launcher reconciliation pass; code, focused tests, proof artifacts, and runtime evidence override stale prose.
 
 Estonian timestamp: 2026-06-11 18:30 EEST
 

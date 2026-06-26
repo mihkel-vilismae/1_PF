@@ -1,6 +1,6 @@
 # Windows mpv runtime directory
 
-> Current checkpoint: `v0.10.66`. This README was refreshed in the docs/launcher reconciliation pass; code, focused tests, proof artifacts, and runtime evidence override stale prose.
+> Current checkpoint: `v0.10.67`. This README was refreshed in the docs/launcher reconciliation pass; code, focused tests, proof artifacts, and runtime evidence override stale prose.
 
 `start_win_full.cmd` and `start_scripts/start_win_full.ps1` use this repo-local directory as the Windows native playback tool location.
 
