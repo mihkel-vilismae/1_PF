@@ -9,6 +9,7 @@ test('root HOW_TO_RUN stays short and points to the runner/status quickstart', (
   const nonEmptyLines = howToRun.split(/\r?\n/).filter((line) => line.trim()).length;
 
   assert.ok(nonEmptyLines <= 80, `HOW_TO_RUN.md should stay short; found ${nonEmptyLines} non-empty lines`);
+  assert.match(howToRun, /\.\\full_windows_runner_status\.cmd/);
   assert.match(howToRun, /full_windows_runner_status\.cmd/);
   assert.match(howToRun, /start_scripts\/windows\/START_WIN\.PS1/);
   assert.match(howToRun, /start_scripts\/raspberry\/START_RASPBERRYOS\.SH/);
@@ -30,6 +31,7 @@ test('default project settings require short HOW_TO_RUN and root runner-status h
 
   assert.match(defaults, /HOW_TO_RUN file must stay short and quickstart-oriented/);
   assert.match(defaults, /full_windows_runner_status\.cmd/);
+  assert.match(defaults, /\.\\full_windows_runner_status\.cmd/);
   assert.match(defaults, /runner\/status helper/);
   assert.match(defaults, /start_scripts\/windows/);
   assert.match(defaults, /start_scripts\/raspberry/);
@@ -37,6 +39,7 @@ test('default project settings require short HOW_TO_RUN and root runner-status h
 
 test('changelog uses paired date and version headings for the latest entry', () => {
   const changelog = read('CHANGELOG.md');
-  assert.match(changelog, /^# Changelog\n\n## 2026-06-26 02:44 EEST\n## v0\.10\.20 - Changelog and quickstart documentation cleanup/m);
+  assert.match(changelog, /^# Changelog\n\n## 2026-06-26 03:05 EEST\n## v0\.10\.20 - Windows runner status parser hotfix/m);
+  assert.match(changelog, /## 2026-06-26 02:44 EEST\n## v0\.10\.20 - Changelog and quickstart documentation cleanup/);
   assert.match(changelog, /## 2026-06-22 14:57 EEST\n## v0\.10\.20 - Regular worker B3 stage-state-machine product path/);
 });

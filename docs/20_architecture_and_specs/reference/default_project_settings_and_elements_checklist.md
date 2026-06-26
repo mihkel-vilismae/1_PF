@@ -129,11 +129,11 @@ Each project should include a suitable `.gitignore` for its technology stack. It
 
 ### full_windows_runner_status.cmd / root runner-status helper
 
-Every default project that has multiple runtime components should include one root-level runner/status helper similar to `full_windows_runner_status.cmd`.
+Every default project that has multiple runtime components should include one root-level runner/status helper similar to `full_windows_runner_status.cmd`. Documentation must show PowerShell current-directory usage, for example `.\full_windows_runner_status.cmd`, because bare local command names are not executed by PowerShell by default.
 
 Expected behavior:
 
-- Easy double-click startup from the repository root.
+- Easy double-click startup from the repository root, plus explicit PowerShell usage with `.\` when run from a terminal.
 - Starts the main components/dependencies through scripts under `start_scripts/`.
 - Provides a visible status view for key components.
 - Provides safe stop/refresh actions when applicable.
@@ -411,7 +411,7 @@ When code changes are implemented, provide:
 
 ### D. Start Scripts
 
-- [ ] A root runner/status helper such as `full_windows_runner_status.cmd` exists when multi-component startup is needed.
+- [ ] A root runner/status helper such as `full_windows_runner_status.cmd` exists when multi-component startup is needed, and PowerShell docs show `.\full_windows_runner_status.cmd`.
 - [ ] Platform-specific startup logic lives under `start_scripts/windows/` or `start_scripts/raspberry/` when needed.
 - [ ] Startup scripts print clear errors when prerequisites are missing.
 - [ ] Startup scripts do not silently fail.

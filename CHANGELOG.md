@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-06-26 03:05 EEST
+## v0.10.20 - Windows runner status parser hotfix
+
+- Fixed `full_windows_runner_status.cmd` startup on Windows by making the wrapper prefer PowerShell 7 (`pwsh`) when available and fall back to Windows PowerShell.
+- Removed non-ASCII punctuation from `start_scripts/windows/FULL_WINDOWS_RUNNER_STATUS.PS1` so Windows PowerShell does not misdecode UTF-8 bytes into smart quotes and misparse table pipes as pipeline operators.
+- Updated `HOW_TO_RUN.md` to show PowerShell current-directory invocation as `.\full_windows_runner_status.cmd` while preserving the `cmd.exe` bare-name example.
+- Added regression coverage that keeps the runner/status PS1 ASCII-safe and verifies the documented PowerShell launcher command.
+
 ## 2026-06-26 02:44 EEST
 ## v0.10.20 - Changelog and quickstart documentation cleanup
 

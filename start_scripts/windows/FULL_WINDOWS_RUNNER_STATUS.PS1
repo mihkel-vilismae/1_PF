@@ -144,7 +144,7 @@ function Get-ComponentStatuses {
 
 function Format-Cell([string]$Value, [int]$Width) {
     if ($Value.Length -gt $Width) {
-        return $Value.Substring(0, [math]::Max(0, $Width - 1)) + "…"
+        return $Value.Substring(0, [math]::Max(0, $Width - 1)) + "..."
     }
     return $Value.PadRight($Width)
 }
@@ -166,7 +166,7 @@ function Render-Menu([array]$Rows) {
     $nowEt = Get-EstoniaNow
     $age = Format-HumanAge -Then $LastUpdated -Now (Get-Date)
     Clear-Host
-    Write-Host "PF_login / PhotoFrame — Full Windows Runner + Status" -ForegroundColor Cyan
+    Write-Host "PF_login / PhotoFrame - Full Windows Runner + Status" -ForegroundColor Cyan
     Write-Host "Repo: $($RepoRoot.Path)" -ForegroundColor DarkGray
     Write-Host "Auto-refresh: every $RefreshSeconds seconds. Press 1/2/3/Q." -ForegroundColor DarkGray
     Write-Host ""

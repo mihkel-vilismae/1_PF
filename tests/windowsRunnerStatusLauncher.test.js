@@ -33,7 +33,10 @@ test('root full_windows_runner_status.cmd delegates to the moved terminal runner
   const content = await readText('full_windows_runner_status.cmd');
 
   assert.match(content, /start_scripts\\windows\\FULL_WINDOWS_RUNNER_STATUS\.PS1/);
-  assert.match(content, /powershell -NoProfile -ExecutionPolicy Bypass/);
+  assert.match(content, /PS_EXE/);
+  assert.match(content, /where pwsh/);
+  assert.match(content, /where powershell/);
+  assert.match(content, /-NoProfile -ExecutionPolicy Bypass/);
   assert.match(content, /%\*/);
 });
 
@@ -56,6 +59,15 @@ test('FULL_WINDOWS_RUNNER_STATUS.PS1 provides start, stop, refresh, status, and 
   assert.match(content, /Format-HumanAge/);
   assert.match(content, /KeyAvailable/);
   assert.match(content, /RefreshSeconds/);
+});
+
+
+test('FULL_WINDOWS_RUNNER_STATUS.PS1 stays ASCII-safe for Windows PowerShell parser compatibility', async () => {
+  const content = await readText('start_scripts/windows/FULL_WINDOWS_RUNNER_STATUS.PS1');
+  const nonAscii = [...content].filter((character) => character.charCodeAt(0) > 127);
+
+  assert.deepEqual(nonAscii, []);
+  assert.doesNotMatch(content, /—|…/);
 });
 
 

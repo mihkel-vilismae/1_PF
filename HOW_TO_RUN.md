@@ -2,7 +2,13 @@
 
 ## Use this for quickstart
 
-From the repository root on Windows, run:
+From the repository root on Windows PowerShell, run:
+
+```powershell
+.\full_windows_runner_status.cmd
+```
+
+From `cmd.exe`, this also works:
 
 ```cmd
 full_windows_runner_status.cmd
