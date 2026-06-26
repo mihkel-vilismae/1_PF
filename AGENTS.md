@@ -78,6 +78,14 @@
 - Load excluded files only when the task directly touches their domain, such as dependency lockfiles, changelog/version history, generated fixtures, runtime proof evidence, archive patches, registry JSONs, or build/cache outputs.
 - Do not exclude active source/spec/test folders such as `server/**`, `dashboard/**`, `tests/**`, or `docs/20_architecture_and_specs/openspec/**` from default analysis.
 
+## Repo Report Timestamp and LOC Rule
+
+- For repository/file/stat/context-analysis answers, print a start timestamp at the top and an end timestamp plus duration at the bottom.
+- Include baseline/version, HEAD, and `LOC scanned/read` when measurable. If LOC was not measured, say so rather than inventing a number.
+- Use Estonian local time with timezone label for this project unless the user asks otherwise.
+- Respect `.ai-context-ignore` before broad repo analysis, and mention excluded files that were loaded on demand because the task required them.
+- Do not report hidden model token usage as exact LOC; LOC must come from files, tool output, script output, or visibly inspected snippets.
+
 ## Baseline Promotion and Memory Hygiene Rule
 
 - When the user explicitly promotes a newest full Git ZIP as the active baseline, treat that artifact as the current immutable baseline and supersede older PF_login baseline entries.

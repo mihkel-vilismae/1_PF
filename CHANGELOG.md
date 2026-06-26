@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-06-26 06:40 EEST
+## v0.10.25 - Repo report timestamp and LOC protocol
+
+- Bumped repository/package version from `0.10.24` to `0.10.25` for the repo-report governance baseline.
+- Added `docs/20_architecture_and_specs/repo_report_timestamp_loc_protocol.md` to define start/end timestamps, duration, baseline, HEAD, and measured `LOC scanned/read` reporting for repo/file/stat/context answers.
+- Added `.codex/skills/repo-report-wrapper/SKILL.md` so Codex-style agents can follow the same report wrapper.
+- Added `npm run check:repo-report-protocol` to validate the reporting protocol documents.
+- Preserved runtime behavior; this is docs/agent-governance/check coverage only.
+
 ## 2026-06-26 05:58 EEST
 ## v0.10.24 - AI context default exclusion policy
 

@@ -4,7 +4,7 @@ This repository contains a dashboard-driven photo-frame system for managing stag
 
 ## Current baseline quick truth
 
-- Repository/package version: `0.10.24`.
+- Repository/package version: `0.10.25`.
 - Dashboard: Vite frontend under `dashboard/`, served by `npm run dev`.
 - Backend API: TypeScript server entrypoint `server/index.ts`, started by `npm run api`.
 - SQLite schema source: `database/schema.sql`; generated/local SQLite DB files remain runtime data and are not the schema source.
@@ -16,6 +16,14 @@ This repository contains a dashboard-driven photo-frame system for managing stag
 Proof/readiness claims still require current proof artifacts. Historical docs and imported proof JSON are context, not automatic current-runtime proof.
 
 The system documentation is organized in canonical numbered folders under `docs/`: `00_current_truth`, `10_runbooks`, `20_architecture_and_specs`, `30_status_snapshots`, `40_backlog_and_tasks`, `50_audits_and_migrations`, and `90_archive`. Implementation status in documentation is not current runtime truth unless the document cites current code, tests, generated evidence, or runtime output.
+
+## v0.10.25 Repo report timestamp and LOC protocol
+
+This baseline adds repository-local reporting guidance for AI/Codex-style repo analysis. Repo/file/stat/context reports should include start timestamp, baseline, HEAD, measured `LOC scanned/read` when available, end timestamp, and duration.
+
+The protocol also reinforces `.ai-context-ignore`: broad analysis should avoid excluded high-LOC/low-default-value files unless the task directly requires them. This is reporting/governance only and does not change runtime behavior.
+
+See [`docs/20_architecture_and_specs/repo_report_timestamp_loc_protocol.md`](docs/20_architecture_and_specs/repo_report_timestamp_loc_protocol.md).
 
 ## v0.10.24 AI context default exclusion policy
 
