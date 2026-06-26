@@ -187,6 +187,8 @@ function render() {
         inspectMode: Boolean(state.inspectMode),
         valueInspectMode: Boolean(state.valueInspectMode),
         implementationStatusMode: v2ImplementationStatusMode,
+        runtimeState: state,
+        dashboardVisualMode,
       })}
     `;
     restoreScrollSnapshotAfterLayout(app, scrollSnapshot);

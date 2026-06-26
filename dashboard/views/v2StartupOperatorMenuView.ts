@@ -3,10 +3,10 @@
  * The left sidebar owns exactly nine top-level routes.
  * The center panel renders each route's original sub-items as typed visual blocks.
  */
-import { V2_OPERATOR_CENTER_PANEL_PAGES, type V2OperatorActionItem, type V2OperatorCenterPanelBlock, type V2OperatorSectionItem } from '../data/v2OperatorCenterPanel.ts';
+import { V2_OPERATOR_CENTER_PANEL_PAGES, type V2OperatorActionItem, type V2OperatorBackendActionButton, type V2OperatorCenterPanelBlock, type V2OperatorSectionItem } from '../data/v2OperatorCenterPanel.ts';
 import { V2_OPERATOR_SIDEBAR_ITEMS, type V2OperatorSidebarRoute } from '../data/v2OperatorSidebar.ts';
 import { getV2BlockStatusId, getV2ImplementationStatusElement } from '../data/v2ImplementationStatus.ts';
-import { type HistoryEntry } from '../services/renderers.ts';
+import { renderLogEntries, renderResultSurface, renderSourceBadge, statusBadge, type HistoryEntry } from '../services/renderers.ts';
 import { escapeHtml } from '../services/renderers/sharedRendererUtils.ts';
 import { renderV2OperatorPageWrapper } from './v2OperatorPageWrapper.ts';
 
@@ -14,6 +14,8 @@ type V2StartupOperatorMenuRenderOptions = {
   inspectMode?: boolean;
   valueInspectMode?: boolean;
   implementationStatusMode?: boolean;
+  runtimeState?: Record<string, any>;
+  dashboardVisualMode?: string | null;
 };
 
 export function renderV2StartupOperatorMenuView(
@@ -30,7 +32,7 @@ export function renderV2StartupOperatorMenuView(
       ${V2_OPERATOR_SIDEBAR_ITEMS.map((item) => renderV2SidebarItem(item, activeItem.route)).join('')}
     </nav>
   `;
-  const centerPanelMarkup = activePage.blocks.map(renderV2CenterPanelBlock).join('');
+  const centerPanelMarkup = activePage.blocks.map((block) => renderV2CenterPanelBlock(block, renderOptions.runtimeState, renderOptions.dashboardVisualMode)).join('');
 
   return renderV2OperatorPageWrapper({
     activeItem,
@@ -65,7 +67,7 @@ function renderV2SidebarItem(item: (typeof V2_OPERATOR_SIDEBAR_ITEMS)[number], a
   `;
 }
 
-function renderV2CenterPanelBlock(block: V2OperatorCenterPanelBlock): string {
+function renderV2CenterPanelBlock(block: V2OperatorCenterPanelBlock, runtimeState: Record<string, any> = {}, dashboardVisualMode: string | null = null): string {
   switch (block.type) {
     case 'infoPanel':
     case 'statusCard':
@@ -76,6 +78,8 @@ function renderV2CenterPanelBlock(block: V2OperatorCenterPanelBlock): string {
     case 'actionList':
     case 'exampleList':
       return renderActionListBlock(block);
+    case 'backendActionCard':
+      return renderBackendActionCard(block, runtimeState);
     case 'sectionGroup':
       return renderSectionGroupBlock(block);
     case 'toggleGroup':
@@ -105,6 +109,33 @@ function renderActionListBlock(block: Extract<V2OperatorCenterPanelBlock, { type
       <div class="v2-action-list" role="list">
         ${block.items.map((item) => renderActionItem(item, block.type)).join('')}
       </div>
+    </article>
+  `;
+}
+
+function renderBackendActionCard(block: Extract<V2OperatorCenterPanelBlock, { type: 'backendActionCard' }>, runtimeState: Record<string, any>): string {
+  const statusKey = block.statusKey;
+  const result = runtimeState.initResults?.[block.resultKey] ?? null;
+  const logs = runtimeState.logs?.[block.logKey] ?? [];
+  const sourceBadge = block.sourceBadge ? renderSourceBadge(block.sourceBadge.mode, block.sourceBadge.label) : '';
+
+  return `
+    <article class="card card--hybrid v2-block v2-block--backendActionCard" data-v2-backend-card="${escapeHtml(block.id)}" data-v2-block-type="backendActionCard" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
+      <header class="card__header v2-block__header">
+        <div>
+          <p class="card__code">${escapeHtml(statusKey)}</p>
+          <h3>${escapeHtml(block.title)}</h3>
+        </div>
+        <div class="card__header-tags">${sourceBadge}</div>
+        <div class="v2-block__pills">
+          ${statusBadge(runtimeState.statusByKey?.[statusKey] ?? 'idle')}
+          ${renderV2StatusHelpButton(getV2BlockStatusId(block.id), block.title)}
+        </div>
+      </header>
+      ${block.body ? `<p class="card__copy">${escapeHtml(block.body)}</p>` : ''}
+      <div class="button-row v2-backend-button-row">${block.actions.map(renderBackendActionButton).join('')}</div>
+      ${renderV2BackendResultSurface(result)}
+      <div class="log-surface" data-scroll-preserve="log-${escapeHtml(block.logKey)}">${renderLogEntries(logs, { sourceKey: block.logKey })}</div>
     </article>
   `;
 }
@@ -265,6 +296,22 @@ function renderSectionItem(item: V2OperatorSectionItem): string {
       <span class="pill">${escapeHtml(item.status ?? 'visual-only')}</span>
     </div>
   `;
+}
+
+function renderV2BackendResultSurface(result: any): string {
+  if (result) {
+    return renderResultSurface(result);
+  }
+  return `
+    <section class="v2-latest-backend-result" aria-label="Latest backend result">
+      <h4>Latest backend result</h4>
+      ${renderResultSurface(result)}
+    </section>
+  `;
+}
+
+function renderBackendActionButton(button: V2OperatorBackendActionButton): string {
+  return `<button class="button button--${escapeHtml(button.variant)}" data-action="${escapeHtml(button.action)}">${escapeHtml(button.label)}</button>`;
 }
 
 function renderVisualButton(item: V2OperatorActionItem): string {

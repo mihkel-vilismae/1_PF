@@ -139,3 +139,10 @@ B2 deliberately does not move requested Setup/Auth/Startup/Workers/Troubleshooti
 - Wired the Implementation status view to `dashboard/data/v2ImplementationStatus.json` through rendered `data-v2-status-id`, `data-v2-implementation-status`, `data-v2-status-label`, and `data-v2-status-help` attributes.
 - Added per-section `?` buttons that open a JSON-backed status/help modal without adding backend/runtime behavior.
 - Added `tests/v2ImplementationStatusSync.test.js` to ensure every rendered V2 status target for all nine routes has a JSON registry element.
+
+## v0.10.40 B4.1 Setup Verify .env placement
+
+| V2 target | Current source path | Existing form | Endpoint/handler | Existing tests/proofs | Reuse decision | Missing V2 proof/test | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `01 SETUP → 1A Verify .env` | `dashboard/data/v2OperatorCenterPanel.ts`, `dashboard/views/v2StartupOperatorMenuView.ts`, `dashboard/services/runtimeTruth/runtimeTruthBehavior.ts` | V2 backend action card plus shared result/log renderers | `verify-env` action → `POST /api/init/verify-env` | `tests/initApi.step1.test.js`; V2 status sync tests | Reuse existing runtime-truth action and shared `renderResultSurface` / `renderLogEntries`; do not duplicate View A card markup. | Add focused V2 render/action mapping coverage in the B4 sync/test slice. | wired/needs verification |
+

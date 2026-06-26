@@ -1,3 +1,18 @@
+## 2026-06-26 15:02 EEST — v0.10.40
+
+### Added
+- Added the V2 Setup `1A Verify .env` backend action card using the existing `verify-env` runtime action, shared result surface, and local log renderer.
+
+### Changed
+- Bumped repository/package version from `0.10.39` to `0.10.40`.
+- Updated V2 implementation-status JSON for the B4.1 Setup verify-env placement.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
 ## 2026-06-26 14:58 EEST — v0.10.39
 
 ### Added

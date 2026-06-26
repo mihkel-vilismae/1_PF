@@ -48,7 +48,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 
 | Page | Target role | Current intended state | Evidence needed before ready |
 | --- | --- | --- | --- |
-| `01 SETUP` | env/database readiness | reuse/extract existing controls | V2 render test + endpoint/action test |
+| `01 SETUP` | env/database readiness | `1A Verify .env` reused/wired in V2; DB controls pending | V2 render test + endpoint/action test |
 | `02 AUTHENTICATION` | NEW AUTH session readiness | reuse existing NEW AUTH controls | V2 render test + new-auth endpoint proof |
 | `03 STARTUP` | Raspberry scheduler/startup | reuse/extract Raspberry scheduler panel | Raspberry scheduler proof + V2 placement test |
 | `04 WORKERS` | worker stage controls | reuse/extract B3 stage controls | worker endpoint proofs + V2 placement test |
@@ -63,7 +63,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | Component | Intended pages | Status | Implementation notes | Evidence target |
 | --- | --- | --- | --- | --- |
 | Event Log / Event history | all current V2 pages | visual/tested | `renderV2OperatorPageWrapper` reuses `renderHistory` and existing copy/clear actions. v0.10.35 route shells inherit this wrapper. | V2 shell test confirms panel, copy action, clear action, renderer use, and route shells. |
-| Latest backend result panel | Setup/Auth/Startup/Workers/Troubleshooting | reused candidate | Existing `renderResultSurface` should be reused. | Button/action tests confirm result surface updates in V2 context. |
+| Latest backend result panel | Setup/Auth/Startup/Workers/Troubleshooting | reused candidate / partial V2 reuse | v0.10.40 reuses `renderResultSurface` for `01 SETUP → 1A Verify .env`. Existing `renderResultSurface` should be reused for the remaining backend cards. | Button/action tests confirm result surface updates in V2 context. |
 | Response payload viewer | Setup/Auth/Startup/Workers | reused candidate | Existing JSON payload viewer should be reused. | Scroll/payload rendering test if changed. |
 | Status/source badges | all pages | reused candidate | Existing badge renderers should be reused. | Snapshot/render assertions. |
 | Per-section `?` icon | major sections/cards | visual/tested | v0.10.38 adds JSON-backed `?` buttons and a status/help modal; v0.10.39 adds sync coverage. | `tests/v2ImplementationStatusSync.test.js`. |
@@ -77,7 +77,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 
 | Element | Status | Current evidence/notes | Required next proof/test |
 | --- | --- | --- | --- |
-| `1A Verify .env` | reused candidate | Existing View A control and endpoint are present. | V2 page render + click/action mapping to `POST /api/init/verify-env`. |
+| `1A Verify .env` | wired/needs verification | v0.10.40 renders the control in V2 Setup using existing `verify-env` runtime action, shared latest backend result panel, response payload viewer, and local log entries. | Focused V2 render/action mapping test and backend endpoint regression test. |
 | `2A Database controls` | reused candidate | Existing View A DB buttons are present. | V2 page render + endpoint mapping for check/inspect/delete/recreate. |
 | Event Log | visual/tested | Shared V2 wrapper renders Event history for current V2 pages, including `07`-`09` route shells. | Future page-specific slices must keep using wrapper. |
 

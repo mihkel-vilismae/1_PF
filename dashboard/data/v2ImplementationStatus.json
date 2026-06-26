@@ -33,6 +33,12 @@
       "summary": "v2 setup is preflight/orchestration only. It may check and report readiness, but it does not install full dependencies in this slice."
     },
     {
+      "id": "v2.block.01.verify-env",
+      "label": "setup.sh / 1A Verify .env",
+      "status": "in-progress",
+      "summary": "B4.1 reuses the existing verify-env action/result/log pipeline in the V2 Setup page. It calls POST /api/init/verify-env through the existing runtime-truth action and renders the shared latest backend result and local log surfaces."
+    },
+    {
       "id": "v2.block.02.actions",
       "label": "authentication.sh / Authentication actions",
       "status": "in-progress",

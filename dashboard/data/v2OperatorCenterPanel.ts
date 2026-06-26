@@ -11,9 +11,13 @@ export type V2OperatorBlockType =
   | 'snapshotViewer'
   | 'snapshotList'
   | 'futurePlaceholder'
-  | 'exampleList';
+  | 'exampleList'
+  | 'backendActionCard'
+  | 'newAuthCard';
 
 export type V2OperatorRisk = 'safe' | 'guarded' | 'destructive' | 'future' | 'localSecretSensitive';
+
+export type V2OperatorButtonVariant = 'primary' | 'secondary' | 'danger';
 
 export type V2OperatorActionItem = {
   id: string;
@@ -22,6 +26,12 @@ export type V2OperatorActionItem = {
   description?: string;
   risk?: V2OperatorRisk;
   interaction?: 'visualOnly' | 'guardedAction' | 'disabledPlaceholder';
+};
+
+export type V2OperatorBackendActionButton = {
+  action: string;
+  label: string;
+  variant: V2OperatorButtonVariant;
 };
 
 export type V2OperatorToggleItem = {
@@ -57,6 +67,17 @@ export type V2OperatorCenterPanelBlock =
       title: string;
       body?: string;
       items: readonly V2OperatorActionItem[];
+    }
+  | {
+      type: 'backendActionCard';
+      id: string;
+      title: string;
+      body?: string;
+      statusKey: string;
+      resultKey: string;
+      logKey: string;
+      sourceBadge?: { mode: string; label: string };
+      actions: readonly V2OperatorBackendActionButton[];
     }
   | {
       type: 'sectionGroup';
@@ -122,6 +143,19 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
         body: 'v2 setup is preflight/orchestration only. It may check and report readiness, but it does not install full dependencies in this slice.',
         status: 'planned-safe',
         risk: 'safe',
+      },
+      {
+        type: 'backendActionCard',
+        id: '01.verify-env',
+        title: '1A Verify .env',
+        body: 'Validate required configuration keys through the existing backend endpoint and render the latest backend result, endpoint metadata, response payload, and local log entries.',
+        statusKey: '1A',
+        resultKey: '1A',
+        logKey: '1A',
+        sourceBadge: { mode: 'real', label: 'POST /api/init/verify-env' },
+        actions: [
+          { action: 'verify-env', label: 'Run', variant: 'primary' },
+        ],
       },
       {
         type: 'actionList',
