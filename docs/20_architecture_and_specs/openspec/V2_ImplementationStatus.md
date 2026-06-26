@@ -55,7 +55,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | `05 TROUBLESHOOTING` | stale lock repair | `B6.1` Pipeline maintenance controls placed/wired to existing maintenance action IDs | stale-lock behavior proof + V2 placement test |
 | `06 RECOVERY` | recovery placeholder now; real recovery later | `B6.2` alert-only buttons placed | placeholder test first; later save/load/autosave/restart proof |
 | `07 PIR` | activity/screen test | `B7.1` visible B5 subset and PIR emulator placed | route/render test now; deeper browser activity and hardware proof later |
-| `08 PLAYBACK` | queue/rendering test | `B8.1` rendering target/mode subsection, `B8.2` browser-local drag/drop queue table, and `B8.3` media-only backend queue-prepare bridge placed | render/queue tests now; address overlay proof later |
+| `08 PLAYBACK` | queue/rendering test | `B8.1` rendering target/mode subsection, `B8.2` browser-local drag/drop queue table, `B8.3` media-only backend queue-prepare bridge, and `B8.4` GPS/address metadata bridge placed | render/queue tests now; address overlay proof later |
 | `09 REAL PLAYBACK` | final endpoint | explanation-only shell implemented; composition later | route render test now; full autonomous playback + recovery proof later |
 
 ## Shared component tracker
@@ -152,10 +152,10 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | Element | Status | Current evidence/notes | Required next proof/test |
 | --- | --- | --- | --- |
 | B4 rendering target/mode subsection | visual/tested | v0.10.51 renders Windows/Raspberry target tabs and playback rendering mode buttons from the shared playbackRenderer contract. Raspberry OS remains disabled. | Deeper playback/browser proof later. |
-| Drag/drop queue | visual/tested | v0.10.56 keeps the drag/drop/file input queue browser-local while adding a media-only backend queue-prepare bridge for valid image/video rows. | Exact dropped-file upload/import and playback proof remain later; B8.3 only requests backend queue preparation through the existing endpoint. |
+| Drag/drop queue | visual/tested | v0.10.57 keeps the drag/drop/file input queue browser-local while adding a media-only backend queue-prepare bridge and honest GPS/address metadata status fields. | Exact dropped-file upload/import and playback proof remain later; the bridge only requests backend queue preparation through the existing endpoint. |
 | Type classification | visual/tested | v0.10.52 classifies dropped files as image/video/other by MIME type or extension and renders yes/no columns. | Deeper browser drop interaction test later. |
 | Video duration | partial/browser-local | v0.10.52 starts browser metadata hydration for video duration when available, otherwise reports unavailable/pending. | Real-media browser metadata proof later. |
-| GPS/address fields | placeholder/needs verification | v0.10.52 renders GPS/address columns but does not extract metadata in the browser-local queue. | Metadata/pipeline integration proof plus missing-address handling test. |
+| GPS/address fields | contract/tested | v0.10.57 adds metadata presence flags for GPS/address, defaults browser-local files to explicit missing labels, and blocks fake address generation. | Real EXIF/pipeline metadata extraction and address overlay proof remain later. |
 | Fullscreen playback | needs verification | Required for final victory. | Browser/native playback proof. |
 | Address overlay | needs verification | Required when address exists; allow/require-address toggle is future design. | UI/proof evidence for visible address and graceful missing-address behavior. |
 | `RPI-WORKERS` | visual row delivered / needs runtime proof | v0.10.45 adds Regular state worker, Playback worker, and On-off worker Waiting cards to Startup, Workers, Troubleshooting, PIR, and Playback. | Runtime worker-call projection and proof remain later. |

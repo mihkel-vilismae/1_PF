@@ -22,6 +22,10 @@ export type V2PlaybackQueueItem = {
   durationLabel: string;
   gpsCoordinates: string;
   address: string;
+  gpsStatus?: 'present' | 'missing';
+  addressStatus?: 'present' | 'missing';
+  metadataSource?: string;
+  metadataMessage?: string;
   backendQueueStatus?: string;
   backendQueueMessage?: string;
 };
@@ -487,12 +491,15 @@ function renderPlaybackDropQueueBlock(block: Extract<V2OperatorCenterPanelBlock,
               <th>is other</th>
               <th>duration</th>
               <th>GPS coordinates</th>
+              <th>GPS status</th>
               <th>address string</th>
+              <th>address status</th>
+              <th>metadata source</th>
               <th>backend queue</th>
             </tr>
           </thead>
           <tbody>
-            ${queueItems.length ? queueItems.map(renderPlaybackDropQueueRow).join('') : '<tr data-v2-playback-empty-queue><td colspan="8">No dropped files yet. Non-media files will be listed here and reported gracefully instead of played.</td></tr>'}
+            ${queueItems.length ? queueItems.map(renderPlaybackDropQueueRow).join('') : '<tr data-v2-playback-empty-queue><td colspan="11">No dropped files yet. Non-media files will be listed here and reported gracefully instead of played.</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -509,7 +516,10 @@ function renderPlaybackDropQueueRow(item: V2PlaybackQueueItem): string {
       <td>${item.mediaKind === 'other' ? 'yes — report not playable' : 'no'}</td>
       <td>${escapeHtml(item.durationLabel)}</td>
       <td>${escapeHtml(item.gpsCoordinates)}</td>
+      <td><span class="pill" data-v2-playback-gps-status="${escapeHtml(item.gpsStatus ?? 'missing')}">${escapeHtml(item.gpsStatus ?? 'missing')}</span></td>
       <td>${escapeHtml(item.address)}</td>
+      <td><span class="pill" data-v2-playback-address-status="${escapeHtml(item.addressStatus ?? 'missing')}">${escapeHtml(item.addressStatus ?? 'missing')}</span></td>
+      <td><small title="${escapeHtml(item.metadataMessage ?? 'No metadata message supplied.')}">${escapeHtml(item.metadataSource ?? 'browser-local-file')}</small></td>
       <td>${renderPlaybackDropQueueBackendCell(item)}</td>
     </tr>
   `;

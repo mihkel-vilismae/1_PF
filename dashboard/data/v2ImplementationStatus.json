@@ -408,7 +408,7 @@
       "id": "v2.block.08.drop-queue",
       "label": "PLAYBACK / drag/drop queue table",
       "status": "in-progress",
-      "summary": "B8.3 keeps the drag/drop queue browser-local while adding a safe media-only bridge button that requests POST /api/runtime/queue/prepare for valid image/video rows and blocks non-media locally."
+      "summary": "B8.4 keeps the drag/drop queue browser-local, adds honest GPS/address metadata presence flags, blocks fake address generation, and preserves the B8.3 media-only backend queue bridge."
     }
   ]
 }

@@ -68,6 +68,7 @@ import { addIsolatedTestMediaItem, buildDefaultDebugPageState, clearDebugElement
 import { buildOsPlaybackViewModel, OS_PLAYBACK_PLATFORMS, type OsPlaybackPlatform, type PlaybackLogEntryViewModel } from './services/osPlaybackViewModel.ts';
 import { requestJson, setDashboardRuntimeMode } from './services/apiClient.ts';
 import { buildV2PlaybackDropQueueBridgeRequest } from './services/v2PlaybackDropQueueBridge.ts';
+import { buildBrowserLocalV2PlaybackMetadata } from './services/v2PlaybackMetadataBridge.ts';
 import { isV2OperatorSidebarRoute, type V2OperatorSidebarRoute } from './data/v2OperatorSidebar.ts';
 import { V2_IMPLEMENTATION_STATUS_REGISTRY, getV2ImplementationStatusElement } from './data/v2ImplementationStatus.ts';
 import { buildViewARefreshPlan } from './services/viewARefreshPlan.ts';
@@ -2034,14 +2035,19 @@ function addV2PlaybackFiles(files: FileList | null | undefined): void {
 
 function buildV2PlaybackQueueItem(file: File): V2PlaybackQueueItem {
   const mediaKind = classifyV2PlaybackFile(file);
+  const metadata = buildBrowserLocalV2PlaybackMetadata();
   v2PlaybackQueueItemCounter += 1;
   return {
     id: `v2-drop-${v2PlaybackQueueItemCounter}`,
     filename: file.name || `unnamed-${v2PlaybackQueueItemCounter}`,
     mediaKind,
     durationLabel: mediaKind === 'video' ? 'metadata pending' : mediaKind === 'image' ? 'not applicable for image' : 'not playable as media',
-    gpsCoordinates: 'not extracted in browser-local queue',
-    address: 'no address string yet',
+    gpsCoordinates: metadata.gpsCoordinates,
+    gpsStatus: metadata.gpsStatus,
+    address: metadata.address,
+    addressStatus: metadata.addressStatus,
+    metadataSource: metadata.metadataSource,
+    metadataMessage: metadata.metadataMessage,
     backendQueueStatus: mediaKind === 'other' ? 'blocked' : 'local-only',
     backendQueueMessage: mediaKind === 'other'
       ? 'Non-media cannot request backend queue prepare.'

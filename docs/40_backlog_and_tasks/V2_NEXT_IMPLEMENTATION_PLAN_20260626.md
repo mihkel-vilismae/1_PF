@@ -28,7 +28,8 @@ Run these one slice at a time, with one logical commit and one full Git ZIP per 
 | 4 | `B8.1` | `08 PLAYBACK` rendering target/mode subsection | **done in v0.10.51** | Render test and status metadata added; Raspberry OS target disabled until proven. |
 | 5 | `B8.2` | `08 PLAYBACK` drag/drop queue table | **done in v0.10.52** | File classification render tests for image/video/other and graceful non-media handling added. |
 | 6 | `B8.3` | `08 PLAYBACK` safe backend queue bridge | **done in v0.10.56** | Valid image/video rows can request `POST /api/runtime/queue/prepare`; non-media is blocked locally; no file-upload claim. |
-| 6 | `B9` | Proof/test expansion | Hardens frontend/backend and graceful-error coverage before composition claims | Endpoint tests, button tests, docs/status sync tests, and explicit not-run proof list. |
+| 7 | `B8.4` | GPS/address metadata bridge | **done in v0.10.57** | GPS/address fields have present/missing status flags; missing address stays explicit and not fabricated. |
+| 8 | `B9` | Proof/test expansion | Hardens frontend/backend and graceful-error coverage before composition claims | Endpoint tests, button tests, docs/status sync tests, and explicit not-run proof list. |
 | 7 | `B10` | `09 REAL PLAYBACK` composition | Compose only from proven pieces | `09` must show only proven/disabled-test controls; no fake readiness. |
 | 8 | `B11` | Real recovery implementation | Save/load/autosave/restart recovery | State-schema tests and rough-shutdown/restart proof. |
 | 9 | `B12` | Victory proof | End-to-end autonomous playback and autonomous recovery proof | Target-machine proof artifacts required before readiness claims. |

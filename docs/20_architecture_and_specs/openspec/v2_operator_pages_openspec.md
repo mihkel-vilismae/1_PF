@@ -631,4 +631,8 @@ B1, B3, B4, and B5 implementation slices have placed the nine-page shell, V2 sta
 
 ## v0.10.52 B8.2 Playback drag/drop queue table
 
-`08 PLAYBACK` now includes a browser-local drag/drop/file-input queue table. It accepts image, video, and non-media files, classifies rows as video/image/other, shows duration when browser metadata is available for videos, and reports non-media as not playable instead of attempting playback. GPS/address columns are visible placeholders until metadata/pipeline integration. B8.3 adds a media-only backend queue-prepare bridge button that requests `POST /api/runtime/queue/prepare` for valid image/video rows, blocks non-media locally, and does not claim browser file upload/import.
+`08 PLAYBACK` now includes a browser-local drag/drop/file-input queue table. It accepts image, video, and non-media files, classifies rows as video/image/other, shows duration when browser metadata is available for videos, and reports non-media as not playable instead of attempting playback. GPS/address columns now have B8.4 metadata presence flags: browser-local files default to explicit missing GPS/address labels, pipeline/trusted-sidecar metadata may mark values present, and missing address text must not be fabricated. B8.3 adds a media-only backend queue-prepare bridge button that requests `POST /api/runtime/queue/prepare` for valid image/video rows, blocks non-media locally, and does not claim browser file upload/import.
+
+## v0.10.57 B8.4 Playback GPS/address metadata bridge
+
+`08 PLAYBACK` now distinguishes GPS and address metadata as `present` or `missing` for each drag/drop queue row. Browser-local files do not claim EXIF extraction; missing values remain visible as `GPS missing — no browser EXIF extraction` and `Address missing — no fake address`. Real address text remains owned by the pipeline/geocode metadata path, not browser fabrication.

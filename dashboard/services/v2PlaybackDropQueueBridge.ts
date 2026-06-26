@@ -11,7 +11,11 @@ export type V2PlaybackDropQueueBridgeItem = {
   mediaKind: 'video' | 'image' | 'other';
   durationLabel?: string;
   gpsCoordinates?: string;
+  gpsStatus?: 'present' | 'missing';
   address?: string;
+  addressStatus?: 'present' | 'missing';
+  metadataSource?: string;
+  metadataMessage?: string;
 };
 
 export type V2PlaybackDropQueueBridgeRequest =
@@ -29,7 +33,11 @@ export type V2PlaybackDropQueueBridgeRequest =
           mediaKind: 'video' | 'image';
           durationLabel: string;
           gpsCoordinates: string;
+          gpsStatus: 'present' | 'missing';
           address: string;
+          addressStatus: 'present' | 'missing';
+          metadataSource: string;
+          metadataMessage: string;
         };
         note: string;
       };
@@ -84,7 +92,11 @@ export function buildV2PlaybackDropQueueBridgeRequest(item: V2PlaybackDropQueueB
         mediaKind: item.mediaKind,
         durationLabel: item.durationLabel ?? '',
         gpsCoordinates: item.gpsCoordinates ?? '',
+        gpsStatus: item.gpsStatus ?? 'missing',
         address: item.address ?? '',
+        addressStatus: item.addressStatus ?? 'missing',
+        metadataSource: item.metadataSource ?? 'unknown',
+        metadataMessage: item.metadataMessage ?? 'No metadata message supplied.',
       },
       note: 'Browser dropped files are not trusted as backend filesystem paths; this request only asks the existing backend queue-prepare stage to refresh durable queue rows for known media.',
     },

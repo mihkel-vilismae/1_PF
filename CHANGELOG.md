@@ -1,3 +1,19 @@
+## 2026-06-26 17:00 EEST — v0.10.57
+
+### Added
+- Added B8.4 V2 playback metadata bridge contract for GPS/address presence flags.
+- Added honest browser-local metadata defaults: GPS missing and Address missing without fabricated addresses.
+- Added metadata bridge tests for present/missing GPS and address states.
+
+### Changed
+- Updated V2 playback drop queue rows and backend queue bridge payloads to carry GPS/address metadata status fields.
+
+### Fixed
+- None
+
+### Removed
+- None
+
 ## 2026-06-26 16:48 EEST — v0.10.56
 
 ### Added
