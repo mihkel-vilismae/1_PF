@@ -298,9 +298,9 @@
     },
     {
       "id": "v2.block.09.goal",
-      "label": "09 REAL PLAYBACK explanation blocks",
+      "label": "REAL PLAYBACK / integrated goal",
       "status": "in-progress",
-      "summary": "B1 explanation-only blocks for the final integrated endpoint page."
+      "summary": "B10.1 changes 09 REAL PLAYBACK from explanation-only to an integrated layout using only proven V2 pieces. It does not claim real recovery, PIR hardware, or final autonomous proof."
     },
     {
       "id": "v2.block.09.sources",
@@ -330,7 +330,7 @@
       "id": "v2.page.real-playback",
       "label": "09 REAL PLAYBACK",
       "status": "in-progress",
-      "summary": "09 REAL PLAYBACK route/page shell is implemented as explanation-only. Final integration remains future until isolated pieces are proven."
+      "summary": "09 REAL PLAYBACK now has a B10.1 integrated layout composed from proven pieces only. Real recovery, PIR hardware, and victory proof remain future gates."
     },
     {
       "id": "v2.page.recovery",
@@ -409,6 +409,78 @@
       "label": "PLAYBACK / drag/drop queue table",
       "status": "in-progress",
       "summary": "B8.4 keeps the drag/drop queue browser-local, adds honest GPS/address metadata presence flags, blocks fake address generation, and preserves the B8.3 media-only backend queue bridge."
+    },
+    {
+      "id": "v2.block.09.proven-boundary",
+      "label": "REAL PLAYBACK / Proven-piece boundary",
+      "status": "in-progress",
+      "summary": "B10.1 documents which already-proven pieces are active on the final page and which recovery/PIR/victory-proof capabilities remain gated."
+    },
+    {
+      "id": "v2.block.09.rpi-scheduler-controls",
+      "label": "REAL PLAYBACK / scheduler controls",
+      "status": "in-progress",
+      "summary": "B10.1 reuses the Raspberry real-crontab scheduler controls from 03 STARTUP on the final page without introducing a Windows CronEmulator real path."
+    },
+    {
+      "id": "v2.block.09.rpi-stages",
+      "label": "REAL PLAYBACK / RPI-STAGES row",
+      "status": "in-progress",
+      "summary": "B10.1 reuses the shared RPI-STAGES row on 09 REAL PLAYBACK for final-page pipeline visibility."
+    },
+    {
+      "id": "v2.block.09.rpi-workers",
+      "label": "REAL PLAYBACK / RPI-WORKERS row",
+      "status": "in-progress",
+      "summary": "B10.1 reuses the shared RPI-WORKERS row on 09 REAL PLAYBACK for final-page worker-call visibility."
+    },
+    {
+      "id": "v2.block.09.worker-b3-1-download",
+      "label": "REAL PLAYBACK / B3 1 download",
+      "status": "in-progress",
+      "summary": "B10.1 reuses the existing V2 worker stage card on 09 REAL PLAYBACK. The action ID and endpoint remain the proven B5.4 contract."
+    },
+    {
+      "id": "v2.block.09.worker-b3-2-index",
+      "label": "REAL PLAYBACK / B3 2 index",
+      "status": "in-progress",
+      "summary": "B10.1 reuses the existing V2 worker stage card on 09 REAL PLAYBACK. The action ID and endpoint remain the proven B5.4 contract."
+    },
+    {
+      "id": "v2.block.09.worker-b3-3-gps",
+      "label": "REAL PLAYBACK / B3 3 gps",
+      "status": "in-progress",
+      "summary": "B10.1 reuses the existing V2 worker stage card on 09 REAL PLAYBACK. The action ID and endpoint remain the proven B5.4 contract."
+    },
+    {
+      "id": "v2.block.09.worker-b3-4-geocode",
+      "label": "REAL PLAYBACK / B3 4 geocode",
+      "status": "in-progress",
+      "summary": "B10.1 reuses the existing V2 worker stage card on 09 REAL PLAYBACK. The action ID and endpoint remain the proven B5.4 contract."
+    },
+    {
+      "id": "v2.block.09.worker-b3-5-queue",
+      "label": "REAL PLAYBACK / B3 5 queue",
+      "status": "in-progress",
+      "summary": "B10.1 reuses the existing V2 worker stage card on 09 REAL PLAYBACK. The action ID and endpoint remain the proven B5.4 contract."
+    },
+    {
+      "id": "v2.block.09.rendering-controls",
+      "label": "REAL PLAYBACK / rendering controls",
+      "status": "in-progress",
+      "summary": "B10.1 reuses the 08 PLAYBACK rendering target/mode controls on 09 REAL PLAYBACK. Raspberry OS rendering remains disabled until hardware proof exists."
+    },
+    {
+      "id": "v2.block.09.drop-queue",
+      "label": "REAL PLAYBACK / queue bridge",
+      "status": "in-progress",
+      "summary": "B10.1 reuses the 08 PLAYBACK drag/drop table, metadata bridge, non-media blocking, and safe media-only queue-prepare bridge."
+    },
+    {
+      "id": "v2.block.09.gated-future-controls",
+      "label": "REAL PLAYBACK / gated future controls",
+      "status": "not-implemented",
+      "summary": "B10.1 lists recovery, PIR hardware, and final victory proof as disabled future gates rather than active controls."
     }
   ]
 }

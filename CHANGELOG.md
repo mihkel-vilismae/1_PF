@@ -1,3 +1,9 @@
+## v0.10.59 - 2026-06-26
+
+- B10.1: composed `09 REAL PLAYBACK` from proven V2 pieces only: Raspberry scheduler, RPI stages/workers, B3.1-B3.5 worker cards, playback rendering controls, queue bridge, and metadata bridge.
+- Kept unproven real recovery, PIR hardware, and final victory proof as disabled future gates on the final page.
+- Added `tests/v2RealPlaybackComposition.test.js` coverage for final-page composition boundaries and queue reuse.
+
 ## 2026-06-26 17:12 EEST — v0.10.58
 
 ### Added
