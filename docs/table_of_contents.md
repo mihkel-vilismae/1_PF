@@ -88,6 +88,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | Path | Use |
 | --- | --- |
 | `docs/20_architecture_and_specs/product_vision_and_authority.md` | Product goal and authority boundaries. |
+| `docs/20_architecture_and_specs/v2_goals/goals.md` | Authoritative V2 real playback goals: autonomous playback, autonomous recovery, and screen on/off tier-2 goal. |
 | `docs/20_architecture_and_specs/architecture_runtime_and_recovery_spec.md` | Runtime/recovery architecture. |
 | `docs/20_architecture_and_specs/dashboard_auth_pipeline_spec.md` | Dashboard/auth pipeline architecture. |
 | `docs/20_architecture_and_specs/auth/NEW_AUTH_PROVIDER_VERIFICATION_FLOW.md` | NEW AUTH provider verification reference. |

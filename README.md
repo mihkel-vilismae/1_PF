@@ -13,7 +13,7 @@ The project is intentionally proof-heavy. Source code, tests, OpenSpec documents
 | Backend API | TypeScript server entrypoint at `server/index.ts` |
 | Database schema source | `database/schema.sql` |
 | Current startup choices | `Test Mode`, `Real Mode`, `V2` |
-| V2 status | Startup option, six-item left sidebar, and original visual-only typed center-panel blocks implemented |
+| V2 status | Startup option, six-item left sidebar, and original visual-only typed center-panel blocks implemented; `09 REAL PLAYBACK` is now documented as the final V2 goal path, not yet implemented |
 | Changelog | Release history lives in [`CHANGELOG.md`](CHANGELOG.md), not in this README |
 
 ## What this repo does
@@ -51,6 +51,20 @@ The V2 sidebar currently contains exactly these top-level rows:
 | `06` | `recovery` | `recovery` |
 
 The order number is display/order metadata and is not part of the label. The V2 center panel now renders the original sub-items as typed visual blocks; auth, worker, database, crontab, troubleshooting, and recovery actions are still not wired from V2.
+
+
+### V2 real playback goal
+
+The documented V2 end goal is `09 REAL PLAYBACK`: an integrated Raspberry-oriented operating page assembled from proven setup, authentication, scheduler, worker, troubleshooting, recovery, PIR, and playback pieces.
+
+Victory has two primary conditions:
+
+1. **Autonomous playback:** after login and scheduler/cron installation, media downloads according to configured rules, progresses through Download → Index → GPS parser → Geocode → Queue, reaches fullscreen image/video playback, and shows the resolved address overlay when available.
+2. **Autonomous recovery:** after sudden power loss or rough shutdown, the system restarts, detects that recovery is needed, loads lightweight saved state, and resumes operation without manual repair. Exact video timestamp recovery is not required; restarting the same media file from the beginning is acceptable.
+
+A second-tier goal is screen on/off behavior driven by mouse, keyboard, and PIR activity. Mouse/keyboard can be tested directly; PIR may require emulation until target hardware input is proven.
+
+See [`docs/20_architecture_and_specs/v2_goals/goals.md`](docs/20_architecture_and_specs/v2_goals/goals.md) for the authoritative V2 goal contract.
 
 ## What is not claimed
 
@@ -169,6 +183,7 @@ Many real-provider and target-machine proofs are intentionally blocked unless ex
 | [`docs/00_current_truth/`](docs/00_current_truth/) | Current evidence-backed guides |
 | [`docs/10_runbooks/`](docs/10_runbooks/) | Operator and developer runbooks |
 | [`docs/20_architecture_and_specs/openspec/`](docs/20_architecture_and_specs/openspec/) | OpenSpec contracts and future-proof requirements |
+| [`docs/20_architecture_and_specs/v2_goals/goals.md`](docs/20_architecture_and_specs/v2_goals/goals.md) | Authoritative V2 real playback goal contract |
 | [`docs/proofs/`](docs/proofs/) | Human-readable proof notes and proof contracts |
 | [`CHANGELOG.md`](CHANGELOG.md) | Release history |
 

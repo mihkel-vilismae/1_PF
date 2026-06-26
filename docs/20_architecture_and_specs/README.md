@@ -43,6 +43,7 @@ The first controlled vision/spec move placed these canonical files here:
 - [Architecture, Runtime, and Recovery Spec](architecture_runtime_and_recovery_spec.md)
 - [Dashboard, Auth, and Pipeline Spec](dashboard_auth_pipeline_spec.md)
 - [Product Vision and Authority](product_vision_and_authority.md)
+- [V2 Real Playback Goals](v2_goals/goals.md) — Defines the current V2 victory conditions: autonomous playback, autonomous recovery after power loss, and the tier-2 screen on/off activity goal.
 
 The old `docs/categorized/vision_spec_docs/` paths remain compatibility pointers. Keep `docs/categorized/vision_spec_docs/main_readme.md` in place until the old-index replacement slice.
 
