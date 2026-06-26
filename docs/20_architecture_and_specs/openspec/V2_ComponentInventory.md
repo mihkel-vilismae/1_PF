@@ -146,3 +146,9 @@ B2 deliberately does not move requested Setup/Auth/Startup/Workers/Troubleshooti
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `01 SETUP → 1A Verify .env` | `dashboard/data/v2OperatorCenterPanel.ts`, `dashboard/views/v2StartupOperatorMenuView.ts`, `dashboard/services/runtimeTruth/runtimeTruthBehavior.ts` | V2 backend action card plus shared result/log renderers | `verify-env` action → `POST /api/init/verify-env` | `tests/initApi.step1.test.js`; V2 status sync tests | Reuse existing runtime-truth action and shared `renderResultSurface` / `renderLogEntries`; do not duplicate View A card markup. | Add focused V2 render/action mapping coverage in the B4 sync/test slice. | wired/needs verification |
 
+## v0.10.41 B4.2 Setup Database controls placement
+
+| V2 target | Current source path | Existing form | Endpoint/handler | Existing tests/proofs | Reuse decision | Missing V2 proof/test | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `01 SETUP → 2A Database controls` | `dashboard/data/v2OperatorCenterPanel.ts`, `dashboard/views/v2StartupOperatorMenuView.ts`, `dashboard/services/runtimeTruth/runtimeTruthBehavior.ts` | V2 backend action card plus shared result/log renderers | `check-db`, `inspect-db`, `delete-db`, `recreate-db` actions → `/api/init/database/*` | `tests/initApi.step1.test.js`; V2 placement test | Reuse existing runtime-truth actions and confirmation guards; do not duplicate View A card markup. | Add frontend click/error tests if action handlers change. | wired/needs verification |
+

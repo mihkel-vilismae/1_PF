@@ -27,6 +27,12 @@
       "summary": "Visual-only in this slice. No backend action is wired from V2."
     },
     {
+      "id": "v2.block.01.database-controls",
+      "label": "setup.sh / 2A Database controls",
+      "status": "in-progress",
+      "summary": "B4.2 reuses the existing database init action/result/log pipeline in the V2 Setup page. It exposes Check DB, Inspect DB, Delete DB, and Recreate DB through the existing browser action handlers and documented /api/init/database/* endpoints."
+    },
+    {
       "id": "v2.block.01.info",
       "label": "setup.sh / Setup scope",
       "status": "in-progress",

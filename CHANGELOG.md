@@ -1,3 +1,18 @@
+## 2026-06-26 15:07 EEST — v0.10.41
+
+### Added
+- Added the V2 Setup `2A Database controls` backend action card using existing `check-db`, `inspect-db`, `delete-db`, and `recreate-db` runtime actions.
+
+### Changed
+- Bumped repository/package version from `0.10.40` to `0.10.41`.
+- Updated V2 implementation-status JSON/docs for the B4.2 database-controls placement.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
 ## 2026-06-26 15:02 EEST — v0.10.40
 
 ### Added

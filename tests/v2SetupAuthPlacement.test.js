@@ -32,3 +32,24 @@ test('V2 Setup renders 1A Verify .env with existing backend action/result/log su
     assert.match(markup, new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
 });
+
+
+test('V2 Setup renders 2A Database controls with guarded existing action IDs', () => {
+  const markup = renderRoute('setup');
+
+  for (const expected of [
+    '2A Database controls',
+    'Check, inspect, delete, or recreate',
+    'data-action="check-db"',
+    'data-action="inspect-db"',
+    'data-action="delete-db"',
+    'data-action="recreate-db"',
+    'GET /api/init/database/status',
+    'Latest backend result',
+    'Database controls are ready to call /api/init/database/* endpoints.',
+    'data-v2-backend-card="01.database-controls"',
+    'data-v2-status-id="v2.block.01.database-controls"',
+  ]) {
+    assert.match(markup, new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
+});

@@ -48,7 +48,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 
 | Page | Target role | Current intended state | Evidence needed before ready |
 | --- | --- | --- | --- |
-| `01 SETUP` | env/database readiness | `1A Verify .env` reused/wired in V2; DB controls pending | V2 render test + endpoint/action test |
+| `01 SETUP` | env/database readiness | `1A Verify .env` and `2A Database controls` reused/wired in V2 | V2 render test + endpoint/action test |
 | `02 AUTHENTICATION` | NEW AUTH session readiness | reuse existing NEW AUTH controls | V2 render test + new-auth endpoint proof |
 | `03 STARTUP` | Raspberry scheduler/startup | reuse/extract Raspberry scheduler panel | Raspberry scheduler proof + V2 placement test |
 | `04 WORKERS` | worker stage controls | reuse/extract B3 stage controls | worker endpoint proofs + V2 placement test |
@@ -78,7 +78,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | Element | Status | Current evidence/notes | Required next proof/test |
 | --- | --- | --- | --- |
 | `1A Verify .env` | wired/needs verification | v0.10.40 renders the control in V2 Setup using existing `verify-env` runtime action, shared latest backend result panel, response payload viewer, and local log entries. | Focused V2 render/action mapping test and backend endpoint regression test. |
-| `2A Database controls` | reused candidate | Existing View A DB buttons are present. | V2 page render + endpoint mapping for check/inspect/delete/recreate. |
+| `2A Database controls` | wired/needs verification | v0.10.41 renders Check DB, Inspect DB, Delete DB, and Recreate DB in V2 Setup using existing runtime action IDs, shared result panel, response payload viewer, and local log entries. | Focused V2 render/action mapping test and DB endpoint regression test. |
 | Event Log | visual/tested | Shared V2 wrapper renders Event history for current V2 pages, including `07`-`09` route shells. | Future page-specific slices must keep using wrapper. |
 
 ## Page `02 AUTHENTICATION` status

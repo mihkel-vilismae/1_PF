@@ -139,6 +139,7 @@ The first shared-infrastructure implementation reuses the existing `renderHistor
 
 - title `Database controls`;
 - status badge;
+- v0.10.41 V2 placement reuses existing `check-db`, `inspect-db`, `delete-db`, and `recreate-db` action IDs;
 - description about documented init endpoints;
 - buttons `Check DB`, `Inspect DB`, `Delete DB`, `Recreate DB`;
 - latest backend result section;

@@ -158,6 +158,22 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
         ],
       },
       {
+        type: 'backendActionCard',
+        id: '01.database-controls',
+        title: '2A Database controls',
+        body: 'Check, inspect, delete, or recreate the configured SQLite database through the existing init database endpoints. Destructive operations keep the existing confirmation guard in the browser action handler.',
+        statusKey: '2A',
+        resultKey: '2A',
+        logKey: '2A',
+        sourceBadge: { mode: 'real', label: 'GET /api/init/database/status' },
+        actions: [
+          { action: 'check-db', label: 'Check DB', variant: 'secondary' },
+          { action: 'inspect-db', label: 'Inspect DB', variant: 'secondary' },
+          { action: 'delete-db', label: 'Delete DB', variant: 'danger' },
+          { action: 'recreate-db', label: 'Recreate DB', variant: 'secondary' },
+        ],
+      },
+      {
         type: 'actionList',
         id: '01.actions',
         title: 'Preflight actions',
