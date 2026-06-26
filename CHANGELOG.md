@@ -1,3 +1,17 @@
+## 2026-06-26 13:15 EEST — v0.10.33
+
+### Added
+- Added `docs/20_architecture_and_specs/openspec/V2_ComponentInventory.md` with a source-backed V2 component inventory for setup, auth, startup, workers, troubleshooting, recovery, PIR, playback, Real Playback, shared rows, event log, and result surfaces.
+
+### Changed
+- Bumped repository/package version from `0.10.32` to `0.10.33` for the documentation inventory baseline.
+
+### Fixed
+- Recorded the live-baseline discrepancy that the requested `V2_ComponentInventory.md` scaffold and `v2-component-inventory-gate` skill were not present before this pass.
+
+### Removed
+- None.
+
 ## 2026-06-26 12:53 EEST — v0.10.32
 
 ### Added
