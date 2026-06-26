@@ -11,6 +11,10 @@ Use this skill to keep `CHANGELOG.md` useful without breaking version metadata, 
 
 Treat root `CHANGELOG.md` as a live workflow input, not just prose. Do not move, split, rewrite, or rename it until you have checked the version guard, git hooks, tests, and docs that expect it at the root.
 
+## Mixed Format Rule
+
+When `CHANGELOG.md` intentionally mixes newer structured entries with preserved legacy headings, validate only the newest structured entry boundary before changing tests or history. If `version_guard.mjs` absorbs later legacy headings into the newest structured entry, prefer a focused parser-boundary repair and matching focused tests over reformatting old changelog history.
+
 ## Required First Checks
 
 Run or inspect these before recommending or making changes:

@@ -1,3 +1,17 @@
+## 2026-06-26 11:22 EEST — v0.10.31
+
+### Added
+- Added a mixed-format changelog rule to the repo-local changelog governance skill.
+
+### Changed
+- Bumped repository/package version from `0.10.30` to `0.10.31` for the skill-governance baseline.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
 ## 2026-06-26 11:14 EEST — v0.10.30
 
 ### Added
