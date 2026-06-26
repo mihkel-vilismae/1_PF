@@ -17,7 +17,8 @@ export type V2OperatorBlockType =
   | 'rpiSchedulerControls'
   | 'rpiStagesRow'
   | 'rpiWorkersRow'
-  | 'recoveryPlaceholderActions';
+  | 'recoveryPlaceholderActions'
+  | 'pirActivityTest';
 
 export type V2OperatorRisk = 'safe' | 'guarded' | 'destructive' | 'future' | 'localSecretSensitive';
 
@@ -144,6 +145,14 @@ export type V2OperatorCenterPanelBlock =
       body?: string;
       status?: string;
       actions: readonly V2OperatorRecoveryPlaceholderAction[];
+    }
+  | {
+      type: 'pirActivityTest';
+      id: string;
+      title: string;
+      body?: string;
+      status?: string;
+      risk?: V2OperatorRisk;
     }
   | {
       type: 'sectionGroup';
@@ -689,12 +698,12 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
     summary: 'Shell for isolated PIR, mouse, keyboard, and screen on-off testing. Real B5 controls arrive in later batches.',
     blocks: [
       {
-        type: 'infoPanel',
-        id: '07.shell',
-        title: '07 PIR shell',
-        body: 'This page is the future isolated proving area for activity detection and screen on-off behavior. B1 adds only the route/page shell so later B7 can reuse or extract the visible B5 subset and add a PIR signal emulator button.',
-        status: 'shell-only',
-        risk: 'future',
+        type: 'pirActivityTest',
+        id: '07.activity-detection',
+        title: 'B5 Screen on-off simulation',
+        body: 'Visible isolated subset for PIR, mouse, and keyboard activity detection. Mouse and keyboard can be tested directly; the PIR button is an emulator until hardware proof exists.',
+        status: 'emulated PIR / direct mouse-keyboard',
+        risk: 'guarded',
       },
       buildRpiWorkersRow('07.rpi-workers', 'PIR'),
       {

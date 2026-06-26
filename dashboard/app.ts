@@ -1634,6 +1634,16 @@ function bindEvents() {
         });
         return;
       }
+      if (action === 'emulate-pir-signal') {
+        markB5ActivityDetected('pir');
+        pushHistory('SCREEN', 'success', 'PIR emulator signal received.', {
+          action,
+          source: 'pir',
+          emulated: true,
+          hardwareProof: false,
+        });
+        return;
+      }
       if (action === 'toggle-marked-for-removal') {
         toggleMarkedForRemoval();
         return;

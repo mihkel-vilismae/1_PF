@@ -543,3 +543,15 @@ body.v2-implementation-status-mode [data-v2-implementation-status="not-implement
 .v2-recovery-placeholder-buttons {
   flex-wrap: wrap;
 }
+
+.v2-pir-timeout-row {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 1rem 0;
+  font-weight: 700;
+}
+
+.v2-pir-timeout-row input {
+  width: 5.5rem;
+}

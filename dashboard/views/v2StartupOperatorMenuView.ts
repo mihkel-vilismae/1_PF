@@ -4,6 +4,7 @@
  * The center panel renders each route's original sub-items as typed visual blocks.
  */
 import { V2_OPERATOR_CENTER_PANEL_PAGES, type V2OperatorActionItem, type V2OperatorBackendActionButton, type V2OperatorCenterPanelBlock, type V2OperatorSectionItem } from '../data/v2OperatorCenterPanel.ts';
+import { B5_ACTIVITY_SOURCES, getB5ActivitySourceLabel, normalizeB5ActivityDetectionState, type B5ActivitySource } from '../services/viewBActivityDetection.ts';
 import { V2_OPERATOR_SIDEBAR_ITEMS, type V2OperatorSidebarRoute } from '../data/v2OperatorSidebar.ts';
 import { getV2BlockStatusId, getV2ImplementationStatusElement } from '../data/v2ImplementationStatus.ts';
 import { renderLogEntries, renderResultSurface, renderSourceBadge, statusBadge, type HistoryEntry } from '../services/renderers.ts';
@@ -93,6 +94,8 @@ function renderV2CenterPanelBlock(block: V2OperatorCenterPanelBlock, runtimeStat
       return renderRpiWorkersRowBlock(block);
     case 'recoveryPlaceholderActions':
       return renderRecoveryPlaceholderActionsBlock(block);
+    case 'pirActivityTest':
+      return renderPirActivityTestBlock(block, runtimeState);
     case 'sectionGroup':
       return renderSectionGroupBlock(block);
     case 'toggleGroup':
@@ -289,6 +292,87 @@ function renderRecoveryPlaceholderActionsBlock(block: Extract<V2OperatorCenterPa
         `).join('')}
       </div>
     </article>
+  `;
+}
+
+
+function renderPirActivityTestBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'pirActivityTest' }>, runtimeState: Record<string, any>): string {
+  const activityDetection = normalizeB5ActivityDetectionState(runtimeState.simulation?.b5ActivityDetection);
+  const timeoutSeconds = Number(runtimeState.simulation?.inactivityTimeoutSeconds ?? 5);
+  const phaseLabel = activityDetection.phase === 'countdown' && activityDetection.countdownValue
+    ? `Countdown: ${activityDetection.countdownValue}`
+    : activityDetection.phase === 'detecting'
+      ? `Detecting for ${activityDetection.detectionWindowSeconds} seconds`
+      : activityDetection.phase === 'complete'
+        ? 'Test complete'
+        : 'Ready to start';
+  const running = activityDetection.phase === 'countdown' || activityDetection.phase === 'detecting';
+
+  return `
+    <article class="card v2-block v2-block--pirActivityTest" data-v2-pir-activity-test data-v2-block-type="pirActivityTest" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
+      ${renderBlockHeader(block.title, getV2BlockStatusId(block.id), block.status, block.risk)}
+      ${block.body ? `<p class="card__copy">${escapeHtml(block.body)}</p>` : ''}
+      <fieldset class="selector-card selector-card--hybrid b5-activity-test v2-pir-source-selector">
+        <legend>B5 activity detection test sources</legend>
+        <p class="stage-card__subtitle">Choose the sources watched by the next 3 → 2 → 1 activity test.</p>
+        <div class="toggle-grid">
+          ${B5_ACTIVITY_SOURCES.map((source) => renderPirActivitySourceOption(source, activityDetection.selectedSources[source])).join('')}
+        </div>
+      </fieldset>
+      <section class="selector-card selector-card--hybrid b5-activity-runner" aria-label="Activity detection test">
+        <div>
+          <p class="selector-card__label">Activity detection test</p>
+          <p class="stage-card__subtitle">Start Test runs a visible 3 → 2 → 1 countdown and then watches selected sources for a bounded test window.</p>
+        </div>
+        <div class="button-row">
+          <button class="button button--primary" data-action="start-b5-activity-test" ${running ? 'disabled' : ''}>Start Test</button>
+          <button class="button button--secondary" data-action="emulate-pir-signal">Emulate PIR signal</button>
+        </div>
+        <p class="notice notice--neutral b5-activity-phase">${escapeHtml(phaseLabel)}</p>
+      </section>
+      <section class="selector-card selector-card--hybrid b5-activity-results" aria-label="Activity detection results">
+        <p class="selector-card__label">Activity detection results</p>
+        <div class="b5-activity-results__grid">
+          ${B5_ACTIVITY_SOURCES.map((source) => renderPirActivityResult(source, activityDetection.results[source])).join('')}
+        </div>
+      </section>
+      <label class="v2-pir-timeout-row">
+        <span>Inactivity timeout</span>
+        <input type="number" min="1" step="1" name="inactivityTimeoutSeconds" value="${escapeHtml(timeoutSeconds)}" />
+        <small>seconds</small>
+      </label>
+      ${renderFieldList([
+        { label: 'Current screen state', value: runtimeState.truth?.screenState ?? 'ON' },
+        { label: 'Last activity source', value: runtimeState.truth?.lastActivitySource ?? 'None' },
+        { label: 'Shared timeout', value: `${timeoutSeconds}s` },
+        { label: 'Playback checkpoint', value: runtimeState.truth?.lastCheckpoint ?? 'No checkpoint yet' },
+      ])}
+      <p class="notice notice--neutral">Screen simulation controls ready.</p>
+    </article>
+  `;
+}
+
+function renderPirActivitySourceOption(source: B5ActivitySource, checked: boolean): string {
+  return `
+    <label class="toggle-card toggle-card--hybrid b5-activity-source-option">
+      <input type="checkbox" name="b5ActivitySource" value="${escapeHtml(source)}" ${checked ? 'checked' : ''} />
+      <span class="toggle-card__body">
+        <span class="toggle-card__label">${escapeHtml(getB5ActivitySourceLabel(source))}</span>
+        <span class="toggle-card__meta">Included in the next V2 PIR test</span>
+      </span>
+    </label>
+  `;
+}
+
+function renderPirActivityResult(source: B5ActivitySource, result: { status?: string; message?: string } | undefined): string {
+  const status = result?.status ?? 'pending';
+  const message = result?.message ?? 'Waiting for test run.';
+  return `
+    <div class="b5-activity-result b5-activity-result--${escapeHtml(status)}" data-b5-activity-result="${escapeHtml(source)}">
+      <strong>${escapeHtml(getB5ActivitySourceLabel(source))}</strong>
+      <span>${escapeHtml(status.replace('_', ' '))}</span>
+      <small>${escapeHtml(message)}</small>
+    </div>
   `;
 }
 

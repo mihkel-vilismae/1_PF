@@ -54,7 +54,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | `04 WORKERS` | worker stage controls | reuse/extract B3 stage controls | worker endpoint proofs + V2 placement test |
 | `05 TROUBLESHOOTING` | stale lock repair | `B6.1` Pipeline maintenance controls placed/wired to existing maintenance action IDs | stale-lock behavior proof + V2 placement test |
 | `06 RECOVERY` | recovery placeholder now; real recovery later | `B6.2` alert-only buttons placed | placeholder test first; later save/load/autosave/restart proof |
-| `07 PIR` | activity/screen test | shell implemented; visible B5 subset later | route render test now; mouse/keyboard test and PIR simulation/hardware proof later |
+| `07 PIR` | activity/screen test | `B7.1` visible B5 subset and PIR emulator placed | route/render test now; deeper browser activity and hardware proof later |
 | `08 PLAYBACK` | queue/rendering test | shell implemented; visible B4 subset + drag/drop queue later | route render test now; rendering/queue tests and address overlay proof later |
 | `09 REAL PLAYBACK` | final endpoint | explanation-only shell implemented; composition later | route render test now; full autonomous playback + recovery proof later |
 
@@ -139,10 +139,10 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 
 | Element | Status | Current evidence/notes | Required next proof/test |
 | --- | --- | --- | --- |
-| B5 visible subset | reused candidate | Existing activity model/rendering likely exists, but exact extraction needed. | V2 render test for visible subset only. |
+| B5 visible subset | visual/tested | v0.10.50 renders the activity source checkboxes, Start Test, activity results, inactivity timeout, status rows, and screen controls-ready event row from the shared B5 activity state. | Deeper browser interaction proof later. |
 | Mouse activity | needs verification | Can be tested directly. | Browser/UI activity test. |
 | Keyboard activity | needs verification | Can be tested directly. | Browser/UI activity test. |
-| PIR sensor | needs solution | Add a PIR-emulation button first; real hardware proof comes later. | PIR emulator contract + later hardware proof. |
+| PIR sensor | emulator/tested | v0.10.50 adds an `Emulate PIR signal` button that marks the B5 activity source as PIR without claiming hardware. | Later hardware proof. |
 | Screen off/on behavior | needs verification | Tier-2 goal. | Inactivity timeout test. |
 | `RPI-WORKERS` | visual row delivered / needs runtime proof | v0.10.45 adds Regular state worker, Playback worker, and On-off worker Waiting cards to Startup, Workers, Troubleshooting, PIR, and Playback. | Runtime worker-call projection and proof remain later. |
 | Event Log | visual/tested | Shared V2 wrapper renders Event history for current V2 pages, including `07`-`09` route shells. | Future page-specific slices must keep using wrapper. |

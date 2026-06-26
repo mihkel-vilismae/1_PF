@@ -51,3 +51,30 @@ test('V2 Recovery renders B6.2 alert-only placeholder buttons with exact labels'
   assert.match(appSource, /window\.alert\(alertText\)/);
   assert.match(appSource, /placeholderOnly: true/);
 });
+
+test('V2 PIR renders B7.1 visible B5 subset and PIR emulator', () => {
+  const markup = render('pir');
+  for (const expected of [
+    'B5 activity detection test sources',
+    'PIR sensor',
+    'Mouse movement',
+    'Keyboard activity',
+    'Activity detection test',
+    'Start Test',
+    'Ready to start',
+    'Activity detection results',
+    'Waiting for test run.',
+    'Inactivity timeout',
+    'Current screen state',
+    'Last activity source',
+    'Shared timeout',
+    'Playback checkpoint',
+    'Screen simulation controls ready.',
+    'data-action="emulate-pir-signal"',
+    'data-v2-status-id="v2.block.07.activity-detection"',
+  ]) {
+    assert.match(markup, new RegExp(esc(expected)));
+  }
+  const appSource = readFileSync('dashboard/app.ts', 'utf8');
+  assert.match(appSource, /markB5ActivityDetected\('pir'\)/);
+});

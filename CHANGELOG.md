@@ -4065,3 +4065,9 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 - Added alert-only `SAVE STATE`, `LOAD STATE`, and `EMULATE POWER OFF` controls to `06 RECOVERY`.
 - Added exact-label placeholder alert handling without real save/load/power behavior.
 - Updated V2 implementation status JSON/docs and placement coverage.
+
+## v0.10.50 - B7.1 V2 PIR visible activity subset
+
+- Added the visible B5 activity-test subset to `07 PIR`: source checkboxes, Start Test, results, timeout/status rows, and controls-ready event row.
+- Added an `Emulate PIR signal` button that uses the existing B5 activity source state without claiming hardware proof.
+- Updated V2 implementation status JSON/docs and placement coverage.

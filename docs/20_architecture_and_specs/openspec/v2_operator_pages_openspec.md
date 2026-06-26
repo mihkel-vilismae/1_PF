@@ -617,3 +617,8 @@ B1, B3, B4, and B5 implementation slices have placed the nine-page shell, V2 sta
 ## v0.10.49 B6.2 Recovery placeholder buttons
 
 `06 RECOVERY` now includes alert-only `SAVE STATE`, `LOAD STATE`, and `EMULATE POWER OFF` buttons. Each button alerts exactly the visible label and makes no state, power, process, or recovery mutation.
+
+
+## v0.10.50 B7.1 PIR visible B5 subset
+
+`07 PIR` now renders the visible B5 activity-test subset: PIR/mouse/keyboard source checkboxes, `Start Test`, activity results, inactivity timeout, status rows, screen controls-ready message, and an `Emulate PIR signal` button. Real PIR hardware remains future.
