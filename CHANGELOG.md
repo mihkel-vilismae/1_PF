@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-06-26 05:00 EEST
+## v0.10.21 - Final Release OpenSpec baseline and root docs refresh
+
+- Bumped repository/package version from `0.10.20` to `0.10.21` so the Final Release OpenSpec baseline has a unique versioned artifact identity.
+- Refreshed root-level Markdown quick-truth, quickstart, update, and agent guidance after a lightweight root-doc XACR pass.
+- Documented that Final Release mode is OpenSpec/planning-only in this baseline and that the startup menu implementation remains a later explicit implementation step.
+- Preserved existing Test Mode, Real Mode, launcher, database, worker, playback, auth, crontab, and recovery runtime behavior.
+
 ## 2026-06-26 03:24 EEST
 ## v0.10.20 - Windows runner Start/Stop terminal tabs hotfix
 

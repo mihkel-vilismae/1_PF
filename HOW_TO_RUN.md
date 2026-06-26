@@ -19,15 +19,17 @@ This is the preferred operator launcher/status helper. It opens the terminal UI 
 Example local absolute path, if this repo was extracted under `S:\_PHOTOFRAMES`:
 
 ```text
-S:\_PHOTOFRAMES\PF_login_v0.10.20_dashboard_dom_stability_fix_full_git\full_windows_runner_status.cmd
+S:\_PHOTOFRAMES\PF_login_v0.10.21_final_release_mode_root_docs_full_git\full_windows_runner_status.cmd
 ```
 
 ## Current launcher and database paths
 
+- Repository/package version: `0.10.21`.
 - Windows launcher: `start_scripts/windows/START_WIN.PS1`.
 - Raspberry launcher: `start_scripts/raspberry/START_RASPBERRYOS.SH`.
 - Canonical SQLite schema: `database/schema.sql`.
 - Existing `.env` and SQLite DB files are preserved by the launchers; the DB is created only when the configured `DB_PATH` does not exist.
+- Final Release dashboard mode is specified in OpenSpec only in this baseline; it is not a runnable startup option until a later implementation commit.
 
 ## Manual
 

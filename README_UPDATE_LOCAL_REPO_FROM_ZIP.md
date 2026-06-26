@@ -28,9 +28,13 @@ Recommended checks:
 
 ```bat
 git status
+type VERSION
+node -p "require('./package.json').version"
 npm install
 npm test
 ```
+
+For the `0.10.21` baseline, `VERSION` and `package.json` should both report `0.10.21`. The Final Release dashboard mode is documented by OpenSpec only here; the startup menu is not implemented until a later code commit.
 
 ## Current repository layout reminders
 

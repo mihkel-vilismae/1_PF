@@ -4,7 +4,7 @@ This repository contains a dashboard-driven photo-frame system for managing stag
 
 ## Current baseline quick truth
 
-- Repository/package version: `0.10.20`.
+- Repository/package version: `0.10.21`.
 - Dashboard: Vite frontend under `dashboard/`, served by `npm run dev`.
 - Backend API: TypeScript server entrypoint `server/index.ts`, started by `npm run api`.
 - SQLite schema source: `database/schema.sql`; generated/local SQLite DB files remain runtime data and are not the schema source.
@@ -16,6 +16,18 @@ This repository contains a dashboard-driven photo-frame system for managing stag
 Proof/readiness claims still require current proof artifacts. Historical docs and imported proof JSON are context, not automatic current-runtime proof.
 
 The system documentation is organized in canonical numbered folders under `docs/`: `00_current_truth`, `10_runbooks`, `20_architecture_and_specs`, `30_status_snapshots`, `40_backlog_and_tasks`, `50_audits_and_migrations`, and `90_archive`. Implementation status in documentation is not current runtime truth unless the document cites current code, tests, generated evidence, or runtime output.
+
+
+## v0.10.21 root documentation and version baseline
+
+This baseline promotes the Final Release OpenSpec planning work into a uniquely versioned repository baseline. It does not implement the third startup button yet. The implemented startup chooser is still Test Mode and Real Mode until a later implementation commit lands.
+
+Current planning/spec status:
+
+- Final Release mode is specified in [`docs/20_architecture_and_specs/openspec/dashboard_final_release_mode_openspec.md`](docs/20_architecture_and_specs/openspec/dashboard_final_release_mode_openspec.md).
+- The intended first implementation slice is a blank Final Release shell with left-sidebar entries for setup, authentication, startup, workers, troubleshooting, and recovery.
+- Runtime behavior, backend actions, iCloudPD auth, worker controls, crontab actions, playback behavior, and recovery actions remain unchanged in this version.
+- Root-level Markdown was reviewed in a lightweight XACR pass so the quick truth, quickstart, update notes, and changelog all point at the same `0.10.21` docs-only baseline.
 
 ## v0.8.44 Raspberry cron worker runtime OpenSpec
 

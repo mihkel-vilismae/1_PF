@@ -71,6 +71,13 @@
 - Generated evidence packs may point to `PF_REGULAR_WORKER_RUNTIME_STATUS_FILE`, but must not generate or recommend a manual product-work confirmation value.
 - Manifest, GPS, geocode, or bridge evidence may enrich proven worker output; it cannot manufacture the underlying worker product-work claim.
 
+## Baseline Promotion and Memory Hygiene Rule
+
+- When the user explicitly promotes a newest full Git ZIP as the active baseline, treat that artifact as the current immutable baseline and supersede older PF_login baseline entries.
+- Do not accumulate many old baseline memories or docs-only baseline notes when a newer explicit baseline replaces them; keep older versions only when they are needed for lineage, rollback, or comparison.
+- Preserve the distinction between docs/OpenSpec-only baseline bumps and runtime implementation bumps in changelog, root README, and handoff summaries.
+- For future implementation work, compare behavior against the active baseline snapshot rather than a later dirty workspace or an older remembered version.
+
 ## VERSION Output Rule
 
 - When the user says `VERSION`, print the full repository version block.
