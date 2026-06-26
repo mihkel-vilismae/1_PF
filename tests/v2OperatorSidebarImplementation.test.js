@@ -4,6 +4,7 @@ import test from 'node:test';
 
 const read = (path) => fs.readFileSync(path, 'utf8');
 const sidebarSource = read('dashboard/data/v2OperatorSidebar.ts');
+const centerPanelSource = read('dashboard/data/v2OperatorCenterPanel.ts');
 const viewSource = read('dashboard/views/v2StartupOperatorMenuView.ts');
 const appSource = read('dashboard/app.ts');
 const stylesSource = read('dashboard/styles.v2.css');
@@ -17,6 +18,20 @@ const expectedItems = [
   ['06', 'recovery', 'recovery'],
 ];
 
+const expectedBlockTypes = [
+  'infoPanel',
+  'statusCard',
+  'actionList',
+  'sectionGroup',
+  'toggleGroup',
+  'multiComboRow',
+  'stageTable',
+  'snapshotViewer',
+  'snapshotList',
+  'futurePlaceholder',
+  'exampleList',
+];
+
 test('V2 sidebar schema contains exactly six top-level routes with separate order metadata', () => {
   const itemMatches = [...sidebarSource.matchAll(/\{ order: '([^']+)', label: '([^']+)', route: '([^']+)'/g)];
   assert.equal(itemMatches.length, 6);
@@ -24,13 +39,39 @@ test('V2 sidebar schema contains exactly six top-level routes with separate orde
   assert.doesNotMatch(sidebarSource, /label: '0[1-6] /);
 });
 
-test('V2 startup shell renders its own sidebar instead of recursive child navigation', () => {
+test('V2 center-panel schema covers all six routes and allowed typed block kinds', () => {
+  for (const [, label, route] of expectedItems) {
+    assert.match(centerPanelSource, new RegExp(`${route}: \\{[\\s\\S]+title: '${label.replace('.', '\\.').replace('/', '\\/')}'`));
+  }
+
+  for (const blockType of expectedBlockTypes) {
+    assert.match(centerPanelSource, new RegExp(`'${blockType}'`), `missing block type ${blockType}`);
+    assert.match(viewSource, new RegExp(`data-v2-block-type=\\"\\$\\{escapeHtml\\(block\\.type\\)\\}|data-v2-block-type=\\"${blockType}\\"|case '${blockType}'`), `view does not render ${blockType}`);
+  }
+});
+
+test('V2 startup shell renders sidebar routes plus center-panel typed blocks instead of recursive child navigation', () => {
   assert.match(viewSource, /data-v2-left-sidebar/);
   assert.match(viewSource, /data-v2-sidebar-count/);
   assert.match(viewSource, /data-v2-sidebar-order/);
   assert.match(viewSource, /data-v2-sidebar-label/);
-  assert.match(viewSource, /intentionally blank until its center-panel contract is implemented/);
+  assert.match(viewSource, /V2_OPERATOR_CENTER_PANEL_PAGES\[activeItem\.route\]/);
+  assert.match(viewSource, /data-v2-center-panel/);
+  assert.match(viewSource, /data-v2-child-item/);
+  assert.match(viewSource, /data-v2-interaction/);
   assert.doesNotMatch(viewSource, /VIEW_ORDER\.map/);
+});
+
+test('V2 center-panel keeps risky and future items visual-only or guarded', () => {
+  const guardedLabels = ['recreate DB', 'install default crontab', 'clear stale locks', 'clear current logs', 'restore state snapshot'];
+  for (const label of guardedLabels) {
+    assert.match(centerPanelSource, new RegExp(`label: '${label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}'[\\s\\S]+interaction: 'guardedAction'`));
+  }
+
+  assert.match(centerPanelSource, /show statistics|statistics page/);
+  assert.match(centerPanelSource, /status: 'v3'/);
+  assert.match(centerPanelSource, /Examples are scenario\/rule seeds, not executable actions/);
+  assert.match(centerPanelSource, /interaction: 'disabledPlaceholder'/);
 });
 
 test('V2 mode uses the startup shell without setting a V2 backend runtime header', () => {
@@ -41,6 +82,8 @@ test('V2 mode uses the startup shell without setting a V2 backend runtime header
 
 test('V2 styling stays in the feature stylesheet', () => {
   assert.match(stylesSource, /V2 startup shell: six left-sidebar rows only/);
+  assert.match(stylesSource, /V2 center panel: original sub-item typed blocks/);
   assert.match(stylesSource, /\.v2-operator-shell/);
-  assert.match(stylesSource, /\.v2-operator-nav__item--active/);
+  assert.match(stylesSource, /\.v2-center-panel/);
+  assert.match(stylesSource, /\.v2-stage-table/);
 });
