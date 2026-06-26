@@ -20,13 +20,14 @@ type V2OperatorPageWrapperOptions = {
 export function renderV2OperatorPageWrapper(options: V2OperatorPageWrapperOptions): string {
   const pageStatusId = getV2PageStatusId(options.activeRoute);
   const pageStatus = getV2ImplementationStatusElement(pageStatusId);
+  const pageStatusName = pageStatus?.status ?? 'in-progress';
 
   return `
     <div
       class="shell v2-operator-shell"
       data-v2-operator-shell
       data-v2-page-wrapper="1"
-      data-v2-status-id="v2.shared.page-wrapper"
+      ${renderV2ElementStatusAttributes('v2.shared.page-wrapper')}
     >
       <aside class="sidebar v2-operator-sidebar">
         <div class="brand-card v2-operator-brand">
@@ -39,7 +40,7 @@ export function renderV2OperatorPageWrapper(options: V2OperatorPageWrapperOption
       </aside>
 
       <main class="main-panel v2-operator-main" data-scroll-preserve="v2-operator-main">
-        <header class="topbar v2-operator-topbar" data-v2-status-id="${escapeHtml(pageStatusId)}" data-v2-implementation-status="${escapeHtml(pageStatus?.status ?? 'in-progress')}">
+        <header class="topbar v2-operator-topbar" ${renderV2ElementStatusAttributes(pageStatusId)}>
           <div>
             <p class="eyebrow">V2</p>
             <h1>${escapeHtml(options.activePage.title)}</h1>
@@ -52,12 +53,12 @@ export function renderV2OperatorPageWrapper(options: V2OperatorPageWrapperOption
           </div>
           <div class="v2-topbar-status">
             <span class="pill">Visual-only blocks</span>
-            <span class="pill v2-implementation-pill v2-implementation-pill--${escapeHtml(pageStatus?.status ?? 'in-progress')}">${escapeHtml(pageStatus?.status ?? 'in-progress')}</span>
+            <span class="pill v2-implementation-pill v2-implementation-pill--${escapeHtml(pageStatusName)}">${escapeHtml(pageStatusName)}</span>
           </div>
         </header>
 
         <section class="v2-center-panel" aria-label="V2 selected operator area" data-v2-center-panel data-v2-active-route="${escapeHtml(options.activeItem.route)}">
-          <header class="card card--feature v2-center-panel__intro" data-v2-status-id="${escapeHtml(pageStatusId)}" data-v2-implementation-status="${escapeHtml(pageStatus?.status ?? 'in-progress')}">
+          <header class="card card--feature v2-center-panel__intro" ${renderV2ElementStatusAttributes(pageStatusId)}>
             <div>
               <p class="card__code">${escapeHtml(options.activeItem.order)}</p>
               <h3>${escapeHtml(options.activeItem.label)}</h3>
@@ -73,15 +74,18 @@ export function renderV2OperatorPageWrapper(options: V2OperatorPageWrapperOption
   `;
 }
 
-function renderV2EventHistoryPanel(history: HistoryEntry[], historyCopyButtonLabel: string): string {
-  const eventStatus = getV2ImplementationStatusElement('v2.shared.event-history');
+function renderV2ElementStatusAttributes(statusId: string): string {
+  const status = getV2ImplementationStatusElement(statusId);
+  const statusName = status?.status ?? 'in-progress';
+  return `data-v2-status-id="${escapeHtml(statusId)}" data-v2-implementation-status="${escapeHtml(statusName)}" data-v2-status-label="${escapeHtml(status?.label ?? statusId)}" data-v2-status-help="${escapeHtml(status?.summary ?? 'Status/help metadata exists, but this item has no dedicated registry entry yet.')}"`;
+}
 
+function renderV2EventHistoryPanel(history: HistoryEntry[], historyCopyButtonLabel: string): string {
   return `
     <article
       class="card side-panel side-panel--history v2-event-history-panel"
       data-v2-event-history-panel
-      data-v2-status-id="v2.shared.event-history"
-      data-v2-implementation-status="${escapeHtml(eventStatus?.status ?? 'in-progress')}"
+      ${renderV2ElementStatusAttributes('v2.shared.event-history')}
       data-scroll-preserve="v2-event-history-panel"
     >
       <div class="side-panel__header">

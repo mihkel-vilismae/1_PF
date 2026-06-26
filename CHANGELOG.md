@@ -1,3 +1,18 @@
+## 2026-06-26 14:55 EEST — v0.10.37
+
+### Added
+- Added V2 implementation-status highlight mode CSS using `data-v2-implementation-status` values from the JSON registry.
+- Added JSON-backed status label/help attributes to V2 wrapper and block elements.
+
+### Changed
+- Bumped repository/package version from `0.10.36` to `0.10.37`.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
 ## 2026-06-26 14:50 EEST — v0.10.36
 
 ### Added

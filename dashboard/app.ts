@@ -163,6 +163,7 @@ function render() {
   document.body.classList.toggle('modal-open', Boolean(state.modal) || dashboardVisualMode === null);
   document.body.classList.toggle('show-marked-for-removal', Boolean(state.showMarkedForRemoval));
   applyDashboardVisualModeClass(dashboardVisualMode);
+  document.body.classList.toggle('v2-implementation-status-mode', dashboardVisualMode === 'v2' && v2ImplementationStatusMode);
 
   // Compute a visible banner for the current visual mode. When a visual mode has
   // been selected, override the lengthy default mode banner with a concise

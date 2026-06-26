@@ -368,3 +368,64 @@ body[data-dashboard-visual-mode="v2"] .version-badge__value {
 .v2-event-history-panel[data-v2-implementation-status] {
   position: relative;
 }
+
+/* V2 implementation-status highlight mode: JSON-backed status attributes. */
+.v2-topbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.45rem;
+}
+
+.v2-topbar-action {
+  white-space: nowrap;
+}
+
+body.v2-implementation-status-mode [data-v2-implementation-status] {
+  outline: 2px solid rgba(250, 204, 21, 0.72);
+  outline-offset: 4px;
+  box-shadow: 0 0 0 1px rgba(250, 204, 21, 0.2), 0 0 24px rgba(250, 204, 21, 0.14);
+}
+
+body.v2-implementation-status-mode [data-v2-implementation-status]::before {
+  content: attr(data-v2-implementation-status);
+  position: absolute;
+  top: 0.45rem;
+  right: 0.55rem;
+  z-index: 2;
+  border: 1px solid rgba(250, 204, 21, 0.36);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.9);
+  color: #fde047;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+body.v2-implementation-status-mode [data-v2-implementation-status="done"] {
+  outline-color: rgba(34, 197, 94, 0.72);
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.2), 0 0 24px rgba(34, 197, 94, 0.14);
+}
+
+body.v2-implementation-status-mode [data-v2-implementation-status="done"]::before {
+  border-color: rgba(34, 197, 94, 0.42);
+  color: #86efac;
+}
+
+body.v2-implementation-status-mode [data-v2-implementation-status="not-implemented"] {
+  outline-color: rgba(248, 113, 113, 0.72);
+  box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.2), 0 0 24px rgba(248, 113, 113, 0.14);
+}
+
+body.v2-implementation-status-mode [data-v2-implementation-status="not-implemented"]::before {
+  border-color: rgba(248, 113, 113, 0.42);
+  color: #fca5a5;
+}
+
+@media (max-width: 760px) {
+  .v2-topbar-actions {
+    justify-content: flex-start;
+  }
+}

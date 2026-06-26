@@ -200,7 +200,7 @@ function renderStageTableBlock(block: Extract<V2OperatorCenterPanelBlock, { type
 function renderV2StatusAttributes(blockId: string): string {
   const statusId = getV2BlockStatusId(blockId);
   const status = getV2ImplementationStatusElement(statusId);
-  return `data-v2-status-id="${escapeHtml(statusId)}" data-v2-implementation-status="${escapeHtml(status?.status ?? 'in-progress')}" data-v2-status-help="${escapeHtml(status?.summary ?? 'Status/help metadata foundation is present; detailed control explanation arrives in a later V2 batch.')}"`;
+  return `data-v2-status-id="${escapeHtml(statusId)}" data-v2-implementation-status="${escapeHtml(status?.status ?? 'in-progress')}" data-v2-status-label="${escapeHtml(status?.label ?? statusId)}" data-v2-status-help="${escapeHtml(status?.summary ?? 'Status/help metadata foundation is present; detailed control explanation arrives in a later V2 batch.')}"`;
 }
 
 function renderBlockHeader(title: string, status?: string, risk?: string): string {
