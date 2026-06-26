@@ -50,7 +50,7 @@ The proof reports image/video coverage from the playback queue. By default it ex
 
 ## mpv availability
 
-The live Windows proof needs a real native player. `start_win_full.cmd` now automatically delegates mpv verification/installation through `scripts/install_mpv_windows.ps1` before the app starts. The preferred repo-local target is:
+The live Windows proof needs a real native player. `start_scripts/windows/start_win_full.cmd` now automatically delegates mpv verification/installation through `scripts/install_mpv_windows.ps1` before the app starts. The preferred repo-local target is:
 
 ```text
 tools/mpv/windows/mpv.exe
@@ -77,22 +77,22 @@ live_windows_native_playback
 
 ## Dedicated Windows proof launcher
 
-For operator runs, prefer the dedicated proof launcher instead of manually starting `start_win_full.cmd` and then setting environment variables in another terminal:
+For operator runs, prefer the dedicated proof launcher instead of manually starting `start_scripts/windows/start_win_full.cmd` and then setting environment variables in another terminal:
 
 ```powershell
 clear
 cd S:\PF_login
-.\start_live_windows_native_playback_proof.cmd
+.\start_scripts\windows\proofs\start_live_windows_native_playback_proof.cmd
 ```
 
-The normal `start_win_full.cmd` does not enable native playback by default. That is intentional. Environment values for native playback are loaded by the backend from its configured env file, so setting `NATIVE_PLAYBACK_ENABLED=true` in a second terminal after the API is already running does not change the running API process.
+The normal `start_scripts/windows/start_win_full.cmd` does not enable native playback by default. That is intentional. Environment values for native playback are loaded by the backend from its configured env file, so setting `NATIVE_PLAYBACK_ENABLED=true` in a second terminal after the API is already running does not change the running API process.
 
 The dedicated launcher creates a proof-only env file under `runtime_data/live_windows_native_playback_proof.env`, starts an owned API process on the actual proof API port, runs `proof:live-windows-native-playback`, writes sanitized proof JSON under `runtime_data/proofs`, stops only the API process it started, and packs logs/proofs/artifacts into a Downloads ZIP.
 
 Use worker auto-start coverage with:
 
 ```powershell
-.\start_live_windows_native_playback_proof.cmd -WorkerAutostart
+.\start_scripts\windows\proofs\start_live_windows_native_playback_proof.cmd -WorkerAutostart
 ```
 
 This still does not claim Raspberry HDMI playback, real reboot recovery, or monitor-pixel/focus proof.
@@ -100,7 +100,7 @@ This still does not claim Raspberry HDMI playback, real reboot recovery, or moni
 
 ### Windows mpv installer path note
 
-The Windows mpv installer redacts repo-local absolute paths with escaped regex patterns, so paths such as `S:\PF_login` are safe during installer verification. Normal `start_win_full.cmd` still does not enable native playback by default; use `start_live_windows_native_playback_proof.cmd` for the opt-in live proof.
+The Windows mpv installer redacts repo-local absolute paths with escaped regex patterns, so paths such as `S:\PF_login` are safe during installer verification. Normal `start_scripts/windows/start_win_full.cmd` still does not enable native playback by default; use `start_live_windows_native_playback_proof.cmd` for the opt-in live proof.
 
 
 ### v0.8.5 note — mpv version verification
@@ -124,7 +124,7 @@ Worker-autostart native playback now detaches/unrefs the OS player process so `p
 ```powershell
 clear
 cd S:\PF_login
-.\start_live_windows_native_playback_proof.cmd -WorkerAutostart
+.\start_scripts\windows\proofs\start_live_windows_native_playback_proof.cmd -WorkerAutostart
 ```
 
 ### v0.8.6 note — worker-autostart native playback proof

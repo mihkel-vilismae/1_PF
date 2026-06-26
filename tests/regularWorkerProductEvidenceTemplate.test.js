@@ -1,3 +1,7 @@
+/**
+ * Verifies product-evidence defaults, runtime provenance, and core completion.
+ * Keeps GPS/geocode enrichment separate from the worker product gate.
+ */
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { buildRegularWorkerProductEvidenceTemplate, evaluateRegularWorkerProductPipelineEvidence } from '../tools/raspberry-regular-stage-worker-product-pipeline-lib.mjs';
@@ -39,6 +43,18 @@ test('regular worker product evidence can pass core pipeline while tracking GPS/
         index_completed: true,
         queue_prepared: true,
         worker_status_product_work_claimed: true,
+        worker: {
+          ...template.worker,
+          product_work_claimed: true,
+          runtime_evidence: {
+            confirmed: true,
+            implementation_status: 'product_work_implemented',
+            worker_status: 'succeeded',
+            invocation_observed: true,
+            product_work_claimed: true,
+            observed_at: '2026-06-21T00:00:00.000Z',
+          },
+        },
         input: { ...template.input, source_kind: 'readiness_approved_manifest', items_seen: 1, items_eligible: 1, manifest_id: 'safe_manifest' },
         selected_media: { ...template.selected_media, media_id: 'safe_media', media_type: 'image', source_provenance: 'readiness_approved' },
         product_record: { ...template.product_record, created: true, record_id: 'safe_product', has_media_asset: true, has_display_asset: true, gps_status: 'blocked', geocode_status: 'blocked', overlay_status: 'partial' },
@@ -49,4 +65,43 @@ test('regular worker product evidence can pass core pipeline while tracking GPS/
   assert.equal(evaluation.proofStatus, 'PASSED');
   assert.deepEqual(evaluation.missingCoreStages, []);
   assert.deepEqual(evaluation.missingEnrichmentStages, ['gps_extraction_completed', 'geocode_completed']);
+});
+
+test('manual product flags cannot pass while embedded runtime status is instrumentation only', () => {
+  const template = buildRegularWorkerProductEvidenceTemplate();
+  const evaluation = evaluateRegularWorkerProductPipelineEvidence({
+    target: { raspberry_like: true },
+    loadedEvidence: {
+      source: 'injected',
+      load_error: null,
+      data: {
+        ...template,
+        source_kind: 'readiness_approved_manifest',
+        media_source_observed: true,
+        download_or_import_completed: true,
+        index_completed: true,
+        queue_prepared: true,
+        worker_status_product_work_claimed: true,
+        worker: {
+          ...template.worker,
+          product_work_claimed: true,
+          runtime_evidence: {
+            confirmed: true,
+            implementation_status: 'instrumentation_only',
+            worker_status: 'succeeded',
+            invocation_observed: true,
+            product_work_claimed: true,
+          },
+        },
+        input: { ...template.input, source_kind: 'readiness_approved_manifest', items_seen: 1, items_eligible: 1 },
+        selected_media: { ...template.selected_media, media_id: 'safe_media' },
+        product_record: { ...template.product_record, created: true, has_media_asset: true },
+        output: { ...template.output, display_queue_written: true, next_display_item_ready: true },
+      },
+    },
+  });
+
+  assert.equal(evaluation.proofStatus, 'FAILED');
+  assert.ok(evaluation.missingCoreStages.includes('worker_status_product_work_claimed'));
+  assert.match(evaluation.failedReasons.join('; '), /runtime_evidence/);
 });

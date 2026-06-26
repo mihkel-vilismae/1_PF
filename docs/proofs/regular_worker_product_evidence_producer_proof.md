@@ -6,14 +6,14 @@ Command:
 npm run proof:regular-worker-product-evidence-producer
 ```
 
-This proof builds a redacted `PF_RASPBERRY_REGULAR_STAGE_WORKER_PRODUCT_EVIDENCE_FILE` compatible artifact from a safe download/readiness manifest and an explicit regular-worker product-work confirmation.
+This proof builds a redacted `PF_RASPBERRY_REGULAR_STAGE_WORKER_PRODUCT_EVIDENCE_FILE` compatible artifact from a safe download/readiness manifest and durable regular-worker runtime evidence.
 
 ## Required inputs
 
 ```text
 PF_PROOF_ENABLE_REGULAR_WORKER_PRODUCT_EVIDENCE=true
-PF_REGULAR_WORKER_PRODUCT_WORK_CONFIRMED=true
 PF_REGULAR_WORKER_PRODUCT_MANIFEST_FILE=<safe-manifest.json>
+PF_REGULAR_WORKER_RUNTIME_STATUS_FILE=<regular-stage-worker-status.json>
 ```
 
 Alternative manifest envs:
@@ -54,6 +54,6 @@ PF_RASPBERRY_REGULAR_STAGE_WORKER_PRODUCT_EVIDENCE_FILE=runtime_data/operator_ev
 
 ## Status semantics
 
-- `PASSED`: manifest resolves to eligible worker input and explicit worker product-work confirmation is present.
-- `BLOCKED`: manifest/opt-in/product-work confirmation missing.
+- `PASSED`: manifest resolves to eligible worker input and runtime status proves a successful product-capable worker run with `productWork.claimed: true`.
+- `BLOCKED`: manifest/opt-in/runtime evidence is missing, `instrumentation_only`, unsuccessful, or does not claim product work.
 - `FAILED`: reserved for malformed/unsafe evidence if safely detectable.

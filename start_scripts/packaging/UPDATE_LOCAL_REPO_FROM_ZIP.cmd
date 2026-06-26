@@ -8,6 +8,7 @@ setlocal EnableExtensions
 
 set "SCRIPT_DIR=%~dp0"
 set "SCRIPT_DIR=%SCRIPT_DIR:~0,-1%"
+for %%I in ("%~dp0..\..") do set "REPO_ROOT=%%~fI"
 set "ZIP_PATH=%~1"
 
 title Repo ZIP Drop Installer
@@ -25,7 +26,7 @@ if "%ZIP_PATH%"=="" (
   echo No ZIP file was provided.
   echo.
   echo How to use:
-  echo   1. Put this CMD file in your local repo folder.
+  echo   1. Keep this CMD under start_scripts\packaging inside the local repo folder.
   echo   2. Drag the updated repo ZIP onto this CMD file.
   echo.
   echo The terminal will stay open.
@@ -38,6 +39,6 @@ echo Dropped file:
 echo   %ZIP_PATH%
 echo.
 
-powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -NoExit -File "%SCRIPT_DIR%\tools\update-local-repo-from-zip.ps1" -ZipPath "%ZIP_PATH%" -RepoPath "%SCRIPT_DIR%"
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -NoExit -File "%REPO_ROOT%\tools\update-local-repo-from-zip.ps1" -ZipPath "%ZIP_PATH%" -RepoPath "%REPO_ROOT%"
 
 exit /b %ERRORLEVEL%

@@ -43,9 +43,9 @@ Manual/provider login stages should use an app-owned authentication checkpoint p
 
 ## Windows full launcher
 
-Run `start_win_full.cmd` from the repository root for the full Windows startup workflow. It installs dependencies, runs tests, builds the frontend, opens API, frontend, and component-status monitor tabs/windows when available, and opens `http://localhost:5173` in the default browser.
+Run `start_scripts/windows/start_win_full.cmd` from the repository root for the full Windows startup workflow. It installs dependencies, runs tests, builds the frontend, opens API, frontend, and component-status monitor tabs/windows when available, and opens `http://localhost:5173` in the default browser.
 
-Use `start_win.cmd` for the older lighter startup path.
+Use `start_scripts/windows/start_win.cmd` for the older lighter startup path.
 
 ## Documentation entry points
 
@@ -144,7 +144,7 @@ npm run build
 npm run dev
 ```
 
-On Windows, `start_win.cmd` checks dependencies, runs `npm run build`, then starts `npm run api`, `npm run dev`, and a component-status monitor in separate terminals. `start_win_full.cmd` delegates to `start_scripts/start_win_full.ps1`, which installs dependencies, runs tests, builds, starts API/frontend/status tabs or windows, and opens the browser.
+On Windows, `start_scripts/windows/start_win.cmd` checks dependencies, runs `npm run build`, then starts `npm run api`, `npm run dev`, and a component-status monitor in separate terminals. `start_scripts/windows/start_win_full.cmd` delegates to `start_scripts/start_win_full.ps1`, which installs dependencies, runs tests, builds, starts API/frontend/status tabs or windows, and opens the browser.
 
 Open the local app:
 
@@ -217,7 +217,7 @@ CHANGELOG.md      forward-only changelog
 
 ## v0.8.2 code summary
 
-v0.8.2 adds automatic Windows mpv setup to the full Windows launcher flow. `start_win_full.cmd` remains a thin wrapper, while `start_scripts/start_win_full.ps1` delegates to `scripts/install_mpv_windows.ps1` after `npm install --verbose`. The installer verifies or downloads a repo-local mpv binary to `tools/mpv/windows/mpv.exe`, writes sanitized install evidence under `runtime_data/proofs`, and never starts native fullscreen playback. If mpv setup is blocked by network/extraction availability, the normal dashboard launch continues with a warning and the live native playback proof remains blocked until mpv is installed.
+v0.8.2 adds automatic Windows mpv setup to the full Windows launcher flow. `start_scripts/windows/start_win_full.cmd` remains a thin wrapper, while `start_scripts/start_win_full.ps1` delegates to `scripts/install_mpv_windows.ps1` after `npm install --verbose`. The installer verifies or downloads a repo-local mpv binary to `tools/mpv/windows/mpv.exe`, writes sanitized install evidence under `runtime_data/proofs`, and never starts native fullscreen playback. If mpv setup is blocked by network/extraction availability, the normal dashboard launch continues with a warning and the live native playback proof remains blocked until mpv is installed.
 
 ### Dedicated live Windows native playback proof
 
@@ -226,15 +226,15 @@ For live Windows `mpv` native playback proof, use the dedicated launcher:
 ```powershell
 clear
 cd S:\PF_login
-.\start_live_windows_native_playback_proof.cmd
+.\start_scripts\windows\proofs\start_live_windows_native_playback_proof.cmd
 ```
 
-This starts a proof-only API with native playback enabled through `runtime_data/live_windows_native_playback_proof.env`, runs `proof:live-windows-native-playback` against `http://127.0.0.1:4301`, exports an evidence ZIP, and keeps normal `start_win_full.cmd` behavior unchanged.
+This starts a proof-only API with native playback enabled through `runtime_data/live_windows_native_playback_proof.env`, runs `proof:live-windows-native-playback` against `http://127.0.0.1:4301`, exports an evidence ZIP, and keeps normal `start_scripts/windows/start_win_full.cmd` behavior unchanged.
 
 
 ### Windows mpv installer path note
 
-The Windows mpv installer redacts repo-local absolute paths with escaped regex patterns, so paths such as `S:\PF_login` are safe during installer verification. Normal `start_win_full.cmd` still does not enable native playback by default; use `start_live_windows_native_playback_proof.cmd` for the opt-in live proof.
+The Windows mpv installer redacts repo-local absolute paths with escaped regex patterns, so paths such as `S:\PF_login` are safe during installer verification. Normal `start_scripts/windows/start_win_full.cmd` still does not enable native playback by default; use `start_live_windows_native_playback_proof.cmd` for the opt-in live proof.
 
 
 ### v0.8.5 note — mpv version verification
@@ -258,7 +258,7 @@ Worker-autostart native playback now detaches/unrefs the OS player process so `p
 ```powershell
 clear
 cd S:\PF_login
-.\start_live_windows_native_playback_proof.cmd -WorkerAutostart
+.\start_scripts\windows\proofs\start_live_windows_native_playback_proof.cmd -WorkerAutostart
 ```
 
 ### v0.8.6 note — worker-autostart native playback proof
@@ -286,12 +286,12 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 Dedicated Windows wrappers now exist for the v0.8.10–v0.8.12 target proof tracks:
 
 ```powershell
-.\start_live_windows_native_video_playback_proof.cmd
-.\start_live_windows_native_recovery_proof.cmd
-.\start_live_windows_scheduler_proof.cmd
+.\start_scripts\windows\proofs\start_live_windows_native_video_playback_proof.cmd
+.\start_scripts\windows\proofs\start_live_windows_native_recovery_proof.cmd
+.\start_scripts\windows\proofs\start_live_windows_scheduler_proof.cmd
 ```
 
-The video and recovery wrappers start a proof-owned API with a proof-only env file before running the proof command, then export an evidence ZIP and stop only the owned API process. The scheduler wrapper exports scheduler proof evidence without claiming Raspberry cron, Windows reboot, or arbitrary Task Scheduler success. Normal `start_win_full.cmd` remains unchanged and does not enable native playback by default.
+The video and recovery wrappers start a proof-owned API with a proof-only env file before running the proof command, then export an evidence ZIP and stop only the owned API process. The scheduler wrapper exports scheduler proof evidence without claiming Raspberry cron, Windows reboot, or arbitrary Task Scheduler success. Normal `start_scripts/windows/start_win_full.cmd` remains unchanged and does not enable native playback by default.
 
 ### v0.8.14 note — generated video fixture repair
 
@@ -373,8 +373,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\START_WIN.PS1
 RaspberryOS users should extract the repository ZIP, open a terminal in the repo root, then run:
 
 ```bash
-chmod +x ./START_RASPBERRYOS.SH
-./START_RASPBERRYOS.SH
+chmod +x ./start_scripts/raspberry/START_RASPBERRYOS.SH
+./start_scripts/raspberry/START_RASPBERRYOS.SH
 ```
 
 The Raspberry launcher performs the same startup intent for RaspberryOS: dependency install, frontend build, SQLite DB creation only when the configured `DB_PATH` file is missing, then background backend/frontend startup with logs and PID files under `runtime_data/start_launcher/`.

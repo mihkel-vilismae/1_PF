@@ -1,3 +1,8 @@
+/**
+ * Bridges accepted GPS and normalized address evidence into worker evidence.
+ * Requires durable regular-worker runtime product confirmation.
+ * Preserves provider redaction and separate device-display proof boundaries.
+ */
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -19,6 +24,7 @@ import {
 import {
   validateNormalizedGeocodeAddressArtifact,
 } from './real-geocode-provider-adapter-lib.mjs';
+import { evaluateRegularWorkerRuntimeProductEvidence } from './regular-worker-runtime-evidence-lib.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const repoRoot = dirname(dirname(__filename));
@@ -194,16 +200,18 @@ export function validateAddressMatchesGps(addressArtifact, gpsEvidence) {
   return { status: errors.length ? 'FAILED' : 'PASSED', errors };
 }
 
-export function buildRegularWorkerProductEvidenceWithGpsGeocode({ resolvedInput, gpsEvidence, addressArtifact, workerRunId = null, productWorkClaimed = false, now = new Date().toISOString() } = {}) {
+/** Enriches runtime-authorized worker product evidence with accepted GPS/address data. */
+export function buildRegularWorkerProductEvidenceWithGpsGeocode({ resolvedInput, gpsEvidence, addressArtifact, workerRunId = null, workerRuntimeEvidence = null, now = new Date().toISOString() } = {}) {
   const baseEvidence = buildRegularWorkerProductEvidenceFromResolvedInput({
     resolvedInput,
     workerRunId,
-    productWorkClaimed,
+    workerRuntimeEvidence,
     now,
   });
   const gps = gpsEvidence?.gps ?? {};
   const address = addressArtifact?.address ?? {};
   const overlayReady = addressArtifact?.overlay_ready ?? {};
+  const productWorkConfirmed = baseEvidence.worker_status_product_work_claimed === true;
   return {
     ...baseEvidence,
     gps_extraction_completed: true,
@@ -253,17 +261,18 @@ export function buildRegularWorkerProductEvidenceWithGpsGeocode({ resolvedInput,
     readiness: {
       ...baseEvidence.readiness,
       evidence_level: gps.source_level === 'real_media_exif' ? 'L4' : 'L3',
-      pipeline_core_complete: true,
-      pipeline_enriched_complete: true,
-      regular_worker_product_pipeline_satisfied: true,
-      real_gps_geocode_bridge_satisfied: true,
+      pipeline_core_complete: productWorkConfirmed,
+      pipeline_enriched_complete: productWorkConfirmed,
+      regular_worker_product_pipeline_satisfied: productWorkConfirmed,
+      real_gps_geocode_bridge_satisfied: productWorkConfirmed,
       address_overlay_visibility_satisfied: false,
-      v1_gate_satisfied: true,
+      v1_gate_satisfied: productWorkConfirmed,
     },
     required_proof_boundary: 'Evidence bridges accepted media GPS and normalized geocode address into product evidence; it does not prove real iCloud download or device overlay visibility.',
   };
 }
 
+/** Evaluates bridge inputs without allowing manual product-work confirmation. */
 export function evaluateRealGpsGeocodeProductBridge(env = process.env, opts = {}) {
   const manifestPath = env.PF_REAL_GPS_GEOCODE_MANIFEST_FILE
     ?? env.PF_REGULAR_WORKER_PRODUCT_MANIFEST_FILE
@@ -273,8 +282,9 @@ export function evaluateRealGpsGeocodeProductBridge(env = process.env, opts = {}
   const addressEvidencePath = env.PF_REAL_GPS_GEOCODE_ADDRESS_EVIDENCE_FILE
     ?? env.PF_NORMALIZED_REAL_GEOCODE_ADDRESS_FILE;
   const sourceKind = opts.sourceKind ?? env.PF_REAL_GPS_GEOCODE_SOURCE_KIND ?? env.PF_WORKER_INPUT_SOURCE_KIND ?? 'readiness_approved_manifest';
-  const productWorkClaimed = isTruthy(env.PF_REGULAR_WORKER_PRODUCT_WORK_CONFIRMED);
   const cwd = opts.cwd ?? process.cwd();
+  const workerRuntimeEvidence = evaluateRegularWorkerRuntimeProductEvidence(env, { cwd });
+  const productWorkClaimed = workerRuntimeEvidence.confirmed;
   const manifest = readJsonFile(manifestPath, { cwd });
   const mediaEvidence = readJsonFile(mediaEvidencePath, { cwd });
   const addressEvidence = readJsonFile(addressEvidencePath, { cwd });
@@ -290,15 +300,15 @@ export function evaluateRealGpsGeocodeProductBridge(env = process.env, opts = {}
       resolvedInput,
       gpsEvidence,
       addressArtifact: addressEvidence.value,
-      workerRunId: env.PF_REGULAR_WORKER_PRODUCT_RUN_ID ?? env.PF_REAL_GPS_GEOCODE_PRODUCT_BRIDGE_RUN_ID ?? null,
-      productWorkClaimed,
+      workerRunId: workerRuntimeEvidence.worker_run_id ?? env.PF_REGULAR_WORKER_PRODUCT_RUN_ID ?? env.PF_REAL_GPS_GEOCODE_PRODUCT_BRIDGE_RUN_ID ?? null,
+      workerRuntimeEvidence,
       now: opts.now ?? new Date().toISOString(),
     })
     : null;
   const structuredEvaluation = productEvidence ? evaluateRegularWorkerStructuredEvidence(productEvidence) : null;
   const requirements = [
     requirement('real_gps_geocode_product_bridge_opt_in', isTruthy(env.PF_PROOF_ENABLE_REAL_GPS_GEOCODE_PRODUCT_BRIDGE), 'Set PF_PROOF_ENABLE_REAL_GPS_GEOCODE_PRODUCT_BRIDGE=true.'),
-    requirement('product_work_confirmed', productWorkClaimed, 'Set PF_REGULAR_WORKER_PRODUCT_WORK_CONFIRMED=true only after regular_stage_worker product output was prepared or readiness-approved bridge evidence is intended.'),
+    requirement('worker_runtime_product_work_confirmed', productWorkClaimed, workerRuntimeEvidence.reasons.join('; ') || 'regular_stage_worker runtime evidence confirms product work.'),
     requirement('address_evidence_configured', Boolean(addressEvidencePath), 'Set PF_REAL_GPS_GEOCODE_ADDRESS_EVIDENCE_FILE or PF_NORMALIZED_REAL_GEOCODE_ADDRESS_FILE.'),
     requirement('gps_source_configured', Boolean(mediaEvidencePath || manifestPath), 'Set PF_REAL_GPS_GEOCODE_MEDIA_EVIDENCE_FILE or a manifest path with GPS evidence.'),
   ];
@@ -315,6 +325,7 @@ export function evaluateRealGpsGeocodeProductBridge(env = process.env, opts = {}
     media_evidence_path: mediaEvidencePath ?? null,
     address_evidence_path: addressEvidencePath ?? null,
     source_kind: sourceKind,
+    worker_runtime_evidence: workerRuntimeEvidence,
     gps_evidence: gpsEvidence,
     address_validation: addressValidation,
     resolved_input: resolvedInput,

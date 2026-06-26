@@ -62,6 +62,7 @@ import { renderRunningProcessView } from './views/runningProcessView.ts';
 import { renderDatabaseViewerView } from './views/databaseViewerView.ts';
 import { renderOsPlaybackFullscreenOverlay, renderOsPlaybackView } from './views/osPlaybackView.ts';
 import { renderDebugView } from './views/debugView.ts';
+import { renderV2OperatorMenuView } from './views/v2OperatorMenuView.ts';
 import { addIsolatedTestMediaItem, buildDefaultDebugPageState, clearDebugElementMetadata, cycleDebugColorSchema, cycleDebugMajorVisualMode, pauseFakeDebugCrontab, previewFakeDebugStateRestore, readFakeDebugCrontab, resumeFakeDebugCrontab, runMockDebugWorker, saveFakeDebugStateSnapshot, saveManualTestingSystemStateSnapshot, selectDebugElementMetadata, setDebugCrontabContent, stageFakeDebugCrontabInstall, type DebugPageState, type DebugWorkerKey } from './services/debugPageModel.ts';
 import { buildOsPlaybackViewModel, OS_PLAYBACK_PLATFORMS, type OsPlaybackPlatform, type PlaybackLogEntryViewModel } from './services/osPlaybackViewModel.ts';
 import { requestJson, setDashboardRuntimeMode } from './services/apiClient.ts';
@@ -150,6 +151,7 @@ function render() {
     E: renderDatabaseViewerView(state),
     WIN: renderOsPlaybackView(state, OS_PLAYBACK_PLATFORMS.windows),
     RPI: renderOsPlaybackView(state, OS_PLAYBACK_PLATFORMS.raspberry),
+    V2: renderV2OperatorMenuView(),
     DEBUG: renderDebugView(state, __APP_VERSION__),
   }[state.activeView] ?? renderInitView(state, dashboardVisualMode);
 

@@ -45,3 +45,7 @@ Use these repository-level documentation guides before adding or moving files:
 - [Documentation Reorganization Plan](../DOC_REORGANIZATION_PLAN.md)
 
 Do not physically move files into this folder until the move is covered by a link-aware documentation slice.
+
+## Recent root/script documentation cleanup
+
+- [Root Script and Documentation Placement XACR — 2026-06-25](root_script_and_doc_placement_xacr_20260625.md)

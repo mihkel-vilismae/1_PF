@@ -8,6 +8,14 @@ This index classifies non-skill documentation files and separates current truth 
 - Included documentation LOC: 10850+
 
 
+
+## 2026-06-25 root launcher and documentation placement refresh
+
+- `full_windows_runner_status.cmd` is the only Windows terminal GUI launcher kept at repository root.
+- Supporting Windows/Raspberry/packaging scripts are organized under `start_scripts/`; see `start_scripts/README.md`.
+- `docs/10_runbooks/windows_runner_status_terminal_ui.md` documents the terminal GUI runner/status workflow.
+- `docs/50_audits_and_migrations/root_script_and_doc_placement_xacr_20260625.md` records the XACR cleanup pass.
+
 ## 2026-05-30 navigation refresh
 
 - `docs/table_of_contents.md` is now the short canonical documentation map for humans and agents.

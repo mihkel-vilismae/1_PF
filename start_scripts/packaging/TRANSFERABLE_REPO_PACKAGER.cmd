@@ -9,12 +9,13 @@ rem During execution, temporary helper files are created under %%TEMP%% and remo
 rem The only normal output left in the target repository is the generated ZIP.
 
 set "SCRIPT_DIR=%~dp0"
+for %%I in ("%~dp0..\..") do set "REPO_ROOT=%%~fI"
 set "SELF=%~f0"
 set "TEMP_PS1=%TEMP%\repo_zip_packager_%RANDOM%_%RANDOM%.ps1"
 
-pushd "%SCRIPT_DIR%" >nul 2>nul
+pushd "%REPO_ROOT%" >nul 2>nul
 if errorlevel 1 (
-  echo ERROR: Could not change to script directory: %SCRIPT_DIR%
+  echo ERROR: Could not change to repo root: %REPO_ROOT%
   pause
   exit /b 1
 )

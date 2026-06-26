@@ -1,4 +1,9 @@
 #!/usr/bin/env node
+/**
+ * Generates the safe GPS/geocode bridge evidence pack.
+ * Exports worker runtime status paths without manual product confirmation.
+ * Keeps incomplete evidence as an honest BLOCKED proof artifact.
+ */
 import { readFile } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import process from 'node:process';
@@ -29,6 +34,7 @@ const envelope = createProofEnvelope({
     requirements: result.requirements,
     configured_paths: result.configured_paths,
     parsed: result.parsed,
+    worker_runtime_evidence: result.worker_runtime_evidence,
     missing_for_bridge: result.missing_for_bridge,
     next_steps: result.next_steps,
     written_templates: written.relative,

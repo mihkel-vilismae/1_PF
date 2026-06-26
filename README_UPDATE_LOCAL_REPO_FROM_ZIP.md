@@ -2,8 +2,8 @@
 
 ## Use
 
-1. Put `UPDATE_LOCAL_REPO_FROM_ZIP.cmd` in the local repo folder you want to overwrite.
-2. Drag the updated repo ZIP from Downloads onto `UPDATE_LOCAL_REPO_FROM_ZIP.cmd`.
+1. Put `start_scripts/packaging/UPDATE_LOCAL_REPO_FROM_ZIP.cmd` in the local repo folder you want to overwrite.
+2. Drag the updated repo ZIP from Downloads onto `start_scripts/packaging/UPDATE_LOCAL_REPO_FROM_ZIP.cmd`.
 3. Confirm with `Y`.
 4. The script:
    - creates a timestamped backup folder,

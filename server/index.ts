@@ -44,6 +44,7 @@ import {
 import { selectCurrentPlayableItem } from './playback/playbackSelectionService.ts';
 import { buildPlaybackContract, normalizePlaybackContractLimit, resolvePlaybackAssetMediaPath } from './playback/playbackContractService.ts';
 import { runPlaybackWorker } from './workers/playbackWorker.ts';
+import { runRegularStageWorker, type RegularStageWorkerStage } from './workers/regularStageWorker.ts';
 import { runInstrumentedSchedulerWorker } from './workers/instrumentedSchedulerWorker.ts';
 import {
   detectNativePlayback,
@@ -746,6 +747,29 @@ async function runSchedulerWorker(workerName: SchedulerWorkerName): Promise<void
     return;
   }
 
+  if (workerName === SCHEDULER_WORKER_NAMES.regularStage) {
+    const context = await buildRequestContext();
+    const result = await runRegularStageWorker({
+      repoRoot,
+      runStage: (stage) => runRegularStageWorkerBackendStage(context, stage),
+    });
+    console.log(JSON.stringify(result, null, 2));
+    await logger.info('regular_stage_worker product stage-state-machine completed.', {
+      worker: result.worker,
+      status: result.status,
+      implementationStatus: result.implementationStatus,
+      startedAt: result.startedAt,
+      finishedAt: result.finishedAt,
+      skippedReason: result.skippedReason,
+      failureReason: result.failureReason,
+      productWorkClaimed: result.productWork.claimed,
+      lastCompletedStage: result.stageState.lastCompletedStage,
+      nextStage: result.stageState.nextStage,
+    });
+    process.exitCode = result.status === 'failed' ? 1 : 0;
+    return;
+  }
+
   const result = await runInstrumentedSchedulerWorker({ workerName, repoRoot });
   console.log(JSON.stringify(result, null, 2));
   await logger.info(`${result.worker} instrumentation completed.`, {
@@ -758,6 +782,36 @@ async function runSchedulerWorker(workerName: SchedulerWorkerName): Promise<void
     failureReason: result.failureReason,
   });
   process.exitCode = result.status === 'failed' ? 1 : 0;
+}
+
+async function runRegularStageWorkerBackendStage(context: RequestContext, stage: RegularStageWorkerStage): Promise<{ statusCode?: number; payload?: unknown; }> {
+  switch (stage.key) {
+    case 'download':
+      return runtimeDownloadRunHandler({ context });
+    case 'index':
+      await ensureRegularStageWorkerDatabase(context);
+      return runtimeIndexRunHandler({ context });
+    case 'gps':
+      await ensureRegularStageWorkerDatabase(context);
+      return runtimeGpsRunHandler({ context });
+    case 'geocode':
+      await ensureRegularStageWorkerDatabase(context);
+      return runtimeGeocodeRunHandler({ context });
+    case 'queue_prepare':
+      await ensureRegularStageWorkerDatabase(context);
+      return runtimeQueuePrepareHandler({ context });
+    default: {
+      const unsupportedStage = stage as { key?: unknown };
+      throw new Error(`Unsupported regular_stage_worker stage: ${String(unsupportedStage.key ?? 'unknown')}`);
+    }
+  }
+}
+
+async function ensureRegularStageWorkerDatabase(context: RequestContext): Promise<void> {
+  const database = await buildDatabaseStatus(context);
+  if (!database.exists) {
+    await getDatabaseService().recreateEmptyDatabase(context);
+  }
 }
 
 // Reads the optional `--scheduler <worker>` argument without affecting HTTP server mode.

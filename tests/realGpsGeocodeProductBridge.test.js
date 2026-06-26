@@ -1,3 +1,7 @@
+/**
+ * Verifies GPS/geocode enrichment preserves worker runtime proof authority.
+ * Covers valid bridge evidence and instrumentation-only rejection.
+ */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, writeFileSync } from 'node:fs';
@@ -11,8 +15,22 @@ import {
   validateMediaGpsEvidence,
 } from '../tools/real-gps-geocode-product-bridge-lib.mjs';
 
+/** Creates an isolated bridge fixture directory. */
 function fixtureDir() { return mkdtempSync(join(tmpdir(), 'pf-gps-geocode-bridge-')); }
+/** Writes one JSON fixture and returns its path. */
 function writeJson(dir, name, value) { const path = join(dir, name); writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`); return path; }
+/** Writes product-capable regular-worker runtime status with optional overrides. */
+function writeWorkerStatus(dir, overrides = {}) {
+  return writeJson(dir, 'regular-worker-status.json', {
+    worker: 'regular_stage_worker',
+    status: 'succeeded',
+    invocation_observed: true,
+    implementationStatus: 'product_work_implemented',
+    productWork: { claimed: true, runId: 'runtime-bridge-run' },
+    finishedAt: '2026-06-21T00:00:00.000Z',
+    ...overrides,
+  });
+}
 
 function buildGpsManifest() {
   const manifest = buildSampleDownloadManifest();
@@ -48,11 +66,12 @@ test('bridge resolves GPS from redacted readiness manifest and writes enriched p
   const dir = fixtureDir();
   const manifestPath = writeJson(dir, 'manifest.json', buildGpsManifest());
   const addressPath = writeJson(dir, 'address.json', buildAddressArtifact());
+  const workerStatusPath = writeWorkerStatus(dir);
   const result = evaluateRealGpsGeocodeProductBridge({
     PF_PROOF_ENABLE_REAL_GPS_GEOCODE_PRODUCT_BRIDGE: 'true',
-    PF_REGULAR_WORKER_PRODUCT_WORK_CONFIRMED: 'true',
     PF_REAL_GPS_GEOCODE_MANIFEST_FILE: manifestPath,
     PF_REAL_GPS_GEOCODE_ADDRESS_EVIDENCE_FILE: addressPath,
+    PF_REGULAR_WORKER_RUNTIME_STATUS_FILE: workerStatusPath,
     PF_REAL_GPS_GEOCODE_SOURCE_KIND: 'readiness_approved_manifest',
     PF_REAL_GPS_GEOCODE_PRODUCT_BRIDGE_RUN_ID: 'bridge-test-run',
   }, { cwd: dir, now: '2026-06-21T00:00:00.000Z' });
@@ -71,6 +90,7 @@ test('bridge accepts a standalone readiness media GPS evidence file', () => {
   const dir = fixtureDir();
   const manifestPath = writeJson(dir, 'manifest.json', buildGpsManifest());
   const addressPath = writeJson(dir, 'address.json', buildAddressArtifact());
+  const workerStatusPath = writeWorkerStatus(dir);
   const mediaEvidencePath = writeJson(dir, 'media-gps.json', {
     schema_version: 1,
     evidence_kind: 'readiness_approved_media_gps',
@@ -88,10 +108,10 @@ test('bridge accepts a standalone readiness media GPS evidence file', () => {
   }))).status, 'PASSED');
   const result = evaluateRealGpsGeocodeProductBridge({
     PF_PROOF_ENABLE_REAL_GPS_GEOCODE_PRODUCT_BRIDGE: 'true',
-    PF_REGULAR_WORKER_PRODUCT_WORK_CONFIRMED: 'true',
     PF_REGULAR_WORKER_PRODUCT_MANIFEST_FILE: manifestPath,
     PF_REAL_GPS_GEOCODE_MEDIA_EVIDENCE_FILE: mediaEvidencePath,
     PF_REAL_GPS_GEOCODE_ADDRESS_EVIDENCE_FILE: addressPath,
+    PF_REGULAR_WORKER_RUNTIME_STATUS_FILE: workerStatusPath,
   }, { cwd: dir, now: '2026-06-21T00:00:00.000Z' });
   assert.equal(result.proofStatus, 'PASSED');
   assert.equal(result.gps_evidence.source, 'media_evidence_file');
@@ -103,14 +123,38 @@ test('bridge fails when normalized address coordinate does not match GPS evidenc
   const wrongAddress = buildAddressArtifact();
   wrongAddress.coordinate.latitude = 58.3776;
   const addressPath = writeJson(dir, 'wrong-address.json', wrongAddress);
+  const workerStatusPath = writeWorkerStatus(dir);
+  const result = evaluateRealGpsGeocodeProductBridge({
+    PF_PROOF_ENABLE_REAL_GPS_GEOCODE_PRODUCT_BRIDGE: 'true',
+    PF_REAL_GPS_GEOCODE_MANIFEST_FILE: manifestPath,
+    PF_REAL_GPS_GEOCODE_ADDRESS_EVIDENCE_FILE: addressPath,
+    PF_REGULAR_WORKER_RUNTIME_STATUS_FILE: workerStatusPath,
+  }, { cwd: dir });
+  assert.equal(result.proofStatus, 'BLOCKED');
+  assert.match(result.address_validation.errors.join('; '), /latitude does not match/);
+});
+
+test('bridge cannot promote instrumentation-only runtime with a manual confirmation flag', () => {
+  const dir = fixtureDir();
+  const manifestPath = writeJson(dir, 'manifest.json', buildGpsManifest());
+  const addressPath = writeJson(dir, 'address.json', buildAddressArtifact());
+  const workerStatusPath = writeWorkerStatus(dir, {
+    implementationStatus: 'instrumentation_only',
+    productWork: { claimed: false },
+  });
   const result = evaluateRealGpsGeocodeProductBridge({
     PF_PROOF_ENABLE_REAL_GPS_GEOCODE_PRODUCT_BRIDGE: 'true',
     PF_REGULAR_WORKER_PRODUCT_WORK_CONFIRMED: 'true',
     PF_REAL_GPS_GEOCODE_MANIFEST_FILE: manifestPath,
     PF_REAL_GPS_GEOCODE_ADDRESS_EVIDENCE_FILE: addressPath,
+    PF_REGULAR_WORKER_RUNTIME_STATUS_FILE: workerStatusPath,
   }, { cwd: dir });
+
   assert.equal(result.proofStatus, 'BLOCKED');
-  assert.match(result.address_validation.errors.join('; '), /latitude does not match/);
+  assert.equal(result.worker_runtime_evidence.confirmed, false);
+  assert.equal(result.product_pipeline_evidence.readiness.regular_worker_product_pipeline_satisfied, false);
+  assert.equal(result.product_pipeline_evidence.readiness.v1_gate_satisfied, false);
+  assert.match(result.block_reasons.join('; '), /instrumentation_only/);
 });
 
 test('manifest GPS resolver refuses selected media without GPS evidence', () => {

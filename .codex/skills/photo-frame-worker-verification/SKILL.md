@@ -52,6 +52,9 @@ tools/CronEmulator/crontab_emulated.txt -> cronemulator scheduler -> subprocess.
 4. Verify the target process, API route, script, or executable exists.
 5. Verify whether execution reaches backend-owned logic.
 6. Check for lock/status/log evidence, including prior `cron_calls.jsonl` entries when relevant.
+   - Derive regular-worker product-work confirmation only from durable worker runtime status evidence.
+   - Treat `implementationStatus: instrumentation_only` as explicit evidence that product work is not implemented or confirmed.
+   - Ignore manual product-work confirmation flags and generated bridge assertions as proof authority.
 7. Classify the result using the classification list.
 8. Separate code-verified behavior from runtime evidence and docs.
 

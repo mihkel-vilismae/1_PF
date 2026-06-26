@@ -28,3 +28,12 @@ Current OpenSpec entries:
 - [Debug Page OpenSpec](debug_page_openspec.md) — lightweight Debug page, sidebar/version tracker, pane template, crontab setup, worker debug pane, safety, and proof-boundary contract.
 
 - [Project Completeness Reporting OpenSpec](project_completeness_reporting_openspec.md) — source priority, status enum, proof-artifact, planned-command, Debug docs/runtime split, and percentage rules for overall completeness reports.
+
+- [Dashboard Test/Real Modes OpenSpec](dashboard_test_real_modes_openspec.md) — page-shell contract for the existing startup mode gate, Test Mode vs Real Mode behavior, shared navigation, and safety/non-claim boundaries.
+
+- [Dashboard View A Init Page OpenSpec](dashboard_view_a_init_page_openspec.md) — page-level contract for Verify .env, legacy auth, NEW AUTH, database controls, scheduler controls, and Test Mode-only whole-logic controls.
+
+- [Dashboard View B Test Page OpenSpec](dashboard_view_b_test_page_openspec.md) — page-level contract for B2 Test/Real download separation, B3 pipeline stages, B4 playback selection, and B5 simulation-only screen controls.
+
+- [Dashboard Test/Real Modes 3XACR Review](dashboard_test_real_modes_xacr_review.md) — docs-only review of the OpenSpec coverage added for existing Test Mode and Real Mode pages.
+

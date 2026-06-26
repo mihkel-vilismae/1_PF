@@ -1,3 +1,7 @@
+/**
+ * Verifies the Raspberry regular-worker product gate and target boundary.
+ * Requires structured product output with worker runtime provenance.
+ */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { buildRegularWorkerProductEvidenceTemplate, evaluateRegularWorkerProductPipelineEvidence, REGULAR_STAGE_WORKER_PRODUCT_STAGES } from '../tools/raspberry-regular-stage-worker-product-pipeline-lib.mjs';
@@ -24,7 +28,14 @@ test('regular worker product pipeline proof passes only with structured v2 produ
       },
     },
     workerRunId: 'worker_run_test',
-    productWorkClaimed: true,
+    workerRuntimeEvidence: {
+      confirmed: true,
+      implementation_status: 'product_work_implemented',
+      worker_status: 'succeeded',
+      invocation_observed: true,
+      product_work_claimed: true,
+      observed_at: '2026-06-21T00:00:00.000Z',
+    },
     now: '2026-06-21T00:00:00.000Z',
   });
   const loadedEvidence = { source: 'injected', load_error: null, data };

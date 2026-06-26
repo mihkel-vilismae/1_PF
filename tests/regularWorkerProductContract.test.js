@@ -1,3 +1,7 @@
+/**
+ * Verifies the regular-worker product contract and canonical OpenSpec text.
+ * Protects stage order and worker runtime evidence authority.
+ */
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
@@ -19,7 +23,7 @@ test('regular worker product contract keeps the required stage list explicit', (
 
 test('regular worker product OpenSpec describes the current structured v2 evidence contract', () => {
   const doc = readFileSync('docs/20_architecture_and_specs/openspec/raspberry_icloud_first_regular_worker_pipeline_openspec.md', 'utf8');
-  assert.match(doc, /Refined: v0\.10\.3 regular worker product evidence bridge/);
+  assert.match(doc, /Refined: v0\.10\.19 worker runtime evidence authority/);
   assert.match(doc, /Evidence shape v2/);
   assert.ok(doc.includes(`real/readiness download manifest
 → regular worker input resolver

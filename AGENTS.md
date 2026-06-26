@@ -55,6 +55,22 @@
 - Classify a passed gate with mismatched or missing identity as `PASSED_NOT_FORMALLY_REFRESHED`; preserve its gate pass status while requiring current-baseline proof before making a refreshed-release claim.
 - Readiness summaries must count formally refreshed gates separately from passed gates and provide exact rerun commands for passed-but-not-refreshed gates.
 
+## Platform-Specific Known Full-Suite Failure Rule
+
+- Track recurring platform-specific full-suite failures in the canonical full-test proof registry with an exact test name, applicable platform, stable ID, and reason.
+- Known-failure matching must require both the current platform and exact failing test name; broad substring matching is not allowed.
+- Known failures remain real test failures and must not change `full_test_suite_stability` from `FAILED` to `PASSED`.
+- Report `KNOWN_FAILURES_ONLY` separately from `UNEXPECTED_FAILURES`, and use `INCOMPLETE_FAILURE_DETAIL` when parsed failure names do not account for the reported failure count.
+- Report registered failures that were not observed so stale entries can be reviewed and removed after focused verification.
+
+## Worker Product-Work Proof Authority Rule
+
+- Product-work confirmation must be derived from durable `regular_stage_worker` runtime status evidence, never from a manually asserted environment flag.
+- Reject product-work confirmation when worker status reports `implementationStatus: instrumentation_only`, `productWork.claimed` is not true, the invocation was not observed, or the worker run did not succeed.
+- `PF_REGULAR_WORKER_PRODUCT_WORK_CONFIRMED` is not proof authority and must be ignored if present.
+- Generated evidence packs may point to `PF_REGULAR_WORKER_RUNTIME_STATUS_FILE`, but must not generate or recommend a manual product-work confirmation value.
+- Manifest, GPS, geocode, or bridge evidence may enrich proven worker output; it cannot manufacture the underlying worker product-work claim.
+
 ## VERSION Output Rule
 
 - When the user says `VERSION`, print the full repository version block.

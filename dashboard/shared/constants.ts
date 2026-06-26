@@ -2,7 +2,7 @@
  * Defines shared dashboard view IDs, navigation labels, and status labels.
  * Views import this file to keep navigation order and badge wording consistent.
  */
-export type DashboardViewId = 'A' | 'B' | 'C' | 'D' | 'E' | 'WIN' | 'RPI' | 'DEBUG';
+export type DashboardViewId = 'A' | 'B' | 'C' | 'D' | 'E' | 'WIN' | 'RPI' | 'V2' | 'DEBUG';
 
 export type DashboardViewDefinition = {
   id: DashboardViewId;
@@ -20,6 +20,7 @@ export const VIEW_ORDER: readonly DashboardViewDefinition[] = [
   { id: 'E', name: 'Database Viewer', subtitle: 'Backend-backed SQLite inspection with honest session logging.' },
   { id: 'WIN', name: 'Windows Playback', subtitle: 'Windows-only preview/fullscreen playback surface.' },
   { id: 'RPI', name: 'Raspberry Playback', subtitle: 'Raspberry OS deployment playback surface.' },
+  { id: 'V2', name: 'V2 Operator Menu', subtitle: 'Visual-only Structure V1 menu prototype.' },
   { id: 'DEBUG', name: 'Debug', subtitle: 'Debug Menu for proof-safe operator diagnostics.' },
 ];
 

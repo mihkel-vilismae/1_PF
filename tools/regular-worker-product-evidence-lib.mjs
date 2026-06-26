@@ -1,3 +1,8 @@
+/**
+ * Defines and validates structured regular-worker product evidence.
+ * Derives product-work truth from embedded durable worker runtime evidence.
+ * Keeps manifests, product output, enrichment, and redaction boundaries explicit.
+ */
 import { createHash } from 'node:crypto';
 import { validateDownloadManifestSafeSchema } from './download-manifest-safe-schema-lib.mjs';
 import { hasSecretLikeText } from './real-icloud-proof-evidence-utils.mjs';
@@ -53,6 +58,7 @@ function normalizeExtension(value) {
   return ext.startsWith('.') ? ext : ext ? `.${ext}` : '';
 }
 
+/** Builds a non-claiming structured product-evidence template. */
 export function buildRegularWorkerProductEvidenceTemplateV2({ now = new Date().toISOString() } = {}) {
   return {
     evidence_schema_version: REGULAR_WORKER_PRODUCT_EVIDENCE_SCHEMA_VERSION,
@@ -71,6 +77,15 @@ export function buildRegularWorkerProductEvidenceTemplateV2({ now = new Date().t
       mode: 'regular',
       entrypoint: 'regular_stage_worker',
       run_id: null,
+      product_work_claimed: false,
+      runtime_evidence: {
+        confirmed: false,
+        implementation_status: null,
+        worker_status: null,
+        invocation_observed: false,
+        product_work_claimed: false,
+        observed_at: null,
+      },
     },
     input: {
       source_kind: 'unset',
@@ -123,6 +138,7 @@ export function getRegularWorkerEvidenceSourceKind(evidence = {}) {
   return firstString(evidence.input?.source_kind, evidence.source_kind) ?? 'unset';
 }
 
+/** Derives compatibility flags while keeping worker claims runtime-authoritative. */
 export function deriveRegularWorkerProductEvidenceFlags(evidence = {}) {
   const sourceKind = getRegularWorkerEvidenceSourceKind(evidence);
   const input = evidence.input ?? {};
@@ -136,8 +152,19 @@ export function deriveRegularWorkerProductEvidenceFlags(evidence = {}) {
     gps_extraction_completed: bool(evidence.gps_extraction_completed) || ['present', 'ok', 'completed'].includes(String(productRecord.gps_status ?? '').toLowerCase()),
     geocode_completed: bool(evidence.geocode_completed) || ['present', 'ok', 'completed'].includes(String(productRecord.geocode_status ?? '').toLowerCase()),
     queue_prepared: bool(evidence.queue_prepared) || bool(output.display_queue_written) || bool(output.next_display_item_ready),
-    worker_status_product_work_claimed: bool(evidence.worker_status_product_work_claimed) || bool(evidence.worker?.product_work_claimed),
+    worker_status_product_work_claimed: runtimeEvidenceConfirmsProductWork(evidence.worker?.runtime_evidence),
   };
+}
+
+/** Confirms product work only from embedded product-capable worker runtime evidence. */
+export function runtimeEvidenceConfirmsProductWork(runtimeEvidence = {}) {
+  return runtimeEvidence?.confirmed === true
+    && runtimeEvidence?.implementation_status !== 'instrumentation_only'
+    && typeof runtimeEvidence?.implementation_status === 'string'
+    && runtimeEvidence.implementation_status.length > 0
+    && runtimeEvidence?.worker_status === 'succeeded'
+    && runtimeEvidence?.invocation_observed === true
+    && runtimeEvidence?.product_work_claimed === true;
 }
 
 export function normalizeRegularWorkerProductEvidence(evidence = {}) {
@@ -155,6 +182,7 @@ export function normalizeRegularWorkerProductEvidence(evidence = {}) {
   };
 }
 
+/** Evaluates core/enrichment completion, redaction, and runtime provenance. */
 export function evaluateRegularWorkerStructuredEvidence(evidence = {}) {
   const normalized = normalizeRegularWorkerProductEvidence(evidence);
   const sourceKind = getRegularWorkerEvidenceSourceKind(normalized);
@@ -174,6 +202,7 @@ export function evaluateRegularWorkerStructuredEvidence(evidence = {}) {
   if (productRecord.has_media_asset !== true) failedReasons.push('product_record.has_media_asset must be true');
   if (output.display_queue_written !== true) failedReasons.push('output.display_queue_written must be true');
   if (output.next_display_item_ready !== true) failedReasons.push('output.next_display_item_ready must be true');
+  if (!runtimeEvidenceConfirmsProductWork(normalized.worker?.runtime_evidence)) failedReasons.push('worker.runtime_evidence must confirm successful product-capable regular_stage_worker product work');
   if (redaction.private_paths_redacted !== true || redaction.secrets_redacted !== true) failedReasons.push('redaction.private_paths_redacted and redaction.secrets_redacted must both be true');
   if (redaction.raw_media_included === true || redaction.raw_provider_output_included === true) failedReasons.push('raw media/provider output must not be included');
   if (hasSecretLikeText(normalized)) failedReasons.push('evidence contains secret-like text');
@@ -248,13 +277,15 @@ export function resolveWorkerInputFromDownloadManifest(manifest, { sourceKind = 
   };
 }
 
-export function buildRegularWorkerProductEvidenceFromResolvedInput({ resolvedInput, workerRunId = null, productWorkClaimed = false, now = new Date().toISOString() } = {}) {
+/** Builds product evidence from resolved input plus validated worker runtime status. */
+export function buildRegularWorkerProductEvidenceFromResolvedInput({ resolvedInput, workerRunId = null, workerRuntimeEvidence = null, now = new Date().toISOString() } = {}) {
   const selected = resolvedInput?.selected_media ?? null;
   const sourceKind = resolvedInput?.input?.source_kind ?? 'unset';
   const recordSeed = selected?.media_id ?? selected?.file_sha256 ?? JSON.stringify(resolvedInput?.input ?? {});
   const recordId = safeHash(`regular-worker-product:${recordSeed}`);
   const outputId = safeHash(`regular-worker-output:${recordSeed}`);
   const evidence = buildRegularWorkerProductEvidenceTemplateV2({ now });
+  const productWorkClaimed = workerRuntimeEvidence?.confirmed === true;
   return normalizeRegularWorkerProductEvidence({
     ...evidence,
     source_kind: sourceKind,
@@ -270,6 +301,14 @@ export function buildRegularWorkerProductEvidenceFromResolvedInput({ resolvedInp
       entrypoint: 'regular_stage_worker',
       run_id: workerRunId ?? safeHash(`regular-worker-run:${recordSeed}:${now}`),
       product_work_claimed: Boolean(productWorkClaimed),
+      runtime_evidence: {
+        confirmed: Boolean(workerRuntimeEvidence?.confirmed),
+        implementation_status: workerRuntimeEvidence?.implementation_status ?? null,
+        worker_status: workerRuntimeEvidence?.worker_status ?? null,
+        invocation_observed: workerRuntimeEvidence?.invocation_observed ?? false,
+        product_work_claimed: workerRuntimeEvidence?.product_work_claimed ?? false,
+        observed_at: workerRuntimeEvidence?.observed_at ?? null,
+      },
     },
     input: resolvedInput?.input ?? evidence.input,
     selected_media: selected ?? evidence.selected_media,
@@ -301,6 +340,6 @@ export function buildRegularWorkerProductEvidenceFromResolvedInput({ resolvedInp
       v1_gate_satisfied: Boolean(selected && productWorkClaimed),
     },
     observed_at: now,
-    required_proof_boundary: 'Evidence is derived from a safe download/readiness manifest and an explicit regular worker product-work claim; it does not prove geocode or device overlay visibility.',
+    required_proof_boundary: 'Evidence is derived from a safe download/readiness manifest and validated regular worker runtime product evidence; it does not prove geocode or device overlay visibility.',
   });
 }

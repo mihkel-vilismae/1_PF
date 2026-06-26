@@ -13,7 +13,10 @@ export function readJsonFile(path, { cwd = process.cwd() } = {}) {
 export function requirement(name, passed, detail) { return { name, passed: Boolean(passed), detail }; }
 export function statusFromRequirements(requirements) { return requirements.every((r) => r.passed) ? 'PASSED' : 'BLOCKED'; }
 export function blockReasons(requirements) { return requirements.filter((r) => !r.passed).map((r) => `${r.name}: ${r.detail}`); }
-export function hasSecretLikeText(value) { return SECRET_RE.test(JSON.stringify(value ?? '')); }
+const SAFE_SHA256_VALUE_RE = /sha256:[a-f0-9]{64}/gi;
+export function hasSecretLikeText(value) {
+  return SECRET_RE.test(JSON.stringify(value ?? '').replace(SAFE_SHA256_VALUE_RE, 'sha256:<safe-hash-redacted>'));
+}
 export function directoryRequirement(inputPath, label, { cwd = process.cwd() } = {}) {
   if (!inputPath) return requirement(`${label}_configured`, false, `${label} is not configured`);
   const resolved = resolve(cwd, inputPath);

@@ -5,7 +5,8 @@
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$RepoRoot = Resolve-Path (Split-Path -Parent $MyInvocation.MyCommand.Path)
+$ScriptDir = Resolve-Path (Split-Path -Parent $MyInvocation.MyCommand.Path)
+$RepoRoot = Resolve-Path (Join-Path $ScriptDir.Path "..\..")
 $ApiUrl = "http://127.0.0.1:4301"
 $FrontendUrl = "http://localhost:5173"
 $RuntimeRoot = Join-Path $RepoRoot "runtime_data\start_launcher"

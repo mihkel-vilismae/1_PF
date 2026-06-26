@@ -25,7 +25,13 @@ async function main() {
   const envelope = await runFullTestProof({ timeoutMs });
   cleanupLingeringTestProcesses(envelope);
   const outputPath = await writeProofArtifact(FULL_TEST_PROOF_KIND, envelope);
-  console.log(JSON.stringify({ status: envelope.proof_status, outputPath, durationMs: envelope.evidence.duration_ms, testCounts: envelope.evidence.test_counts }, null, 2));
+  console.log(JSON.stringify({
+    status: envelope.proof_status,
+    outputPath,
+    durationMs: envelope.evidence.duration_ms,
+    testCounts: envelope.evidence.test_counts,
+    regressionAssessment: envelope.evidence.regression_assessment,
+  }, null, 2));
   process.exit(envelope.proof_status === 'PASSED' ? 0 : 1);
 }
 

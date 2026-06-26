@@ -24,14 +24,14 @@ The generated `latest.env` includes the bridge variables:
 
 ```bash
 PF_PROOF_ENABLE_REAL_GPS_GEOCODE_PRODUCT_BRIDGE=true
-PF_REGULAR_WORKER_PRODUCT_WORK_CONFIRMED=true
+PF_REGULAR_WORKER_RUNTIME_STATUS_FILE=runtime_data/scheduler/regular-stage-worker-status.json
 PF_REAL_GPS_GEOCODE_SOURCE_KIND=readiness_approved_manifest
 PF_REAL_GPS_GEOCODE_MEDIA_EVIDENCE_FILE=...
 PF_REAL_GPS_GEOCODE_ADDRESS_EVIDENCE_FILE=...
 PF_NORMALIZED_REAL_GEOCODE_ADDRESS_FILE=...
 ```
 
-Operators must only use the product-work confirmation after product work is intended/confirmed or the evidence is explicitly readiness-approved.
+The pack never generates manual product-work confirmation. The bridge derives that claim from the referenced durable worker runtime status.
 
 ## Status behavior
 

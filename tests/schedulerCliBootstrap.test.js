@@ -8,18 +8,32 @@ import { promisify } from 'node:util';
 
 const execFileAsync = promisify(execFile);
 
-test('regular scheduler CLI can write instrumentation without reading missing env file', async () => {
+test('regular scheduler CLI runs B3 stage-state-machine with a configured env file', async () => {
   const logDir = await mkdtemp(path.join(os.tmpdir(), 'scheduler-cli-log-'));
+  const runtimeRoot = await mkdtemp(path.join(os.tmpdir(), 'scheduler-cli-runtime-'));
+  const envFile = path.join(runtimeRoot, 'regular-worker.env');
+  const dbPath = path.join(runtimeRoot, 'photo_frame.sqlite');
+  const downloadDir = path.join(runtimeRoot, 'downloads');
   try {
+    await rm(path.join(process.cwd(), 'runtime_data', 'scheduler'), { recursive: true, force: true });
+    await import('node:fs/promises').then(({ writeFile }) => writeFile(envFile, [
+      `DB_PATH=${dbPath}`,
+      `DOWNLOAD_DIR=${downloadDir}`,
+      `LOG_DIR=${logDir}`,
+      '',
+    ].join('\n'), 'utf8'));
     const { stdout, stderr } = await execFileAsync(process.execPath, ['--import', 'tsx', 'server/index.ts', '--scheduler', 'regular-stage-worker'], {
       cwd: process.cwd(),
-      env: { ...process.env, INIT_ENV_FILE: '/tmp/pf-missing-env-file-for-regular-worker.env', LOG_DIR: logDir },
+      env: { ...process.env, INIT_ENV_FILE: envFile, LOG_DIR: logDir },
       timeout: 20000,
     });
     assert.match(stdout, /regular_stage_worker/);
+    assert.match(stdout, /b3_stage_state_machine_v1/);
+    assert.match(stdout, /productWork/);
     assert.doesNotMatch(`${stdout}\n${stderr}`, /Cannot access 'HttpError' before initialization/);
   } finally {
     await rm(logDir, { recursive: true, force: true });
+    await rm(runtimeRoot, { recursive: true, force: true });
   }
 });
 

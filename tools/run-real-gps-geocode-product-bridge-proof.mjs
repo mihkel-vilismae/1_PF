@@ -1,4 +1,9 @@
 #!/usr/bin/env node
+/**
+ * Runs the GPS/geocode-to-worker product evidence bridge.
+ * Requires worker runtime product evidence and sanitized provider inputs.
+ * Writes proof artifacts without claiming device display visibility.
+ */
 import { readFile } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import process from 'node:process';
@@ -31,6 +36,7 @@ const envelope = createProofEnvelope({
     environment: getProofEnvironment(),
     requirements: result.requirements,
     source_kind: result.source_kind,
+    worker_runtime_evidence: result.worker_runtime_evidence,
     gps_evidence: result.gps_evidence,
     address_validation: result.address_validation,
     resolved_input: result.resolved_input,
@@ -43,7 +49,7 @@ const envelope = createProofEnvelope({
   },
   knownLimitations: result.proofStatus === 'PASSED'
     ? ['Generated product evidence enriched with accepted GPS/geocode address. This does not prove real iCloud authentication or device overlay visibility.']
-    : ['Set bridge opt-in, product-work confirmation, an accepted GPS source, and normalized geocode address evidence.'],
+    : ['Set bridge opt-in, product-capable regular worker runtime evidence, an accepted GPS source, and normalized geocode address evidence.'],
 });
 const outputPath = await writeProofArtifact('real_gps_geocode_product_bridge', envelope);
 console.log(JSON.stringify({ status: envelope.proof_status, outputPath, generatedEvidenceFile: written?.outputPath ?? null, env: written?.envLine ?? null, block_reasons: result.block_reasons }, null, 2));

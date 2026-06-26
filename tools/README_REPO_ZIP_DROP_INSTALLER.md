@@ -18,8 +18,8 @@ The `.cmd` launcher now removes the trailing slash from its own folder path befo
 
 ## How to use
 
-1. Copy `UPDATE_LOCAL_REPO_FROM_ZIP.cmd` and the whole `tools/` folder into your local repo folder.
-2. Drag the updated repo ZIP from Downloads onto `UPDATE_LOCAL_REPO_FROM_ZIP.cmd`.
+1. Copy `start_scripts/packaging/UPDATE_LOCAL_REPO_FROM_ZIP.cmd` and the whole `tools/` folder into your local repo folder.
+2. Drag the updated repo ZIP from Downloads onto `start_scripts/packaging/UPDATE_LOCAL_REPO_FROM_ZIP.cmd`.
 3. The terminal opens and shows progress.
 4. Type `YES` to confirm.
 5. The terminal stays open after success or failure.

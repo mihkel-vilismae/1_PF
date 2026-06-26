@@ -1,4 +1,9 @@
 #!/usr/bin/env node
+/**
+ * Runs the regular-worker product evidence producer proof.
+ * Derives product authority from durable worker runtime status.
+ * Writes sanitized proof and product evidence artifacts.
+ */
 import { readFile } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import process from 'node:process';
@@ -28,6 +33,7 @@ const envelope = createProofEnvelope({
     environment: getProofEnvironment(),
     requirements: result.requirements,
     source_kind: result.source_kind,
+    worker_runtime_evidence: result.worker_runtime_evidence,
     resolved_input: result.resolved_input,
     structured_evaluation: result.structured_evaluation,
     generated_evidence_file: written?.outputPath ?? null,
@@ -37,8 +43,8 @@ const envelope = createProofEnvelope({
     non_claims: ['does not prove iCloud auth', 'does not prove real GPS/geocode', 'does not prove address overlay visibility'],
   },
   knownLimitations: result.proofStatus === 'PASSED'
-    ? ['Generated regular worker product evidence from accepted manifest plus explicit regular worker product-work confirmation.']
-    : ['Set manifest path, opt-in, and product-work confirmation after regular_stage_worker has run.'],
+    ? ['Generated regular worker product evidence from accepted manifest plus product-capable regular_stage_worker runtime evidence.']
+    : ['Set manifest path and opt-in, then provide product-capable regular_stage_worker runtime status evidence.'],
 });
 const outputPath = await writeProofArtifact('regular_worker_product_evidence_producer', envelope);
 console.log(JSON.stringify({ status: envelope.proof_status, outputPath, generatedEvidenceFile: written?.outputPath ?? null, env: written?.envLine ?? null, block_reasons: result.block_reasons }, null, 2));

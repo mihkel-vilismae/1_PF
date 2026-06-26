@@ -17,6 +17,20 @@ import {
 export const FULL_TEST_PROOF_KIND = 'full_test_suite_stability';
 export const DEFAULT_FULL_TEST_TIMEOUT_MS = 600000;
 export const FULL_TEST_REPORTER = 'spec';
+export const FULL_TEST_KNOWN_FAILURES = Object.freeze([
+  {
+    id: 'win32-raspberry-launcher-executable-bit',
+    platforms: ['win32'],
+    test_name: 'Raspberry launcher files and docs exist',
+    reason: 'Windows worktrees do not provide the POSIX executable-mode evidence expected by this Raspberry launcher test.',
+  },
+  {
+    id: 'win32-wave-d-queue-count',
+    platforms: ['win32'],
+    test_name: 'Wave D proves the deterministic Stage 2-6 pipeline on a fresh DB with blocking failure paths',
+    reason: 'Recurring Windows full-suite queue-count mismatch; tracked pending a separately scoped root-cause fix.',
+  },
+]);
 
 /** Reads the current version and Git commit for proof metadata. */
 export async function readFullTestProjectMetadata({ runGitCommand = runCommand } = {}) {
@@ -69,6 +83,57 @@ export function parseNodeTestCounts(output) {
   return counts;
 }
 
+/** Extracts unique failing test titles from Node's spec reporter output. */
+export function parseNodeFailedTestNames(output) {
+  const failedNames = [];
+  const pattern = /^\s*✖\s+(.+?)\s+\([0-9.]+ms\)\s*$/gm;
+  for (const match of String(output ?? '').matchAll(pattern)) {
+    if (!failedNames.includes(match[1])) failedNames.push(match[1]);
+  }
+  return failedNames;
+}
+
+/** Compares observed failures with exact platform-specific known-failure entries. */
+export function classifyFullTestRegression({
+  platform,
+  proofStatus,
+  testCounts,
+  failedTestNames,
+  knownFailures = FULL_TEST_KNOWN_FAILURES,
+}) {
+  const applicableKnownFailures = knownFailures.filter((entry) => entry.platforms.includes(platform));
+  const knownByName = new Map(applicableKnownFailures.map((entry) => [entry.test_name, entry]));
+  const matchedKnownFailures = failedTestNames
+    .filter((name) => knownByName.has(name))
+    .map((name) => knownByName.get(name));
+  const unexpectedFailures = failedTestNames.filter((name) => !knownByName.has(name));
+  const knownFailuresNotObserved = applicableKnownFailures.filter((entry) => !failedTestNames.includes(entry.test_name));
+  const failureDetailsComplete = Number.isInteger(testCounts.failed)
+    && testCounts.failed === failedTestNames.length;
+
+  let assessment = 'UNEXPECTED_FAILURES';
+  if (proofStatus === 'TIMED_OUT') assessment = 'TIMED_OUT';
+  else if (proofStatus === 'PASSED') assessment = 'CLEAN';
+  else if (!failureDetailsComplete) assessment = 'INCOMPLETE_FAILURE_DETAIL';
+  else if (failedTestNames.length > 0 && unexpectedFailures.length === 0) assessment = 'KNOWN_FAILURES_ONLY';
+
+  return {
+    assessment,
+    platform,
+    policy: 'exact_test_name_and_platform',
+    proof_status_impact: 'none',
+    failure_details_complete: failureDetailsComplete,
+    observed_failure_count: failedTestNames.length,
+    applicable_known_failure_count: applicableKnownFailures.length,
+    matched_known_failure_count: matchedKnownFailures.length,
+    unexpected_failure_count: unexpectedFailures.length,
+    failed_test_names: failedTestNames,
+    matched_known_failures: matchedKnownFailures,
+    unexpected_failures: unexpectedFailures,
+    known_failures_not_observed: knownFailuresNotObserved,
+  };
+}
+
 /** Classifies the full-suite command outcome using explicit proof status vocabulary. */
 export function classifyFullTestProofStatus(commandResult) {
   if (commandResult.timedOut) return 'TIMED_OUT';
@@ -95,6 +160,14 @@ export function buildFullTestKnownLimitations({ proofStatus }) {
 export function buildFullTestProofEnvelope({ metadata, testCommand, testResult, timeoutMs }) {
   const combinedOutput = `${testResult.stdout ?? ''}\n${testResult.stderr ?? ''}`;
   const proofStatus = classifyFullTestProofStatus(testResult);
+  const testCounts = parseNodeTestCounts(combinedOutput);
+  const failedTestNames = parseNodeFailedTestNames(combinedOutput);
+  const regressionAssessment = classifyFullTestRegression({
+    platform: process.platform,
+    proofStatus,
+    testCounts,
+    failedTestNames,
+  });
   return createProofEnvelope({
     proofKind: FULL_TEST_PROOF_KIND,
     baselineVersion: metadata.version,
@@ -113,7 +186,8 @@ export function buildFullTestProofEnvelope({ metadata, testCommand, testResult, 
       signal: testResult.signal,
       timed_out: testResult.timedOut,
       duration_ms: testResult.durationMs,
-      test_counts: parseNodeTestCounts(combinedOutput),
+      test_counts: testCounts,
+      regression_assessment: regressionAssessment,
       stdout_tail: String(testResult.stdout ?? '').slice(-8000),
       stderr_tail: String(testResult.stderr ?? '').slice(-8000),
     },

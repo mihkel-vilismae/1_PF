@@ -70,7 +70,10 @@ function validateManifestItem(item, errors) {
 }
 
 function containsForbiddenValue(value) {
-  if (typeof value === 'string') return FORBIDDEN_VALUE.test(value);
+  if (typeof value === 'string') {
+    if (SAFE_HASH.test(value)) return false;
+    return FORBIDDEN_VALUE.test(value);
+  }
   if (Array.isArray(value)) return value.some(containsForbiddenValue);
   if (value && typeof value === 'object') return Object.values(value).some(containsForbiddenValue);
   return false;

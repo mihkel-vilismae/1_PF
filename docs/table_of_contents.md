@@ -151,13 +151,23 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/categorized/` | Compatibility navigation from the older categorized layout. |
 | Root-level moved-doc pointers under `docs/` | Compatibility pointers only unless explicitly listed as current above. |
 
+
+## Root launcher and script organization — 2026-06-25
+
+| Path | Use |
+| --- | --- |
+| `full_windows_runner_status.cmd` | Preferred root Windows terminal GUI launcher. Shows Start All, Stop All, Refresh Status, and status table. |
+| `start_scripts/README.md` | Current map for moved Windows/Raspberry/packaging helper scripts. |
+| `docs/10_runbooks/windows_runner_status_terminal_ui.md` | Operator runbook for the Windows terminal GUI runner/status menu. |
+| `docs/50_audits_and_migrations/root_script_and_doc_placement_xacr_20260625.md` | Cleanup report for root script/doc placement. |
+
 ## Scripts, config, and logs
 
 | Path | Use |
 | --- | --- |
-| `start_win_full.cmd` / `start_scripts/start_win_full.ps1` | Full Windows launcher with API, frontend, and component-status monitor tabs/windows. |
+| `start_scripts/windows/start_win_full.cmd` / `start_scripts/start_win_full.ps1` | Full Windows launcher with API, frontend, and component-status monitor tabs/windows. |
 | `start_raspberry_full.sh` / `start_scripts/start_raspberry_full.sh` | Raspberry project-owned launcher skeleton; dry-run by default, optional API start only. |
-| `start_win.cmd` | Lighter Windows startup path with API, frontend, and component-status monitor terminals. |
+| `start_scripts/windows/start_win.cmd` | Lighter Windows startup path with API, frontend, and component-status monitor terminals. |
 | `start_scripts/start_component_status.ps1` | API/dashboard running-status and version monitor for Windows launchers. |
 | `conf/runtime-truth.seed.json` | Committed neutral runtime-truth seed used at dashboard boot. |
 | `conf/runtime-truth.json` | Ignored local runtime-truth state written during app use. |

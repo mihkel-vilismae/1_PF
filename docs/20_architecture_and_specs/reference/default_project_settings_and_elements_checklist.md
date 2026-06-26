@@ -406,7 +406,7 @@ When code changes are implemented, provide:
 
 ### D. Start Scripts
 
-- [ ] `start_win.cmd` or `start_gui.cmd` exists when Windows startup is needed.
+- [ ] `start_scripts/windows/start_win.cmd` or `start_gui.cmd` exists when Windows startup is needed.
 - [ ] `start_scripts/start_win.ps1` exists when PowerShell startup logic is needed.
 - [ ] Startup scripts print clear errors when prerequisites are missing.
 - [ ] Startup scripts do not silently fail.

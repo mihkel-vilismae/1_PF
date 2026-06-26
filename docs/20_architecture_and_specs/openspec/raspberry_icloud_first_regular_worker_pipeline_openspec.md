@@ -2,7 +2,7 @@
 
 Status: active implementation contract  
 Introduced: v0.8.69  
-Refined: v0.10.3 regular worker product evidence bridge
+Refined: v0.10.19 worker runtime evidence authority
 
 ## Goal
 
@@ -33,7 +33,7 @@ real/readiness download manifest
 
 A regular worker product evidence artifact must include both legacy booleans and structured evidence.
 
-Legacy booleans remain supported for compatibility:
+Legacy booleans remain readable for compatibility, but `worker_status_product_work_claimed` is derived from `worker.runtime_evidence` and cannot be promoted by a standalone boolean:
 
 - `media_source_observed`;
 - `download_or_import_completed`;
@@ -51,7 +51,14 @@ Structured v2 evidence must include:
   "worker": {
     "mode": "regular",
     "entrypoint": "regular_stage_worker",
-    "run_id": "safe_id"
+    "run_id": "safe_id",
+    "runtime_evidence": {
+      "confirmed": true,
+      "implementation_status": "product_work_implemented",
+      "worker_status": "succeeded",
+      "invocation_observed": true,
+      "product_work_claimed": true
+    }
   },
   "input": {
     "source_kind": "real_download_manifest|readiness_approved_manifest",
@@ -106,10 +113,10 @@ Until R2/R3 are explicitly confirmed, real DB/queue writes should be staged or g
 The product evidence producer requires explicit opt-ins:
 
 - `PF_PROOF_ENABLE_REGULAR_WORKER_PRODUCT_EVIDENCE=true`
-- `PF_REGULAR_WORKER_PRODUCT_WORK_CONFIRMED=true`
 - `PF_REGULAR_WORKER_PRODUCT_MANIFEST_FILE` or `PF_REAL_ICLOUD_BATCH1_MANIFEST_FILE`
+- `PF_REGULAR_WORKER_RUNTIME_STATUS_FILE` pointing to durable product-capable worker status evidence
 
-These flags are not a substitute for real media/geocode/display proofs. They only make the worker product evidence bridge explicit and auditable.
+`PF_REGULAR_WORKER_PRODUCT_WORK_CONFIRMED` is not proof authority. Product-work confirmation must be derived from a successful observed `regular_stage_worker` runtime status with a non-`instrumentation_only` implementation and `productWork.claimed: true`.
 
 ## Non-claims
 
@@ -125,7 +132,7 @@ These flags are not a substitute for real media/geocode/display proofs. They onl
 
 ## Product evidence producer proof
 
-`proof:regular-worker-product-evidence-producer` converts a safe manifest plus explicit regular-worker product-work confirmation into a redacted `PF_RASPBERRY_REGULAR_STAGE_WORKER_PRODUCT_EVIDENCE_FILE` compatible artifact.
+`proof:regular-worker-product-evidence-producer` converts a safe manifest plus validated regular-worker runtime product evidence into a redacted `PF_RASPBERRY_REGULAR_STAGE_WORKER_PRODUCT_EVIDENCE_FILE` compatible artifact.
 
 It writes:
 
@@ -144,7 +151,7 @@ npm run proof:raspberry-regular-stage-worker-product-pipeline
 
 - a redacted real/download or readiness-approved media GPS source;
 - a normalized geocode address artifact from a provider-chain or accepted cache output;
-- explicit product-work confirmation.
+- durable regular-worker runtime evidence confirming product work.
 
 The generated evidence may set:
 

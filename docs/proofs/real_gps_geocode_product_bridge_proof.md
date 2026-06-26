@@ -19,7 +19,7 @@ The proof is blocked by default. A passing run requires:
 
 ```bash
 export PF_PROOF_ENABLE_REAL_GPS_GEOCODE_PRODUCT_BRIDGE=true
-export PF_REGULAR_WORKER_PRODUCT_WORK_CONFIRMED=true
+export PF_REGULAR_WORKER_RUNTIME_STATUS_FILE=/path/to/regular-stage-worker-status.json
 export PF_REAL_GPS_GEOCODE_MANIFEST_FILE=/path/to/redacted_manifest_with_gps.json
 export PF_REAL_GPS_GEOCODE_ADDRESS_EVIDENCE_FILE=/path/to/normalized_real_geocode_address.json
 ```
@@ -40,6 +40,8 @@ The GPS source must be one of:
 - `provider_coordinate_fixture`
 
 The bridge verifies that the normalized address artifact coordinate matches the accepted GPS evidence within proof tolerance and that the address artifact does not include provider secrets or raw provider payload.
+
+Product-work confirmation is derived from the worker runtime status. A manual confirmation flag is ignored, and `implementationStatus: instrumentation_only` keeps the bridge blocked.
 
 ## Generated output
 

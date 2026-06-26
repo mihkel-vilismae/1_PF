@@ -1,3 +1,7 @@
+/**
+ * Verifies bridge evidence-pack generation and runtime-status handoff.
+ * Ensures generated env files never assert worker product confirmation.
+ */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, writeFileSync, readFileSync } from 'node:fs';
@@ -13,8 +17,22 @@ import {
   writeRealGpsGeocodeEvidencePack,
 } from '../tools/real-gps-geocode-product-bridge-evidence-pack-lib.mjs';
 
+/** Creates an isolated evidence-pack fixture directory. */
 function fixtureDir() { return mkdtempSync(join(tmpdir(), 'pf-gps-geocode-pack-')); }
+/** Writes one JSON fixture and returns its path. */
 function writeJson(dir, name, value) { const path = join(dir, name); writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`); return path; }
+/** Writes product-capable regular-worker runtime status with optional overrides. */
+function writeWorkerStatus(dir, overrides = {}) {
+  return writeJson(dir, 'regular-worker-status.json', {
+    worker: 'regular_stage_worker',
+    status: 'succeeded',
+    invocation_observed: true,
+    implementationStatus: 'product_work_implemented',
+    productWork: { claimed: true, runId: 'runtime-pack-run' },
+    finishedAt: '2026-06-21T00:00:00.000Z',
+    ...overrides,
+  });
+}
 
 function buildGpsManifest() {
   const manifest = buildSampleDownloadManifest();
@@ -59,12 +77,13 @@ test('evidence pack passes when manifest GPS and normalized address evidence are
   const dir = fixtureDir();
   const manifestPath = writeJson(dir, 'manifest.json', buildGpsManifest());
   const addressPath = writeJson(dir, 'address.json', buildAddressArtifact());
+  const workerStatusPath = writeWorkerStatus(dir);
   const result = evaluateRealGpsGeocodeProductBridgeEvidencePack({
     PF_PROOF_ENABLE_REAL_GPS_GEOCODE_PRODUCT_BRIDGE_EVIDENCE_PACK: 'true',
     PF_PROOF_ENABLE_REAL_GPS_GEOCODE_PRODUCT_BRIDGE: 'true',
-    PF_REGULAR_WORKER_PRODUCT_WORK_CONFIRMED: 'true',
     PF_REAL_GPS_GEOCODE_MANIFEST_FILE: manifestPath,
     PF_REAL_GPS_GEOCODE_ADDRESS_EVIDENCE_FILE: addressPath,
+    PF_REGULAR_WORKER_RUNTIME_STATUS_FILE: workerStatusPath,
     PF_REAL_GPS_GEOCODE_SOURCE_KIND: 'readiness_approved_manifest',
   }, { cwd: dir });
   assert.equal(result.proofStatus, 'PASSED');
@@ -84,12 +103,13 @@ test('evidence pack passes with standalone media GPS evidence file', () => {
     redaction: { private_paths_redacted: true, secrets_redacted: true, raw_media_included: false },
   });
   const addressPath = writeJson(dir, 'address.json', buildAddressArtifact());
+  const workerStatusPath = writeWorkerStatus(dir);
   const result = evaluateRealGpsGeocodeProductBridgeEvidencePack({
     PF_PROOF_ENABLE_REAL_GPS_GEOCODE_PRODUCT_BRIDGE_EVIDENCE_PACK: 'true',
     PF_PROOF_ENABLE_REAL_GPS_GEOCODE_PRODUCT_BRIDGE: 'true',
-    PF_REGULAR_WORKER_PRODUCT_WORK_CONFIRMED: 'true',
     PF_REAL_GPS_GEOCODE_MEDIA_EVIDENCE_FILE: mediaPath,
     PF_REAL_GPS_GEOCODE_ADDRESS_EVIDENCE_FILE: addressPath,
+    PF_REGULAR_WORKER_RUNTIME_STATUS_FILE: workerStatusPath,
   }, { cwd: dir });
   assert.equal(result.proofStatus, 'PASSED');
   assert.equal(result.gps_evidence.source, 'media_evidence_file');
@@ -99,10 +119,12 @@ test('generated latest.env contains exact bridge proof variables', () => {
   const lines = buildBridgeEnvLines({
     mediaEvidencePath: '/repo/runtime_data/operator_evidence/media.json',
     addressEvidencePath: '/repo/runtime_data/operator_evidence/address.json',
+    workerRuntimeStatusPath: '/repo/runtime_data/scheduler/regular-stage-worker-status.json',
     sourceKind: 'readiness_approved_manifest',
   });
   assert.ok(lines.includes('PF_PROOF_ENABLE_REAL_GPS_GEOCODE_PRODUCT_BRIDGE=true'));
-  assert.ok(lines.includes('PF_REGULAR_WORKER_PRODUCT_WORK_CONFIRMED=true'));
+  assert.ok(lines.includes('PF_REGULAR_WORKER_RUNTIME_STATUS_FILE=/repo/runtime_data/scheduler/regular-stage-worker-status.json'));
+  assert.equal(lines.some((line) => line.startsWith('PF_REGULAR_WORKER_PRODUCT_WORK_CONFIRMED=')), false);
   assert.ok(lines.some((line) => line.startsWith('PF_REAL_GPS_GEOCODE_MEDIA_EVIDENCE_FILE=')));
   assert.ok(lines.some((line) => line.startsWith('PF_REAL_GPS_GEOCODE_ADDRESS_EVIDENCE_FILE=')));
   assert.ok(lines.some((line) => line.startsWith('PF_NORMALIZED_REAL_GEOCODE_ADDRESS_FILE=')));
@@ -124,13 +146,36 @@ test('coordinate mismatch keeps pack blocked instead of failed shell path', () =
   const address = buildAddressArtifact();
   address.coordinate.latitude = 58.3776;
   const addressPath = writeJson(dir, 'wrong-address.json', address);
+  const workerStatusPath = writeWorkerStatus(dir);
+  const result = evaluateRealGpsGeocodeProductBridgeEvidencePack({
+    PF_PROOF_ENABLE_REAL_GPS_GEOCODE_PRODUCT_BRIDGE_EVIDENCE_PACK: 'true',
+    PF_PROOF_ENABLE_REAL_GPS_GEOCODE_PRODUCT_BRIDGE: 'true',
+    PF_REAL_GPS_GEOCODE_MANIFEST_FILE: manifestPath,
+    PF_REAL_GPS_GEOCODE_ADDRESS_EVIDENCE_FILE: addressPath,
+    PF_REGULAR_WORKER_RUNTIME_STATUS_FILE: workerStatusPath,
+  }, { cwd: dir });
+  assert.equal(result.proofStatus, 'BLOCKED');
+  assert.match(result.block_reasons.join('; '), /latitude does not match/);
+});
+
+test('evidence pack remains blocked when runtime status is instrumentation only', () => {
+  const dir = fixtureDir();
+  const manifestPath = writeJson(dir, 'manifest.json', buildGpsManifest());
+  const addressPath = writeJson(dir, 'address.json', buildAddressArtifact());
+  const workerStatusPath = writeWorkerStatus(dir, {
+    implementationStatus: 'instrumentation_only',
+    productWork: { claimed: false },
+  });
   const result = evaluateRealGpsGeocodeProductBridgeEvidencePack({
     PF_PROOF_ENABLE_REAL_GPS_GEOCODE_PRODUCT_BRIDGE_EVIDENCE_PACK: 'true',
     PF_PROOF_ENABLE_REAL_GPS_GEOCODE_PRODUCT_BRIDGE: 'true',
     PF_REGULAR_WORKER_PRODUCT_WORK_CONFIRMED: 'true',
     PF_REAL_GPS_GEOCODE_MANIFEST_FILE: manifestPath,
     PF_REAL_GPS_GEOCODE_ADDRESS_EVIDENCE_FILE: addressPath,
+    PF_REGULAR_WORKER_RUNTIME_STATUS_FILE: workerStatusPath,
   }, { cwd: dir });
+
   assert.equal(result.proofStatus, 'BLOCKED');
-  assert.match(result.block_reasons.join('; '), /latitude does not match/);
+  assert.ok(result.missing_for_bridge.includes('product-capable regular_stage_worker runtime evidence'));
+  assert.match(result.block_reasons.join('; '), /instrumentation_only/);
 });

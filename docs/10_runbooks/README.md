@@ -46,6 +46,7 @@ Slice 17 moved this documentation-governance runbook into the canonical runbook 
 - [Documentation Workflow and Inventory](documentation_workflow_and_inventory.md)
 
 The old `docs/categorized/other_documentation/documentation_workflow_and_inventory.md` path remains a compatibility pointer only. Use the canonical runbook path for new references.
+- [Windows Runner Status Terminal UI](windows_runner_status_terminal_ui.md) — root `full_windows_runner_status.cmd` launcher, Start All / Stop All / Refresh Status menu, and moved script layout.
 - [Windows Full Launcher Runbook](windows_full_launcher.md) — full Windows startup script with dependency install, tests, dual API/frontend tabs, and browser opening.
 
 - [GPS Metadata Sources](gps_metadata_sources.md) — EXIF, JSON/XMP/text sidecar, filename-token, and path-token coordinate source examples for the GPS parser stage.

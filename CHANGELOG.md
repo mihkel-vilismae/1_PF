@@ -1,3 +1,41 @@
+## 2026-06-22 15:09 EEST — v0.10.19
+
+### Added
+- Added shared regular-worker runtime evidence validation for product-work proof.
+
+### Changed
+- Product evidence producers and GPS/geocode bridges now derive confirmation from durable worker status.
+- Evidence packs now emit a worker runtime status path instead of manual confirmation.
+
+### Fixed
+- Prevented `instrumentation_only` worker status and generated bridge evidence from overstating product implementation.
+
+### Removed
+- Removed manual `PF_REGULAR_WORKER_PRODUCT_WORK_CONFIRMED` as proof authority.
+
+## 0.10.20 - Regular worker B3 stage-state-machine product path
+
+- Implemented `regular_stage_worker` product work as a durable B3 stage-state-machine instead of instrumentation-only status.
+- Reused the same backend actions as the B-test View manual Run buttons: B3.1 download, B3.2 index, B3.3 GPS, B3.4 geocode, and B3.5 queue prepare.
+- Added `runtime_data/scheduler/regular-stage-worker-state.json`, product output, and `regular-stage-worker-status.json` fields proving `implementationStatus=b3_stage_state_machine_v1` and `productWork.claimed=true` after a completed queue-prepare cycle.
+- Updated regular-worker product evidence producer to auto-derive a safe readiness manifest from the latest PASSED `real_download_continuation` proof when no manifest env is configured.
+- Added focused tests for the B3 state machine and auto-manifest evidence path.
+
+## 2026-06-22 14:57 EEST — v0.10.18
+
+### Added
+- Added exact platform-specific known-failure tracking to the full-test proof.
+- Added regression assessments that separate known-only Windows failures from unexpected failures.
+
+### Changed
+- Full-test proof output now reports matched, unexpected, and registered-but-not-observed failures.
+
+### Fixed
+- Prevented recurring Windows-only failures from obscuring whether a full-suite run introduced additional regressions.
+
+### Removed
+- None.
+
 ## 2026-06-22 14:52 EEST — v0.10.17
 
 ### Added

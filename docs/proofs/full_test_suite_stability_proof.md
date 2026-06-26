@@ -10,6 +10,19 @@ It executes the complete Node test suite through the checked-in local `tsx` depe
 - The command, arguments, exit code, signal, duration, timeout setting, and test counts were recorded.
 - Timeout and non-zero exits are represented honestly as `TIMED_OUT` or `FAILED`.
 - Sanitized output tails are available for diagnosis without storing unlimited logs in Git.
+- Platform-specific known failures are matched by exact test name and platform, then reported separately from unexpected regressions.
+
+## Known-failure assessment
+
+The proof records one regression assessment:
+
+- `CLEAN`: the suite passed.
+- `KNOWN_FAILURES_ONLY`: every parsed failure exactly matches the current platform's registry.
+- `UNEXPECTED_FAILURES`: at least one failure is not registered for the current platform.
+- `INCOMPLETE_FAILURE_DETAIL`: the parsed failure names do not account for the reported failure count.
+- `TIMED_OUT`: the suite exceeded its timeout.
+
+Known failures remain failures. This assessment does not change the proof status, command exit code, or test semantics. Registry entries include a stable ID, exact test name, applicable platform, and reason. Entries not observed in a run are reported for later removal review.
 
 ## What it does not prove
 

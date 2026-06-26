@@ -1,3 +1,7 @@
+/**
+ * Verifies stage ordering and structured regular-worker evidence evaluation.
+ * Keeps worker product truth bound to embedded runtime provenance.
+ */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { buildRegularWorkerProductPipelineContract, evaluateRegularWorkerProductEvidenceAgainstContract, REGULAR_WORKER_PRODUCT_PIPELINE_STAGES } from '../tools/regular-worker-product-pipeline-contract-lib.mjs';
@@ -23,6 +27,7 @@ test('regular worker product evidence is incomplete until all v1 flags are true'
     geocode_completed: true,
     queue_prepared: true,
     worker_status_product_work_claimed: true,
+    worker: { runtime_evidence: { confirmed: true, implementation_status: 'product_work_implemented', worker_status: 'succeeded', invocation_observed: true, product_work_claimed: true } },
   });
   assert.equal(complete.complete, true);
   assert.deepEqual(complete.missingFlags, []);
@@ -36,6 +41,7 @@ test('regular worker product evidence distinguishes core completion from enrichm
     index_completed: true,
     queue_prepared: true,
     worker_status_product_work_claimed: true,
+    worker: { runtime_evidence: { confirmed: true, implementation_status: 'product_work_implemented', worker_status: 'succeeded', invocation_observed: true, product_work_claimed: true } },
     input: { source_kind: 'readiness_approved_manifest', items_seen: 1, items_eligible: 1 },
     selected_media: { media_id: 'safe_media' },
     product_record: { created: true, has_media_asset: true },

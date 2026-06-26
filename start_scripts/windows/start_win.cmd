@@ -3,7 +3,8 @@ REM Starts the 12_PF dashboard on Windows from the repository root.
 REM Checks Node/npm availability, installs dependencies when missing,
 REM then opens separate terminals for the API server and Vite frontend.
 setlocal
-cd /d "%~dp0"
+for %%I in ("%~dp0..\..") do set "REPO_ROOT=%%~fI"
+cd /d "%REPO_ROOT%"
 
 REM If the repo-local .env is missing, seed it from the parent folder.
 REM This supports setups where the private .env is kept outside the Git repo.
@@ -68,13 +69,13 @@ if errorlevel 1 (
 )
 
 echo [INFO] Starting 12_PF API server in a new terminal...
-start "12_PF API" cmd /k "cd /d ""%~dp0"" && npm run api"
+start "12_PF API" cmd /k "cd /d ""%REPO_ROOT%"" && npm run api"
 
 echo [INFO] Starting 12_PF frontend in a new terminal...
-start "12_PF Frontend" cmd /k "cd /d ""%~dp0"" && npm run dev"
+start "12_PF Frontend" cmd /k "cd /d ""%REPO_ROOT%"" && npm run dev"
 
 echo [INFO] Starting component status monitor in a new terminal...
-start "12_PF Status" cmd /k "cd /d ""%~dp0"" && powershell -NoProfile -ExecutionPolicy Bypass -File ""%~dp0start_scripts\start_component_status.ps1"""
+start "12_PF Status" cmd /k "cd /d ""%REPO_ROOT%"" && powershell -NoProfile -ExecutionPolicy Bypass -File ""%REPO_ROOT%\start_scripts\start_component_status.ps1"""
 
 echo [INFO] Startup commands launched.
 echo [INFO] API: usually http://127.0.0.1:4301

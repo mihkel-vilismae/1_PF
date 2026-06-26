@@ -10,11 +10,11 @@ import { join } from 'node:path';
 import { createProofEnvelope, runCommand, sanitizeEvidence } from './proof-utils.mjs';
 
 const REQUIRED_PROJECT_COMMANDS = Object.freeze([
-  'start_win_full.cmd',
-  'start_live_windows_native_playback_proof.cmd',
-  'start_live_windows_native_video_playback_proof.cmd',
-  'start_live_windows_native_recovery_proof.cmd',
-  'start_live_windows_scheduler_proof.cmd',
+  'start_scripts/windows/start_win_full.cmd',
+  'start_scripts/windows/proofs/start_live_windows_native_playback_proof.cmd',
+  'start_scripts/windows/proofs/start_live_windows_native_video_playback_proof.cmd',
+  'start_scripts/windows/proofs/start_live_windows_native_recovery_proof.cmd',
+  'start_scripts/windows/proofs/start_live_windows_scheduler_proof.cmd',
 ]);
 const REQUIRED_PROOF_DOCS = Object.freeze([
   'docs/proofs/live_windows_native_playback_proof.md',

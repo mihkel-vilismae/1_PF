@@ -1,3 +1,8 @@
+/**
+ * Builds safe GPS/geocode bridge templates and operator handoff variables.
+ * Points to worker runtime status without generating product confirmation.
+ * Keeps missing evidence BLOCKED while still exporting diagnostics.
+ */
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join, relative, sep, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -17,6 +22,7 @@ import {
 } from './real-gps-geocode-product-bridge-lib.mjs';
 import { resolveWorkerInputFromDownloadManifest } from './regular-worker-product-evidence-lib.mjs';
 import { validateNormalizedGeocodeAddressArtifact } from './real-geocode-provider-adapter-lib.mjs';
+import { evaluateRegularWorkerRuntimeProductEvidence, resolveRegularWorkerRuntimeStatusPath } from './regular-worker-runtime-evidence-lib.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const repoRoot = dirname(dirname(__filename));
@@ -106,12 +112,13 @@ export function buildNormalizedGeocodeAddressTemplate({ latitude = 59.437, longi
   };
 }
 
-export function buildBridgeEnvLines({ mediaEvidencePath, manifestPath, addressEvidencePath, sourceKind = 'readiness_approved_manifest', productWorkConfirmed = true } = {}) {
+/** Builds bridge environment lines without a manual product-work assertion. */
+export function buildBridgeEnvLines({ mediaEvidencePath, manifestPath, addressEvidencePath, workerRuntimeStatusPath, sourceKind = 'readiness_approved_manifest' } = {}) {
   const lines = [
     'PF_PROOF_ENABLE_REAL_GPS_GEOCODE_PRODUCT_BRIDGE=true',
-    `PF_REGULAR_WORKER_PRODUCT_WORK_CONFIRMED=${productWorkConfirmed ? 'true' : 'false'}`,
     `PF_REAL_GPS_GEOCODE_SOURCE_KIND=${sourceKind}`,
   ];
+  if (workerRuntimeStatusPath) lines.push(`PF_REGULAR_WORKER_RUNTIME_STATUS_FILE=${repoRelative(workerRuntimeStatusPath)}`);
   if (mediaEvidencePath) lines.push(`PF_REAL_GPS_GEOCODE_MEDIA_EVIDENCE_FILE=${repoRelative(mediaEvidencePath)}`);
   if (manifestPath) lines.push(`PF_REAL_GPS_GEOCODE_MANIFEST_FILE=${repoRelative(manifestPath)}`);
   if (addressEvidencePath) {
@@ -121,12 +128,15 @@ export function buildBridgeEnvLines({ mediaEvidencePath, manifestPath, addressEv
   return lines;
 }
 
+/** Validates pack inputs and worker runtime evidence before claiming readiness. */
 export function evaluateRealGpsGeocodeProductBridgeEvidencePack(env = process.env, opts = {}) {
   const cwd = opts.cwd ?? process.cwd();
   const sourceKind = opts.sourceKind ?? env.PF_REAL_GPS_GEOCODE_SOURCE_KIND ?? env.PF_WORKER_INPUT_SOURCE_KIND ?? 'readiness_approved_manifest';
   const manifestPath = firstExistingPath(env.PF_REAL_GPS_GEOCODE_MANIFEST_FILE, env.PF_REGULAR_WORKER_PRODUCT_MANIFEST_FILE, env.PF_WORKER_REAL_DOWNLOAD_BRIDGE_MANIFEST_FILE, env.PF_REAL_ICLOUD_BATCH1_MANIFEST_FILE);
   const mediaEvidencePath = firstExistingPath(env.PF_REAL_GPS_GEOCODE_MEDIA_EVIDENCE_FILE);
   const addressEvidencePath = firstExistingPath(env.PF_REAL_GPS_GEOCODE_ADDRESS_EVIDENCE_FILE, env.PF_NORMALIZED_REAL_GEOCODE_ADDRESS_FILE);
+  const workerRuntimeStatusPath = resolveRegularWorkerRuntimeStatusPath(env, { cwd });
+  const workerRuntimeEvidence = evaluateRegularWorkerRuntimeProductEvidence(env, { cwd });
   const manifest = readJsonFile(manifestPath, { cwd });
   const mediaEvidence = readJsonFile(mediaEvidencePath, { cwd });
   const addressEvidence = readJsonFile(addressEvidencePath, { cwd });
@@ -140,14 +150,15 @@ export function evaluateRealGpsGeocodeProductBridgeEvidencePack(env = process.en
   if (!manifestPath && !mediaEvidencePath) missing.push('PF_REAL_GPS_GEOCODE_MEDIA_EVIDENCE_FILE or PF_REAL_GPS_GEOCODE_MANIFEST_FILE');
   if (!addressEvidencePath) missing.push('PF_REAL_GPS_GEOCODE_ADDRESS_EVIDENCE_FILE or PF_NORMALIZED_REAL_GEOCODE_ADDRESS_FILE');
   if (!isTruthy(env.PF_PROOF_ENABLE_REAL_GPS_GEOCODE_PRODUCT_BRIDGE)) missing.push('PF_PROOF_ENABLE_REAL_GPS_GEOCODE_PRODUCT_BRIDGE=true');
-  if (!isTruthy(env.PF_REGULAR_WORKER_PRODUCT_WORK_CONFIRMED)) missing.push('PF_REGULAR_WORKER_PRODUCT_WORK_CONFIRMED=true');
+  if (!workerRuntimeEvidence.confirmed) missing.push('product-capable regular_stage_worker runtime evidence');
 
   const requirements = [
     requirement('bridge_evidence_pack_opt_in', isTruthy(env.PF_PROOF_ENABLE_REAL_GPS_GEOCODE_PRODUCT_BRIDGE_EVIDENCE_PACK) || isTruthy(env.PF_PROOF_ENABLE_REAL_GPS_GEOCODE_PRODUCT_BRIDGE), 'Set PF_PROOF_ENABLE_REAL_GPS_GEOCODE_PRODUCT_BRIDGE_EVIDENCE_PACK=true or PF_PROOF_ENABLE_REAL_GPS_GEOCODE_PRODUCT_BRIDGE=true.'),
     requirement('gps_source_path_configured', Boolean(manifestPath || mediaEvidencePath), 'Set PF_REAL_GPS_GEOCODE_MEDIA_EVIDENCE_FILE or PF_REAL_GPS_GEOCODE_MANIFEST_FILE.'),
     requirement('address_evidence_path_configured', Boolean(addressEvidencePath), 'Set PF_REAL_GPS_GEOCODE_ADDRESS_EVIDENCE_FILE or PF_NORMALIZED_REAL_GEOCODE_ADDRESS_FILE.'),
     requirement('bridge_opt_in_ready_for_latest_env', true, 'latest.env will include PF_PROOF_ENABLE_REAL_GPS_GEOCODE_PRODUCT_BRIDGE=true.'),
-    requirement('product_work_confirmation_ready_for_latest_env', true, 'latest.env will include PF_REGULAR_WORKER_PRODUCT_WORK_CONFIRMED=true; operator must only use it when product work is intended/confirmed.'),
+    requirement('worker_runtime_status_ready_for_latest_env', true, 'latest.env will point to PF_REGULAR_WORKER_RUNTIME_STATUS_FILE; product-work confirmation is derived from that runtime evidence.'),
+    requirement('worker_runtime_product_work_confirmed', workerRuntimeEvidence.confirmed, workerRuntimeEvidence.reasons.join('; ') || 'regular_stage_worker runtime evidence confirms product work.'),
   ];
   if (manifestPath) requirements.push(requirement('manifest_parsed', Boolean(manifest.value), manifest.reason));
   if (mediaEvidencePath) requirements.push(requirement('media_gps_evidence_parsed', Boolean(mediaEvidence.value), mediaEvidence.reason));
@@ -166,6 +177,7 @@ export function evaluateRealGpsGeocodeProductBridgeEvidencePack(env = process.en
       manifest_path: manifestPath ?? null,
       media_evidence_path: mediaEvidencePath ?? null,
       address_evidence_path: addressEvidencePath ?? null,
+      worker_runtime_status_path: workerRuntimeStatusPath,
     },
     parsed: {
       manifest: Boolean(manifest.value),
@@ -177,6 +189,7 @@ export function evaluateRealGpsGeocodeProductBridgeEvidencePack(env = process.en
     media_validation: mediaValidation,
     address_validation: addressValidation,
     address_gps_validation: addressGpsValidation,
+    worker_runtime_evidence: workerRuntimeEvidence,
     missing_for_bridge: missing,
     block_reasons: blockReasons(requirements),
     next_steps: buildEvidencePackNextSteps({ missing, mediaEvidencePath, manifestPath, addressEvidencePath }),
@@ -210,6 +223,7 @@ export function getRealGpsGeocodeEvidencePackOutputPaths({ outputDirectory = joi
   };
 }
 
+/** Writes sanitized templates, runtime-status handoff, report, and next steps. */
 export async function writeRealGpsGeocodeEvidencePack(result, { outputDirectory = join(repoRoot, 'runtime_data', 'operator_evidence', 'real_gps_geocode_product_bridge_evidence_pack'), now = new Date().toISOString() } = {}) {
   const paths = getRealGpsGeocodeEvidencePackOutputPaths({ outputDirectory });
   await mkdir(paths.outputDirectory, { recursive: true });
@@ -224,8 +238,8 @@ export async function writeRealGpsGeocodeEvidencePack(result, { outputDirectory 
     mediaEvidencePath: mediaPathForEnv,
     manifestPath: manifestPathForEnv,
     addressEvidencePath: addressPathForEnv,
+    workerRuntimeStatusPath: result?.configured_paths?.worker_runtime_status_path,
     sourceKind: result?.source_kind ?? 'readiness_approved_manifest',
-    productWorkConfirmed: true,
   });
   await writeFile(paths.mediaGpsTemplatePath, `${JSON.stringify(sanitizeEvidence(mediaTemplate), null, 2)}\n`, 'utf8');
   await writeFile(paths.normalizedAddressTemplatePath, `${JSON.stringify(sanitizeEvidence(addressTemplate), null, 2)}\n`, 'utf8');

@@ -3,7 +3,8 @@ REM Windows full startup wrapper for the PF_login photo-frame dashboard.
 REM Delegates dependency install, repo-local mpv setup, test execution, dual-tab launch,
 REM and browser opening to start_scripts\start_win_full.ps1.
 setlocal
-cd /d "%~dp0"
+for %%I in ("%~dp0..\..") do set "REPO_ROOT=%%~fI"
+cd /d "%REPO_ROOT%"
 
 where powershell >nul 2>nul
 if errorlevel 1 (
@@ -12,7 +13,7 @@ if errorlevel 1 (
   exit /b 1
 )
 
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0start_scripts\start_win_full.ps1"
+powershell -NoProfile -ExecutionPolicy Bypass -File "%REPO_ROOT%\start_scripts\start_win_full.ps1"
 set "EXIT_CODE=%ERRORLEVEL%"
 if not "%EXIT_CODE%"=="0" (
   echo [ERROR] start_win_full.ps1 failed with exit code %EXIT_CODE%.
