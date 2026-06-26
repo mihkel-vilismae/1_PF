@@ -1,3 +1,18 @@
+## 2026-06-26 12:53 EEST — v0.10.32
+
+### Added
+- None.
+
+### Changed
+- Merged the divergent `origin/master` workflow-skill history into local `master`.
+- Bumped repository/package version from `0.10.31` to `0.10.32` for the merge baseline.
+
+### Fixed
+- Resolved merge conflicts in repo-local skill metadata and version/package metadata while preserving the newer local skill guidance.
+
+### Removed
+- None.
+
 ## 2026-06-26 11:22 EEST — v0.10.31
 
 ### Added
@@ -3791,3 +3806,18 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 ## DATE_NOT_RECORDED
 ## v0.9.6
 - Add real iCloud evidence ZIP/package contract proof.
+
+## 2026-06-26 05:22 EEST — v0.10.22
+
+### Added
+- Added the repo-local `changelog-governance` skill for safer changelog, version metadata, hook, and documentation-history work.
+- Added the repo-local `operator-menu-acr-normalizer` skill for regression-aware PF_login operator-menu ACR and UI contract normalization.
+
+### Changed
+- Updated root, package, and lockfile version metadata to `0.10.22`.
+
+### Fixed
+- None
+
+### Removed
+- None
