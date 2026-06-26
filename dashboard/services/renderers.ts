@@ -28,7 +28,7 @@ type LogEntry = {
   details?: TransportDetails | Record<string, unknown> | null;
 };
 
-type HistoryEntry = LogEntry & {
+export type HistoryEntry = LogEntry & {
   source?: string;
 };
 

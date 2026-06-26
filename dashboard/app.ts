@@ -146,17 +146,18 @@ function handleB5ActivityKeyDown(): void {
 function render() {
   const state = getState();
   const hasLiveTraffic = transitTerminal.hasLiveTraffic();
+  const nonV2DashboardVisualMode = dashboardVisualMode === 'v2' ? null : dashboardVisualMode;
   const viewMarkup = {
-    A: renderInitView(state, dashboardVisualMode),
-    B: renderTestView(state, dashboardVisualMode),
-    C: renderLastRunView(state, dashboardVisualMode),
+    A: renderInitView(state, nonV2DashboardVisualMode),
+    B: renderTestView(state, nonV2DashboardVisualMode),
+    C: renderLastRunView(state, nonV2DashboardVisualMode),
     D: renderRunningProcessView(state),
     E: renderDatabaseViewerView(state),
     WIN: renderOsPlaybackView(state, OS_PLAYBACK_PLATFORMS.windows),
     RPI: renderOsPlaybackView(state, OS_PLAYBACK_PLATFORMS.raspberry),
     V2: renderV2OperatorMenuView(),
     DEBUG: renderDebugView(state, __APP_VERSION__),
-  }[state.activeView] ?? renderInitView(state, dashboardVisualMode);
+  }[state.activeView] ?? renderInitView(state, nonV2DashboardVisualMode);
 
   document.body.classList.toggle('modal-open', Boolean(state.modal) || dashboardVisualMode === null);
   document.body.classList.toggle('show-marked-for-removal', Boolean(state.showMarkedForRemoval));
@@ -179,7 +180,7 @@ function render() {
   if (dashboardVisualMode === 'v2') {
     app.innerHTML = `
       ${renderVersionBadge(__APP_VERSION__, backendVersionState)}
-      ${renderV2StartupOperatorMenuView(v2OperatorSidebarRoute)}
+      ${renderV2StartupOperatorMenuView(v2OperatorSidebarRoute, state.history, getHistoryCopyButtonLabel())}
     `;
     restoreScrollSnapshotAfterLayout(app, scrollSnapshot);
     if (!liveUpdatesPaused) {
@@ -1196,7 +1197,7 @@ function bindEvents() {
       setActiveView(id, `${id} — ${label?.name ?? ''}`);
       // Trigger safe preloads or refresh actions depending on the selected view.
       if (id === 'A') {
-        const plan = buildViewARefreshPlan(dashboardVisualMode);
+        const plan = buildViewARefreshPlan(dashboardVisualMode === 'v2' ? null : dashboardVisualMode);
         plan.actions.forEach((action) => runAction(action));
         pushHistory('VIEW_A', 'info', 'View A preload/refresh plan executed.', {
           actions: plan.actions,

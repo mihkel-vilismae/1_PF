@@ -110,3 +110,15 @@ Therefore every requested nine-page placement below still needs V2 placement tes
 ## Regression Boundary
 
 This inventory does not authorize behavior changes. Existing Test Mode, Real Mode, View A, View B, Debug, backend endpoints, worker commands, scheduler routes, proof runners, and runtime artifacts should continue unchanged until a separately scoped implementation slice edits source code and adds focused tests.
+
+
+## v0.10.34 B2 shared infrastructure findings
+
+| V2 target | Current source path | Existing form | Endpoint/handler | Existing tests/proofs | Reuse decision | Missing V2 proof/test | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Shared V2 page wrapper | `dashboard/views/v2OperatorPageWrapper.ts` | reusable wrapper | none | `tests/v2OperatorSidebarImplementation.test.js` | reuse for all future V2 page shells | extend when `07`-`09` are added | visual/tested |
+| V2 Event history panel | `dashboard/views/v2OperatorPageWrapper.ts`, `dashboard/services/renderers.ts` | reused renderer + wrapper panel | existing local `copy-history` / `clear-history` actions in `dashboard/app.ts` | `tests/v2OperatorSidebarImplementation.test.js`, `tests/eventHistoryExport.test.js` | reuse; do not duplicate event log HTML per page | placement test for future `07`-`09` pages | visual/tested |
+| V2 implementation-status metadata | `dashboard/data/v2ImplementationStatus.json`, `dashboard/data/v2ImplementationStatus.ts` | structured JSON + TS accessor | none | `tests/v2OperatorSidebarImplementation.test.js` | reuse as B3 overlay data source | B3 overlay toggle/highlight tests | foundation/tested |
+| V2 block status attributes | `dashboard/views/v2StartupOperatorMenuView.ts` | render-time data attributes | none | `tests/v2OperatorSidebarImplementation.test.js` | keep metadata-driven; no inline optimistic claims | B3 tooltip/overlay tests | foundation/tested |
+
+B2 deliberately does not move requested Setup/Auth/Startup/Workers/Troubleshooting/PIR/Playback cards. Those remain later reuse/extraction batches.

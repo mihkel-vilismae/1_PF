@@ -1,3 +1,21 @@
+## 2026-06-26 13:36 EEST — v0.10.34
+
+### Added
+- Added `dashboard/views/v2OperatorPageWrapper.ts` as the shared V2 page wrapper foundation.
+- Added `dashboard/data/v2ImplementationStatus.json` and `dashboard/data/v2ImplementationStatus.ts` as the V2 status/help metadata foundation.
+- Added V2 Event history placement inside the shared wrapper, reusing the existing event-history renderer and copy/clear actions.
+
+### Changed
+- Bumped repository/package version from `0.10.33` to `0.10.34` and synchronized `package-lock.json`.
+- Updated the V2 startup operator shell to render through the shared wrapper and attach status metadata attributes to V2 blocks.
+- Updated V2 OpenSpec/status/inventory docs to record the B2 shared-infrastructure boundary.
+
+### Fixed
+- Fixed the package-lock version mismatch from the previous `0.10.33` inventory baseline.
+
+### Removed
+- None.
+
 ## 2026-06-26 13:15 EEST — v0.10.33
 
 ### Added

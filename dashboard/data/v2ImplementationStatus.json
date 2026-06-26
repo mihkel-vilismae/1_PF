@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "scope": "v2-only",
+  "sourceDocument": "docs/20_architecture_and_specs/openspec/V2_ImplementationStatus.md",
+  "legend": {
+    "done": {
+      "label": "Done / proven",
+      "color": "green",
+      "meaning": "Implemented and supported by relevant tests or proofs."
+    },
+    "in-progress": {
+      "label": "In progress",
+      "color": "yellow",
+      "meaning": "Shell or foundation exists, but placement/functionality/proof coverage is incomplete."
+    },
+    "not-implemented": {
+      "label": "Not implemented",
+      "color": "red",
+      "meaning": "Documented requirement exists, but there is no working implementation yet."
+    }
+  },
+  "elements": [
+    {
+      "id": "v2.shared.page-wrapper",
+      "label": "Shared V2 page wrapper",
+      "status": "in-progress",
+      "summary": "Reusable V2 shell foundation that owns sidebar/main layout and shared event-history placement."
+    },
+    {
+      "id": "v2.shared.event-history",
+      "label": "V2 Event history panel",
+      "status": "in-progress",
+      "summary": "Reuses the existing event-history renderer and copy/clear actions inside V2 pages."
+    },
+    {
+      "id": "v2.shared.status-help-metadata",
+      "label": "V2 status/help metadata foundation",
+      "status": "in-progress",
+      "summary": "Structured metadata backing future Explain controls, Explain values, and Implementation status overlays."
+    },
+    {
+      "id": "v2.page.setup",
+      "label": "01 SETUP",
+      "status": "in-progress",
+      "summary": "Existing visual-only V2 page. Requested real setup cards are not moved in this batch."
+    },
+    {
+      "id": "v2.page.authentication",
+      "label": "02 AUTHENTICATION",
+      "status": "in-progress",
+      "summary": "Existing visual-only V2 page. Requested NEW AUTH card is not moved in this batch."
+    },
+    {
+      "id": "v2.page.startup",
+      "label": "03 STARTUP",
+      "status": "in-progress",
+      "summary": "Existing visual-only V2 page. Raspberry crontab controls are not wired in this batch."
+    },
+    {
+      "id": "v2.page.workers",
+      "label": "04 WORKERS",
+      "status": "in-progress",
+      "summary": "Existing visual-only V2 page. B3.1-B3.5 worker controls are not moved in this batch."
+    },
+    {
+      "id": "v2.page.troubleshooting",
+      "label": "05 TROUBLESHOOTING",
+      "status": "in-progress",
+      "summary": "Existing visual-only V2 page. Stale-lock controls are not moved in this batch."
+    },
+    {
+      "id": "v2.page.recovery",
+      "label": "06 RECOVERY",
+      "status": "in-progress",
+      "summary": "Existing visual-only V2 page. Recovery placeholder buttons and real recovery are future batches."
+    },
+    {
+      "id": "v2.page.pir",
+      "label": "07 PIR",
+      "status": "not-implemented",
+      "summary": "Sidebar/page shell is planned for B1/B7 and is not present in this batch."
+    },
+    {
+      "id": "v2.page.playback",
+      "label": "08 PLAYBACK",
+      "status": "not-implemented",
+      "summary": "Sidebar/page shell is planned for B1/B8 and is not present in this batch."
+    },
+    {
+      "id": "v2.page.real-playback",
+      "label": "09 REAL PLAYBACK",
+      "status": "not-implemented",
+      "summary": "Final endpoint remains future/explanation-only until isolated pages are proven."
+    }
+  ]
+}

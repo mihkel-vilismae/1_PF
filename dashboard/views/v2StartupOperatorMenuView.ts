@@ -5,49 +5,31 @@
  */
 import { V2_OPERATOR_CENTER_PANEL_PAGES, type V2OperatorActionItem, type V2OperatorCenterPanelBlock, type V2OperatorSectionItem } from '../data/v2OperatorCenterPanel.ts';
 import { V2_OPERATOR_SIDEBAR_ITEMS, type V2OperatorSidebarRoute } from '../data/v2OperatorSidebar.ts';
+import { getV2BlockStatusId, getV2ImplementationStatusElement } from '../data/v2ImplementationStatus.ts';
+import { type HistoryEntry } from '../services/renderers.ts';
 import { escapeHtml } from '../services/renderers/sharedRendererUtils.ts';
+import { renderV2OperatorPageWrapper } from './v2OperatorPageWrapper.ts';
 
-export function renderV2StartupOperatorMenuView(activeRoute: V2OperatorSidebarRoute): string {
+export function renderV2StartupOperatorMenuView(activeRoute: V2OperatorSidebarRoute, history: HistoryEntry[] = [], historyCopyButtonLabel = 'copy all log'): string {
   const activeItem = V2_OPERATOR_SIDEBAR_ITEMS.find((item) => item.route === activeRoute) ?? V2_OPERATOR_SIDEBAR_ITEMS[0];
   const activePage = V2_OPERATOR_CENTER_PANEL_PAGES[activeItem.route];
 
-  return `
-    <div class="shell v2-operator-shell" data-v2-operator-shell>
-      <aside class="sidebar v2-operator-sidebar">
-        <div class="brand-card v2-operator-brand">
-          <p class="eyebrow">Photo frame operator workspace</p>
-          <h1>V2</h1>
-          <p class="brand-copy">Six-item operator shell. Entry is visual-only and does not run auth, workers, crontab, database, troubleshooting, or recovery actions.</p>
-        </div>
-
-        <nav class="nav-card v2-operator-nav" aria-label="V2 operator menu" data-v2-left-sidebar data-v2-sidebar-count="${V2_OPERATOR_SIDEBAR_ITEMS.length}">
-          ${V2_OPERATOR_SIDEBAR_ITEMS.map((item) => renderV2SidebarItem(item, activeItem.route)).join('')}
-        </nav>
-      </aside>
-
-      <main class="main-panel v2-operator-main" data-scroll-preserve="v2-operator-main">
-        <header class="topbar v2-operator-topbar">
-          <div>
-            <p class="eyebrow">V2</p>
-            <h1>${escapeHtml(activePage.title)}</h1>
-            <p class="v2-operator-summary">${escapeHtml(activePage.summary)}</p>
-          </div>
-          <span class="pill">Visual-only blocks</span>
-        </header>
-
-        <section class="v2-center-panel" aria-label="V2 selected operator area" data-v2-center-panel data-v2-active-route="${escapeHtml(activeItem.route)}">
-          <header class="card card--feature v2-center-panel__intro">
-            <div>
-              <p class="card__code">${escapeHtml(activeItem.order)}</p>
-              <h3>${escapeHtml(activeItem.label)}</h3>
-            </div>
-            <span class="pill">${escapeHtml(activeItem.subtitle)}</span>
-          </header>
-          ${activePage.blocks.map(renderV2CenterPanelBlock).join('')}
-        </section>
-      </main>
-    </div>
+  const sidebarMarkup = `
+    <nav class="nav-card v2-operator-nav" aria-label="V2 operator menu" data-v2-left-sidebar data-v2-sidebar-count="${V2_OPERATOR_SIDEBAR_ITEMS.length}">
+      ${V2_OPERATOR_SIDEBAR_ITEMS.map((item) => renderV2SidebarItem(item, activeItem.route)).join('')}
+    </nav>
   `;
+  const centerPanelMarkup = activePage.blocks.map(renderV2CenterPanelBlock).join('');
+
+  return renderV2OperatorPageWrapper({
+    activeItem,
+    activeRoute: activeItem.route,
+    activePage,
+    sidebarMarkup,
+    centerPanelMarkup,
+    history,
+    historyCopyButtonLabel,
+  });
 }
 
 function renderV2SidebarItem(item: (typeof V2_OPERATOR_SIDEBAR_ITEMS)[number], activeRoute: V2OperatorSidebarRoute): string {
@@ -93,7 +75,7 @@ function renderV2CenterPanelBlock(block: V2OperatorCenterPanelBlock): string {
 
 function renderSimpleBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'infoPanel' | 'statusCard' | 'snapshotViewer' | 'snapshotList' | 'futurePlaceholder' }>): string {
   return `
-    <article class="card v2-block v2-block--${escapeHtml(block.type)}" data-v2-block-type="${escapeHtml(block.type)}" data-v2-block-id="${escapeHtml(block.id)}">
+    <article class="card v2-block v2-block--${escapeHtml(block.type)}" data-v2-block-type="${escapeHtml(block.type)}" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
       ${renderBlockHeader(block.title, block.status, block.risk)}
       ${block.body ? `<p class="card__copy">${escapeHtml(block.body)}</p>` : ''}
       ${block.fields ? renderFieldList(block.fields) : ''}
@@ -103,7 +85,7 @@ function renderSimpleBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'i
 
 function renderActionListBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'actionList' | 'exampleList' }>): string {
   return `
-    <article class="card v2-block v2-block--${escapeHtml(block.type)}" data-v2-block-type="${escapeHtml(block.type)}" data-v2-block-id="${escapeHtml(block.id)}">
+    <article class="card v2-block v2-block--${escapeHtml(block.type)}" data-v2-block-type="${escapeHtml(block.type)}" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
       ${renderBlockHeader(block.title, block.type === 'exampleList' ? '*EX' : undefined, block.type === 'exampleList' ? 'future' : undefined)}
       ${block.body ? `<p class="card__copy">${escapeHtml(block.body)}</p>` : ''}
       <div class="v2-action-list" role="list">
@@ -115,7 +97,7 @@ function renderActionListBlock(block: Extract<V2OperatorCenterPanelBlock, { type
 
 function renderSectionGroupBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'sectionGroup' }>): string {
   return `
-    <article class="card v2-block v2-block--sectionGroup" data-v2-block-type="sectionGroup" data-v2-block-id="${escapeHtml(block.id)}">
+    <article class="card v2-block v2-block--sectionGroup" data-v2-block-type="sectionGroup" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
       ${renderBlockHeader(block.title)}
       ${block.body ? `<p class="card__copy">${escapeHtml(block.body)}</p>` : ''}
       <div class="v2-section-grid">
@@ -138,7 +120,7 @@ function renderSectionGroupBlock(block: Extract<V2OperatorCenterPanelBlock, { ty
 
 function renderToggleGroupBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'toggleGroup' }>): string {
   return `
-    <article class="card v2-block v2-block--toggleGroup" data-v2-block-type="toggleGroup" data-v2-block-id="${escapeHtml(block.id)}">
+    <article class="card v2-block v2-block--toggleGroup" data-v2-block-type="toggleGroup" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
       ${renderBlockHeader(block.title, block.status)}
       ${block.body ? `<p class="card__copy">${escapeHtml(block.body)}</p>` : ''}
       ${block.actions ? `<div class="v2-inline-actions">${block.actions.map((item) => renderVisualButton(item)).join('')}</div>` : ''}
@@ -156,7 +138,7 @@ function renderToggleGroupBlock(block: Extract<V2OperatorCenterPanelBlock, { typ
 
 function renderMultiComboRowBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'multiComboRow' }>): string {
   return `
-    <article class="card v2-block v2-block--multiComboRow" data-v2-block-type="multiComboRow" data-v2-block-id="${escapeHtml(block.id)}">
+    <article class="card v2-block v2-block--multiComboRow" data-v2-block-type="multiComboRow" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
       ${renderBlockHeader(block.title, block.status, block.risk)}
       ${block.body ? `<p class="card__copy">${escapeHtml(block.body)}</p>` : ''}
       <div class="v2-multi-combo-row" data-v2-multi-combo-row>
@@ -171,7 +153,7 @@ function renderMultiComboRowBlock(block: Extract<V2OperatorCenterPanelBlock, { t
 
 function renderStageTableBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'stageTable' }>): string {
   return `
-    <article class="card v2-block v2-block--stageTable" data-v2-block-type="stageTable" data-v2-block-id="${escapeHtml(block.id)}">
+    <article class="card v2-block v2-block--stageTable" data-v2-block-type="stageTable" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
       ${renderBlockHeader(block.title, block.status)}
       ${block.body ? `<p class="card__copy">${escapeHtml(block.body)}</p>` : ''}
       ${block.actions ? `<div class="v2-inline-actions">${block.actions.map((item) => renderVisualButton(item)).join('')}</div>` : ''}
@@ -199,6 +181,12 @@ function renderStageTableBlock(block: Extract<V2OperatorCenterPanelBlock, { type
       </div>
     </article>
   `;
+}
+
+function renderV2StatusAttributes(blockId: string): string {
+  const statusId = getV2BlockStatusId(blockId);
+  const status = getV2ImplementationStatusElement(statusId);
+  return `data-v2-status-id="${escapeHtml(statusId)}" data-v2-implementation-status="${escapeHtml(status?.status ?? 'in-progress')}" data-v2-status-help="${escapeHtml(status?.summary ?? 'Status/help metadata foundation is present; detailed control explanation arrives in a later V2 batch.')}"`;
 }
 
 function renderBlockHeader(title: string, status?: string, risk?: string): string {

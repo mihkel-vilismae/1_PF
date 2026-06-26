@@ -68,7 +68,7 @@ The top control `Show marked for removal` must not be part of the V2 page shell.
 
 The `Implementation status` button is scoped to V2 pages only. It must expose reality, not optimism. The overlay should highlight clickable elements and major parent sections/cards using a structured implementation-status JSON file that the V2 frontend can read.
 
-The JSON source, [`V2_ImplementationStatus.md`](V2_ImplementationStatus.md), and the rendered overlay must remain synchronized. The exact JSON path should be chosen during code inventory to match the existing frontend architecture; the requirement is a structured JSON source, not hand-written duplicate status strings scattered across components.
+The frontend-readable JSON source is `dashboard/data/v2ImplementationStatus.json`. That JSON source, [`V2_ImplementationStatus.md`](V2_ImplementationStatus.md), and the rendered V2 status attributes/overlay must remain synchronized. The requirement is a structured JSON source, not hand-written duplicate status strings scattered across components.
 
 | Status/color | Meaning | Required boundary |
 | --- | --- | --- |
@@ -111,7 +111,7 @@ Each V2 page must include an Event Log / Event history panel similar to the refe
 - status chips such as `SUCCESS` or `INFO`;
 - descriptive event text.
 
-The first implementation can reuse existing page-local logs if a shared event component is not yet available, but the architecture target is one reusable Event Log renderer.
+The first shared-infrastructure implementation reuses the existing `renderHistory` event renderer through `dashboard/views/v2OperatorPageWrapper.ts`. Later V2 pages must use that wrapper or an extracted successor rather than duplicating event-log markup.
 
 ## Page `01 SETUP`
 
@@ -563,3 +563,18 @@ Rules:
 ### Next required OpenSpec-to-code handoff
 
 The next implementation checkpoint should be a code inventory/reuse map, not page UI. It should update `V2_ImplementationStatus.md` with actual discovered component paths, endpoints, tests/proofs, and extraction decisions. Only after that inventory is reviewed should V2 shell/sidebar/component placement begin.
+
+
+## v0.10.34 shared infrastructure boundary
+
+Batch B2 establishes the reusable V2 wrapper and status/help metadata foundation without moving old View A/B cards and without wiring new backend behavior.
+
+| Implemented in B2 | Not implemented in B2 |
+| --- | --- |
+| `renderV2OperatorPageWrapper` shared shell wrapper | New sidebar routes `07`, `08`, `09` |
+| V2 Event history panel using existing `renderHistory` | Final `09 REAL PLAYBACK` composition |
+| Existing `copy all log` / `Clear` event actions inside V2 | Screenshot card migration from source pages |
+| `dashboard/data/v2ImplementationStatus.json` metadata source | Interactive Implementation status overlay button |
+| `data-v2-status-id` and `data-v2-implementation-status` attributes | Per-section clickable `?` icons |
+
+The result is infrastructure only: it is allowed to support future V2 UI placement but must not claim real playback, PIR, recovery, scheduler, or worker behavior.
