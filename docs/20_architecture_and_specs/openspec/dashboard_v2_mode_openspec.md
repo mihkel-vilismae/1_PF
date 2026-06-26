@@ -1,6 +1,6 @@
 # Dashboard V2 Mode OpenSpec
 
-Status: documentation-only OpenSpec for a planned third startup mode. No runtime implementation is included in this slice.
+Status: OpenSpec plus first implementation slice. v0.10.27 implements the V2 startup choice and six-item sidebar shell; center-panel actions remain intentionally blank/unimplemented.
 
 ## Purpose
 

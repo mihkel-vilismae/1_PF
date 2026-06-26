@@ -1,9 +1,9 @@
 # V2 Operator Menu left sidebar OpenSpec
 
-Status: implementation-ready OpenSpec / left-sidebar-only contract  
-Project: PF_login / PhotoFrame  
-Baseline lineage: v0.10.20 immutable snapshot, promoted through v0.10.21 docs/version baseline  
-Scope: v2 operator menu left sidebar route list only  
+Status: OpenSpec plus first implementation slice. v0.10.27 implements the six V2 left-sidebar rows; center-panel child layout and actions remain intentionally blank/unimplemented.
+Project: PF_login / PhotoFrame
+Baseline lineage: v0.10.20 immutable snapshot, promoted through v0.10.21 docs/version baseline
+Scope: v2 operator menu left sidebar route list only
 Non-scope: center-panel child layout, backend action wiring, real operator actions, recovery behavior, iCloud authentication behavior, crontab writes, worker execution.
 
 ## Purpose

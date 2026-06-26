@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-06-26 06:55 EEST
+## v0.10.27 - V2 startup mode and six-item sidebar shell
+
+- Bumped repository/package version from `0.10.26` to `0.10.27` for the V2 startup/sidebar implementation baseline.
+- Renamed the planned third startup mode from the earlier Final Release wording to `V2` across the OpenSpec planning docs.
+- Added the third frontend startup gate choice `V2`; selecting it clears the backend runtime mode header instead of introducing an unsupported `v2` backend mode.
+- Added a V2-only startup shell with exactly six left-sidebar rows: `setup.sh`, `authentication.sh`, `startup.sh`, `workers`, `troubleshooting`, and `recovery`, with order metadata separate from labels.
+- Kept the V2 center panel intentionally blank and added focused static tests for the three-choice gate and six-item sidebar contract.
+- Preserved Test Mode, Real Mode, backend actions, auth, DB, crontab, workers, troubleshooting actions, and recovery actions.
+
 ## 2026-06-26 06:45 EEST
 ## v0.10.26 - Large-file containment rule
 

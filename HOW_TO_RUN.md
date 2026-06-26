@@ -24,12 +24,12 @@ S:\_PHOTOFRAMES\PF_login_v0.10.21_final_release_mode_root_docs_full_git\full_win
 
 ## Current launcher and database paths
 
-- Repository/package version: `0.10.23`.
+- Repository/package version: `0.10.27`.
 - Windows launcher: `start_scripts/windows/START_WIN.PS1`.
 - Raspberry launcher: `start_scripts/raspberry/START_RASPBERRYOS.SH`.
 - Canonical SQLite schema: `database/schema.sql`.
 - Existing `.env` and SQLite DB files are preserved by the launchers; the DB is created only when the configured `DB_PATH` does not exist.
-- V2 dashboard mode is specified in OpenSpec only in this baseline; it is not a runnable startup option until a later implementation commit.
+- V2 dashboard mode is now a runnable frontend startup option. It opens the first V2 operator shell with the six left-sidebar rows and an intentionally blank center panel; no backend release actions are wired.
 
 ## Manual
 
