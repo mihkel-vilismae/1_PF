@@ -1,6 +1,6 @@
 # CronEmulator
 
-> Current checkpoint: `v0.10.65`. CronEmulator remains a Windows development/emulation tool only; V2 Startup uses Raspberry real-crontab-oriented controls for the production path.
+> Current checkpoint: `v0.10.66`. CronEmulator remains a Windows development/emulation tool only; V2 Startup uses Raspberry real-crontab-oriented controls for the production path.
 
 
 A lightweight Windows 11 cron emulator dashboard written in Python.

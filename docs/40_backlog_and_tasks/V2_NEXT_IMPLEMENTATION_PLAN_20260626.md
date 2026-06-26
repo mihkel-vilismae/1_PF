@@ -4,7 +4,7 @@ Estonian timestamp: 2026-06-26 18:53 EEST
 
 ## Status
 
-Planning/status document for the implementation sequence through `v0.10.65`. It is not proof that live target-machine playback or recovery has passed.
+Planning/status document for the implementation sequence through `v0.10.66`. It is not proof that live target-machine playback or recovery has passed.
 
 ## Current completed baseline
 
@@ -28,7 +28,7 @@ The previous B6-B12 implementation sequence is complete as code/tests/docs slice
 | 4 | `SEC.1` | Audit dependency vulnerabilities | Existing npm audit warnings remain | Low-regression fix or documented deferral with exact dependency/risk. |
 | 5 | `DOCS.3` | Post-live-proof docs reconciliation | Needed only after live proofs change truth | Update B12 gate status and current-truth docs from actual evidence. |
 
-## Completed sequence through v0.10.65
+## Completed sequence through v0.10.66
 
 | Slice | Delivered in | Current reality |
 | --- | --- | --- |

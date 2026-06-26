@@ -1,6 +1,6 @@
 # Archive
 
-> Current checkpoint: `v0.10.65`. This README is historical/provenance or compatibility material; use the root README, current OpenSpec docs, and current proof evidence for live implementation truth.
+> Current checkpoint: `v0.10.66`. This README is historical/provenance or compatibility material; use the root README, current OpenSpec docs, and current proof evidence for live implementation truth.
 
 Estonian timestamp: 2026-05-24 23:31 EEST
 

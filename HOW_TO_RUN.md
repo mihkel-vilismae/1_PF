@@ -1,6 +1,6 @@
 # How to Run
 
-> Current checkpoint: `v0.10.65`. This file is intentionally short; longer operator detail belongs in `docs/10_runbooks/`.
+> Current checkpoint: `v0.10.66`. This file is intentionally short; longer operator detail belongs in `docs/10_runbooks/`.
 
 ## Use this for quickstart
 
@@ -21,12 +21,12 @@ This is the preferred operator launcher/status helper. It opens the terminal UI 
 Example local absolute path, if this repo was extracted under `S:\_PHOTOFRAMES`:
 
 ```text
-S:\_PHOTOFRAMES\PF_login_v0.10.65_docs2_status_reconciliation_full_git\full_windows_runner_status.cmd
+S:\_PHOTOFRAMES\PF_login_v0.10.66_security_audit_cleanup_full_git\full_windows_runner_status.cmd
 ```
 
 ## Current launcher and database paths
 
-- Repository/package version: `0.10.65`.
+- Repository/package version: `0.10.66`.
 - Windows launcher: `start_scripts/windows/START_WIN.PS1`.
 - Raspberry launcher: `start_scripts/raspberry/START_RASPBERRYOS.SH`.
 - Canonical SQLite schema: `database/schema.sql`.

@@ -1,6 +1,6 @@
 # Current Truth Documentation
 
-> Current checkpoint: `v0.10.65`. Current code includes V2 recovery save/load/autosave/restart-check wiring plus the B12 proof gate; live target-machine playback/recovery evidence still overrides stale prose.
+> Current checkpoint: `v0.10.66`. Current code includes V2 recovery save/load/autosave/restart-check wiring plus the B12 proof gate; live target-machine playback/recovery evidence still overrides stale prose.
 
 Estonian timestamp: 2026-05-24 23:31 EEST
 

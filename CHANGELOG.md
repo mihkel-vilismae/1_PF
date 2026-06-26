@@ -1,3 +1,9 @@
+## 2026-06-26 19:26 EEST — v0.10.66
+
+- Ran 2x ACR over unresolved risks and fixed the sandbox-fixable dependency audit issue.
+- Upgraded Vite to `^8.1.0`, pinned `esbuild` to `0.28.1` via npm overrides, and regenerated the lockfile.
+- Added `SECURITY_AUDIT_TRIAGE_20260626.md` and dependency audit policy tests; `npm audit --audit-level=low` now reports zero vulnerabilities in this checkpoint.
+
 ## 2026-06-26 18:53 EEST — v0.10.65
 
 ### Added

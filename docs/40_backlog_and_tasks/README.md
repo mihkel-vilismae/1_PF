@@ -1,6 +1,6 @@
 # Backlog and Tasks
 
-> Current checkpoint: `v0.10.65`. This README was refreshed in the docs/launcher reconciliation pass; code, focused tests, proof artifacts, and runtime evidence override stale prose.
+> Current checkpoint: `v0.10.66`. This README was refreshed in the docs/launcher reconciliation pass; code, focused tests, proof artifacts, and runtime evidence override stale prose.
 
 Estonian timestamp: 2026-05-24 23:31 EEST
 
