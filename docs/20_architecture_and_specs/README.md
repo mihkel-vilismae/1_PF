@@ -48,6 +48,7 @@ The first controlled vision/spec move placed these canonical files here:
 - [V2 Implementation Status](openspec/V2_ImplementationStatus.md) — Tracks each planned V2 page/control/status and whether it is visual, placeholder, wired, tested, unresolved, or future.
 - [V2 Goal Summary](openspec/V2_GoalSummary.md) — Captures the current operator intent behind the V2 pages and `09 REAL PLAYBACK`.
 - [V2 Issue Register](openspec/V2_IssueRegister.md) — Tracks known V2 design questions and verification gaps.
+- [V2 HR Decision Log](openspec/V2_HRDecisionLog.md) — Records the operator answers to the implementation-planning question set.
 
 The old `docs/categorized/vision_spec_docs/` paths remain compatibility pointers. Keep `docs/categorized/vision_spec_docs/main_readme.md` in place until the old-index replacement slice.
 
@@ -98,6 +99,7 @@ The old `docs/categorized/other_documentation/default_project_settings_and_eleme
 - [V2 Implementation Status](openspec/V2_ImplementationStatus.md) — status tracker for V2 elements and proof gaps.
 - [V2 Goal Summary](openspec/V2_GoalSummary.md) — source-of-truth summary for the current V2 implementation intent.
 - [V2 Issue Register](openspec/V2_IssueRegister.md) — issue register for recovery, PIR, cron, auth, stale locks, file validity, and proof gaps.
+- [V2 HR Decision Log](openspec/V2_HRDecisionLog.md) — answered implementation-planning questions for the V2 path to `09 REAL PLAYBACK`.
 
 - [Raspberry local tool checker OpenSpec](openspec/raspberry_local_tool_checker_openspec.md) — implemented Raspberry tool-readiness preflight contract and non-claims.
 

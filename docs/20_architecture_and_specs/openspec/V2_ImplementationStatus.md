@@ -1,6 +1,6 @@
 # V2 Implementation Status
 
-Estonian timestamp: 2026-06-26 09:34 EEST
+Estonian timestamp: 2026-06-26 10:54 EEST
 
 ## Status
 
@@ -26,9 +26,11 @@ This document is intentionally conservative. A UI element being visible is not e
 
 ## Sync rule
 
-The top-right V2 `Implementation status` UI and each per-section `?` explanation must stay synchronized with this document.
+The top-right V2 `Implementation status` UI, each per-section `?` explanation, and the structured implementation-status JSON file must stay synchronized with this document.
 
-Do not show a green/done state in the UI unless the corresponding row here is `tested` or `proven` with evidence.
+The JSON file is the frontend-readable status source; this document is the human-readable tracker. During implementation, choose a JSON path that fits the dashboard architecture and keep JSON/docs/code in lockstep.
+
+Do not show a green/done state in the UI unless the corresponding row here is `tested` or `proven` with evidence. Initial colors are green = done/proven, yellow = in progress, and red = not implemented.
 
 ## Current baseline summary
 
@@ -64,7 +66,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | Per-section `?` icon | major sections/cards | planned | New shared section wrapper or metadata-driven status control. | V2 status overlay test. |
 | `Explain controls` | top V2 shell | planned | Keep current semantics if already present; otherwise add shared explain mode. | UI test toggles class/markers. |
 | `Explain values` | top V2 shell | planned | Explains status/value rows. | UI test toggles class/markers. |
-| `Implementation status` | top V2 shell | planned | New button; highlights elements by status. | UI test verifies status classes match metadata. |
+| `Implementation status` | V2 shell only | planned | New button; highlights elements by status using structured JSON metadata. | UI test verifies status classes match JSON/docs metadata. |
 | `RPI-STAGES` row | Startup/Workers/Troubleshooting | planned | Shared media-stage status row. | Render/status test. |
 | `RPI-WORKERS` row | Startup/Workers/Troubleshooting/PIR/Playback | planned | Shared worker-call status row. | Render/status test. |
 
@@ -90,7 +92,8 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | Element | Status | Current evidence/notes | Required next proof/test |
 | --- | --- | --- | --- |
 | Raspberry scheduler controls | reused candidate | Existing scheduler panel contains Windows and Raspberry target panels. | Extract/reuse Raspberry-safe panel only; V2 action tests. |
-| Emulator-labeled buttons | needs decision | User requested labels but real path should avoid Windows emulator. | Keep test-only/visual unless explicitly approved. |
+| Scheduler button concepts formerly tied to emulator | planned/needs verification | Keep the button concepts, but wire to real crontab/scheduler behavior, not Windows emulator. | Inspect crontab examples/configs; V2 action tests confirm no Windows emulator dependency. |
+| WSL placeholder controls | future/placeholder | May exist only clearly marked WSL and disabled. | Render test confirms disabled state and labeling. |
 | `RPI-STAGES` | planned | Shared row requested. | Render/status test. |
 | `RPI-WORKERS` | planned | Shared row requested. | Render/status test. |
 | Event Log | extraction needed | Scheduler endpoint terminal exists separately. | Decide relation to global Event Log. |
@@ -125,8 +128,8 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | `SAVE STATE` button | placeholder | First implementation should only alert `SAVE STATE`. | Button alert test. |
 | `LOAD STATE` button | placeholder | First implementation should only alert `LOAD STATE`. | Button alert test. |
 | `EMULATE POWER OFF` button | placeholder | First implementation should only alert `EMULATE POWER OFF`. | Button alert test. |
-| Lightweight saved state | future/needs design | Must be small enough for frequent autosave. | State schema OpenSpec + unit tests. |
-| Autosave | future | Required for real recovery. | Durability/restart test. |
+| Lightweight saved state | future/needs design | At minimum must restore the same current media file/queue context; exact fields remain design-open. | State schema OpenSpec + unit tests. |
+| Autosave | future/needs design | Likely state/stage-change based and/or resource-aware interval; decide after runtime inspection. | Durability/restart test. |
 | Recovery worker | future | Cron-called worker detects restart and loads state. | Raspberry recovery proof. |
 
 ## Page `07 PIR` status
@@ -136,7 +139,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | B5 visible subset | reused candidate | Existing activity model/rendering likely exists, but exact extraction needed. | V2 render test for visible subset only. |
 | Mouse activity | needs verification | Can be tested directly. | Browser/UI activity test. |
 | Keyboard activity | needs verification | Can be tested directly. | Browser/UI activity test. |
-| PIR sensor | needs solution | Signal likely needs emulation/simulation until hardware is available. | PIR emulator contract + later hardware proof. |
+| PIR sensor | needs solution | Add a PIR-emulation button first; real hardware proof comes later. | PIR emulator contract + later hardware proof. |
 | Screen off/on behavior | needs verification | Tier-2 goal. | Inactivity timeout test. |
 | `RPI-WORKERS` | planned | Shared row requested. | Render/status test. |
 | Event Log | extraction needed | Need common placement. | Shared Event Log appears on page. |
@@ -146,12 +149,12 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | Element | Status | Current evidence/notes | Required next proof/test |
 | --- | --- | --- | --- |
 | B4 rendering target/mode subsection | reused candidate | Existing View B B4 rendering controls exist. | V2 render test for visible subsection only. |
-| Drag/drop queue | planned | New client-side or backend-backed queue needs design. | File drop/table test. |
+| Drag/drop queue | planned | New queue accepts images, videos, and other files; non-media entries are reported as not playable when selected. | File drop/table and not-playable handling tests. |
 | Type classification | planned | Must classify image/video/other. | Unit/UI test. |
 | Video duration | planned | Can use browser metadata or backend helper. | Media metadata test. |
-| GPS/address fields | needs verification | Extraction/address may require backend pipeline. | Metadata/pipeline integration proof. |
+| GPS/address fields | needs verification | Extraction/address may require backend pipeline; missing-address policy will use a future toggle. | Metadata/pipeline integration proof plus missing-address handling test. |
 | Fullscreen playback | needs verification | Required for final victory. | Browser/native playback proof. |
-| Address overlay | needs verification | Required for final victory. | UI/proof evidence. |
+| Address overlay | needs verification | Required when address exists; allow/require-address toggle is future design. | UI/proof evidence for visible address and graceful missing-address behavior. |
 | `RPI-WORKERS` | planned | Shared row requested. | Render/status test. |
 | Event Log | extraction needed | Need common placement. | Shared Event Log appears on page. |
 
@@ -161,7 +164,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | --- | --- | --- | --- |
 | Sidebar/page | planned | New page requested. | V2 route/sidebar test. |
 | Explanation text | planned | Initial page should document composition intent. | Render test. |
-| Integrated real operation | future | Must be assembled from proven parts only. | Final autonomous playback proof. |
+| Integrated real operation | future | Must be assembled from proven parts only; test-only controls may appear disabled. | Final autonomous playback proof. |
 | Autonomous recovery | future | Must recover after rough shutdown/power loss. | Final recovery proof. |
 | Screen on/off integration | future | Tier-2 goal. | Activity/recovery/playback integration proof. |
 

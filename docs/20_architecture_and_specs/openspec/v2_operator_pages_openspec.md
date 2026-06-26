@@ -1,6 +1,6 @@
 # V2 Operator Pages OpenSpec
 
-Estonian timestamp: 2026-06-26 09:34 EEST
+Estonian timestamp: 2026-06-26 10:54 EEST
 
 ## Status
 
@@ -17,6 +17,8 @@ The victory goals are defined in [`../v2_goals/goals.md`](../v2_goals/goals.md):
 3. second-tier screen on/off behavior from mouse, keyboard, and PIR activity.
 
 This OpenSpec translates those goals into page structure, component placement, reuse rules, status tracking, and proof boundaries.
+
+The implementation-planning answers are recorded in [`V2_HRDecisionLog.md`](V2_HRDecisionLog.md). Where this OpenSpec previously held an open question, the decision log is the current operator decision source.
 
 ## Implementation boundary
 
@@ -64,19 +66,18 @@ The top control `Show marked for removal` must not be part of the V2 page shell.
 
 ## Implementation status overlay
 
-The `Implementation status` button must expose reality, not optimism. The overlay should highlight clickable elements and major parent sections/cards using the same status vocabulary tracked in [`V2_ImplementationStatus.md`](V2_ImplementationStatus.md).
+The `Implementation status` button is scoped to V2 pages only. It must expose reality, not optimism. The overlay should highlight clickable elements and major parent sections/cards using a structured implementation-status JSON file that the V2 frontend can read.
 
-| Status | Meaning | Suggested visual intent |
+The JSON source, [`V2_ImplementationStatus.md`](V2_ImplementationStatus.md), and the rendered overlay must remain synchronized. The exact JSON path should be chosen during code inventory to match the existing frontend architecture; the requirement is a structured JSON source, not hand-written duplicate status strings scattered across components.
+
+| Status/color | Meaning | Required boundary |
 | --- | --- | --- |
-| `placeholder` | visible only; no real behavior yet | orange/partial |
-| `reused` | existing component is reused or extracted | neutral/blue |
-| `wired` | calls an existing handler/endpoint | blue/active |
-| `tested` | behavior has a test/proof in this V2 placement | green/proven |
-| `needs verification` | may work but lacks current evidence | yellow |
-| `needs solution` | known or suspected gap | red |
-| `future` | documented target, intentionally not implemented yet | gray |
+| green | done/proven | Only use when implementation and tests/proofs support the claim. |
+| yellow | in progress | Use for partial work or actively wired but not fully proven controls. |
+| red | not implemented | Use for planned/missing behavior or known gaps. |
+| additional colors | optional later refinement | Must be documented before use. |
 
-A status shown in UI must match the implementation status document and the available test/proof evidence. If evidence is missing, the status must say so.
+A status shown in UI must match the implementation status document, the structured JSON, and the available test/proof evidence. If evidence is missing, the status must say so.
 
 ## Shared reusable components
 
@@ -188,17 +189,17 @@ The browser UI/new-auth path is preferred. If browser auth proves unreliable, co
 
 ### Scheduler controls rule
 
-The real path must not depend on the Windows custom cron emulator. Raspberry/Raspberry-related cron is preferred. WSL or another Linux-like development route may be considered later for dev/test, but customer-facing victory remains Raspberry-oriented.
+The real path must not depend on the Windows custom cron emulator. Raspberry/Raspberry-related crontab is the implementation target. WSL controls may exist only as clearly marked disabled placeholders for development visibility.
 
-The user also requested these labels from the screenshot to remain considered for the scheduler area:
+The user requested the scheduler button concepts from the screenshot to remain, but their behavior must be repurposed to real crontab/scheduler behavior instead of Windows emulator behavior:
 
-- `Check emulator scheduler`;
-- `Run emulator`;
-- `Stop emulator`;
-- `Install crontab`;
-- `Get active crontab`.
+- `Check emulator scheduler` concept → check real crontab/scheduler state;
+- `Run emulator` concept → run the relevant crontab-backed scheduler/worker action manually or by approved real-path trigger;
+- `Stop emulator` concept → stop/disable the relevant crontab-backed path where supported;
+- `Install crontab` → install project-owned crontab block;
+- `Get active crontab` → print/read active project-owned crontab state.
 
-Because the first three labels are Windows/emulator-oriented, they must be tracked as design-risk controls. They may be visual/test-only in isolated V2 startup, but they must not become part of the final `09 REAL PLAYBACK` real path unless explicitly approved later.
+The final labels may be adjusted during implementation if needed for honesty, but the controls must not call or depend on the deprecated Windows cron emulator. Cron intervals must be customizable, with existing crontab examples/configs inspected before choosing defaults.
 
 ### Raspberry scheduler actions
 
@@ -280,7 +281,11 @@ Future intended behavior:
 
 ### State-size principle
 
-The saved state must be lightweight enough for frequent autosave. It should identify current operational position, current media/queue checkpoint, recovery flags, and enough pipeline context to continue safely. It must not become a giant database dump.
+The saved state must be lightweight enough for frequent autosave. It should identify at least the current media item and queue context so playback can continue from the same file after restart. Exact video timestamp recovery is not required.
+
+The exact recovery-state schema remains a design decision after code inventory. Candidate fields include current media file, queue position, playback mode, screen state, last activity source, worker stage/status, `recovery in progress` flag, scheduler/crontab status, and auth/session readiness. It must not become a giant database dump.
+
+Autosave policy remains open. The expected direction is autosave on important state/stage changes and/or a resource-aware interval after runtime cost is understood.
 
 ## Page `07 PIR`
 
@@ -298,7 +303,7 @@ Add `B5 Screen on-off simulation`, but only the items displayed in the provided 
 
 ### PIR status boundary
 
-Mouse and keyboard can be tested directly. PIR sensor signal likely needs emulation/simulation until target hardware input is proven. PIR must be tracked as `needs solution` or `needs verification` until proven.
+Mouse and keyboard can be tested directly. PIR sensor signal gets an emulation button first: clicking it simulates receiving a PIR signal until real hardware input is available and proven. PIR hardware integration remains a later target.
 
 ### Additional shared rows
 
@@ -339,7 +344,9 @@ After files are added, display them in a table with at least:
 
 ### Invalid/non-media boundary
 
-The drag/drop area may accept other files for operator visibility/testing, but invalid or non-media files must not be allowed to advance far in the real media pipeline. The pipeline must detect/reject corrupt, partial, invalid, or non-media items before they pollute playback.
+The drag/drop area may accept other files for operator visibility/testing. Non-media files may enter the `08 PLAYBACK` queue/table, but when selected for playback the system must handle them gracefully and report that the file is not an image or video instead of trying to play it.
+
+In the real media pipeline, corrupt, partial, invalid, or non-media items must not pollute the database or advance through real media stages. Corrupt/incomplete downloads should be deleted and redownloaded where possible, leveraging provider integrity behavior such as iCloudPD checks when available.
 
 ### Additional shared rows
 
@@ -366,7 +373,7 @@ When proven pieces exist, `09 REAL PLAYBACK` should compose the minimum real ope
 | `08 PLAYBACK` | playback queue/rendering/current media |
 | shared | Event Log and Implementation status overlay |
 
-Do not bring every testing button into `09`. Bring only what is needed for real operation.
+Do not bring every testing button into `09` as active operator behavior. Test-related controls may be present for visibility, but they must be disabled unless explicitly promoted into the real operational path.
 
 ## RPI-STAGES row
 
@@ -398,10 +405,19 @@ Before a moved/reused control is marked ready:
 
 1. locate the original component/control and endpoint;
 2. locate existing tests/proofs for original behavior;
-3. reuse or extend those tests/proofs for the new V2 placement;
-4. update `V2_ImplementationStatus.md` with the actual evidence;
-5. keep unknowns marked as `needs verification`;
-6. keep suspected broken areas marked as `needs solution`.
+3. if the reused control lacks a quick/reasonable test, add that test before continuing; if coverage would be large, document the gap and align before proceeding;
+4. reuse or extend tests/proofs for the new V2 placement;
+5. verify that frontend buttons work and handle backend replies gracefully, including success and error display behavior instead of crashing on failures such as HTTP 500;
+6. verify backend endpoints separately with backend tests/proofs;
+7. update `V2_ImplementationStatus.md` with the actual evidence;
+8. keep unknowns marked as `needs verification`;
+9. keep suspected broken areas marked as `needs solution`.
+
+Final evidence should include both an autonomous playback proof and an autonomous recovery proof. The playback proof should cover auth, one-or-more-file download, pipeline progression, queue insertion, and media display. The recovery proof should simulate abrupt termination/restart and verify the restored state is acceptable for continued operation.
+
+## Address overlay policy
+
+The final address/GPS playback rule is intentionally deferred until implementation design. The UI should plan for a toggle/control that can switch between allowing playback without an address and requiring address data before playback selection. Until that toggle is designed, media with missing address data should be handled honestly and visibly rather than treated as a failure of the entire playback system.
 
 ## Definition of done for `09 REAL PLAYBACK`
 

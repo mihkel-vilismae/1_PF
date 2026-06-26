@@ -1,6 +1,6 @@
 # V2 Real Playback Goals
 
-Estonian timestamp: 2026-06-26 09:26 EEST
+Estonian timestamp: 2026-06-26 10:54 EEST
 
 ## Authority
 
@@ -13,7 +13,8 @@ Companion V2 documents:
 - [`../openspec/v2_operator_pages_openspec.md`](../openspec/v2_operator_pages_openspec.md) — page/component/reuse/proof OpenSpec;
 - [`../openspec/V2_ImplementationStatus.md`](../openspec/V2_ImplementationStatus.md) — current implementation-status tracker;
 - [`../openspec/V2_GoalSummary.md`](../openspec/V2_GoalSummary.md) — operator-planning summary;
-- [`../openspec/V2_IssueRegister.md`](../openspec/V2_IssueRegister.md) — known issues and verification gaps.
+- [`../openspec/V2_IssueRegister.md`](../openspec/V2_IssueRegister.md) — known issues and verification gaps;
+- [`../openspec/V2_HRDecisionLog.md`](../openspec/V2_HRDecisionLog.md) — operator answers to the V2 implementation-planning question set.
 
 
 ## Main goal 1: autonomous playback
@@ -52,7 +53,15 @@ A V2 real playback recovery flow is successful when:
 6. Recovery loads the previous saved state.
 7. The system resumes the real playback pipeline and playback operation independently.
 8. Playback recovery restores the current media item well enough to continue the frame experience; exact timestamp resume is not required. Starting the same video from the beginning is acceptable.
-9. Corrupt, partial, invalid, or non-media files caused by interruption are rejected before they can advance far through the media pipeline.
+9. Corrupt or partial downloaded files are deleted/redownloaded where possible and must not enter the database or advance through the media pipeline.
+10. Corrupt, partial, invalid, or non-media files caused by interruption are rejected before they can advance far through the media pipeline.
+
+
+## Playback queue and address policy
+
+The playback queue may show images, videos, and other/random files for testing and visibility. Non-media files can sit in the queue/table, but when selected the system must report that the file is not an image or video rather than attempting playback.
+
+Address overlay behavior is required when an address exists. The final policy for missing GPS/address data is deferred; implementation should plan a toggle/control that can allow or require address data before playback selection.
 
 ## Tier-2 goal: screen on/off activity behavior
 
@@ -86,7 +95,9 @@ The real playback page should eventually compose only proven or honestly marked 
 
 ## Scheduler direction
 
-The real path should not depend on the Windows custom cron emulator. Raspberry/Raspberry-related runtime is preferred. WSL or a similar Linux-like development path may be considered for development/testing, but the customer-facing target remains Raspberry-oriented unless a later decision changes that.
+The real path must not depend on the Windows custom cron emulator. Raspberry/Raspberry-related runtime and real crontab are preferred. WSL or a similar Linux-like development path may be represented by clearly marked disabled placeholders for development/testing visibility, but the customer-facing target remains Raspberry-oriented unless a later decision changes that.
+
+Cron intervals must be customizable. Existing crontab examples/configs should be inspected before choosing default values.
 
 ## Goal status vocabulary
 

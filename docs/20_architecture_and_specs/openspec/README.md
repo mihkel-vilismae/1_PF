@@ -60,3 +60,5 @@ Current OpenSpec entries:
 
 - [V2 Issue Register](V2_IssueRegister.md) — known issue/problem register for recovery state, corrupted downloads, PIR signal testing, cron direction, auth fallback, stale-lock verification, and fake-readiness risk.
 
+- [V2 HR Decision Log](V2_HRDecisionLog.md) — answered implementation-planning questions for V2 baseline, code inventory, reuse/extraction, recovery, scheduler, PIR, playback, tests/proofs, reporting, and final `09 REAL PLAYBACK` behavior.
+

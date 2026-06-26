@@ -1,6 +1,6 @@
 # V2 Goal Summary
 
-Estonian timestamp: 2026-06-26 09:34 EEST
+Estonian timestamp: 2026-06-26 10:54 EEST
 
 ## Purpose
 
@@ -97,13 +97,13 @@ Do not include `Show marked for removal`.
 
 Each major page section/card should also have a small top-right question/status icon. Clicking it should show the current explanation and implementation state for that section.
 
-The implementation status UI must reflect reality and stay in sync with [`V2_ImplementationStatus.md`](V2_ImplementationStatus.md).
+The implementation status UI must reflect reality and stay in sync with [`V2_ImplementationStatus.md`](V2_ImplementationStatus.md) and the structured JSON file that the V2 frontend reads for overlay data.
 
 ## Recovery intent
 
 The recovery page begins with placeholder buttons, but its real purpose is serious: the system must recover from rough shutdown/power loss.
 
-The future state should be lightweight and autosaved frequently. It should be enough to restore the current operational position, current media item/queue checkpoint, recovery flag, and required worker/runtime state. For playback, restoring the same file and starting it from the beginning is acceptable.
+The future state should be lightweight and autosaved frequently enough to survive rough shutdown. It must at least restore the current media file and queue context so playback can continue from the same file; exact timestamp recovery is not required. The exact schema and autosave policy remain open until code inventory clarifies runtime cost.
 
 ## Known issue attitude
 
@@ -111,12 +111,28 @@ Unsolved problems must be tracked, not hidden.
 
 Examples:
 
-- PIR hardware signal may require emulation;
-- interrupted downloads may leave corrupt/partial files;
-- non-media files must be rejected before playback;
-- Windows cron emulator should not be the real path;
-- stale-lock buttons need verification;
+- PIR hardware signal starts with an emulation button and later gets real hardware proof;
+- interrupted downloads may leave corrupt/partial files, which should be deleted/redownloaded and kept out of the DB/pipeline;
+- non-media files may appear in the `08 PLAYBACK` queue/table, but when selected they must be reported as not image/video instead of played;
+- address/GPS playback policy needs a future allow/require-address toggle;
+- Windows cron emulator is excluded from the real path;
+- WSL controls may exist only as clearly marked disabled placeholders;
+- stale-lock buttons need verification from docs/original commits/tests;
 - browser auth is preferred but command-line auth fallback is acceptable.
+
+## HR decision summary
+
+The implementation-planning question set is recorded in [`V2_HRDecisionLog.md`](V2_HRDecisionLog.md). Important settled decisions:
+
+- implementation starts from the OpenSpec docs package;
+- code inventory precedes UI changes;
+- sidebar order is `07 PIR`, `08 PLAYBACK`, `09 REAL PLAYBACK`;
+- component extraction/reuse is mandatory;
+- `09 REAL PLAYBACK` remains explanation-only until isolated pages are proven;
+- status overlay is V2-only and reads structured JSON;
+- status colors start with green = done/proven, yellow = in progress, red = not implemented;
+- scheduler buttons are crontab-backed, not Windows-emulator-backed;
+- final reports include ZIP artifacts, per-file diffstat, inspection footprint categories, and unresolved risks.
 
 ## Documentation order
 
@@ -127,5 +143,6 @@ Before large UI implementation, the documentation package should be in place:
 3. V2 implementation status;
 4. V2 goal summary;
 5. V2 issue register;
-6. TOC/README references;
-7. ACR review docs.
+6. V2 HR decision log;
+7. TOC/README references;
+8. ACR review docs.
