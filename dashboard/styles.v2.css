@@ -1,0 +1,30 @@
+/*
+ * V2 mode-specific dashboard styling for PF_login.
+ * This stylesheet keeps V2 presentation outside the large shared stylesheet.
+ * It does not add backend calls, runtime actions, or release operations.
+ */
+
+body[data-dashboard-visual-mode="v2"] {
+  --v2-accent: #a78bfa;
+  --v2-accent-soft: rgba(167, 139, 250, 0.18);
+}
+
+.mode-gate__actions {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.mode-choice--v2 {
+  border-color: rgba(167, 139, 250, 0.46);
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.2), rgba(15, 23, 42, 0.88));
+}
+
+body[data-dashboard-visual-mode="v2"] .topbar .eyebrow,
+body[data-dashboard-visual-mode="v2"] .version-badge__value {
+  color: var(--v2-accent);
+}
+
+@media (max-width: 920px) {
+  .mode-gate__actions {
+    grid-template-columns: 1fr;
+  }
+}

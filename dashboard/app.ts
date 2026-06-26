@@ -71,7 +71,7 @@ import { captureScrollSnapshot, restoreScrollSnapshotAfterLayout } from './servi
 
 const app = document.getElementById('app');
 declare const __APP_VERSION__: string;
-type DashboardVisualMode = 'test' | 'real';
+type DashboardVisualMode = 'test' | 'real' | 'v2';
 const TRANSIT_EVENT_NAME = 'dashboard:transit';
 const COPY_HISTORY_LABEL = 'copy all log';
 const SCHEDULER_RUN_LOG_POLL_MS = 5000;
@@ -168,7 +168,9 @@ function render() {
     ? state.modeBanner
     : dashboardVisualMode === 'test'
       ? 'Test Mode'
-      : 'Real Mode';
+      : dashboardVisualMode === 'real'
+        ? 'Real Mode'
+        : 'V2';
   const scrollSnapshot = captureScrollSnapshot(app);
 
   app.innerHTML = `
@@ -384,7 +386,7 @@ function renderModeSelectionGate(): string {
         <p class="eyebrow">Startup choice</p>
         <h1 id="modeGateTitle">Choose dashboard mode</h1>
         <p id="modeGateDescription" class="mode-gate__copy">
-          Select an operating mode before entering the dashboard. Test Mode routes runtime/database/log actions to isolated test storage; Real Mode uses the real configured runtime storage.
+          Select an operating mode before entering the dashboard. Test Mode routes runtime/database/log actions to isolated test storage; Real Mode uses the real configured runtime storage; V2 opens the operator menu shell without enabling release actions.
         </p>
         <div class="mode-gate__actions" aria-label="Dashboard mode choices">
           <button class="mode-choice mode-choice--test" type="button" data-dashboard-visual-mode="test">
@@ -394,6 +396,10 @@ function renderModeSelectionGate(): string {
           <button class="mode-choice mode-choice--real" type="button" data-dashboard-visual-mode="real">
             <span>Real Mode</span>
             <small>Use the real configured runtime data, logs, downloads, and database paths.</small>
+          </button>
+          <button class="mode-choice mode-choice--v2" type="button" data-dashboard-visual-mode="v2">
+            <span>V2</span>
+            <small>Open the v2 operator menu shell. No auth, worker, crontab, database, or recovery actions run on entry.</small>
           </button>
         </div>
       </div>
@@ -1140,11 +1146,19 @@ function normalizeDebugWorkerKey(value: string | null | undefined): DebugWorkerK
 function bindEvents() {
   app.querySelectorAll<HTMLButtonElement>('[data-dashboard-visual-mode]').forEach((button) => {
     button.addEventListener('click', () => {
-      const selectedMode = button.dataset.dashboardVisualMode === 'real' ? 'real' : 'test';
+      const requestedMode = button.dataset.dashboardVisualMode;
+      const selectedMode: DashboardVisualMode = requestedMode === 'real' ? 'real' : requestedMode === 'v2' ? 'v2' : 'test';
       dashboardVisualMode = selectedMode;
-      setDashboardRuntimeMode(selectedMode);
+      // V2 is a frontend-only shell in this slice. Do not send a new backend
+      // runtime header until server-side V2 action boundaries are specified.
+      setDashboardRuntimeMode(selectedMode === 'v2' ? null : selectedMode);
+      if (selectedMode === 'v2') {
+        setActiveView('V2', 'V2');
+      }
       render();
-      tryInitPreload();
+      if (selectedMode !== 'v2') {
+        tryInitPreload();
+      }
     });
   });
 

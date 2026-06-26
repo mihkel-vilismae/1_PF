@@ -1,5 +1,5 @@
 /*
- * Guards the frontend-only Test Mode / Real Mode startup gate implementation.
+ * Guards the frontend-only Test Mode / Real Mode / V2 startup gate implementation.
  * The checks keep the mode selector visible in source while preserving backend boundaries.
  * This test is static so it cannot trigger auth, downloads, scheduler, or playback behavior.
  */
@@ -12,12 +12,15 @@ const indexSource = readFileSync('dashboard/index.html', 'utf8');
 const stylesSource = readFileSync('dashboard/styles.css', 'utf8');
 const testModeStylesSource = readFileSync('dashboard/styles.test.css', 'utf8');
 const realModeStylesSource = readFileSync('dashboard/styles.real.css', 'utf8');
+const v2ModeStylesSource = readFileSync('dashboard/styles.v2.css', 'utf8');
 
-test('dashboard startup gate exposes Test Mode and Real Mode as frontend-only choices', () => {
-  assert.match(appSource, /type DashboardVisualMode = 'test' \| 'real'/);
+test('dashboard startup gate exposes Test Mode, Real Mode, and V2 as frontend-only choices', () => {
+  assert.match(appSource, /type DashboardVisualMode = 'test' \| 'real' \| 'v2'/);
   assert.match(appSource, /let dashboardVisualMode: DashboardVisualMode \| null = null/);
   assert.match(appSource, /data-dashboard-visual-mode="test"/);
   assert.match(appSource, /data-dashboard-visual-mode="real"/);
+  assert.match(appSource, /data-dashboard-visual-mode="v2"/);
+  assert.match(appSource, /No auth, worker, crontab, database, or recovery actions run on entry/);
   assert.match(appSource, /does not trigger real auth, downloads, scheduler actions, playback, or backend behavior changes/);
 });
 
@@ -42,8 +45,11 @@ test('dashboard visual mode CSS keeps mode styling presentation-only', () => {
   assert.match(indexSource, /href="\.\/styles\.css"/);
   assert.match(indexSource, /href="\.\/styles\.test\.css"/);
   assert.match(indexSource, /href="\.\/styles\.real\.css"/);
+  assert.match(indexSource, /href="\.\/styles\.v2\.css"/);
   assert.match(testModeStylesSource, /body\[data-dashboard-visual-mode="test"\]/);
   assert.match(realModeStylesSource, /Real Mode intentionally has no overrides at this time/);
+  assert.match(v2ModeStylesSource, /body\[data-dashboard-visual-mode="v2"\]/);
+  assert.match(v2ModeStylesSource, /mode-choice--v2/);
   assert.match(stylesSource, /\.shell--mode-gated/);
   assert.match(stylesSource, /\.mode-gate/);
   assert.match(stylesSource, /Mode styles do not change backend calls, runtime actions, or dashboard behavior/);
