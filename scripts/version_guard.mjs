@@ -1,4 +1,8 @@
 #!/usr/bin/env node
+// Maintains repository version metadata for commits and release checks.
+// Validates VERSION, package metadata, and the newest changelog entry.
+// Prepares patch/minor/major bumps from conventional commit messages.
+// Keeps legacy changelog history readable while enforcing structured entries.
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
@@ -21,7 +25,18 @@ function prependChangelogEntry(changelog,entry){ const firstEntry=changelog.matc
 function lastSundayUtcDay(year,monthIndex){ const end=new Date(Date.UTC(year,monthIndex+1,0)); return end.getUTCDate()-end.getUTCDay(); }
 function tallinnSuffix(date){ const y=date.getUTCFullYear(); const start=Date.UTC(y,2,lastSundayUtcDay(y,2),1,0,0); const end=Date.UTC(y,9,lastSundayUtcDay(y,9),1,0,0); const t=date.getTime(); return t>=start && t<end ? 'EEST':'EET'; }
 function formatTallinn(date=new Date()){ const fmt=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Tallinn',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}); const parts=Object.fromEntries(fmt.formatToParts(date).map(p=>[p.type,p.value])); return `${parts.year}-${parts.month}-${parts.day} ${parts.hour}:${parts.minute} ${tallinnSuffix(date)}`; }
-function parseChangelogEntries(text){ const lines=text.split(/\r?\n/); const entries=[]; let cur=null; for(const line of lines){ const m=/^##\s+(\d{4}-\d{2}-\d{2} \d{2}:\d{2} (?:EET|EEST))\s+—\s+v(\d+\.\d+\.\d+)\s*$/.exec(line); if(m){ if(cur) entries.push(cur); cur={timestamp:m[1],version:m[2],bodyLines:[]}; continue; } if(cur) cur.bodyLines.push(line);} if(cur) entries.push(cur); return entries; }
+// Parses structured changelog entries and stops each entry at the next H2 heading,
+// allowing newer structured entries to coexist with preserved legacy headings.
+function parseChangelogEntries(text){
+ const lines=text.split(/\r?\n/); const entries=[]; let cur=null;
+ for(const line of lines){
+  const m=/^##\s+(\d{4}-\d{2}-\d{2} \d{2}:\d{2} (?:EET|EEST))\s+—\s+v(\d+\.\d+\.\d+)\s*$/.exec(line);
+  if(m){ if(cur) entries.push(cur); cur={timestamp:m[1],version:m[2],bodyLines:[]}; continue; }
+  if(cur && /^##\s+/.test(line)){ entries.push(cur); cur=null; }
+  if(cur) cur.bodyLines.push(line);
+ }
+ if(cur) entries.push(cur); return entries;
+}
 function validateStructuredEntry(entry){ const body=entry.bodyLines.join('\n'); const sections=[...body.matchAll(/^###\s+(Added|Changed|Fixed|Removed)\s*$/gm)].map(m=>m[1]); if(sections.length!==4 || new Set(sections).size!==4) throw new Error(`Changelog entry v${entry.version} must include exactly these sections: ${REQUIRED_SECTIONS.join(', ')}`); for(const section of REQUIRED_SECTIONS){ const re=new RegExp(`###\\s+${section}\\s*\\n([\\s\\S]*?)(?=\\n###\\s+|$)`); const m=body.match(re); if(!m) throw new Error(`Changelog entry v${entry.version} is missing section ${section}.`); const items=m[1].split(/\r?\n/).map(x=>x.trim()).filter(Boolean); if(!items.length) throw new Error(`Changelog entry v${entry.version} section ${section} must contain at least one bullet.`); if(items.some(x=>!x.startsWith('- '))) throw new Error(`Changelog entry v${entry.version} section ${section} must use bullet lines.`); } }
 function validateRepo({requireGit=false}={}){ const version=parseSemver(readText('VERSION')); const pkg=parseSemver(readJson('package.json').version); const lockJson=readJson('package-lock.json'); const lock=parseSemver(lockJson.version); const lockRoot=parseSemver(lockJson.packages[''].version); if(cmp(version,pkg)!==0) throw new Error(`VERSION (${version.raw}) and package.json (${pkg.raw}) must match.`); if(cmp(version,lock)!==0) throw new Error(`VERSION (${version.raw}) and package-lock.json (${lock.raw}) must match.`); if(cmp(version,lockRoot)!==0) throw new Error(`VERSION (${version.raw}) and package-lock.json packages[""].version (${lockRoot.raw}) must match.`); const entries=parseChangelogEntries(readText('CHANGELOG.md')); if(!entries.length) throw new Error('CHANGELOG.md must contain at least one version entry.'); if(entries[0].version!==version.raw) throw new Error(`Latest CHANGELOG entry version (${entries[0].version}) must match VERSION (${version.raw}).`); if(cmp(version,parseSemver(ENFORCEMENT_VERSION))>=0) validateStructuredEntry(entries[0]); if(requireGit){ if(!hasGit()) throw new Error('Git repository not available for staged-change validation.'); const staged=stagedFiles(); const missing=missingMetaForCommit(staged); if(missing.length) throw new Error(`Staged change set must include ${missing[0]} whenever other repository files are being committed.`); } return version.raw; }
 function validateCommitMessage(message){ const parsed=parseCommitMessage(message); if(hasGit()){ try{ const head=parseSemver(git(['show','HEAD:VERSION'])); const current=parseSemver(readText('VERSION')); const actual=bumpKind(head,current); const rank={none:0,patch:1,minor:2,major:3}; if(rank[actual] < rank[parsed.requiredBump]) throw new Error(`Commit message requires a ${parsed.requiredBump} bump, but VERSION only changed from ${head.raw} to ${current.raw} (${actual}).`); }catch(err){ if(!/fatal: invalid object name 'HEAD'/.test(String(err.stderr||'')) && !/exists on disk, but not in 'HEAD'/.test(String(err.stderr||''))) throw err; } }

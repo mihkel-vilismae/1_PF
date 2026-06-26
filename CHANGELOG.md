@@ -1,3 +1,19 @@
+## 2026-06-26 11:14 EEST — v0.10.30
+
+### Added
+- Added repo-local Codex skills for changelog governance and operator-menu ACR normalization.
+- Added a dashboard Final Release mode OpenSpec for the planned third startup shell.
+
+### Changed
+- Bumped repository/package version from `0.10.29` to `0.10.30` for the docs/governance baseline.
+
+### Fixed
+- Fixed `scripts/version_guard.mjs` so structured changelog validation stops at the next legacy H2 heading instead of absorbing preserved history.
+- Updated the root docs quickstart policy test so it validates the current structured latest changelog entry and retained legacy runner-history entries.
+
+### Removed
+- None.
+
 ## 2026-06-26 07:12 EEST
 ## v0.10.29 - V2 center-panel original sub-items
 

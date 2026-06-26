@@ -1,3 +1,7 @@
+// Verifies root quickstart docs stay compact and point to canonical runbooks.
+// Keeps root documentation entry points stable as implementation docs move.
+// Protects changelog/version history expectations used by repo guard checks.
+// Uses file-level reads only; no runtime services are started.
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
@@ -37,9 +41,19 @@ test('default project settings require short HOW_TO_RUN and root runner-status h
   assert.match(defaults, /start_scripts\/raspberry/);
 });
 
-test('changelog uses paired date and version headings for the latest entry', () => {
+// Confirms the newest structured changelog entry matches VERSION while
+// preserving legacy runner-history entries below the root changelog marker.
+test('changelog keeps current version entry and legacy runner history', () => {
   const changelog = read('CHANGELOG.md');
-  assert.match(changelog, /^# Changelog\n\n## 2026-06-26 03:24 EEST\n## v0\.10\.20 - Windows runner Start\/Stop terminal tabs hotfix/m);
+  const version = read('VERSION').trim().replaceAll('.', '\\.');
+
+  assert.match(changelog, new RegExp(`^## \\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2} (?:EET|EEST) — v${version}\\s*$`, 'm'));
+  assert.match(changelog, /^### Added\s*$/m);
+  assert.match(changelog, /^### Changed\s*$/m);
+  assert.match(changelog, /^### Fixed\s*$/m);
+  assert.match(changelog, /^### Removed\s*$/m);
+  assert.match(changelog, /^# Changelog\s*$/m);
+  assert.match(changelog, /## 2026-06-26 03:24 EEST\n## v0\.10\.20 - Windows runner Start\/Stop terminal tabs hotfix/);
   assert.match(changelog, /## 2026-06-26 03:05 EEST\n## v0\.10\.20 - Windows runner status parser hotfix/);
   assert.match(changelog, /## 2026-06-26 02:44 EEST\n## v0\.10\.20 - Changelog and quickstart documentation cleanup/);
   assert.match(changelog, /## 2026-06-22 14:57 EEST\n## v0\.10\.20 - Regular worker B3 stage-state-machine product path/);
