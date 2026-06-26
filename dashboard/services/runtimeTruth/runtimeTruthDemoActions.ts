@@ -274,27 +274,81 @@ export function createRuntimeTruthDemoActions({
     });
   }
 
+  // Mirrors backend runtime action outcomes into the shared result surface used by V2 cards.
+  function recordRuntimeBackendResult(key, operation, endpoint, outcome, payload = null, meta = null, error = null) {
+    patchState((draft) => {
+      draft.initResults[key] = {
+        operation,
+        method: endpoint.method,
+        endpoint: endpoint.path,
+        outcome,
+        receivedAt: stamp(),
+        status: meta?.response?.status ?? error?.status ?? null,
+        message: outcome === 'success'
+          ? summarizeRuntimeResultMessage(operation, payload)
+          : summarizeRuntimeErrorMessage(operation, error),
+        payload: outcome === 'success' ? payload : undefined,
+        errorPayload: outcome === 'error' ? (error?.payload ?? meta?.response?.body ?? null) : undefined,
+      };
+    });
+  }
+
+  // Builds a stable, human-readable success message for V2 result surfaces.
+  function summarizeRuntimeResultMessage(operation, payload) {
+    if (payload?.message && typeof payload.message === 'string') {
+      return payload.message;
+    }
+    if (Array.isArray(payload?.messages) && payload.messages.length) {
+      return String(payload.messages[0]);
+    }
+    return `${operation} completed.`;
+  }
+
+  // Builds a stable, human-readable error message for V2 result surfaces.
+  function summarizeRuntimeErrorMessage(operation, error) {
+    if (error?.message && typeof error.message === 'string') {
+      return `${operation} failed: ${error.message}`;
+    }
+    return `${operation} failed.`;
+  }
+
   // Runs the backend detector for persisted pipeline issues.
   function detectPipelineIssues() {
+    const operation = 'Detect pipeline issues';
+    const endpoint = RUNTIME_EXECUTION_ENDPOINTS.pipelineIssuesDetect;
     void runBackendAction({
       key: 'B3-DIAGNOSTICS',
       source: 'PIPELINE',
-      operation: 'Detect pipeline issues',
-      endpoint: RUNTIME_EXECUTION_ENDPOINTS.pipelineIssuesDetect,
+      operation,
+      endpoint,
       execute: detectRuntimePipelineIssues,
-      onSuccess: syncPipelineLockTruth,
+      onSuccess: (payload, meta) => {
+        syncPipelineLockTruth(payload);
+        recordRuntimeBackendResult('B3-DIAGNOSTICS', operation, endpoint, 'success', payload, meta);
+      },
+      onError: (error) => {
+        recordRuntimeBackendResult('B3-DIAGNOSTICS', operation, endpoint, 'error', null, error?.meta ?? null, error);
+      },
     });
   }
 
   // Clears stale persisted pipeline locks through the backend.
   function clearStalePipelineLocksAction() {
+    const operation = 'Clear stale pipeline locks';
+    const endpoint = RUNTIME_EXECUTION_ENDPOINTS.pipelineStaleLocksClear;
     void runBackendAction({
       key: 'B3-DIAGNOSTICS',
       source: 'PIPELINE',
-      operation: 'Clear stale pipeline locks',
-      endpoint: RUNTIME_EXECUTION_ENDPOINTS.pipelineStaleLocksClear,
+      operation,
+      endpoint,
       execute: clearRuntimePipelineStaleLocks,
-      onSuccess: syncPipelineLockTruth,
+      onSuccess: (payload, meta) => {
+        syncPipelineLockTruth(payload);
+        recordRuntimeBackendResult('B3-DIAGNOSTICS', operation, endpoint, 'success', payload, meta);
+      },
+      onError: (error) => {
+        recordRuntimeBackendResult('B3-DIAGNOSTICS', operation, endpoint, 'error', null, error?.meta ?? null, error);
+      },
     });
   }
 

@@ -1,3 +1,18 @@
+## 2026-06-26 16:33 EEST — v0.10.53
+
+### Added
+- Added B9.1 V2 proof tests for pipeline maintenance success and error rendering.
+
+### Changed
+- Bumped repository/package version from `0.10.52` to `0.10.53`.
+- V2 pipeline maintenance actions now mirror their latest backend success/error result into the shared result surface.
+
+### Fixed
+- Pipeline maintenance cards no longer stay at `No backend result yet` after their backend action completes.
+
+### Removed
+- None.
+
 ## 2026-06-26 15:56 EEST — v0.10.46
 
 ### Added
