@@ -29,7 +29,7 @@ body[data-dashboard-visual-mode="v2"] .version-badge__value {
   }
 }
 
-/* V2 startup shell: six left-sidebar rows only. */
+/* V2 startup shell: nine left-sidebar rows only. */
 .v2-operator-shell {
   grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
 }

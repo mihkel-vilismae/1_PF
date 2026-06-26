@@ -8,7 +8,10 @@ export type V2OperatorSidebarRoute =
   | 'startup'
   | 'workers'
   | 'troubleshooting'
-  | 'recovery';
+  | 'recovery'
+  | 'pir'
+  | 'playback'
+  | 'real-playback';
 
 export type V2OperatorSidebarItem = {
   order: string;
@@ -24,6 +27,9 @@ export const V2_OPERATOR_SIDEBAR_ITEMS: readonly V2OperatorSidebarItem[] = [
   { order: '04', label: 'workers', route: 'workers', subtitle: 'status + controls' },
   { order: '05', label: 'troubleshooting', route: 'troubleshooting', subtitle: 'logs + stale locks' },
   { order: '06', label: 'recovery', route: 'recovery', subtitle: 'recovery' },
+  { order: '07', label: 'PIR', route: 'pir', subtitle: 'activity test shell' },
+  { order: '08', label: 'PLAYBACK', route: 'playback', subtitle: 'queue/rendering shell' },
+  { order: '09', label: 'REAL PLAYBACK', route: 'real-playback', subtitle: 'final endpoint plan' },
 ] as const;
 
 export function isV2OperatorSidebarRoute(value: string | null | undefined): value is V2OperatorSidebarRoute {

@@ -1,6 +1,6 @@
 /*
  * Renders the V2 startup-mode operator shell.
- * The left sidebar owns exactly six top-level routes.
+ * The left sidebar owns exactly nine top-level routes.
  * The center panel renders each route's original sub-items as typed visual blocks.
  */
 import { V2_OPERATOR_CENTER_PANEL_PAGES, type V2OperatorActionItem, type V2OperatorCenterPanelBlock, type V2OperatorSectionItem } from '../data/v2OperatorCenterPanel.ts';

@@ -235,6 +235,24 @@ const v2MenuTree: V2MenuNode[] = [
       { id: 'recovery.stored', label: 'currently stored backup snapshots', explanation: 'Navigable snapshot list with protocol version and compatibility status later.' },
     ],
   },
+  {
+    id: 'pir',
+    label: 'PIR',
+    status: 'v2-visual',
+    explanation: 'Route shell for isolated activity detection and screen on-off testing. Real B5 controls and PIR emulator arrive later.',
+  },
+  {
+    id: 'playback',
+    label: 'PLAYBACK',
+    status: 'v2-visual',
+    explanation: 'Route shell for isolated playback queue, rendering mode, fullscreen, and address overlay testing.',
+  },
+  {
+    id: 'realPlayback',
+    label: 'REAL PLAYBACK',
+    status: 'v2-visual',
+    explanation: 'Explanation-only final endpoint shell. It will compose proven startup, workers, recovery, PIR, and playback pieces later.',
+  },
 ];
 
 function regularStage(label: string): V2MenuNode {
@@ -256,6 +274,9 @@ const rootSummary = [
   { label: 'workers', value: 'status + controls', tone: 'v2-visual' },
   { label: 'troubleshooting', value: 'logs + stale locks', tone: 'v2-visual' },
   { label: 'recovery', value: 'snapshot + restore plan', tone: 'v2-visual' },
+  { label: 'PIR', value: 'activity test shell', tone: 'v2-visual' },
+  { label: 'PLAYBACK', value: 'queue/rendering shell', tone: 'v2-visual' },
+  { label: 'REAL PLAYBACK', value: 'final endpoint plan', tone: 'v2-visual' },
 ];
 
 export function renderV2OperatorMenuView(): string {

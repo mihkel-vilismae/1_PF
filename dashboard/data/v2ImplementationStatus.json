@@ -77,20 +77,38 @@
     {
       "id": "v2.page.pir",
       "label": "07 PIR",
-      "status": "not-implemented",
-      "summary": "Sidebar/page shell is planned for B1/B7 and is not present in this batch."
+      "status": "in-progress",
+      "summary": "07 PIR route/page shell is implemented. Real B5 controls and PIR emulator are future B7 work."
     },
     {
       "id": "v2.page.playback",
       "label": "08 PLAYBACK",
-      "status": "not-implemented",
-      "summary": "Sidebar/page shell is planned for B1/B8 and is not present in this batch."
+      "status": "in-progress",
+      "summary": "08 PLAYBACK route/page shell is implemented. Real B4 controls and drag/drop queue are future B8 work."
     },
     {
       "id": "v2.page.real-playback",
       "label": "09 REAL PLAYBACK",
-      "status": "not-implemented",
-      "summary": "Final endpoint remains future/explanation-only until isolated pages are proven."
+      "status": "in-progress",
+      "summary": "09 REAL PLAYBACK route/page shell is implemented as explanation-only. Final integration remains future until isolated pieces are proven."
+    },
+    {
+      "id": "v2.block.07.shell",
+      "label": "07 PIR shell blocks",
+      "status": "in-progress",
+      "summary": "B1 shell/explanation blocks for the future isolated PIR page."
+    },
+    {
+      "id": "v2.block.08.shell",
+      "label": "08 PLAYBACK shell blocks",
+      "status": "in-progress",
+      "summary": "B1 shell/explanation blocks for the future isolated playback page."
+    },
+    {
+      "id": "v2.block.09.goal",
+      "label": "09 REAL PLAYBACK explanation blocks",
+      "status": "in-progress",
+      "summary": "B1 explanation-only blocks for the final integrated endpoint page."
     }
   ]
 }

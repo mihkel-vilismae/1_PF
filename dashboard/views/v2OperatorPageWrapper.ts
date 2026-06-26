@@ -29,7 +29,7 @@ export function renderV2OperatorPageWrapper(options: V2OperatorPageWrapperOption
         <div class="brand-card v2-operator-brand">
           <p class="eyebrow">Photo frame operator workspace</p>
           <h1>V2</h1>
-          <p class="brand-copy">Six-item operator shell. Entry is visual-only and does not run auth, workers, crontab, database, troubleshooting, or recovery actions.</p>
+          <p class="brand-copy">Nine-item operator shell. Entry is visual-only and does not run auth, workers, crontab, database, troubleshooting, or recovery actions.</p>
         </div>
 
         ${options.sidebarMarkup}

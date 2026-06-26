@@ -420,6 +420,90 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
       },
     ],
   },
+  pir: {
+    route: 'pir',
+    title: 'PIR',
+    summary: 'Shell for isolated PIR, mouse, keyboard, and screen on-off testing. Real B5 controls arrive in later batches.',
+    blocks: [
+      {
+        type: 'infoPanel',
+        id: '07.shell',
+        title: '07 PIR shell',
+        body: 'This page is the future isolated proving area for activity detection and screen on-off behavior. B1 adds only the route/page shell so later B7 can reuse or extract the visible B5 subset and add a PIR signal emulator button.',
+        status: 'shell-only',
+        risk: 'future',
+      },
+      {
+        type: 'statusCard',
+        id: '07.boundary',
+        title: 'PIR implementation boundary',
+        body: 'Mouse and keyboard activity can be tested directly later. Real PIR hardware integration remains future; initial V2 behavior should use an emulator button.',
+        status: 'not wired',
+        risk: 'future',
+        fields: [
+          { label: 'Real PIR hardware', value: 'future' },
+          { label: 'PIR emulator button', value: 'planned for B7' },
+          { label: 'Screen on/off logic', value: 'not wired in B1' },
+        ],
+      },
+    ],
+  },
+  playback: {
+    route: 'playback',
+    title: 'PLAYBACK',
+    summary: 'Shell for isolated playback queue, rendering target, and fullscreen testing. Real queue controls arrive in later batches.',
+    blocks: [
+      {
+        type: 'infoPanel',
+        id: '08.shell',
+        title: '08 PLAYBACK shell',
+        body: 'This page is the future isolated proving area for playback selection, drag/drop queue classification, rendering target/mode, fullscreen playback, and address overlay behavior. B1 adds only the route/page shell.',
+        status: 'shell-only',
+        risk: 'future',
+      },
+      {
+        type: 'statusCard',
+        id: '08.boundary',
+        title: 'Playback implementation boundary',
+        body: 'The drag/drop queue, metadata table, non-media handling, rendering controls, and address-missing toggle are planned but not implemented in this route-shell batch.',
+        status: 'not wired',
+        risk: 'future',
+        fields: [
+          { label: 'Drag/drop queue', value: 'planned for B8' },
+          { label: 'Non-media handling', value: 'planned graceful skip/report' },
+          { label: 'Address overlay', value: 'future toggle decision' },
+        ],
+      },
+    ],
+  },
+  'real-playback': {
+    route: 'real-playback',
+    title: 'REAL PLAYBACK',
+    summary: 'Final integrated endpoint page. It remains explanation-only until isolated setup, auth, startup, worker, PIR, playback, troubleshooting, and recovery pieces are proven.',
+    blocks: [
+      {
+        type: 'infoPanel',
+        id: '09.goal',
+        title: '09 REAL PLAYBACK goal',
+        body: 'This page is the final endpoint for autonomous playback and autonomous recovery. It will later compose proven pieces from 03 STARTUP, 04 WORKERS, 06 RECOVERY, 07 PIR, and 08 PLAYBACK. B1 intentionally keeps it explanation-only.',
+        status: 'explanation-only',
+        risk: 'future',
+      },
+      {
+        type: 'actionList',
+        id: '09.sources',
+        title: 'Future source pages',
+        body: 'These entries document the planned composition sources. They are disabled explanation items, not functional controls.',
+        items: [
+          { id: '09.01', label: '03 STARTUP — Raspberry scheduler/crontab readiness', status: 'future source', risk: 'future', interaction: 'disabledPlaceholder' },
+          { id: '09.02', label: '04 WORKERS — media pipeline and worker status', status: 'future source', risk: 'future', interaction: 'disabledPlaceholder' },
+          { id: '09.03', label: '06 RECOVERY — saved state and power-loss recovery', status: 'future source', risk: 'future', interaction: 'disabledPlaceholder' },
+          { id: '09.04', label: '07 PIR — activity and screen on-off behavior', status: 'future source', risk: 'future', interaction: 'disabledPlaceholder' },
+          { id: '09.05', label: '08 PLAYBACK — queue, fullscreen rendering, and address overlay', status: 'future source', risk: 'future', interaction: 'disabledPlaceholder' },
+        ],
+      },
+    ],
+  },
 };
 
 export const V2_OPERATOR_ALLOWED_BLOCK_TYPES: readonly V2OperatorBlockType[] = [

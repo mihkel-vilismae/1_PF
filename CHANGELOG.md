@@ -1,3 +1,19 @@
+## 2026-06-26 14:35 EEST — v0.10.35
+
+### Added
+- Added V2 route/page shells for `07 PIR`, `08 PLAYBACK`, and `09 REAL PLAYBACK`.
+- Added explanation-only center-panel blocks for the new V2 shell routes while preserving the shared V2 wrapper and Event history placement.
+
+### Changed
+- Bumped repository/package version from `0.10.34` to `0.10.35`.
+- Updated V2 route/schema tests, root README V2 sidebar table, V2 implementation-status JSON, and OpenSpec docs for the nine-page shell.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
 ## 2026-06-26 13:36 EEST — v0.10.34
 
 ### Added

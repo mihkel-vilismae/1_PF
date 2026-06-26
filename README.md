@@ -8,12 +8,12 @@ The project is intentionally proof-heavy. Source code, tests, OpenSpec documents
 
 | Field | Value |
 |---|---|
-| Version | `0.10.29` |
+| Version | `0.10.35` |
 | Main dashboard | Vite frontend in `dashboard/` |
 | Backend API | TypeScript server entrypoint at `server/index.ts` |
 | Database schema source | `database/schema.sql` |
 | Current startup choices | `Test Mode`, `Real Mode`, `V2` |
-| V2 status | Startup option, six-item left sidebar, and original visual-only typed center-panel blocks implemented; `09 REAL PLAYBACK` is now documented as the final V2 goal path, not yet implemented |
+| V2 status | Startup option, nine-item left sidebar, shared Event history placement, and visual-only typed center-panel blocks implemented; `09 REAL PLAYBACK` is present as an explanation-only final endpoint shell |
 | Changelog | Release history lives in [`CHANGELOG.md`](CHANGELOG.md), not in this README |
 
 ## What this repo does
@@ -37,7 +37,7 @@ The startup gate has three choices:
 |---|---|
 | `Test Mode` | Existing test/simulation-oriented dashboard behavior |
 | `Real Mode` | Existing real-mode dashboard behavior |
-| `V2` | New operator-menu shell with six left-sidebar rows |
+| `V2` | Operator-menu shell with nine left-sidebar rows |
 
 The V2 sidebar currently contains exactly these top-level rows:
 
@@ -49,8 +49,11 @@ The V2 sidebar currently contains exactly these top-level rows:
 | `04` | `workers` | `workers` |
 | `05` | `troubleshooting` | `troubleshooting` |
 | `06` | `recovery` | `recovery` |
+| `07` | `PIR` | `pir` |
+| `08` | `PLAYBACK` | `playback` |
+| `09` | `REAL PLAYBACK` | `real-playback` |
 
-The order number is display/order metadata and is not part of the label. The V2 center panel now renders the original sub-items as typed visual blocks; auth, worker, database, crontab, troubleshooting, and recovery actions are still not wired from V2.
+The order number is display/order metadata and is not part of the label. The V2 center panel renders typed visual blocks and shell/explanation pages; auth, worker, database, crontab, troubleshooting, recovery, PIR, playback, and real-playback actions are still not wired from V2.
 
 
 ### V2 real playback goal

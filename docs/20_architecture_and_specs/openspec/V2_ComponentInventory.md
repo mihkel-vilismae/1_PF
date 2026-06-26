@@ -49,14 +49,14 @@ On-demand excluded context: no generated proof/runtime artifact payloads were lo
 
 ## Current V2 Baseline Finding
 
-The current V2 UI is not the nine-page V2 operator structure yet. It is a visual-only six-route startup shell:
+The current V2 UI now has the nine-page V2 operator route shell. The requested real controls are still not migrated/wired:
 
 | Evidence | Finding |
 | --- | --- |
 | `dashboard/data/v2OperatorSidebar.ts` | Defines exactly `01` through `06`: setup, authentication, startup, workers, troubleshooting, recovery. |
 | `dashboard/data/v2OperatorCenterPanel.ts` | Defines typed visual center-panel blocks; many actions are `visualOnly`, `guardedAction`, or `disabledPlaceholder`. |
 | `dashboard/views/v2StartupOperatorMenuView.ts` and `dashboard/views/v2OperatorMenuView.ts` | Render V2 visual-only surfaces. |
-| `tests/v2OperatorSidebarImplementation.test.js` | Asserts exactly six routes and visual-only/guarded behavior. |
+| `tests/v2OperatorSidebarImplementation.test.js` | Asserts exactly nine routes, shared wrapper/Event history inheritance, and visual-only/guarded behavior. |
 | `tests/v2OperatorMenuBackendContract.test.js` | Maps existing backend endpoints to older V2 menu rows, but does not prove the requested nine-page placement. |
 
 Therefore every requested nine-page placement below still needs V2 placement tests before any item can be marked green/done for V2.
@@ -91,7 +91,7 @@ Therefore every requested nine-page placement below still needs V2 placement tes
 | Area | Decision |
 | --- | --- |
 | Existing View A/B controls | Reuse/extract; do not copy large HTML blocks. |
-| Existing V2 six-route shell | Treat as prior visual-only implementation, not the requested nine-page V2 structure. |
+| Existing V2 nine-route shell | Treat as visual-only route/page shell, not proof that requested controls are wired. |
 | Runtime endpoints | Keep centralized; V2 must call the same existing service constants/handlers unless a later reviewed contract changes them. |
 | Scheduler | Use Raspberry/real-crontab path for V2 real goal; Windows CronEmulator remains excluded from the real path. |
 | Recovery | Start with exact placeholder alerts only when UI work begins; full recovery remains future proof work. |
@@ -122,3 +122,12 @@ This inventory does not authorize behavior changes. Existing Test Mode, Real Mod
 | V2 block status attributes | `dashboard/views/v2StartupOperatorMenuView.ts` | render-time data attributes | none | `tests/v2OperatorSidebarImplementation.test.js` | keep metadata-driven; no inline optimistic claims | B3 tooltip/overlay tests | foundation/tested |
 
 B2 deliberately does not move requested Setup/Auth/Startup/Workers/Troubleshooting/PIR/Playback cards. Those remain later reuse/extraction batches.
+
+
+## v0.10.35 B1 route-shell findings
+
+| V2 target | Current source path | Existing form | Endpoint/handler | Existing tests/proofs | Reuse decision | Missing V2 proof/test | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `07 PIR / route shell` | `dashboard/data/v2OperatorSidebar.ts`; `dashboard/data/v2OperatorCenterPanel.ts` | visual shell blocks | none | `tests/v2OperatorSidebarImplementation.test.js`; `tests/v2OperatorMenuView.test.js`; `tests/rootReadmeStructure.test.js` | reuse shared V2 wrapper; add B7 controls later | B7 visible B5 subset + PIR emulator tests | visual/tested shell |
+| `08 PLAYBACK / route shell` | `dashboard/data/v2OperatorSidebar.ts`; `dashboard/data/v2OperatorCenterPanel.ts` | visual shell blocks | none | same as above | reuse shared V2 wrapper; add B8 controls later | B8 B4 subset + drag/drop queue tests | visual/tested shell |
+| `09 REAL PLAYBACK / explanation shell` | `dashboard/data/v2OperatorSidebar.ts`; `dashboard/data/v2OperatorCenterPanel.ts` | explanation-only shell blocks | none | same as above | keep explanation-only until proven pieces exist | B10 composition tests + final proof | visual/tested shell |

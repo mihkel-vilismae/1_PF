@@ -36,11 +36,11 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 
 | Area | Current status | Notes |
 | --- | --- | --- |
-| V2 baseline | `visual` | v0.10.29 has startup option, six-item sidebar, and typed visual center-panel blocks. |
+| V2 baseline | `visual` | v0.10.35 has startup option, nine-item sidebar, shared Event history placement, typed visual center-panel blocks, and shell/explanation pages for `07`-`09`. |
 | Goals doc | `documented` | `docs/20_architecture_and_specs/v2_goals/goals.md` defines victory conditions. |
 | New docs package | `planned/documented` | This document and companion OpenSpec files define next implementation direction. |
 | Runtime implementation | `not changed by docs` | Documentation does not wire new backend/runtime behavior. |
-| Shared V2 page wrapper | `visual/tested` | v0.10.34 adds `renderV2OperatorPageWrapper` as a reusable V2 shell wrapper for existing six V2 routes. |
+| Shared V2 page wrapper | `visual/tested` | v0.10.34 adds `renderV2OperatorPageWrapper` as a reusable V2 shell wrapper; v0.10.35 extends the route shell to all nine V2 routes. |
 | V2 Event history panel | `visual/tested` | v0.10.34 renders a reusable V2 event-history panel with existing `copy all log` and `Clear` actions. |
 | V2 status/help metadata foundation | `visual/tested` | v0.10.34 adds `dashboard/data/v2ImplementationStatus.json` plus render-time status data attributes. |
 
@@ -54,15 +54,15 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | `04 WORKERS` | worker stage controls | reuse/extract B3 stage controls | worker endpoint proofs + V2 placement test |
 | `05 TROUBLESHOOTING` | stale lock repair | reuse/extract pipeline maintenance controls | stale-lock behavior proof + V2 placement test |
 | `06 RECOVERY` | recovery placeholder now; real recovery later | alert-only first | placeholder test first; later save/load/autosave/restart proof |
-| `07 PIR` | activity/screen test | visible B5 subset only | mouse/keyboard test; PIR simulation/hardware proof later |
-| `08 PLAYBACK` | queue/rendering test | visible B4 subset + drag/drop queue | rendering/queue tests; address overlay proof later |
-| `09 REAL PLAYBACK` | final endpoint | explanation first, then composition | full autonomous playback + recovery proof |
+| `07 PIR` | activity/screen test | shell implemented; visible B5 subset later | route render test now; mouse/keyboard test and PIR simulation/hardware proof later |
+| `08 PLAYBACK` | queue/rendering test | shell implemented; visible B4 subset + drag/drop queue later | route render test now; rendering/queue tests and address overlay proof later |
+| `09 REAL PLAYBACK` | final endpoint | explanation-only shell implemented; composition later | route render test now; full autonomous playback + recovery proof later |
 
 ## Shared component tracker
 
 | Component | Intended pages | Status | Implementation notes | Evidence target |
 | --- | --- | --- | --- | --- |
-| Event Log / Event history | current V2 pages | visual/tested | `renderV2OperatorPageWrapper` reuses `renderHistory` and existing copy/clear actions. Future pages inherit this wrapper. | V2 shell test confirms panel, copy action, clear action, and renderer use. |
+| Event Log / Event history | all current V2 pages | visual/tested | `renderV2OperatorPageWrapper` reuses `renderHistory` and existing copy/clear actions. v0.10.35 route shells inherit this wrapper. | V2 shell test confirms panel, copy action, clear action, renderer use, and route shells. |
 | Latest backend result panel | Setup/Auth/Startup/Workers/Troubleshooting | reused candidate | Existing `renderResultSurface` should be reused. | Button/action tests confirm result surface updates in V2 context. |
 | Response payload viewer | Setup/Auth/Startup/Workers | reused candidate | Existing JSON payload viewer should be reused. | Scroll/payload rendering test if changed. |
 | Status/source badges | all pages | reused candidate | Existing badge renderers should be reused. | Snapshot/render assertions. |
@@ -79,7 +79,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | --- | --- | --- | --- |
 | `1A Verify .env` | reused candidate | Existing View A control and endpoint are present. | V2 page render + click/action mapping to `POST /api/init/verify-env`. |
 | `2A Database controls` | reused candidate | Existing View A DB buttons are present. | V2 page render + endpoint mapping for check/inspect/delete/recreate. |
-| Event Log | visual/tested | Shared V2 wrapper renders Event history for current V2 pages. | Future B1/B2 extension ensures new pages inherit wrapper. |
+| Event Log | visual/tested | Shared V2 wrapper renders Event history for current V2 pages, including `07`-`09` route shells. | Future page-specific slices must keep using wrapper. |
 
 ## Page `02 AUTHENTICATION` status
 
@@ -88,7 +88,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | `1A-STASH-OFF NEW AUTH` | reused candidate | Existing View A NEW AUTH card and `/api/auth/new/*` actions exist. | V2 render/action test; secret boundary test. |
 | Browser auth path | needs verification | Preferred path; may need runtime evidence. | New-auth proof/evidence pack. |
 | CLI auth fallback | future/documented | Acceptable fallback if UI auth fails. | Runbook/proof once used. |
-| Event Log | visual/tested | Shared V2 wrapper renders Event history for current V2 pages. | Future B1/B2 extension ensures new pages inherit wrapper. |
+| Event Log | visual/tested | Shared V2 wrapper renders Event history for current V2 pages, including `07`-`09` route shells. | Future page-specific slices must keep using wrapper. |
 
 ## Page `03 STARTUP` status
 
@@ -112,7 +112,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | `B3.5 Enqueue playback` | reused candidate | Existing runtime endpoint path known. | V2 render + action test + queue proof. |
 | `RPI-STAGES` | planned | Shared row requested. | Render/status test. |
 | `RPI-WORKERS` | planned | Shared row requested. | Render/status test. |
-| Event Log | visual/tested | Shared V2 wrapper renders Event history for current V2 pages. | Future B1/B2 extension ensures new pages inherit wrapper. |
+| Event Log | visual/tested | Shared V2 wrapper renders Event history for current V2 pages, including `07`-`09` route shells. | Future page-specific slices must keep using wrapper. |
 
 ## Page `05 TROUBLESHOOTING` status
 
@@ -122,7 +122,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | `Clear stale locks` | needs verification | User recalls it may work; exact behavior must be confirmed. | Test/proof documents stale-only clear semantics. |
 | `RPI-STAGES` | planned | Shared row requested. | Render/status test. |
 | `RPI-WORKERS` | planned | Shared row requested. | Render/status test. |
-| Event Log | visual/tested | Shared V2 wrapper renders Event history for current V2 pages. | Future B1/B2 extension ensures new pages inherit wrapper. |
+| Event Log | visual/tested | Shared V2 wrapper renders Event history for current V2 pages, including `07`-`09` route shells. | Future page-specific slices must keep using wrapper. |
 
 ## Page `06 RECOVERY` status
 
@@ -145,7 +145,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | PIR sensor | needs solution | Add a PIR-emulation button first; real hardware proof comes later. | PIR emulator contract + later hardware proof. |
 | Screen off/on behavior | needs verification | Tier-2 goal. | Inactivity timeout test. |
 | `RPI-WORKERS` | planned | Shared row requested. | Render/status test. |
-| Event Log | visual/tested | Shared V2 wrapper renders Event history for current V2 pages. | Future B1/B2 extension ensures new pages inherit wrapper. |
+| Event Log | visual/tested | Shared V2 wrapper renders Event history for current V2 pages, including `07`-`09` route shells. | Future page-specific slices must keep using wrapper. |
 
 ## Page `08 PLAYBACK` status
 
@@ -159,7 +159,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | Fullscreen playback | needs verification | Required for final victory. | Browser/native playback proof. |
 | Address overlay | needs verification | Required when address exists; allow/require-address toggle is future design. | UI/proof evidence for visible address and graceful missing-address behavior. |
 | `RPI-WORKERS` | planned | Shared row requested. | Render/status test. |
-| Event Log | visual/tested | Shared V2 wrapper renders Event history for current V2 pages. | Future B1/B2 extension ensures new pages inherit wrapper. |
+| Event Log | visual/tested | Shared V2 wrapper renders Event history for current V2 pages, including `07`-`09` route shells. | Future page-specific slices must keep using wrapper. |
 
 ## Page `09 REAL PLAYBACK` status
 
@@ -272,3 +272,12 @@ Before any implementation report is final:
 | Status overlay button | `planned` | B2 does not add the interactive `Implementation status` overlay button; that remains B3. |
 | Per-section `?` icons | `planned` | B2 adds data attributes only; clickable question/status icons remain B3. |
 | New pages `07`-`09` | `not implemented` | B2 did not add sidebar routes or page shells for `07 PIR`, `08 PLAYBACK`, or `09 REAL PLAYBACK`. |
+
+
+## v0.10.35 B1 route-shell update
+
+| Element | Status | Evidence/notes | Remaining work |
+| --- | --- | --- | --- |
+| `07 PIR` route/page shell | `visual/tested` | Sidebar route and center-panel shell blocks exist; page inherits shared V2 Event history wrapper. | Add visible B5 subset and PIR emulator in B7. |
+| `08 PLAYBACK` route/page shell | `visual/tested` | Sidebar route and center-panel shell blocks exist; page inherits shared V2 Event history wrapper. | Add visible B4 subset and drag/drop queue in B8. |
+| `09 REAL PLAYBACK` route/page shell | `visual/tested` | Sidebar route and explanation-only blocks exist; page documents future composition sources. | Compose only proven pieces later in B10. |

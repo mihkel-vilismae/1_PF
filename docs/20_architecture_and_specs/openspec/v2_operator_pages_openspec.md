@@ -578,3 +578,17 @@ Batch B2 establishes the reusable V2 wrapper and status/help metadata foundation
 | `data-v2-status-id` and `data-v2-implementation-status` attributes | Per-section clickable `?` icons |
 
 The result is infrastructure only: it is allowed to support future V2 UI placement but must not claim real playback, PIR, recovery, scheduler, or worker behavior.
+
+
+## v0.10.35 B1 route-shell implementation note
+
+B1 implements only the V2 route/page shell for `07 PIR`, `08 PLAYBACK`, and `09 REAL PLAYBACK`.
+
+Acceptance boundary:
+
+- the left sidebar has nine top-level routes in order `01` through `09`;
+- `07 PIR` and `08 PLAYBACK` are shell pages only;
+- `09 REAL PLAYBACK` is explanation-only and lists future composition sources;
+- all new pages inherit the shared V2 wrapper and Event history placement;
+- no setup/auth/scheduler/worker/troubleshooting/recovery/PIR/playback backend behavior is newly wired;
+- no screenshot panels are copied into the new pages.

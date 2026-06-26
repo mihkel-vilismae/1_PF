@@ -14,7 +14,7 @@ test('root README is a project landing page, not a release log', () => {
   assert.doesNotMatch(readme, /^## v\d+\.\d+\.\d+/m);
 });
 
-test('root README documents the implemented V2 startup and six-sidebar state', () => {
+test('root README documents the implemented V2 startup and nine-sidebar state', () => {
   const expectedRows = [
     '| `01` | `setup.sh` | `setup` |',
     '| `02` | `authentication.sh` | `authentication` |',
@@ -22,11 +22,14 @@ test('root README documents the implemented V2 startup and six-sidebar state', (
     '| `04` | `workers` | `workers` |',
     '| `05` | `troubleshooting` | `troubleshooting` |',
     '| `06` | `recovery` | `recovery` |',
+    '| `07` | `PIR` | `pir` |',
+    '| `08` | `PLAYBACK` | `playback` |',
+    '| `09` | `REAL PLAYBACK` | `real-playback` |',
   ];
 
   for (const row of expectedRows) {
     assert.ok(readme.includes(row), `missing V2 sidebar row: ${row}`);
   }
 
-  assert.match(readme, /V2 center panel now renders the original sub-items as typed visual blocks/);
+  assert.match(readme, /V2 center panel renders typed visual blocks and shell\/explanation pages/);
 });

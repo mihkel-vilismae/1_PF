@@ -28,9 +28,15 @@ test('V2 Operator Menu renders planned Structure V1 roots and safety boundary', 
     'workers',
     'troubleshooting',
     'recovery',
+    'PIR',
+    'PLAYBACK',
+    'REAL PLAYBACK',
     'backup DB',
     'current backup snapshot generation policy',
     'currently stored backup snapshots',
+    'activity test shell',
+    'queue/rendering shell',
+    'final endpoint plan',
   ]) {
     assert.match(markup, new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }

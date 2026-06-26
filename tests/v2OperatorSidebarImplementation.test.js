@@ -19,6 +19,9 @@ const expectedItems = [
   ['04', 'workers', 'workers'],
   ['05', 'troubleshooting', 'troubleshooting'],
   ['06', 'recovery', 'recovery'],
+  ['07', 'PIR', 'pir'],
+  ['08', 'PLAYBACK', 'playback'],
+  ['09', 'REAL PLAYBACK', 'real-playback'],
 ];
 
 const expectedBlockTypes = [
@@ -35,16 +38,17 @@ const expectedBlockTypes = [
   'exampleList',
 ];
 
-test('V2 sidebar schema contains exactly six top-level routes with separate order metadata', () => {
+test('V2 sidebar schema contains exactly nine top-level routes with separate order metadata', () => {
   const itemMatches = [...sidebarSource.matchAll(/\{ order: '([^']+)', label: '([^']+)', route: '([^']+)'/g)];
-  assert.equal(itemMatches.length, 6);
+  assert.equal(itemMatches.length, 9);
   assert.deepEqual(itemMatches.map((match) => [match[1], match[2], match[3]]), expectedItems);
-  assert.doesNotMatch(sidebarSource, /label: '0[1-6] /);
+  assert.doesNotMatch(sidebarSource, /label: '0[1-9] /);
 });
 
-test('V2 center-panel schema covers all six routes and allowed typed block kinds', () => {
+test('V2 center-panel schema covers all nine routes and allowed typed block kinds', () => {
   for (const [, label, route] of expectedItems) {
-    assert.match(centerPanelSource, new RegExp(`${route}: \\{[\\s\\S]+title: '${label.replace('.', '\\.').replace('/', '\\/')}'`));
+    const routeKey = route.includes('-') ? `'${route}'` : route;
+        assert.match(centerPanelSource, new RegExp(`${routeKey}: \\{[\\s\\S]+title: '${label.replace('.', '\\.').replace('/', '\\/')}'`));
   }
 
   for (const blockType of expectedBlockTypes) {
@@ -97,12 +101,20 @@ test('V2 shared infrastructure renders event history and status metadata foundat
   assert.match(wrapperSource, /data-action="copy-history"/);
   assert.match(wrapperSource, /data-action="clear-history"/);
   assert.match(wrapperSource, /renderHistory\(history\)/);
+
+  assert.ok(statusRegistry.elements.some((element) => element.id === 'v2.page.pir' && element.status === 'in-progress'));
+  assert.ok(statusRegistry.elements.some((element) => element.id === 'v2.page.playback' && element.status === 'in-progress'));
+  assert.ok(statusRegistry.elements.some((element) => element.id === 'v2.page.real-playback' && element.status === 'in-progress'));
+  assert.match(centerPanelSource, /07 PIR shell/);
+  assert.match(centerPanelSource, /08 PLAYBACK shell/);
+  assert.match(centerPanelSource, /09 REAL PLAYBACK goal/);
+  assert.match(centerPanelSource, /explanation-only/);
   assert.match(viewSource, /data-v2-status-id/);
   assert.match(viewSource, /data-v2-implementation-status/);
 });
 
 test('V2 styling stays in the feature stylesheet', () => {
-  assert.match(stylesSource, /V2 startup shell: six left-sidebar rows only/);
+  assert.match(stylesSource, /V2 startup shell: nine left-sidebar rows only/);
   assert.match(stylesSource, /V2 center panel: original sub-item typed blocks/);
   assert.match(stylesSource, /\.v2-operator-shell/);
   assert.match(stylesSource, /\.v2-center-panel/);
