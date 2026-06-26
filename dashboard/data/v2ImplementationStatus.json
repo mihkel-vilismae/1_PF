@@ -93,6 +93,12 @@
       "summary": "Linked worker type + schedule selector row. Installation must remain previewable and guarded because it writes crontab."
     },
     {
+      "id": "v2.block.03.rpi-scheduler-controls",
+      "label": "startup.sh / 3A Scheduler controls",
+      "status": "in-progress",
+      "summary": "B5.1 renders the Raspberry-focused scheduler controls in V2 Startup. The visible button labels keep the existing scheduler concepts while the buttons carry the Raspberry real-crontab target through existing scheduler backend handlers."
+    },
+    {
       "id": "v2.block.03.sections",
       "label": "startup.sh / Startup sections",
       "status": "in-progress",

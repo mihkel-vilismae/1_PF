@@ -1692,15 +1692,17 @@ function bindEvents() {
         runAction(action, { confirmationSource: 'window.confirm' });
         return;
       }
+      const schedulerTarget = button.dataset.schedulerTarget;
+      const schedulerTargetPayload = schedulerTarget ? { target: schedulerTarget } : {};
       if (action === 'install-crontab') {
         const input = app.querySelector<HTMLTextAreaElement>('[data-scheduler-crontab-input]');
         if (input) {
           setSchedulerEditableCrontab(input.value);
         }
-        runAction(action);
+        runAction(action, schedulerTargetPayload);
         return;
       }
-      runAction(action);
+      runAction(action, schedulerTargetPayload);
     });
   });
 

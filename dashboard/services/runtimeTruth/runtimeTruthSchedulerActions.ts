@@ -56,55 +56,59 @@ export function createRuntimeTruthSchedulerActions({
 }) {
   const { guardAction, endAction } = guards;
 
-  // Checks the CronEmulator process/API without starting it.
-  async function checkEmulatorSchedulerAction() {
+  function resolveSchedulerTarget(options: { target?: string } = {}) {
+    return options?.target ?? getState().selectedSchedulerTarget;
+  }
+
+  // Checks the scheduler process/API without starting it.
+  async function checkEmulatorSchedulerAction(options: { target?: string } = {}) {
     return runSchedulerAction({
       buttonKey: 'check-emulator-scheduler',
       operation: 'Check emulator scheduler',
       endpoint: SCHEDULER_EMULATOR_ENDPOINTS.check,
-      execute: () => checkEmulatorScheduler({ target: getState().selectedSchedulerTarget }),
+      execute: () => checkEmulatorScheduler({ target: resolveSchedulerTarget(options) }),
     });
   }
 
-  // Starts CronEmulator and its internal scheduler loop.
-  async function runEmulatorAction() {
+  // Starts the selected scheduler target.
+  async function runEmulatorAction(options: { target?: string } = {}) {
     return runSchedulerAction({
       buttonKey: 'run-emulator',
       operation: 'Run emulator',
       endpoint: SCHEDULER_EMULATOR_ENDPOINTS.run,
-      execute: () => runEmulator({ target: getState().selectedSchedulerTarget }),
+      execute: () => runEmulator({ target: resolveSchedulerTarget(options) }),
     });
   }
 
-  // Stops the CronEmulator scheduler loop and backend-owned process if present.
-  async function stopEmulatorAction() {
+  // Stops the selected scheduler target if the backend owns a stoppable process.
+  async function stopEmulatorAction(options: { target?: string } = {}) {
     return runSchedulerAction({
       buttonKey: 'stop-emulator',
       operation: 'Stop emulator',
       endpoint: SCHEDULER_EMULATOR_ENDPOINTS.stop,
-      execute: () => stopEmulator({ target: getState().selectedSchedulerTarget }),
+      execute: () => stopEmulator({ target: resolveSchedulerTarget(options) }),
     });
   }
 
-  // Installs the current textarea content into CronEmulator's crontab file.
-  async function installCrontabAction() {
+  // Installs the current textarea content into the selected crontab target.
+  async function installCrontabAction(options: { target?: string } = {}) {
     const crontabText = String(getState().schedulerEmulator?.editableCrontab ?? '');
     return runSchedulerAction({
       buttonKey: 'install-crontab',
       operation: 'Install crontab',
       endpoint: SCHEDULER_EMULATOR_ENDPOINTS.installCrontab,
-      payload: { crontabText },
-      execute: () => installEmulatorCrontab({ target: getState().selectedSchedulerTarget, crontabText }),
+      payload: { crontabText, target: resolveSchedulerTarget(options) },
+      execute: () => installEmulatorCrontab({ target: resolveSchedulerTarget(options), crontabText }),
     });
   }
 
   // Reads the active crontab and is the only action that updates textarea B.
-  async function getActiveCrontabAction() {
+  async function getActiveCrontabAction(options: { target?: string } = {}) {
     return runSchedulerAction({
       buttonKey: 'get-active-crontab',
       operation: 'Get active crontab',
       endpoint: SCHEDULER_EMULATOR_ENDPOINTS.activeCrontab,
-      execute: () => getActiveEmulatorCrontab({ target: getState().selectedSchedulerTarget }),
+      execute: () => getActiveEmulatorCrontab({ target: resolveSchedulerTarget(options) }),
       onSuccess: (draft, responsePayload) => {
         const crontabText = readSchedulerCrontabText(responsePayload);
         if (typeof crontabText === 'string') {

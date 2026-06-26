@@ -11,17 +11,12 @@ import {
   renderSourceBadge,
 } from "../services/renderers.ts";
 import { NEW_AUTH_BUTTONS, renderNewAuthActionRow } from "./newAuthActionRows.ts";
+import { SCHEDULER_EMULATOR_BUTTONS, renderSchedulerActionButton } from "./schedulerActionRows.ts";
 import {
   getAuthButtonCopy,
   getAuthButtonStatusHelp,
   getAuthButtonStatusLabel,
 } from "../data/authButtonStatusCopy.ts";
-import {
-  getSchedulerEmulatorButtonCopy,
-  getSchedulerEmulatorButtonStatusHelp,
-  getSchedulerEmulatorButtonStatusLabel,
-  normalizeSchedulerEmulatorButtonStatus,
-} from "../data/schedulerEmulatorStatusCopy.ts";
 import {
   getOperationSupportLevel,
   SCHEDULER_OPERATION_SUPPORT,
@@ -75,14 +70,6 @@ const AUTH_2FA_BUTTON = Object.freeze({
   label: "Submit 2FA",
   variant: "primary",
 });
-
-const SCHEDULER_EMULATOR_BUTTONS = Object.freeze([
-  { action: "check-emulator-scheduler", variant: "secondary" },
-  { action: "run-emulator", variant: "primary" },
-  { action: "stop-emulator", variant: "secondary" },
-  { action: "install-crontab", variant: "secondary" },
-  { action: "get-active-crontab", variant: "secondary" },
-]);
 
 // Renders the full View A page from runtime-truth state and selected dashboard mode.
 export function renderInitView(state, dashboardVisualMode = null) {
@@ -429,7 +416,7 @@ function renderWindowsSchedulerControls(state, disabled) {
   return `
     <div class="scheduler-emulator-controls">
       <div class="button-row scheduler-emulator-button-row">
-        ${SCHEDULER_EMULATOR_BUTTONS.map((button) => renderSchedulerEmulatorActionButton(button, schedulerState.buttonStates ?? {}, disabled)).join("")}
+        ${SCHEDULER_EMULATOR_BUTTONS.map((button) => renderSchedulerActionButton(button, { buttonStates: schedulerState.buttonStates ?? {}, disabled })).join("")}
       </div>
       <div class="scheduler-crontab-grid">
         <label class="scheduler-crontab-field">
@@ -442,33 +429,6 @@ function renderWindowsSchedulerControls(state, disabled) {
         </label>
       </div>
     </div>
-  `;
-}
-
-// Renders one CronEmulator action button with an auth-style status circle.
-function renderSchedulerEmulatorActionButton(button, buttonStates, disabled) {
-  const copy = getSchedulerEmulatorButtonCopy(button.action);
-  const statusState = buttonStates?.[button.action] ?? {
-    status: "neutral",
-    message: "Not checked yet.",
-    endpoint: null,
-  };
-  const status = normalizeSchedulerEmulatorButtonStatus(statusState.status);
-  const label = copy?.label ?? button.action;
-  const helpText = getSchedulerEmulatorButtonStatusHelp(
-    button.action,
-    status,
-    statusState.message,
-  );
-  const statusLabelText = getSchedulerEmulatorButtonStatusLabel(status);
-  const title = escapeAttribute(helpText);
-  const disabledAttribute = disabled || "";
-
-  return `
-    <span class="auth-button-shell auth-button-shell--${escapeAttribute(status)} scheduler-emulator-button" data-scheduler-button-key="${escapeAttribute(button.action)}" data-scheduler-button-status="${escapeAttribute(status)}" data-scheduler-help-text="${title}" title="${title}">
-      <span class="auth-button-status-dot" aria-label="${escapeAttribute(`${label} status: ${statusLabelText}`)}" title="${title}"></span>
-      <button class="button button--${escapeAttribute(button.variant)}" data-action="${escapeAttribute(button.action)}" title="${title}" aria-label="${escapeAttribute(`${label}. ${helpText}`)}"${disabledAttribute}>${escapeHtml(label)}</button>
-    </span>
   `;
 }
 

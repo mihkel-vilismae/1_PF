@@ -90,7 +90,7 @@ Later implementation should first inventory and reuse/extract these component fa
 | Response payload viewer | existing result JSON block | Setup, Auth, Startup, Workers |
 | Status badges/source badges | shared renderers | all operational cards |
 | Auth action rows | `NEW AUTH` card from View A | `02 AUTHENTICATION` |
-| Scheduler target panel | `3A Scheduler controls` from View A | `03 STARTUP`, Raspberry-focused |
+| Scheduler target panel | shared `schedulerActionRows` renderer extracted from View A | `03 STARTUP`, Raspberry-focused |
 | Worker/stage card pattern | B3/Test page stage cards | `04 WORKERS`, `09 REAL PLAYBACK` status summary |
 | B4 rendering controls | View B playback selection | `08 PLAYBACK`, later `09 REAL PLAYBACK` |
 | B5 activity controls | View B / OS playback activity model | `07 PIR`, later `09 REAL PLAYBACK` |

@@ -1,3 +1,19 @@
+## 2026-06-26 15:24 EEST — v0.10.43
+
+### Added
+- Added the V2 Startup `3A Scheduler controls` card with Raspberry real-crontab targeting while preserving the requested scheduler button labels.
+- Extracted scheduler action-button rendering into a shared View A/V2 renderer.
+
+### Changed
+- Bumped repository/package version from `0.10.42` to `0.10.43`.
+- Scheduler action buttons can now pass an explicit scheduler target payload without changing backend route contracts.
+
+### Fixed
+- None.
+
+### Removed
+- Removed the duplicated scheduler button renderer from `dashboard/views/initView.ts` in favor of the shared renderer.
+
 ## 2026-06-26 15:11 EEST — v0.10.42
 
 ### Added

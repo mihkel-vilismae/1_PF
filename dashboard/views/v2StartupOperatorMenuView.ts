@@ -10,6 +10,8 @@ import { renderLogEntries, renderResultSurface, renderSourceBadge, statusBadge, 
 import { escapeHtml } from '../services/renderers/sharedRendererUtils.ts';
 import { renderV2OperatorPageWrapper } from './v2OperatorPageWrapper.ts';
 import { NEW_AUTH_BUTTONS, renderNewAuthActionRow } from './newAuthActionRows.ts';
+import { SCHEDULER_EMULATOR_BUTTONS, renderSchedulerActionButton } from './schedulerActionRows.ts';
+import { SCHEDULER_TARGETS } from '../../shared/schedulerPlatformCapabilities.ts';
 
 type V2StartupOperatorMenuRenderOptions = {
   inspectMode?: boolean;
@@ -83,6 +85,8 @@ function renderV2CenterPanelBlock(block: V2OperatorCenterPanelBlock, runtimeStat
       return renderBackendActionCard(block, runtimeState);
     case 'newAuthCard':
       return renderV2NewAuthCard(block, runtimeState, dashboardVisualMode);
+    case 'rpiSchedulerControls':
+      return renderRpiSchedulerControlsBlock(block, runtimeState);
     case 'sectionGroup':
       return renderSectionGroupBlock(block);
     case 'toggleGroup':
@@ -174,6 +178,52 @@ function renderV2NewAuthCard(block: Extract<V2OperatorCenterPanelBlock, { type: 
       ${newAuth.artifactPackResult ? renderResultSurface(newAuth.artifactPackResult) : ''}
       ${newAuth.artifactPackListResult ? renderResultSurface(newAuth.artifactPackListResult) : ''}
       <div class="log-surface" data-scroll-preserve="log-${escapeHtml(block.logKey)}">${renderLogEntries(runtimeState.logs?.[block.logKey] ?? [], { sourceKey: block.logKey })}</div>
+    </article>
+  `;
+}
+
+function renderRpiSchedulerControlsBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'rpiSchedulerControls' }>, runtimeState: Record<string, any>): string {
+  const schedulerState = runtimeState.schedulerEmulator ?? {};
+  const result = runtimeState.initResults?.[block.resultKey] ?? null;
+  const logs = runtimeState.logs?.[block.logKey] ?? [];
+  const sourceBadge = block.sourceBadge ? renderSourceBadge(block.sourceBadge.mode, block.sourceBadge.label) : '';
+
+  return `
+    <article class="card card--hybrid v2-block v2-block--rpiSchedulerControls" data-v2-rpi-scheduler-controls data-v2-block-type="rpiSchedulerControls" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
+      <header class="card__header v2-block__header">
+        <div>
+          <p class="card__code">${escapeHtml(block.statusKey)}</p>
+          <h3>${escapeHtml(block.title)}</h3>
+        </div>
+        <div class="card__header-tags">${sourceBadge}</div>
+        <div class="v2-block__pills">
+          ${statusBadge(runtimeState.statusByKey?.[block.statusKey] ?? 'idle')}
+          ${renderV2StatusHelpButton(getV2BlockStatusId(block.id), block.title)}
+        </div>
+      </header>
+      ${block.body ? `<p class="card__copy">${escapeHtml(block.body)}</p>` : ''}
+      <div class="v2-rpi-scheduler-target-row">
+        <span class="pill">Target: Raspberry real crontab</span>
+        <span class="pill">No Windows CronEmulator target</span>
+      </div>
+      <div class="button-row scheduler-emulator-button-row v2-rpi-scheduler-button-row">
+        ${SCHEDULER_EMULATOR_BUTTONS.map((button) => renderSchedulerActionButton(button, {
+          buttonStates: schedulerState.buttonStates ?? {},
+          schedulerTarget: SCHEDULER_TARGETS.raspberryRealCrontab,
+        })).join('')}
+      </div>
+      <div class="scheduler-crontab-grid v2-rpi-crontab-grid">
+        <label class="scheduler-crontab-field">
+          <span>insert Raspberry crontab</span>
+          <textarea class="terminal-textarea" data-scheduler-crontab-input spellcheck="false">${escapeHtml(schedulerState.editableCrontab ?? '')}</textarea>
+        </label>
+        <label class="scheduler-crontab-field">
+          <span>active Raspberry crontab</span>
+          <textarea class="terminal-textarea" data-scheduler-active-crontab readonly spellcheck="false">${escapeHtml(schedulerState.activeCrontab ?? "not checked, press 'Get active crontab'")}</textarea>
+        </label>
+      </div>
+      ${renderV2BackendResultSurface(result)}
+      <div class="log-surface" data-scroll-preserve="log-${escapeHtml(block.logKey)}">${renderLogEntries(logs, { sourceKey: block.logKey })}</div>
     </article>
   `;
 }

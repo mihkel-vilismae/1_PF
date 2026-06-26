@@ -13,7 +13,8 @@ export type V2OperatorBlockType =
   | 'futurePlaceholder'
   | 'exampleList'
   | 'backendActionCard'
-  | 'newAuthCard';
+  | 'newAuthCard'
+  | 'rpiSchedulerControls';
 
 export type V2OperatorRisk = 'safe' | 'guarded' | 'destructive' | 'future' | 'localSecretSensitive';
 
@@ -85,6 +86,16 @@ export type V2OperatorCenterPanelBlock =
       title: string;
       body?: string;
       statusKey: string;
+      logKey: string;
+      sourceBadge?: { mode: string; label: string };
+    }
+  | {
+      type: 'rpiSchedulerControls';
+      id: string;
+      title: string;
+      body?: string;
+      statusKey: string;
+      resultKey: string;
       logKey: string;
       sourceBadge?: { mode: string; label: string };
     }
@@ -282,6 +293,16 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
             ],
           },
         ],
+      },
+      {
+        type: 'rpiSchedulerControls',
+        id: '03.rpi-scheduler-controls',
+        title: '3A Scheduler controls',
+        body: 'Raspberry-focused scheduler control card. It keeps the existing button concepts from the scheduler panel while forcing the real Raspberry crontab target through the existing scheduler backend contract.',
+        statusKey: '3A',
+        resultKey: '3A',
+        logKey: '3A',
+        sourceBadge: { mode: 'real', label: 'Raspberry real crontab' },
       },
       {
         type: 'multiComboRow',

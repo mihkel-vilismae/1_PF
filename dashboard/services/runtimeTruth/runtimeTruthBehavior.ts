@@ -272,12 +272,12 @@ export function createRuntimeTruthBehavior({
           printCron,
         ),
       "check-emulator-scheduler": () =>
-        void schedulerActions.checkEmulatorSchedulerAction(),
-      "run-emulator": () => void schedulerActions.runEmulatorAction(),
-      "stop-emulator": () => void schedulerActions.stopEmulatorAction(),
-      "install-crontab": () => void schedulerActions.installCrontabAction(),
+        void schedulerActions.checkEmulatorSchedulerAction(payload),
+      "run-emulator": () => void schedulerActions.runEmulatorAction(payload),
+      "stop-emulator": () => void schedulerActions.stopEmulatorAction(payload),
+      "install-crontab": () => void schedulerActions.installCrontabAction(payload),
       "get-active-crontab": () =>
-        void schedulerActions.getActiveCrontabAction(),
+        void schedulerActions.getActiveCrontabAction(payload),
       "refresh-scheduler-run-log": () =>
         void schedulerActions.refreshSchedulerRunLogAction(),
       "verify-db-viewer": () =>

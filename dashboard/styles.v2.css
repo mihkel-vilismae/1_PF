@@ -461,3 +461,12 @@ body.v2-implementation-status-mode [data-v2-implementation-status="not-implement
 .v2-section-card header .v2-status-help-button {
   flex: 0 0 auto;
 }
+
+
+.v2-rpi-scheduler-target-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, max-content));
+  gap: 0.75rem;
+  align-items: center;
+  margin: 0.75rem 0;
+}

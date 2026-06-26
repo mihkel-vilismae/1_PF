@@ -94,7 +94,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 
 | Element | Status | Current evidence/notes | Required next proof/test |
 | --- | --- | --- | --- |
-| Raspberry scheduler controls | reused candidate | Existing scheduler panel contains Windows and Raspberry target panels. | Extract/reuse Raspberry-safe panel only; V2 action tests. |
+| Raspberry scheduler controls | wired/needs verification | v0.10.43 renders the V2 Startup scheduler controls with Raspberry real-crontab target payloads while preserving existing scheduler action labels and backend contracts. | Raspberry hardware/crontab proof + V2 action tests. |
 | Scheduler button concepts formerly tied to emulator | planned/needs verification | Keep the button concepts, but wire to real crontab/scheduler behavior, not Windows emulator. | Inspect crontab examples/configs; V2 action tests confirm no Windows emulator dependency. |
 | WSL placeholder controls | future/placeholder | May exist only clearly marked WSL and disabled. | Render test confirms disabled state and labeling. |
 | `RPI-STAGES` | planned | Shared row requested. | Render/status test. |
