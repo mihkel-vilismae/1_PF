@@ -1,0 +1,4 @@
+interface:
+  display_name: "Changelog Governance"
+  short_description: "Safely audit and split repository changelogs"
+  default_prompt: "Use $changelog-governance to analyze CHANGELOG.md before changing version history."

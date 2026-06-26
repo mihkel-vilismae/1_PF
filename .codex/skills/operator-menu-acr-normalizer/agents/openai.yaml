@@ -1,0 +1,4 @@
+interface:
+  display_name: "Operator Menu ACR Normalizer"
+  short_description: "Normalize PF operator menus into typed UI contracts"
+  default_prompt: "Use $operator-menu-acr-normalizer to convert this PF_login operator menu tree into a typed sidebar and center-panel contract."

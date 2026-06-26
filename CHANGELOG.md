@@ -3684,3 +3684,18 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 ## DATE_NOT_RECORDED
 ## v0.9.6
 - Add real iCloud evidence ZIP/package contract proof.
+
+## 2026-06-26 05:22 EEST — v0.10.22
+
+### Added
+- Added the repo-local `changelog-governance` skill for safer changelog, version metadata, hook, and documentation-history work.
+- Added the repo-local `operator-menu-acr-normalizer` skill for regression-aware PF_login operator-menu ACR and UI contract normalization.
+
+### Changed
+- Updated root, package, and lockfile version metadata to `0.10.22`.
+
+### Fixed
+- None
+
+### Removed
+- None
