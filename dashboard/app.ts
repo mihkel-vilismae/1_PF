@@ -63,9 +63,11 @@ import { renderDatabaseViewerView } from './views/databaseViewerView.ts';
 import { renderOsPlaybackFullscreenOverlay, renderOsPlaybackView } from './views/osPlaybackView.ts';
 import { renderDebugView } from './views/debugView.ts';
 import { renderV2OperatorMenuView } from './views/v2OperatorMenuView.ts';
+import { renderV2StartupOperatorMenuView } from './views/v2StartupOperatorMenuView.ts';
 import { addIsolatedTestMediaItem, buildDefaultDebugPageState, clearDebugElementMetadata, cycleDebugColorSchema, cycleDebugMajorVisualMode, pauseFakeDebugCrontab, previewFakeDebugStateRestore, readFakeDebugCrontab, resumeFakeDebugCrontab, runMockDebugWorker, saveFakeDebugStateSnapshot, saveManualTestingSystemStateSnapshot, selectDebugElementMetadata, setDebugCrontabContent, stageFakeDebugCrontabInstall, type DebugPageState, type DebugWorkerKey } from './services/debugPageModel.ts';
 import { buildOsPlaybackViewModel, OS_PLAYBACK_PLATFORMS, type OsPlaybackPlatform, type PlaybackLogEntryViewModel } from './services/osPlaybackViewModel.ts';
 import { requestJson, setDashboardRuntimeMode } from './services/apiClient.ts';
+import { isV2OperatorSidebarRoute, type V2OperatorSidebarRoute } from './data/v2OperatorSidebar.ts';
 import { buildViewARefreshPlan } from './services/viewARefreshPlan.ts';
 import { captureScrollSnapshot, restoreScrollSnapshotAfterLayout } from './services/scrollPreservation.ts';
 
@@ -80,6 +82,7 @@ const OS_PLAYBACK_ROTATION_INTERVAL_SECONDS = 12;
 const OS_PLAYBACK_RESUME_HEARTBEAT_MIN_MS = 5000;
 const TEST_MODE_NEW_AUTH_DISABLED_MESSAGE = 'NEW AUTH login is disabled in Test Mode. Switch to Real Mode to use iCloudPD login controls.';
 let dashboardVisualMode: DashboardVisualMode | null = null;
+let v2OperatorSidebarRoute: V2OperatorSidebarRoute = 'setup';
 let liveUpdatesPaused = false;
 let pendingLiveUpdateRender = false;
 let hasInitPreloadRun = false;
@@ -172,6 +175,20 @@ function render() {
         ? 'Real Mode'
         : 'V2';
   const scrollSnapshot = captureScrollSnapshot(app);
+
+  if (dashboardVisualMode === 'v2') {
+    app.innerHTML = `
+      ${renderVersionBadge(__APP_VERSION__, backendVersionState)}
+      ${renderV2StartupOperatorMenuView(v2OperatorSidebarRoute)}
+    `;
+    restoreScrollSnapshotAfterLayout(app, scrollSnapshot);
+    if (!liveUpdatesPaused) {
+      pendingLiveUpdateRender = false;
+    }
+    hideInspectTooltip();
+    bindEvents();
+    return;
+  }
 
   app.innerHTML = `
     ${renderVersionBadge(__APP_VERSION__, backendVersionState)}
@@ -1158,6 +1175,16 @@ function bindEvents() {
       render();
       if (selectedMode !== 'v2') {
         tryInitPreload();
+      }
+    });
+  });
+
+  app.querySelectorAll<HTMLButtonElement>('[data-v2-sidebar-route]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const route = button.dataset.v2SidebarRoute;
+      if (isV2OperatorSidebarRoute(route)) {
+        v2OperatorSidebarRoute = route;
+        render();
       }
     });
   });
