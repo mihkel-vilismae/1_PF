@@ -1,3 +1,18 @@
+## 2026-06-26 17:12 EEST — v0.10.58
+
+### Added
+- Added B9.4 V2 playback media metadata proof matrix.
+- Added tests proving media/non-media queue controls, queue-prepare metadata preservation, and explicit missing GPS/address behavior.
+
+### Changed
+- Updated V2 next-plan and implementation-status docs for the playback metadata proof checkpoint.
+
+### Fixed
+- None
+
+### Removed
+- None
+
 ## 2026-06-26 17:00 EEST — v0.10.57
 
 ### Added
