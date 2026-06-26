@@ -12,6 +12,9 @@ type V2OperatorPageWrapperOptions = {
   centerPanelMarkup: string;
   history: HistoryEntry[];
   historyCopyButtonLabel: string;
+  inspectMode: boolean;
+  valueInspectMode: boolean;
+  implementationStatusMode: boolean;
 };
 
 export function renderV2OperatorPageWrapper(options: V2OperatorPageWrapperOptions): string {
@@ -41,6 +44,11 @@ export function renderV2OperatorPageWrapper(options: V2OperatorPageWrapperOption
             <p class="eyebrow">V2</p>
             <h1>${escapeHtml(options.activePage.title)}</h1>
             <p class="v2-operator-summary">${escapeHtml(options.activePage.summary)}</p>
+          </div>
+          <div class="v2-topbar-actions" aria-label="V2 explanation and status controls">
+            ${renderV2ToolbarButton('toggle-inspect-mode', options.inspectMode ? 'Hide control guide' : 'Explain controls', options.inspectMode, 'Explain what visible V2 controls do.')}
+            ${renderV2ToolbarButton('toggle-value-inspect-mode', options.valueInspectMode ? 'Hide value guide' : 'Explain values', options.valueInspectMode, 'Explain where visible V2 values come from.')}
+            ${renderV2ToolbarButton('toggle-v2-implementation-status', options.implementationStatusMode ? 'Hide implementation status' : 'Implementation status', options.implementationStatusMode, 'Highlight V2 implementation status from the JSON metadata registry.')}
           </div>
           <div class="v2-topbar-status">
             <span class="pill">Visual-only blocks</span>
@@ -85,5 +93,19 @@ function renderV2EventHistoryPanel(history: HistoryEntry[], historyCopyButtonLab
       </div>
       <div class="history-surface" data-scroll-preserve="v2-event-history-surface">${renderHistory(history)}</div>
     </article>
+  `;
+}
+
+function renderV2ToolbarButton(action: string, label: string, active: boolean, title: string): string {
+  return `
+    <button
+      class="button ${active ? 'button--primary' : 'button--secondary'} v2-topbar-action"
+      type="button"
+      data-action="${escapeHtml(action)}"
+      aria-pressed="${active ? 'true' : 'false'}"
+      title="${escapeHtml(title)}"
+    >
+      ${escapeHtml(label)}
+    </button>
   `;
 }

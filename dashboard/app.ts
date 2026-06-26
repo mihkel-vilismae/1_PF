@@ -85,6 +85,7 @@ let dashboardVisualMode: DashboardVisualMode | null = null;
 let v2OperatorSidebarRoute: V2OperatorSidebarRoute = 'setup';
 let liveUpdatesPaused = false;
 let pendingLiveUpdateRender = false;
+let v2ImplementationStatusMode = false;
 let hasInitPreloadRun = false;
 let hasInitNewAuthPreloadRun = false;
 type BackendVersionState = {
@@ -180,7 +181,11 @@ function render() {
   if (dashboardVisualMode === 'v2') {
     app.innerHTML = `
       ${renderVersionBadge(__APP_VERSION__, backendVersionState)}
-      ${renderV2StartupOperatorMenuView(v2OperatorSidebarRoute, state.history, getHistoryCopyButtonLabel())}
+      ${renderV2StartupOperatorMenuView(v2OperatorSidebarRoute, state.history, getHistoryCopyButtonLabel(), {
+        inspectMode: Boolean(state.inspectMode),
+        valueInspectMode: Boolean(state.valueInspectMode),
+        implementationStatusMode: v2ImplementationStatusMode,
+      })}
     `;
     restoreScrollSnapshotAfterLayout(app, scrollSnapshot);
     if (!liveUpdatesPaused) {
@@ -377,6 +382,11 @@ function requestLiveUpdateRender(): void {
 }
 
 // Toggles the operator inspection guard that pauses background render churn.
+function toggleV2ImplementationStatusMode(): void {
+  v2ImplementationStatusMode = !v2ImplementationStatusMode;
+  render();
+}
+
 function toggleLiveUpdatesPaused(): void {
   liveUpdatesPaused = !liveUpdatesPaused;
   if (!liveUpdatesPaused && pendingLiveUpdateRender) {
@@ -1578,6 +1588,10 @@ function bindEvents() {
       }
       if (action === 'toggle-live-updates') {
         toggleLiveUpdatesPaused();
+        return;
+      }
+      if (action === 'toggle-v2-implementation-status') {
+        toggleV2ImplementationStatusMode();
         return;
       }
       if (action === 'toggle-marked-for-removal') {

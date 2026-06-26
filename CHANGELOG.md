@@ -1,3 +1,18 @@
+## 2026-06-26 14:50 EEST — v0.10.36
+
+### Added
+- Added V2 topbar toolbar buttons for `Explain controls`, `Explain values`, and `Implementation status`.
+- Kept V2 toolbar controls frontend-only; no backend/runtime behavior is wired by this slice.
+
+### Changed
+- Bumped repository/package version from `0.10.35` to `0.10.36`.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
 ## 2026-06-26 14:35 EEST — v0.10.35
 
 ### Added

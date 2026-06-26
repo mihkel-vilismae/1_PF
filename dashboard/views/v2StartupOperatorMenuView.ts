@@ -10,7 +10,18 @@ import { type HistoryEntry } from '../services/renderers.ts';
 import { escapeHtml } from '../services/renderers/sharedRendererUtils.ts';
 import { renderV2OperatorPageWrapper } from './v2OperatorPageWrapper.ts';
 
-export function renderV2StartupOperatorMenuView(activeRoute: V2OperatorSidebarRoute, history: HistoryEntry[] = [], historyCopyButtonLabel = 'copy all log'): string {
+type V2StartupOperatorMenuRenderOptions = {
+  inspectMode?: boolean;
+  valueInspectMode?: boolean;
+  implementationStatusMode?: boolean;
+};
+
+export function renderV2StartupOperatorMenuView(
+  activeRoute: V2OperatorSidebarRoute,
+  history: HistoryEntry[] = [],
+  historyCopyButtonLabel = 'copy all log',
+  renderOptions: V2StartupOperatorMenuRenderOptions = {},
+): string {
   const activeItem = V2_OPERATOR_SIDEBAR_ITEMS.find((item) => item.route === activeRoute) ?? V2_OPERATOR_SIDEBAR_ITEMS[0];
   const activePage = V2_OPERATOR_CENTER_PANEL_PAGES[activeItem.route];
 
@@ -29,6 +40,9 @@ export function renderV2StartupOperatorMenuView(activeRoute: V2OperatorSidebarRo
     centerPanelMarkup,
     history,
     historyCopyButtonLabel,
+    inspectMode: Boolean(renderOptions.inspectMode),
+    valueInspectMode: Boolean(renderOptions.valueInspectMode),
+    implementationStatusMode: Boolean(renderOptions.implementationStatusMode),
   });
 }
 

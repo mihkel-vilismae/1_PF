@@ -66,6 +66,10 @@ test('V2 startup shell renders sidebar routes plus center-panel typed blocks ins
   assert.match(viewSource, /renderV2OperatorPageWrapper/);
   assert.match(wrapperSource, /data-v2-page-wrapper/);
   assert.match(wrapperSource, /data-v2-center-panel/);
+  assert.match(wrapperSource, /v2-topbar-actions/);
+  assert.match(wrapperSource, /toggle-v2-implementation-status/);
+  assert.match(wrapperSource, /Explain controls/);
+  assert.match(wrapperSource, /Explain values/);
   assert.match(viewSource, /data-v2-child-item/);
   assert.match(viewSource, /data-v2-interaction/);
   assert.doesNotMatch(viewSource, /VIEW_ORDER\.map/);
@@ -84,7 +88,7 @@ test('V2 center-panel keeps risky and future items visual-only or guarded', () =
 });
 
 test('V2 mode uses the startup shell without setting a V2 backend runtime header', () => {
-  assert.match(appSource, /renderV2StartupOperatorMenuView\(v2OperatorSidebarRoute, state\.history, getHistoryCopyButtonLabel\(\)\)/);
+  assert.match(appSource, /renderV2StartupOperatorMenuView\(v2OperatorSidebarRoute, state\.history, getHistoryCopyButtonLabel\(\), \{/);
   assert.match(appSource, /setDashboardRuntimeMode\(selectedMode === 'v2' \? null : selectedMode\)/);
   assert.match(appSource, /data-v2-sidebar-route/);
 });
