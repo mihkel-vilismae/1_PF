@@ -612,3 +612,8 @@ B1, B3, B4, and B5 implementation slices have placed the nine-page shell, V2 sta
 ## v0.10.48 B6.1 Troubleshooting pipeline maintenance
 
 `05 TROUBLESHOOTING` now includes a `Pipeline maintenance` card with `Detect issues in pipeline` and `Clear stale locks` buttons. The buttons reuse existing runtime action IDs and existing backend endpoints; live stale-lock repair proof remains a later B9/proof task.
+
+
+## v0.10.49 B6.2 Recovery placeholder buttons
+
+`06 RECOVERY` now includes alert-only `SAVE STATE`, `LOAD STATE`, and `EMULATE POWER OFF` buttons. Each button alerts exactly the visible label and makes no state, power, process, or recovery mutation.

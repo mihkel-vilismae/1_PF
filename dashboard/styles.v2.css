@@ -539,3 +539,7 @@ body.v2-implementation-status-mode [data-v2-implementation-status="not-implement
   font-size: 0.82rem;
   text-align: right;
 }
+
+.v2-recovery-placeholder-buttons {
+  flex-wrap: wrap;
+}

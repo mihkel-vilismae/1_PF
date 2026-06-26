@@ -16,7 +16,8 @@ export type V2OperatorBlockType =
   | 'newAuthCard'
   | 'rpiSchedulerControls'
   | 'rpiStagesRow'
-  | 'rpiWorkersRow';
+  | 'rpiWorkersRow'
+  | 'recoveryPlaceholderActions';
 
 export type V2OperatorRisk = 'safe' | 'guarded' | 'destructive' | 'future' | 'localSecretSensitive';
 
@@ -35,6 +36,11 @@ export type V2OperatorBackendActionButton = {
   action: string;
   label: string;
   variant: V2OperatorButtonVariant;
+};
+
+export type V2OperatorRecoveryPlaceholderAction = {
+  id: string;
+  label: 'SAVE STATE' | 'LOAD STATE' | 'EMULATE POWER OFF';
 };
 
 export type V2OperatorToggleItem = {
@@ -130,6 +136,14 @@ export type V2OperatorCenterPanelBlock =
       body?: string;
       status?: string;
       workers: readonly V2OperatorRpiWorkerItem[];
+    }
+  | {
+      type: 'recoveryPlaceholderActions';
+      id: string;
+      title: string;
+      body?: string;
+      status?: string;
+      actions: readonly V2OperatorRecoveryPlaceholderAction[];
     }
   | {
       type: 'sectionGroup';
@@ -639,10 +653,22 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
         status: 'visual-only',
       },
       {
+        type: 'recoveryPlaceholderActions',
+        id: '06.placeholder-actions',
+        title: 'Recovery placeholder buttons',
+        body: 'First recovery-control slice. Each button alerts exactly its visible label and does not save, load, restore, or power-cycle anything yet.',
+        status: 'placeholder-only',
+        actions: [
+          { id: '06.save-state', label: 'SAVE STATE' },
+          { id: '06.load-state', label: 'LOAD STATE' },
+          { id: '06.emulate-power-off', label: 'EMULATE POWER OFF' },
+        ],
+      },
+      {
         type: 'actionList',
         id: '06.actions',
         title: 'snapshot actions',
-        body: 'Save/restore are visual-only. Restore must require selection, confirmation, compatibility check, and before/after summary when implemented for real.',
+        body: 'Legacy snapshot action notes remain visual-only. Restore must require selection, confirmation, compatibility check, and before/after summary when implemented for real.',
         items: [
           { id: '06.05', label: 'save state snapshot', status: 'v2 visual', risk: 'guarded', interaction: 'guardedAction' },
           { id: '06.06', label: 'restore state snapshot', status: 'v2 visual', risk: 'destructive', interaction: 'guardedAction' },

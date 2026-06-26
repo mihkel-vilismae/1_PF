@@ -53,7 +53,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | `03 STARTUP` | Raspberry scheduler/startup | reuse/extract Raspberry scheduler panel | Raspberry scheduler proof + V2 placement test |
 | `04 WORKERS` | worker stage controls | reuse/extract B3 stage controls | worker endpoint proofs + V2 placement test |
 | `05 TROUBLESHOOTING` | stale lock repair | `B6.1` Pipeline maintenance controls placed/wired to existing maintenance action IDs | stale-lock behavior proof + V2 placement test |
-| `06 RECOVERY` | recovery placeholder now; real recovery later | alert-only first | placeholder test first; later save/load/autosave/restart proof |
+| `06 RECOVERY` | recovery placeholder now; real recovery later | `B6.2` alert-only buttons placed | placeholder test first; later save/load/autosave/restart proof |
 | `07 PIR` | activity/screen test | shell implemented; visible B5 subset later | route render test now; mouse/keyboard test and PIR simulation/hardware proof later |
 | `08 PLAYBACK` | queue/rendering test | shell implemented; visible B4 subset + drag/drop queue later | route render test now; rendering/queue tests and address overlay proof later |
 | `09 REAL PLAYBACK` | final endpoint | explanation-only shell implemented; composition later | route render test now; full autonomous playback + recovery proof later |
@@ -128,9 +128,9 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 
 | Element | Status | Current evidence/notes | Required next proof/test |
 | --- | --- | --- | --- |
-| `SAVE STATE` button | placeholder | First implementation should only alert `SAVE STATE`. | Button alert test. |
-| `LOAD STATE` button | placeholder | First implementation should only alert `LOAD STATE`. | Button alert test. |
-| `EMULATE POWER OFF` button | placeholder | First implementation should only alert `EMULATE POWER OFF`. | Button alert test. |
+| `SAVE STATE` button | placeholder/tested | v0.10.49 renders an alert-only button that alerts exactly `SAVE STATE`; no state is saved. | Later real save-state schema/proof. |
+| `LOAD STATE` button | placeholder/tested | v0.10.49 renders an alert-only button that alerts exactly `LOAD STATE`; no state is loaded. | Later real load-state schema/proof. |
+| `EMULATE POWER OFF` button | placeholder/tested | v0.10.49 renders an alert-only button that alerts exactly `EMULATE POWER OFF`; no process/power behavior is changed. | Later restart/recovery proof. |
 | Lightweight saved state | future/needs design | At minimum must restore the same current media file/queue context; exact fields remain design-open. | State schema OpenSpec + unit tests. |
 | Autosave | future/needs design | Likely state/stage-change based and/or resource-aware interval; decide after runtime inspection. | Durability/restart test. |
 | Recovery worker | future | Cron-called worker detects restart and loads state. | Raspberry recovery proof. |

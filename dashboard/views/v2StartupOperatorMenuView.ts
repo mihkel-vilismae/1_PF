@@ -91,6 +91,8 @@ function renderV2CenterPanelBlock(block: V2OperatorCenterPanelBlock, runtimeStat
       return renderRpiStagesRowBlock(block);
     case 'rpiWorkersRow':
       return renderRpiWorkersRowBlock(block);
+    case 'recoveryPlaceholderActions':
+      return renderRecoveryPlaceholderActionsBlock(block);
     case 'sectionGroup':
       return renderSectionGroupBlock(block);
     case 'toggleGroup':
@@ -269,6 +271,21 @@ function renderRpiWorkersRowBlock(block: Extract<V2OperatorCenterPanelBlock, { t
               <div><dt>Since last call</dt><dd>${escapeHtml(worker.sinceLastCall)}</dd></div>
             </dl>
           </div>
+        `).join('')}
+      </div>
+    </article>
+  `;
+}
+
+
+function renderRecoveryPlaceholderActionsBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'recoveryPlaceholderActions' }>): string {
+  return `
+    <article class="card v2-block v2-block--recoveryPlaceholderActions" data-v2-recovery-placeholder-actions data-v2-block-type="recoveryPlaceholderActions" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
+      ${renderBlockHeader(block.title, getV2BlockStatusId(block.id), block.status, 'future')}
+      ${block.body ? `<p class="card__copy">${escapeHtml(block.body)}</p>` : ''}
+      <div class="button-row v2-recovery-placeholder-buttons">
+        ${block.actions.map((action) => `
+          <button class="button button--secondary" type="button" data-action="v2-placeholder-alert" data-v2-alert-text="${escapeHtml(action.label)}" data-v2-recovery-placeholder="${escapeHtml(action.id)}">${escapeHtml(action.label)}</button>
         `).join('')}
       </div>
     </article>

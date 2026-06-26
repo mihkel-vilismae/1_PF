@@ -23,7 +23,7 @@ Run these one slice at a time, with one logical commit and one full Git ZIP per 
 | Order | Slice | Goal | Why next | Proof/test expectation |
 | ---: | --- | --- | --- | --- |
 | 1 | `B6.1` | `05 TROUBLESHOOTING` pipeline maintenance: Detect issues and Clear stale locks | **done in v0.10.48** | Placement test added; live stale-lock behavior proof remains later. |
-| 2 | `B6.2` | `06 RECOVERY` placeholder buttons: `SAVE STATE`, `LOAD STATE`, `EMULATE POWER OFF` | Gives recovery page safe visible controls without faking real recovery | Exact alert/text tests; status stays placeholder/future for real recovery. |
+| 2 | `B6.2` | `06 RECOVERY` placeholder buttons: `SAVE STATE`, `LOAD STATE`, `EMULATE POWER OFF` | **done in v0.10.49** | Exact alert/text tests; status stays placeholder/future for real recovery. |
 | 3 | `B7.1` | `07 PIR` visible B5 subset and PIR emulator button | Adds isolated screen/activity test page before integrated Real Playback | Render/activity tests; PIR hardware remains later. |
 | 4 | `B8.1` | `08 PLAYBACK` rendering target/mode subsection | Adds isolated playback UI before drag/drop queue | Render tests and status metadata; Raspberry OS target disabled until proven. |
 | 5 | `B8.2` | `08 PLAYBACK` drag/drop queue table | Creates safe local queue/classification path | File classification tests for image/video/other and graceful non-media handling. |

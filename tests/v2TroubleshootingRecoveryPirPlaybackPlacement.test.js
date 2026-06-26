@@ -38,3 +38,16 @@ test('V2 Troubleshooting renders B6.1 pipeline maintenance controls on existing 
   assert.match(behaviorSource, /detect-pipeline-issues/);
   assert.match(behaviorSource, /clear-stale-pipeline-locks/);
 });
+
+test('V2 Recovery renders B6.2 alert-only placeholder buttons with exact labels', () => {
+  const markup = render('recovery');
+  for (const label of ['SAVE STATE', 'LOAD STATE', 'EMULATE POWER OFF']) {
+    assert.match(markup, new RegExp(`data-action="v2-placeholder-alert"[^>]+data-v2-alert-text="${esc(label)}"`));
+    assert.match(markup, new RegExp(`>${esc(label)}<`));
+  }
+  assert.match(markup, /data-v2-recovery-placeholder-actions/);
+  assert.match(markup, /data-v2-status-id="v2.block.06.placeholder-actions"/);
+  const appSource = readFileSync('dashboard/app.ts', 'utf8');
+  assert.match(appSource, /window\.alert\(alertText\)/);
+  assert.match(appSource, /placeholderOnly: true/);
+});

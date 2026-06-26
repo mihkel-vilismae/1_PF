@@ -336,7 +336,7 @@
       "id": "v2.page.recovery",
       "label": "06 RECOVERY",
       "status": "in-progress",
-      "summary": "Existing visual-only V2 page. Recovery placeholder buttons and real recovery are future batches."
+      "summary": "V2 Recovery contains B6.2 alert-only placeholder buttons for SAVE STATE, LOAD STATE, and EMULATE POWER OFF. Real recovery remains future."
     },
     {
       "id": "v2.page.setup",
@@ -385,6 +385,12 @@
       "label": "troubleshooting / Pipeline maintenance",
       "status": "in-progress",
       "summary": "B6.1 adds Detect issues in pipeline and Clear stale locks using existing runtime maintenance action IDs and /api/runtime/pipeline/* endpoints. Live stale-lock proof remains later."
+    },
+    {
+      "id": "v2.block.06.placeholder-actions",
+      "label": "recovery / Recovery placeholder buttons",
+      "status": "in-progress",
+      "summary": "B6.2 adds SAVE STATE, LOAD STATE, and EMULATE POWER OFF placeholder buttons. Each button alerts exactly its visible label and does not perform real recovery yet."
     }
   ]
 }

@@ -1624,6 +1624,16 @@ function bindEvents() {
         openV2StatusHelp(button.dataset.v2HelpStatusId);
         return;
       }
+      if (action === 'v2-placeholder-alert') {
+        const alertText = button.dataset.v2AlertText ?? button.textContent?.trim() ?? '';
+        window.alert(alertText);
+        pushHistory('RECOVERY', 'info', `${alertText} placeholder clicked.`, {
+          action,
+          placeholderOnly: true,
+          productionMutation: false,
+        });
+        return;
+      }
       if (action === 'toggle-marked-for-removal') {
         toggleMarkedForRemoval();
         return;

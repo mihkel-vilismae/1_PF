@@ -4059,3 +4059,9 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 - Added `05 TROUBLESHOOTING` Pipeline maintenance card with `Detect issues in pipeline` and `Clear stale locks`.
 - Reused existing runtime maintenance action IDs/endpoints; no backend/server route changes.
 - Updated V2 implementation status JSON/docs and added focused placement coverage.
+
+## v0.10.49 - B6.2 V2 recovery placeholder buttons
+
+- Added alert-only `SAVE STATE`, `LOAD STATE`, and `EMULATE POWER OFF` controls to `06 RECOVERY`.
+- Added exact-label placeholder alert handling without real save/load/power behavior.
+- Updated V2 implementation status JSON/docs and placement coverage.
