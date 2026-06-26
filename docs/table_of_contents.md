@@ -89,6 +89,10 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | --- | --- |
 | `docs/20_architecture_and_specs/product_vision_and_authority.md` | Product goal and authority boundaries. |
 | `docs/20_architecture_and_specs/v2_goals/goals.md` | Authoritative V2 real playback goals: autonomous playback, autonomous recovery, and screen on/off tier-2 goal. |
+| `docs/20_architecture_and_specs/openspec/v2_operator_pages_openspec.md` | V2 pages `01` through `09`, shared components, reuse-first implementation contract, and proof boundaries. |
+| `docs/20_architecture_and_specs/openspec/V2_ImplementationStatus.md` | Element-by-element V2 implementation state tracker synchronized with the planned status overlay. |
+| `docs/20_architecture_and_specs/openspec/V2_GoalSummary.md` | Authoritative summary of the V2 planning conversation, requested placements, constraints, and final Real Playback intent. |
+| `docs/20_architecture_and_specs/openspec/V2_IssueRegister.md` | Known V2 design issues, unresolved items, and verification gaps. |
 | `docs/20_architecture_and_specs/architecture_runtime_and_recovery_spec.md` | Runtime/recovery architecture. |
 | `docs/20_architecture_and_specs/dashboard_auth_pipeline_spec.md` | Dashboard/auth pipeline architecture. |
 | `docs/20_architecture_and_specs/auth/NEW_AUTH_PROVIDER_VERIFICATION_FLOW.md` | NEW AUTH provider verification reference. |

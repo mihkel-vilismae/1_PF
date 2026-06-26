@@ -52,3 +52,11 @@ Current OpenSpec entries:
 
 - [Repo Large-File Containment XACR Review](repo_large_file_containment_xacr_review.md) — multipass review and refined prompt for applying the large-file containment policy without changing runtime behavior.
 
+- [V2 Operator Pages OpenSpec](v2_operator_pages_openspec.md) — full V2 page/component/reuse/proof contract for pages `01` through `09`, including Event Log, RPI rows, Recovery, PIR, Playback, and `09 REAL PLAYBACK` composition boundaries.
+
+- [V2 Implementation Status](V2_ImplementationStatus.md) — element-by-element status tracker for the planned V2 implementation and the required sync target for the future implementation-status UI overlay.
+
+- [V2 Goal Summary](V2_GoalSummary.md) — faithful summary of the V2 planning intent, requested page placements, component reuse constraint, and final `09 REAL PLAYBACK` path.
+
+- [V2 Issue Register](V2_IssueRegister.md) — known issue/problem register for recovery state, corrupted downloads, PIR signal testing, cron direction, auth fallback, stale-lock verification, and fake-readiness risk.
+

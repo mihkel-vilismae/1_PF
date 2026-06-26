@@ -44,6 +44,10 @@ The first controlled vision/spec move placed these canonical files here:
 - [Dashboard, Auth, and Pipeline Spec](dashboard_auth_pipeline_spec.md)
 - [Product Vision and Authority](product_vision_and_authority.md)
 - [V2 Real Playback Goals](v2_goals/goals.md) — Defines the current V2 victory conditions: autonomous playback, autonomous recovery after power loss, and the tier-2 screen on/off activity goal.
+- [V2 Operator Pages OpenSpec](openspec/v2_operator_pages_openspec.md) — Defines pages `01` through `09`, shared components, reuse rules, page placement, and proof boundaries for the V2 operator path.
+- [V2 Implementation Status](openspec/V2_ImplementationStatus.md) — Tracks each planned V2 page/control/status and whether it is visual, placeholder, wired, tested, unresolved, or future.
+- [V2 Goal Summary](openspec/V2_GoalSummary.md) — Captures the current operator intent behind the V2 pages and `09 REAL PLAYBACK`.
+- [V2 Issue Register](openspec/V2_IssueRegister.md) — Tracks known V2 design questions and verification gaps.
 
 The old `docs/categorized/vision_spec_docs/` paths remain compatibility pointers. Keep `docs/categorized/vision_spec_docs/main_readme.md` in place until the old-index replacement slice.
 
@@ -89,6 +93,11 @@ The old `docs/categorized/other_documentation/default_project_settings_and_eleme
 - [Raspberry OS missing feature OpenSpec](openspec/raspberry_os_missing_features_openspec.md) — documentation-only Raspberry OS contract for launcher, tools, playback, scheduler, recovery, power-loss, evidence export, and operator-guide gaps.
 - [Raspberry cron worker runtime OpenSpec](openspec/raspberry_cron_worker_runtime_openspec.md) — defines app-running as active cron plus three worker lanes with singleton, duplicate-skip, cross-worker independence, and stale-lock recovery proof boundaries.
 - [Endpoint contract inventory OpenSpec](openspec/endpoint_contract_inventory_openspec.md) — same-origin HTTP API route-surface map and drift guard.
+
+- [V2 Operator Pages OpenSpec](openspec/v2_operator_pages_openspec.md) — V2 page/component/reuse/proof contract for the planned nine-page operator flow.
+- [V2 Implementation Status](openspec/V2_ImplementationStatus.md) — status tracker for V2 elements and proof gaps.
+- [V2 Goal Summary](openspec/V2_GoalSummary.md) — source-of-truth summary for the current V2 implementation intent.
+- [V2 Issue Register](openspec/V2_IssueRegister.md) — issue register for recovery, PIR, cron, auth, stale locks, file validity, and proof gaps.
 
 - [Raspberry local tool checker OpenSpec](openspec/raspberry_local_tool_checker_openspec.md) — implemented Raspberry tool-readiness preflight contract and non-claims.
 

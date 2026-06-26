@@ -66,6 +66,13 @@ A second-tier goal is screen on/off behavior driven by mouse, keyboard, and PIR 
 
 See [`docs/20_architecture_and_specs/v2_goals/goals.md`](docs/20_architecture_and_specs/v2_goals/goals.md) for the authoritative V2 goal contract.
 
+The current V2 documentation package also includes:
+
+- [`docs/20_architecture_and_specs/openspec/v2_operator_pages_openspec.md`](docs/20_architecture_and_specs/openspec/v2_operator_pages_openspec.md) — page/component/reuse/proof contract for pages `01` through `09`;
+- [`docs/20_architecture_and_specs/openspec/V2_ImplementationStatus.md`](docs/20_architecture_and_specs/openspec/V2_ImplementationStatus.md) — status tracker for V2 elements, proof expectations, and unresolved states;
+- [`docs/20_architecture_and_specs/openspec/V2_GoalSummary.md`](docs/20_architecture_and_specs/openspec/V2_GoalSummary.md) — source-of-truth summary of the V2 planning intent;
+- [`docs/20_architecture_and_specs/openspec/V2_IssueRegister.md`](docs/20_architecture_and_specs/openspec/V2_IssueRegister.md) — open design questions, likely problems, and verification gaps.
+
 ## What is not claimed
 
 This README is a project landing page, not proof evidence. Do not infer target-machine success from documentation alone.
@@ -184,6 +191,10 @@ Many real-provider and target-machine proofs are intentionally blocked unless ex
 | [`docs/10_runbooks/`](docs/10_runbooks/) | Operator and developer runbooks |
 | [`docs/20_architecture_and_specs/openspec/`](docs/20_architecture_and_specs/openspec/) | OpenSpec contracts and future-proof requirements |
 | [`docs/20_architecture_and_specs/v2_goals/goals.md`](docs/20_architecture_and_specs/v2_goals/goals.md) | Authoritative V2 real playback goal contract |
+| [`docs/20_architecture_and_specs/openspec/v2_operator_pages_openspec.md`](docs/20_architecture_and_specs/openspec/v2_operator_pages_openspec.md) | V2 page/component/reuse/proof OpenSpec for pages `01` through `09` |
+| [`docs/20_architecture_and_specs/openspec/V2_ImplementationStatus.md`](docs/20_architecture_and_specs/openspec/V2_ImplementationStatus.md) | Element-by-element V2 implementation status tracker |
+| [`docs/20_architecture_and_specs/openspec/V2_GoalSummary.md`](docs/20_architecture_and_specs/openspec/V2_GoalSummary.md) | Authoritative V2 planning and placement summary |
+| [`docs/20_architecture_and_specs/openspec/V2_IssueRegister.md`](docs/20_architecture_and_specs/openspec/V2_IssueRegister.md) | Known issues, design questions, and verification gaps for V2 |
 | [`docs/proofs/`](docs/proofs/) | Human-readable proof notes and proof contracts |
 | [`CHANGELOG.md`](CHANGELOG.md) | Release history |
 

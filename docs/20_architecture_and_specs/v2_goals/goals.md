@@ -8,6 +8,14 @@ This document is the current V2 goal authority for the planned `09 REAL PLAYBACK
 
 Implementation, tests, proofs, and OpenSpec documents must not claim V2 success unless they satisfy these goals or explicitly document the remaining gap.
 
+Companion V2 documents:
+
+- [`../openspec/v2_operator_pages_openspec.md`](../openspec/v2_operator_pages_openspec.md) — page/component/reuse/proof OpenSpec;
+- [`../openspec/V2_ImplementationStatus.md`](../openspec/V2_ImplementationStatus.md) — current implementation-status tracker;
+- [`../openspec/V2_GoalSummary.md`](../openspec/V2_GoalSummary.md) — operator-planning summary;
+- [`../openspec/V2_IssueRegister.md`](../openspec/V2_IssueRegister.md) — known issues and verification gaps.
+
+
 ## Main goal 1: autonomous playback
 
 The first primary objective is a complete autonomous playback path after operator login.
