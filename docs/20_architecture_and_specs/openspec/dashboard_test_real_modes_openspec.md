@@ -1,10 +1,10 @@
-# Dashboard Test Mode / Real Mode OpenSpec
+# Dashboard Startup Modes OpenSpec
 
-Status: documentation-only OpenSpec for the existing startup mode gate and the shared Test Mode / Real Mode dashboard shell.
+Status: documentation-only OpenSpec for the existing startup mode gate and the shared Test Mode / Real Mode dashboard shell, with a documented planned Final Release mode extension.
 
 ## Purpose
 
-The dashboard starts behind a mode gate. The operator chooses **Test Mode** or **Real Mode** before interacting with the dashboard. These two modes share almost all view structure, but their safety boundaries differ. This OpenSpec documents those boundaries so future UI changes do not blur test-only, real-runtime, read-only, and secret-sensitive behavior.
+The dashboard starts behind a mode gate. The operator currently chooses **Test Mode** or **Real Mode** before interacting with the dashboard. These two modes share almost all view structure, but their safety boundaries differ. This OpenSpec documents those boundaries so future UI changes do not blur test-only, real-runtime, read-only, secret-sensitive behavior, or the separately planned **Final Release** shell.
 
 ## Source files
 
@@ -21,14 +21,20 @@ dashboard/services/runtimeTruth.ts
 
 The current startup mode gate is rendered by `renderModeSelectionGate()` in `dashboard/app.ts`.
 
-Current choices:
+Current implemented choices:
 
 ```text
 Test Mode
 Real Mode
 ```
 
-Selecting a mode must not itself trigger auth, downloads, database mutation, scheduler mutation, playback mutation, worker execution, or recovery behavior. The selection is a frontend mode boundary used to tag backend calls and control visibility/disabled states.
+Planned documented choice, not implemented by this OpenSpec update:
+
+```text
+Final Release
+```
+
+Selecting a mode must not itself trigger auth, downloads, database mutation, scheduler mutation, playback mutation, worker execution, or recovery behavior. The selection is a frontend mode boundary used to tag backend calls and control visibility/disabled states. Final Release has its own OpenSpec in `dashboard_final_release_mode_openspec.md` and starts as a blank release shell with a mode-specific sidebar.
 
 ## Shared dashboard shell
 
@@ -64,7 +70,13 @@ data-dashboard-visual-mode="test"
 data-dashboard-visual-mode="real"
 ```
 
-The marker is a frontend display and behavior boundary. It does not prove runtime readiness or real-provider success.
+The planned Final Release extension should use:
+
+```text
+data-dashboard-visual-mode="final-release"
+```
+
+The marker is a frontend display and behavior boundary. It does not prove runtime readiness, real-provider success, or release readiness.
 
 ## Test Mode boundary
 
@@ -136,6 +148,28 @@ Mode-specific View B behavior:
 | `B5 — Screen on-off simulation` | visible | visible |
 
 If a mode is not selected yet, rendering helpers may behave as mixed/default because the shell is inert behind the startup gate.
+
+
+## Planned Final Release boundary
+
+Final Release is documented separately in:
+
+```text
+docs/20_architecture_and_specs/openspec/dashboard_final_release_mode_openspec.md
+```
+
+The first implementation must be a blank shell only. It should add the third startup option and render a Final Release sidebar with:
+
+```text
+01 setup.sh — preflight only
+02 authentication.sh — local iCloudPD login
+03 startup.sh — env / DB / crontab
+04 workers — status + controls
+05 troubleshooting — logs + stale locks
+06 recovery — recovery
+```
+
+It must not wire real setup, authentication, startup, worker, troubleshooting, or recovery actions until those behaviors have their own approved OpenSpec/proof contracts.
 
 ## Read-only, mutating, and sensitive action classification
 

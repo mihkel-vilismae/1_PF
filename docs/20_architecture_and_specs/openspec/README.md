@@ -37,3 +37,7 @@ Current OpenSpec entries:
 
 - [Dashboard Test/Real Modes 3XACR Review](dashboard_test_real_modes_xacr_review.md) — docs-only review of the OpenSpec coverage added for existing Test Mode and Real Mode pages.
 
+- [Dashboard Final Release Mode OpenSpec](dashboard_final_release_mode_openspec.md) — planned third startup mode contract for a blank Final Release shell with release-menu sidebar rows for setup, authentication, startup, workers, troubleshooting, and recovery.
+
+- [Dashboard Final Release Mode 3+2XACR and 3AXCR Review](dashboard_final_release_mode_xacr_review.md) — docs-only multipass review and refined implementation prompt for the planned Final Release shell.
+
