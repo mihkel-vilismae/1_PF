@@ -15,7 +15,7 @@ test('large-file containment policy is documented and runnable', () => {
   assert.match(agents, /check:large-file-containment/);
 
   assert.match(openspec, /Files above `1500` physical lines are \*\*glue-only\*\*/);
-  assert.match(openspec, /dashboard\/styles\.final-release\.css/);
+  assert.match(openspec, /dashboard\/styles\.v2\.css/);
   assert.match(openspec, /npm run check:large-file-containment/);
 
   assert.equal(

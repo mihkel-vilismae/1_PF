@@ -53,18 +53,18 @@ See [`docs/20_architecture_and_specs/openspec/v2_operator_menu_center_panel_orig
 
 This baseline adds docs-only OpenSpec coverage for the V2 operator menu left sidebar. It freezes the sidebar to exactly six route rows: `setup.sh`, `authentication.sh`, `startup.sh`, `workers`, `troubleshooting`, and `recovery`, with numeric order kept separate from labels.
 
-The spec explicitly prevents implementing the planning tree as a generic recursive sidebar. Center-panel typed blocks remain a later OpenSpec/implementation slice. Runtime behavior, Test Mode, Real Mode, Final Release startup implementation, backend actions, auth, workers, crontab, troubleshooting, and recovery remain unchanged.
+The spec explicitly prevents implementing the planning tree as a generic recursive sidebar. Center-panel typed blocks remain a later OpenSpec/implementation slice. Runtime behavior, Test Mode, Real Mode, V2 startup implementation, backend actions, auth, workers, crontab, troubleshooting, and recovery remain unchanged.
 
 See [`docs/20_architecture_and_specs/openspec/v2_operator_menu_left_sidebar_openspec.md`](docs/20_architecture_and_specs/openspec/v2_operator_menu_left_sidebar_openspec.md).
 
 ## v0.10.21 root documentation and version baseline
 
-This baseline promotes the Final Release OpenSpec planning work into a uniquely versioned repository baseline. It does not implement the third startup button yet. The implemented startup chooser is still Test Mode and Real Mode until a later implementation commit lands.
+This baseline promotes the V2 OpenSpec planning work into a uniquely versioned repository baseline. It does not implement the third startup button yet. The implemented startup chooser is still Test Mode and Real Mode until a later implementation commit lands.
 
 Current planning/spec status:
 
-- Final Release mode is specified in [`docs/20_architecture_and_specs/openspec/dashboard_final_release_mode_openspec.md`](docs/20_architecture_and_specs/openspec/dashboard_final_release_mode_openspec.md).
-- The intended first implementation slice is a blank Final Release shell with left-sidebar entries for setup, authentication, startup, workers, troubleshooting, and recovery.
+- V2 mode is specified in [`docs/20_architecture_and_specs/openspec/dashboard_v2_mode_openspec.md`](docs/20_architecture_and_specs/openspec/dashboard_v2_mode_openspec.md).
+- The intended first implementation slice is a blank V2 shell with left-sidebar entries for setup, authentication, startup, workers, troubleshooting, and recovery.
 - Runtime behavior, backend actions, iCloudPD auth, worker controls, crontab actions, playback behavior, and recovery actions remain unchanged in this version.
 - Root-level Markdown was reviewed in a lightweight XACR pass so the quick truth, quickstart, update notes, and changelog all point at the same `0.10.21` docs-only baseline.
 

@@ -32,7 +32,7 @@
 - Bumped repository/package version from `0.10.22` to `0.10.23` for the docs-only V2 operator center-panel original OpenSpec baseline.
 - Added `v2_operator_menu_center_panel_original_openspec.md` to capture the original typed-block sub-item model for setup, authentication, startup, workers, troubleshooting, and recovery.
 - Added an XACR review documenting why center-panel child items must remain typed blocks and must not become nested sidebar routes.
-- Preserved runtime behavior: no sidebar, center-panel, Test Mode, Real Mode, Final Release button, backend action, worker, auth, crontab, troubleshooting, or recovery implementation changed.
+- Preserved runtime behavior: no sidebar, center-panel, Test Mode, Real Mode, V2 button, backend action, worker, auth, crontab, troubleshooting, or recovery implementation changed.
 
 ## 2026-06-26 05:28 EEST
 ## v0.10.22 - V2 operator left sidebar OpenSpec
@@ -40,14 +40,14 @@
 - Bumped repository/package version from `0.10.21` to `0.10.22` for the docs-only V2 operator left-sidebar OpenSpec baseline.
 - Added `v2_operator_menu_left_sidebar_openspec.md` to freeze exactly six V2 operator sidebar routes: `setup.sh`, `authentication.sh`, `startup.sh`, `workers`, `troubleshooting`, and `recovery`.
 - Added a 6ACR review documenting the left-sidebar-only scope, anti-recursive-menu guard, route/data-shape requirements, and acceptance checks.
-- Preserved runtime behavior: no Test Mode, Real Mode, Final Release button, backend action, worker, auth, crontab, troubleshooting, or recovery implementation changed.
+- Preserved runtime behavior: no Test Mode, Real Mode, V2 button, backend action, worker, auth, crontab, troubleshooting, or recovery implementation changed.
 
 ## 2026-06-26 05:00 EEST
-## v0.10.21 - Final Release OpenSpec baseline and root docs refresh
+## v0.10.21 - V2 OpenSpec baseline and root docs refresh
 
-- Bumped repository/package version from `0.10.20` to `0.10.21` so the Final Release OpenSpec baseline has a unique versioned artifact identity.
+- Bumped repository/package version from `0.10.20` to `0.10.21` so the V2 OpenSpec baseline has a unique versioned artifact identity.
 - Refreshed root-level Markdown quick-truth, quickstart, update, and agent guidance after a lightweight root-doc XACR pass.
-- Documented that Final Release mode is OpenSpec/planning-only in this baseline and that the startup menu implementation remains a later explicit implementation step.
+- Documented that V2 mode is OpenSpec/planning-only in this baseline and that the startup menu implementation remains a later explicit implementation step.
 - Preserved existing Test Mode, Real Mode, launcher, database, worker, playback, auth, crontab, and recovery runtime behavior.
 
 ## 2026-06-26 03:24 EEST

@@ -37,9 +37,9 @@ Current OpenSpec entries:
 
 - [Dashboard Test/Real Modes 3XACR Review](dashboard_test_real_modes_xacr_review.md) — docs-only review of the OpenSpec coverage added for existing Test Mode and Real Mode pages.
 
-- [Dashboard Final Release Mode OpenSpec](dashboard_final_release_mode_openspec.md) — planned third startup mode contract for a blank Final Release shell with release-menu sidebar rows for setup, authentication, startup, workers, troubleshooting, and recovery.
+- [Dashboard V2 Mode OpenSpec](dashboard_v2_mode_openspec.md) — planned third startup mode contract for a blank V2 shell with release-menu sidebar rows for setup, authentication, startup, workers, troubleshooting, and recovery.
 
-- [Dashboard Final Release Mode 3+2XACR and 3AXCR Review](dashboard_final_release_mode_xacr_review.md) — docs-only multipass review and refined implementation prompt for the planned Final Release shell.
+- [Dashboard V2 Mode 3+2XACR and 3AXCR Review](dashboard_v2_mode_xacr_review.md) — docs-only multipass review and refined implementation prompt for the planned V2 shell.
 
 - [V2 Operator Menu left sidebar OpenSpec](v2_operator_menu_left_sidebar_openspec.md) — freezes the six top-level v2 operator sidebar routes, separates order metadata from labels, forbids recursive child sidebar rendering, and defines sidebar acceptance checks.
 

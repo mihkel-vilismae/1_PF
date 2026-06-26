@@ -113,9 +113,9 @@ currently stored backup snapshots
 
 Those are page content concerns owned by the center panel or later OpenSpec slices.
 
-## Relationship to Final Release mode
+## Relationship to V2 mode
 
-The previous Final Release mode OpenSpec defines a planned third startup mode. This left-sidebar OpenSpec defines the stable v2 operator menu sidebar that should be rendered inside that Final Release/operator surface when implementation is approved.
+The previous V2 mode OpenSpec defines a planned third startup mode. This left-sidebar OpenSpec defines the stable v2 operator menu sidebar that should be rendered inside that V2 operator surface when implementation is approved.
 
 This document does not require changing Test Mode or Real Mode. Existing Test Mode and Real Mode behavior must remain unchanged unless explicitly changed by a later implementation request.
 
@@ -155,7 +155,7 @@ Preferred proof shape for implementation:
 static schema test
 + render/sidebar test
 + regression assertion that Test Mode and Real Mode startup choices still exist
-+ assertion that Final Release/operator sidebar contains only six route rows
++ assertion that V2 operator sidebar contains only six route rows
 ```
 
 The OpenSpec source of truth for this slice is this file, not the raw planning tree.

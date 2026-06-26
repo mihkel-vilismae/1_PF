@@ -46,7 +46,7 @@ The OpenSpec should record the original center-panel items as a contract snapsho
 The generated OpenSpec preserves these active constraints:
 
 - Existing runtime remains unchanged.
-- Existing Test/Real/Final Release planning work remains unchanged.
+- Existing Test/Real/V2 planning work remains unchanged.
 - Left sidebar remains exactly six routes.
 - Children stay out of the sidebar.
 - Risky actions are guarded by default.

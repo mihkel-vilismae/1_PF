@@ -29,7 +29,7 @@ S:\_PHOTOFRAMES\PF_login_v0.10.21_final_release_mode_root_docs_full_git\full_win
 - Raspberry launcher: `start_scripts/raspberry/START_RASPBERRYOS.SH`.
 - Canonical SQLite schema: `database/schema.sql`.
 - Existing `.env` and SQLite DB files are preserved by the launchers; the DB is created only when the configured `DB_PATH` does not exist.
-- Final Release dashboard mode is specified in OpenSpec only in this baseline; it is not a runnable startup option until a later implementation commit.
+- V2 dashboard mode is specified in OpenSpec only in this baseline; it is not a runnable startup option until a later implementation commit.
 
 ## Manual
 

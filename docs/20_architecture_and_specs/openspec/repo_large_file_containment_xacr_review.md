@@ -8,9 +8,9 @@ Runtime impact: none
 
 The repository already has known large-file hotspots. The most risky implementation pattern is adding new feature bodies to `dashboard/app.ts`, `dashboard/styles.css`, or `server/index.ts` just because those files already control broad application behavior.
 
-The user's Final Release operator-menu slice exposed the problem clearly:
+The user's V2 operator-menu slice exposed the problem clearly:
 
-- `dashboard/app.ts` owns startup gate glue but should not own the full Final Release UI.
+- `dashboard/app.ts` owns startup gate glue but should not own the full V2 UI.
 - `dashboard/styles.css` owns shared dashboard styling but should not absorb a new feature stylesheet section.
 - Existing large prototype/test files should not become dumping grounds for independent feature contracts.
 

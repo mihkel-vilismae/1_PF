@@ -1,10 +1,10 @@
 # Dashboard Startup Modes OpenSpec
 
-Status: documentation-only OpenSpec for the existing startup mode gate and the shared Test Mode / Real Mode dashboard shell, with a documented planned Final Release mode extension.
+Status: documentation-only OpenSpec for the existing startup mode gate and the shared Test Mode / Real Mode dashboard shell, with a documented planned V2 mode extension.
 
 ## Purpose
 
-The dashboard starts behind a mode gate. The operator currently chooses **Test Mode** or **Real Mode** before interacting with the dashboard. These two modes share almost all view structure, but their safety boundaries differ. This OpenSpec documents those boundaries so future UI changes do not blur test-only, real-runtime, read-only, secret-sensitive behavior, or the separately planned **Final Release** shell.
+The dashboard starts behind a mode gate. The operator currently chooses **Test Mode** or **Real Mode** before interacting with the dashboard. These two modes share almost all view structure, but their safety boundaries differ. This OpenSpec documents those boundaries so future UI changes do not blur test-only, real-runtime, read-only, secret-sensitive behavior, or the separately planned **V2** shell.
 
 ## Source files
 
@@ -31,10 +31,10 @@ Real Mode
 Planned documented choice, not implemented by this OpenSpec update:
 
 ```text
-Final Release
+V2
 ```
 
-Selecting a mode must not itself trigger auth, downloads, database mutation, scheduler mutation, playback mutation, worker execution, or recovery behavior. The selection is a frontend mode boundary used to tag backend calls and control visibility/disabled states. Final Release has its own OpenSpec in `dashboard_final_release_mode_openspec.md` and starts as a blank release shell with a mode-specific sidebar.
+Selecting a mode must not itself trigger auth, downloads, database mutation, scheduler mutation, playback mutation, worker execution, or recovery behavior. The selection is a frontend mode boundary used to tag backend calls and control visibility/disabled states. V2 has its own OpenSpec in `dashboard_v2_mode_openspec.md` and starts as a blank release shell with a mode-specific sidebar.
 
 ## Shared dashboard shell
 
@@ -70,10 +70,10 @@ data-dashboard-visual-mode="test"
 data-dashboard-visual-mode="real"
 ```
 
-The planned Final Release extension should use:
+The planned V2 extension should use:
 
 ```text
-data-dashboard-visual-mode="final-release"
+data-dashboard-visual-mode="v2"
 ```
 
 The marker is a frontend display and behavior boundary. It does not prove runtime readiness, real-provider success, or release readiness.
@@ -150,15 +150,15 @@ Mode-specific View B behavior:
 If a mode is not selected yet, rendering helpers may behave as mixed/default because the shell is inert behind the startup gate.
 
 
-## Planned Final Release boundary
+## Planned V2 boundary
 
-Final Release is documented separately in:
+V2 is documented separately in:
 
 ```text
-docs/20_architecture_and_specs/openspec/dashboard_final_release_mode_openspec.md
+docs/20_architecture_and_specs/openspec/dashboard_v2_mode_openspec.md
 ```
 
-The first implementation must be a blank shell only. It should add the third startup option and render a Final Release sidebar with:
+The first implementation must be a blank shell only. It should add the third startup option and render a V2 sidebar with:
 
 ```text
 01 setup.sh — preflight only

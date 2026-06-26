@@ -77,7 +77,7 @@ feature stylesheet
   feature-specific layout, cards, buttons, and page styles
 ```
 
-For the Final Release operator menu, this means preferring a dedicated stylesheet such as `dashboard/styles.final-release.css` instead of adding a large section to `dashboard/styles.css`.
+For the V2 operator menu, this means preferring a dedicated stylesheet such as `dashboard/styles.v2.css` instead of adding a large section to `dashboard/styles.css`.
 
 ### Tests
 

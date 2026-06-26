@@ -1,4 +1,4 @@
-# Dashboard Final Release Mode OpenSpec
+# Dashboard V2 Mode OpenSpec
 
 Status: documentation-only OpenSpec for a planned third startup mode. No runtime implementation is included in this slice.
 
@@ -14,10 +14,10 @@ Real Mode
 This OpenSpec defines a planned third startup choice:
 
 ```text
-Final Release
+V2
 ```
 
-Final Release is an operator-facing release shell for the Raspberry/production flow. The first implementation must be intentionally minimal: add the third startup option, enter a Final Release dashboard shell, and render the Final Release sidebar menu. Main content panels start blank until their behavior is separately specified and approved.
+V2 is an operator-facing release shell for the Raspberry/production flow. The first implementation must be intentionally minimal: add the third startup option, enter a V2 dashboard shell, and render the V2 sidebar menu. Main content panels start blank until their behavior is separately specified and approved.
 
 ## Baseline source files to inspect before implementation
 
@@ -41,10 +41,10 @@ The startup gate must offer exactly three operator choices after this mode is im
 ```text
 Test Mode
 Real Mode
-Final Release
+V2
 ```
 
-Selecting Final Release must not itself trigger:
+Selecting V2 must not itself trigger:
 
 ```text
 authentication
@@ -61,29 +61,29 @@ recovery/restore action
 file deletion
 ```
 
-Mode selection remains a frontend navigation/runtime boundary. Any real action behind the Final Release menu must be introduced later behind an explicit operator button and its own proof/safety contract.
+Mode selection remains a frontend navigation/runtime boundary. Any real action behind the V2 menu must be introduced later behind an explicit operator button and its own proof/safety contract.
 
-## Final Release visual/runtime identity
+## V2 visual/runtime identity
 
 The planned frontend visual mode value should be stable and explicit:
 
 ```text
-final-release
+v2
 ```
 
 The body marker should become:
 
 ```text
-data-dashboard-visual-mode="final-release"
+data-dashboard-visual-mode="v2"
 ```
 
 The top banner should show:
 
 ```text
-Final Release
+V2
 ```
 
-The implementation must not silently treat Final Release as Test Mode. It also must not silently treat Final Release as Real Mode unless the API/runtime header boundary is intentionally specified.
+The implementation must not silently treat V2 as Test Mode. It also must not silently treat V2 as Real Mode unless the API/runtime header boundary is intentionally specified.
 
 ## Runtime header boundary
 
@@ -94,21 +94,21 @@ X-Dashboard-Runtime-Mode: test
 X-Dashboard-Runtime-Mode: real
 ```
 
-Existing backend normalization treats unknown runtime modes as Real Mode. Therefore, the first Final Release implementation must choose one of these safe strategies and document the choice in code comments/tests:
+Existing backend normalization treats unknown runtime modes as Real Mode. Therefore, the first V2 implementation must choose one of these safe strategies and document the choice in code comments/tests:
 
 | Strategy | Requirement |
 |---|---|
-| no runtime header for blank shell | Preferred for the first blank-shell implementation if the Final Release page performs no backend calls. |
-| explicit `real` header | Allowed only if Final Release intentionally reuses Real Mode storage for real release actions. |
-| new `final-release` header | Not allowed until backend normalization, server action guards, tests, and docs explicitly support it. |
+| no runtime header for blank shell | Preferred for the first blank-shell implementation if the V2 page performs no backend calls. |
+| explicit `real` header | Allowed only if V2 intentionally reuses Real Mode storage for real release actions. |
+| new `v2` header | Not allowed until backend normalization, server action guards, tests, and docs explicitly support it. |
 
-The first blank-shell implementation should avoid backend calls from the Final Release content area.
+The first blank-shell implementation should avoid backend calls from the V2 content area.
 
 ## Sidebar contract
 
-When the operator enters Final Release mode, the left sidebar navigation should be replaced by the Final Release release-menu rows rather than the existing Test/Real view list.
+When the operator enters V2 mode, the left sidebar navigation should be replaced by the V2 release-menu rows rather than the existing Test/Real view list.
 
-The first Final Release sidebar must render these rows in this order:
+The first V2 sidebar must render these rows in this order:
 
 | Order | Visible label | Subtitle / scope | Initial behavior |
 |---:|---|---|---|
@@ -123,7 +123,7 @@ The sidebar labels intentionally look like operator scripts/menu sections. The f
 
 ## Blank content contract
 
-Final Release content panels start empty by design.
+V2 content panels start empty by design.
 
 Allowed initial content:
 
@@ -165,19 +165,19 @@ V2 — V2 Operator Menu
 DEBUG — Debug
 ```
 
-Final Release must not remove, rename, reorder, or hide those views when Test Mode or Real Mode is selected.
+V2 must not remove, rename, reorder, or hide those views when Test Mode or Real Mode is selected.
 
-Final Release may use separate view IDs/internal state for its six menu rows, but those IDs must not collide with the existing `DashboardViewId` values unless the architecture is explicitly changed and tested.
+V2 may use separate view IDs/internal state for its six menu rows, but those IDs must not collide with the existing `DashboardViewId` values unless the architecture is explicitly changed and tested.
 
 ## Relationship to V2 Operator Menu
 
 The existing `V2 — V2 Operator Menu` remains a separate prototype surface.
 
-Final Release is not the same as V2. It may reuse lessons, styling, or mapping tables from the V2 operator menu, but the first implementation should avoid coupling Final Release to V2 runtime behavior unless a later spec approves the merge.
+The V2 startup mode replaces the earlier Final Release working name. It may reuse lessons, styling, or mapping tables from the legacy V2 Operator Menu prototype, but the first implementation should avoid coupling the new V2 startup shell to legacy prototype runtime behavior unless a later spec approves the merge.
 
 ## Action classification for later slices
 
-Future Final Release menu actions must be classified before wiring:
+Future V2 menu actions must be classified before wiring:
 
 ```text
 read-only/status
@@ -200,13 +200,13 @@ Every non-visual action needs an explicit backend endpoint contract, proof comma
 Use this prompt only after explicit implementation approval:
 
 ```text
-Implement only the first blank-shell Final Release mode from `dashboard_final_release_mode_openspec.md`.
+Implement only the first blank-shell V2 mode from `dashboard_v2_mode_openspec.md`.
 
 Preserve the v0.10.20 baseline behavior for Test Mode and Real Mode. Do not wire backend actions, script execution, auth, crontab, workers, playback, recovery, or fake statuses.
 
-Add a third startup gate button labeled `Final Release`. Selecting it should show a concise `Final Release` banner and a mode-specific left sidebar with exactly these rows: `01 setup.sh`, `02 authentication.sh`, `03 startup.sh`, `04 workers`, `05 troubleshooting`, `06 recovery`, with the subtitles specified in the OpenSpec. The main content area may be blank/placeholder-only per the blank content contract.
+Add a third startup gate button labeled `V2`. Selecting it should show a concise `V2` banner and a mode-specific left sidebar with exactly these rows: `01 setup.sh`, `02 authentication.sh`, `03 startup.sh`, `04 workers`, `05 troubleshooting`, `06 recovery`, with the subtitles specified in the OpenSpec. The main content area may be blank/placeholder-only per the blank content contract.
 
-Update or add focused tests proving: the gate has three choices; Test/Real behavior is preserved; Final Release selection does not send a test/real runtime header unless intentionally documented; the Final Release sidebar rows render in order; no backend action buttons are introduced by the blank shell.
+Update or add focused tests proving: the gate has three choices; Test/Real behavior is preserved; V2 selection does not send a test/real runtime header unless intentionally documented; the V2 sidebar rows render in order; no backend action buttons are introduced by the blank shell.
 ```
 
 ## Proof expectations for first implementation
@@ -218,11 +218,11 @@ npm test -- tests/dashboardVisualModeGate.test.js
 npm test -- tests/dashboardRuntimeModeHeader.test.js
 ```
 
-Add or update focused tests as needed so the changed mode gate and Final Release blank sidebar are covered without requiring a full proof suite.
+Add or update focused tests as needed so the changed mode gate and V2 blank sidebar are covered without requiring a full proof suite.
 
 ## Non-claims
 
-This OpenSpec does not claim that Final Release operations are implemented.
+This OpenSpec does not claim that V2 operations are implemented.
 
 It does not prove:
 

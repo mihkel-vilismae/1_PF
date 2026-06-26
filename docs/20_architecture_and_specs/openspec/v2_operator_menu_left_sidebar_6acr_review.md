@@ -24,9 +24,9 @@ Decision: the OpenSpec must freeze the sidebar as a route list, not a nested UI 
 
 ## Pass 2 — Baseline preservation
 
-Existing app behavior already has Test Mode and Real Mode surfaces, plus a docs-only Final Release mode plan. The new sidebar contract must not alter existing Test/Real behavior by itself.
+Existing app behavior already has Test Mode and Real Mode surfaces, plus a docs-only V2 mode plan. The new sidebar contract must not alter existing Test/Real behavior by itself.
 
-Decision: define the sidebar as belonging to the v2 operator/final-release surface and make Test Mode / Real Mode preservation explicit.
+Decision: define the sidebar as belonging to the v2 operator/v2 surface and make Test Mode / Real Mode preservation explicit.
 
 ## Pass 3 — Schema normalization
 

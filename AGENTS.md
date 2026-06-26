@@ -172,7 +172,7 @@
 - Allowed large-file edits: imports, route registration, one small render branch, adapter glue, narrow same-responsibility bug fix, or append-only release ledger updates.
 - Avoid adding more than roughly `50` to `75` lines to any non-allowlisted file above `1500` lines; create a new focused module, view, service, data file, stylesheet, or test instead.
 - For files above `700` lines, add code only when it belongs to the file's existing single responsibility; otherwise create a new file.
-- Do not add feature-specific CSS to shared stylesheets above `1000` lines; prefer feature-specific stylesheets such as `dashboard/styles.final-release.css`.
+- Do not add feature-specific CSS to shared stylesheets above `1000` lines; prefer feature-specific stylesheets such as `dashboard/styles.v2.css`.
 - Do not grow large mixed workflow tests with unrelated feature contracts; add focused tests for new behavior.
 - Run `npm run check:large-file-containment` before packaging implementation ZIPs when this rule is relevant.
 - If an exception is necessary, state the file, line count, reason, preserved behavior, and risk in the implementation summary.
