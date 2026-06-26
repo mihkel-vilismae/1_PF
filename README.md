@@ -4,7 +4,7 @@ This repository contains a dashboard-driven photo-frame system for managing stag
 
 ## Current baseline quick truth
 
-- Repository/package version: `0.10.23`.
+- Repository/package version: `0.10.24`.
 - Dashboard: Vite frontend under `dashboard/`, served by `npm run dev`.
 - Backend API: TypeScript server entrypoint `server/index.ts`, started by `npm run api`.
 - SQLite schema source: `database/schema.sql`; generated/local SQLite DB files remain runtime data and are not the schema source.

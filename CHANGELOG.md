@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-06-26 05:58 EEST
+## v0.10.24 - AI context default exclusion policy
+
+- Bumped repository/package version from `0.10.23` to `0.10.24` for the repo-local AI context governance baseline.
+- Added `.ai-context-ignore` as the default on-demand loading manifest for large low-value files such as `package-lock.json`, full `CHANGELOG.md`, generated fixtures, runtime proof artifacts, archive patches, registry JSONs, and build/cache outputs.
+- Added `docs/20_architecture_and_specs/ai_context_default_exclusion_policy.md` and `npm run check:ai-context-policy` to document and validate the policy.
+- Preserved runtime behavior and all tracked files; this policy affects AI context selection only and does not delete, untrack, split, or rewrite excluded files.
+
 ## 2026-06-26 05:35 EEST
 ## v0.10.23 - V2 operator center-panel original OpenSpec
 
