@@ -1,3 +1,18 @@
+## 2026-06-26 16:48 EEST — v0.10.55
+
+### Added
+- Added B9.3 V2 playback drag/drop queue bridge contract documentation.
+- Added tests proving the current drag/drop queue is browser-local before B8.3 bridge implementation.
+
+### Changed
+- Bumped repository/package version from `0.10.54` to `0.10.55`.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
 ## 2026-06-26 16:42 EEST — v0.10.54
 
 ### Added
