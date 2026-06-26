@@ -1,0 +1,29 @@
+# PF_login / PhotoFrame AI context default exclusions.
+# This is not .gitignore. Files remain tracked and must be loaded on demand
+# when the task directly touches their domain.
+
+# Dependency lockfiles: load only for dependency/version-lock/npm-install work.
+package-lock.json
+
+# Large canonical history: load top/relevant sections first; whole file on demand.
+CHANGELOG.md
+
+# Generated fixtures and proof/runtime artifacts: load only for proof/fixture debugging.
+generated_test_data/**
+runtime_data/**
+
+# Archive and patch archaeology: load only for rollback/comparison/patch review.
+docs/90_archive/patches/**
+*.patch
+
+# Large machine-readable registries: load only for registry/keybook/goal-registry work.
+docs/40_backlog_and_tasks/debug_page_keybook.json
+docs/40_backlog_and_tasks/overall_project_goal_registry.json
+
+# Dependency/build/cache output: not default AI context.
+node_modules/**
+dist/**
+build/**
+coverage/**
+.cache/**
+.vite/**

@@ -71,6 +71,13 @@
 - Generated evidence packs may point to `PF_REGULAR_WORKER_RUNTIME_STATUS_FILE`, but must not generate or recommend a manual product-work confirmation value.
 - Manifest, GPS, geocode, or bridge evidence may enrich proven worker output; it cannot manufacture the underlying worker product-work claim.
 
+## AI Context Default Exclusion Rule
+
+- Before broad repo analysis, read `.ai-context-ignore` and avoid loading those paths by default.
+- Treat excluded paths as on-demand context, not deleted, untracked, or unimportant files.
+- Load excluded files only when the task directly touches their domain, such as dependency lockfiles, changelog/version history, generated fixtures, runtime proof evidence, archive patches, registry JSONs, or build/cache outputs.
+- Do not exclude active source/spec/test folders such as `server/**`, `dashboard/**`, `tests/**`, or `docs/20_architecture_and_specs/openspec/**` from default analysis.
+
 ## Baseline Promotion and Memory Hygiene Rule
 
 - When the user explicitly promotes a newest full Git ZIP as the active baseline, treat that artifact as the current immutable baseline and supersede older PF_login baseline entries.

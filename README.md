@@ -17,6 +17,14 @@ Proof/readiness claims still require current proof artifacts. Historical docs an
 
 The system documentation is organized in canonical numbered folders under `docs/`: `00_current_truth`, `10_runbooks`, `20_architecture_and_specs`, `30_status_snapshots`, `40_backlog_and_tasks`, `50_audits_and_migrations`, and `90_archive`. Implementation status in documentation is not current runtime truth unless the document cites current code, tests, generated evidence, or runtime output.
 
+## v0.10.24 AI context default exclusion policy
+
+This baseline adds repository-local AI context governance. For broad AI-assisted repo analysis, use [`.ai-context-ignore`](.ai-context-ignore) as the default context-exclusion policy and load excluded paths only on demand when the task directly touches their domain.
+
+Excluded files remain tracked and valid project files. This policy does not delete, untrack, split, or rewrite `package-lock.json`, `CHANGELOG.md`, generated fixtures, runtime proof artifacts, registry JSONs, archive patches, or build/cache outputs.
+
+See [`docs/20_architecture_and_specs/ai_context_default_exclusion_policy.md`](docs/20_architecture_and_specs/ai_context_default_exclusion_policy.md).
+
 ## v0.10.23 V2 operator center-panel original OpenSpec baseline
 
 This baseline adds docs-only OpenSpec coverage for the original V2 operator menu center-panel/sub-item design. It records the first-pass typed-block model for each of the six operator routes: setup, authentication, startup, workers, troubleshooting, and recovery.
