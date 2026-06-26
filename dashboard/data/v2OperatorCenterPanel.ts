@@ -218,6 +218,64 @@ function buildRpiWorkersRow(id: string, pageLabel: string): V2OperatorCenterPane
   };
 }
 
+const V2_WORKER_STAGE_CARDS = Object.freeze([
+  {
+    type: 'backendActionCard',
+    id: '04.worker-b3-1-download',
+    title: 'B3.1 Download',
+    body: 'Run the existing download stage endpoint from the V2 Workers page. The card stays scoped to one stage and reports local status/log events.',
+    statusKey: 'B3.1',
+    resultKey: 'B3.1',
+    logKey: 'B3.1',
+    sourceBadge: { mode: 'real', label: 'REAL · POST /api/runtime/download/run' },
+    actions: [{ action: 'run-b3-1', label: 'Run', variant: 'primary' }],
+  },
+  {
+    type: 'backendActionCard',
+    id: '04.worker-b3-2-index',
+    title: 'B3.2 Index',
+    body: 'Run the existing index stage endpoint from the V2 Workers page.',
+    statusKey: 'B3.2',
+    resultKey: 'B3.2',
+    logKey: 'B3.2',
+    sourceBadge: { mode: 'real', label: 'REAL · POST /api/runtime/index/run' },
+    actions: [{ action: 'run-b3-2', label: 'Run', variant: 'primary' }],
+  },
+  {
+    type: 'backendActionCard',
+    id: '04.worker-b3-3-gps',
+    title: 'B3.3 Parse GPS',
+    body: 'Run the existing GPS extraction stage endpoint from the V2 Workers page.',
+    statusKey: 'B3.3',
+    resultKey: 'B3.3',
+    logKey: 'B3.3',
+    sourceBadge: { mode: 'real', label: 'REAL · POST /api/runtime/gps/run' },
+    actions: [{ action: 'run-b3-3', label: 'Run', variant: 'primary' }],
+  },
+  {
+    type: 'backendActionCard',
+    id: '04.worker-b3-4-geocode',
+    title: 'B3.4 Geocode',
+    body: 'Run the existing deterministic placeholder geocode stage endpoint from the V2 Workers page.',
+    statusKey: 'B3.4',
+    resultKey: 'B3.4',
+    logKey: 'B3.4',
+    sourceBadge: { mode: 'real', label: 'REAL · POST /api/runtime/geocode/run' },
+    actions: [{ action: 'run-b3-4', label: 'Run', variant: 'primary' }],
+  },
+  {
+    type: 'backendActionCard',
+    id: '04.worker-b3-5-queue',
+    title: 'B3.5 Enqueue playback',
+    body: 'Run the existing playback queue preparation endpoint from the V2 Workers page.',
+    statusKey: 'B3.5',
+    resultKey: 'B3.5',
+    logKey: 'B3.5',
+    sourceBadge: { mode: 'real', label: 'REAL · POST /api/runtime/queue/prepare' },
+    actions: [{ action: 'run-b3-5', label: 'Run', variant: 'primary' }],
+  },
+] satisfies readonly V2OperatorCenterPanelBlock[]);
+
 
 export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2OperatorCenterPanelPage> = {
   setup: {
@@ -407,6 +465,7 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
       },
       buildRpiStagesRow('04.rpi-stages', 'Workers'),
       buildRpiWorkersRow('04.rpi-workers', 'Workers'),
+      ...V2_WORKER_STAGE_CARDS,
       {
         type: 'stageTable',
         id: '04.02',

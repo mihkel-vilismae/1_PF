@@ -70,8 +70,8 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | `Explain controls` | top V2 shell | visual/tested | v0.10.36 adds the approved V2 toolbar button and reuses the existing frontend explain-control mode action. | `tests/v2ImplementationStatusSync.test.js`. |
 | `Explain values` | top V2 shell | visual/tested | v0.10.36 adds the approved V2 toolbar button and reuses the existing frontend explain-value mode action. | `tests/v2ImplementationStatusSync.test.js`. |
 | `Implementation status` | V2 shell only | visual/tested | v0.10.36 adds the toolbar button, v0.10.37 adds highlight classes, v0.10.38 adds `?` status/help modal, and v0.10.39 adds JSON/render/docs sync tests. | `tests/v2ImplementationStatusSync.test.js`. |
-| `RPI-STAGES` row | Startup/Workers/Troubleshooting | planned | Shared media-stage status row. | Render/status test. |
-| `RPI-WORKERS` row | Startup/Workers/Troubleshooting/PIR/Playback | planned | Shared worker-call status row. | Render/status test. |
+| `RPI-STAGES` row | Startup/Workers/Troubleshooting | visual row delivered / needs runtime proof | v0.10.44 shared media-stage status row. | `tests/v2StartupWorkersPlacement.test.js`; runtime projection proof later. |
+| `RPI-WORKERS` row | Startup/Workers/Troubleshooting/PIR/Playback | visual row delivered / needs runtime proof | v0.10.45 shared worker-call status row. | `tests/v2StartupWorkersPlacement.test.js`; runtime projection proof later. |
 
 ## Page `01 SETUP` status
 
@@ -105,11 +105,11 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 
 | Element | Status | Current evidence/notes | Required next proof/test |
 | --- | --- | --- | --- |
-| `B3.1 Download` | reused candidate | Existing runtime endpoint path known. | V2 render + action test + worker proof. |
-| `B3.2 Index` | reused candidate | Existing runtime endpoint path known. | V2 render + action test + worker proof. |
-| `B3.3 Parse GPS` | reused candidate | Existing runtime endpoint path known. | V2 render + action test + worker proof. |
-| `B3.4 Geocode` | reused candidate | Existing runtime endpoint path known. | V2 render + action test + geocode proof. |
-| `B3.5 Enqueue playback` | reused candidate | Existing runtime endpoint path known. | V2 render + action test + queue proof. |
+| `B3.1 Download` | wired/needs verification | v0.10.46 adds a V2 Workers card with REAL `POST /api/runtime/download/run`, Run action `run-b3-1`, status badge, and local event log. | Live V2 button/backend proof and worker evidence remain later. |
+| `B3.2 Index` | wired/needs verification | v0.10.46 adds a V2 Workers card with REAL `POST /api/runtime/index/run`, Run action `run-b3-2`, status badge, and local event log. | Live V2 button/backend proof and worker evidence remain later. |
+| `B3.3 Parse GPS` | wired/needs verification | v0.10.46 adds a V2 Workers card with REAL `POST /api/runtime/gps/run`, Run action `run-b3-3`, status badge, and local event log. | Live V2 button/backend proof and worker evidence remain later. |
+| `B3.4 Geocode` | wired/needs verification | v0.10.46 adds a V2 Workers card with REAL `POST /api/runtime/geocode/run`, Run action `run-b3-4`, status badge, and local event log. Geocoder is still the deterministic placeholder backend. | Live V2 button/backend proof and geocode evidence remain later. |
+| `B3.5 Enqueue playback` | wired/needs verification | v0.10.46 adds a V2 Workers card with REAL `POST /api/runtime/queue/prepare`, Run action `run-b3-5`, status badge, and local event log. | Live V2 button/backend proof and queue evidence remain later. |
 | `RPI-STAGES` | visual row delivered / needs runtime proof | v0.10.44 adds the shared Download → Index → GPS parser → Geocode → Queue idle row to Startup, Workers, and Troubleshooting. | Runtime stage health projection and proof remain later. |
 | `RPI-WORKERS` | visual row delivered / needs runtime proof | v0.10.45 adds Regular state worker, Playback worker, and On-off worker Waiting cards to Startup, Workers, Troubleshooting, PIR, and Playback. | Runtime worker-call projection and proof remain later. |
 | Event Log | visual/tested | Shared V2 wrapper renders Event history for current V2 pages, including `07`-`09` route shells. | Future page-specific slices must keep using wrapper. |
@@ -243,7 +243,7 @@ The next non-UI checkpoint should fill this table from actual code inspection.
 | `01 SETUP / Database controls` | inventory pending | init DB endpoints | inventory pending | inventory pending | render/click/result | `v2.page01.databaseControls` | `not_implemented` |
 | `02 AUTHENTICATION / NEW AUTH` | inventory pending | `/api/auth/new/*` | inventory pending | inventory pending | render/click/result | `v2.page02.newAuth` | `not_implemented` |
 | `03 STARTUP / Raspberry scheduler` | inventory pending | cron/scheduler endpoints | inventory pending | inventory pending | crontab status actions | `v2.page03.scheduler` | `not_implemented` |
-| `04 WORKERS / B3.1-B3.5` | inventory pending | runtime worker endpoints | inventory pending | inventory pending | per-worker click/status | `v2.page04.workerCards` | `not_implemented` |
+| `04 WORKERS / B3.1-B3.5` | `dashboard/data/v2OperatorCenterPanel.ts` + shared V2 backend card renderer | runtime worker endpoints | focused V2 render test | reuse existing runtime action IDs | live click/status proof later | `v2.block.04.worker-b3-*` | `wired_needs_verification` |
 | `05 TROUBLESHOOTING / stale locks` | inventory pending | pipeline maintenance endpoints | inventory pending | inventory pending | stale-only behavior | `v2.page05.pipelineMaintenance` | `needs_verification` |
 | `06 RECOVERY / placeholders` | new simple buttons | browser alerts first | none | new minimal component | exact alert tests | `v2.page06.recoveryPlaceholders` | `not_implemented` |
 | `07 PIR / B5 subset` | inventory pending | activity handlers/PIR emulator | inventory pending | inventory pending | activity/emulator tests | `v2.page07.pirSimulation` | `needs_solution` |

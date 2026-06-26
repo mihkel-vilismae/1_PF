@@ -1,3 +1,18 @@
+## 2026-06-26 15:56 EEST — v0.10.46
+
+### Added
+- Added V2 Workers B3.1-B3.5 runtime worker cards for Download, Index, Parse GPS, Geocode, and Enqueue playback.
+- Each worker card exposes the existing Run action ID, REAL endpoint badge, status badge, and local event log row through shared V2 backend-card rendering.
+
+### Changed
+- Bumped repository/package version from `0.10.45` to `0.10.46`.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
 ## 2026-06-26 15:45 EEST — v0.10.45
 
 ### Added

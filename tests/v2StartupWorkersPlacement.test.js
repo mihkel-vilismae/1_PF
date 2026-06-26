@@ -74,3 +74,22 @@ test('V2 renders the shared RPI-WORKERS row on Startup, Workers, Troubleshooting
     assert.match(markup, /No worker call observed yet/);
   }
 });
+
+
+test('V2 Workers renders B3.1-B3.5 worker cards with REAL endpoints and Run actions', () => {
+  const markup = render('workers');
+  const expected = [
+    ['B3.1 Download', 'run-b3-1', 'POST /api/runtime/download/run'],
+    ['B3.2 Index', 'run-b3-2', 'POST /api/runtime/index/run'],
+    ['B3.3 Parse GPS', 'run-b3-3', 'POST /api/runtime/gps/run'],
+    ['B3.4 Geocode', 'run-b3-4', 'POST /api/runtime/geocode/run'],
+    ['B3.5 Enqueue playback', 'run-b3-5', 'POST /api/runtime/queue/prepare'],
+  ];
+  for (const [title, action, endpoint] of expected) {
+    assert.match(markup, new RegExp(title));
+    assert.match(markup, new RegExp(`data-action="${action}"`));
+    assert.match(markup, new RegExp(`REAL · ${endpoint.replaceAll('/', '\\/')}`));
+  }
+  assert.match(markup, /status-badge--idle/);
+  assert.match(markup, /Ready to call POST \/api\/runtime\/download\/run\./);
+});

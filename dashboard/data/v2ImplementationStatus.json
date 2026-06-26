@@ -159,6 +159,36 @@
       "summary": "B5.3 adds the shared worker call status row to Workers: Regular state worker, Playback worker, and On-off worker all render as Waiting with no observed calls yet."
     },
     {
+      "id": "v2.block.04.worker-b3-1-download",
+      "label": "workers / B3.1 Download",
+      "status": "in-progress",
+      "summary": "B5.4 adds the V2 Workers Download card with REAL POST /api/runtime/download/run endpoint label, idle status badge, Run action, and local event log."
+    },
+    {
+      "id": "v2.block.04.worker-b3-2-index",
+      "label": "workers / B3.2 Index",
+      "status": "in-progress",
+      "summary": "B5.4 adds the V2 Workers Index card with REAL POST /api/runtime/index/run endpoint label, idle status badge, Run action, and local event log."
+    },
+    {
+      "id": "v2.block.04.worker-b3-3-gps",
+      "label": "workers / B3.3 Parse GPS",
+      "status": "in-progress",
+      "summary": "B5.4 adds the V2 Workers Parse GPS card with REAL POST /api/runtime/gps/run endpoint label, idle status badge, Run action, and local event log."
+    },
+    {
+      "id": "v2.block.04.worker-b3-4-geocode",
+      "label": "workers / B3.4 Geocode",
+      "status": "in-progress",
+      "summary": "B5.4 adds the V2 Workers Geocode card with REAL POST /api/runtime/geocode/run endpoint label, idle status badge, Run action, and local event log. Geocoding remains the deterministic placeholder endpoint."
+    },
+    {
+      "id": "v2.block.04.worker-b3-5-queue",
+      "label": "workers / B3.5 Enqueue playback",
+      "status": "in-progress",
+      "summary": "B5.4 adds the V2 Workers Enqueue playback card with REAL POST /api/runtime/queue/prepare endpoint label, idle status badge, Run action, and local event log."
+    },
+    {
       "id": "v2.block.05.01",
       "label": "troubleshooting / manual troubleshooting actions",
       "status": "in-progress",
@@ -330,7 +360,7 @@
       "id": "v2.page.workers",
       "label": "04 WORKERS",
       "status": "in-progress",
-      "summary": "V2 Workers now contains shared RPI-STAGES and RPI-WORKERS visual rows. B3.1-B3.5 worker controls are still future until B5.4."
+      "summary": "V2 Workers now contains shared RPI-STAGES/RPI-WORKERS rows and B3.1-B3.5 runtime worker cards. Live end-to-end proof remains future B9."
     },
     {
       "id": "v2.shared.event-history",
