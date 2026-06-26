@@ -111,7 +111,7 @@ function renderV2CenterPanelBlock(block: V2OperatorCenterPanelBlock, runtimeStat
     case 'rpiWorkersRow':
       return renderRpiWorkersRowBlock(block);
     case 'recoveryPlaceholderActions':
-      return renderRecoveryPlaceholderActionsBlock(block);
+      return renderRecoveryPlaceholderActionsBlock(block, runtimeState);
     case 'pirActivityTest':
       return renderPirActivityTestBlock(block, runtimeState);
     case 'playbackRenderingControls':
@@ -305,18 +305,29 @@ function renderRpiWorkersRowBlock(block: Extract<V2OperatorCenterPanelBlock, { t
 }
 
 
-function renderRecoveryPlaceholderActionsBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'recoveryPlaceholderActions' }>): string {
+function renderRecoveryPlaceholderActionsBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'recoveryPlaceholderActions' }>, runtimeState: Record<string, any>): string {
+  const result = runtimeState.initResults?.B11 ?? null;
   return `
     <article class="card v2-block v2-block--recoveryPlaceholderActions" data-v2-recovery-placeholder-actions data-v2-block-type="recoveryPlaceholderActions" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
-      ${renderBlockHeader(block.title, getV2BlockStatusId(block.id), block.status, 'future')}
+      ${renderBlockHeader(block.title, getV2BlockStatusId(block.id), block.status, 'guarded')}
       ${block.body ? `<p class="card__copy">${escapeHtml(block.body)}</p>` : ''}
       <div class="button-row v2-recovery-placeholder-buttons">
-        ${block.actions.map((action) => `
-          <button class="button button--secondary" type="button" data-action="v2-placeholder-alert" data-v2-alert-text="${escapeHtml(action.label)}" data-v2-recovery-placeholder="${escapeHtml(action.id)}">${escapeHtml(action.label)}</button>
-        `).join('')}
+        ${block.actions.map((action) => renderRecoveryActionButton(action)).join('')}
       </div>
+      <p class="notice notice--neutral">Recovery endpoints store same media/queue context only. Exact playback timestamp resume is not required.</p>
+      ${renderV2BackendResultSurface(result)}
     </article>
   `;
+}
+
+function renderRecoveryActionButton(action: { id: string; label: string }): string {
+  const actionId = action.id.endsWith('save-state')
+    ? 'v2-recovery-save-state'
+    : action.id.endsWith('load-state')
+      ? 'v2-recovery-load-state'
+      : 'v2-recovery-emulate-power-off';
+  const variant = action.id.endsWith('load-state') ? 'button--primary' : 'button--secondary';
+  return `<button class="button ${variant}" type="button" data-action="${escapeHtml(actionId)}" data-v2-recovery-action="${escapeHtml(action.id)}">${escapeHtml(action.label)}</button>`;
 }
 
 

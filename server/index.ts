@@ -64,6 +64,8 @@ import {
 } from './testing_wholeLogicTestModeService.ts';
 import { createInspectionRoutes } from './routes/inspectionRoutes.ts';
 import { createRuntimeStatusRoutes } from './routes/runtimeStatusRoutes.ts';
+import { createV2RecoveryStateService } from './recovery/v2RecoveryStateService.ts';
+import type { V2RecoveryStateSaveReason } from '../shared/v2RecoveryStateSchema.ts';
 import {
   DASHBOARD_RUNTIME_MODE_HEADER,
   applyDashboardRuntimeModeToEnvValues,
@@ -117,6 +119,7 @@ const defaultEnvFilePath = path.join(repoRoot, '.env');
 const schedulerNodeArguments = Object.freeze(['--import', 'tsx']);
 const port = Number(process.env.PORT || 4301);
 const fullLogVerboseEnabled = await resolveInitialFullLogVerboseEnabled();
+const v2RecoveryStateService = createV2RecoveryStateService({ repoRoot });
 const logger = createProjectLogger({
   repoRoot,
   logDir: await resolveInitialLogDirectory(),
@@ -552,6 +555,9 @@ const routes: Record<string, RouteHandler> = {
   'GET /api/runtime/playback/resume-checkpoint': runtimePlaybackResumeCheckpointGetHandler,
   'POST /api/runtime/playback/resume-checkpoint': runtimePlaybackResumeCheckpointSaveHandler,
   'POST /api/runtime/playback/resume-checkpoint/clear': runtimePlaybackResumeCheckpointClearHandler,
+  'GET /api/runtime/recovery/state': runtimeRecoveryStateGetHandler,
+  'POST /api/runtime/recovery/state/save': runtimeRecoveryStateSaveHandler,
+  'POST /api/runtime/recovery/state/load': runtimeRecoveryStateLoadHandler,
   'GET /api/native-playback/status': nativePlaybackStatusHandler,
   'POST /api/native-playback/detect': nativePlaybackDetectHandler,
   'POST /api/native-playback/start-current': nativePlaybackStartCurrentHandler,
@@ -2059,6 +2065,38 @@ async function runtimePlaybackSelectCurrentHandler({ context }: Pick<HandlerArgs
   };
 }
 
+
+// Reads the latest V2 recovery snapshot without mutating playback state.
+async function runtimeRecoveryStateGetHandler(): Promise<HandlerResult> {
+  return {
+    statusCode: 200,
+    payload: await v2RecoveryStateService.readStatus(),
+  };
+}
+
+// Saves a manual V2 recovery snapshot supplied by the dashboard.
+async function runtimeRecoveryStateSaveHandler({ body }: Pick<HandlerArgs, 'body'>): Promise<HandlerResult> {
+  const reason = normalizeV2RecoverySaveReason(body.reason, 'manual-save');
+  const envelope = await v2RecoveryStateService.saveSnapshot(body.snapshot ?? body, reason, 'manual');
+  return {
+    statusCode: envelope.validation.ok ? 200 : 400,
+    payload: envelope,
+  };
+}
+
+// Loads the latest V2 recovery snapshot. The endpoint is intentionally non-autoplay.
+async function runtimeRecoveryStateLoadHandler(): Promise<HandlerResult> {
+  return {
+    statusCode: 200,
+    payload: await v2RecoveryStateService.loadSnapshot(),
+  };
+}
+
+function normalizeV2RecoverySaveReason(value: unknown, fallback: V2RecoveryStateSaveReason): V2RecoveryStateSaveReason {
+  return value === 'manual-save' || value === 'autosave-stage-change' || value === 'pre-shutdown' || value === 'restart-detected'
+    ? value
+    : fallback;
+}
 
 // Reads the latest persisted playback resume checkpoint for Windows/Raspberry views.
 async function runtimePlaybackResumeCheckpointGetHandler({ url, context }: Pick<HandlerArgs, 'url' | 'context'>): Promise<HandlerResult> {

@@ -677,7 +677,7 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
         body: 'Shows latest snapshot time and other snapshot-level metadata later. No state read/write happens from V2 in this slice.',
         status: 'visual-only',
         fields: [
-          { label: 'Latest snapshot time', value: 'not wired' },
+          { label: 'Latest snapshot time', value: 'shown in B11 result surface after save/load' },
           { label: 'Compatibility', value: 'not evaluated' },
         ],
       },
@@ -705,9 +705,9 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
       {
         type: 'recoveryPlaceholderActions',
         id: '06.placeholder-actions',
-        title: 'Recovery placeholder buttons',
-        body: 'First recovery-control slice. Each button alerts exactly its visible label and does not save, load, restore, or power-cycle anything yet.',
-        status: 'placeholder-only',
+        title: 'Recovery manual state controls',
+        body: 'B11.2 wires SAVE STATE and LOAD STATE to manual recovery endpoints. EMULATE POWER OFF records a pre-shutdown snapshot without actually powering off the machine.',
+        status: 'manual recovery endpoints',
         actions: [
           { id: '06.save-state', label: 'SAVE STATE' },
           { id: '06.load-state', label: 'LOAD STATE' },

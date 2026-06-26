@@ -1,6 +1,6 @@
-# V2 Recovery State Schema — B11.1
+# V2 Recovery State Schema — B11.1/B11.2
 
-Status: schema-only, no save/load runtime behavior yet.
+Status: B11.1 schema plus B11.2 manual save/load endpoints and V2 wiring. Autosave/restart detection remains B11.3.
 
 ## Purpose
 
@@ -29,17 +29,21 @@ The V2 recovery state snapshot is a lightweight contract for restoring the same 
 | `pipeline.corruptOrPartialDownloadsExcluded` | Must be `true`; corrupt/incomplete downloads must not enter recovery or playback queue context. |
 | `notes` | Human-readable non-secret notes. |
 
-## Explicit non-goals for B11.1
+## B11.2 manual endpoint behavior
 
-- No real save endpoint.
-- No real load endpoint.
-- No autosave loop.
-- No restart detector.
+- Manual save endpoint: `POST /api/runtime/recovery/state/save`.
+- Manual load endpoint: `POST /api/runtime/recovery/state/load`.
+- Read-only status endpoint: `GET /api/runtime/recovery/state`.
+- Save/load persists lightweight same-media/queue context only; it does not autoplay or force fullscreen.
+
+## Explicit non-goals until B11.3
+
+- No autosave loop until B11.3.
+- No restart detector until B11.3.
 - No exact video timestamp requirement.
 - No credentials, cookies, session file contents, or other secret material in snapshots.
 
 ## Next implementation gates
 
-1. B11.2: manual save/load endpoints and V2 wiring.
-2. B11.3: autosave/restart recovery flow.
-3. B9.5/B12: proof harness for abrupt stop/restart and final victory proof.
+1. B11.3: autosave/restart recovery flow.
+2. B9.5/B12: proof harness for abrupt stop/restart and final victory proof.

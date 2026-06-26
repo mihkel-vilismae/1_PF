@@ -33,7 +33,7 @@ test('B11.1 validation rejects fake-compatible snapshots that require exact time
   assert.match(result.errors.join('\n'), /corruptOrPartialDownloadsExcluded must be true/);
 });
 
-test('B11.1 renders the recovery schema card without activating save/load endpoints', () => {
+test('B11.2 renders the recovery schema card with manual save/load endpoints wired', () => {
   const state = createInitialState();
   const markup = renderV2StartupOperatorMenuView('recovery', state.history, 'copy all log', {
     runtimeState: state,
@@ -43,21 +43,21 @@ test('B11.1 renders the recovery schema card without activating save/load endpoi
 
   assert.match(markup, /Lightweight recovery state schema/);
   assert.match(markup, /same media\/queue context/);
-  assert.match(markup, /manual save\/load endpoints arrive in B11\.2/);
+  assert.match(markup, /manual save\/load endpoints arrive in B11\.2|B11\.2 manual endpoints wired/);
   assert.match(markup, /data-v2-status-id="v2.block.06.recovery-state-schema"/);
-  assert.match(markup, /data-v2-alert-text="SAVE STATE"/);
-  assert.doesNotMatch(markup, /data-action="v2-recovery-save-state"/);
-  assert.doesNotMatch(markup, /data-action="v2-recovery-load-state"/);
+  assert.match(markup, /data-action="v2-recovery-save-state"/);
+  assert.match(markup, /data-action="v2-recovery-load-state"/);
+  assert.doesNotMatch(markup, /data-v2-alert-text="SAVE STATE"/);
 });
 
 test('B11.1 documents the recovery schema and future implementation gates', () => {
   const doc = readFileSync('docs/20_architecture_and_specs/openspec/V2_RecoveryStateSchema.md', 'utf8');
   for (const expected of [
-    'schema-only',
+    'B11.2 manual save/load endpoints',
     'same media/queue context',
     'Exact video timestamp resume is not required',
-    'No real save endpoint',
-    'No real load endpoint',
+    'Manual save endpoint',
+    'Manual load endpoint',
     'corrupt/incomplete downloads must not enter recovery or playback queue context',
   ]) {
     assert.match(doc, new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'));

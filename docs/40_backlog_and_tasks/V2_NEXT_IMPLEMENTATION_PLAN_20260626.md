@@ -34,7 +34,7 @@ Run these one slice at a time, with one logical commit and one full Git ZIP per 
 | 10 | `B10.1` | `09 REAL PLAYBACK` integrated layout | **done in v0.10.59** | Composes proven pieces only; unproven recovery/PIR gates remain disabled/future. |
 | 11 | `B10.2` | `09 REAL PLAYBACK` status projection | **done in v0.10.60** | Read-only scheduler/pipeline/queue/metadata/rendering/recovery-gate projection. |
 | 12 | `B11.1` | Lightweight recovery state schema | **done in v0.10.61** | Schema-only: same media/queue context, no exact timestamp requirement, no secrets. |
-| 13 | `B11.2` | Manual recovery save/load endpoints | planned | Implement real endpoints and V2 wiring. |
+| 13 | `B11.2` | Manual recovery save/load endpoints | **done in v0.10.62** | SAVE STATE / LOAD STATE endpoints and V2 wiring; no autoplay. |
 | 14 | `B11.3` | Autosave/restart recovery flow | planned | Rough shutdown/restart flow and proof harness. |
 | 9 | `B12` | Victory proof | End-to-end autonomous playback and autonomous recovery proof | Target-machine proof artifacts required before readiness claims. |
 

@@ -169,7 +169,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | Integrated layout | visual/tested | v0.10.59 B10.1 composes scheduler, RPI rows, B3.1-B3.5 worker cards, playback rendering controls, queue bridge, and metadata bridge from proven pieces only. | `tests/v2RealPlaybackComposition.test.js`. |
 | Action flow/status projection | visual/tested | v0.10.60 B10.2 adds read-only scheduler/pipeline/queue/metadata/rendering/recovery-gate projection. | `tests/v2RealPlaybackProjection.test.js`. |
 | Integrated real operation | future | Final autonomous runtime proof is not yet claimed. | Final autonomous playback proof. |
-| Recovery schema | schema/tested | v0.10.61 B11.1 defines the lightweight recovery state schema: same media/queue context, no exact timestamp requirement, no secrets, corrupt-download exclusion. | `tests/v2RecoveryStateSchema.test.js`; real endpoints still B11.2. |
+| Recovery schema | schema/tested | v0.10.62 B11.2 adds manual save/load endpoints and V2 wiring on top of the B11.1 schema. | `tests/v2RecoveryStateSchema.test.js`; `tests/v2RecoveryManualEndpoints.test.js`; autosave/restart still B11.3. |
 | Autonomous recovery | future | Must recover after rough shutdown/power loss. | Final recovery proof. |
 | Screen on/off integration | future | Tier-2 goal. | Activity/recovery/playback integration proof. |
 
@@ -299,10 +299,12 @@ Before any implementation report is final:
 The root README files and this status document were refreshed after B5 so the repository entry points no longer describe the old six-page/no-action V2 baseline. The next planned implementation starts with B6.1 Troubleshooting pipeline maintenance, then B6.2 Recovery placeholders. See [`../../40_backlog_and_tasks/V2_NEXT_IMPLEMENTATION_PLAN_20260626.md`](../../40_backlog_and_tasks/V2_NEXT_IMPLEMENTATION_PLAN_20260626.md).
 
 
-## v0.10.59-v0.10.61 B10/B11 update
+## v0.10.59-v0.10.62 B10/B11 update
 
 | Slice | Status | Evidence/notes | Remaining work |
 | --- | --- | --- | --- |
 | `B10.1` `09 REAL PLAYBACK` layout | `visual/tested` | Final page now composes only proven surfaces: Raspberry scheduler controls, RPI-STAGES/RPI-WORKERS, B3.1-B3.5 worker cards, B8 rendering controls, B8 queue bridge, and B8 metadata bridge. | Final autonomous proof remains future. |
 | `B10.2` status projection | `visual/tested` | Read-only projection summarizes scheduler, pipeline stages, queue bridge, metadata, rendering, and recovery gate state. | Projection is not a worker runner or recovery engine. |
-| `B11.1` recovery schema | `schema/tested` | `dashboard/services/v2RecoveryStateSchema.ts` and `V2_RecoveryStateSchema.md` define same-media/queue-context recovery without exact timestamp requirement. | Manual save/load endpoints and autosave/restart recovery remain B11.2/B11.3. |
+| `B11.1` recovery schema | `schema/tested` | `dashboard/services/v2RecoveryStateSchema.ts` and `V2_RecoveryStateSchema.md` define same-media/queue-context recovery without exact timestamp requirement. | Manual save/load endpoints are implemented in B11.2; autosave/restart recovery remains B11.3. |
+
+| `B11.2` manual recovery endpoints | `wired/tested` | `POST /api/runtime/recovery/state/save`, `POST /api/runtime/recovery/state/load`, and `GET /api/runtime/recovery/state` persist same-media/queue-context snapshots without autoplay or secrets. | Autosave/restart flow remains B11.3. |

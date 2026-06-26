@@ -1,3 +1,9 @@
+## v0.10.62 - 2026-06-26
+
+- B11.2: implemented manual V2 recovery save/load endpoints and V2 recovery-page wiring.
+- Added shared recovery snapshot normalization, file-backed backend persistence under `runtime_data/recovery`, and result surfaces for SAVE STATE / LOAD STATE / EMULATE POWER OFF.
+- Preserved the same-media/queue-context recovery boundary: no secrets, no autoplay, and no exact timestamp requirement.
+
 ## v0.10.61 - 2026-06-26
 
 - B11.1: defined the lightweight V2 recovery state schema as schema-only work with same media/queue context, no exact timestamp requirement, corrupt-download exclusion, and no secrets.

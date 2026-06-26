@@ -69,6 +69,12 @@ import { buildOsPlaybackViewModel, OS_PLAYBACK_PLATFORMS, type OsPlaybackPlatfor
 import { requestJson, setDashboardRuntimeMode } from './services/apiClient.ts';
 import { buildV2PlaybackDropQueueBridgeRequest } from './services/v2PlaybackDropQueueBridge.ts';
 import { buildBrowserLocalV2PlaybackMetadata } from './services/v2PlaybackMetadataBridge.ts';
+import {
+  V2_RECOVERY_ENDPOINTS,
+  loadV2RecoveryStateSnapshot,
+  saveV2RecoveryStateSnapshot,
+} from './services/v2RecoveryStateClient.ts';
+import { createEmptyV2RecoveryStateSnapshot, type V2RecoveryStateSaveReason } from './services/v2RecoveryStateSchema.ts';
 import { isV2OperatorSidebarRoute, type V2OperatorSidebarRoute } from './data/v2OperatorSidebar.ts';
 import { V2_IMPLEMENTATION_STATUS_REGISTRY, getV2ImplementationStatusElement } from './data/v2ImplementationStatus.ts';
 import { buildViewARefreshPlan } from './services/viewARefreshPlan.ts';
@@ -1639,6 +1645,18 @@ function bindEvents() {
         });
         return;
       }
+      if (action === 'v2-recovery-save-state') {
+        void runV2RecoverySave('manual-save');
+        return;
+      }
+      if (action === 'v2-recovery-load-state') {
+        void runV2RecoveryLoad();
+        return;
+      }
+      if (action === 'v2-recovery-emulate-power-off') {
+        void runV2RecoverySave('pre-shutdown', 'EMULATE POWER OFF records a pre-shutdown snapshot; it does not power off this machine.');
+        return;
+      }
       if (action === 'v2-playback-queue-prepare-item') {
         prepareV2PlaybackQueueItemForBackend(button.dataset.v2PlaybackQueueItemId);
         return;
@@ -2129,6 +2147,122 @@ function formatDurationSeconds(seconds: number): string {
   const minutes = Math.floor(roundedSeconds / 60);
   const remainder = roundedSeconds % 60;
   return `${minutes}:${String(remainder).padStart(2, '0')}`;
+}
+
+function buildCurrentV2RecoverySnapshot(reason: V2RecoveryStateSaveReason) {
+  const state = getState();
+  const savedAtIso = new Date().toISOString();
+  const snapshot = createEmptyV2RecoveryStateSnapshot(savedAtIso, reason);
+  const mediaRows = v2PlaybackQueueItems.filter((item) => item.mediaKind === 'image' || item.mediaKind === 'video');
+  const preparedRows = mediaRows.filter((item) => ['requested', 'prepared', 'queued', 'success'].includes(String(item.backendQueueStatus ?? '').toLowerCase()));
+  const selected = preparedRows[0] ?? mediaRows[0] ?? null;
+  const lastStageCompleted = String(state.truth?.lastStageCompleted ?? '');
+  snapshot.playback = {
+    currentMediaId: selected?.id ?? (state.truth?.currentMedia && typeof state.truth.currentMedia === 'object' ? String((state.truth.currentMedia as Record<string, unknown>).id ?? '') || null : null),
+    currentFilename: selected?.filename ?? (state.truth?.currentMedia && typeof state.truth.currentMedia === 'object' ? String((state.truth.currentMedia as Record<string, unknown>).name ?? '') || null : null),
+    mediaKind: selected?.mediaKind === 'image' || selected?.mediaKind === 'video' || selected?.mediaKind === 'other' ? selected.mediaKind : 'unknown',
+    queueCursorIndex: selected ? Math.max(0, v2PlaybackQueueItems.findIndex((item) => item.id === selected.id)) : null,
+    queueLength: mediaRows.length || Number(state.truth?.queueLength ?? 0),
+    playbackPositionSeconds: null,
+    exactTimestampRequired: false,
+  };
+  snapshot.queue = {
+    source: preparedRows.length > 0 ? 'v2-browser-local-bridge' : mediaRows.length > 0 ? 'v2-browser-local-bridge' : 'unknown',
+    preparedMediaCount: preparedRows.length,
+    selectedQueueItemId: selected?.id ?? null,
+    selectedBackendQueueStatus: selected?.backendQueueStatus ?? null,
+  };
+  snapshot.pipeline = {
+    activeStage: mapV2RecoveryActiveStage(lastStageCompleted),
+    stageStatuses: {
+      '3A': String(state.statusByKey?.['3A'] ?? 'idle'),
+      'B3.1': String(state.statusByKey?.['B3.1'] ?? 'idle'),
+      'B3.2': String(state.statusByKey?.['B3.2'] ?? 'idle'),
+      'B3.3': String(state.statusByKey?.['B3.3'] ?? 'idle'),
+      'B3.4': String(state.statusByKey?.['B3.4'] ?? 'idle'),
+      'B3.5': String(state.statusByKey?.['B3.5'] ?? 'idle'),
+      B4: String(state.statusByKey?.B4 ?? 'idle'),
+      B11: String(state.statusByKey?.B11 ?? 'idle'),
+    },
+    corruptOrPartialDownloadsExcluded: true,
+  };
+  snapshot.notes = [
+    `${reason} snapshot created by V2 recovery wiring.`,
+    'No credentials, cookies, or session file contents are included.',
+    'Exact playback timestamp resume is not required; same media/queue context is enough.',
+  ];
+  return snapshot;
+}
+
+function mapV2RecoveryActiveStage(lastStageCompleted: string): 'download' | 'index' | 'gps-parser' | 'geocode' | 'queue' | 'playback' | 'idle' | 'unknown' {
+  if (lastStageCompleted === 'B3.1') return 'download';
+  if (lastStageCompleted === 'B3.2') return 'index';
+  if (lastStageCompleted === 'B3.3') return 'gps-parser';
+  if (lastStageCompleted === 'B3.4') return 'geocode';
+  if (lastStageCompleted === 'B3.5') return 'queue';
+  if (lastStageCompleted === 'B4') return 'playback';
+  return lastStageCompleted ? 'unknown' : 'idle';
+}
+
+async function runV2RecoverySave(reason: V2RecoveryStateSaveReason, operatorMessage: string | null = null): Promise<void> {
+  const snapshot = buildCurrentV2RecoverySnapshot(reason);
+  recordV2RecoveryResult('running', 'Save V2 recovery state', V2_RECOVERY_ENDPOINTS.save, 'Saving V2 recovery state...', { snapshot, reason });
+  try {
+    const result = await saveV2RecoveryStateSnapshot({ snapshot, reason });
+    recordV2RecoveryResult('success', 'Save V2 recovery state', V2_RECOVERY_ENDPOINTS.save, String((result.payload as Record<string, unknown>)?.message ?? 'V2 recovery state saved.'), result.payload, result.meta);
+    pushHistory('RECOVERY', 'success', operatorMessage ?? 'V2 recovery state saved.', { reason, endpoint: V2_RECOVERY_ENDPOINTS.save.path });
+  } catch (error) {
+    recordV2RecoveryResult('error', 'Save V2 recovery state', V2_RECOVERY_ENDPOINTS.save, getV2RecoveryErrorMessage('Save V2 recovery state', error), null, (error as any)?.meta ?? null, error);
+    pushHistory('RECOVERY', 'error', getV2RecoveryErrorMessage('Save V2 recovery state', error), { reason, endpoint: V2_RECOVERY_ENDPOINTS.save.path });
+  }
+}
+
+async function runV2RecoveryLoad(): Promise<void> {
+  recordV2RecoveryResult('running', 'Load V2 recovery state', V2_RECOVERY_ENDPOINTS.load, 'Loading V2 recovery state...', {});
+  try {
+    const result = await loadV2RecoveryStateSnapshot();
+    const payload = result.payload as Record<string, unknown>;
+    recordV2RecoveryResult('success', 'Load V2 recovery state', V2_RECOVERY_ENDPOINTS.load, String(payload?.message ?? 'V2 recovery state loaded.'), payload, result.meta);
+    patchState((draft) => {
+      draft.v2Recovery = {
+        ...(typeof draft.v2Recovery === 'object' && draft.v2Recovery !== null ? draft.v2Recovery as Record<string, unknown> : {}),
+        latestLoad: structuredClone(payload),
+      };
+      const snapshot = payload?.snapshot as Record<string, any> | null;
+      if (snapshot?.playback?.currentFilename) {
+        draft.truth.lastCheckpoint = `Recovered context: ${snapshot.playback.currentFilename}`;
+        draft.truth.playbackStatus = 'Recovery snapshot loaded; same media can be resumed from beginning';
+      }
+    });
+    pushHistory('RECOVERY', payload?.snapshot ? 'success' : 'warning', String(payload?.message ?? 'V2 recovery state loaded.'), { endpoint: V2_RECOVERY_ENDPOINTS.load.path });
+  } catch (error) {
+    recordV2RecoveryResult('error', 'Load V2 recovery state', V2_RECOVERY_ENDPOINTS.load, getV2RecoveryErrorMessage('Load V2 recovery state', error), null, (error as any)?.meta ?? null, error);
+    pushHistory('RECOVERY', 'error', getV2RecoveryErrorMessage('Load V2 recovery state', error), { endpoint: V2_RECOVERY_ENDPOINTS.load.path });
+  }
+}
+
+function recordV2RecoveryResult(outcome: 'running' | 'success' | 'error', operation: string, endpoint: { method: string; path: string }, message: string, payload: unknown = null, meta: any = null, error: unknown = null): void {
+  patchState((draft) => {
+    draft.statusByKey.B11 = outcome === 'running' ? 'running' : outcome;
+    (draft.initResults as Record<string, unknown>).B11 = {
+      operation,
+      method: endpoint.method,
+      endpoint: endpoint.path,
+      outcome,
+      receivedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      status: meta?.response?.status ?? (error as any)?.status ?? null,
+      message,
+      payload: outcome === 'success' ? payload : undefined,
+      errorPayload: outcome === 'error' ? ((error as any)?.payload ?? meta?.response?.body ?? null) : undefined,
+    };
+  });
+}
+
+function getV2RecoveryErrorMessage(operation: string, error: unknown): string {
+  if (error instanceof Error && error.message) {
+    return `${operation} failed: ${error.message}`;
+  }
+  return `${operation} failed.`;
 }
 
 function getHistoryCopyButtonLabel(): string {
