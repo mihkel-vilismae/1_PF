@@ -1,83 +1,30 @@
 @echo off
-REM Starts the 12_PF dashboard on Windows from the repository root.
-REM Checks Node/npm availability, installs dependencies when missing,
-REM then opens separate terminals for the API server and Vite frontend.
+REM Starts PF_login / PhotoFrame on Windows from the repository root.
+REM Delegates environment preparation, dependency install, build, DB initialization,
+REM and tabbed service launch to start_scripts\windows\START_WIN.PS1.
 setlocal
 for %%I in ("%~dp0..\..") do set "REPO_ROOT=%%~fI"
 cd /d "%REPO_ROOT%"
 
-REM If the repo-local .env is missing, seed it from the parent folder.
-REM This supports setups where the private .env is kept outside the Git repo.
-if not exist ".env" (
-  if exist "..\.env" (
-    echo [INFO] .env not found in repo root. Copying parent ..\.env into this repo...
-    copy /Y "..\.env" ".env" >nul
-    if errorlevel 1 (
-      echo [ERROR] Failed to copy ..\.env into the repo root.
-      pause
-      exit /b 1
-    )
-  ) else (
-    echo [WARN] .env not found in repo root, and parent ..\.env does not exist.
-    echo [WARN] Continuing startup; backend checks may fail until .env is created.
-  )
+set "PS_EXE="
+where pwsh >nul 2>nul
+if not errorlevel 1 set "PS_EXE=pwsh"
+if "%PS_EXE%"=="" (
+  where powershell >nul 2>nul
+  if not errorlevel 1 set "PS_EXE=powershell"
 )
-
-where node >nul 2>nul
-if errorlevel 1 (
-  echo [ERROR] Node.js was not found on PATH.
-  echo Install Node.js, reopen this terminal, and run start_win.cmd again.
+if "%PS_EXE%"=="" (
+  echo [ERROR] Neither PowerShell 7 ^(pwsh^) nor Windows PowerShell ^(powershell^) was found on PATH.
   pause
   exit /b 1
 )
 
-where npm >nul 2>nul
-if errorlevel 1 (
-  echo [ERROR] npm was not found on PATH.
-  echo Install Node.js/npm, reopen this terminal, and run start_win.cmd again.
+"%PS_EXE%" -NoProfile -ExecutionPolicy Bypass -File "%REPO_ROOT%\start_scripts\windows\START_WIN.PS1" %*
+set "EXIT_CODE=%ERRORLEVEL%"
+if not "%EXIT_CODE%"=="0" (
+  echo [ERROR] START_WIN.PS1 failed with exit code %EXIT_CODE%.
   pause
-  exit /b 1
+  exit /b %EXIT_CODE%
 )
 
-if not exist "node_modules" (
-  echo [INFO] node_modules not found. Installing dependencies...
-  call npm install --verbose
-  if errorlevel 1 (
-    echo [ERROR] npm install failed.
-    pause
-    exit /b 1
-  )
-)
-
-REM Enable local-only raw iCloudPD stdout/stderr capture for login debugging.
-REM The raw log is private runtime evidence and must not be exposed through API/UI.
-if not defined ICLOUDPD_RAW_STDIO_LOG (
-  set "ICLOUDPD_RAW_STDIO_LOG=1"
-)
-if not defined ICLOUDPD_RAW_STDIO_LOG_PATH (
-  set "ICLOUDPD_RAW_STDIO_LOG_PATH=runtime_data\private_logs\icloudpd_raw_stdio.log"
-)
-echo [INFO] Raw iCloudPD stdout/stderr capture: ICLOUDPD_RAW_STDIO_LOG=%ICLOUDPD_RAW_STDIO_LOG%
-echo [INFO] Raw iCloudPD stdout/stderr log: %ICLOUDPD_RAW_STDIO_LOG_PATH%
-
-echo [INFO] Building 12_PF dashboard before starting the API server...
-call npm run build
-if errorlevel 1 (
-  echo [ERROR] npm run build failed. API server was not started.
-  pause
-  exit /b 1
-)
-
-echo [INFO] Starting 12_PF API server in a new terminal...
-start "12_PF API" cmd /k "cd /d ""%REPO_ROOT%"" && npm run api"
-
-echo [INFO] Starting 12_PF frontend in a new terminal...
-start "12_PF Frontend" cmd /k "cd /d ""%REPO_ROOT%"" && npm run dev"
-
-echo [INFO] Starting component status monitor in a new terminal...
-start "12_PF Status" cmd /k "cd /d ""%REPO_ROOT%"" && powershell -NoProfile -ExecutionPolicy Bypass -File ""%REPO_ROOT%\start_scripts\start_component_status.ps1"""
-
-echo [INFO] Startup commands launched.
-echo [INFO] API: usually http://127.0.0.1:4301
-echo [INFO] Frontend: usually http://localhost:5173
-pause
+exit /b 0

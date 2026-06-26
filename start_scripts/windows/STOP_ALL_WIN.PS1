@@ -16,7 +16,10 @@ $TargetPorts = @(4301, 5173)
 $RepoCommandPatterns = @(
     "npm run api",
     "npm run dev",
-    "start_component_status.ps1"
+    "start_component_status.ps1",
+    "backend_api.cmd",
+    "frontend_vite.cmd",
+    "status_monitor.cmd"
 )
 $PortOwnerCommandPatterns = @(
     "npm",
@@ -24,6 +27,11 @@ $PortOwnerCommandPatterns = @(
     "vite",
     "tsx",
     "server/index.ts"
+)
+$RepoTerminalHostNames = @(
+    "cmd.exe",
+    "powershell.exe",
+    "pwsh.exe"
 )
 
 function Write-Step([string]$Message) {
@@ -67,6 +75,40 @@ function Test-IsRepoOwnedStartProcess($Process) {
     return Test-CommandLineContainsAnyPattern -CommandLine $commandLine -Patterns $RepoCommandPatterns
 }
 
+function Test-IsRepoOwnedTerminalHost($Process) {
+    $processName = ([string]$Process.Name).ToLowerInvariant()
+    if ($RepoTerminalHostNames -notcontains $processName) { return $false }
+
+    $commandLine = [string]$Process.CommandLine
+    if ([string]::IsNullOrWhiteSpace($commandLine)) { return $false }
+
+    $repoText = Convert-ToComparablePathText $RepoRoot.Path
+    $commandText = Convert-ToComparablePathText $commandLine
+    if (-not $commandText.Contains($repoText)) { return $false }
+
+    return Test-CommandLineContainsAnyPattern -CommandLine $commandLine -Patterns $RepoCommandPatterns
+}
+
+function Add-MatchingRepoTerminalAncestors([hashtable]$ProcessMap, [hashtable]$TargetIds, [int]$ProcessId, [string]$Reason) {
+    if (-not $ProcessMap.ContainsKey($ProcessId)) { return }
+
+    $current = $ProcessMap[$ProcessId]
+    while ($null -ne $current -and $null -ne $current.ParentProcessId) {
+        $parentId = [int]$current.ParentProcessId
+        if ($parentId -eq 0 -or $parentId -eq $PID) { return }
+        if (-not $ProcessMap.ContainsKey($parentId)) { return }
+
+        $parent = $ProcessMap[$parentId]
+        if (Test-IsRepoOwnedStartProcess $parent -or Test-IsRepoOwnedTerminalHost $parent) {
+            Add-ProcessAndDescendants -ProcessMap $ProcessMap -TargetIds $TargetIds -ProcessId $parentId -Reason $Reason
+        }
+
+        $parentName = ([string]$parent.Name).ToLowerInvariant()
+        if ($parentName -eq "wt.exe" -or $parentName -eq "windowsterminal.exe") { return }
+        $current = $parent
+    }
+}
+
 function Add-ProcessAndDescendants([hashtable]$ProcessMap, [hashtable]$TargetIds, [int]$ProcessId, [string]$Reason) {
     if (-not $ProcessMap.ContainsKey($ProcessId)) { return }
     if (-not $TargetIds.ContainsKey($ProcessId)) {
@@ -103,7 +145,7 @@ function Add-TargetPortOwners([hashtable]$ProcessMap, [hashtable]$TargetIds) {
             }
         }
         catch {
-            Write-Skip "Could not inspect local port $port: $($_.Exception.Message)"
+            Write-Skip "Could not inspect local port ${port}: $($_.Exception.Message)"
             continue
         }
 
@@ -116,6 +158,7 @@ function Add-TargetPortOwners([hashtable]$ProcessMap, [hashtable]$TargetIds) {
             $shape = "$processName $commandLine"
             if (Test-CommandLineContainsAnyPattern -CommandLine $shape -Patterns $PortOwnerCommandPatterns) {
                 Add-ProcessAndDescendants -ProcessMap $ProcessMap -TargetIds $TargetIds -ProcessId $ownerId -Reason "project default port $port owner"
+                Add-MatchingRepoTerminalAncestors -ProcessMap $ProcessMap -TargetIds $TargetIds -ProcessId $ownerId -Reason "repo-owned terminal hosting project default port $port"
             }
             else {
                 Write-Skip "Port $port owner PID $ownerId did not match Node/npm/Vite command shape."
@@ -138,16 +181,16 @@ function Stop-TargetProcesses([hashtable]$ProcessMap, [hashtable]$TargetIds) {
         $process = $ProcessMap[$processId]
         $name = if ($process) { [string]$process.Name } else { "unknown" }
         if ($DryRun) {
-            Write-Host ("[DRY-RUN] Would stop PID {0} ({1}) — {2}" -f $processId, $name, $reason) -ForegroundColor Yellow
+            Write-Host ("[DRY-RUN] Would stop PID {0} ({1}) - {2}" -f $processId, $name, $reason) -ForegroundColor Yellow
             continue
         }
 
         try {
             Stop-Process -Id $processId -Force -ErrorAction Stop
-            Write-Host ("[STOPPED] PID {0} ({1}) — {2}" -f $processId, $name, $reason) -ForegroundColor Green
+            Write-Host ("[STOPPED] PID {0} ({1}) - {2}" -f $processId, $name, $reason) -ForegroundColor Green
         }
         catch {
-            Write-Host ("[WARN] Could not stop PID {0} ({1}) — {2}: {3}" -f $processId, $name, $reason, $_.Exception.Message) -ForegroundColor Yellow
+            Write-Host ("[WARN] Could not stop PID {0} ({1}) - {2}: {3}" -f $processId, $name, $reason, $_.Exception.Message) -ForegroundColor Yellow
         }
     }
 }

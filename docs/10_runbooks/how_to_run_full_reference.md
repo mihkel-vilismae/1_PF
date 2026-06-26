@@ -33,7 +33,7 @@ npm run api
 npm run dev
 ```
 
-On Windows, you can also run `start_scripts/windows/start_win.cmd` from the repository root. It checks Node/npm, installs dependencies when needed, runs `npm run build`, then starts the API server, Vite frontend, and component-status monitor in separate terminals.
+On Windows, you can also run `start_scripts/windows/start_win.cmd` from the repository root. It delegates to `START_WIN.PS1`, checks Node/npm, installs dependencies when needed, runs `npm run build`, initializes the DB when missing, then starts the API server, Vite frontend, and component-status monitor as Windows Terminal tabs when `wt.exe` is available, with separate `cmd.exe` windows as fallback.
 
 For a fuller Windows startup pass, run `start_scripts/windows/start_win_full.cmd` from the repository root. It installs dependencies with verbose npm output, runs `npm test`, runs `npm run build`, opens API, frontend, and component-status monitor tabs when Windows Terminal is available, falls back to separate `cmd.exe` windows, and opens the frontend in the default browser. See [`docs/10_runbooks/windows_full_launcher.md`](docs/10_runbooks/windows_full_launcher.md).
 
@@ -454,7 +454,7 @@ git rev-parse --short HEAD
 powershell -NoProfile -ExecutionPolicy Bypass -File .\start_scripts\windows\START_WIN.PS1
 ```
 
-`start_scripts/windows/START_WIN.PS1` is the Windows launcher. It installs dependencies, builds the frontend, creates the SQLite DB from `database/schema.sql` only when the configured `DB_PATH` file is missing, then opens the backend API and Vite frontend in separate PowerShell windows.
+`start_scripts/windows/START_WIN.PS1` is the Windows launcher. It installs dependencies, builds the frontend, creates the SQLite DB from `database/schema.sql` only when the configured `DB_PATH` file is missing, then opens the backend API, Vite frontend, and status monitor as Windows Terminal tabs when `wt.exe` is available, with separate `cmd.exe` windows as fallback.
 
 RaspberryOS users should extract the repository ZIP, open a terminal in the repo root, then run:
 

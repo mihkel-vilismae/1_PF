@@ -14,7 +14,7 @@ From `cmd.exe`, this also works:
 full_windows_runner_status.cmd
 ```
 
-This is the preferred operator launcher/status helper. It opens the terminal UI for Start All, Stop All, Refresh Status, and component status.
+This is the preferred operator launcher/status helper. It opens the terminal UI for Start All, Stop All, Refresh Status, and component status. Start All opens backend, frontend, and status monitor as tabs in one Windows Terminal window when `wt.exe` is available; Stop All targets those repo-owned service terminals and their child processes.
 
 Example local absolute path, if this repo was extracted under `S:\_PHOTOFRAMES`:
 

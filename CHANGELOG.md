@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-06-26 03:24 EEST
+## v0.10.20 - Windows runner Start/Stop terminal tabs hotfix
+
+- Fixed `STOP_ALL_WIN.PS1` PowerShell parsing when reporting local port inspection failures by replacing invalid `$port:` interpolation with `${port}:`.
+- Updated `START_WIN.PS1` so Start All opens Backend API, Frontend Vite, and Status Monitor as tabs in one Windows Terminal window when `wt.exe` is available, with separate `cmd.exe` windows as fallback.
+- Changed the root runner Start All action to call `START_WIN.PS1` directly instead of launching the older `start_win.cmd` path in a separate terminal.
+- Updated `start_scripts/windows/start_win.cmd` to delegate to `START_WIN.PS1` so the wrapper cannot drift from the current tabbed startup behavior.
+- Strengthened Stop All so repo-owned terminal hosts are also targeted when they host project service processes, helping close service tabs instead of only killing child Node processes.
+
 ## 2026-06-26 03:05 EEST
 ## v0.10.20 - Windows runner status parser hotfix
 

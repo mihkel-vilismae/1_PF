@@ -5,12 +5,11 @@ import { test } from 'node:test';
 const readText = (path) => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 
 test('start_win.cmd launches API, frontend, and component status monitor', async () => {
-  const content = await readText('start_win.cmd');
+  const content = await readText('start_scripts/windows/start_win.cmd');
 
-  assert.match(content, /npm run api/);
-  assert.match(content, /npm run dev/);
-  assert.match(content, /start_component_status\.ps1/);
-  assert.match(content, /12_PF Status/);
+  assert.match(content, /START_WIN\.PS1/);
+  assert.match(content, /where pwsh/);
+  assert.match(content, /where powershell/);
 });
 
 test('full Windows launcher opens API, frontend, and status tabs or windows', async () => {

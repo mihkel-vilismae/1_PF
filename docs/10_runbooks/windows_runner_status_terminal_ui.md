@@ -9,8 +9,8 @@ This slice keeps one root-level Windows terminal GUI launcher for local developm
 
 ## Files
 
-- `start_scripts/windows/start_win.cmd` — moved Windows launcher that starts the API, frontend, and component status monitor in separate terminals.
-- `start_scripts/windows/stop_all_win.cmd` — new convenience wrapper that stops the processes started by `start_scripts/windows/start_win.cmd`.
+- `start_scripts/windows/start_win.cmd` — moved Windows launcher wrapper that delegates to `START_WIN.PS1`.
+- `start_scripts/windows/stop_all_win.cmd` — convenience wrapper that stops the repo-owned service terminals/processes started by `START_WIN.PS1` or the runner UI.
 - `start_scripts/windows/STOP_ALL_WIN.PS1` — process-matching implementation used by `start_scripts/windows/stop_all_win.cmd`.
 - `full_windows_runner_status.cmd` — root terminal UI launcher and preferred Windows operator entry point.
 - `start_scripts/windows/FULL_WINDOWS_RUNNER_STATUS.PS1` — terminal UI with Start All, Stop All, Refresh Status, and auto-refreshing status table.
@@ -19,7 +19,7 @@ This slice keeps one root-level Windows terminal GUI launcher for local developm
 
 `full_windows_runner_status.cmd` opens a terminal menu with:
 
-1. Start All — launches `start_scripts/windows/start_win.cmd` in a separate terminal.
+1. Start All — runs `start_scripts/windows/START_WIN.PS1`; it opens backend, frontend, and status monitor as tabs in one Windows Terminal window when `wt.exe` is available, with separate `cmd.exe` windows as fallback.
 2. Stop All — runs `start_scripts/windows/STOP_ALL_WIN.PS1`.
 3. Refresh Status — manually refreshes status.
 4. Quit — closes the runner UI.
@@ -38,4 +38,4 @@ The menu auto-refreshes every 5 seconds by default and shows:
 
 ## Safety boundary
 
-The stop script avoids broad arbitrary process killing. It targets repo-owned launcher command lines and project-default port owners matching Node/npm/Vite command shapes.
+The stop script avoids broad arbitrary process killing. It targets repo-owned launcher command lines, repo-owned service terminal hosts, and project-default port owners matching Node/npm/Vite command shapes. It deliberately stops the service `cmd`/PowerShell hosts so Windows Terminal service tabs close; it does not intentionally kill the Windows Terminal application hosting the runner UI.

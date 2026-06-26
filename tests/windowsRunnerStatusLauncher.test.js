@@ -18,6 +18,9 @@ test('STOP_ALL_WIN.PS1 targets processes launched by start_win without broad arb
   assert.match(content, /npm run api/);
   assert.match(content, /npm run dev/);
   assert.match(content, /start_component_status\.ps1/);
+  assert.match(content, /backend_api\.cmd/);
+  assert.match(content, /frontend_vite\.cmd/);
+  assert.match(content, /status_monitor\.cmd/);
   assert.match(content, /Get-CimInstance Win32_Process/);
   assert.match(content, /ParentProcessId/);
   assert.match(content, /Get-NetTCPConnection/);
@@ -52,8 +55,9 @@ test('FULL_WINDOWS_RUNNER_STATUS.PS1 provides start, stop, refresh, status, and 
   assert.match(content, /Database file/);
   assert.match(content, /4301/);
   assert.match(content, /5173/);
-  assert.match(content, /start_scripts\\windows\\start_win\.cmd|start_win\.cmd/);
+  assert.match(content, /start_scripts\\windows\\START_WIN\.PS1|START_WIN\.PS1/);
   assert.match(content, /STOP_ALL_WIN\.PS1/);
+  assert.match(content, /service terminals open as Windows Terminal tabs/);
   assert.match(content, /Last updated at/);
   assert.match(content, /Estonia time/);
   assert.match(content, /Format-HumanAge/);
@@ -62,14 +66,62 @@ test('FULL_WINDOWS_RUNNER_STATUS.PS1 provides start, stop, refresh, status, and 
 });
 
 
-test('FULL_WINDOWS_RUNNER_STATUS.PS1 stays ASCII-safe for Windows PowerShell parser compatibility', async () => {
-  const content = await readText('start_scripts/windows/FULL_WINDOWS_RUNNER_STATUS.PS1');
-  const nonAscii = [...content].filter((character) => character.charCodeAt(0) > 127);
+test('Windows runner PowerShell scripts stay ASCII-safe for Windows PowerShell parser compatibility', async () => {
+  for (const script of [
+    'start_scripts/windows/FULL_WINDOWS_RUNNER_STATUS.PS1',
+    'start_scripts/windows/START_WIN.PS1',
+    'start_scripts/windows/STOP_ALL_WIN.PS1',
+  ]) {
+    const content = await readText(script);
+    const nonAscii = [...content].filter((character) => character.charCodeAt(0) > 127);
 
-  assert.deepEqual(nonAscii, []);
-  assert.doesNotMatch(content, /—|…/);
+    assert.deepEqual(nonAscii, [], `${script} must stay ASCII-safe`);
+    assert.doesNotMatch(content, /—|…/);
+  }
 });
 
+
+
+test('START_WIN.PS1 opens API, frontend, and status monitor in Windows Terminal tabs when wt.exe is available', async () => {
+  const content = await readText('start_scripts/windows/START_WIN.PS1');
+
+  assert.match(content, /Get-Command "wt\.exe"/);
+  assert.match(content, /"-w 0"/);
+  assert.match(content, /new-tab/);
+  assert.match(content, /PF Backend API/);
+  assert.match(content, /PF Frontend Vite/);
+  assert.match(content, /PF Status Monitor/);
+  assert.match(content, /start_component_status\.ps1/);
+  assert.match(content, /backend_api\.cmd/);
+  assert.match(content, /frontend_vite\.cmd/);
+  assert.match(content, /status_monitor\.cmd/);
+  assert.match(content, /tab_commands/);
+  assert.match(content, /Quote-WtArgument/);
+  assert.match(content, /Start-CmdWindow/);
+  assert.doesNotMatch(content, /Start-Process -FilePath "powershell\.exe"/);
+});
+
+test('start_win.cmd delegates to START_WIN.PS1 instead of duplicating stale startup logic', async () => {
+  const content = await readText('start_scripts/windows/start_win.cmd');
+
+  assert.match(content, /START_WIN\.PS1/);
+  assert.match(content, /where pwsh/);
+  assert.match(content, /where powershell/);
+  assert.doesNotMatch(content, /start "12_PF API"/);
+  assert.doesNotMatch(content, /start "12_PF Frontend"/);
+});
+
+test('STOP_ALL_WIN.PS1 avoids PowerShell colon interpolation parse errors and closes repo terminal hosts', async () => {
+  const content = await readText('start_scripts/windows/STOP_ALL_WIN.PS1');
+
+  assert.doesNotMatch(content, /\$port:/);
+  assert.match(content, /\$\{port\}:/);
+  assert.match(content, /RepoTerminalHostNames/);
+  assert.match(content, /cmd\.exe/);
+  assert.match(content, /pwsh\.exe/);
+  assert.match(content, /Add-MatchingRepoTerminalAncestors/);
+  assert.match(content, /wt\.exe/);
+});
 
 test('repo root keeps only the terminal GUI launcher among Windows/Raspberry scripts', async () => {
   const forbiddenRootScripts = [

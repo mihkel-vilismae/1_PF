@@ -39,7 +39,8 @@ test('default project settings require short HOW_TO_RUN and root runner-status h
 
 test('changelog uses paired date and version headings for the latest entry', () => {
   const changelog = read('CHANGELOG.md');
-  assert.match(changelog, /^# Changelog\n\n## 2026-06-26 03:05 EEST\n## v0\.10\.20 - Windows runner status parser hotfix/m);
+  assert.match(changelog, /^# Changelog\n\n## 2026-06-26 03:24 EEST\n## v0\.10\.20 - Windows runner Start\/Stop terminal tabs hotfix/m);
+  assert.match(changelog, /## 2026-06-26 03:05 EEST\n## v0\.10\.20 - Windows runner status parser hotfix/);
   assert.match(changelog, /## 2026-06-26 02:44 EEST\n## v0\.10\.20 - Changelog and quickstart documentation cleanup/);
   assert.match(changelog, /## 2026-06-22 14:57 EEST\n## v0\.10\.20 - Regular worker B3 stage-state-machine product path/);
 });

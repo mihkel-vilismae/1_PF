@@ -11,7 +11,7 @@ $ErrorActionPreference = "Stop"
 
 $ScriptDir = Resolve-Path (Split-Path -Parent $MyInvocation.MyCommand.Path)
 $RepoRoot = Resolve-Path (Join-Path $ScriptDir.Path "..\..")
-$StartScript = Join-Path $RepoRoot.Path "start_scripts\windows\start_win.cmd"
+$StartScript = Join-Path $RepoRoot.Path "start_scripts\windows\START_WIN.PS1"
 $StopScript = Join-Path $RepoRoot.Path "start_scripts\windows\STOP_ALL_WIN.PS1"
 $DatabasePath = Join-Path $RepoRoot.Path "runtime_data\photo_frame.sqlite"
 $LastUpdated = Get-Date
@@ -209,11 +209,16 @@ function Render-Menu([array]$Rows) {
 
 function Invoke-StartAll {
     if (-not (Test-Path $StartScript)) {
-        $script:LastAction = "start_win.cmd missing; cannot start all."
+        $script:LastAction = "start_scripts\windows\START_WIN.PS1 missing; cannot start all."
         return
     }
-    Start-Process -FilePath "cmd.exe" -ArgumentList "/c", "`"$StartScript`"" -WorkingDirectory $RepoRoot.Path
-    $script:LastAction = "Start All launched start_scripts\windows\start_win.cmd in a separate terminal."
+    try {
+        & $StartScript
+        $script:LastAction = "Start All completed; service terminals open as Windows Terminal tabs when wt.exe is available."
+    }
+    catch {
+        $script:LastAction = "Start All failed: $($_.Exception.Message)"
+    }
 }
 
 function Invoke-StopAll {

@@ -1,6 +1,6 @@
 # PF_login / PhotoFrame Windows start launcher.
 # Run from the repository root. It prepares a local SQLite DB when needed,
-# then starts the backend API and Vite frontend in separate PowerShell windows.
+# then starts the backend API, Vite frontend, and status monitor as Windows Terminal tabs when available.
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
@@ -12,6 +12,7 @@ $FrontendUrl = "http://localhost:5173"
 $RuntimeRoot = Join-Path $RepoRoot "runtime_data\start_launcher"
 $LogRoot = Join-Path $RuntimeRoot "logs"
 $PidRoot = Join-Path $RuntimeRoot "pids"
+$TabCommandRoot = Join-Path $RuntimeRoot "tab_commands"
 
 function Write-Step([string]$Message) {
     Write-Host "[START] $Message" -ForegroundColor Cyan
@@ -67,7 +68,7 @@ function Initialize-EnvFile {
 }
 
 function Initialize-RuntimeDirectories {
-    New-Item -ItemType Directory -Force -Path $RuntimeRoot, $LogRoot, $PidRoot | Out-Null
+    New-Item -ItemType Directory -Force -Path $RuntimeRoot, $LogRoot, $PidRoot, $TabCommandRoot | Out-Null
     foreach ($key in @("DOWNLOAD_DIR", "LOG_DIR", "ICLOUDPD_COOKIE_DIR")) {
         $value = Read-DotEnvValue $key
         if ($value) {
@@ -114,11 +115,76 @@ function Invoke-RepoCommand([string]$StepName, [string]$Command, [string[]]$Argu
     finally { Pop-Location }
 }
 
-function Start-RepoProcess([string]$Title, [string]$NpmScript, [string]$LogName) {
-    $logPath = Join-Path $LogRoot $LogName
-    $command = "Set-Location -LiteralPath '$($RepoRoot.Path)'; npm run $NpmScript 2>&1 | Tee-Object -FilePath '$logPath'"
-    Write-Step "Opening $Title window. Log: $logPath"
-    Start-Process -FilePath "powershell.exe" -ArgumentList @("-NoExit", "-ExecutionPolicy", "Bypass", "-Command", $command) -WorkingDirectory $RepoRoot
+function Get-PreferredPowerShellExe {
+    if ($null -ne (Get-Command "pwsh" -ErrorAction SilentlyContinue)) { return "pwsh" }
+    if ($null -ne (Get-Command "powershell" -ErrorAction SilentlyContinue)) { return "powershell" }
+    throw "Neither PowerShell 7 (pwsh) nor Windows PowerShell (powershell) was found on PATH."
+}
+
+function Write-TabCommandFile([string]$FileName, [string[]]$Lines) {
+    $path = Join-Path $TabCommandRoot $FileName
+    Set-Content -LiteralPath $path -Encoding ASCII -Value $Lines
+    return $path
+}
+
+function New-TabCommandFiles {
+    $repo = $RepoRoot.Path
+    $statusScript = Join-Path $repo "start_scripts\start_component_status.ps1"
+    $powerShellExe = Get-PreferredPowerShellExe
+
+    $backendCommand = Write-TabCommandFile "backend_api.cmd" @(
+        "@echo off",
+        "cd /d `"$repo`"",
+        "npm run api"
+    )
+    $frontendCommand = Write-TabCommandFile "frontend_vite.cmd" @(
+        "@echo off",
+        "cd /d `"$repo`"",
+        "npm run dev"
+    )
+    $statusCommand = Write-TabCommandFile "status_monitor.cmd" @(
+        "@echo off",
+        "cd /d `"$repo`"",
+        "$powerShellExe -NoProfile -ExecutionPolicy Bypass -File `"$statusScript`""
+    )
+
+    return [pscustomobject]@{
+        Backend = $backendCommand
+        Frontend = $frontendCommand
+        Status = $statusCommand
+    }
+}
+
+function Quote-WtArgument([string]$Value) {
+    return '"' + $Value.Replace('"', '\"') + '"'
+}
+
+function Start-CmdWindow([string]$Title, [string]$CommandPath) {
+    Write-Step "Opening $Title fallback cmd window."
+    Start-Process -FilePath "cmd.exe" -ArgumentList ("/k " + (Quote-WtArgument $CommandPath)) -WorkingDirectory $RepoRoot.Path
+}
+
+function Start-RepoProcessTabs {
+    $repo = $RepoRoot.Path
+    $commands = New-TabCommandFiles
+
+    $windowsTerminal = Get-Command "wt.exe" -ErrorAction SilentlyContinue
+    if ($null -ne $windowsTerminal) {
+        Write-Step "Opening Backend API, Frontend Vite, and Status monitor as Windows Terminal tabs."
+        $wtArguments = @(
+            "-w 0",
+            "new-tab --title " + (Quote-WtArgument "PF Backend API") + " cmd /k " + (Quote-WtArgument $commands.Backend),
+            "; new-tab --title " + (Quote-WtArgument "PF Frontend Vite") + " cmd /k " + (Quote-WtArgument $commands.Frontend),
+            "; new-tab --title " + (Quote-WtArgument "PF Status Monitor") + " cmd /k " + (Quote-WtArgument $commands.Status)
+        ) -join " "
+        Start-Process -FilePath "wt.exe" -ArgumentList $wtArguments -WorkingDirectory $repo
+        return
+    }
+
+    Write-Step "Windows Terminal not found; opening separate cmd windows instead."
+    Start-CmdWindow "PF_login backend API" $commands.Backend
+    Start-CmdWindow "PF_login frontend" $commands.Frontend
+    Start-CmdWindow "PF_login status monitor" $commands.Status
 }
 
 Write-Step "PF_login Windows start launcher"
@@ -130,10 +196,9 @@ Initialize-RuntimeDirectories
 Invoke-RepoCommand "Install dependencies" "npm" @("install")
 Invoke-RepoCommand "Build frontend" "npm" @("run", "build")
 Initialize-Database
-Start-RepoProcess "PF_login backend API" "api" "backend_api.log"
-Start-RepoProcess "PF_login frontend" "dev" "frontend_vite.log"
+Start-RepoProcessTabs
 Start-Sleep -Seconds 3
 Write-Step "Backend: $ApiUrl"
 Write-Step "Frontend: $FrontendUrl"
 Start-Process $FrontendUrl
-Write-Host "[DONE] Frontend, backend, and SQLite DB startup sequence launched." -ForegroundColor Green
+Write-Host "[DONE] Frontend, backend, status monitor, and SQLite DB startup sequence launched." -ForegroundColor Green
