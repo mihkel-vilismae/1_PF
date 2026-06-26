@@ -1,5 +1,7 @@
 # How to Run
 
+> Current checkpoint: `v0.10.47`. This file is intentionally short; longer operator detail belongs in `docs/10_runbooks/`.
+
 ## Use this for quickstart
 
 From the repository root on Windows PowerShell, run:
@@ -19,17 +21,18 @@ This is the preferred operator launcher/status helper. It opens the terminal UI 
 Example local absolute path, if this repo was extracted under `S:\_PHOTOFRAMES`:
 
 ```text
-S:\_PHOTOFRAMES\PF_login_v0.10.21_final_release_mode_root_docs_full_git\full_windows_runner_status.cmd
+S:\_PHOTOFRAMES\PF_login_v0.10.47_docs_launcher_readme_plan_full_git\full_windows_runner_status.cmd
 ```
 
 ## Current launcher and database paths
 
-- Repository/package version: `0.10.27`.
+- Repository/package version: `0.10.47`.
 - Windows launcher: `start_scripts/windows/START_WIN.PS1`.
 - Raspberry launcher: `start_scripts/raspberry/START_RASPBERRYOS.SH`.
 - Canonical SQLite schema: `database/schema.sql`.
 - Existing `.env` and SQLite DB files are preserved by the launchers; the DB is created only when the configured `DB_PATH` does not exist.
-- V2 dashboard mode is now a runnable frontend startup option. It opens the V2 operator shell with six left-sidebar rows and original visual-only typed center-panel blocks; no backend release actions are wired.
+- V2 dashboard mode is a runnable frontend startup option with nine left-sidebar rows, shared Event history, implementation-status/help controls, Setup/Auth controls, Startup Raspberry scheduler controls, shared RPI-STAGES/RPI-WORKERS rows, and Workers B3.1-B3.5 cards.
+- Live Raspberry, auth-provider, playback, and recovery success still require explicit proof artifacts; normal launchers do not claim those proofs.
 
 ## Manual
 
@@ -57,7 +60,3 @@ Use these when you need more than the quickstart:
 - `HOW_TO_RUN.md` must stay short and quickstart-oriented. Put long operator notes in `docs/10_runbooks/` and link them here.
 - Windows Task Scheduler is not part of PF_login project scope; use the project-owned scheduler/proof paths documented in proof runbooks.
 - Native playback and iCloud proofs remain explicit opt-in proof/operator flows; normal launchers do not silently claim those proofs.
-
-## v0.10.23 note
-
-The V2 operator center-panel/sub-item OpenSpec is documentation-only in this baseline. It does not implement sidebar or center-panel runtime UI behavior.

@@ -1,6 +1,6 @@
 # Dashboard V2 Mode OpenSpec
 
-Status: OpenSpec plus first implementation slice. v0.10.27 implements the V2 startup choice and six-item sidebar shell; center-panel actions remain intentionally blank/unimplemented.
+Status: Historical V2 startup/six-shell OpenSpec plus first implementation slice. Superseded for current route/page status by `v2_operator_pages_openspec.md` and `V2_ImplementationStatus.md`; as of v0.10.47 the current V2 shell is nine pages with B3/B4/B5 partial controls. This file remains useful for the original startup-gate boundary.
 
 ## Purpose
 

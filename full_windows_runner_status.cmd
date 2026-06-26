@@ -1,5 +1,6 @@
 @echo off
 REM Opens the PF_login / PhotoFrame full Windows runner and status terminal UI.
+REM Current repo version is read from VERSION by the delegated status UI.
 setlocal
 cd /d "%~dp0"
 

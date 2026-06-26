@@ -1,5 +1,7 @@
 # Status Snapshots
 
+> Current checkpoint: `v0.10.47`. This README was refreshed in the docs/launcher reconciliation pass; code, focused tests, proof artifacts, and runtime evidence override stale prose.
+
 Estonian timestamp: 2026-05-24 23:31 EEST
 
 ## Purpose

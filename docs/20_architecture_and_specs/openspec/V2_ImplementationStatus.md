@@ -1,6 +1,6 @@
 # V2 Implementation Status
 
-Estonian timestamp: 2026-06-26 10:54 EEST
+Estonian timestamp: 2026-06-26 15:52 EEST
 
 ## Status
 
@@ -36,10 +36,10 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 
 | Area | Current status | Notes |
 | --- | --- | --- |
-| V2 baseline | `visual` | v0.10.35 has startup option, nine-item sidebar, shared Event history placement, typed visual center-panel blocks, and shell/explanation pages for `07`-`09`. |
+| V2 baseline | `visual/wired partial` | v0.10.46 has startup option, nine-item sidebar, shared Event history placement, B3 status/help overlay, B4 Setup/Auth controls, B5 Startup/Workers controls, and shell/explanation pages for `07`-`09`. |
 | Goals doc | `documented` | `docs/20_architecture_and_specs/v2_goals/goals.md` defines victory conditions. |
 | New docs package | `planned/documented` | This document and companion OpenSpec files define next implementation direction. |
-| Runtime implementation | `not changed by docs` | Documentation does not wire new backend/runtime behavior. |
+| Runtime implementation | `partially reused` | V2 B4/B5 controls are placed against existing frontend action contracts; backend/server routes were not newly introduced by these slices. Live backend/target-machine proof remains later. |
 | Shared V2 page wrapper | `visual/tested` | v0.10.34 adds `renderV2OperatorPageWrapper` as a reusable V2 shell wrapper; v0.10.35 extends the route shell to all nine V2 routes. |
 | V2 Event history panel | `visual/tested` | v0.10.34 renders a reusable V2 event-history panel with existing `copy all log` and `Clear` actions. |
 | V2 status/help metadata foundation | `visual/tested` | v0.10.39 keeps `dashboard/data/v2ImplementationStatus.json` synchronized with every rendered V2 status target and B3 status/help controls. |
@@ -99,7 +99,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | WSL placeholder controls | future/placeholder | May exist only clearly marked WSL and disabled. | Render test confirms disabled state and labeling. |
 | `RPI-STAGES` | visual row delivered / needs runtime proof | v0.10.44 adds the shared Download → Index → GPS parser → Geocode → Queue idle row to Startup, Workers, and Troubleshooting. | Runtime stage health projection and proof remain later. |
 | `RPI-WORKERS` | visual row delivered / needs runtime proof | v0.10.45 adds Regular state worker, Playback worker, and On-off worker Waiting cards to Startup, Workers, Troubleshooting, PIR, and Playback. | Runtime worker-call projection and proof remain later. |
-| Event Log | extraction needed | Scheduler endpoint terminal exists separately. | Decide relation to global Event Log. |
+| Event Log | visual/tested | Shared V2 wrapper renders Event history for current V2 pages. | Future page-specific slices must keep using wrapper. |
 
 ## Page `04 WORKERS` status
 
@@ -165,8 +165,8 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 
 | Element | Status | Current evidence/notes | Required next proof/test |
 | --- | --- | --- | --- |
-| Sidebar/page | planned | New page requested. | V2 route/sidebar test. |
-| Explanation text | planned | Initial page should document composition intent. | Render test. |
+| Sidebar/page | visual/tested | v0.10.35 added the `09 REAL PLAYBACK` route/page shell. | Keep route/sidebar tests current. |
+| Explanation text | visual/tested | v0.10.35 added explanation-only composition text; no real integrated operation is claimed. | Render test remains the evidence boundary. |
 | Integrated real operation | future | Must be assembled from proven parts only; test-only controls may appear disabled. | Final autonomous playback proof. |
 | Autonomous recovery | future | Must recover after rough shutdown/power loss. | Final recovery proof. |
 | Screen on/off integration | future | Tier-2 goal. | Activity/recovery/playback integration proof. |
@@ -291,3 +291,7 @@ Before any implementation report is final:
 | V2 implementation-status highlights | `dashboard/styles.v2.css`; `dashboard/data/v2ImplementationStatus.json` | CSS highlight mode driven by `data-v2-implementation-status` | none | `tests/v2ImplementationStatusSync.test.js` | keep JSON as source for status color/class meaning | future green/done claims require stronger proofs | visual/tested |
 | V2 per-section `?` status help | `dashboard/views/v2OperatorPageWrapper.ts`; `dashboard/views/v2StartupOperatorMenuView.ts`; `dashboard/app.ts` | per-surface help buttons opening a status/help modal | frontend modal only | `tests/v2ImplementationStatusSync.test.js` | reuse modal renderer; no duplicated per-page help markup | future text may need expansion as real cards land | visual/tested |
 | V2 JSON/render sync check | `tests/v2ImplementationStatusSync.test.js` | automated registry coverage test | none | focused test passes for all nine routes | keep as guard before B4/B5 components are added | docs still require human judgement for status wording | tested |
+
+## v0.10.47 docs/launcher reconciliation note
+
+The root README files and this status document were refreshed after B5 so the repository entry points no longer describe the old six-page/no-action V2 baseline. The next planned implementation starts with B6.1 Troubleshooting pipeline maintenance, then B6.2 Recovery placeholders. See [`../../40_backlog_and_tasks/V2_NEXT_IMPLEMENTATION_PLAN_20260626.md`](../../40_backlog_and_tasks/V2_NEXT_IMPLEMENTATION_PLAN_20260626.md).

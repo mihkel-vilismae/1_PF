@@ -1,5 +1,7 @@
 # Backlog and Tasks
 
+> Current checkpoint: `v0.10.47`. This README was refreshed in the docs/launcher reconciliation pass; code, focused tests, proof artifacts, and runtime evidence override stale prose.
+
 Estonian timestamp: 2026-05-24 23:31 EEST
 
 ## Purpose
@@ -62,3 +64,7 @@ The old `docs/active_workflow_docs/slice_8_9_route_selection.md` path remains a 
 
 - [Overall Project Goal Registry](overall_project_goal_registry.md) is the active source registry for project-completeness reports. It combines v1 gates, Debug page goals, and active backlog items while keeping proof states and source paths explicit.
 - [Overall Project Goal Registry JSON](overall_project_goal_registry.json) is the machine-readable companion used by proof/tests.
+
+## Current V2 next-plan
+
+- [V2 next implementation plan](V2_NEXT_IMPLEMENTATION_PLAN_20260626.md) — post-B5 sequence from troubleshooting/recovery through victory proof.

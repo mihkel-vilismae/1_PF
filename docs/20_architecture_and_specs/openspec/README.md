@@ -1,5 +1,7 @@
 # OpenSpec documentation
 
+> Current checkpoint: `v0.10.47`. This README was refreshed in the docs/launcher reconciliation pass; code, focused tests, proof artifacts, and runtime evidence override stale prose.
+
 This folder holds forward-looking OpenSpec contracts for implementation areas that are not yet proven by current runtime evidence.
 
 OpenSpec documents in this folder are requirements and proof contracts, not implementation proof. A feature is not considered implemented until code, tests, and generated or target-machine evidence prove the specific behavior.
@@ -52,9 +54,9 @@ Current OpenSpec entries:
 
 - [Repo Large-File Containment XACR Review](repo_large_file_containment_xacr_review.md) — multipass review and refined prompt for applying the large-file containment policy without changing runtime behavior.
 
-- [V2 Operator Pages OpenSpec](v2_operator_pages_openspec.md) — full V2 page/component/reuse/proof contract for pages `01` through `09`, including Event Log, RPI rows, Recovery, PIR, Playback, and `09 REAL PLAYBACK` composition boundaries.
+- [V2 Operator Pages OpenSpec](v2_operator_pages_openspec.md) — full V2 page/component/reuse/proof contract for pages `01` through `09`, including the implemented Event history/status overlay and the still-planned Recovery, PIR, Playback, and `09 REAL PLAYBACK` proof boundaries.
 
-- [V2 Implementation Status](V2_ImplementationStatus.md) — element-by-element status tracker for the planned V2 implementation and the required sync target for the future implementation-status UI overlay.
+- [V2 Implementation Status](V2_ImplementationStatus.md) — element-by-element status tracker for the V2 implementation and the sync target for the current implementation-status UI overlay.
 
 - [V2 Goal Summary](V2_GoalSummary.md) — faithful summary of the V2 planning intent, requested page placements, component reuse constraint, and final `09 REAL PLAYBACK` path.
 
@@ -62,3 +64,5 @@ Current OpenSpec entries:
 
 - [V2 HR Decision Log](V2_HRDecisionLog.md) — answered implementation-planning questions for V2 baseline, code inventory, reuse/extraction, recovery, scheduler, PIR, playback, tests/proofs, reporting, and final `09 REAL PLAYBACK` behavior.
 - [V2 Real Playback OpenSpec Coverage 3+2 ACR](../../50_audits_and_migrations/V2_REAL_PLAYBACK_OPENSPEC_COVERAGE_3PLUS2ACR_20260626.md) — audit record for the coverage-hardening pass that added inventory gates, JSON status schema, acceptance criteria, proof matrix, and drift guards.
+
+- [V2 next implementation plan](../../40_backlog_and_tasks/V2_NEXT_IMPLEMENTATION_PLAN_20260626.md) — post-B5 implementation sequence and proof gates.

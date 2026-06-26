@@ -1,5 +1,7 @@
 # Task Docs
 
+> Current checkpoint: `v0.10.47`. This README is historical/provenance or compatibility material; use the root README, current OpenSpec docs, and current proof evidence for live implementation truth.
+
 This folder stores implementation-oriented notes for larger functionality changes so they stay easy to inspect later.
 
 `_TABLE_OF_CONTENTS.md` is the authoritative index for this folder. Every file in `task_docs/` must be listed there, and any add/remove/rename/material update in this folder must update `_TABLE_OF_CONTENTS.md` in the same patch. Regenerate it with `npm run task-docs:toc`. Verify drift manually with `npm run task-docs:check`, and note that the repo pre-commit hook runs the same check automatically.

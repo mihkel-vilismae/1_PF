@@ -1,5 +1,7 @@
 # PF_login / PhotoFrame
 
+> Current checkpoint: `v0.10.47` after B5 Startup/Workers controls and this README/launcher reconciliation pass. Code, focused tests, generated proof artifacts, and runtime evidence remain stronger than prose when they conflict.
+
 PF_login / PhotoFrame is a local dashboard-driven photo-frame system for staged media processing, operator inspection, and Raspberry/Windows playback workflows.
 
 The project is intentionally proof-heavy. Source code, tests, OpenSpec documents, and generated proof artifacts are kept separate so the repo can distinguish implemented behavior, planned behavior, and target-machine evidence.
@@ -8,12 +10,12 @@ The project is intentionally proof-heavy. Source code, tests, OpenSpec documents
 
 | Field | Value |
 |---|---|
-| Version | `0.10.35` |
+| Version | `0.10.47` |
 | Main dashboard | Vite frontend in `dashboard/` |
 | Backend API | TypeScript server entrypoint at `server/index.ts` |
 | Database schema source | `database/schema.sql` |
 | Current startup choices | `Test Mode`, `Real Mode`, `V2` |
-| V2 status | Startup option, nine-item left sidebar, shared Event history placement, and visual-only typed center-panel blocks implemented; `09 REAL PLAYBACK` is present as an explanation-only final endpoint shell |
+| V2 status | Nine-page V2 operator shell, shared Event history, implementation-status toolbar/overlay/help, Setup/Auth controls, Startup Raspberry scheduler controls, shared RPI-STAGES/RPI-WORKERS rows, and Workers B3.1-B3.5 cards are implemented; `07 PIR` and `08 PLAYBACK` remain shells for their later isolated controls, and `09 REAL PLAYBACK` remains explanation-only. |
 | Changelog | Release history lives in [`CHANGELOG.md`](CHANGELOG.md), not in this README |
 
 ## What this repo does
@@ -37,7 +39,7 @@ The startup gate has three choices:
 |---|---|
 | `Test Mode` | Existing test/simulation-oriented dashboard behavior |
 | `Real Mode` | Existing real-mode dashboard behavior |
-| `V2` | Operator-menu shell with nine left-sidebar rows |
+| `V2` | Operator-menu shell with nine left-sidebar rows plus V2 status/help overlay, shared Event history, Setup/Auth controls, Startup scheduler controls, and Workers stage cards |
 
 The V2 sidebar currently contains exactly these top-level rows:
 
@@ -53,7 +55,7 @@ The V2 sidebar currently contains exactly these top-level rows:
 | `08` | `PLAYBACK` | `playback` |
 | `09` | `REAL PLAYBACK` | `real-playback` |
 
-The order number is display/order metadata and is not part of the label. The V2 center panel renders typed visual blocks and shell/explanation pages; auth, worker, database, crontab, troubleshooting, recovery, PIR, playback, and real-playback actions are still not wired from V2.
+The order number is display/order metadata and is not part of the label. The V2 center panel renders typed visual blocks and shell/explanation pages. Current wired/placed V2 controls include Setup Verify `.env`, Setup Database controls, Authentication NEW AUTH, Startup Raspberry scheduler controls, and Workers B3.1-B3.5 action cards. Troubleshooting maintenance controls, Recovery placeholders, PIR activity controls, Playback drag/drop/rendering controls, and integrated `09 REAL PLAYBACK` remain future slices.
 
 
 ### V2 real playback goal
@@ -69,7 +71,7 @@ A second-tier goal is screen on/off behavior driven by mouse, keyboard, and PIR 
 
 See [`docs/20_architecture_and_specs/v2_goals/goals.md`](docs/20_architecture_and_specs/v2_goals/goals.md) for the authoritative V2 goal contract.
 
-Current V2 implementation-planning decisions: start from the OpenSpec docs state, inventory existing code/components/tests before UI work, reuse/extract shared components instead of copy-pasting HTML, keep the implementation-status overlay V2-only, store overlay status in structured JSON, and keep `09 REAL PLAYBACK` explanation-only until isolated pages are proven.
+Current V2 implementation decisions remain: reuse/extract shared components instead of copy-pasting HTML, keep the implementation-status overlay V2-only, store overlay status in structured JSON, and keep `09 REAL PLAYBACK` explanation-only until isolated pages are proven.
 
 
 The current V2 documentation package also includes:
@@ -88,9 +90,9 @@ This README is a project landing page, not proof evidence. Do not infer target-m
 Current non-claims include:
 
 - no automatic proof that a fresh Raspberry target is fully ready unless current proof artifacts say so;
-- no claim that V2 center-panel sub-items execute real backend actions; they are visual/read-only typed blocks in this baseline;
-- no claim that V2 buttons trigger auth, crontab, DB, worker, troubleshooting, or recovery actions;
-- no claim that real iCloud, GPS/geocode, playback, or recovery behavior is proven unless the relevant proof output exists;
+- no claim that every V2 center-panel sub-item executes real backend actions; several later-page controls remain shell/planned only;
+- no claim that V2 Setup/Auth/Startup/Workers placements prove successful live backend, Raspberry hardware, iCloud, or crontab execution without current proof output;
+- no claim that troubleshooting, recovery, PIR, playback, or integrated `09 REAL PLAYBACK` are complete;
 - no claim that archive or older status documents are current truth without code/test/evidence confirmation.
 
 ## Repository map
@@ -204,6 +206,7 @@ Many real-provider and target-machine proofs are intentionally blocked unless ex
 | [`docs/20_architecture_and_specs/openspec/V2_GoalSummary.md`](docs/20_architecture_and_specs/openspec/V2_GoalSummary.md) | Authoritative V2 planning and placement summary |
 | [`docs/20_architecture_and_specs/openspec/V2_IssueRegister.md`](docs/20_architecture_and_specs/openspec/V2_IssueRegister.md) | Known issues, design questions, and verification gaps for V2 |
 | [`docs/20_architecture_and_specs/openspec/V2_HRDecisionLog.md`](docs/20_architecture_and_specs/openspec/V2_HRDecisionLog.md) | Operator answers to the V2 implementation-planning question set |
+| [`docs/40_backlog_and_tasks/V2_NEXT_IMPLEMENTATION_PLAN_20260626.md`](docs/40_backlog_and_tasks/V2_NEXT_IMPLEMENTATION_PLAN_20260626.md) | Current next-slice plan from B6 troubleshooting/recovery shell through B12 victory proof |
 | [`docs/proofs/`](docs/proofs/) | Human-readable proof notes and proof contracts |
 | [`CHANGELOG.md`](CHANGELOG.md) | Release history |
 

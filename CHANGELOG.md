@@ -270,6 +270,22 @@
 
 # Changelog
 
+## 2026-06-26 15:52 EEST — v0.10.47
+
+### Added
+- Added a V2 next-implementation plan covering B6 troubleshooting/recovery shell through final proof gates.
+
+### Changed
+- Refreshed repository README files and root quickstart documentation for the v0.10.47 checkpoint after B5 Startup/Workers work.
+- Updated the Windows runner/status UI title path so the displayed launcher title includes the current repository version.
+- Reconciled key V2 OpenSpec/status docs with the implemented B1, B3, B4, and B5 slices.
+
+### Fixed
+- Removed stale root README/HOW_TO_RUN version references and outdated six-page/no-V2-action wording.
+
+### Removed
+- Nothing.
+
 ## 2026-06-26 07:05 EEST
 ## v0.10.28 - Root README rebuild
 

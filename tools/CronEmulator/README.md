@@ -1,5 +1,8 @@
 # CronEmulator
 
+> Current checkpoint: `v0.10.47`. CronEmulator remains a Windows development/emulation tool only; V2 Startup uses Raspberry real-crontab-oriented controls for the production path.
+
+
 A lightweight Windows 11 cron emulator dashboard written in Python.
 
 It reads `crontab_emulated.txt` from the project root, displays the raw file in a terminal-like panel, parses each cron row into table entries, shows human-readable timing, shows seconds until the next run, and records per-job run logs.

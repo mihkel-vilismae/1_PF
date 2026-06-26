@@ -1,5 +1,7 @@
 # Repo ZIP Drop Installer Tool
 
+> Current checkpoint: `v0.10.47`. This README was refreshed in the docs/launcher reconciliation pass; code, focused tests, proof artifacts, and runtime evidence override stale prose.
+
 ## What changed in v4
 
 This version fixes a Windows path parsing issue where a repo path ending with `\` could produce:

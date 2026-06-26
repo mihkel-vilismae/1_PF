@@ -1,5 +1,7 @@
 # Start scripts
 
+> Current checkpoint: `v0.10.47`. The root `full_windows_runner_status.cmd` remains the preferred Windows operator entry point and the terminal UI displays the current repo version.
+
 This folder holds operator-facing scripts that were moved out of the repository root to keep the root directory focused.
 
 ## Root launcher

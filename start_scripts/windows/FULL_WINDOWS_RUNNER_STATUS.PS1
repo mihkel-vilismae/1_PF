@@ -17,6 +17,12 @@ $DatabasePath = Join-Path $RepoRoot.Path "runtime_data\photo_frame.sqlite"
 $LastUpdated = Get-Date
 $LastAction = "Opened runner."
 
+$VersionFile = Join-Path $RepoRoot.Path "VERSION"
+$RepoVersion = "unknown"
+if (Test-Path -LiteralPath $VersionFile) {
+    $RepoVersion = ((Get-Content -LiteralPath $VersionFile -TotalCount 1) -as [string]).Trim()
+}
+
 $Components = @(
     [pscustomobject]@{ Name = "Backend API"; Kind = "port"; Port = 4301; Hint = "npm run api" },
     [pscustomobject]@{ Name = "Frontend Vite"; Kind = "port"; Port = 5173; Hint = "npm run dev" },
@@ -166,7 +172,7 @@ function Render-Menu([array]$Rows) {
     $nowEt = Get-EstoniaNow
     $age = Format-HumanAge -Then $LastUpdated -Now (Get-Date)
     Clear-Host
-    Write-Host "PF_login / PhotoFrame - Full Windows Runner + Status" -ForegroundColor Cyan
+    Write-Host "PF_login / PhotoFrame - Full Windows Runner + Status v$RepoVersion" -ForegroundColor Cyan
     Write-Host "Repo: $($RepoRoot.Path)" -ForegroundColor DarkGray
     Write-Host "Auto-refresh: every $RefreshSeconds seconds. Press 1/2/3/Q." -ForegroundColor DarkGray
     Write-Host ""

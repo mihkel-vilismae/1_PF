@@ -1,5 +1,7 @@
 # Proof artifacts
 
+> Current checkpoint: `v0.10.47`. This README was refreshed in the docs/launcher reconciliation pass; code, focused tests, proof artifacts, and runtime evidence override stale prose.
+
 This folder documents proof workflows for behavior that cannot be honestly proven by source code alone.
 
 | Layer | Location | Tracked in Git | Purpose |

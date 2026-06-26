@@ -63,6 +63,9 @@ test('FULL_WINDOWS_RUNNER_STATUS.PS1 provides start, stop, refresh, status, and 
   assert.match(content, /Format-HumanAge/);
   assert.match(content, /KeyAvailable/);
   assert.match(content, /RefreshSeconds/);
+  assert.match(content, /VERSION/);
+  assert.match(content, /RepoVersion/);
+  assert.match(content, /Full Windows Runner \+ Status v\$RepoVersion/);
 });
 
 

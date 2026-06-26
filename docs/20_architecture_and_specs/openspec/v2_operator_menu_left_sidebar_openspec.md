@@ -1,6 +1,6 @@
 # V2 Operator Menu left sidebar OpenSpec
 
-Status: OpenSpec plus first implementation slice. v0.10.27 implements the six V2 left-sidebar rows; center-panel child layout and actions remain intentionally blank/unimplemented.
+Status: Historical six-row sidebar OpenSpec plus first implementation slice. Superseded for current route/page status by `v2_operator_pages_openspec.md` and `V2_ImplementationStatus.md`; as of v0.10.47 the current V2 sidebar has nine rows `01` through `09`. This file remains useful for the original route metadata and non-recursive-sidebar boundary.
 Project: PF_login / PhotoFrame
 Baseline lineage: v0.10.20 immutable snapshot, promoted through v0.10.21 docs/version baseline
 Scope: v2 operator menu left sidebar route list only

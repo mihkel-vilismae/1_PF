@@ -1,5 +1,7 @@
 # Architecture and Specs
 
+> Current checkpoint: `v0.10.47`. This README was refreshed in the docs/launcher reconciliation pass; code, focused tests, proof artifacts, and runtime evidence override stale prose.
+
 Estonian timestamp: 2026-05-24 23:31 EEST
 
 ## Purpose
@@ -105,3 +107,5 @@ The old `docs/categorized/other_documentation/default_project_settings_and_eleme
 
 - [Project Completeness Reporting OpenSpec](openspec/project_completeness_reporting_openspec.md) — defines source priority, proof honesty, and percentage rules for `print overall project completeness` reports.
 - [V2 Real Playback OpenSpec Coverage 3+2 ACR](../50_audits_and_migrations/V2_REAL_PLAYBACK_OPENSPEC_COVERAGE_3PLUS2ACR_20260626.md) — audit record for the expanded V2 OpenSpec implementation gates and proof/status coverage.
+
+- [V2 next implementation plan](../40_backlog_and_tasks/V2_NEXT_IMPLEMENTATION_PLAN_20260626.md) — post-B5 implementation sequence and proof gates.

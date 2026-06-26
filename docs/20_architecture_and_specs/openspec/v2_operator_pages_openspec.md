@@ -1,10 +1,10 @@
 # V2 Operator Pages OpenSpec
 
-Estonian timestamp: 2026-06-26 10:54 EEST
+Estonian timestamp: 2026-06-26 15:52 EEST
 
 ## Status
 
-Documentation-only OpenSpec. This document defines the V2 operator page architecture that must guide later implementation. It is not proof that V2 already works.
+OpenSpec plus implementation tracker. This document defines the V2 operator page architecture and records the current B1/B3/B4/B5 implementation boundary. It is not proof that live Raspberry/auth/playback/recovery behavior already works.
 
 ## Authority and relationship to goals
 
@@ -603,3 +603,7 @@ Acceptance boundary:
 - Wired the Implementation status view to `dashboard/data/v2ImplementationStatus.json` through rendered `data-v2-status-id`, `data-v2-implementation-status`, `data-v2-status-label`, and `data-v2-status-help` attributes.
 - Added per-section `?` buttons that open a JSON-backed status/help modal without adding backend/runtime behavior.
 - Added `tests/v2ImplementationStatusSync.test.js` to ensure every rendered V2 status target for all nine routes has a JSON registry element.
+
+## v0.10.47 reconciliation note
+
+B1, B3, B4, and B5 implementation slices have placed the nine-page shell, V2 status/help overlay, Setup/Auth controls, Startup Raspberry scheduler controls, RPI-STAGES/RPI-WORKERS rows, and Workers B3.1-B3.5 cards. Troubleshooting maintenance, Recovery placeholders, PIR, Playback, Real Playback composition, recovery implementation, and victory proofs remain future work. See [`../../40_backlog_and_tasks/V2_NEXT_IMPLEMENTATION_PLAN_20260626.md`](../../40_backlog_and_tasks/V2_NEXT_IMPLEMENTATION_PLAN_20260626.md).
