@@ -4,7 +4,7 @@ This repository contains a dashboard-driven photo-frame system for managing stag
 
 ## Current baseline quick truth
 
-- Repository/package version: `0.10.25`.
+- Repository/package version: `0.10.26`.
 - Dashboard: Vite frontend under `dashboard/`, served by `npm run dev`.
 - Backend API: TypeScript server entrypoint `server/index.ts`, started by `npm run api`.
 - SQLite schema source: `database/schema.sql`; generated/local SQLite DB files remain runtime data and are not the schema source.
@@ -16,6 +16,14 @@ This repository contains a dashboard-driven photo-frame system for managing stag
 Proof/readiness claims still require current proof artifacts. Historical docs and imported proof JSON are context, not automatic current-runtime proof.
 
 The system documentation is organized in canonical numbered folders under `docs/`: `00_current_truth`, `10_runbooks`, `20_architecture_and_specs`, `30_status_snapshots`, `40_backlog_and_tasks`, `50_audits_and_migrations`, and `90_archive`. Implementation status in documentation is not current runtime truth unless the document cites current code, tests, generated evidence, or runtime output.
+
+## v0.10.26 Large-file containment rule
+
+This baseline adds a repo-local rule for avoiding substantial new feature logic in already-large files. Files above `1500` LOC are treated as glue-only unless the change is a narrow same-responsibility fix; independent feature bodies should move into focused modules, views, services, data files, stylesheets, or tests.
+
+The baseline adds `npm run check:large-file-containment`, which mechanically checks the current diff range for large additions to oversized non-allowlisted files. This is governance/check coverage only and does not change runtime behavior.
+
+See [`docs/20_architecture_and_specs/openspec/repo_large_file_containment_openspec.md`](docs/20_architecture_and_specs/openspec/repo_large_file_containment_openspec.md).
 
 ## v0.10.25 Repo report timestamp and LOC protocol
 

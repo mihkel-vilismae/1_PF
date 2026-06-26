@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-06-26 06:45 EEST
+## v0.10.26 - Large-file containment rule
+
+- Bumped repository/package version from `0.10.25` to `0.10.26` for the repo-governance baseline.
+- Added `docs/20_architecture_and_specs/openspec/repo_large_file_containment_openspec.md` and a multipass XACR review for the large-file containment policy.
+- Added `npm run check:large-file-containment` with `tools/check-large-file-containment.mjs` to flag large additions to oversized non-allowlisted files.
+- Added focused policy coverage in `tests/largeFileContainmentPolicy.test.js`.
+- Preserved runtime behavior; this is docs/agent-governance/check coverage only.
+
 ## 2026-06-26 06:40 EEST
 ## v0.10.25 - Repo report timestamp and LOC protocol
 

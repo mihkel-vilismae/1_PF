@@ -164,3 +164,15 @@
 - If any newly added or newly tracked binary is at or above GitHub's 100 MB hard limit, stop and warn that a normal GitHub push is expected to fail unless the file is removed from history or handled through an approved alternative such as Git LFS.
 - The confirmation message must name the affected paths and sizes and state whether the risk is a warning-threshold case or a likely push-blocking case.
 - Do not use this rule to block ordinary source files, small assets, or already-tracked unchanged binaries; it applies to newly introduced tracked binary payloads that materially affect Git/GitHub workflow safety.
+
+## Large-File Containment Rule
+
+- Do not add substantial new feature logic to files above `1500` physical lines.
+- Treat files above `1500` lines as glue-only unless the change is a tightly scoped bug fix inside existing behavior.
+- Allowed large-file edits: imports, route registration, one small render branch, adapter glue, narrow same-responsibility bug fix, or append-only release ledger updates.
+- Avoid adding more than roughly `50` to `75` lines to any non-allowlisted file above `1500` lines; create a new focused module, view, service, data file, stylesheet, or test instead.
+- For files above `700` lines, add code only when it belongs to the file's existing single responsibility; otherwise create a new file.
+- Do not add feature-specific CSS to shared stylesheets above `1000` lines; prefer feature-specific stylesheets such as `dashboard/styles.final-release.css`.
+- Do not grow large mixed workflow tests with unrelated feature contracts; add focused tests for new behavior.
+- Run `npm run check:large-file-containment` before packaging implementation ZIPs when this rule is relevant.
+- If an exception is necessary, state the file, line count, reason, preserved behavior, and risk in the implementation summary.
