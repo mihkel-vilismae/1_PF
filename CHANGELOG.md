@@ -1,3 +1,9 @@
+## v0.10.64 - 2026-06-26
+
+- B12: added the autonomous playback + recovery victory proof gate.
+- Added a conservative proof evaluator and 09 REAL PLAYBACK projection row that blocks customer-ready claims without explicit live playback and recovery evidence.
+- Documented that this sandbox implements the gate but does not pass target-machine victory proof.
+
 ## v0.10.63 - 2026-06-26
 
 - B11.3: added autosave and restart-check recovery flow for V2 recovery snapshots.

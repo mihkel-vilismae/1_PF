@@ -1,6 +1,6 @@
 # Current Truth Documentation
 
-> Current checkpoint: `v0.10.47`. This README was refreshed in the docs/launcher reconciliation pass; code, focused tests, proof artifacts, and runtime evidence override stale prose.
+> Current checkpoint: `v0.10.64`. Current code includes V2 recovery save/load/autosave/restart-check wiring plus the B12 proof gate; live target-machine playback/recovery evidence still overrides stale prose.
 
 Estonian timestamp: 2026-05-24 23:31 EEST
 

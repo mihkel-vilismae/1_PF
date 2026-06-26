@@ -330,7 +330,7 @@
       "id": "v2.page.real-playback",
       "label": "09 REAL PLAYBACK",
       "status": "in-progress",
-      "summary": "09 REAL PLAYBACK has a B10.1 integrated layout plus B10.2 read-only action-flow/status projection. Real recovery, PIR hardware, and victory proof remain future gates."
+      "summary": "09 REAL PLAYBACK has the B10 integrated layout/projection and B12 victory proof gate. Live target-machine playback/recovery evidence remains required before customer-ready claims."
     },
     {
       "id": "v2.page.recovery",

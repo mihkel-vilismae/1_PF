@@ -31,6 +31,6 @@ This matrix records the V2 controls that already have visible buttons and the ac
 | `04 WORKERS` | `B3.5 Enqueue playback` | `run-b3-5` | `POST /api/runtime/queue/prepare` | Placement covered; backend queue bridge work starts in B8.3. |
 | `05 TROUBLESHOOTING` | `Detect issues in pipeline` | `detect-pipeline-issues` | `POST /api/runtime/pipeline/issues/detect` | B9.1 covers success rendering. |
 | `05 TROUBLESHOOTING` | `Clear stale locks` | `clear-stale-pipeline-locks` | `POST /api/runtime/pipeline/stale-locks/clear` | B9.1 covers error rendering. |
-| `06 RECOVERY` | `SAVE STATE` | `v2-placeholder-alert` | Browser alert only | Placeholder-only by design; no real recovery mutation. |
-| `06 RECOVERY` | `LOAD STATE` | `v2-placeholder-alert` | Browser alert only | Placeholder-only by design; no real recovery mutation. |
-| `06 RECOVERY` | `EMULATE POWER OFF` | `v2-placeholder-alert` | Browser alert only | Placeholder-only by design; no real recovery mutation. |
+| `06 RECOVERY` | `SAVE STATE` | `v2-recovery-save-state` | `POST /api/runtime/recovery/state/save` | Manual recovery snapshot save. |
+| `06 RECOVERY` | `LOAD STATE` | `v2-recovery-load-state` | `POST /api/runtime/recovery/state/load` | Manual recovery snapshot load; no autoplay. |
+| `06 RECOVERY` | `EMULATE POWER OFF` | `v2-recovery-emulate-power-off` | `POST /api/runtime/recovery/state/save` | Records pre-shutdown snapshot; no actual power-off. |

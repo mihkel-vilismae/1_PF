@@ -4,6 +4,7 @@
  * upload dropped browser files, or claim recovery/PIR hardware proof.
  */
 import { normalizePlaybackRenderingState } from './playbackRenderer.ts';
+import { evaluateV2VictoryProofGate } from './v2VictoryProofGate.ts';
 
 export type V2RealPlaybackQueueProjectionItem = {
   mediaKind?: string;
@@ -39,6 +40,7 @@ export function buildV2RealPlaybackProjection(runtimeState: Record<string, any> 
   const playbackReady = Boolean(runtimeState.truth?.playbackActive || statusByKey.B4 === 'success' || queuePreparedRows.length > 0);
   const schedulerStatus = String(statusByKey['3A'] ?? 'idle');
   const queueStatus = queuePreparedRows.length > 0 ? 'queue bridge requested' : mediaRows.length > 0 ? 'media waiting' : 'empty';
+  const victoryGate = evaluateV2VictoryProofGate(runtimeState, queueItems);
   const readiness: V2RealPlaybackProjection['readiness'] = queuePreparedRows.length > 0 && playbackReady
     ? 'ready'
     : mediaRows.length > 0 || successfulWorkerStages > 0
@@ -90,6 +92,12 @@ export function buildV2RealPlaybackProjection(runtimeState: Record<string, any> 
         message: runtimeState.v2Recovery?.latestAutosave || runtimeState.v2Recovery?.restartCheck
           ? 'B11.3 autosave/restart check state is available; live power-loss proof remains B12.'
           : 'B11.2 manual save/load endpoints exist; B11.3 autosave/restart watch activates when V2 runs or queue state changes.',
+      },
+      {
+        id: 'victory-proof',
+        label: '7. B12 victory proof gate',
+        status: victoryGate.status,
+        message: victoryGate.summary,
       },
     ],
   };

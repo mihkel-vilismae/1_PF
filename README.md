@@ -1,6 +1,6 @@
 # PF_login / PhotoFrame
 
-> Current checkpoint: `v0.10.47` after B5 Startup/Workers controls and this README/launcher reconciliation pass. Code, focused tests, generated proof artifacts, and runtime evidence remain stronger than prose when they conflict.
+> Current checkpoint: `v0.10.64` after B11 manual/autosave recovery wiring and the B12 autonomous playback/recovery proof gate. Code, focused tests, generated proof artifacts, and runtime evidence remain stronger than prose when they conflict.
 
 PF_login / PhotoFrame is a local dashboard-driven photo-frame system for staged media processing, operator inspection, and Raspberry/Windows playback workflows.
 
@@ -55,7 +55,7 @@ The V2 sidebar currently contains exactly these top-level rows:
 | `08` | `PLAYBACK` | `playback` |
 | `09` | `REAL PLAYBACK` | `real-playback` |
 
-The order number is display/order metadata and is not part of the label. The V2 center panel renders typed visual blocks and shell/explanation pages. Current wired/placed V2 controls include Setup Verify `.env`, Setup Database controls, Authentication NEW AUTH, Startup Raspberry scheduler controls, and Workers B3.1-B3.5 action cards. Troubleshooting maintenance controls, Recovery placeholders, PIR activity controls, Playback drag/drop/rendering controls, and integrated `09 REAL PLAYBACK` remain future slices.
+The order number is display/order metadata and is not part of the label. The V2 center panel renders typed visual blocks and shell/explanation pages. Current wired/placed V2 controls include Setup Verify `.env`, Setup Database controls, Authentication NEW AUTH, Startup Raspberry scheduler controls, Workers B3.1-B3.5 action cards, Troubleshooting pipeline maintenance, Recovery manual save/load plus autosave/restart-check flow, PIR emulator controls, Playback drag/drop/rendering/queue metadata bridge, and an integrated `09 REAL PLAYBACK` layout with a B12 proof gate.
 
 
 ### V2 real playback goal
@@ -71,7 +71,7 @@ A second-tier goal is screen on/off behavior driven by mouse, keyboard, and PIR 
 
 See [`docs/20_architecture_and_specs/v2_goals/goals.md`](docs/20_architecture_and_specs/v2_goals/goals.md) for the authoritative V2 goal contract.
 
-Current V2 implementation decisions remain: reuse/extract shared components instead of copy-pasting HTML, keep the implementation-status overlay V2-only, store overlay status in structured JSON, and keep `09 REAL PLAYBACK` explanation-only until isolated pages are proven.
+Current V2 implementation decisions remain: reuse/extract shared components instead of copy-pasting HTML, keep the implementation-status overlay V2-only, store overlay status in structured JSON, and keep `09 REAL PLAYBACK` composed only from proven pieces and block customer-ready claims until B12 live evidence exists.
 
 
 The current V2 documentation package also includes:
@@ -206,7 +206,7 @@ Many real-provider and target-machine proofs are intentionally blocked unless ex
 | [`docs/20_architecture_and_specs/openspec/V2_GoalSummary.md`](docs/20_architecture_and_specs/openspec/V2_GoalSummary.md) | Authoritative V2 planning and placement summary |
 | [`docs/20_architecture_and_specs/openspec/V2_IssueRegister.md`](docs/20_architecture_and_specs/openspec/V2_IssueRegister.md) | Known issues, design questions, and verification gaps for V2 |
 | [`docs/20_architecture_and_specs/openspec/V2_HRDecisionLog.md`](docs/20_architecture_and_specs/openspec/V2_HRDecisionLog.md) | Operator answers to the V2 implementation-planning question set |
-| [`docs/40_backlog_and_tasks/V2_NEXT_IMPLEMENTATION_PLAN_20260626.md`](docs/40_backlog_and_tasks/V2_NEXT_IMPLEMENTATION_PLAN_20260626.md) | Current next-slice plan from B6 troubleshooting/recovery shell through B12 victory proof |
+| [`docs/40_backlog_and_tasks/V2_NEXT_IMPLEMENTATION_PLAN_20260626.md`](docs/40_backlog_and_tasks/V2_NEXT_IMPLEMENTATION_PLAN_20260626.md) | Current V2 slice ledger through B12 proof gate, with live target-machine proof still pending |
 | [`docs/proofs/`](docs/proofs/) | Human-readable proof notes and proof contracts |
 | [`CHANGELOG.md`](CHANGELOG.md) | Release history |
 

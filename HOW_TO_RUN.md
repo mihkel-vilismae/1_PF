@@ -1,6 +1,6 @@
 # How to Run
 
-> Current checkpoint: `v0.10.47`. This file is intentionally short; longer operator detail belongs in `docs/10_runbooks/`.
+> Current checkpoint: `v0.10.64`. This file is intentionally short; longer operator detail belongs in `docs/10_runbooks/`.
 
 ## Use this for quickstart
 

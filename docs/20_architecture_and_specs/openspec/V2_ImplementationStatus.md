@@ -310,3 +310,5 @@ The root README files and this status document were refreshed after B5 so the re
 | `B11.2` manual recovery endpoints | `wired/tested` | `POST /api/runtime/recovery/state/save`, `POST /api/runtime/recovery/state/load`, and `GET /api/runtime/recovery/state` persist same-media/queue-context snapshots without autoplay or secrets. | Autosave/restart flow remains B11.3. |
 
 | `B11.3` autosave/restart recovery flow | `wired/tested` | `POST /api/runtime/recovery/autosave` stores pre-shutdown/stage snapshots; `POST /api/runtime/recovery/restart-check` compares backend boot records and saved snapshots. | Live power-loss proof remains B12. |
+
+| `B12` victory proof gate | `gate/tested` | `evaluateV2VictoryProofGate` requires scheduler/pipeline/queue/recovery prerequisites plus explicit live playback and recovery evidence. | Gate exists; live target-machine proof not passed in this sandbox. |

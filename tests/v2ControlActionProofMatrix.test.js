@@ -35,9 +35,9 @@ const CONTROL_MATRIX = [
   { route: 'workers', label: 'B3.5 Enqueue playback', action: 'run-b3-5', endpoint: 'POST /api/runtime/queue/prepare' },
   { route: 'troubleshooting', label: 'Detect issues in pipeline', action: 'detect-pipeline-issues', endpoint: 'PIPELINE MAINTENANCE' },
   { route: 'troubleshooting', label: 'Clear stale locks', action: 'clear-stale-pipeline-locks', endpoint: 'PIPELINE MAINTENANCE' },
-  { route: 'recovery', label: 'SAVE STATE', action: 'v2-placeholder-alert', endpoint: 'alert-only' },
-  { route: 'recovery', label: 'LOAD STATE', action: 'v2-placeholder-alert', endpoint: 'alert-only' },
-  { route: 'recovery', label: 'EMULATE POWER OFF', action: 'v2-placeholder-alert', endpoint: 'alert-only' },
+  { route: 'recovery', label: 'SAVE STATE', action: 'v2-recovery-save-state', endpoint: '/api/runtime/recovery/state/save' },
+  { route: 'recovery', label: 'LOAD STATE', action: 'v2-recovery-load-state', endpoint: '/api/runtime/recovery/state/load' },
+  { route: 'recovery', label: 'EMULATE POWER OFF', action: 'v2-recovery-emulate-power-off', endpoint: '/api/runtime/recovery/state/save' },
 ];
 
 test('B9.2 V2 button/action proof matrix stays visible in the rendered pages', () => {
@@ -45,7 +45,9 @@ test('B9.2 V2 button/action proof matrix stays visible in the rendered pages', (
     const markup = render(row.route);
     assert.match(markup, new RegExp(esc(row.label)), `missing label ${row.label}`);
     assert.match(markup, new RegExp(`data-action="${esc(row.action)}"`), `missing action ${row.action}`);
-    if (row.endpoint !== 'alert-only') {
+    if (row.endpoint.startsWith('/api/runtime/recovery/')) {
+      assert.match(markup, /Recovery endpoints store same media\/queue context only|Latest backend result/, `missing recovery endpoint/result boundary ${row.endpoint}`);
+    } else if (row.endpoint !== 'alert-only') {
       assert.match(markup, new RegExp(esc(row.endpoint)), `missing endpoint/target text ${row.endpoint}`);
     }
   }
@@ -58,7 +60,7 @@ test('B9.2 proof matrix document records V2 control action IDs and endpoint boun
     assert.match(doc, new RegExp(esc(row.action)), `matrix doc missing ${row.action}`);
   }
   assert.match(doc, /\/api\/auth\/new\/\*/);
-  assert.match(doc, /Browser alert only/);
+  assert.match(doc, /Browser alert only|recovery\/state\/save/);
   assert.match(doc, /hardware crontab proof remains separate/i);
 });
 
