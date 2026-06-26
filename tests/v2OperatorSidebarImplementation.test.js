@@ -111,8 +111,8 @@ test('V2 shared infrastructure renders event history and status metadata foundat
   assert.ok(statusRegistry.elements.some((element) => element.id === 'v2.page.real-playback' && element.status === 'in-progress'));
   assert.match(centerPanelSource, /B5 Screen on-off simulation/);
   assert.match(centerPanelSource, /08 PLAYBACK shell/);
-  assert.match(centerPanelSource, /09 REAL PLAYBACK goal/);
-  assert.match(centerPanelSource, /explanation-only/);
+  assert.match(centerPanelSource, /09 REAL PLAYBACK integrated goal/);
+  assert.match(centerPanelSource, /integrated layout/);
   assert.match(viewSource, /data-v2-status-id/);
   assert.match(viewSource, /data-v2-implementation-status/);
 });

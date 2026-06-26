@@ -336,7 +336,7 @@
       "id": "v2.page.recovery",
       "label": "06 RECOVERY",
       "status": "in-progress",
-      "summary": "V2 Recovery contains B6.2 alert-only placeholder buttons for SAVE STATE, LOAD STATE, and EMULATE POWER OFF. Real recovery remains future."
+      "summary": "V2 Recovery contains B6.2 alert-only placeholder buttons and B11.1 schema-only lightweight recovery state contract. Real save/load remains B11.2."
     },
     {
       "id": "v2.page.setup",
@@ -487,6 +487,12 @@
       "label": "REAL PLAYBACK / action flow status projection",
       "status": "in-progress",
       "summary": "B10.2 adds a read-only final-page projection of scheduler, pipeline, queue, metadata, rendering, and recovery gate state. It does not start workers or claim recovery proof."
+    },
+    {
+      "id": "v2.block.06.recovery-state-schema",
+      "label": "recovery / lightweight recovery state schema",
+      "status": "in-progress",
+      "summary": "B11.1 defines the schema-only recovery snapshot contract: same media/queue context, queue cursor, pipeline statuses, corrupt-download exclusion, no secrets, and no exact timestamp requirement."
     }
   ]
 }

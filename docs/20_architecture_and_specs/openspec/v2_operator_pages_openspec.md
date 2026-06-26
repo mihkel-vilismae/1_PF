@@ -360,7 +360,7 @@ In the real media pipeline, corrupt, partial, invalid, or non-media items must n
 
 ### Initial content
 
-At first, `09 REAL PLAYBACK` should contain explanatory text only. It should state that earlier pages are isolated proving pages and this page is the final integrated endpoint.
+Initial B1 behavior kept `09 REAL PLAYBACK` explanation-only. As of v0.10.59/v0.10.60, the page now contains an integrated layout and read-only action-flow/status projection built only from proven V2 pieces. It still must not claim final autonomous playback or recovery readiness until B12 proof exists.
 
 ### Final composition
 
@@ -636,3 +636,11 @@ B1, B3, B4, and B5 implementation slices have placed the nine-page shell, V2 sta
 ## v0.10.57 B8.4 Playback GPS/address metadata bridge
 
 `08 PLAYBACK` now distinguishes GPS and address metadata as `present` or `missing` for each drag/drop queue row. Browser-local files do not claim EXIF extraction; missing values remain visible as `GPS missing — no browser EXIF extraction` and `Address missing — no fake address`. Real address text remains owned by the pipeline/geocode metadata path, not browser fabrication.
+
+
+## v0.10.59-v0.10.61 B10/B11 implementation notes
+
+- v0.10.59 `B10.1` composes `09 REAL PLAYBACK` from proven pieces only: Raspberry scheduler controls, RPI-STAGES/RPI-WORKERS, B3.1-B3.5 worker cards, playback rendering controls, drag/drop queue bridge, and GPS/address metadata bridge.
+- v0.10.60 `B10.2` adds a read-only action-flow/status projection for scheduler, pipeline, queue bridge, metadata, rendering, and recovery gate state.
+- v0.10.61 `B11.1` defines the lightweight recovery state schema. The schema captures same media/queue context and explicitly does not require exact video timestamp resume.
+- Real manual save/load endpoints, autosave/restart recovery, PIR hardware proof, and final autonomous victory proof remain future work.

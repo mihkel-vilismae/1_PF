@@ -56,7 +56,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | `06 RECOVERY` | recovery placeholder now; real recovery later | `B6.2` alert-only buttons placed | placeholder test first; later save/load/autosave/restart proof |
 | `07 PIR` | activity/screen test | `B7.1` visible B5 subset and PIR emulator placed | route/render test now; deeper browser activity and hardware proof later |
 | `08 PLAYBACK` | queue/rendering test | `B8.1` rendering target/mode subsection, `B8.2` browser-local drag/drop queue table, `B8.3` media-only backend queue-prepare bridge, and `B8.4` GPS/address metadata bridge placed | render/queue tests now; address overlay proof later |
-| `09 REAL PLAYBACK` | final endpoint | explanation-only shell implemented; composition later | route render test now; full autonomous playback + recovery proof later |
+| `09 REAL PLAYBACK` | final endpoint | B10.1 integrated layout + B10.2 read-only status projection composed from proven pieces only | composition/projection tests now; full autonomous playback + recovery proof later |
 
 ## Shared component tracker
 
@@ -166,8 +166,10 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | Element | Status | Current evidence/notes | Required next proof/test |
 | --- | --- | --- | --- |
 | Sidebar/page | visual/tested | v0.10.35 added the `09 REAL PLAYBACK` route/page shell. | Keep route/sidebar tests current. |
-| Explanation text | visual/tested | v0.10.35 added explanation-only composition text; no real integrated operation is claimed. | Render test remains the evidence boundary. |
-| Integrated real operation | future | Must be assembled from proven parts only; test-only controls may appear disabled. | Final autonomous playback proof. |
+| Integrated layout | visual/tested | v0.10.59 B10.1 composes scheduler, RPI rows, B3.1-B3.5 worker cards, playback rendering controls, queue bridge, and metadata bridge from proven pieces only. | `tests/v2RealPlaybackComposition.test.js`. |
+| Action flow/status projection | visual/tested | v0.10.60 B10.2 adds read-only scheduler/pipeline/queue/metadata/rendering/recovery-gate projection. | `tests/v2RealPlaybackProjection.test.js`. |
+| Integrated real operation | future | Final autonomous runtime proof is not yet claimed. | Final autonomous playback proof. |
+| Recovery schema | schema/tested | v0.10.61 B11.1 defines the lightweight recovery state schema: same media/queue context, no exact timestamp requirement, no secrets, corrupt-download exclusion. | `tests/v2RecoveryStateSchema.test.js`; real endpoints still B11.2. |
 | Autonomous recovery | future | Must recover after rough shutdown/power loss. | Final recovery proof. |
 | Screen on/off integration | future | Tier-2 goal. | Activity/recovery/playback integration proof. |
 
@@ -295,3 +297,12 @@ Before any implementation report is final:
 ## v0.10.47 docs/launcher reconciliation note
 
 The root README files and this status document were refreshed after B5 so the repository entry points no longer describe the old six-page/no-action V2 baseline. The next planned implementation starts with B6.1 Troubleshooting pipeline maintenance, then B6.2 Recovery placeholders. See [`../../40_backlog_and_tasks/V2_NEXT_IMPLEMENTATION_PLAN_20260626.md`](../../40_backlog_and_tasks/V2_NEXT_IMPLEMENTATION_PLAN_20260626.md).
+
+
+## v0.10.59-v0.10.61 B10/B11 update
+
+| Slice | Status | Evidence/notes | Remaining work |
+| --- | --- | --- | --- |
+| `B10.1` `09 REAL PLAYBACK` layout | `visual/tested` | Final page now composes only proven surfaces: Raspberry scheduler controls, RPI-STAGES/RPI-WORKERS, B3.1-B3.5 worker cards, B8 rendering controls, B8 queue bridge, and B8 metadata bridge. | Final autonomous proof remains future. |
+| `B10.2` status projection | `visual/tested` | Read-only projection summarizes scheduler, pipeline stages, queue bridge, metadata, rendering, and recovery gate state. | Projection is not a worker runner or recovery engine. |
+| `B11.1` recovery schema | `schema/tested` | `dashboard/services/v2RecoveryStateSchema.ts` and `V2_RecoveryStateSchema.md` define same-media/queue-context recovery without exact timestamp requirement. | Manual save/load endpoints and autosave/restart recovery remain B11.2/B11.3. |

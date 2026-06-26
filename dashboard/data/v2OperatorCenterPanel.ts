@@ -658,6 +658,20 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
     blocks: [
       {
         type: 'statusCard',
+        id: '06.recovery-state-schema',
+        title: 'Lightweight recovery state schema',
+        body: 'B11.1 defines the schema only. It captures same media/queue context, queue cursor, pipeline stage statuses, and corrupt-download exclusion without saving/loading real state yet.',
+        status: 'schema-only',
+        risk: 'guarded',
+        fields: [
+          { label: 'Schema version', value: '1' },
+          { label: 'Exact video timestamp', value: 'not required; same media from beginning is acceptable' },
+          { label: 'Secrets', value: 'not allowed in recovery snapshots' },
+          { label: 'Runtime behavior', value: 'manual save/load endpoints arrive in B11.2' },
+        ],
+      },
+      {
+        type: 'statusCard',
         id: '06.01',
         title: 'snapshot metadata',
         body: 'Shows latest snapshot time and other snapshot-level metadata later. No state read/write happens from V2 in this slice.',

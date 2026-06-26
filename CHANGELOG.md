@@ -1,3 +1,8 @@
+## v0.10.61 - 2026-06-26
+
+- B11.1: defined the lightweight V2 recovery state schema as schema-only work with same media/queue context, no exact timestamp requirement, corrupt-download exclusion, and no secrets.
+- Added a recovery-page schema card, OpenSpec schema doc, and tests without adding save/load/autosave runtime behavior.
+
 ## v0.10.60 - 2026-06-26
 
 - B10.2: added `09 REAL PLAYBACK` read-only action flow/status projection for scheduler, worker stages, queue bridge, metadata, rendering, and recovery gate state.
