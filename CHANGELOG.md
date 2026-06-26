@@ -1,3 +1,19 @@
+## 2026-06-26 16:48 EEST — v0.10.56
+
+### Added
+- Added B8.3 safe media-only backend queue bridge controls to the V2 Playback drag/drop queue table.
+- Added `dashboard/services/v2PlaybackDropQueueBridge.ts` to build provenance-safe queue-prepare requests for image/video rows and block non-media rows locally.
+
+### Changed
+- Bumped repository/package version from `0.10.55` to `0.10.56`.
+- Updated V2 playback queue bridge docs/status to state that this is not a browser file upload/import feature.
+
+### Fixed
+- Non-media drag/drop rows now have an explicit backend-queue blocked state instead of relying only on the playback classification columns.
+
+### Removed
+- None.
+
 ## 2026-06-26 16:48 EEST — v0.10.55
 
 ### Added

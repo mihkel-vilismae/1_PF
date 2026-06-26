@@ -421,13 +421,14 @@ export function createRuntimeTruthDemoActions({
   }
 
   // Runs the backend queue-prepare stage behind the existing B3.5 action.
-  function runEnqueueStage(onComplete = () => {}) {
+  function runEnqueueStage(onComplete = () => {}, requestBody = {}) {
     runBackendPipelineStage({
       key: 'B3.5',
       operation: 'Prepare playback queue',
       endpoint: RUNTIME_EXECUTION_ENDPOINTS.queuePrepare,
       execute: runRuntimeQueuePrepare,
       onComplete,
+      requestBody,
     });
   }
 

@@ -614,3 +614,19 @@ body.v2-implementation-status-mode [data-v2-implementation-status="not-implement
 .v2-playback-queue-table th {
   white-space: nowrap;
 }
+
+.v2-playback-backend-cell {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 11rem;
+}
+
+.v2-playback-backend-cell small {
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.button--compact {
+  padding: 0.35rem 0.55rem;
+  min-height: auto;
+}

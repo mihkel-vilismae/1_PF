@@ -465,7 +465,7 @@ export function createRuntimeTruthBehavior({
           endpoint: RUNTIME_EXECUTION_ENDPOINTS.geocodeRun,
           execute: runRuntimeGeocode,
         }),
-      "run-b3-5": () => demoActions.runEnqueueStage(),
+      "run-b3-5": (detail) => demoActions.runEnqueueStage(() => {}, detail),
       "detect-pipeline-issues": () => demoActions.detectPipelineIssues(),
       "clear-stale-pipeline-locks": () =>
         demoActions.clearStalePipelineLocksAction(),

@@ -631,4 +631,4 @@ B1, B3, B4, and B5 implementation slices have placed the nine-page shell, V2 sta
 
 ## v0.10.52 B8.2 Playback drag/drop queue table
 
-`08 PLAYBACK` now includes a browser-local drag/drop/file-input queue table. It accepts image, video, and non-media files, classifies rows as video/image/other, shows duration when browser metadata is available for videos, and reports non-media as not playable instead of attempting playback. GPS/address columns are visible placeholders until metadata/pipeline integration.
+`08 PLAYBACK` now includes a browser-local drag/drop/file-input queue table. It accepts image, video, and non-media files, classifies rows as video/image/other, shows duration when browser metadata is available for videos, and reports non-media as not playable instead of attempting playback. GPS/address columns are visible placeholders until metadata/pipeline integration. B8.3 adds a media-only backend queue-prepare bridge button that requests `POST /api/runtime/queue/prepare` for valid image/video rows, blocks non-media locally, and does not claim browser file upload/import.

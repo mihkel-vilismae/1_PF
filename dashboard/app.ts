@@ -67,6 +67,7 @@ import { renderV2StartupOperatorMenuView, type V2PlaybackQueueItem } from './vie
 import { addIsolatedTestMediaItem, buildDefaultDebugPageState, clearDebugElementMetadata, cycleDebugColorSchema, cycleDebugMajorVisualMode, pauseFakeDebugCrontab, previewFakeDebugStateRestore, readFakeDebugCrontab, resumeFakeDebugCrontab, runMockDebugWorker, saveFakeDebugStateSnapshot, saveManualTestingSystemStateSnapshot, selectDebugElementMetadata, setDebugCrontabContent, stageFakeDebugCrontabInstall, type DebugPageState, type DebugWorkerKey } from './services/debugPageModel.ts';
 import { buildOsPlaybackViewModel, OS_PLAYBACK_PLATFORMS, type OsPlaybackPlatform, type PlaybackLogEntryViewModel } from './services/osPlaybackViewModel.ts';
 import { requestJson, setDashboardRuntimeMode } from './services/apiClient.ts';
+import { buildV2PlaybackDropQueueBridgeRequest } from './services/v2PlaybackDropQueueBridge.ts';
 import { isV2OperatorSidebarRoute, type V2OperatorSidebarRoute } from './data/v2OperatorSidebar.ts';
 import { V2_IMPLEMENTATION_STATUS_REGISTRY, getV2ImplementationStatusElement } from './data/v2ImplementationStatus.ts';
 import { buildViewARefreshPlan } from './services/viewARefreshPlan.ts';
@@ -1637,6 +1638,10 @@ function bindEvents() {
         });
         return;
       }
+      if (action === 'v2-playback-queue-prepare-item') {
+        prepareV2PlaybackQueueItemForBackend(button.dataset.v2PlaybackQueueItemId);
+        return;
+      }
       if (action === 'emulate-pir-signal') {
         markB5ActivityDetected('pir');
         pushHistory('SCREEN', 'success', 'PIR emulator signal received.', {
@@ -2037,6 +2042,10 @@ function buildV2PlaybackQueueItem(file: File): V2PlaybackQueueItem {
     durationLabel: mediaKind === 'video' ? 'metadata pending' : mediaKind === 'image' ? 'not applicable for image' : 'not playable as media',
     gpsCoordinates: 'not extracted in browser-local queue',
     address: 'no address string yet',
+    backendQueueStatus: mediaKind === 'other' ? 'blocked' : 'local-only',
+    backendQueueMessage: mediaKind === 'other'
+      ? 'Non-media cannot request backend queue prepare.'
+      : 'Not sent to backend yet.',
   };
 }
 
@@ -2050,6 +2059,38 @@ function classifyV2PlaybackFile(file: File): V2PlaybackQueueItem['mediaKind'] {
     return 'image';
   }
   return 'other';
+}
+
+function prepareV2PlaybackQueueItemForBackend(itemId: string | undefined): void {
+  const item = v2PlaybackQueueItems.find((candidate) => candidate.id === itemId) ?? null;
+  const bridgeRequest = buildV2PlaybackDropQueueBridgeRequest(item);
+  if (bridgeRequest.ok === false) {
+    if (item) {
+      v2PlaybackQueueItems = v2PlaybackQueueItems.map((candidate) => candidate.id === item.id
+        ? { ...candidate, backendQueueStatus: 'blocked', backendQueueMessage: bridgeRequest.message }
+        : candidate);
+    }
+    pushHistory('PLAYBACK', 'warning', bridgeRequest.message, {
+      action: 'v2-playback-queue-prepare-item',
+      endpoint: bridgeRequest.endpoint.path,
+      reason: bridgeRequest.reason,
+      backendRequestSent: false,
+    });
+    render();
+    return;
+  }
+
+  v2PlaybackQueueItems = v2PlaybackQueueItems.map((candidate) => candidate.id === item?.id
+    ? { ...candidate, backendQueueStatus: 'requested', backendQueueMessage: bridgeRequest.message }
+    : candidate);
+  pushHistory('PLAYBACK', 'info', bridgeRequest.message, {
+    action: 'v2-playback-queue-prepare-item',
+    endpoint: bridgeRequest.endpoint.path,
+    request: bridgeRequest.body,
+    backendRequestSent: true,
+  });
+  runAction('run-b3-5', bridgeRequest.body);
+  render();
 }
 
 function hydrateV2VideoDuration(file: File, itemId: string): void {

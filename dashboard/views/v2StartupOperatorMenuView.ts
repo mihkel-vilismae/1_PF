@@ -22,6 +22,8 @@ export type V2PlaybackQueueItem = {
   durationLabel: string;
   gpsCoordinates: string;
   address: string;
+  backendQueueStatus?: string;
+  backendQueueMessage?: string;
 };
 
 type V2StartupOperatorMenuRenderOptions = {
@@ -486,10 +488,11 @@ function renderPlaybackDropQueueBlock(block: Extract<V2OperatorCenterPanelBlock,
               <th>duration</th>
               <th>GPS coordinates</th>
               <th>address string</th>
+              <th>backend queue</th>
             </tr>
           </thead>
           <tbody>
-            ${queueItems.length ? queueItems.map(renderPlaybackDropQueueRow).join('') : '<tr data-v2-playback-empty-queue><td colspan="7">No dropped files yet. Non-media files will be listed here and reported gracefully instead of played.</td></tr>'}
+            ${queueItems.length ? queueItems.map(renderPlaybackDropQueueRow).join('') : '<tr data-v2-playback-empty-queue><td colspan="8">No dropped files yet. Non-media files will be listed here and reported gracefully instead of played.</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -507,8 +510,21 @@ function renderPlaybackDropQueueRow(item: V2PlaybackQueueItem): string {
       <td>${escapeHtml(item.durationLabel)}</td>
       <td>${escapeHtml(item.gpsCoordinates)}</td>
       <td>${escapeHtml(item.address)}</td>
+      <td>${renderPlaybackDropQueueBackendCell(item)}</td>
     </tr>
   `;
+}
+
+function renderPlaybackDropQueueBackendCell(item: V2PlaybackQueueItem): string {
+  const isMedia = item.mediaKind === 'image' || item.mediaKind === 'video';
+  const status = item.backendQueueStatus ?? (isMedia ? 'local-only' : 'blocked');
+  const message = item.backendQueueMessage ?? (isMedia
+    ? 'Not sent to backend yet.'
+    : 'Non-media cannot request backend queue prepare.');
+  const action = isMedia
+    ? `<button class="button button--secondary button--compact" type="button" data-action="v2-playback-queue-prepare-item" data-v2-playback-queue-item-id="${escapeHtml(item.id)}">Prepare backend queue</button>`
+    : '<button class="button button--secondary button--compact" type="button" disabled aria-disabled="true">Not playable</button>';
+  return `<div class="v2-playback-backend-cell"><span class="pill">${escapeHtml(status)}</span><small>${escapeHtml(message)}</small>${action}</div>`;
 }
 
 function renderSectionGroupBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'sectionGroup' }>): string {
