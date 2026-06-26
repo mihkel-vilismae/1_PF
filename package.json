@@ -162,7 +162,8 @@
     "task-docs:toc": "node scripts/generate-task-docs-toc.mjs",
     "test": "tsx --test",
     "typecheck": "tsc --noEmit",
-    "validate:view-e": "node scripts/validate-view-e.mjs"
+    "validate:view-e": "node scripts/validate-view-e.mjs",
+    "check:ai-context-policy": "node tools/check-ai-context-policy.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
