@@ -622,3 +622,8 @@ B1, B3, B4, and B5 implementation slices have placed the nine-page shell, V2 sta
 ## v0.10.50 B7.1 PIR visible B5 subset
 
 `07 PIR` now renders the visible B5 activity-test subset: PIR/mouse/keyboard source checkboxes, `Start Test`, activity results, inactivity timeout, status rows, screen controls-ready message, and an `Emulate PIR signal` button. Real PIR hardware remains future.
+
+
+## v0.10.51 B8.1 Playback rendering target/mode subsection
+
+`08 PLAYBACK` now renders the isolated B4 rendering subsection. It keeps backend playback selection owned by `POST /api/runtime/playback/select-current`, uses the browser-native renderer for preview/fullscreen presentation, and keeps Raspberry OS rendering disabled until proof exists.

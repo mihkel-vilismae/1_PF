@@ -5,6 +5,7 @@
  */
 import { V2_OPERATOR_CENTER_PANEL_PAGES, type V2OperatorActionItem, type V2OperatorBackendActionButton, type V2OperatorCenterPanelBlock, type V2OperatorSectionItem } from '../data/v2OperatorCenterPanel.ts';
 import { B5_ACTIVITY_SOURCES, getB5ActivitySourceLabel, normalizeB5ActivityDetectionState, type B5ActivitySource } from '../services/viewBActivityDetection.ts';
+import { buildPlaybackRenderingOptions, getSharedPlaybackRendererId, normalizePlaybackRenderingState, PLAYBACK_RENDERING_LIBRARY, PLAYBACK_RENDERING_PLATFORM_OPTIONS, PLAYBACK_RENDERING_PLATFORMS, PLAYBACK_RENDERING_MODES, type PlaybackRenderingMode, type PlaybackRenderingPlatform } from '../services/playbackRenderer.ts';
 import { V2_OPERATOR_SIDEBAR_ITEMS, type V2OperatorSidebarRoute } from '../data/v2OperatorSidebar.ts';
 import { getV2BlockStatusId, getV2ImplementationStatusElement } from '../data/v2ImplementationStatus.ts';
 import { renderLogEntries, renderResultSurface, renderSourceBadge, statusBadge, type HistoryEntry } from '../services/renderers.ts';
@@ -96,6 +97,8 @@ function renderV2CenterPanelBlock(block: V2OperatorCenterPanelBlock, runtimeStat
       return renderRecoveryPlaceholderActionsBlock(block);
     case 'pirActivityTest':
       return renderPirActivityTestBlock(block, runtimeState);
+    case 'playbackRenderingControls':
+      return renderPlaybackRenderingControlsBlock(block, runtimeState);
     case 'sectionGroup':
       return renderSectionGroupBlock(block);
     case 'toggleGroup':
@@ -374,6 +377,80 @@ function renderPirActivityResult(source: B5ActivitySource, result: { status?: st
       <small>${escapeHtml(message)}</small>
     </div>
   `;
+}
+
+
+function renderPlaybackRenderingControlsBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'playbackRenderingControls' }>, runtimeState: Record<string, any>): string {
+  const playbackRenderingState = normalizePlaybackRenderingState(runtimeState.playbackRendering);
+  const playbackReady = Boolean(runtimeState.truth?.playbackActive || runtimeState.statusByKey?.B4 === 'success');
+  const renderingOptions = buildPlaybackRenderingOptions(playbackReady);
+  return `
+    <article class="card v2-block v2-block--playbackRenderingControls" data-v2-playback-rendering-controls data-v2-block-type="playbackRenderingControls" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
+      ${renderBlockHeader(block.title, getV2BlockStatusId(block.id), block.status)}
+      ${block.body ? `<p class="card__copy">${escapeHtml(block.body)}</p>` : ''}
+      <section class="playback-rendering-panel selector-card selector-card--hybrid" aria-label="B4 rendering controls">
+        <div>
+          <p class="selector-card__label">Rendering target</p>
+          <p class="stage-card__subtitle">Rendering tabs affect only preview/fullscreen presentation. Backend selection remains <code>POST /api/runtime/playback/select-current</code>.</p>
+        </div>
+        <div class="playback-rendering-tabs" role="tablist" aria-label="V2 playback rendering platform tabs">
+          ${renderV2PlaybackRenderingPlatformTabs(playbackRenderingState.platform, playbackReady)}
+        </div>
+        <div>
+          <p class="selector-card__label">Rendering mode</p>
+          <p class="stage-card__subtitle">Preview and fullscreen use the same ${escapeHtml(PLAYBACK_RENDERING_LIBRARY.label)}. Controls unlock after B4 Run selects/activates playback.</p>
+        </div>
+        <div class="playback-rendering-options" role="group" aria-label="V2 playback rendering mode controls">
+          ${renderV2PlaybackRenderingModeButtons(renderingOptions, playbackRenderingState.mode, playbackReady)}
+        </div>
+        <p class="notice playback-rendering-panel__notice">${playbackReady ? escapeHtml(getV2PlaybackRenderingReadyMessage(playbackRenderingState.mode)) : 'Run B4 successfully before changing rendering mode or target.'}</p>
+      </section>
+    </article>
+  `;
+}
+
+function renderV2PlaybackRenderingPlatformTabs(activePlatform: PlaybackRenderingPlatform, playbackReady: boolean): string {
+  return PLAYBACK_RENDERING_PLATFORM_OPTIONS.map((option) => {
+    const isActive = option.value === activePlatform;
+    const isRaspberry = option.value === PLAYBACK_RENDERING_PLATFORMS.raspberryOs;
+    const disabled = !playbackReady || isRaspberry;
+    const title = isRaspberry ? 'Raspberry OS rendering is disabled until Raspberry playback proof exists.' : option.description;
+    return `<button
+      class="button ${isActive ? 'button--primary' : 'button--secondary'} playback-rendering-tab"
+      type="button"
+      role="tab"
+      aria-selected="${isActive ? 'true' : 'false'}"
+      data-playback-rendering-platform="${escapeHtml(option.value)}"
+      title="${escapeHtml(title)}"
+      ${disabled ? 'disabled' : ''}
+    >${escapeHtml(option.label)}${isRaspberry ? ' (disabled)' : ''}</button>`;
+  }).join('');
+}
+
+function renderV2PlaybackRenderingModeButtons(options: ReturnType<typeof buildPlaybackRenderingOptions>, activeMode: PlaybackRenderingMode, playbackReady: boolean): string {
+  return options.map((option) => {
+    const isActive = option.value === activeMode;
+    const disabled = !playbackReady || !option.enabled;
+    const sharedRendererId = getSharedPlaybackRendererId(option.value);
+    const sharedRendererText = sharedRendererId ? `Shared renderer: ${sharedRendererId}. ` : '';
+    return `<button
+      class="button ${isActive ? 'button--primary' : 'button--secondary'} playback-rendering-mode"
+      type="button"
+      data-playback-rendering-mode="${escapeHtml(option.value)}"
+      title="${escapeHtml(sharedRendererText + option.description)}"
+      ${disabled ? 'disabled' : ''}
+    >${escapeHtml(option.label)}</button>`;
+  }).join('');
+}
+
+function getV2PlaybackRenderingReadyMessage(mode: PlaybackRenderingMode): string {
+  if (mode === PLAYBACK_RENDERING_MODES.previewWindow) {
+    return 'Preview rendering mode is selected. Real media presentation remains browser-native and frontend-owned in this slice.';
+  }
+  if (mode === PLAYBACK_RENDERING_MODES.fullscreen) {
+    return 'Fullscreen rendering mode is selected. OS-level or Raspberry hardware control is not implemented in this slice.';
+  }
+  return 'Playback can continue without rendering.';
 }
 
 function renderSectionGroupBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'sectionGroup' }>): string {

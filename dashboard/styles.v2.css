@@ -555,3 +555,8 @@ body.v2-implementation-status-mode [data-v2-implementation-status="not-implement
 .v2-pir-timeout-row input {
   width: 5.5rem;
 }
+
+.v2-playback-rendering-controls .playback-rendering-options,
+.v2-playback-rendering-controls .playback-rendering-tabs {
+  flex-wrap: wrap;
+}

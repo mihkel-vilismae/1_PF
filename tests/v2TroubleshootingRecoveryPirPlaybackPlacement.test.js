@@ -78,3 +78,23 @@ test('V2 PIR renders B7.1 visible B5 subset and PIR emulator', () => {
   const appSource = readFileSync('dashboard/app.ts', 'utf8');
   assert.match(appSource, /markB5ActivityDetected\('pir'\)/);
 });
+
+test('V2 Playback renders B8.1 rendering target and mode subsection', () => {
+  const markup = render('playback');
+  for (const expected of [
+    'Rendering target',
+    'POST /api/runtime/playback/select-current',
+    'Windows',
+    'Raspberry OS (disabled)',
+    'Rendering mode',
+    'Browser native media renderer',
+    'Playback without rendering',
+    'Show real rendering in preview window',
+    'Switch to fullscreen',
+    'Run B4 successfully before changing rendering mode or target.',
+    'data-v2-playback-rendering-controls',
+    'data-v2-status-id="v2.block.08.rendering-controls"',
+  ]) {
+    assert.match(markup, new RegExp(esc(expected)));
+  }
+});

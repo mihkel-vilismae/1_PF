@@ -4071,3 +4071,9 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 - Added the visible B5 activity-test subset to `07 PIR`: source checkboxes, Start Test, results, timeout/status rows, and controls-ready event row.
 - Added an `Emulate PIR signal` button that uses the existing B5 activity source state without claiming hardware proof.
 - Updated V2 implementation status JSON/docs and placement coverage.
+
+## v0.10.51 - B8.1 V2 playback rendering controls
+
+- Added `08 PLAYBACK` rendering target/mode subsection using the shared playbackRenderer state contract.
+- Kept backend selection owned by `POST /api/runtime/playback/select-current`; Raspberry OS rendering remains disabled.
+- Updated V2 implementation status JSON/docs and placement coverage.

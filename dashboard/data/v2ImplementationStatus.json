@@ -324,7 +324,7 @@
       "id": "v2.page.playback",
       "label": "08 PLAYBACK",
       "status": "in-progress",
-      "summary": "08 PLAYBACK shell now includes the shared RPI-WORKERS row. Playback controls and drag/drop queue remain future B8 work."
+      "summary": "08 PLAYBACK contains B8.1 rendering controls plus the shared RPI-WORKERS row. Drag/drop queue and backend playback proof remain future."
     },
     {
       "id": "v2.page.real-playback",
@@ -397,6 +397,12 @@
       "label": "PIR / B5 activity detection visible subset",
       "status": "in-progress",
       "summary": "B7.1 adds the visible B5 activity source checkboxes, Start Test, result rows, inactivity timeout, status rows, and a PIR emulator button. Real PIR hardware remains future."
+    },
+    {
+      "id": "v2.block.08.rendering-controls",
+      "label": "PLAYBACK / B4 rendering target and mode controls",
+      "status": "in-progress",
+      "summary": "B8.1 adds the isolated playback rendering target/mode subsection using the shared playbackRenderer state contract. Raspberry OS rendering remains disabled until proof exists."
     }
   ]
 }

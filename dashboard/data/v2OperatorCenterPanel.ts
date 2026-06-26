@@ -18,7 +18,8 @@ export type V2OperatorBlockType =
   | 'rpiStagesRow'
   | 'rpiWorkersRow'
   | 'recoveryPlaceholderActions'
-  | 'pirActivityTest';
+  | 'pirActivityTest'
+  | 'playbackRenderingControls';
 
 export type V2OperatorRisk = 'safe' | 'guarded' | 'destructive' | 'future' | 'localSecretSensitive';
 
@@ -147,7 +148,7 @@ export type V2OperatorCenterPanelBlock =
       actions: readonly V2OperatorRecoveryPlaceholderAction[];
     }
   | {
-      type: 'pirActivityTest';
+      type: 'pirActivityTest' | 'playbackRenderingControls';
       id: string;
       title: string;
       body?: string;
@@ -730,9 +731,16 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
         type: 'infoPanel',
         id: '08.shell',
         title: '08 PLAYBACK shell',
-        body: 'This page is the future isolated proving area for playback selection, drag/drop queue classification, rendering target/mode, fullscreen playback, and address overlay behavior. B1 adds only the route/page shell.',
-        status: 'shell-only',
+        body: 'This page is the isolated proving area for playback selection, drag/drop queue classification, rendering target/mode, fullscreen playback, and address overlay behavior. B8 keeps backend selection owned by POST /api/runtime/playback/select-current.',
+        status: 'isolated playback UI',
         risk: 'future',
+      },
+      {
+        type: 'playbackRenderingControls',
+        id: '08.rendering-controls',
+        title: 'B4 Playback selection / rendering controls',
+        body: 'Rendering tabs affect only preview/fullscreen presentation; backend selection remains POST /api/runtime/playback/select-current.',
+        status: 'frontend rendering controls',
       },
       buildRpiWorkersRow('08.rpi-workers', 'Playback'),
       {
