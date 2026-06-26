@@ -8,12 +8,12 @@ The project is intentionally proof-heavy. Source code, tests, OpenSpec documents
 
 | Field | Value |
 |---|---|
-| Version | `0.10.28` |
+| Version | `0.10.29` |
 | Main dashboard | Vite frontend in `dashboard/` |
 | Backend API | TypeScript server entrypoint at `server/index.ts` |
 | Database schema source | `database/schema.sql` |
 | Current startup choices | `Test Mode`, `Real Mode`, `V2` |
-| V2 status | Startup option and six-item left sidebar implemented; center panel is intentionally blank for now |
+| V2 status | Startup option, six-item left sidebar, and original visual-only typed center-panel blocks implemented |
 | Changelog | Release history lives in [`CHANGELOG.md`](CHANGELOG.md), not in this README |
 
 ## What this repo does
@@ -50,7 +50,7 @@ The V2 sidebar currently contains exactly these top-level rows:
 | `05` | `troubleshooting` | `troubleshooting` |
 | `06` | `recovery` | `recovery` |
 
-The order number is display/order metadata and is not part of the label. The V2 center panel is a placeholder in this baseline; auth, worker, database, crontab, troubleshooting, and recovery actions are not wired from V2 yet.
+The order number is display/order metadata and is not part of the label. The V2 center panel now renders the original sub-items as typed visual blocks; auth, worker, database, crontab, troubleshooting, and recovery actions are still not wired from V2.
 
 ## What is not claimed
 
@@ -59,7 +59,7 @@ This README is a project landing page, not proof evidence. Do not infer target-m
 Current non-claims include:
 
 - no automatic proof that a fresh Raspberry target is fully ready unless current proof artifacts say so;
-- no claim that V2 center-panel sub-items are implemented yet;
+- no claim that V2 center-panel sub-items execute real backend actions; they are visual/read-only typed blocks in this baseline;
 - no claim that V2 buttons trigger auth, crontab, DB, worker, troubleshooting, or recovery actions;
 - no claim that real iCloud, GPS/geocode, playback, or recovery behavior is proven unless the relevant proof output exists;
 - no claim that archive or older status documents are current truth without code/test/evidence confirmation.

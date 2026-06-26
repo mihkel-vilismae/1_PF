@@ -28,5 +28,5 @@ test('root README documents the implemented V2 startup and six-sidebar state', (
     assert.ok(readme.includes(row), `missing V2 sidebar row: ${row}`);
   }
 
-  assert.match(readme, /The V2 center panel is a placeholder in this baseline/);
+  assert.match(readme, /V2 center panel now renders the original sub-items as typed visual blocks/);
 });

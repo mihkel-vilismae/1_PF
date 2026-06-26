@@ -1,3 +1,12 @@
+## 2026-06-26 07:12 EEST
+## v0.10.29 - V2 center-panel original sub-items
+
+- Bumped repository/package version from `0.10.28` to `0.10.29` for the V2 center-panel implementation baseline.
+- Added `dashboard/data/v2OperatorCenterPanel.ts` as the data-owned original center-panel/sub-item contract for setup, authentication, startup, workers, troubleshooting, and recovery.
+- Updated the V2 startup operator menu view to render route children as typed visual blocks: info panels, status cards, action lists, section groups, multi-combo row, stage table, toggle group, future placeholder, example list, snapshot viewers, and snapshot list.
+- Kept V2 actions visual-only/disabled; guarded/destructive/future items remain non-executing until backend contracts and guard flows exist.
+- Added focused tests for typed center-panel coverage while preserving Test Mode, Real Mode, V2 startup, six-sidebar routing, backend runtime-mode isolation, and large-file containment.
+
 # Changelog
 
 ## 2026-06-26 07:05 EEST

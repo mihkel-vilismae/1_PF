@@ -29,7 +29,7 @@ S:\_PHOTOFRAMES\PF_login_v0.10.21_final_release_mode_root_docs_full_git\full_win
 - Raspberry launcher: `start_scripts/raspberry/START_RASPBERRYOS.SH`.
 - Canonical SQLite schema: `database/schema.sql`.
 - Existing `.env` and SQLite DB files are preserved by the launchers; the DB is created only when the configured `DB_PATH` does not exist.
-- V2 dashboard mode is now a runnable frontend startup option. It opens the first V2 operator shell with the six left-sidebar rows and an intentionally blank center panel; no backend release actions are wired.
+- V2 dashboard mode is now a runnable frontend startup option. It opens the V2 operator shell with six left-sidebar rows and original visual-only typed center-panel blocks; no backend release actions are wired.
 
 ## Manual
 
