@@ -99,6 +99,12 @@
       "summary": "B5.1 renders the Raspberry-focused scheduler controls in V2 Startup. The visible button labels keep the existing scheduler concepts while the buttons carry the Raspberry real-crontab target through existing scheduler backend handlers."
     },
     {
+      "id": "v2.block.03.rpi-stages",
+      "label": "startup.sh / RPI-STAGES media pipeline stage row",
+      "status": "in-progress",
+      "summary": "B5.2 adds the shared Raspberry media pipeline stage row to Startup with Download, Index, GPS parser, Geocode, and Queue cards, all intentionally Idle until real worker calls run."
+    },
+    {
       "id": "v2.block.03.sections",
       "label": "startup.sh / Startup sections",
       "status": "in-progress",
@@ -135,6 +141,12 @@
       "summary": "v2 may collect runtime statistics; the rich statistics page remains v3.0."
     },
     {
+      "id": "v2.block.04.rpi-stages",
+      "label": "workers / RPI-STAGES media pipeline stage row",
+      "status": "in-progress",
+      "summary": "B5.2 adds the same shared Raspberry media pipeline stage row to Workers so stage health is visible where worker controls will be added."
+    },
+    {
       "id": "v2.block.05.01",
       "label": "troubleshooting / manual troubleshooting actions",
       "status": "in-progress",
@@ -157,6 +169,12 @@
       "label": "troubleshooting / logging / log handling",
       "status": "in-progress",
       "summary": "Page-specific logs, global log, full verbose log, high-importance regular log, and conditional actions from measurable rules."
+    },
+    {
+      "id": "v2.block.05.rpi-stages",
+      "label": "troubleshooting / RPI-STAGES media pipeline stage row",
+      "status": "in-progress",
+      "summary": "B5.2 adds the same shared Raspberry media pipeline stage row to Troubleshooting for diagnostic visibility without running any stage."
     },
     {
       "id": "v2.block.06.01",
@@ -270,19 +288,19 @@
       "id": "v2.page.startup",
       "label": "03 STARTUP",
       "status": "in-progress",
-      "summary": "Existing visual-only V2 page. Raspberry crontab controls are not wired in this batch."
+      "summary": "V2 Startup now contains the Raspberry scheduler controls plus shared RPI-STAGES visual row. Worker execution proof remains later."
     },
     {
       "id": "v2.page.troubleshooting",
       "label": "05 TROUBLESHOOTING",
       "status": "in-progress",
-      "summary": "Existing visual-only V2 page. Stale-lock controls are not moved in this batch."
+      "summary": "V2 Troubleshooting now contains the shared RPI-STAGES visual row. Stale-lock controls remain future."
     },
     {
       "id": "v2.page.workers",
       "label": "04 WORKERS",
       "status": "in-progress",
-      "summary": "Existing visual-only V2 page. B3.1-B3.5 worker controls are not moved in this batch."
+      "summary": "V2 Workers now contains the shared RPI-STAGES visual row. B3.1-B3.5 worker controls are still future until B5.4."
     },
     {
       "id": "v2.shared.event-history",

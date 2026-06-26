@@ -46,3 +46,15 @@ test('V2 scheduler buttons pass their explicit target through the shared action 
   assert.match(initViewSource, /renderSchedulerActionButton/);
   assert.match(sharedRowsSource, /schedulerTarget/);
 });
+
+
+test('V2 renders the shared RPI-STAGES row on Startup, Workers, and Troubleshooting', () => {
+  for (const route of ['startup', 'workers', 'troubleshooting']) {
+    const markup = render(route);
+    assert.match(markup, /data-v2-rpi-stages-row/);
+    assert.match(markup, /DOWNLOAD → INDEX → GPS PARSER → GEOCODE → QUEUE/);
+    for (const label of ['Download', 'Index', 'GPS parser', 'Geocode', 'Queue']) {
+      assert.match(markup, new RegExp(label));
+    }
+  }
+});

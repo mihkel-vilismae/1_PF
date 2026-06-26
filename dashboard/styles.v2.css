@@ -470,3 +470,30 @@ body.v2-implementation-status-mode [data-v2-implementation-status="not-implement
   align-items: center;
   margin: 0.75rem 0;
 }
+
+.v2-rpi-stage-flow {
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 12px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  margin: 0.75rem 0;
+  padding: 0.65rem 0.75rem;
+  text-transform: uppercase;
+}
+
+.v2-rpi-stage-card-row {
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+}
+
+.v2-rpi-stage-card {
+  align-items: center;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  min-height: 3rem;
+  padding: 0.7rem 0.8rem;
+}

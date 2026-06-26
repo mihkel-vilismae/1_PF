@@ -1,3 +1,18 @@
+## 2026-06-26 15:34 EEST — v0.10.44
+
+### Added
+- Added the shared `RPI-STAGES` media pipeline stage row to V2 Startup, Workers, and Troubleshooting.
+- Added one reusable V2 renderer for the Download → Index → GPS parser → Geocode → Queue idle-stage row.
+
+### Changed
+- Bumped repository/package version from `0.10.43` to `0.10.44`.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
 ## 2026-06-26 15:24 EEST — v0.10.43
 
 ### Added

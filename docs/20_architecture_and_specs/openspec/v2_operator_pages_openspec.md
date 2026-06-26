@@ -91,7 +91,7 @@ Later implementation should first inventory and reuse/extract these component fa
 | Status badges/source badges | shared renderers | all operational cards |
 | Auth action rows | `NEW AUTH` card from View A | `02 AUTHENTICATION` |
 | Scheduler target panel | shared `schedulerActionRows` renderer extracted from View A | `03 STARTUP`, Raspberry-focused |
-| Worker/stage card pattern | B3/Test page stage cards | `04 WORKERS`, `09 REAL PLAYBACK` status summary |
+| Worker/stage card pattern | shared `RPI-STAGES` visual row plus later B3/Test stage cards | `03 STARTUP`, `04 WORKERS`, `05 TROUBLESHOOTING`, later `09 REAL PLAYBACK` status summary |
 | B4 rendering controls | View B playback selection | `08 PLAYBACK`, later `09 REAL PLAYBACK` |
 | B5 activity controls | View B / OS playback activity model | `07 PIR`, later `09 REAL PLAYBACK` |
 | RPI-STAGES row | current/status row if existing, otherwise extract from status model | Startup, Workers, Troubleshooting |

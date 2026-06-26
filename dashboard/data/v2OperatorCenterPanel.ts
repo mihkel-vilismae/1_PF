@@ -14,7 +14,8 @@ export type V2OperatorBlockType =
   | 'exampleList'
   | 'backendActionCard'
   | 'newAuthCard'
-  | 'rpiSchedulerControls';
+  | 'rpiSchedulerControls'
+  | 'rpiStagesRow';
 
 export type V2OperatorRisk = 'safe' | 'guarded' | 'destructive' | 'future' | 'localSecretSensitive';
 
@@ -48,6 +49,12 @@ export type V2OperatorStageItem = {
   status: string;
   batchSizeLabel: string;
   statisticsStatus: string;
+};
+
+export type V2OperatorRpiStageItem = {
+  id: string;
+  label: string;
+  status: string;
 };
 
 export type V2OperatorSectionItem = V2OperatorActionItem | V2OperatorToggleItem;
@@ -100,6 +107,14 @@ export type V2OperatorCenterPanelBlock =
       sourceBadge?: { mode: string; label: string };
     }
   | {
+      type: 'rpiStagesRow';
+      id: string;
+      title: string;
+      body?: string;
+      status?: string;
+      stages: readonly V2OperatorRpiStageItem[];
+    }
+  | {
       type: 'sectionGroup';
       id: string;
       title: string;
@@ -149,6 +164,26 @@ export type V2OperatorCenterPanelPage = {
 };
 
 const visualOnly = 'Visual-only in this slice. No backend action is wired from V2.';
+
+const RPI_PIPELINE_STAGES = Object.freeze([
+  { id: 'download', label: 'Download', status: 'Idle' },
+  { id: 'index', label: 'Index', status: 'Idle' },
+  { id: 'gps-parser', label: 'GPS parser', status: 'Idle' },
+  { id: 'geocode', label: 'Geocode', status: 'Idle' },
+  { id: 'queue', label: 'Queue', status: 'Idle' },
+] satisfies readonly V2OperatorRpiStageItem[]);
+
+function buildRpiStagesRow(id: string, pageLabel: string): V2OperatorCenterPanelBlock {
+  return {
+    type: 'rpiStagesRow',
+    id,
+    title: 'RPI-STAGES / Media pipeline stage row',
+    body: `${pageLabel} shared stage row. It reports the intended Raspberry media pipeline order without starting a worker in this slice.`,
+    status: 'visual status row',
+    stages: RPI_PIPELINE_STAGES,
+  };
+}
+
 
 export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2OperatorCenterPanelPage> = {
   setup: {
@@ -304,6 +339,7 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
         logKey: '3A',
         sourceBadge: { mode: 'real', label: 'Raspberry real crontab' },
       },
+      buildRpiStagesRow('03.rpi-stages', 'Startup'),
       {
         type: 'multiComboRow',
         id: '03.03.07',
@@ -334,6 +370,7 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
           { label: 'Screen on-off worker', value: 'not wired from V2' },
         ],
       },
+      buildRpiStagesRow('04.rpi-stages', 'Workers'),
       {
         type: 'stageTable',
         id: '04.02',
@@ -414,6 +451,7 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
           { id: '05.01.12', label: 'clear current logs', status: 'planned-safe', risk: 'destructive', interaction: 'guardedAction' },
         ],
       },
+      buildRpiStagesRow('05.rpi-stages', 'Troubleshooting'),
       {
         type: 'infoPanel',
         id: '05.logging',

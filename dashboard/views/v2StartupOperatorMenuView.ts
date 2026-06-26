@@ -87,6 +87,8 @@ function renderV2CenterPanelBlock(block: V2OperatorCenterPanelBlock, runtimeStat
       return renderV2NewAuthCard(block, runtimeState, dashboardVisualMode);
     case 'rpiSchedulerControls':
       return renderRpiSchedulerControlsBlock(block, runtimeState);
+    case 'rpiStagesRow':
+      return renderRpiStagesRowBlock(block);
     case 'sectionGroup':
       return renderSectionGroupBlock(block);
     case 'toggleGroup':
@@ -224,6 +226,25 @@ function renderRpiSchedulerControlsBlock(block: Extract<V2OperatorCenterPanelBlo
       </div>
       ${renderV2BackendResultSurface(result)}
       <div class="log-surface" data-scroll-preserve="log-${escapeHtml(block.logKey)}">${renderLogEntries(logs, { sourceKey: block.logKey })}</div>
+    </article>
+  `;
+}
+
+
+function renderRpiStagesRowBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'rpiStagesRow' }>): string {
+  return `
+    <article class="card v2-block v2-block--rpiStagesRow" data-v2-rpi-stages-row data-v2-block-type="rpiStagesRow" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
+      ${renderBlockHeader(block.title, getV2BlockStatusId(block.id), block.status)}
+      ${block.body ? `<p class="card__copy">${escapeHtml(block.body)}</p>` : ''}
+      <div class="v2-rpi-stage-flow" aria-label="DOWNLOAD to INDEX to GPS PARSER to GEOCODE to QUEUE">DOWNLOAD → INDEX → GPS PARSER → GEOCODE → QUEUE</div>
+      <div class="v2-rpi-stage-card-row">
+        ${block.stages.map((stage) => `
+          <div class="v2-rpi-stage-card" data-v2-rpi-stage="${escapeHtml(stage.id)}">
+            <strong>${escapeHtml(stage.label)}</strong>
+            <span class="pill">${escapeHtml(stage.status)}</span>
+          </div>
+        `).join('')}
+      </div>
     </article>
   `;
 }

@@ -97,7 +97,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | Raspberry scheduler controls | wired/needs verification | v0.10.43 renders the V2 Startup scheduler controls with Raspberry real-crontab target payloads while preserving existing scheduler action labels and backend contracts. | Raspberry hardware/crontab proof + V2 action tests. |
 | Scheduler button concepts formerly tied to emulator | planned/needs verification | Keep the button concepts, but wire to real crontab/scheduler behavior, not Windows emulator. | Inspect crontab examples/configs; V2 action tests confirm no Windows emulator dependency. |
 | WSL placeholder controls | future/placeholder | May exist only clearly marked WSL and disabled. | Render test confirms disabled state and labeling. |
-| `RPI-STAGES` | planned | Shared row requested. | Render/status test. |
+| `RPI-STAGES` | visual row delivered / needs runtime proof | v0.10.44 adds the shared Download → Index → GPS parser → Geocode → Queue idle row to Startup, Workers, and Troubleshooting. | Runtime stage health projection and proof remain later. |
 | `RPI-WORKERS` | planned | Shared row requested. | Render/status test. |
 | Event Log | extraction needed | Scheduler endpoint terminal exists separately. | Decide relation to global Event Log. |
 
@@ -110,7 +110,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | `B3.3 Parse GPS` | reused candidate | Existing runtime endpoint path known. | V2 render + action test + worker proof. |
 | `B3.4 Geocode` | reused candidate | Existing runtime endpoint path known. | V2 render + action test + geocode proof. |
 | `B3.5 Enqueue playback` | reused candidate | Existing runtime endpoint path known. | V2 render + action test + queue proof. |
-| `RPI-STAGES` | planned | Shared row requested. | Render/status test. |
+| `RPI-STAGES` | visual row delivered / needs runtime proof | v0.10.44 adds the shared Download → Index → GPS parser → Geocode → Queue idle row to Startup, Workers, and Troubleshooting. | Runtime stage health projection and proof remain later. |
 | `RPI-WORKERS` | planned | Shared row requested. | Render/status test. |
 | Event Log | visual/tested | Shared V2 wrapper renders Event history for current V2 pages, including `07`-`09` route shells. | Future page-specific slices must keep using wrapper. |
 
@@ -120,7 +120,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | --- | --- | --- | --- |
 | `Detect issues in pipeline` | needs verification | User recalls it may work; exact behavior must be confirmed. | Test/proof documents stale lock detection semantics. |
 | `Clear stale locks` | needs verification | User recalls it may work; exact behavior must be confirmed. | Test/proof documents stale-only clear semantics. |
-| `RPI-STAGES` | planned | Shared row requested. | Render/status test. |
+| `RPI-STAGES` | visual row delivered / needs runtime proof | v0.10.44 adds the shared Download → Index → GPS parser → Geocode → Queue idle row to Startup, Workers, and Troubleshooting. | Runtime stage health projection and proof remain later. |
 | `RPI-WORKERS` | planned | Shared row requested. | Render/status test. |
 | Event Log | visual/tested | Shared V2 wrapper renders Event history for current V2 pages, including `07`-`09` route shells. | Future page-specific slices must keep using wrapper. |
 
