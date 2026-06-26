@@ -68,6 +68,7 @@ import { addIsolatedTestMediaItem, buildDefaultDebugPageState, clearDebugElement
 import { buildOsPlaybackViewModel, OS_PLAYBACK_PLATFORMS, type OsPlaybackPlatform, type PlaybackLogEntryViewModel } from './services/osPlaybackViewModel.ts';
 import { requestJson, setDashboardRuntimeMode } from './services/apiClient.ts';
 import { isV2OperatorSidebarRoute, type V2OperatorSidebarRoute } from './data/v2OperatorSidebar.ts';
+import { V2_IMPLEMENTATION_STATUS_REGISTRY, getV2ImplementationStatusElement } from './data/v2ImplementationStatus.ts';
 import { buildViewARefreshPlan } from './services/viewARefreshPlan.ts';
 import { captureScrollSnapshot, restoreScrollSnapshotAfterLayout } from './services/scrollPreservation.ts';
 
@@ -386,6 +387,28 @@ function requestLiveUpdateRender(): void {
 function toggleV2ImplementationStatusMode(): void {
   v2ImplementationStatusMode = !v2ImplementationStatusMode;
   render();
+}
+
+function openV2StatusHelp(statusId: string | undefined): void {
+  const status = getV2ImplementationStatusElement(statusId ?? '');
+  const label = status?.label ?? statusId ?? 'V2 implementation status';
+  const statusName = status?.status ?? 'in-progress';
+  const summary = status?.summary ?? 'This V2 element has status metadata attributes, but no dedicated JSON registry entry yet.';
+  openModal({
+    kind: 'log',
+    title: label,
+    subtitle: `V2 implementation status: ${statusName}`,
+    entry: {
+      type: statusName === 'done' ? 'success' : statusName === 'not-implemented' ? 'warning' : 'info',
+      message: summary,
+      details: {
+        id: statusId ?? null,
+        status: statusName,
+        sourceDocument: V2_IMPLEMENTATION_STATUS_REGISTRY.sourceDocument,
+        scope: V2_IMPLEMENTATION_STATUS_REGISTRY.scope,
+      },
+    },
+  });
 }
 
 function toggleLiveUpdatesPaused(): void {
@@ -1593,6 +1616,10 @@ function bindEvents() {
       }
       if (action === 'toggle-v2-implementation-status') {
         toggleV2ImplementationStatusMode();
+        return;
+      }
+      if (action === 'show-v2-status-help') {
+        openV2StatusHelp(button.dataset.v2HelpStatusId);
         return;
       }
       if (action === 'toggle-marked-for-removal') {

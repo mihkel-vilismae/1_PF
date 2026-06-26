@@ -90,7 +90,7 @@ function renderV2CenterPanelBlock(block: V2OperatorCenterPanelBlock): string {
 function renderSimpleBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'infoPanel' | 'statusCard' | 'snapshotViewer' | 'snapshotList' | 'futurePlaceholder' }>): string {
   return `
     <article class="card v2-block v2-block--${escapeHtml(block.type)}" data-v2-block-type="${escapeHtml(block.type)}" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
-      ${renderBlockHeader(block.title, block.status, block.risk)}
+      ${renderBlockHeader(block.title, getV2BlockStatusId(block.id), block.status, block.risk)}
       ${block.body ? `<p class="card__copy">${escapeHtml(block.body)}</p>` : ''}
       ${block.fields ? renderFieldList(block.fields) : ''}
     </article>
@@ -100,7 +100,7 @@ function renderSimpleBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'i
 function renderActionListBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'actionList' | 'exampleList' }>): string {
   return `
     <article class="card v2-block v2-block--${escapeHtml(block.type)}" data-v2-block-type="${escapeHtml(block.type)}" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
-      ${renderBlockHeader(block.title, block.type === 'exampleList' ? '*EX' : undefined, block.type === 'exampleList' ? 'future' : undefined)}
+      ${renderBlockHeader(block.title, getV2BlockStatusId(block.id), block.type === 'exampleList' ? '*EX' : undefined, block.type === 'exampleList' ? 'future' : undefined)}
       ${block.body ? `<p class="card__copy">${escapeHtml(block.body)}</p>` : ''}
       <div class="v2-action-list" role="list">
         ${block.items.map((item) => renderActionItem(item, block.type)).join('')}
@@ -112,14 +112,15 @@ function renderActionListBlock(block: Extract<V2OperatorCenterPanelBlock, { type
 function renderSectionGroupBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'sectionGroup' }>): string {
   return `
     <article class="card v2-block v2-block--sectionGroup" data-v2-block-type="sectionGroup" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
-      ${renderBlockHeader(block.title)}
+      ${renderBlockHeader(block.title, getV2BlockStatusId(block.id))}
       ${block.body ? `<p class="card__copy">${escapeHtml(block.body)}</p>` : ''}
       <div class="v2-section-grid">
         ${block.sections.map((section) => `
-          <section class="v2-section-card" data-v2-section-id="${escapeHtml(section.id)}">
+          <section class="v2-section-card" data-v2-section-id="${escapeHtml(section.id)}" ${renderV2StatusAttributes(section.id)}>
             <header>
               <p class="card__code">${escapeHtml(section.id)}</p>
               <h4>${escapeHtml(section.title)}</h4>
+              ${renderV2StatusHelpButton(getV2BlockStatusId(section.id), section.title)}
             </header>
             ${section.body ? `<p>${escapeHtml(section.body)}</p>` : ''}
             <div class="v2-action-list v2-action-list--compact" role="list">
@@ -135,7 +136,7 @@ function renderSectionGroupBlock(block: Extract<V2OperatorCenterPanelBlock, { ty
 function renderToggleGroupBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'toggleGroup' }>): string {
   return `
     <article class="card v2-block v2-block--toggleGroup" data-v2-block-type="toggleGroup" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
-      ${renderBlockHeader(block.title, block.status)}
+      ${renderBlockHeader(block.title, getV2BlockStatusId(block.id), block.status)}
       ${block.body ? `<p class="card__copy">${escapeHtml(block.body)}</p>` : ''}
       ${block.actions ? `<div class="v2-inline-actions">${block.actions.map((item) => renderVisualButton(item)).join('')}</div>` : ''}
       <div class="v2-toggle-list">
@@ -153,7 +154,7 @@ function renderToggleGroupBlock(block: Extract<V2OperatorCenterPanelBlock, { typ
 function renderMultiComboRowBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'multiComboRow' }>): string {
   return `
     <article class="card v2-block v2-block--multiComboRow" data-v2-block-type="multiComboRow" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
-      ${renderBlockHeader(block.title, block.status, block.risk)}
+      ${renderBlockHeader(block.title, getV2BlockStatusId(block.id), block.status, block.risk)}
       ${block.body ? `<p class="card__copy">${escapeHtml(block.body)}</p>` : ''}
       <div class="v2-multi-combo-row" data-v2-multi-combo-row>
         ${renderDisabledSelect('Worker type', block.workerOptions)}
@@ -168,7 +169,7 @@ function renderMultiComboRowBlock(block: Extract<V2OperatorCenterPanelBlock, { t
 function renderStageTableBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'stageTable' }>): string {
   return `
     <article class="card v2-block v2-block--stageTable" data-v2-block-type="stageTable" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
-      ${renderBlockHeader(block.title, block.status)}
+      ${renderBlockHeader(block.title, getV2BlockStatusId(block.id), block.status)}
       ${block.body ? `<p class="card__copy">${escapeHtml(block.body)}</p>` : ''}
       ${block.actions ? `<div class="v2-inline-actions">${block.actions.map((item) => renderVisualButton(item)).join('')}</div>` : ''}
       <div class="v2-stage-table-wrap">
@@ -203,7 +204,7 @@ function renderV2StatusAttributes(blockId: string): string {
   return `data-v2-status-id="${escapeHtml(statusId)}" data-v2-implementation-status="${escapeHtml(status?.status ?? 'in-progress')}" data-v2-status-label="${escapeHtml(status?.label ?? statusId)}" data-v2-status-help="${escapeHtml(status?.summary ?? 'Status/help metadata foundation is present; detailed control explanation arrives in a later V2 batch.')}"`;
 }
 
-function renderBlockHeader(title: string, status?: string, risk?: string): string {
+function renderBlockHeader(title: string, statusId: string, status?: string, risk?: string): string {
   return `
     <header class="card__header v2-block__header">
       <div>
@@ -213,8 +214,22 @@ function renderBlockHeader(title: string, status?: string, risk?: string): strin
       <div class="v2-block__pills">
         ${status ? `<span class="pill">${escapeHtml(status)}</span>` : ''}
         ${risk ? `<span class="pill v2-risk-pill v2-risk-pill--${escapeHtml(risk)}">${escapeHtml(risk)}</span>` : ''}
+        ${renderV2StatusHelpButton(statusId, title)}
       </div>
     </header>
+  `;
+}
+
+function renderV2StatusHelpButton(statusId: string, label: string): string {
+  return `
+    <button
+      class="v2-status-help-button"
+      type="button"
+      data-action="show-v2-status-help"
+      data-v2-help-status-id="${escapeHtml(statusId)}"
+      aria-label="Show implementation status for ${escapeHtml(label)}"
+      title="Show implementation status"
+    >?</button>
   `;
 }
 

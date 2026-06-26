@@ -54,6 +54,7 @@ export function renderV2OperatorPageWrapper(options: V2OperatorPageWrapperOption
           <div class="v2-topbar-status">
             <span class="pill">Visual-only blocks</span>
             <span class="pill v2-implementation-pill v2-implementation-pill--${escapeHtml(pageStatusName)}">${escapeHtml(pageStatusName)}</span>
+            ${renderV2StatusHelpButton(pageStatusId, options.activePage.title)}
           </div>
         </header>
 
@@ -64,6 +65,7 @@ export function renderV2OperatorPageWrapper(options: V2OperatorPageWrapperOption
               <h3>${escapeHtml(options.activeItem.label)}</h3>
             </div>
             <span class="pill">${escapeHtml(options.activeItem.subtitle)}</span>
+              ${renderV2StatusHelpButton(pageStatusId, options.activePage.title)}
           </header>
           ${options.centerPanelMarkup}
         </section>
@@ -90,6 +92,7 @@ function renderV2EventHistoryPanel(history: HistoryEntry[], historyCopyButtonLab
     >
       <div class="side-panel__header">
         <h2>Event history</h2>
+        ${renderV2StatusHelpButton('v2.shared.event-history', 'Event history')}
         <div class="side-panel__actions">
           <button class="button button--ghost" data-action="copy-history">${escapeHtml(historyCopyButtonLabel)}</button>
           <button class="button button--ghost" data-action="clear-history">Clear</button>
@@ -111,5 +114,18 @@ function renderV2ToolbarButton(action: string, label: string, active: boolean, t
     >
       ${escapeHtml(label)}
     </button>
+  `;
+}
+
+function renderV2StatusHelpButton(statusId: string, label: string): string {
+  return `
+    <button
+      class="v2-status-help-button"
+      type="button"
+      data-action="show-v2-status-help"
+      data-v2-help-status-id="${escapeHtml(statusId)}"
+      aria-label="Show implementation status for ${escapeHtml(label)}"
+      title="Show implementation status"
+    >?</button>
   `;
 }

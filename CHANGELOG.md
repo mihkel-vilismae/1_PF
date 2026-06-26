@@ -1,3 +1,18 @@
+## 2026-06-26 15:03 EEST — v0.10.38
+
+### Added
+- Added per-section V2 `?` implementation-status help buttons for page, block, section, and Event history surfaces.
+- Added a JSON-backed status/help modal for V2 status buttons.
+
+### Changed
+- Bumped repository/package version from `0.10.37` to `0.10.38`.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
 ## 2026-06-26 14:55 EEST — v0.10.37
 
 ### Added
