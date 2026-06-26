@@ -42,7 +42,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | Runtime implementation | `not changed by docs` | Documentation does not wire new backend/runtime behavior. |
 | Shared V2 page wrapper | `visual/tested` | v0.10.34 adds `renderV2OperatorPageWrapper` as a reusable V2 shell wrapper; v0.10.35 extends the route shell to all nine V2 routes. |
 | V2 Event history panel | `visual/tested` | v0.10.34 renders a reusable V2 event-history panel with existing `copy all log` and `Clear` actions. |
-| V2 status/help metadata foundation | `visual/tested` | v0.10.34 adds `dashboard/data/v2ImplementationStatus.json` plus render-time status data attributes. |
+| V2 status/help metadata foundation | `visual/tested` | v0.10.39 keeps `dashboard/data/v2ImplementationStatus.json` synchronized with every rendered V2 status target and B3 status/help controls. |
 
 ## Page status matrix
 
@@ -66,10 +66,10 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | Latest backend result panel | Setup/Auth/Startup/Workers/Troubleshooting | reused candidate | Existing `renderResultSurface` should be reused. | Button/action tests confirm result surface updates in V2 context. |
 | Response payload viewer | Setup/Auth/Startup/Workers | reused candidate | Existing JSON payload viewer should be reused. | Scroll/payload rendering test if changed. |
 | Status/source badges | all pages | reused candidate | Existing badge renderers should be reused. | Snapshot/render assertions. |
-| Per-section `?` icon | major sections/cards | planned | New shared section wrapper or metadata-driven status control. | V2 status overlay test. |
-| `Explain controls` | top V2 shell | planned | Keep current semantics if already present; otherwise add shared explain mode. | UI test toggles class/markers. |
-| `Explain values` | top V2 shell | planned | Explains status/value rows. | UI test toggles class/markers. |
-| `Implementation status` | V2 shell only | planned | Button/overlay remain future B3, but v0.10.34 adds structured JSON metadata and `data-v2-implementation-status` attributes. | B3 UI test verifies status classes match JSON/docs metadata. |
+| Per-section `?` icon | major sections/cards | visual/tested | v0.10.38 adds JSON-backed `?` buttons and a status/help modal; v0.10.39 adds sync coverage. | `tests/v2ImplementationStatusSync.test.js`. |
+| `Explain controls` | top V2 shell | visual/tested | v0.10.36 adds the approved V2 toolbar button and reuses the existing frontend explain-control mode action. | `tests/v2ImplementationStatusSync.test.js`. |
+| `Explain values` | top V2 shell | visual/tested | v0.10.36 adds the approved V2 toolbar button and reuses the existing frontend explain-value mode action. | `tests/v2ImplementationStatusSync.test.js`. |
+| `Implementation status` | V2 shell only | visual/tested | v0.10.36 adds the toolbar button, v0.10.37 adds highlight classes, v0.10.38 adds `?` status/help modal, and v0.10.39 adds JSON/render/docs sync tests. | `tests/v2ImplementationStatusSync.test.js`. |
 | `RPI-STAGES` row | Startup/Workers/Troubleshooting | planned | Shared media-stage status row. | Render/status test. |
 | `RPI-WORKERS` row | Startup/Workers/Troubleshooting/PIR/Playback | planned | Shared worker-call status row. | Render/status test. |
 
@@ -281,3 +281,13 @@ Before any implementation report is final:
 | `07 PIR` route/page shell | `visual/tested` | Sidebar route and center-panel shell blocks exist; page inherits shared V2 Event history wrapper. | Add visible B5 subset and PIR emulator in B7. |
 | `08 PLAYBACK` route/page shell | `visual/tested` | Sidebar route and center-panel shell blocks exist; page inherits shared V2 Event history wrapper. | Add visible B4 subset and drag/drop queue in B8. |
 | `09 REAL PLAYBACK` route/page shell | `visual/tested` | Sidebar route and explanation-only blocks exist; page documents future composition sources. | Compose only proven pieces later in B10. |
+
+
+## v0.10.39 B3 implementation-status overlay findings
+
+| V2 target | Current source path | Existing form | Endpoint/handler | Existing tests/proofs | Reuse decision | Missing V2 proof/test | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| V2 topbar explanation/status controls | `dashboard/views/v2OperatorPageWrapper.ts`; `dashboard/app.ts` | frontend-only toolbar buttons | existing `toggle-inspect-mode`, existing `toggle-value-inspect-mode`, local `toggle-v2-implementation-status` | `tests/v2ImplementationStatusSync.test.js` | reuse current explain modes; keep V2 status local/frontend-only | richer control/value copy for future real cards | visual/tested |
+| V2 implementation-status highlights | `dashboard/styles.v2.css`; `dashboard/data/v2ImplementationStatus.json` | CSS highlight mode driven by `data-v2-implementation-status` | none | `tests/v2ImplementationStatusSync.test.js` | keep JSON as source for status color/class meaning | future green/done claims require stronger proofs | visual/tested |
+| V2 per-section `?` status help | `dashboard/views/v2OperatorPageWrapper.ts`; `dashboard/views/v2StartupOperatorMenuView.ts`; `dashboard/app.ts` | per-surface help buttons opening a status/help modal | frontend modal only | `tests/v2ImplementationStatusSync.test.js` | reuse modal renderer; no duplicated per-page help markup | future text may need expansion as real cards land | visual/tested |
+| V2 JSON/render sync check | `tests/v2ImplementationStatusSync.test.js` | automated registry coverage test | none | focused test passes for all nine routes | keep as guard before B4/B5 components are added | docs still require human judgement for status wording | tested |

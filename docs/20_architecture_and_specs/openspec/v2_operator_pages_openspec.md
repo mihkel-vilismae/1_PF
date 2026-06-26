@@ -592,3 +592,11 @@ Acceptance boundary:
 - all new pages inherit the shared V2 wrapper and Event history placement;
 - no setup/auth/scheduler/worker/troubleshooting/recovery/PIR/playback backend behavior is newly wired;
 - no screenshot panels are copied into the new pages.
+
+
+## v0.10.39 B3 implementation-status overlay
+
+- Added the V2-only topbar controls: `Explain controls`, `Explain values`, and `Implementation status`.
+- Wired the Implementation status view to `dashboard/data/v2ImplementationStatus.json` through rendered `data-v2-status-id`, `data-v2-implementation-status`, `data-v2-status-label`, and `data-v2-status-help` attributes.
+- Added per-section `?` buttons that open a JSON-backed status/help modal without adding backend/runtime behavior.
+- Added `tests/v2ImplementationStatusSync.test.js` to ensure every rendered V2 status target for all nine routes has a JSON registry element.

@@ -131,3 +131,11 @@ B2 deliberately does not move requested Setup/Auth/Startup/Workers/Troubleshooti
 | `07 PIR / route shell` | `dashboard/data/v2OperatorSidebar.ts`; `dashboard/data/v2OperatorCenterPanel.ts` | visual shell blocks | none | `tests/v2OperatorSidebarImplementation.test.js`; `tests/v2OperatorMenuView.test.js`; `tests/rootReadmeStructure.test.js` | reuse shared V2 wrapper; add B7 controls later | B7 visible B5 subset + PIR emulator tests | visual/tested shell |
 | `08 PLAYBACK / route shell` | `dashboard/data/v2OperatorSidebar.ts`; `dashboard/data/v2OperatorCenterPanel.ts` | visual shell blocks | none | same as above | reuse shared V2 wrapper; add B8 controls later | B8 B4 subset + drag/drop queue tests | visual/tested shell |
 | `09 REAL PLAYBACK / explanation shell` | `dashboard/data/v2OperatorSidebar.ts`; `dashboard/data/v2OperatorCenterPanel.ts` | explanation-only shell blocks | none | same as above | keep explanation-only until proven pieces exist | B10 composition tests + final proof | visual/tested shell |
+
+
+## v0.10.39 B3 implementation-status overlay
+
+- Added the V2-only topbar controls: `Explain controls`, `Explain values`, and `Implementation status`.
+- Wired the Implementation status view to `dashboard/data/v2ImplementationStatus.json` through rendered `data-v2-status-id`, `data-v2-implementation-status`, `data-v2-status-label`, and `data-v2-status-help` attributes.
+- Added per-section `?` buttons that open a JSON-backed status/help modal without adding backend/runtime behavior.
+- Added `tests/v2ImplementationStatusSync.test.js` to ensure every rendered V2 status target for all nine routes has a JSON registry element.

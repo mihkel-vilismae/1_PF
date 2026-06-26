@@ -1,4 +1,20 @@
-## 2026-06-26 15:03 EEST — v0.10.38
+## 2026-06-26 14:58 EEST — v0.10.39
+
+### Added
+- Added `tests/v2ImplementationStatusSync.test.js` for V2 status-registry/render/docs synchronization.
+- Added JSON registry entries for every currently rendered V2 block/section status target across all nine routes.
+
+### Changed
+- Bumped repository/package version from `0.10.38` to `0.10.39`.
+- Updated V2 OpenSpec/status/component inventory docs for the completed B3 implementation-status overlay batch.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
+## 2026-06-26 14:56 EEST — v0.10.38
 
 ### Added
 - Added per-section V2 `?` implementation-status help buttons for page, block, section, and Event history surfaces.
@@ -13,7 +29,7 @@
 ### Removed
 - None.
 
-## 2026-06-26 14:55 EEST — v0.10.37
+## 2026-06-26 14:54 EEST — v0.10.37
 
 ### Added
 - Added V2 implementation-status highlight mode CSS using `data-v2-implementation-status` values from the JSON registry.

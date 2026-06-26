@@ -21,58 +21,196 @@
   },
   "elements": [
     {
-      "id": "v2.shared.page-wrapper",
-      "label": "Shared V2 page wrapper",
+      "id": "v2.block.01.actions",
+      "label": "setup.sh / Preflight actions",
       "status": "in-progress",
-      "summary": "Reusable V2 shell foundation that owns sidebar/main layout and shared event-history placement."
+      "summary": "Visual-only in this slice. No backend action is wired from V2."
     },
     {
-      "id": "v2.shared.event-history",
-      "label": "V2 Event history panel",
+      "id": "v2.block.01.info",
+      "label": "setup.sh / Setup scope",
       "status": "in-progress",
-      "summary": "Reuses the existing event-history renderer and copy/clear actions inside V2 pages."
+      "summary": "v2 setup is preflight/orchestration only. It may check and report readiness, but it does not install full dependencies in this slice."
     },
     {
-      "id": "v2.shared.status-help-metadata",
-      "label": "V2 status/help metadata foundation",
+      "id": "v2.block.02.actions",
+      "label": "authentication.sh / Authentication actions",
       "status": "in-progress",
-      "summary": "Structured metadata backing future Explain controls, Explain values, and Implementation status overlays."
+      "summary": "Visual-only in this slice. No backend action is wired from V2."
     },
     {
-      "id": "v2.page.setup",
-      "label": "01 SETUP",
+      "id": "v2.block.02.info",
+      "label": "authentication.sh / Local-only authentication boundary",
       "status": "in-progress",
-      "summary": "Existing visual-only V2 page. Requested real setup cards are not moved in this batch."
+      "summary": "This page owns only local iCloudPD login/session flow. It must not display raw credentials, 2FA codes, cookies, session files, or secret paths without an existing redaction contract."
+    },
+    {
+      "id": "v2.block.02.status",
+      "label": "authentication.sh / iCloudPD session status",
+      "status": "in-progress",
+      "summary": "Session status placeholder. No session read/write action is executed from V2 in this slice."
+    },
+    {
+      "id": "v2.block.03.01",
+      "label": "startup.sh / .env / environment variables",
+      "status": "in-progress",
+      "summary": "If .env does not exist, a later guarded implementation may create it from defaults/example values. Missing defaults must be a non-crashing error."
+    },
+    {
+      "id": "v2.block.03.02",
+      "label": "startup.sh / database",
+      "status": "in-progress",
+      "summary": "Database inspection and maintenance actions. Destructive operations must stay guarded."
+    },
+    {
+      "id": "v2.block.03.03",
+      "label": "startup.sh / crontab",
+      "status": "in-progress",
+      "summary": "Crontab reads are safe to expose visually; writes must be previewed and guarded."
+    },
+    {
+      "id": "v2.block.03.03.07",
+      "label": "startup.sh / install custom worker",
+      "status": "in-progress",
+      "summary": "Linked worker type + schedule selector row. Installation must remain previewable and guarded because it writes crontab."
+    },
+    {
+      "id": "v2.block.03.sections",
+      "label": "startup.sh / Startup sections",
+      "status": "in-progress",
+      "summary": "These are grouped center-panel sections, not nested sidebar routes."
+    },
+    {
+      "id": "v2.block.04.01",
+      "label": "workers / current status",
+      "status": "in-progress",
+      "summary": "Summary placeholder for regular worker, playback worker, and screen on-off worker status."
+    },
+    {
+      "id": "v2.block.04.02",
+      "label": "workers / regular worker",
+      "status": "in-progress",
+      "summary": "Repeated stage rows. Batch size is a stage setting/display, not a navigation item. Rich statistics are v3 placeholders."
+    },
+    {
+      "id": "v2.block.04.03",
+      "label": "workers / playback worker",
+      "status": "in-progress",
+      "summary": "Current status and current image/video placeholder. Later hover/enter details may show full filename, GPS coordinates, and parsed address."
+    },
+    {
+      "id": "v2.block.04.04",
+      "label": "workers / screen on-off worker",
+      "status": "in-progress",
+      "summary": "Toggle rows are visual-only until backend contracts exist."
+    },
+    {
+      "id": "v2.block.04.05",
+      "label": "workers / statistics page",
+      "status": "in-progress",
+      "summary": "v2 may collect runtime statistics; the rich statistics page remains v3.0."
+    },
+    {
+      "id": "v2.block.05.01",
+      "label": "troubleshooting / manual troubleshooting actions",
+      "status": "in-progress",
+      "summary": "Visual-only actions. Clear/delete operations are guarded placeholders."
+    },
+    {
+      "id": "v2.block.05.06",
+      "label": "troubleshooting / examples (*EX)",
+      "status": "in-progress",
+      "summary": "Examples are scenario/rule seeds, not executable actions. Promotion requires measurable condition, threshold, duration, handling, log output, proof/evidence output, and operator explanation."
+    },
+    {
+      "id": "v2.block.05.errors",
+      "label": "troubleshooting / error logging / error handling",
+      "status": "in-progress",
+      "summary": "Page-specific error logs, combined/global error log, global high-priority error log, and final outer-layer catch/log handling before exit when possible."
+    },
+    {
+      "id": "v2.block.05.logging",
+      "label": "troubleshooting / logging / log handling",
+      "status": "in-progress",
+      "summary": "Page-specific logs, global log, full verbose log, high-importance regular log, and conditional actions from measurable rules."
+    },
+    {
+      "id": "v2.block.06.01",
+      "label": "recovery / snapshot metadata",
+      "status": "in-progress",
+      "summary": "Shows latest snapshot time and other snapshot-level metadata later. No state read/write happens from V2 in this slice."
+    },
+    {
+      "id": "v2.block.06.02",
+      "label": "recovery / current backup snapshot generation policy",
+      "status": "in-progress",
+      "summary": "Human-readable policy text placeholder. Changing policy may involve AI later and is not wired now."
+    },
+    {
+      "id": "v2.block.06.03",
+      "label": "recovery / current snapshot",
+      "status": "in-progress",
+      "summary": "Human-readable structure, raw item/field list, and JSON-like values placeholder."
+    },
+    {
+      "id": "v2.block.06.04",
+      "label": "recovery / current backup snapshot",
+      "status": "in-progress",
+      "summary": "Latest saved backup snapshot inspection placeholder before restore."
+    },
+    {
+      "id": "v2.block.06.07",
+      "label": "recovery / currently stored backup snapshots",
+      "status": "in-progress",
+      "summary": "Navigable stored-snapshot list placeholder with protocol version and compatibility status later."
+    },
+    {
+      "id": "v2.block.06.actions",
+      "label": "recovery / snapshot actions",
+      "status": "in-progress",
+      "summary": "Save/restore are visual-only. Restore must require selection, confirmation, compatibility check, and before/after summary when implemented for real."
+    },
+    {
+      "id": "v2.block.07.boundary",
+      "label": "PIR / PIR implementation boundary",
+      "status": "in-progress",
+      "summary": "Mouse and keyboard activity can be tested directly later. Real PIR hardware integration remains future; initial V2 behavior should use an emulator button."
+    },
+    {
+      "id": "v2.block.07.shell",
+      "label": "07 PIR shell blocks",
+      "status": "in-progress",
+      "summary": "B1 shell/explanation blocks for the future isolated PIR page."
+    },
+    {
+      "id": "v2.block.08.boundary",
+      "label": "PLAYBACK / Playback implementation boundary",
+      "status": "in-progress",
+      "summary": "The drag/drop queue, metadata table, non-media handling, rendering controls, and address-missing toggle are planned but not implemented in this route-shell batch."
+    },
+    {
+      "id": "v2.block.08.shell",
+      "label": "08 PLAYBACK shell blocks",
+      "status": "in-progress",
+      "summary": "B1 shell/explanation blocks for the future isolated playback page."
+    },
+    {
+      "id": "v2.block.09.goal",
+      "label": "09 REAL PLAYBACK explanation blocks",
+      "status": "in-progress",
+      "summary": "B1 explanation-only blocks for the final integrated endpoint page."
+    },
+    {
+      "id": "v2.block.09.sources",
+      "label": "REAL PLAYBACK / Future source pages",
+      "status": "in-progress",
+      "summary": "These entries document the planned composition sources. They are disabled explanation items, not functional controls."
     },
     {
       "id": "v2.page.authentication",
       "label": "02 AUTHENTICATION",
       "status": "in-progress",
       "summary": "Existing visual-only V2 page. Requested NEW AUTH card is not moved in this batch."
-    },
-    {
-      "id": "v2.page.startup",
-      "label": "03 STARTUP",
-      "status": "in-progress",
-      "summary": "Existing visual-only V2 page. Raspberry crontab controls are not wired in this batch."
-    },
-    {
-      "id": "v2.page.workers",
-      "label": "04 WORKERS",
-      "status": "in-progress",
-      "summary": "Existing visual-only V2 page. B3.1-B3.5 worker controls are not moved in this batch."
-    },
-    {
-      "id": "v2.page.troubleshooting",
-      "label": "05 TROUBLESHOOTING",
-      "status": "in-progress",
-      "summary": "Existing visual-only V2 page. Stale-lock controls are not moved in this batch."
-    },
-    {
-      "id": "v2.page.recovery",
-      "label": "06 RECOVERY",
-      "status": "in-progress",
-      "summary": "Existing visual-only V2 page. Recovery placeholder buttons and real recovery are future batches."
     },
     {
       "id": "v2.page.pir",
@@ -93,22 +231,52 @@
       "summary": "09 REAL PLAYBACK route/page shell is implemented as explanation-only. Final integration remains future until isolated pieces are proven."
     },
     {
-      "id": "v2.block.07.shell",
-      "label": "07 PIR shell blocks",
+      "id": "v2.page.recovery",
+      "label": "06 RECOVERY",
       "status": "in-progress",
-      "summary": "B1 shell/explanation blocks for the future isolated PIR page."
+      "summary": "Existing visual-only V2 page. Recovery placeholder buttons and real recovery are future batches."
     },
     {
-      "id": "v2.block.08.shell",
-      "label": "08 PLAYBACK shell blocks",
+      "id": "v2.page.setup",
+      "label": "01 SETUP",
       "status": "in-progress",
-      "summary": "B1 shell/explanation blocks for the future isolated playback page."
+      "summary": "Existing visual-only V2 page. Requested real setup cards are not moved in this batch."
     },
     {
-      "id": "v2.block.09.goal",
-      "label": "09 REAL PLAYBACK explanation blocks",
+      "id": "v2.page.startup",
+      "label": "03 STARTUP",
       "status": "in-progress",
-      "summary": "B1 explanation-only blocks for the final integrated endpoint page."
+      "summary": "Existing visual-only V2 page. Raspberry crontab controls are not wired in this batch."
+    },
+    {
+      "id": "v2.page.troubleshooting",
+      "label": "05 TROUBLESHOOTING",
+      "status": "in-progress",
+      "summary": "Existing visual-only V2 page. Stale-lock controls are not moved in this batch."
+    },
+    {
+      "id": "v2.page.workers",
+      "label": "04 WORKERS",
+      "status": "in-progress",
+      "summary": "Existing visual-only V2 page. B3.1-B3.5 worker controls are not moved in this batch."
+    },
+    {
+      "id": "v2.shared.event-history",
+      "label": "V2 Event history panel",
+      "status": "in-progress",
+      "summary": "Reuses the existing event-history renderer and copy/clear actions inside V2 pages."
+    },
+    {
+      "id": "v2.shared.page-wrapper",
+      "label": "Shared V2 page wrapper",
+      "status": "in-progress",
+      "summary": "Reusable V2 shell foundation that owns sidebar/main layout and shared event-history placement."
+    },
+    {
+      "id": "v2.shared.status-help-metadata",
+      "label": "V2 status/help metadata foundation",
+      "status": "in-progress",
+      "summary": "Structured metadata backing future Explain controls, Explain values, and Implementation status overlays."
     }
   ]
 }
