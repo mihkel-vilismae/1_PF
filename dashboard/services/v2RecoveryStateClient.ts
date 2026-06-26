@@ -13,6 +13,8 @@ export const V2_RECOVERY_ENDPOINTS = Object.freeze({
   save: { method: 'POST', path: '/api/runtime/recovery/state/save' },
   load: { method: 'POST', path: '/api/runtime/recovery/state/load' },
   status: { method: 'GET', path: '/api/runtime/recovery/state' },
+  autosave: { method: 'POST', path: '/api/runtime/recovery/autosave' },
+  restartCheck: { method: 'POST', path: '/api/runtime/recovery/restart-check' },
 });
 
 type RecoveryRequestBody = {
@@ -27,6 +29,14 @@ export function saveV2RecoveryStateSnapshot(body: RecoveryRequestBody): Promise<
 
 export function loadV2RecoveryStateSnapshot(body: RecoveryRequestBody = {}): Promise<ApiResponseWithMeta> {
   return callV2RecoveryEndpoint(V2_RECOVERY_ENDPOINTS.load, body);
+}
+
+export function autosaveV2RecoveryStateSnapshot(body: RecoveryRequestBody): Promise<ApiResponseWithMeta> {
+  return callV2RecoveryEndpoint(V2_RECOVERY_ENDPOINTS.autosave, body);
+}
+
+export function checkV2RecoveryRestartState(body: RecoveryRequestBody = {}): Promise<ApiResponseWithMeta> {
+  return callV2RecoveryEndpoint(V2_RECOVERY_ENDPOINTS.restartCheck, body);
 }
 
 function callV2RecoveryEndpoint(endpoint: RuntimeEndpoint, body?: RecoveryRequestBody): Promise<ApiResponseWithMeta> {

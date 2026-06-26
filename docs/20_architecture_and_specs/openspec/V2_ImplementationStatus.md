@@ -169,7 +169,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | Integrated layout | visual/tested | v0.10.59 B10.1 composes scheduler, RPI rows, B3.1-B3.5 worker cards, playback rendering controls, queue bridge, and metadata bridge from proven pieces only. | `tests/v2RealPlaybackComposition.test.js`. |
 | Action flow/status projection | visual/tested | v0.10.60 B10.2 adds read-only scheduler/pipeline/queue/metadata/rendering/recovery-gate projection. | `tests/v2RealPlaybackProjection.test.js`. |
 | Integrated real operation | future | Final autonomous runtime proof is not yet claimed. | Final autonomous playback proof. |
-| Recovery schema | schema/tested | v0.10.62 B11.2 adds manual save/load endpoints and V2 wiring on top of the B11.1 schema. | `tests/v2RecoveryStateSchema.test.js`; `tests/v2RecoveryManualEndpoints.test.js`; autosave/restart still B11.3. |
+| Recovery schema | schema/tested | v0.10.62 B11.2 adds manual save/load endpoints and V2 wiring on top of the B11.1 schema. | `tests/v2RecoveryStateSchema.test.js`; `tests/v2RecoveryManualEndpoints.test.js`; autosave/restart flow is B11.3. |
 | Autonomous recovery | future | Must recover after rough shutdown/power loss. | Final recovery proof. |
 | Screen on/off integration | future | Tier-2 goal. | Activity/recovery/playback integration proof. |
 
@@ -308,3 +308,5 @@ The root README files and this status document were refreshed after B5 so the re
 | `B11.1` recovery schema | `schema/tested` | `dashboard/services/v2RecoveryStateSchema.ts` and `V2_RecoveryStateSchema.md` define same-media/queue-context recovery without exact timestamp requirement. | Manual save/load endpoints are implemented in B11.2; autosave/restart recovery remains B11.3. |
 
 | `B11.2` manual recovery endpoints | `wired/tested` | `POST /api/runtime/recovery/state/save`, `POST /api/runtime/recovery/state/load`, and `GET /api/runtime/recovery/state` persist same-media/queue-context snapshots without autoplay or secrets. | Autosave/restart flow remains B11.3. |
+
+| `B11.3` autosave/restart recovery flow | `wired/tested` | `POST /api/runtime/recovery/autosave` stores pre-shutdown/stage snapshots; `POST /api/runtime/recovery/restart-check` compares backend boot records and saved snapshots. | Live power-loss proof remains B12. |

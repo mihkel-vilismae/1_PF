@@ -1,6 +1,6 @@
 # V2 Recovery State Schema — B11.1/B11.2
 
-Status: B11.1 schema plus B11.2 manual save/load endpoints and V2 wiring. Autosave/restart detection remains B11.3.
+Status: B11.1 schema, B11.2 manual save/load endpoints, and B11.3 autosave/restart-check flow.
 
 ## Purpose
 
@@ -36,14 +36,17 @@ The V2 recovery state snapshot is a lightweight contract for restoring the same 
 - Read-only status endpoint: `GET /api/runtime/recovery/state`.
 - Save/load persists lightweight same-media/queue context only; it does not autoplay or force fullscreen.
 
-## Explicit non-goals until B11.3
+## B11.3 autosave/restart behavior
 
-- No autosave loop until B11.3.
-- No restart detector until B11.3.
+- Autosave endpoint: `POST /api/runtime/recovery/autosave`.
+- Restart check endpoint: `POST /api/runtime/recovery/restart-check`.
+- V2 triggers autosave after queue-prepare bridge requests and during browser pre-shutdown.
+- V2 entry runs a restart check against the backend boot marker and saved snapshot.
+
+## Explicit non-goals until B12
 - No exact video timestamp requirement.
 - No credentials, cookies, session file contents, or other secret material in snapshots.
 
 ## Next implementation gates
 
-1. B11.3: autosave/restart recovery flow.
-2. B9.5/B12: proof harness for abrupt stop/restart and final victory proof.
+1. B12: proof harness for abrupt stop/restart and final victory proof.

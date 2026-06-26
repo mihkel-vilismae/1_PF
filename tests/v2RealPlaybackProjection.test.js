@@ -23,7 +23,7 @@ test('B10.2 builds a real playback projection from existing action state and que
   assert.match(projection.summary, /backend queue preparation/i);
   assert.ok(projection.rows.some((row) => row.id === 'queue' && /1 backend queue request/.test(row.message)));
   assert.ok(projection.rows.some((row) => row.id === 'metadata' && /No fake address/.test(row.message)));
-  assert.ok(projection.rows.some((row) => row.id === 'recovery' && row.status === 'blocked until B11'));
+  assert.ok(projection.rows.some((row) => row.id === 'recovery' && row.status === 'manual save/load available'));
 });
 
 test('B10.2 renders the action flow/status projection on 09 REAL PLAYBACK', () => {
@@ -46,5 +46,5 @@ test('B10.2 renders the action flow/status projection on 09 REAL PLAYBACK', () =
   assert.match(markup, /3\. Playback queue bridge/);
   assert.match(markup, /4\. GPS\/address metadata/);
   assert.match(markup, /6\. Recovery gate/);
-  assert.match(markup, /blocked until B11/);
+  assert.match(markup, /manual save\/load available|autosave\/restart watch active/);
 });

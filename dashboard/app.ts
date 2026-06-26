@@ -71,6 +71,8 @@ import { buildV2PlaybackDropQueueBridgeRequest } from './services/v2PlaybackDrop
 import { buildBrowserLocalV2PlaybackMetadata } from './services/v2PlaybackMetadataBridge.ts';
 import {
   V2_RECOVERY_ENDPOINTS,
+  autosaveV2RecoveryStateSnapshot,
+  checkV2RecoveryRestartState,
   loadV2RecoveryStateSnapshot,
   saveV2RecoveryStateSnapshot,
 } from './services/v2RecoveryStateClient.ts';
@@ -97,6 +99,7 @@ let pendingLiveUpdateRender = false;
 let v2ImplementationStatusMode = false;
 let v2PlaybackQueueItems: V2PlaybackQueueItem[] = [];
 let v2PlaybackQueueItemCounter = 0;
+let v2RecoveryRestartCheckQueued = false;
 let hasInitPreloadRun = false;
 let hasInitNewAuthPreloadRun = false;
 type BackendVersionState = {
@@ -1221,7 +1224,9 @@ function bindEvents() {
         setActiveView('V2', 'V2');
       }
       render();
-      if (selectedMode !== 'v2') {
+      if (selectedMode === 'v2') {
+        queueV2RecoveryRestartCheck();
+      } else {
         tryInitPreload();
       }
     });
@@ -2114,6 +2119,7 @@ function prepareV2PlaybackQueueItemForBackend(itemId: string | undefined): void 
     backendRequestSent: true,
   });
   runAction('run-b3-5', bridgeRequest.body);
+  queueV2RecoveryAutosave('autosave-stage-change');
   render();
 }
 
@@ -2239,6 +2245,43 @@ async function runV2RecoveryLoad(): Promise<void> {
     recordV2RecoveryResult('error', 'Load V2 recovery state', V2_RECOVERY_ENDPOINTS.load, getV2RecoveryErrorMessage('Load V2 recovery state', error), null, (error as any)?.meta ?? null, error);
     pushHistory('RECOVERY', 'error', getV2RecoveryErrorMessage('Load V2 recovery state', error), { endpoint: V2_RECOVERY_ENDPOINTS.load.path });
   }
+}
+
+function queueV2RecoveryAutosave(reason: V2RecoveryStateSaveReason = 'autosave-stage-change'): void {
+  const snapshot = buildCurrentV2RecoverySnapshot(reason);
+  void autosaveV2RecoveryStateSnapshot({ snapshot, reason }).then((result) => {
+    patchState((draft) => {
+      draft.v2Recovery = {
+        ...(typeof draft.v2Recovery === 'object' && draft.v2Recovery !== null ? draft.v2Recovery as Record<string, unknown> : {}),
+        latestAutosave: structuredClone(result.payload),
+      };
+      draft.statusByKey.B11 = 'success';
+      draft.truth.lastCheckpoint = `V2 recovery autosave: ${snapshot.playback.currentFilename ?? 'no media selected'}`;
+    });
+  }).catch((error) => {
+    pushHistory('RECOVERY', 'warning', getV2RecoveryErrorMessage('Autosave V2 recovery state', error), { endpoint: V2_RECOVERY_ENDPOINTS.autosave.path, autosave: true });
+  });
+}
+
+function queueV2RecoveryRestartCheck(): void {
+  if (v2RecoveryRestartCheckQueued) {
+    return;
+  }
+  v2RecoveryRestartCheckQueued = true;
+  void checkV2RecoveryRestartState().then((result) => {
+    const payload = result.payload as Record<string, unknown>;
+    patchState((draft) => {
+      draft.v2Recovery = {
+        ...(typeof draft.v2Recovery === 'object' && draft.v2Recovery !== null ? draft.v2Recovery as Record<string, unknown> : {}),
+        restartCheck: structuredClone(payload),
+      };
+    });
+    if (payload?.possibleRestartDetected === true) {
+      pushHistory('RECOVERY', 'warning', 'Possible restart detected; V2 recovery snapshot is available to load.', { endpoint: V2_RECOVERY_ENDPOINTS.restartCheck.path });
+    }
+  }).catch((error) => {
+    pushHistory('RECOVERY', 'warning', getV2RecoveryErrorMessage('Check V2 recovery restart state', error), { endpoint: V2_RECOVERY_ENDPOINTS.restartCheck.path });
+  });
 }
 
 function recordV2RecoveryResult(outcome: 'running' | 'success' | 'error', operation: string, endpoint: { method: string; path: string }, message: string, payload: unknown = null, meta: any = null, error: unknown = null): void {
@@ -2397,6 +2440,7 @@ document.addEventListener('fullscreenchange', syncOsPlaybackFullscreenStateFromB
 window.addEventListener('beforeunload', () => {
   void saveOsPlaybackResumeCheckpoint(OS_PLAYBACK_PLATFORMS.windows, 'beforeunload');
   void saveOsPlaybackResumeCheckpoint(OS_PLAYBACK_PLATFORMS.raspberry, 'beforeunload');
+  queueV2RecoveryAutosave('pre-shutdown');
 });
 
 window.addEventListener('keydown', (event) => {

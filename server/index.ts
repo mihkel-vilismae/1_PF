@@ -78,6 +78,8 @@ const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, '..');
 const versionFilePath = path.join(repoRoot, 'VERSION');
 const backendVersion = (await readTextIfExists(versionFilePath))?.trim() || 'unknown';
+const serverBootId = randomUUID();
+const serverBootStartedAtIso = new Date().toISOString();
 
 const PLAYBACK_RESUME_CHECKPOINT_SCHEMA_VERSION = 1;
 const PLAYBACK_RESUME_CHECKPOINT_STALE_MS = 10 * 60 * 1000;
@@ -119,7 +121,11 @@ const defaultEnvFilePath = path.join(repoRoot, '.env');
 const schedulerNodeArguments = Object.freeze(['--import', 'tsx']);
 const port = Number(process.env.PORT || 4301);
 const fullLogVerboseEnabled = await resolveInitialFullLogVerboseEnabled();
-const v2RecoveryStateService = createV2RecoveryStateService({ repoRoot });
+const v2RecoveryStateService = createV2RecoveryStateService({
+  repoRoot,
+  bootId: serverBootId,
+  bootStartedAtIso: serverBootStartedAtIso,
+});
 const logger = createProjectLogger({
   repoRoot,
   logDir: await resolveInitialLogDirectory(),
@@ -558,6 +564,8 @@ const routes: Record<string, RouteHandler> = {
   'GET /api/runtime/recovery/state': runtimeRecoveryStateGetHandler,
   'POST /api/runtime/recovery/state/save': runtimeRecoveryStateSaveHandler,
   'POST /api/runtime/recovery/state/load': runtimeRecoveryStateLoadHandler,
+  'POST /api/runtime/recovery/autosave': runtimeRecoveryAutosaveHandler,
+  'POST /api/runtime/recovery/restart-check': runtimeRecoveryRestartCheckHandler,
   'GET /api/native-playback/status': nativePlaybackStatusHandler,
   'POST /api/native-playback/detect': nativePlaybackDetectHandler,
   'POST /api/native-playback/start-current': nativePlaybackStartCurrentHandler,
@@ -2089,6 +2097,24 @@ async function runtimeRecoveryStateLoadHandler(): Promise<HandlerResult> {
   return {
     statusCode: 200,
     payload: await v2RecoveryStateService.loadSnapshot(),
+  };
+}
+
+// Persists an automatic V2 recovery snapshot for stage/queue changes or pre-shutdown.
+async function runtimeRecoveryAutosaveHandler({ body }: Pick<HandlerArgs, 'body'>): Promise<HandlerResult> {
+  const reason = normalizeV2RecoverySaveReason(body.reason, 'autosave-stage-change');
+  const envelope = await v2RecoveryStateService.saveSnapshot(body.snapshot ?? body, reason, reason === 'pre-shutdown' ? 'pre-shutdown' : 'autosave');
+  return {
+    statusCode: envelope.validation.ok ? 200 : 400,
+    payload: envelope,
+  };
+}
+
+// Records current backend boot identity and reports whether a saved snapshot suggests restart recovery is needed.
+async function runtimeRecoveryRestartCheckHandler(): Promise<HandlerResult> {
+  return {
+    statusCode: 200,
+    payload: await v2RecoveryStateService.checkRestart(),
   };
 }
 

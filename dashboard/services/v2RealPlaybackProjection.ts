@@ -86,8 +86,10 @@ export function buildV2RealPlaybackProjection(runtimeState: Record<string, any> 
       {
         id: 'recovery',
         label: '6. Recovery gate',
-        status: 'blocked until B11',
-        message: 'Manual save/load/autosave recovery is intentionally not active until the lightweight recovery state schema and endpoints exist.',
+        status: runtimeState.v2Recovery?.latestAutosave || runtimeState.v2Recovery?.restartCheck ? 'autosave/restart watch active' : 'manual save/load available',
+        message: runtimeState.v2Recovery?.latestAutosave || runtimeState.v2Recovery?.restartCheck
+          ? 'B11.3 autosave/restart check state is available; live power-loss proof remains B12.'
+          : 'B11.2 manual save/load endpoints exist; B11.3 autosave/restart watch activates when V2 runs or queue state changes.',
       },
     ],
   };

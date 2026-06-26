@@ -1,3 +1,9 @@
+## v0.10.63 - 2026-06-26
+
+- B11.3: added autosave and restart-check recovery flow for V2 recovery snapshots.
+- Autosaves now run after V2 playback queue-prepare requests and on browser pre-shutdown; V2 entry runs a restart check against backend boot state.
+- Updated Real Playback recovery projection to show manual recovery availability or autosave/restart watch status without claiming live power-loss proof.
+
 ## v0.10.62 - 2026-06-26
 
 - B11.2: implemented manual V2 recovery save/load endpoints and V2 recovery-page wiring.

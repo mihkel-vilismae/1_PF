@@ -336,7 +336,7 @@
       "id": "v2.page.recovery",
       "label": "06 RECOVERY",
       "status": "in-progress",
-      "summary": "V2 Recovery contains B11.2 manual SAVE STATE / LOAD STATE endpoints and EMULATE POWER OFF pre-shutdown snapshot wiring. Autosave/restart recovery remains B11.3."
+      "summary": "V2 Recovery contains B11.2 manual SAVE STATE / LOAD STATE endpoints and B11.3 autosave/restart-check flow. Live power-loss proof remains B12."
     },
     {
       "id": "v2.page.setup",
@@ -492,7 +492,7 @@
       "id": "v2.block.06.recovery-state-schema",
       "label": "recovery / lightweight recovery state schema",
       "status": "in-progress",
-      "summary": "B11.1/B11.2 define and persist the lightweight recovery snapshot contract: same media/queue context, queue cursor, pipeline statuses, corrupt-download exclusion, no secrets, and no exact timestamp requirement."
+      "summary": "B11.1-B11.3 define, persist, autosave, and restart-check the lightweight recovery snapshot contract: same media/queue context, corrupt-download exclusion, no secrets, and no exact timestamp requirement."
     }
   ]
 }
