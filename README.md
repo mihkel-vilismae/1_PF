@@ -4,7 +4,7 @@ This repository contains a dashboard-driven photo-frame system for managing stag
 
 ## Current baseline quick truth
 
-- Repository/package version: `0.10.22`.
+- Repository/package version: `0.10.23`.
 - Dashboard: Vite frontend under `dashboard/`, served by `npm run dev`.
 - Backend API: TypeScript server entrypoint `server/index.ts`, started by `npm run api`.
 - SQLite schema source: `database/schema.sql`; generated/local SQLite DB files remain runtime data and are not the schema source.
@@ -17,6 +17,13 @@ Proof/readiness claims still require current proof artifacts. Historical docs an
 
 The system documentation is organized in canonical numbered folders under `docs/`: `00_current_truth`, `10_runbooks`, `20_architecture_and_specs`, `30_status_snapshots`, `40_backlog_and_tasks`, `50_audits_and_migrations`, and `90_archive`. Implementation status in documentation is not current runtime truth unless the document cites current code, tests, generated evidence, or runtime output.
 
+## v0.10.23 V2 operator center-panel original OpenSpec baseline
+
+This baseline adds docs-only OpenSpec coverage for the original V2 operator menu center-panel/sub-item design. It records the first-pass typed-block model for each of the six operator routes: setup, authentication, startup, workers, troubleshooting, and recovery.
+
+The center-panel spec is intentionally marked as original draft coverage because the item set is expected to change later. It does not implement UI behavior, backend actions, auth/session behavior, DB/crontab writes, worker controls, troubleshooting actions, or recovery actions.
+
+See [`docs/20_architecture_and_specs/openspec/v2_operator_menu_center_panel_original_openspec.md`](docs/20_architecture_and_specs/openspec/v2_operator_menu_center_panel_original_openspec.md).
 
 ## v0.10.22 V2 operator left sidebar OpenSpec baseline
 

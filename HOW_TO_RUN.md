@@ -24,7 +24,7 @@ S:\_PHOTOFRAMES\PF_login_v0.10.21_final_release_mode_root_docs_full_git\full_win
 
 ## Current launcher and database paths
 
-- Repository/package version: `0.10.21`.
+- Repository/package version: `0.10.23`.
 - Windows launcher: `start_scripts/windows/START_WIN.PS1`.
 - Raspberry launcher: `start_scripts/raspberry/START_RASPBERRYOS.SH`.
 - Canonical SQLite schema: `database/schema.sql`.
@@ -57,3 +57,7 @@ Use these when you need more than the quickstart:
 - `HOW_TO_RUN.md` must stay short and quickstart-oriented. Put long operator notes in `docs/10_runbooks/` and link them here.
 - Windows Task Scheduler is not part of PF_login project scope; use the project-owned scheduler/proof paths documented in proof runbooks.
 - Native playback and iCloud proofs remain explicit opt-in proof/operator flows; normal launchers do not silently claim those proofs.
+
+## v0.10.23 note
+
+The V2 operator center-panel/sub-item OpenSpec is documentation-only in this baseline. It does not implement sidebar or center-panel runtime UI behavior.

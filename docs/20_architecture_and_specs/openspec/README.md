@@ -45,3 +45,7 @@ Current OpenSpec entries:
 
 - [V2 Operator Menu left sidebar 6ACR review](v2_operator_menu_left_sidebar_6acr_review.md) — docs-only multipass review that narrows the implementation contract to the six left-sidebar route rows before center-panel block coverage.
 
+- [V2 Operator Menu center panel original items OpenSpec](v2_operator_menu_center_panel_original_openspec.md) — captures the original center-panel/sub-item typed-block contract for the six V2 operator routes, including startup groups, worker stage table, troubleshooting examples, and recovery snapshots.
+
+- [V2 Operator Menu center panel original XACR review](v2_operator_menu_center_panel_original_xacr_review.md) — docs-only multipass review of the original center-panel item coverage, risk boundaries, and later implementation prompt.
+

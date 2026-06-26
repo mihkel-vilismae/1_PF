@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-06-26 05:35 EEST
+## v0.10.23 - V2 operator center-panel original OpenSpec
+
+- Bumped repository/package version from `0.10.22` to `0.10.23` for the docs-only V2 operator center-panel original OpenSpec baseline.
+- Added `v2_operator_menu_center_panel_original_openspec.md` to capture the original typed-block sub-item model for setup, authentication, startup, workers, troubleshooting, and recovery.
+- Added an XACR review documenting why center-panel child items must remain typed blocks and must not become nested sidebar routes.
+- Preserved runtime behavior: no sidebar, center-panel, Test Mode, Real Mode, Final Release button, backend action, worker, auth, crontab, troubleshooting, or recovery implementation changed.
+
 ## 2026-06-26 05:28 EEST
 ## v0.10.22 - V2 operator left sidebar OpenSpec
 
