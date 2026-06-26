@@ -15,7 +15,8 @@ export type V2OperatorBlockType =
   | 'backendActionCard'
   | 'newAuthCard'
   | 'rpiSchedulerControls'
-  | 'rpiStagesRow';
+  | 'rpiStagesRow'
+  | 'rpiWorkersRow';
 
 export type V2OperatorRisk = 'safe' | 'guarded' | 'destructive' | 'future' | 'localSecretSensitive';
 
@@ -55,6 +56,14 @@ export type V2OperatorRpiStageItem = {
   id: string;
   label: string;
   status: string;
+};
+
+export type V2OperatorRpiWorkerItem = {
+  id: string;
+  label: string;
+  status: string;
+  lastCalled: string;
+  sinceLastCall: string;
 };
 
 export type V2OperatorSectionItem = V2OperatorActionItem | V2OperatorToggleItem;
@@ -115,6 +124,14 @@ export type V2OperatorCenterPanelBlock =
       stages: readonly V2OperatorRpiStageItem[];
     }
   | {
+      type: 'rpiWorkersRow';
+      id: string;
+      title: string;
+      body?: string;
+      status?: string;
+      workers: readonly V2OperatorRpiWorkerItem[];
+    }
+  | {
       type: 'sectionGroup';
       id: string;
       title: string;
@@ -173,6 +190,12 @@ const RPI_PIPELINE_STAGES = Object.freeze([
   { id: 'queue', label: 'Queue', status: 'Idle' },
 ] satisfies readonly V2OperatorRpiStageItem[]);
 
+const RPI_WORKERS = Object.freeze([
+  { id: 'regular-state-worker', label: 'Regular state worker', status: 'Waiting', lastCalled: 'Never', sinceLastCall: 'No worker call observed yet' },
+  { id: 'playback-worker', label: 'Playback worker', status: 'Waiting', lastCalled: 'Never', sinceLastCall: 'No worker call observed yet' },
+  { id: 'on-off-worker', label: 'On-off worker', status: 'Waiting', lastCalled: 'Never', sinceLastCall: 'No worker call observed yet' },
+] satisfies readonly V2OperatorRpiWorkerItem[]);
+
 function buildRpiStagesRow(id: string, pageLabel: string): V2OperatorCenterPanelBlock {
   return {
     type: 'rpiStagesRow',
@@ -181,6 +204,17 @@ function buildRpiStagesRow(id: string, pageLabel: string): V2OperatorCenterPanel
     body: `${pageLabel} shared stage row. It reports the intended Raspberry media pipeline order without starting a worker in this slice.`,
     status: 'visual status row',
     stages: RPI_PIPELINE_STAGES,
+  };
+}
+
+function buildRpiWorkersRow(id: string, pageLabel: string): V2OperatorCenterPanelBlock {
+  return {
+    type: 'rpiWorkersRow',
+    id,
+    title: 'RPI-WORKERS / Worker call status row',
+    body: `${pageLabel} shared worker-call row. It reports the three Raspberry worker entrypoints without calling a worker in this slice.`,
+    status: '3 WORKERS',
+    workers: RPI_WORKERS,
   };
 }
 
@@ -340,6 +374,7 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
         sourceBadge: { mode: 'real', label: 'Raspberry real crontab' },
       },
       buildRpiStagesRow('03.rpi-stages', 'Startup'),
+      buildRpiWorkersRow('03.rpi-workers', 'Startup'),
       {
         type: 'multiComboRow',
         id: '03.03.07',
@@ -371,6 +406,7 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
         ],
       },
       buildRpiStagesRow('04.rpi-stages', 'Workers'),
+      buildRpiWorkersRow('04.rpi-workers', 'Workers'),
       {
         type: 'stageTable',
         id: '04.02',
@@ -452,6 +488,7 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
         ],
       },
       buildRpiStagesRow('05.rpi-stages', 'Troubleshooting'),
+      buildRpiWorkersRow('05.rpi-workers', 'Troubleshooting'),
       {
         type: 'infoPanel',
         id: '05.logging',
@@ -560,6 +597,7 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
         status: 'shell-only',
         risk: 'future',
       },
+      buildRpiWorkersRow('07.rpi-workers', 'PIR'),
       {
         type: 'statusCard',
         id: '07.boundary',
@@ -588,6 +626,7 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
         status: 'shell-only',
         risk: 'future',
       },
+      buildRpiWorkersRow('08.rpi-workers', 'Playback'),
       {
         type: 'statusCard',
         id: '08.boundary',

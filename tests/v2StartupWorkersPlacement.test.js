@@ -58,3 +58,19 @@ test('V2 renders the shared RPI-STAGES row on Startup, Workers, and Troubleshoot
     }
   }
 });
+
+
+test('V2 renders the shared RPI-WORKERS row on Startup, Workers, Troubleshooting, PIR, and Playback', () => {
+  for (const route of ['startup', 'workers', 'troubleshooting', 'pir', 'playback']) {
+    const markup = render(route);
+    assert.match(markup, /data-v2-rpi-workers-row/);
+    assert.match(markup, /3 WORKERS/);
+    for (const label of ['Regular state worker', 'Playback worker', 'On-off worker']) {
+      assert.match(markup, new RegExp(label));
+    }
+    assert.match(markup, /Last called/);
+    assert.match(markup, /Never/);
+    assert.match(markup, /Since last call/);
+    assert.match(markup, /No worker call observed yet/);
+  }
+});

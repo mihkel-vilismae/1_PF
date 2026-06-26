@@ -105,6 +105,12 @@
       "summary": "B5.2 adds the shared Raspberry media pipeline stage row to Startup with Download, Index, GPS parser, Geocode, and Queue cards, all intentionally Idle until real worker calls run."
     },
     {
+      "id": "v2.block.03.rpi-workers",
+      "label": "startup.sh / RPI-WORKERS worker call status row",
+      "status": "in-progress",
+      "summary": "B5.3 adds the shared worker call status row to Startup: Regular state worker, Playback worker, and On-off worker all render as Waiting with no observed calls yet."
+    },
+    {
       "id": "v2.block.03.sections",
       "label": "startup.sh / Startup sections",
       "status": "in-progress",
@@ -147,6 +153,12 @@
       "summary": "B5.2 adds the same shared Raspberry media pipeline stage row to Workers so stage health is visible where worker controls will be added."
     },
     {
+      "id": "v2.block.04.rpi-workers",
+      "label": "workers / RPI-WORKERS worker call status row",
+      "status": "in-progress",
+      "summary": "B5.3 adds the shared worker call status row to Workers: Regular state worker, Playback worker, and On-off worker all render as Waiting with no observed calls yet."
+    },
+    {
       "id": "v2.block.05.01",
       "label": "troubleshooting / manual troubleshooting actions",
       "status": "in-progress",
@@ -175,6 +187,12 @@
       "label": "troubleshooting / RPI-STAGES media pipeline stage row",
       "status": "in-progress",
       "summary": "B5.2 adds the same shared Raspberry media pipeline stage row to Troubleshooting for diagnostic visibility without running any stage."
+    },
+    {
+      "id": "v2.block.05.rpi-workers",
+      "label": "troubleshooting / RPI-WORKERS worker call status row",
+      "status": "in-progress",
+      "summary": "B5.3 adds the shared worker call status row to Troubleshooting: Regular state worker, Playback worker, and On-off worker all render as Waiting with no observed calls yet."
     },
     {
       "id": "v2.block.06.01",
@@ -219,6 +237,12 @@
       "summary": "Mouse and keyboard activity can be tested directly later. Real PIR hardware integration remains future; initial V2 behavior should use an emulator button."
     },
     {
+      "id": "v2.block.07.rpi-workers",
+      "label": "PIR / RPI-WORKERS worker call status row",
+      "status": "in-progress",
+      "summary": "B5.3 adds the shared worker call status row to PIR: Regular state worker, Playback worker, and On-off worker all render as Waiting with no observed calls yet."
+    },
+    {
       "id": "v2.block.07.shell",
       "label": "07 PIR shell blocks",
       "status": "in-progress",
@@ -229,6 +253,12 @@
       "label": "PLAYBACK / Playback implementation boundary",
       "status": "in-progress",
       "summary": "The drag/drop queue, metadata table, non-media handling, rendering controls, and address-missing toggle are planned but not implemented in this route-shell batch."
+    },
+    {
+      "id": "v2.block.08.rpi-workers",
+      "label": "PLAYBACK / RPI-WORKERS worker call status row",
+      "status": "in-progress",
+      "summary": "B5.3 adds the shared worker call status row to Playback: Regular state worker, Playback worker, and On-off worker all render as Waiting with no observed calls yet."
     },
     {
       "id": "v2.block.08.shell",
@@ -258,13 +288,13 @@
       "id": "v2.page.pir",
       "label": "07 PIR",
       "status": "in-progress",
-      "summary": "07 PIR route/page shell is implemented. Real B5 controls and PIR emulator are future B7 work."
+      "summary": "07 PIR shell now includes the shared RPI-WORKERS row. Real PIR controls and emulator remain future B7 work."
     },
     {
       "id": "v2.page.playback",
       "label": "08 PLAYBACK",
       "status": "in-progress",
-      "summary": "08 PLAYBACK route/page shell is implemented. Real B4 controls and drag/drop queue are future B8 work."
+      "summary": "08 PLAYBACK shell now includes the shared RPI-WORKERS row. Playback controls and drag/drop queue remain future B8 work."
     },
     {
       "id": "v2.page.real-playback",
@@ -288,19 +318,19 @@
       "id": "v2.page.startup",
       "label": "03 STARTUP",
       "status": "in-progress",
-      "summary": "V2 Startup now contains the Raspberry scheduler controls plus shared RPI-STAGES visual row. Worker execution proof remains later."
+      "summary": "V2 Startup now contains Raspberry scheduler controls, RPI-STAGES, and RPI-WORKERS visual rows. Worker execution proof remains later."
     },
     {
       "id": "v2.page.troubleshooting",
       "label": "05 TROUBLESHOOTING",
       "status": "in-progress",
-      "summary": "V2 Troubleshooting now contains the shared RPI-STAGES visual row. Stale-lock controls remain future."
+      "summary": "V2 Troubleshooting now contains shared RPI-STAGES and RPI-WORKERS visual rows. Stale-lock controls remain future."
     },
     {
       "id": "v2.page.workers",
       "label": "04 WORKERS",
       "status": "in-progress",
-      "summary": "V2 Workers now contains the shared RPI-STAGES visual row. B3.1-B3.5 worker controls are still future until B5.4."
+      "summary": "V2 Workers now contains shared RPI-STAGES and RPI-WORKERS visual rows. B3.1-B3.5 worker controls are still future until B5.4."
     },
     {
       "id": "v2.shared.event-history",

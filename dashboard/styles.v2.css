@@ -497,3 +497,45 @@ body.v2-implementation-status-mode [data-v2-implementation-status="not-implement
   min-height: 3rem;
   padding: 0.7rem 0.8rem;
 }
+
+.v2-rpi-worker-card-row {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  margin-top: 0.8rem;
+}
+
+.v2-rpi-worker-card {
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 14px;
+  padding: 0.8rem;
+}
+
+.v2-rpi-worker-card header,
+.v2-rpi-worker-card dl > div {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.v2-rpi-worker-card dl {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0.7rem 0 0;
+}
+
+.v2-rpi-worker-card dt,
+.v2-rpi-worker-card dd {
+  margin: 0;
+}
+
+.v2-rpi-worker-card dt {
+  color: var(--muted);
+  font-size: 0.76rem;
+  text-transform: uppercase;
+}
+
+.v2-rpi-worker-card dd {
+  font-size: 0.82rem;
+  text-align: right;
+}

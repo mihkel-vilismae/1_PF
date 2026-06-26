@@ -1,3 +1,18 @@
+## 2026-06-26 15:45 EEST — v0.10.45
+
+### Added
+- Added the shared `RPI-WORKERS` worker call status row to V2 Startup, Workers, Troubleshooting, PIR, and Playback.
+- Added one reusable V2 renderer for Regular state worker, Playback worker, and On-off worker status cards.
+
+### Changed
+- Bumped repository/package version from `0.10.44` to `0.10.45`.
+
+### Fixed
+- None.
+
+### Removed
+- None.
+
 ## 2026-06-26 15:34 EEST — v0.10.44
 
 ### Added

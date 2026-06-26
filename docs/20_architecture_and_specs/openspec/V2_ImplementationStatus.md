@@ -98,7 +98,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | Scheduler button concepts formerly tied to emulator | planned/needs verification | Keep the button concepts, but wire to real crontab/scheduler behavior, not Windows emulator. | Inspect crontab examples/configs; V2 action tests confirm no Windows emulator dependency. |
 | WSL placeholder controls | future/placeholder | May exist only clearly marked WSL and disabled. | Render test confirms disabled state and labeling. |
 | `RPI-STAGES` | visual row delivered / needs runtime proof | v0.10.44 adds the shared Download → Index → GPS parser → Geocode → Queue idle row to Startup, Workers, and Troubleshooting. | Runtime stage health projection and proof remain later. |
-| `RPI-WORKERS` | planned | Shared row requested. | Render/status test. |
+| `RPI-WORKERS` | visual row delivered / needs runtime proof | v0.10.45 adds Regular state worker, Playback worker, and On-off worker Waiting cards to Startup, Workers, Troubleshooting, PIR, and Playback. | Runtime worker-call projection and proof remain later. |
 | Event Log | extraction needed | Scheduler endpoint terminal exists separately. | Decide relation to global Event Log. |
 
 ## Page `04 WORKERS` status
@@ -111,7 +111,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | `B3.4 Geocode` | reused candidate | Existing runtime endpoint path known. | V2 render + action test + geocode proof. |
 | `B3.5 Enqueue playback` | reused candidate | Existing runtime endpoint path known. | V2 render + action test + queue proof. |
 | `RPI-STAGES` | visual row delivered / needs runtime proof | v0.10.44 adds the shared Download → Index → GPS parser → Geocode → Queue idle row to Startup, Workers, and Troubleshooting. | Runtime stage health projection and proof remain later. |
-| `RPI-WORKERS` | planned | Shared row requested. | Render/status test. |
+| `RPI-WORKERS` | visual row delivered / needs runtime proof | v0.10.45 adds Regular state worker, Playback worker, and On-off worker Waiting cards to Startup, Workers, Troubleshooting, PIR, and Playback. | Runtime worker-call projection and proof remain later. |
 | Event Log | visual/tested | Shared V2 wrapper renders Event history for current V2 pages, including `07`-`09` route shells. | Future page-specific slices must keep using wrapper. |
 
 ## Page `05 TROUBLESHOOTING` status
@@ -121,7 +121,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | `Detect issues in pipeline` | needs verification | User recalls it may work; exact behavior must be confirmed. | Test/proof documents stale lock detection semantics. |
 | `Clear stale locks` | needs verification | User recalls it may work; exact behavior must be confirmed. | Test/proof documents stale-only clear semantics. |
 | `RPI-STAGES` | visual row delivered / needs runtime proof | v0.10.44 adds the shared Download → Index → GPS parser → Geocode → Queue idle row to Startup, Workers, and Troubleshooting. | Runtime stage health projection and proof remain later. |
-| `RPI-WORKERS` | planned | Shared row requested. | Render/status test. |
+| `RPI-WORKERS` | visual row delivered / needs runtime proof | v0.10.45 adds Regular state worker, Playback worker, and On-off worker Waiting cards to Startup, Workers, Troubleshooting, PIR, and Playback. | Runtime worker-call projection and proof remain later. |
 | Event Log | visual/tested | Shared V2 wrapper renders Event history for current V2 pages, including `07`-`09` route shells. | Future page-specific slices must keep using wrapper. |
 
 ## Page `06 RECOVERY` status
@@ -144,7 +144,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | Keyboard activity | needs verification | Can be tested directly. | Browser/UI activity test. |
 | PIR sensor | needs solution | Add a PIR-emulation button first; real hardware proof comes later. | PIR emulator contract + later hardware proof. |
 | Screen off/on behavior | needs verification | Tier-2 goal. | Inactivity timeout test. |
-| `RPI-WORKERS` | planned | Shared row requested. | Render/status test. |
+| `RPI-WORKERS` | visual row delivered / needs runtime proof | v0.10.45 adds Regular state worker, Playback worker, and On-off worker Waiting cards to Startup, Workers, Troubleshooting, PIR, and Playback. | Runtime worker-call projection and proof remain later. |
 | Event Log | visual/tested | Shared V2 wrapper renders Event history for current V2 pages, including `07`-`09` route shells. | Future page-specific slices must keep using wrapper. |
 
 ## Page `08 PLAYBACK` status
@@ -158,7 +158,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | GPS/address fields | needs verification | Extraction/address may require backend pipeline; missing-address policy will use a future toggle. | Metadata/pipeline integration proof plus missing-address handling test. |
 | Fullscreen playback | needs verification | Required for final victory. | Browser/native playback proof. |
 | Address overlay | needs verification | Required when address exists; allow/require-address toggle is future design. | UI/proof evidence for visible address and graceful missing-address behavior. |
-| `RPI-WORKERS` | planned | Shared row requested. | Render/status test. |
+| `RPI-WORKERS` | visual row delivered / needs runtime proof | v0.10.45 adds Regular state worker, Playback worker, and On-off worker Waiting cards to Startup, Workers, Troubleshooting, PIR, and Playback. | Runtime worker-call projection and proof remain later. |
 | Event Log | visual/tested | Shared V2 wrapper renders Event history for current V2 pages, including `07`-`09` route shells. | Future page-specific slices must keep using wrapper. |
 
 ## Page `09 REAL PLAYBACK` status

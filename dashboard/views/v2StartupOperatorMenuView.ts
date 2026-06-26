@@ -89,6 +89,8 @@ function renderV2CenterPanelBlock(block: V2OperatorCenterPanelBlock, runtimeStat
       return renderRpiSchedulerControlsBlock(block, runtimeState);
     case 'rpiStagesRow':
       return renderRpiStagesRowBlock(block);
+    case 'rpiWorkersRow':
+      return renderRpiWorkersRowBlock(block);
     case 'sectionGroup':
       return renderSectionGroupBlock(block);
     case 'toggleGroup':
@@ -242,6 +244,30 @@ function renderRpiStagesRowBlock(block: Extract<V2OperatorCenterPanelBlock, { ty
           <div class="v2-rpi-stage-card" data-v2-rpi-stage="${escapeHtml(stage.id)}">
             <strong>${escapeHtml(stage.label)}</strong>
             <span class="pill">${escapeHtml(stage.status)}</span>
+          </div>
+        `).join('')}
+      </div>
+    </article>
+  `;
+}
+
+
+function renderRpiWorkersRowBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'rpiWorkersRow' }>): string {
+  return `
+    <article class="card v2-block v2-block--rpiWorkersRow" data-v2-rpi-workers-row data-v2-block-type="rpiWorkersRow" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
+      ${renderBlockHeader(block.title, getV2BlockStatusId(block.id), block.status)}
+      ${block.body ? `<p class="card__copy">${escapeHtml(block.body)}</p>` : ''}
+      <div class="v2-rpi-worker-card-row">
+        ${block.workers.map((worker) => `
+          <div class="v2-rpi-worker-card" data-v2-rpi-worker="${escapeHtml(worker.id)}">
+            <header>
+              <strong>${escapeHtml(worker.label)}</strong>
+              <span class="pill">${escapeHtml(worker.status)}</span>
+            </header>
+            <dl>
+              <div><dt>Last called</dt><dd>${escapeHtml(worker.lastCalled)}</dd></div>
+              <div><dt>Since last call</dt><dd>${escapeHtml(worker.sinceLastCall)}</dd></div>
+            </dl>
           </div>
         `).join('')}
       </div>
