@@ -162,6 +162,8 @@ If these controls are reused from existing View A, the V2 implementation must ad
 
 ### Required auth actions
 
+v0.10.42 renders the V2 Authentication `1A-STASH-OFF - NEW AUTH` card with the existing shared NEW AUTH action-row renderer and these endpoint intents. It must stay on the `new-auth-*` action family and must not reuse old login-card action IDs.
+
 | Button | Endpoint intent |
 | --- | --- |
 | `Verify iCloudPD install` | `POST /api/auth/new/verify-icloudpd` |

@@ -80,6 +80,15 @@ export type V2OperatorCenterPanelBlock =
       actions: readonly V2OperatorBackendActionButton[];
     }
   | {
+      type: 'newAuthCard';
+      id: string;
+      title: string;
+      body?: string;
+      statusKey: string;
+      logKey: string;
+      sourceBadge?: { mode: string; label: string };
+    }
+  | {
       type: 'sectionGroup';
       id: string;
       title: string;
@@ -196,6 +205,15 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
         body: 'This page owns only local iCloudPD login/session flow. It must not display raw credentials, 2FA codes, cookies, session files, or secret paths without an existing redaction contract.',
         status: 'planned-safe',
         risk: 'localSecretSensitive',
+      },
+      {
+        type: 'newAuthCard',
+        id: '02.new-auth',
+        title: '1A-STASH-OFF - NEW AUTH',
+        body: 'Fresh real-auth UI boundary for iCloudPD. These controls intentionally target only /api/auth/new/* endpoints and do not reuse the existing login card routes.',
+        statusKey: '1A-STASH-OFF',
+        logKey: '1A-STASH-OFF',
+        sourceBadge: { mode: 'real', label: 'NEW ENDPOINTS' },
       },
       {
         type: 'statusCard',

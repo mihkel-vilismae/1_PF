@@ -10,6 +10,7 @@ import {
   renderStepList,
   renderSourceBadge,
 } from "../services/renderers.ts";
+import { NEW_AUTH_BUTTONS, renderNewAuthActionRow } from "./newAuthActionRows.ts";
 import {
   getAuthButtonCopy,
   getAuthButtonStatusHelp,
@@ -81,49 +82,6 @@ const SCHEDULER_EMULATOR_BUTTONS = Object.freeze([
   { action: "stop-emulator", variant: "secondary" },
   { action: "install-crontab", variant: "secondary" },
   { action: "get-active-crontab", variant: "secondary" },
-]);
-
-const NEW_AUTH_BUTTONS = Object.freeze([
-  {
-    action: "new-auth-verify-icloudpd",
-    label: "Verify iCloudPD install",
-    variant: "secondary",
-  },
-  {
-    action: "new-auth-verify-provider-session",
-    label: "Verify with iCloudPD",
-    variant: "primary",
-  },
-  {
-    action: "new-auth-login-using-env",
-    label: "Login using .env values",
-    variant: "primary",
-  },
-  {
-    action: "new-auth-check-login",
-    label: "Check login",
-    variant: "secondary",
-  },
-  {
-    action: "new-auth-logout-session",
-    label: "Log out and remove existing session",
-    variant: "danger",
-  },
-  {
-    action: "new-auth-session-files",
-    label: "Show auth/session paths and files",
-    variant: "secondary",
-  },
-  {
-    action: "new-auth-generate-artifact-pack",
-    label: "Generate auth evidence pack",
-    variant: "secondary",
-  },
-  {
-    action: "new-auth-list-artifact-packs",
-    label: "List auth evidence packs",
-    variant: "secondary",
-  },
 ]);
 
 // Renders the full View A page from runtime-truth state and selected dashboard mode.
@@ -550,51 +508,6 @@ function renderNewAuthCard(state, dashboardVisualMode = null) {
       ${newAuth.artifactPackListResult ? renderResultSurface(newAuth.artifactPackListResult) : ""}
       <div class="log-surface" data-scroll-preserve="log-1A-STASH-OFF">${renderLogEntries(state.logs["1A-STASH-OFF"], { sourceKey: "1A-STASH-OFF" })}</div>
     </article>
-  `;
-}
-
-// Renders one NEW AUTH action row and applies Test Mode disabled attributes.
-function renderNewAuthActionRow(
-  button,
-  buttonStates = {},
-  disabledInTestMode = false,
-) {
-  const statusState = buttonStates?.[button.action] ?? {
-    status: "neutral",
-    message: "Not checked yet.",
-    endpoint: null,
-  };
-  const status = disabledInTestMode
-    ? "blocked"
-    : normalizeAuthButtonStatus(statusState.status);
-  const copy = getAuthButtonCopy(button.action);
-  const rawLabel = copy?.label ?? button.label;
-  const label = escapeHtml(rawLabel);
-  const disabledMessage =
-    "Disabled in Test Mode. Switch to Real Mode to use iCloudPD login controls.";
-  const message = disabledInTestMode
-    ? disabledMessage
-    : statusState.message || copy?.statuses?.[status] || "Not checked yet.";
-  const endpoint = disabledInTestMode
-    ? ""
-    : statusState.endpoint || copy?.endpoint || "";
-  const helpText = disabledInTestMode
-    ? disabledMessage
-    : getAuthButtonStatusHelp(button.action, status, statusState.message);
-  const statusLabelText = getAuthButtonStatusLabel(status);
-  const title = escapeAttribute(helpText);
-  const disabledAttributes = disabledInTestMode
-    ? ' disabled aria-disabled="true" data-disabled-reason="test-mode-new-auth-login-disabled"'
-    : "";
-
-  return `
-    <div class="new-auth-action-row ${disabledInTestMode ? "new-auth-action-row--disabled" : ""}" data-new-auth-action-row="${escapeAttribute(button.action)}"${disabledInTestMode ? ' data-new-auth-action-disabled="test-mode"' : ""}>
-      <span class="auth-button-shell auth-button-shell--${escapeAttribute(status)}" data-auth-button-key="${escapeAttribute(button.action)}" data-auth-button-status="${escapeAttribute(status)}" data-auth-help-text="${title}" title="${title}">
-        <span class="auth-button-status-dot" aria-label="${escapeAttribute(`${rawLabel} status: ${statusLabelText}`)}" title="${title}"></span>
-        <button class="button button--${escapeAttribute(button.variant)}" data-action="${escapeAttribute(button.action)}" title="${title}" aria-label="${escapeAttribute(`${rawLabel}. ${helpText}`)}"${disabledAttributes}>${label}</button>
-      </span>
-      <p class="new-auth-action-row__status"><strong>${escapeHtml(statusLabelText)}.</strong> ${escapeHtml(message)}${endpoint ? ` <span>${escapeHtml(endpoint)}</span>` : ""}</p>
-    </div>
   `;
 }
 

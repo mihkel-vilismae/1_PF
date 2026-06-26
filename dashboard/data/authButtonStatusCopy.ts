@@ -91,7 +91,7 @@ export const AUTH_BUTTON_STATUS_COPY = Object.freeze({
   },
   'new-auth-check-login': {
     label: 'Check login',
-    endpoint: 'GET /api/auth/new/status',
+    endpoint: 'GET /api/auth/new/status?mode=passive',
     operationType: 'new auth passive status read',
     realityState: 'real',
     backendState: 'real',

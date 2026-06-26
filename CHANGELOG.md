@@ -1,3 +1,19 @@
+## 2026-06-26 15:11 EEST — v0.10.42
+
+### Added
+- Added the V2 Authentication `1A-STASH-OFF - NEW AUTH` card using existing `/api/auth/new/*` action IDs, shared result surfaces, and sanitized local logs.
+- Extracted NEW AUTH action-row rendering into a shared renderer used by View A and V2.
+
+### Changed
+- Bumped repository/package version from `0.10.41` to `0.10.42`.
+- Updated V2 implementation-status JSON/docs for the B4.3 NEW AUTH placement.
+
+### Fixed
+- None.
+
+### Removed
+- Removed the page-local duplicate NEW AUTH action-row renderer from `dashboard/views/initView.ts` in favor of the shared renderer.
+
 ## 2026-06-26 15:07 EEST — v0.10.41
 
 ### Added

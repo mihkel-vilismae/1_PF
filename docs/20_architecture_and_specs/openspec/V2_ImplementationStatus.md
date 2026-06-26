@@ -49,7 +49,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | Page | Target role | Current intended state | Evidence needed before ready |
 | --- | --- | --- | --- |
 | `01 SETUP` | env/database readiness | `1A Verify .env` and `2A Database controls` reused/wired in V2 | V2 render test + endpoint/action test |
-| `02 AUTHENTICATION` | NEW AUTH session readiness | reuse existing NEW AUTH controls | V2 render test + new-auth endpoint proof |
+| `02 AUTHENTICATION` | NEW AUTH session readiness | `1A-STASH-OFF - NEW AUTH` reused/wired in V2 | V2 render test + new-auth endpoint proof |
 | `03 STARTUP` | Raspberry scheduler/startup | reuse/extract Raspberry scheduler panel | Raspberry scheduler proof + V2 placement test |
 | `04 WORKERS` | worker stage controls | reuse/extract B3 stage controls | worker endpoint proofs + V2 placement test |
 | `05 TROUBLESHOOTING` | stale lock repair | reuse/extract pipeline maintenance controls | stale-lock behavior proof + V2 placement test |
@@ -85,7 +85,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 
 | Element | Status | Current evidence/notes | Required next proof/test |
 | --- | --- | --- | --- |
-| `1A-STASH-OFF NEW AUTH` | reused candidate | Existing View A NEW AUTH card and `/api/auth/new/*` actions exist. | V2 render/action test; secret boundary test. |
+| `1A-STASH-OFF NEW AUTH` | wired/needs verification | v0.10.42 renders NEW AUTH in V2 Authentication using existing `/api/auth/new/*` action IDs, shared action-row renderer, latest result surfaces, and sanitized local log entries. | Focused V2 render/action mapping test; secret/redaction regression test; new-auth endpoint proof. |
 | Browser auth path | needs verification | Preferred path; may need runtime evidence. | New-auth proof/evidence pack. |
 | CLI auth fallback | future/documented | Acceptable fallback if UI auth fails. | Runbook/proof once used. |
 | Event Log | visual/tested | Shared V2 wrapper renders Event history for current V2 pages, including `07`-`09` route shells. | Future page-specific slices must keep using wrapper. |

@@ -152,3 +152,9 @@ B2 deliberately does not move requested Setup/Auth/Startup/Workers/Troubleshooti
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `01 SETUP → 2A Database controls` | `dashboard/data/v2OperatorCenterPanel.ts`, `dashboard/views/v2StartupOperatorMenuView.ts`, `dashboard/services/runtimeTruth/runtimeTruthBehavior.ts` | V2 backend action card plus shared result/log renderers | `check-db`, `inspect-db`, `delete-db`, `recreate-db` actions → `/api/init/database/*` | `tests/initApi.step1.test.js`; V2 placement test | Reuse existing runtime-truth actions and confirmation guards; do not duplicate View A card markup. | Add frontend click/error tests if action handlers change. | wired/needs verification |
 
+## v0.10.42 B4.3 Authentication NEW AUTH placement
+
+| V2 target | Current source path | Existing form | Endpoint/handler | Existing tests/proofs | Reuse decision | Missing V2 proof/test | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `02 AUTHENTICATION → 1A-STASH-OFF - NEW AUTH` | `dashboard/views/newAuthActionRows.ts`, `dashboard/views/v2StartupOperatorMenuView.ts`, `dashboard/services/runtimeTruth/runtimeTruthNewAuthActions.ts` | V2 NEW AUTH card plus shared action rows/result/log renderers | `new-auth-*` action IDs → `/api/auth/new/*` endpoints | `tests/newAuth*.test.js`; `tests/v2SetupAuthPlacement.test.js` | Extract shared NEW AUTH action-row renderer and reuse existing runtime-truth actions; do not use old login-card action IDs. | Add endpoint/result/error proof in later B9 proof expansion. | wired/needs verification |
+

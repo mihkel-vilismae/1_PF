@@ -9,6 +9,7 @@ import { getV2BlockStatusId, getV2ImplementationStatusElement } from '../data/v2
 import { renderLogEntries, renderResultSurface, renderSourceBadge, statusBadge, type HistoryEntry } from '../services/renderers.ts';
 import { escapeHtml } from '../services/renderers/sharedRendererUtils.ts';
 import { renderV2OperatorPageWrapper } from './v2OperatorPageWrapper.ts';
+import { NEW_AUTH_BUTTONS, renderNewAuthActionRow } from './newAuthActionRows.ts';
 
 type V2StartupOperatorMenuRenderOptions = {
   inspectMode?: boolean;
@@ -80,6 +81,8 @@ function renderV2CenterPanelBlock(block: V2OperatorCenterPanelBlock, runtimeStat
       return renderActionListBlock(block);
     case 'backendActionCard':
       return renderBackendActionCard(block, runtimeState);
+    case 'newAuthCard':
+      return renderV2NewAuthCard(block, runtimeState, dashboardVisualMode);
     case 'sectionGroup':
       return renderSectionGroupBlock(block);
     case 'toggleGroup':
@@ -136,6 +139,41 @@ function renderBackendActionCard(block: Extract<V2OperatorCenterPanelBlock, { ty
       <div class="button-row v2-backend-button-row">${block.actions.map(renderBackendActionButton).join('')}</div>
       ${renderV2BackendResultSurface(result)}
       <div class="log-surface" data-scroll-preserve="log-${escapeHtml(block.logKey)}">${renderLogEntries(logs, { sourceKey: block.logKey })}</div>
+    </article>
+  `;
+}
+
+function renderV2NewAuthCard(block: Extract<V2OperatorCenterPanelBlock, { type: 'newAuthCard' }>, runtimeState: Record<string, any>, dashboardVisualMode: string | null): string {
+  const newAuth = runtimeState.newAuth ?? {};
+  const disabledInTestMode = dashboardVisualMode === 'test';
+  const disabledNotice = disabledInTestMode
+    ? '<p class="notice notice--warning new-auth-disabled-notice">NEW AUTH login is disabled in Test Mode. Switch to Real Mode to use iCloudPD login controls.</p>'
+    : '';
+  const sourceBadge = block.sourceBadge ? renderSourceBadge(block.sourceBadge.mode, disabledInTestMode ? 'DISABLED IN TEST MODE' : block.sourceBadge.label) : '';
+
+  return `
+    <article class="card card--hybrid v2-block v2-block--newAuthCard ${disabledInTestMode ? 'card--new-auth-disabled' : ''}" data-v2-new-auth-card="${escapeHtml(block.id)}" data-new-auth-card="1A-STASH-OFF" data-v2-block-type="newAuthCard" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}${disabledInTestMode ? ' data-new-auth-disabled="test-mode" aria-disabled="true"' : ''}>
+      <header class="card__header v2-block__header">
+        <div>
+          <p class="card__code">${escapeHtml(block.statusKey)}</p>
+          <h3>${escapeHtml(block.title)}</h3>
+        </div>
+        <div class="card__header-tags">${sourceBadge}</div>
+        <div class="v2-block__pills">
+          ${statusBadge(runtimeState.statusByKey?.[block.statusKey] ?? 'idle')}
+          ${renderV2StatusHelpButton(getV2BlockStatusId(block.id), block.title)}
+        </div>
+      </header>
+      ${block.body ? `<p class="card__copy">${escapeHtml(block.body)}</p>` : ''}
+      ${disabledNotice}
+      <div class="new-auth-action-list">
+        ${NEW_AUTH_BUTTONS.map((button) => renderNewAuthActionRow(button, newAuth.buttonStates ?? {}, disabledInTestMode)).join('')}
+      </div>
+      ${renderV2BackendResultSurface(newAuth.latestResult ?? null)}
+      ${newAuth.sessionFilesResult ? renderResultSurface(newAuth.sessionFilesResult) : ''}
+      ${newAuth.artifactPackResult ? renderResultSurface(newAuth.artifactPackResult) : ''}
+      ${newAuth.artifactPackListResult ? renderResultSurface(newAuth.artifactPackListResult) : ''}
+      <div class="log-surface" data-scroll-preserve="log-${escapeHtml(block.logKey)}">${renderLogEntries(runtimeState.logs?.[block.logKey] ?? [], { sourceKey: block.logKey })}</div>
     </article>
   `;
 }

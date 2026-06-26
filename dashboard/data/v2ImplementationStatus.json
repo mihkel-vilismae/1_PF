@@ -57,6 +57,12 @@
       "summary": "This page owns only local iCloudPD login/session flow. It must not display raw credentials, 2FA codes, cookies, session files, or secret paths without an existing redaction contract."
     },
     {
+      "id": "v2.block.02.new-auth",
+      "label": "authentication.sh / 1A-STASH-OFF - NEW AUTH",
+      "status": "in-progress",
+      "summary": "B4.3 reuses the existing NEW AUTH button states, /api/auth/new/* action IDs, shared latest-result rendering, and sanitized log/result surfaces in the V2 Authentication page. The existing secret/redaction boundary remains in force."
+    },
+    {
       "id": "v2.block.02.status",
       "label": "authentication.sh / iCloudPD session status",
       "status": "in-progress",
