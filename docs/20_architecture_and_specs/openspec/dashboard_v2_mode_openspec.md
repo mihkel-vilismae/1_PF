@@ -1,6 +1,6 @@
 # Dashboard V2 Mode OpenSpec
 
-Status: Historical V2 startup/six-shell OpenSpec plus first implementation slice. Superseded for current route/page status by `v2_operator_pages_openspec.md` and `V2_ImplementationStatus.md`; as of v0.10.47 the current V2 shell is nine pages with B3/B4/B5 partial controls. This file remains useful for the original startup-gate boundary.
+Status: Historical V2 startup/six-shell OpenSpec plus first implementation slice. Superseded for current route/page status by `v2_operator_pages_openspec.md` and `V2_ImplementationStatus.md`; as of v0.10.65 the current V2 flow is nine pages with B3-B12 controls, recovery wiring, Real Playback composition, and a live-proof gate. This file remains useful for the original startup-gate boundary.
 
 ## Purpose
 

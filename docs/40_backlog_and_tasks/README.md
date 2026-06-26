@@ -1,6 +1,6 @@
 # Backlog and Tasks
 
-> Current checkpoint: `v0.10.47`. This README was refreshed in the docs/launcher reconciliation pass; code, focused tests, proof artifacts, and runtime evidence override stale prose.
+> Current checkpoint: `v0.10.65`. This README was refreshed in the docs/launcher reconciliation pass; code, focused tests, proof artifacts, and runtime evidence override stale prose.
 
 Estonian timestamp: 2026-05-24 23:31 EEST
 
@@ -67,4 +67,4 @@ The old `docs/active_workflow_docs/slice_8_9_route_selection.md` path remains a 
 
 ## Current V2 next-plan
 
-- [V2 next implementation plan](V2_NEXT_IMPLEMENTATION_PLAN_20260626.md) — post-B5 sequence from troubleshooting/recovery through victory proof.
+- [V2 next implementation plan](V2_NEXT_IMPLEMENTATION_PLAN_20260626.md) — post-B12 sequence from troubleshooting/recovery through victory proof.

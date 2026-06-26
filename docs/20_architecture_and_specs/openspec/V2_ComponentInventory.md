@@ -1,12 +1,12 @@
 # V2 Component Inventory
 
-Estonian timestamp: 2026-06-26 13:15 EEST
+Estonian timestamp: 2026-06-26 18:53 EEST
 
 ## Status
 
-Documentation/evidence inventory only. This pass did not implement UI, runtime, backend, scheduler, worker, auth, playback, recovery, or hardware behavior.
+Documentation/evidence inventory plus historical reuse record. The original inventory section below is preserved for provenance; the current status snapshot reflects v0.10.65 after DOCS.2 reconciliation on top of v0.10.64 B12 proof-gate work.
 
-Live baseline inspected: `VERSION` `0.10.32`, package version `0.10.32`, `master` at `176f72d9`. The requested `v2-component-inventory-gate` skill and this inventory scaffold were not present in the live repository, so this file was created at the requested canonical path and filled from current source/tests/proof docs.
+Current baseline inspected for this reconciliation: `VERSION` `0.10.65`; previous implementation base `v0.10.64` at `a834482a`. Live target-machine proof still outranks this prose.
 
 ## Inspection Footprint
 
@@ -49,17 +49,17 @@ On-demand excluded context: no generated proof/runtime artifact payloads were lo
 
 ## Current V2 Baseline Finding
 
-The current V2 UI now has the nine-page V2 operator route shell. The requested real controls are still not migrated/wired:
+The current V2 UI has the nine-page operator flow plus B3-B12 status/help, control placement, playback bridge, recovery wiring, and proof-gate work. Older inventory rows below are retained as historical source/reuse notes; use this table for current status before reading the old inventory rows.
 
-| Evidence | Finding |
+| Evidence | Current finding |
 | --- | --- |
-| `dashboard/data/v2OperatorSidebar.ts` | Defines exactly `01` through `06`: setup, authentication, startup, workers, troubleshooting, recovery. |
-| `dashboard/data/v2OperatorCenterPanel.ts` | Defines typed visual center-panel blocks; many actions are `visualOnly`, `guardedAction`, or `disabledPlaceholder`. |
-| `dashboard/views/v2StartupOperatorMenuView.ts` and `dashboard/views/v2OperatorMenuView.ts` | Render V2 visual-only surfaces. |
-| `tests/v2OperatorSidebarImplementation.test.js` | Asserts exactly nine routes, shared wrapper/Event history inheritance, and visual-only/guarded behavior. |
-| `tests/v2OperatorMenuBackendContract.test.js` | Maps existing backend endpoints to older V2 menu rows, but does not prove the requested nine-page placement. |
+| `dashboard/data/v2OperatorSidebar.ts` | Defines the nine V2 pages `01` through `09`. |
+| `dashboard/data/v2OperatorCenterPanel.ts` | Defines current typed blocks and integrated `09 REAL PLAYBACK` composition/projection surfaces. |
+| `dashboard/views/v2StartupOperatorMenuView.ts` | Renders V2 status/help, Setup/Auth/Startup/Workers/Troubleshooting/Recovery/PIR/Playback/Real Playback surfaces using shared renderers. |
+| `dashboard/data/v2ImplementationStatus.json` | Provides frontend-readable page/block summaries updated to v0.10.65 reality. |
+| Focused V2 tests | Cover route order, status sync, Setup/Auth placement, Startup/Workers placement, Troubleshooting/Recovery/PIR/Playback placement, playback queue/metadata proof, Real Playback composition/projection, recovery endpoints/autosave/restart, and the B12 gate. |
 
-Therefore every requested nine-page placement below still needs V2 placement tests before any item can be marked green/done for V2.
+The remaining boundary is not visibility or basic wiring. The remaining boundary is live target-machine proof: Raspberry crontab/hardware, live auth/session, live media pipeline/playback, PIR hardware, and abrupt-stop/restart recovery evidence.
 
 ## Inventory Table
 
@@ -91,12 +91,12 @@ Therefore every requested nine-page placement below still needs V2 placement tes
 | Area | Decision |
 | --- | --- |
 | Existing View A/B controls | Reuse/extract; do not copy large HTML blocks. |
-| Existing V2 nine-route shell | Treat as visual-only route/page shell, not proof that requested controls are wired. |
+| Existing V2 nine-route flow | Current V2 pages contain wired controls/projections through B12; still do not treat UI visibility as live target-machine proof. |
 | Runtime endpoints | Keep centralized; V2 must call the same existing service constants/handlers unless a later reviewed contract changes them. |
 | Scheduler | Use Raspberry/real-crontab path for V2 real goal; Windows CronEmulator remains excluded from the real path. |
-| Recovery | Start with exact placeholder alerts only when UI work begins; full recovery remains future proof work. |
+| Recovery | Manual save/load endpoints plus autosave/restart-check are implemented; live abrupt-restart proof remains required. |
 | PIR | Start with emulator/simulation; real hardware remains later. |
-| Playback drag/drop | New component likely required; keep separate from real DB pipeline until safety contract exists. |
+| Playback drag/drop | Browser-local queue, metadata bridge, and safe backend queue-prepare bridge exist; no browser-file upload/import claim. |
 
 ## Required Next Tests Before UI Placement
 
@@ -171,3 +171,8 @@ B2 deliberately does not move requested Setup/Auth/Startup/Workers/Troubleshooti
 ## v0.10.47 docs reconciliation note
 
 Root README files, V2 status docs, and the next-plan document were refreshed after B5. Treat this inventory as the component/reuse record through B5; new B6/B7/B8/B9/B10 work must append focused findings instead of rewriting history.
+
+
+## v0.10.65 DOCS.2 reconciliation note
+
+This file now carries a current-status snapshot above the original inventory rows. The original table intentionally remains partly historical because it records reuse/source decisions from the pre-implementation inventory checkpoint. For current implementation status, prefer `V2_ImplementationStatus.md`, `v2_operator_pages_openspec.md`, `dashboard/data/v2ImplementationStatus.json`, and the focused V2 tests/proof-gate docs.

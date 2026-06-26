@@ -24,7 +24,7 @@
       "id": "v2.block.01.actions",
       "label": "setup.sh / Preflight actions",
       "status": "in-progress",
-      "summary": "Visual-only in this slice. No backend action is wired from V2."
+      "summary": "V2 Setup has wired Verify .env and Database controls using existing frontend actions/result surfaces. Live endpoint/environment proof remains required before readiness claims."
     },
     {
       "id": "v2.block.01.database-controls",
@@ -48,7 +48,7 @@
       "id": "v2.block.02.actions",
       "label": "authentication.sh / Authentication actions",
       "status": "in-progress",
-      "summary": "Visual-only in this slice. No backend action is wired from V2."
+      "summary": "V2 Authentication has the NEW AUTH card wired to the /api/auth/new/* action family with shared action rows and sanitized result surfaces. Live auth/session proof remains required."
     },
     {
       "id": "v2.block.02.info",
@@ -192,7 +192,7 @@
       "id": "v2.block.05.01",
       "label": "troubleshooting / manual troubleshooting actions",
       "status": "in-progress",
-      "summary": "Visual-only actions. Clear/delete operations are guarded placeholders."
+      "summary": "V2 Troubleshooting has Pipeline maintenance actions for Detect issues and Clear stale locks using existing runtime action IDs. Mocked UI proof exists; live stale-lock repair proof remains required."
     },
     {
       "id": "v2.block.05.06",
@@ -258,7 +258,7 @@
       "id": "v2.block.06.actions",
       "label": "recovery / snapshot actions",
       "status": "in-progress",
-      "summary": "Save/restore are visual-only. Restore must require selection, confirmation, compatibility check, and before/after summary when implemented for real."
+      "summary": "V2 Recovery now uses manual save/load state endpoints plus autosave/restart-check flow. It restores same media/queue context without secrets or exact timestamp claims; live abrupt-restart proof remains required."
     },
     {
       "id": "v2.block.07.boundary",
@@ -282,7 +282,7 @@
       "id": "v2.block.08.boundary",
       "label": "PLAYBACK / Playback implementation boundary",
       "status": "in-progress",
-      "summary": "The drag/drop queue, metadata table, non-media handling, rendering controls, and address-missing toggle are planned but not implemented in this route-shell batch."
+      "summary": "V2 Playback has rendering controls, browser-local drag/drop table, safe media-only backend queue-prepare bridge, and GPS/address metadata status bridge. It does not upload browser files or fabricate addresses."
     },
     {
       "id": "v2.block.08.rpi-workers",
@@ -312,7 +312,7 @@
       "id": "v2.page.authentication",
       "label": "02 AUTHENTICATION",
       "status": "in-progress",
-      "summary": "Existing visual-only V2 page. Requested NEW AUTH card is not moved in this batch."
+      "summary": "02 AUTHENTICATION contains the V2 NEW AUTH card wired to new-auth action IDs only. Live auth/session evidence remains required before readiness claims."
     },
     {
       "id": "v2.page.pir",
@@ -342,7 +342,7 @@
       "id": "v2.page.setup",
       "label": "01 SETUP",
       "status": "in-progress",
-      "summary": "Existing visual-only V2 page. Requested real setup cards are not moved in this batch."
+      "summary": "01 SETUP contains Verify .env and Database controls wired to existing action contracts. Live environment/database proof remains required before readiness claims."
     },
     {
       "id": "v2.page.startup",

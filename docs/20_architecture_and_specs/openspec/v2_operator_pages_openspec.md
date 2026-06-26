@@ -1,10 +1,10 @@
 # V2 Operator Pages OpenSpec
 
-Estonian timestamp: 2026-06-26 15:52 EEST
+Estonian timestamp: 2026-06-26 18:53 EEST
 
 ## Status
 
-OpenSpec plus implementation tracker. This document defines the V2 operator page architecture and records the current B1/B3/B4/B5 implementation boundary. It is not proof that live Raspberry/auth/playback/recovery behavior already works.
+OpenSpec plus implementation tracker. This document defines the V2 operator page architecture and records the current B1 through B12 implementation boundary. It is not proof that live Raspberry/auth/playback/recovery behavior already works.
 
 ## Authority and relationship to goals
 
@@ -28,7 +28,7 @@ V2 implementation must be regression-safe and reuse-first:
 - If the same visible element already exists, reuse the existing component or extract a shared component.
 - If a source page currently contains page-local markup, factor the reusable part before rendering it in V2.
 - Keep endpoint and handler behavior centralized. A moved/reused control must not silently call a different endpoint.
-- The first V2 implementation pass may render visual placement without functional wiring, but the status overlay and `V2_ImplementationStatus.md` must state that honestly.
+- Early V2 passes rendered visual placement first; current wired controls and proof gates must continue to state their live-proof boundaries honestly.
 - Do not claim a control is working merely because it is visible.
 
 ## Page model
@@ -42,7 +42,7 @@ The V2 sidebar must become a nine-page operator structure.
 | `03` | `STARTUP` | Raspberry-oriented scheduler/startup controls |
 | `04` | `WORKERS` | worker/stage controls and pipeline visibility |
 | `05` | `TROUBLESHOOTING` | stale-lock and pipeline repair visibility |
-| `06` | `RECOVERY` | manual placeholder controls first, future save/load/autosave recovery |
+| `06` | `RECOVERY` | manual save/load, autosave, restart-check, and recovery proof-gate support |
 | `07` | `PIR` | isolated activity and screen on/off testing |
 | `08` | `PLAYBACK` | isolated playback queue/rendering testing |
 | `09` | `REAL PLAYBACK` | final integrated real-use endpoint page |
@@ -606,7 +606,7 @@ Acceptance boundary:
 
 ## v0.10.47 reconciliation note
 
-B1, B3, B4, and B5 implementation slices have placed the nine-page shell, V2 status/help overlay, Setup/Auth controls, Startup Raspberry scheduler controls, RPI-STAGES/RPI-WORKERS rows, and Workers B3.1-B3.5 cards. Troubleshooting maintenance, Recovery placeholders, PIR, Playback, Real Playback composition, recovery implementation, and victory proofs remain future work. See [`../../40_backlog_and_tasks/V2_NEXT_IMPLEMENTATION_PLAN_20260626.md`](../../40_backlog_and_tasks/V2_NEXT_IMPLEMENTATION_PLAN_20260626.md).
+B1, B3, B4, and B5 implementation slices placed the nine-page shell, V2 status/help overlay, Setup/Auth controls, Startup Raspberry scheduler controls, RPI-STAGES/RPI-WORKERS rows, and Workers B3.1-B3.5 cards. Later B6-B12 slices added troubleshooting maintenance, recovery wiring, PIR emulator, playback queue/metadata bridge, `09 REAL PLAYBACK` composition/projection, and the B12 proof gate. Live Raspberry/auth/playback/abrupt-restart proof remains required. See [`../../40_backlog_and_tasks/V2_NEXT_IMPLEMENTATION_PLAN_20260626.md`](../../40_backlog_and_tasks/V2_NEXT_IMPLEMENTATION_PLAN_20260626.md).
 
 
 ## v0.10.48 B6.1 Troubleshooting pipeline maintenance
@@ -643,4 +643,9 @@ B1, B3, B4, and B5 implementation slices have placed the nine-page shell, V2 sta
 - v0.10.59 `B10.1` composes `09 REAL PLAYBACK` from proven pieces only: Raspberry scheduler controls, RPI-STAGES/RPI-WORKERS, B3.1-B3.5 worker cards, playback rendering controls, drag/drop queue bridge, and GPS/address metadata bridge.
 - v0.10.60 `B10.2` adds a read-only action-flow/status projection for scheduler, pipeline, queue bridge, metadata, rendering, and recovery gate state.
 - v0.10.61 `B11.1` defines the lightweight recovery state schema. The schema captures same media/queue context and explicitly does not require exact video timestamp resume.
-- Real manual save/load endpoints, autosave/restart recovery, PIR hardware proof, and final autonomous victory proof remain future work.
+- Manual save/load endpoints and autosave/restart-check are implemented; PIR hardware proof and final live autonomous victory proof remain future work.
+
+
+## v0.10.65 DOCS.2 status reconciliation
+
+The OpenSpec wording was reconciled with v0.10.64 implementation reality: `09 REAL PLAYBACK` is composed and has a status projection; recovery has manual save/load/autosave/restart-check wiring; the B12 proof gate is implemented but not live-passed. This document must continue to distinguish focused tests and mock proofs from target-machine evidence.

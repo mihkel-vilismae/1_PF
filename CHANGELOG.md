@@ -1,3 +1,19 @@
+## 2026-06-26 18:53 EEST — v0.10.65
+
+### Added
+- Added `docs/50_audits_and_migrations/V2_DOCS2_STATUS_RECONCILIATION_3PLUS2ACR_20260626.md` to record the DOCS.2 3+2 ACR reconciliation pass.
+- Added `tests/v2DocsStatusReconciliation.test.js` to guard against stale V2 page/status wording returning.
+
+### Changed
+- Reconciled root README, quickstart/update README files, OpenSpec README, V2 implementation status, V2 operator pages OpenSpec, component inventory, and next-plan docs to v0.10.65 reality.
+- Updated `dashboard/data/v2ImplementationStatus.json` page/block summaries for Setup, Authentication, Troubleshooting, Recovery, and Playback so they no longer describe route-shell-only or visual-only states.
+
+### Fixed
+- Fixed stale root quickstart version examples and V2 status language left behind after B10-B12.
+
+### Removed
+- None
+
 ## v0.10.64 - 2026-06-26
 
 - B12: added the autonomous playback + recovery victory proof gate.

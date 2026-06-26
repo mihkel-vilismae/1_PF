@@ -1,6 +1,6 @@
 # Current Implementation Status Docs
 
-> Current checkpoint: `v0.10.47`. This compatibility README is preserved for navigation/provenance; use root README, current OpenSpec docs, and proof evidence for live implementation truth.
+> Current checkpoint: `v0.10.65`. This compatibility README is preserved for navigation/provenance; use root README, current OpenSpec docs, and proof evidence for live implementation truth.
 
 
 ## Documentation navigation notice

@@ -1,6 +1,6 @@
 # PF_login / PhotoFrame
 
-> Current checkpoint: `v0.10.64` after B11 manual/autosave recovery wiring and the B12 autonomous playback/recovery proof gate. Code, focused tests, generated proof artifacts, and runtime evidence remain stronger than prose when they conflict.
+> Current checkpoint: `v0.10.65` after DOCS.2 OpenSpec/status reconciliation on top of the v0.10.64 recovery wiring and B12 autonomous playback/recovery proof gate. Code, focused tests, generated proof artifacts, and runtime evidence remain stronger than prose when they conflict.
 
 PF_login / PhotoFrame is a local dashboard-driven photo-frame system for staged media processing, operator inspection, and Raspberry/Windows playback workflows.
 
@@ -10,12 +10,12 @@ The project is intentionally proof-heavy. Source code, tests, OpenSpec documents
 
 | Field | Value |
 |---|---|
-| Version | `0.10.47` |
+| Version | `0.10.65` |
 | Main dashboard | Vite frontend in `dashboard/` |
 | Backend API | TypeScript server entrypoint at `server/index.ts` |
 | Database schema source | `database/schema.sql` |
 | Current startup choices | `Test Mode`, `Real Mode`, `V2` |
-| V2 status | Nine-page V2 operator shell, shared Event history, implementation-status toolbar/overlay/help, Setup/Auth controls, Startup Raspberry scheduler controls, shared RPI-STAGES/RPI-WORKERS rows, and Workers B3.1-B3.5 cards are implemented; `07 PIR` and `08 PLAYBACK` remain shells for their later isolated controls, and `09 REAL PLAYBACK` remains explanation-only. |
+| V2 status | Nine-page V2 operator flow with status/help overlay, Event history, Setup/Auth controls, Startup/Workers controls, Troubleshooting maintenance, Recovery save/load/autosave/restart-check, PIR emulator, Playback rendering/queue/metadata bridge, and integrated `09 REAL PLAYBACK` layout/projection. B12 proof gate exists, but live Raspberry autonomous playback/recovery evidence is still required before readiness claims. |
 | Changelog | Release history lives in [`CHANGELOG.md`](CHANGELOG.md), not in this README |
 
 ## What this repo does
@@ -39,7 +39,7 @@ The startup gate has three choices:
 |---|---|
 | `Test Mode` | Existing test/simulation-oriented dashboard behavior |
 | `Real Mode` | Existing real-mode dashboard behavior |
-| `V2` | Operator-menu shell with nine left-sidebar rows plus V2 status/help overlay, shared Event history, Setup/Auth controls, Startup scheduler controls, and Workers stage cards |
+| `V2` | Nine-page operator flow with status/help overlay, shared Event history, Setup/Auth/Startup/Workers/Troubleshooting/Recovery/PIR/Playback controls, integrated `09 REAL PLAYBACK` layout/projection, and B12 proof gate |
 
 The V2 sidebar currently contains exactly these top-level rows:
 
@@ -55,7 +55,7 @@ The V2 sidebar currently contains exactly these top-level rows:
 | `08` | `PLAYBACK` | `playback` |
 | `09` | `REAL PLAYBACK` | `real-playback` |
 
-The order number is display/order metadata and is not part of the label. The V2 center panel renders typed visual blocks and shell/explanation pages. Current wired/placed V2 controls include Setup Verify `.env`, Setup Database controls, Authentication NEW AUTH, Startup Raspberry scheduler controls, Workers B3.1-B3.5 action cards, Troubleshooting pipeline maintenance, Recovery manual save/load plus autosave/restart-check flow, PIR emulator controls, Playback drag/drop/rendering/queue metadata bridge, and an integrated `09 REAL PLAYBACK` layout with a B12 proof gate.
+The order number is display/order metadata and is not part of the label. The V2 center panel renders typed visual blocks and shell/explanation pages, plus the later integrated `09 REAL PLAYBACK` composition. Current wired/placed V2 controls include Setup Verify `.env`, Setup Database controls, Authentication NEW AUTH, Startup Raspberry scheduler controls, Workers B3.1-B3.5 action cards, Troubleshooting pipeline maintenance, Recovery manual save/load plus autosave/restart-check flow, PIR emulator controls, Playback drag/drop/rendering/queue metadata bridge, and an integrated `09 REAL PLAYBACK` layout with a B12 proof gate.
 
 
 ### V2 real playback goal
@@ -90,9 +90,10 @@ This README is a project landing page, not proof evidence. Do not infer target-m
 Current non-claims include:
 
 - no automatic proof that a fresh Raspberry target is fully ready unless current proof artifacts say so;
-- no claim that every V2 center-panel sub-item executes real backend actions; several later-page controls remain shell/planned only;
 - no claim that V2 Setup/Auth/Startup/Workers placements prove successful live backend, Raspberry hardware, iCloud, or crontab execution without current proof output;
-- no claim that troubleshooting, recovery, PIR, playback, or integrated `09 REAL PLAYBACK` are complete;
+- no claim that the B12 proof gate has live-passed autonomous playback or abrupt-restart recovery on target hardware;
+- no claim that PIR hardware has been proven; current PIR support is emulator-first;
+- no claim that browser drag/drop uploads/imports exact local files into the backend media database; the bridge only requests safe queue preparation for valid media rows;
 - no claim that archive or older status documents are current truth without code/test/evidence confirmation.
 
 ## Repository map

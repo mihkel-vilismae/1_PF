@@ -1,6 +1,6 @@
 # Drag-and-drop repo ZIP installer
 
-> Current checkpoint: `v0.10.47`. This README was refreshed with the current root launcher/database/V2 state.
+> Current checkpoint: `v0.10.65`. This README is refreshed with the current root launcher/database/V2 recovery/proof-gate state.
 
 ## Use
 
@@ -36,7 +36,7 @@ npm install
 npm test
 ```
 
-For this checkpoint, `VERSION`, `package.json`, and `package-lock.json` should all report `0.10.47`. The V2 dashboard is implemented as a nine-page operator shell with B3/B4/B5 placed controls, but target-machine proof claims still require current proof artifacts.
+For this checkpoint, `VERSION`, `package.json`, and `package-lock.json` should all report `0.10.65`. The V2 dashboard now includes the integrated `09 REAL PLAYBACK` layout/projection and B12 proof gate; target-machine proof claims still require current proof artifacts.
 
 ## Current repository layout reminders
 

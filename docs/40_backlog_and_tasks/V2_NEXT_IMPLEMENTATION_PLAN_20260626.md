@@ -1,10 +1,10 @@
 # V2 Next Implementation Plan
 
-Estonian timestamp: 2026-06-26 15:52 EEST
+Estonian timestamp: 2026-06-26 18:53 EEST
 
 ## Status
 
-Planning document for the next implementation sequence after `v0.10.47`. It is not proof that the later slices are complete.
+Planning/status document for the implementation sequence through `v0.10.65`. It is not proof that live target-machine playback or recovery has passed.
 
 ## Current completed baseline
 
@@ -18,34 +18,39 @@ Planning document for the next implementation sequence after `v0.10.47`. It is n
 
 ## Recommended next sequence
 
-Run these one slice at a time, with one logical commit and one full Git ZIP per checkpoint.
+The previous B6-B12 implementation sequence is complete as code/tests/docs slices. The next work should be live-proof and hardening, not more optimistic UI composition.
 
 | Order | Slice | Goal | Why next | Proof/test expectation |
 | ---: | --- | --- | --- | --- |
-| 1 | `B6.1` | `05 TROUBLESHOOTING` pipeline maintenance: Detect issues and Clear stale locks | **done in v0.10.48** | Placement test added; live stale-lock behavior proof remains later. |
-| 2 | `B6.2` | `06 RECOVERY` placeholder buttons: `SAVE STATE`, `LOAD STATE`, `EMULATE POWER OFF` | **done in v0.10.49** | Exact alert/text tests; status stays placeholder/future for real recovery. |
-| 3 | `B7.1` | `07 PIR` visible B5 subset and PIR emulator button | **done in v0.10.50** | Render test added; PIR hardware remains later. |
-| 4 | `B8.1` | `08 PLAYBACK` rendering target/mode subsection | **done in v0.10.51** | Render test and status metadata added; Raspberry OS target disabled until proven. |
-| 5 | `B8.2` | `08 PLAYBACK` drag/drop queue table | **done in v0.10.52** | File classification render tests for image/video/other and graceful non-media handling added. |
-| 6 | `B8.3` | `08 PLAYBACK` safe backend queue bridge | **done in v0.10.56** | Valid image/video rows can request `POST /api/runtime/queue/prepare`; non-media is blocked locally; no file-upload claim. |
-| 7 | `B8.4` | GPS/address metadata bridge | **done in v0.10.57** | GPS/address fields have present/missing status flags; missing address stays explicit and not fabricated. |
-| 8 | `B9.4` | Playback + metadata proof expansion | **done in v0.10.58** | Media/non-media behavior, queue insertion request, and missing GPS/address behavior are covered by focused tests. |
-| 9 | `B9` | Remaining proof/test expansion | Hardens frontend/backend and graceful-error coverage before composition claims | Endpoint tests, button tests, docs/status sync tests, and explicit not-run proof list. |
-| 10 | `B10.1` | `09 REAL PLAYBACK` integrated layout | **done in v0.10.59** | Composes proven pieces only; unproven recovery/PIR gates remain disabled/future. |
-| 11 | `B10.2` | `09 REAL PLAYBACK` status projection | **done in v0.10.60** | Read-only scheduler/pipeline/queue/metadata/rendering/recovery-gate projection. |
-| 12 | `B11.1` | Lightweight recovery state schema | **done in v0.10.61** | Schema-only: same media/queue context, no exact timestamp requirement, no secrets. |
-| 13 | `B11.2` | Manual recovery save/load endpoints | **done in v0.10.62** | SAVE STATE / LOAD STATE endpoints and V2 wiring; no autoplay. |
-| 14 | `B11.3` | Autosave/restart recovery flow | planned | Rough shutdown/restart flow and proof harness. |
-| 9 | `B12` | Victory proof | End-to-end autonomous playback and autonomous recovery proof | Target-machine proof artifacts required before readiness claims. |
+| 1 | `LIVE.1` | Target-machine autonomous playback proof | Prove login/scheduler/pipeline/queue/rendering on the real environment | Generated evidence pack showing media reaches playback and address overlay appears when address exists. |
+| 2 | `LIVE.2` | Abrupt-stop/restart recovery proof | Prove B11 save/load/autosave/restart-check under rough shutdown | Evidence that same media/queue context restores; exact timestamp not required. |
+| 3 | `PIR.1` | PIR hardware readiness/proof | Move beyond emulator-only status when hardware is available | Hardware input diagnostic/proof artifact or explicit blocker. |
+| 4 | `SEC.1` | Audit dependency vulnerabilities | Existing npm audit warnings remain | Low-regression fix or documented deferral with exact dependency/risk. |
+| 5 | `DOCS.3` | Post-live-proof docs reconciliation | Needed only after live proofs change truth | Update B12 gate status and current-truth docs from actual evidence. |
+
+## Completed sequence through v0.10.65
+
+| Slice | Delivered in | Current reality |
+| --- | --- | --- |
+| `B1` | `v0.10.35` | V2 has `01` through `09` route/page shells. |
+| `B3.1-B3.4` | `v0.10.39` | V2 status toolbar, JSON-backed highlights, per-section `?` help popovers, and sync tests exist. |
+| `B4.1-B4.3` | `v0.10.42` | V2 Setup/Auth controls are placed/wired to existing frontend action contracts and shared renderers. |
+| `B5.1-B5.4` | `v0.10.46` | V2 Startup/Workers controls, RPI-STAGES, RPI-WORKERS, and Workers B3.1-B3.5 cards are placed. |
+| `DOCS.1` | `v0.10.47` | README files, runner title version display, and next-plan documentation were refreshed. |
+| `B6.1-B8.2` | `v0.10.52` | Troubleshooting maintenance, recovery placeholders, PIR emulator subset, playback rendering, and browser-local drag/drop queue were added. |
+| `B9.1-B8.4-B9.4` | `v0.10.58` | Control proof matrix, playback bridge contract, media-only queue bridge, metadata bridge, and playback metadata proof tests were added. |
+| `B10.1-B11.1` | `v0.10.61` | `09 REAL PLAYBACK` integrated layout/projection and recovery state schema were added. |
+| `B11.2-B12` | `v0.10.64` | Manual recovery endpoints, autosave/restart-check, and B12 proof gate were added. |
+| `DOCS.2` | `v0.10.65` | OpenSpec/status JSON/root docs were reconciled to current implementation reality. |
 
 ## Rules for every next slice
 
-- Preserve existing B1/B3/B4/B5 behavior unless a slice explicitly changes it.
+- Preserve existing B1-B12 behavior unless a slice explicitly changes it.
 - Reuse/extract shared components; do not paste old page HTML into V2.
 - Update `dashboard/data/v2ImplementationStatus.json`, `V2_ImplementationStatus.md`, and relevant README/OpenSpec docs together.
 - Include LOC-before diffstat, tests run, tests not run, inspected files, unresolved risks, and a full Git ZIP.
-- Do not mark a control green/done unless current tests/proofs support the exact claim.
+- Do not mark B12 live-passed unless target-machine evidence exists.
 
 ## Immediate recommendation
 
-Start with `B6.1`, then `B6.2`. That completes the currently visible operator maintenance/recovery pages before PIR/playback work and reduces the risk that `09 REAL PLAYBACK` is composed from unverified pieces.
+Run `LIVE.1` and `LIVE.2` on the target machine before changing the B12 gate status. If target hardware is not available, run `SEC.1` or a docs-only proof-runbook cleanup slice instead.

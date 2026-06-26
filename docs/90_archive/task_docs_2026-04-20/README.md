@@ -1,6 +1,6 @@
 # Task Docs
 
-> Current checkpoint: `v0.10.47`. This README is historical/provenance or compatibility material; use the root README, current OpenSpec docs, and current proof evidence for live implementation truth.
+> Current checkpoint: `v0.10.65`. This README is historical/provenance or compatibility material; use the root README, current OpenSpec docs, and current proof evidence for live implementation truth.
 
 This folder stores implementation-oriented notes for larger functionality changes so they stay easy to inspect later.
 

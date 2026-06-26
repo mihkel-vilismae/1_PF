@@ -1,10 +1,10 @@
 # V2 Implementation Status
 
-Estonian timestamp: 2026-06-26 15:52 EEST
+Estonian timestamp: 2026-06-26 18:53 EEST
 
 ## Status
 
-Authoritative implementation-status tracker for the planned V2 operator pages and the path to `09 REAL PLAYBACK`.
+Authoritative implementation-status tracker for the V2 operator pages and the path through `09 REAL PLAYBACK`, recovery wiring, and the B12 proof gate.
 
 This document is intentionally conservative. A UI element being visible is not enough to mark it working.
 
@@ -36,10 +36,10 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 
 | Area | Current status | Notes |
 | --- | --- | --- |
-| V2 baseline | `visual/wired partial` | v0.10.46 has startup option, nine-item sidebar, shared Event history placement, B3 status/help overlay, B4 Setup/Auth controls, B5 Startup/Workers controls, and shell/explanation pages for `07`-`09`. |
+| V2 baseline | `wired/tested partial` | v0.10.64 has the nine-page V2 flow, shared Event history, B3 status/help overlay, B4/B5/B6/B7/B8 controls, B10 integrated `09 REAL PLAYBACK` layout/projection, B11 recovery endpoints/autosave/restart-check, and a B12 proof gate. Live target-machine proof remains required. |
 | Goals doc | `documented` | `docs/20_architecture_and_specs/v2_goals/goals.md` defines victory conditions. |
 | New docs package | `planned/documented` | This document and companion OpenSpec files define next implementation direction. |
-| Runtime implementation | `partially reused` | V2 B4/B5 controls are placed against existing frontend action contracts; backend/server routes were not newly introduced by these slices. Live backend/target-machine proof remains later. |
+| Runtime implementation | `partially reused/wired` | V2 controls are placed against existing frontend action contracts plus B11 recovery endpoints. Some proofs are mocked or focused; Raspberry/live auth/live playback/live abrupt-restart evidence remains outside this docs slice. |
 | Shared V2 page wrapper | `visual/tested` | v0.10.34 adds `renderV2OperatorPageWrapper` as a reusable V2 shell wrapper; v0.10.35 extends the route shell to all nine V2 routes. |
 | V2 Event history panel | `visual/tested` | v0.10.34 renders a reusable V2 event-history panel with existing `copy all log` and `Clear` actions. |
 | V2 status/help metadata foundation | `visual/tested` | v0.10.39 keeps `dashboard/data/v2ImplementationStatus.json` synchronized with every rendered V2 status target and B3 status/help controls. |
@@ -48,12 +48,12 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 
 | Page | Target role | Current intended state | Evidence needed before ready |
 | --- | --- | --- | --- |
-| `01 SETUP` | env/database readiness | `1A Verify .env` and `2A Database controls` reused/wired in V2 | V2 render test + endpoint/action test |
-| `02 AUTHENTICATION` | NEW AUTH session readiness | `1A-STASH-OFF - NEW AUTH` reused/wired in V2 | V2 render test + new-auth endpoint proof |
-| `03 STARTUP` | Raspberry scheduler/startup | reuse/extract Raspberry scheduler panel | Raspberry scheduler proof + V2 placement test |
-| `04 WORKERS` | worker stage controls | reuse/extract B3 stage controls | worker endpoint proofs + V2 placement test |
+| `01 SETUP` | env/database readiness | `1A Verify .env` and `2A Database controls` reused/wired in V2 | Focused V2 placement/action tests exist; live environment/database proof still needed |
+| `02 AUTHENTICATION` | NEW AUTH session readiness | `1A-STASH-OFF - NEW AUTH` reused/wired in V2 | Focused V2 placement/action tests exist; live auth/session proof still needed |
+| `03 STARTUP` | Raspberry scheduler/startup | Raspberry scheduler controls plus RPI-STAGES/RPI-WORKERS are placed in V2 | Raspberry target crontab proof still needed |
+| `04 WORKERS` | worker stage controls | B3.1-B3.5 worker cards plus shared status rows are placed in V2 | Live pipeline worker proof still needed |
 | `05 TROUBLESHOOTING` | stale lock repair | `B6.1` Pipeline maintenance controls placed/wired to existing maintenance action IDs | stale-lock behavior proof + V2 placement test |
-| `06 RECOVERY` | recovery placeholder now; real recovery later | `B6.2` alert-only buttons placed | placeholder test first; later save/load/autosave/restart proof |
+| `06 RECOVERY` | recovery state and restart flow | B11.2 manual save/load endpoints and B11.3 autosave/restart-check are wired in V2 | Live abrupt-stop/restart proof still needed |
 | `07 PIR` | activity/screen test | `B7.1` visible B5 subset and PIR emulator placed | route/render test now; deeper browser activity and hardware proof later |
 | `08 PLAYBACK` | queue/rendering test | `B8.1` rendering target/mode subsection, `B8.2` browser-local drag/drop queue table, `B8.3` media-only backend queue-prepare bridge, and `B8.4` GPS/address metadata bridge placed | render/queue tests now; address overlay proof later |
 | `09 REAL PLAYBACK` | final endpoint | B10.1 integrated layout + B10.2 read-only status projection composed from proven pieces only | composition/projection tests now; full autonomous playback + recovery proof later |
@@ -235,15 +235,15 @@ The color names are operator-facing shorthand. Code may use semantic statuses, b
 | `docs` | yes | Markdown docs that describe this element. |
 | `operatorNote` | yes | Plain-language current reality. |
 
-### Inventory table template for next checkpoint
+### Historical inventory table template from pre-placement checkpoint
 
-The next non-UI checkpoint should fill this table from actual code inspection.
+The table below is preserved for provenance from the pre-placement planning checkpoint. Current implementation truth is the page status matrix above plus the version notes below.
 
 | V2 element | Current source path | Endpoint/handler | Existing test/proof | Reuse decision | V2 test needed | Status JSON ID | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `01 SETUP / Verify .env` | inventory pending | `POST /api/init/verify-env` | inventory pending | inventory pending | render/click/result | `v2.page01.verifyEnv` | `not_implemented` |
-| `01 SETUP / Database controls` | inventory pending | init DB endpoints | inventory pending | inventory pending | render/click/result | `v2.page01.databaseControls` | `not_implemented` |
-| `02 AUTHENTICATION / NEW AUTH` | inventory pending | `/api/auth/new/*` | inventory pending | inventory pending | render/click/result | `v2.page02.newAuth` | `not_implemented` |
+| `01 SETUP / Verify .env` | `dashboard/views/v2StartupOperatorMenuView.ts` + existing action | `POST /api/init/verify-env` | focused V2 tests | reused shared result/log surfaces | live endpoint proof | `v2.block.01.actions` | `wired_needs_verification` |
+| `01 SETUP / Database controls` | V2 shared backend card/renderers | init DB endpoints | focused V2 tests | reused existing DB actions | live DB proof | `v2.block.01.actions` | `wired_needs_verification` |
+| `02 AUTHENTICATION / NEW AUTH` | shared NEW AUTH action rows | `/api/auth/new/*` | focused V2 tests | extracted/reused | live auth proof | `v2.block.02.actions` | `wired_needs_verification` |
 | `03 STARTUP / Raspberry scheduler` | inventory pending | cron/scheduler endpoints | inventory pending | inventory pending | crontab status actions | `v2.page03.scheduler` | `not_implemented` |
 | `04 WORKERS / B3.1-B3.5` | `dashboard/data/v2OperatorCenterPanel.ts` + shared V2 backend card renderer | runtime worker endpoints | focused V2 render test | reuse existing runtime action IDs | live click/status proof later | `v2.block.04.worker-b3-*` | `wired_needs_verification` |
 | `05 TROUBLESHOOTING / stale locks` | inventory pending | pipeline maintenance endpoints | inventory pending | inventory pending | stale-only behavior | `v2.page05.pipelineMaintenance` | `needs_verification` |
@@ -305,10 +305,20 @@ The root README files and this status document were refreshed after B5 so the re
 | --- | --- | --- | --- |
 | `B10.1` `09 REAL PLAYBACK` layout | `visual/tested` | Final page now composes only proven surfaces: Raspberry scheduler controls, RPI-STAGES/RPI-WORKERS, B3.1-B3.5 worker cards, B8 rendering controls, B8 queue bridge, and B8 metadata bridge. | Final autonomous proof remains future. |
 | `B10.2` status projection | `visual/tested` | Read-only projection summarizes scheduler, pipeline stages, queue bridge, metadata, rendering, and recovery gate state. | Projection is not a worker runner or recovery engine. |
-| `B11.1` recovery schema | `schema/tested` | `dashboard/services/v2RecoveryStateSchema.ts` and `V2_RecoveryStateSchema.md` define same-media/queue-context recovery without exact timestamp requirement. | Manual save/load endpoints are implemented in B11.2; autosave/restart recovery remains B11.3. |
+| `B11.1` recovery schema | `schema/tested` | `dashboard/services/v2RecoveryStateSchema.ts` and `V2_RecoveryStateSchema.md` define same-media/queue-context recovery without exact timestamp requirement. | Manual save/load endpoints are implemented in B11.2; autosave/restart recovery is implemented in B11.3. |
 
-| `B11.2` manual recovery endpoints | `wired/tested` | `POST /api/runtime/recovery/state/save`, `POST /api/runtime/recovery/state/load`, and `GET /api/runtime/recovery/state` persist same-media/queue-context snapshots without autoplay or secrets. | Autosave/restart flow remains B11.3. |
+| `B11.2` manual recovery endpoints | `wired/tested` | `POST /api/runtime/recovery/state/save`, `POST /api/runtime/recovery/state/load`, and `GET /api/runtime/recovery/state` persist same-media/queue-context snapshots without autoplay or secrets. | Live abrupt-restart proof remains required. |
 
 | `B11.3` autosave/restart recovery flow | `wired/tested` | `POST /api/runtime/recovery/autosave` stores pre-shutdown/stage snapshots; `POST /api/runtime/recovery/restart-check` compares backend boot records and saved snapshots. | Live power-loss proof remains B12. |
 
 | `B12` victory proof gate | `gate/tested` | `evaluateV2VictoryProofGate` requires scheduler/pipeline/queue/recovery prerequisites plus explicit live playback and recovery evidence. | Gate exists; live target-machine proof not passed in this sandbox. |
+
+
+## v0.10.65 DOCS.2 status reconciliation
+
+| Area | Status after reconciliation | Notes |
+| --- | --- | --- |
+| OpenSpec/page-level wording | `refreshed` | Removed stale setup/auth/troubleshooting/recovery/playback summaries that still described route-shell or visual-only states after B4-B12. |
+| Structured JSON status source | `refreshed` | `dashboard/data/v2ImplementationStatus.json` page/block summaries now match v0.10.64 implementation reality while keeping live proof non-claims. |
+| Root README/quickstart docs | `refreshed` | Root entry points now report v0.10.65 and the current integrated V2/recovery/proof-gate boundary. |
+| B12 proof gate | `implemented/not live-passed` | The gate exists and blocks customer-ready claims until live autonomous playback and live abrupt-restart recovery evidence are supplied. |
