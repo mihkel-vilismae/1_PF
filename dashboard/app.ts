@@ -63,7 +63,7 @@ import { renderDatabaseViewerView } from './views/databaseViewerView.ts';
 import { renderOsPlaybackFullscreenOverlay, renderOsPlaybackView } from './views/osPlaybackView.ts';
 import { renderDebugView } from './views/debugView.ts';
 import { renderV2OperatorMenuView } from './views/v2OperatorMenuView.ts';
-import { renderV2StartupOperatorMenuView } from './views/v2StartupOperatorMenuView.ts';
+import { renderV2StartupOperatorMenuView, type V2PlaybackQueueItem } from './views/v2StartupOperatorMenuView.ts';
 import { addIsolatedTestMediaItem, buildDefaultDebugPageState, clearDebugElementMetadata, cycleDebugColorSchema, cycleDebugMajorVisualMode, pauseFakeDebugCrontab, previewFakeDebugStateRestore, readFakeDebugCrontab, resumeFakeDebugCrontab, runMockDebugWorker, saveFakeDebugStateSnapshot, saveManualTestingSystemStateSnapshot, selectDebugElementMetadata, setDebugCrontabContent, stageFakeDebugCrontabInstall, type DebugPageState, type DebugWorkerKey } from './services/debugPageModel.ts';
 import { buildOsPlaybackViewModel, OS_PLAYBACK_PLATFORMS, type OsPlaybackPlatform, type PlaybackLogEntryViewModel } from './services/osPlaybackViewModel.ts';
 import { requestJson, setDashboardRuntimeMode } from './services/apiClient.ts';
@@ -87,6 +87,8 @@ let v2OperatorSidebarRoute: V2OperatorSidebarRoute = 'setup';
 let liveUpdatesPaused = false;
 let pendingLiveUpdateRender = false;
 let v2ImplementationStatusMode = false;
+let v2PlaybackQueueItems: V2PlaybackQueueItem[] = [];
+let v2PlaybackQueueItemCounter = 0;
 let hasInitPreloadRun = false;
 let hasInitNewAuthPreloadRun = false;
 type BackendVersionState = {
@@ -189,6 +191,7 @@ function render() {
         implementationStatusMode: v2ImplementationStatusMode,
         runtimeState: state,
         dashboardVisualMode,
+        v2PlaybackQueueItems,
       })}
     `;
     restoreScrollSnapshotAfterLayout(app, scrollSnapshot);
@@ -1833,6 +1836,28 @@ function bindEvents() {
     });
   });
 
+  app.querySelectorAll<HTMLInputElement>('[data-v2-playback-file-input]').forEach((input) => {
+    input.addEventListener('change', () => {
+      addV2PlaybackFiles(input.files);
+      input.value = '';
+    });
+  });
+
+  app.querySelectorAll<HTMLElement>('[data-v2-playback-drop-zone]').forEach((dropZone) => {
+    dropZone.addEventListener('dragover', (event) => {
+      event.preventDefault();
+      dropZone.classList.add('v2-playback-drop-zone--dragging');
+    });
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('v2-playback-drop-zone--dragging');
+    });
+    dropZone.addEventListener('drop', (event) => {
+      event.preventDefault();
+      dropZone.classList.remove('v2-playback-drop-zone--dragging');
+      addV2PlaybackFiles(event.dataTransfer?.files ?? null);
+    });
+  });
+
   app.querySelectorAll<HTMLElement>('[data-last-run-mode]').forEach((button) => {
     button.addEventListener('click', () => {
       const mode = button.dataset.lastRunMode;
@@ -1975,6 +2000,88 @@ function openLogModal(sourceKey, index) {
       sourceKey: sourceName,
     },
   });
+}
+
+
+function addV2PlaybackFiles(files: FileList | null | undefined): void {
+  const fileArray = Array.from(files ?? []);
+  if (!fileArray.length) {
+    return;
+  }
+
+  const nextItems = fileArray.map((file) => buildV2PlaybackQueueItem(file));
+  v2PlaybackQueueItems = [...v2PlaybackQueueItems, ...nextItems];
+  pushHistory('PLAYBACK', 'info', `Added ${nextItems.length} file(s) to the V2 browser-local playback queue.`, {
+    action: 'v2-playback-drop-queue-add',
+    fileCount: nextItems.length,
+    mediaKinds: nextItems.map((item) => item.mediaKind),
+    productionMutation: false,
+  });
+  render();
+
+  nextItems.forEach((item, index) => {
+    const file = fileArray[index];
+    if (item.mediaKind === 'video' && file) {
+      hydrateV2VideoDuration(file, item.id);
+    }
+  });
+}
+
+function buildV2PlaybackQueueItem(file: File): V2PlaybackQueueItem {
+  const mediaKind = classifyV2PlaybackFile(file);
+  v2PlaybackQueueItemCounter += 1;
+  return {
+    id: `v2-drop-${v2PlaybackQueueItemCounter}`,
+    filename: file.name || `unnamed-${v2PlaybackQueueItemCounter}`,
+    mediaKind,
+    durationLabel: mediaKind === 'video' ? 'metadata pending' : mediaKind === 'image' ? 'not applicable for image' : 'not playable as media',
+    gpsCoordinates: 'not extracted in browser-local queue',
+    address: 'no address string yet',
+  };
+}
+
+function classifyV2PlaybackFile(file: File): V2PlaybackQueueItem['mediaKind'] {
+  const type = String(file.type ?? '').toLowerCase();
+  const name = String(file.name ?? '').toLowerCase();
+  if (type.startsWith('video/') || /\.(mp4|mov|m4v|webm|avi|mkv)$/i.test(name)) {
+    return 'video';
+  }
+  if (type.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|heic|heif|bmp)$/i.test(name)) {
+    return 'image';
+  }
+  return 'other';
+}
+
+function hydrateV2VideoDuration(file: File, itemId: string): void {
+  if (typeof URL === 'undefined' || typeof document === 'undefined') {
+    return;
+  }
+  const objectUrl = URL.createObjectURL(file);
+  const video = document.createElement('video');
+  video.preload = 'metadata';
+  video.onloadedmetadata = () => {
+    const duration = Number.isFinite(video.duration) ? video.duration : null;
+    URL.revokeObjectURL(objectUrl);
+    v2PlaybackQueueItems = v2PlaybackQueueItems.map((item) => item.id === itemId
+      ? { ...item, durationLabel: duration == null ? 'duration unavailable' : formatDurationSeconds(duration) }
+      : item);
+    render();
+  };
+  video.onerror = () => {
+    URL.revokeObjectURL(objectUrl);
+    v2PlaybackQueueItems = v2PlaybackQueueItems.map((item) => item.id === itemId
+      ? { ...item, durationLabel: 'duration unavailable' }
+      : item);
+    render();
+  };
+  video.src = objectUrl;
+}
+
+function formatDurationSeconds(seconds: number): string {
+  const roundedSeconds = Math.max(0, Math.round(seconds));
+  const minutes = Math.floor(roundedSeconds / 60);
+  const remainder = roundedSeconds % 60;
+  return `${minutes}:${String(remainder).padStart(2, '0')}`;
 }
 
 function getHistoryCopyButtonLabel(): string {

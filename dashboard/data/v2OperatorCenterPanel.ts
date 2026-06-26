@@ -19,7 +19,8 @@ export type V2OperatorBlockType =
   | 'rpiWorkersRow'
   | 'recoveryPlaceholderActions'
   | 'pirActivityTest'
-  | 'playbackRenderingControls';
+  | 'playbackRenderingControls'
+  | 'playbackDropQueue';
 
 export type V2OperatorRisk = 'safe' | 'guarded' | 'destructive' | 'future' | 'localSecretSensitive';
 
@@ -148,7 +149,23 @@ export type V2OperatorCenterPanelBlock =
       actions: readonly V2OperatorRecoveryPlaceholderAction[];
     }
   | {
-      type: 'pirActivityTest' | 'playbackRenderingControls';
+      type: 'pirActivityTest';
+      id: string;
+      title: string;
+      body?: string;
+      status?: string;
+      risk?: V2OperatorRisk;
+    }
+  | {
+      type: 'playbackRenderingControls';
+      id: string;
+      title: string;
+      body?: string;
+      status?: string;
+      risk?: V2OperatorRisk;
+    }
+  | {
+      type: 'playbackDropQueue';
       id: string;
       title: string;
       body?: string;
@@ -742,6 +759,13 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
         body: 'Rendering tabs affect only preview/fullscreen presentation; backend selection remains POST /api/runtime/playback/select-current.',
         status: 'frontend rendering controls',
       },
+      {
+        type: 'playbackDropQueue',
+        id: '08.drop-queue',
+        title: 'Drag/drop playback queue',
+        body: 'Drop images, videos, and other files into a browser-local V2 queue table. Non-media files are allowed into the table and must be reported gracefully instead of played.',
+        status: 'browser-local queue table',
+      },
       buildRpiWorkersRow('08.rpi-workers', 'Playback'),
       {
         type: 'statusCard',
@@ -800,4 +824,13 @@ export const V2_OPERATOR_ALLOWED_BLOCK_TYPES: readonly V2OperatorBlockType[] = [
   'snapshotList',
   'futurePlaceholder',
   'exampleList',
+  'backendActionCard',
+  'newAuthCard',
+  'rpiSchedulerControls',
+  'rpiStagesRow',
+  'rpiWorkersRow',
+  'recoveryPlaceholderActions',
+  'pirActivityTest',
+  'playbackRenderingControls',
+  'playbackDropQueue',
 ] as const;

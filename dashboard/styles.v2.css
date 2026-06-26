@@ -560,3 +560,57 @@ body.v2-implementation-status-mode [data-v2-implementation-status="not-implement
 .v2-playback-rendering-controls .playback-rendering-tabs {
   flex-wrap: wrap;
 }
+
+.v2-playback-drop-zone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 7rem;
+  margin: 1rem 0;
+  padding: 1.25rem;
+  border: 2px dashed rgba(148, 163, 184, 0.55);
+  border-radius: 1rem;
+  background: rgba(15, 23, 42, 0.04);
+  cursor: pointer;
+  text-align: center;
+}
+
+.v2-playback-drop-zone input {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.v2-playback-drop-zone span {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.v2-playback-drop-zone--dragging {
+  border-style: solid;
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.v2-playback-queue-table-wrap {
+  overflow-x: auto;
+}
+
+.v2-playback-queue-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+}
+
+.v2-playback-queue-table th,
+.v2-playback-queue-table td {
+  padding: 0.55rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.3);
+  text-align: left;
+  vertical-align: top;
+}
+
+.v2-playback-queue-table th {
+  white-space: nowrap;
+}

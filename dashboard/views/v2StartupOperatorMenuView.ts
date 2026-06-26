@@ -15,12 +15,22 @@ import { NEW_AUTH_BUTTONS, renderNewAuthActionRow } from './newAuthActionRows.ts
 import { SCHEDULER_EMULATOR_BUTTONS, renderSchedulerActionButton } from './schedulerActionRows.ts';
 import { SCHEDULER_TARGETS } from '../../shared/schedulerPlatformCapabilities.ts';
 
+export type V2PlaybackQueueItem = {
+  id: string;
+  filename: string;
+  mediaKind: 'video' | 'image' | 'other';
+  durationLabel: string;
+  gpsCoordinates: string;
+  address: string;
+};
+
 type V2StartupOperatorMenuRenderOptions = {
   inspectMode?: boolean;
   valueInspectMode?: boolean;
   implementationStatusMode?: boolean;
   runtimeState?: Record<string, any>;
   dashboardVisualMode?: string | null;
+  v2PlaybackQueueItems?: readonly V2PlaybackQueueItem[];
 };
 
 export function renderV2StartupOperatorMenuView(
@@ -37,7 +47,7 @@ export function renderV2StartupOperatorMenuView(
       ${V2_OPERATOR_SIDEBAR_ITEMS.map((item) => renderV2SidebarItem(item, activeItem.route)).join('')}
     </nav>
   `;
-  const centerPanelMarkup = activePage.blocks.map((block) => renderV2CenterPanelBlock(block, renderOptions.runtimeState, renderOptions.dashboardVisualMode)).join('');
+  const centerPanelMarkup = activePage.blocks.map((block) => renderV2CenterPanelBlock(block, renderOptions.runtimeState, renderOptions.dashboardVisualMode, renderOptions.v2PlaybackQueueItems ?? [])).join('');
 
   return renderV2OperatorPageWrapper({
     activeItem,
@@ -72,7 +82,7 @@ function renderV2SidebarItem(item: (typeof V2_OPERATOR_SIDEBAR_ITEMS)[number], a
   `;
 }
 
-function renderV2CenterPanelBlock(block: V2OperatorCenterPanelBlock, runtimeState: Record<string, any> = {}, dashboardVisualMode: string | null = null): string {
+function renderV2CenterPanelBlock(block: V2OperatorCenterPanelBlock, runtimeState: Record<string, any> = {}, dashboardVisualMode: string | null = null, v2PlaybackQueueItems: readonly V2PlaybackQueueItem[] = []): string {
   switch (block.type) {
     case 'infoPanel':
     case 'statusCard':
@@ -99,6 +109,8 @@ function renderV2CenterPanelBlock(block: V2OperatorCenterPanelBlock, runtimeStat
       return renderPirActivityTestBlock(block, runtimeState);
     case 'playbackRenderingControls':
       return renderPlaybackRenderingControlsBlock(block, runtimeState);
+    case 'playbackDropQueue':
+      return renderPlaybackDropQueueBlock(block, v2PlaybackQueueItems);
     case 'sectionGroup':
       return renderSectionGroupBlock(block);
     case 'toggleGroup':
@@ -451,6 +463,52 @@ function getV2PlaybackRenderingReadyMessage(mode: PlaybackRenderingMode): string
     return 'Fullscreen rendering mode is selected. OS-level or Raspberry hardware control is not implemented in this slice.';
   }
   return 'Playback can continue without rendering.';
+}
+
+
+function renderPlaybackDropQueueBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'playbackDropQueue' }>, queueItems: readonly V2PlaybackQueueItem[]): string {
+  return `
+    <article class="card v2-block v2-block--playbackDropQueue" data-v2-playback-drop-queue data-v2-block-type="playbackDropQueue" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
+      ${renderBlockHeader(block.title, getV2BlockStatusId(block.id), block.status)}
+      ${block.body ? `<p class="card__copy">${escapeHtml(block.body)}</p>` : ''}
+      <label class="v2-playback-drop-zone" data-v2-playback-drop-zone>
+        <input data-v2-playback-file-input type="file" multiple accept="image/*,video/*,*/*" />
+        <span><strong>Drop files here</strong><small>Images, videos, and other files are accepted into this browser-local queue table.</small></span>
+      </label>
+      <div class="v2-playback-queue-table-wrap">
+        <table class="v2-playback-queue-table">
+          <thead>
+            <tr>
+              <th>filename</th>
+              <th>is video</th>
+              <th>is image</th>
+              <th>is other</th>
+              <th>duration</th>
+              <th>GPS coordinates</th>
+              <th>address string</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${queueItems.length ? queueItems.map(renderPlaybackDropQueueRow).join('') : '<tr data-v2-playback-empty-queue><td colspan="7">No dropped files yet. Non-media files will be listed here and reported gracefully instead of played.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </article>
+  `;
+}
+
+function renderPlaybackDropQueueRow(item: V2PlaybackQueueItem): string {
+  return `
+    <tr data-v2-playback-queue-item="${escapeHtml(item.id)}" data-v2-playback-media-kind="${escapeHtml(item.mediaKind)}">
+      <td>${escapeHtml(item.filename)}</td>
+      <td>${item.mediaKind === 'video' ? 'yes' : 'no'}</td>
+      <td>${item.mediaKind === 'image' ? 'yes' : 'no'}</td>
+      <td>${item.mediaKind === 'other' ? 'yes — report not playable' : 'no'}</td>
+      <td>${escapeHtml(item.durationLabel)}</td>
+      <td>${escapeHtml(item.gpsCoordinates)}</td>
+      <td>${escapeHtml(item.address)}</td>
+    </tr>
+  `;
 }
 
 function renderSectionGroupBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'sectionGroup' }>): string {

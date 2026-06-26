@@ -109,7 +109,7 @@ test('V2 shared infrastructure renders event history and status metadata foundat
   assert.ok(statusRegistry.elements.some((element) => element.id === 'v2.page.pir' && element.status === 'in-progress'));
   assert.ok(statusRegistry.elements.some((element) => element.id === 'v2.page.playback' && element.status === 'in-progress'));
   assert.ok(statusRegistry.elements.some((element) => element.id === 'v2.page.real-playback' && element.status === 'in-progress'));
-  assert.match(centerPanelSource, /07 PIR shell/);
+  assert.match(centerPanelSource, /B5 Screen on-off simulation/);
   assert.match(centerPanelSource, /08 PLAYBACK shell/);
   assert.match(centerPanelSource, /09 REAL PLAYBACK goal/);
   assert.match(centerPanelSource, /explanation-only/);

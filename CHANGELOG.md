@@ -4077,3 +4077,9 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 - Added `08 PLAYBACK` rendering target/mode subsection using the shared playbackRenderer state contract.
 - Kept backend selection owned by `POST /api/runtime/playback/select-current`; Raspberry OS rendering remains disabled.
 - Updated V2 implementation status JSON/docs and placement coverage.
+
+## v0.10.52 - B8.2 V2 playback drag/drop queue table
+
+- Added browser-local drag/drop/file-input queue table to `08 PLAYBACK`.
+- Added image/video/other classification, video duration metadata hydration when available, and graceful non-media reporting.
+- Kept GPS/address fields visible as placeholders pending pipeline metadata integration.

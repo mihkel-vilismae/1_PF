@@ -324,7 +324,7 @@
       "id": "v2.page.playback",
       "label": "08 PLAYBACK",
       "status": "in-progress",
-      "summary": "08 PLAYBACK contains B8.1 rendering controls plus the shared RPI-WORKERS row. Drag/drop queue and backend playback proof remain future."
+      "summary": "08 PLAYBACK contains B8.1 rendering controls and B8.2 browser-local drag/drop queue table plus the shared RPI-WORKERS row. Backend playback proof remains future."
     },
     {
       "id": "v2.page.real-playback",
@@ -403,6 +403,12 @@
       "label": "PLAYBACK / B4 rendering target and mode controls",
       "status": "in-progress",
       "summary": "B8.1 adds the isolated playback rendering target/mode subsection using the shared playbackRenderer state contract. Raspberry OS rendering remains disabled until proof exists."
+    },
+    {
+      "id": "v2.block.08.drop-queue",
+      "label": "PLAYBACK / drag/drop queue table",
+      "status": "in-progress",
+      "summary": "B8.2 adds a browser-local drag/drop queue table that classifies image/video/other files and reports non-media as not playable instead of trying to play it."
     }
   ]
 }

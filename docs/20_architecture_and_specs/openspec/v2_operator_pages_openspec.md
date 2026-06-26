@@ -627,3 +627,8 @@ B1, B3, B4, and B5 implementation slices have placed the nine-page shell, V2 sta
 ## v0.10.51 B8.1 Playback rendering target/mode subsection
 
 `08 PLAYBACK` now renders the isolated B4 rendering subsection. It keeps backend playback selection owned by `POST /api/runtime/playback/select-current`, uses the browser-native renderer for preview/fullscreen presentation, and keeps Raspberry OS rendering disabled until proof exists.
+
+
+## v0.10.52 B8.2 Playback drag/drop queue table
+
+`08 PLAYBACK` now includes a browser-local drag/drop/file-input queue table. It accepts image, video, and non-media files, classifies rows as video/image/other, shows duration when browser metadata is available for videos, and reports non-media as not playable instead of attempting playback. GPS/address columns are visible placeholders until metadata/pipeline integration.

@@ -98,3 +98,35 @@ test('V2 Playback renders B8.1 rendering target and mode subsection', () => {
     assert.match(markup, new RegExp(esc(expected)));
   }
 });
+
+test('V2 Playback renders B8.2 drag/drop queue table with image/video/other rows', () => {
+  const markup = render('playback', {
+    v2PlaybackQueueItems: [
+      { id: 'img-1', filename: 'family.jpg', mediaKind: 'image', durationLabel: 'not applicable for image', gpsCoordinates: '59.4370, 24.7536', address: 'Tallinn, Estonia' },
+      { id: 'vid-1', filename: 'clip.mp4', mediaKind: 'video', durationLabel: '0:12', gpsCoordinates: 'not extracted in browser-local queue', address: 'no address string yet' },
+      { id: 'txt-1', filename: 'notes.txt', mediaKind: 'other', durationLabel: 'not playable as media', gpsCoordinates: 'not extracted in browser-local queue', address: 'no address string yet' },
+    ],
+  });
+  for (const expected of [
+    'Drop files here',
+    'filename',
+    'is video',
+    'is image',
+    'is other',
+    'duration',
+    'GPS coordinates',
+    'address string',
+    'family.jpg',
+    'clip.mp4',
+    'notes.txt',
+    'yes — report not playable',
+    'data-v2-playback-drop-queue',
+    'data-v2-status-id="v2.block.08.drop-queue"',
+  ]) {
+    assert.match(markup, new RegExp(esc(expected)));
+  }
+  const appSource = readFileSync('dashboard/app.ts', 'utf8');
+  assert.match(appSource, /classifyV2PlaybackFile/);
+  assert.match(appSource, /data-v2-playback-drop-zone/);
+  assert.match(appSource, /not playable as media/);
+});
