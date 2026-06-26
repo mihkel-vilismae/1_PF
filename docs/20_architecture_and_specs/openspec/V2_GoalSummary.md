@@ -146,3 +146,13 @@ Before large UI implementation, the documentation package should be in place:
 6. V2 HR decision log;
 7. TOC/README references;
 8. ACR review docs.
+
+## 3+2 ACR OpenSpec coverage expansion summary
+
+Estonian timestamp: 2026-06-26 11:05 EEST
+
+The OpenSpec coverage has been expanded to make the path from isolated V2 pages to `09 REAL PLAYBACK` more enforceable.
+
+The next implementation work must not start by copying page markup. It must start with a code inventory/reuse map that identifies current component locations, endpoints, tests, proofs, extraction needs, and status JSON IDs for each requested V2 element.
+
+The final `09 REAL PLAYBACK` page remains the endpoint goal, but it must be composed from proven parts only. Test-only controls may appear on that page only disabled. The final victory evidence remains autonomous playback plus autonomous recovery.

@@ -435,3 +435,131 @@ The final address/GPS playback rule is intentionally deferred until implementati
 10. power loss or rough shutdown is recoverable without manual repair;
 11. system restores enough state to continue operation;
 12. screen on/off behavior works for mouse/keyboard and eventually PIR.
+
+## 3+2 ACR coverage expansion — implementation contract hardening
+
+Estonian timestamp: 2026-06-26 11:05 EEST
+
+This section expands OpenSpec coverage after a 3+2 ACR review focused on preventing implementation drift. It is still documentation-only. It defines what the next code-inventory and implementation phases must prove before controls are marked ready.
+
+### ACR pass summary
+
+| Pass | Coverage finding | Required OpenSpec response |
+| --- | --- | --- |
+| A1 — requirement extraction | The existing docs define pages and goals, but implementation can still drift if page elements are not tied to components, endpoints, proofs, and status metadata. | Add traceability from every V2 element to component source, endpoint, test/proof, status JSON entry, and target page. |
+| C1 — duplication critique | The largest code risk is repeated screenshot-derived HTML. | Require a component inventory and extraction decision before UI placement. |
+| R1 — sequencing refinement | `09 REAL PLAYBACK` must not be assembled before isolated pages prove their pieces. | Add phase gates and acceptance criteria. |
+| C2 — status honesty critique | A visible card can look complete while behavior is placeholder or unproven. | Require synchronized JSON/docs/UI status and status-specific evidence. |
+| R2 — proof refinement | Existing backend proofs do not automatically prove V2 placement. | Require endpoint proof plus V2 render/click/result handling tests. |
+
+### Coverage gate before any V2 UI placement
+
+Before adding or moving any V2 UI element, the implementation must produce a code inventory/reuse map. The inventory can be a temporary implementation report or a committed docs update, but it must answer these fields for each requested element.
+
+| Field | Required answer |
+| --- | --- |
+| Requested V2 element | Exact page/card/control from this OpenSpec. |
+| Current source location | Existing component, renderer, page-local block, or `not found`. |
+| Reuse decision | `reuse directly`, `extract shared component`, `new component`, or `defer`. |
+| Endpoint/handler | Existing endpoint/handler used by the control, or `visual only`. |
+| Existing tests/proofs | Test/proof names or `none found`. |
+| New V2 tests needed | Render, click, response-handling, status-overlay, or proof gap. |
+| Implementation-status JSON ID | Stable ID that the V2 status overlay will read. |
+| Documentation status | Matching row in `V2_ImplementationStatus.md`. |
+| Risk status | `green`, `yellow`, `red`, or documented later color. |
+
+No large HTML or JSX block may be copied into a new V2 page merely to satisfy visual placement. If the same structure appears on more than one V2 page, it must be a reusable component or renderer unless a documented exception is approved.
+
+### Reusable component extraction checklist
+
+A reused/extracted component is acceptable only when these conditions are met.
+
+| Check | Requirement |
+| --- | --- |
+| Boundary | Component accepts data/handlers as inputs and does not hard-code page-specific global state unless that behavior already exists and is documented. |
+| Endpoint stability | Moving the component must not silently change backend endpoint names, methods, payloads, or result handling. |
+| Status metadata | Component or wrapper can expose an implementation-status JSON ID. |
+| Section help | Component or wrapper can render the top-right `?` explanation/status icon. |
+| Event logging | Component either writes to the shared Event Log path or exposes events to the V2 page shell. |
+| Testing | Component has or receives render/click tests in the V2 placement. |
+| Duplication guard | Duplicated markup is limited to small composition wrappers, not repeated card bodies. |
+
+### Structured status JSON contract
+
+The implementation-status overlay must read a structured JSON source. The exact path is decided during code inventory, but the schema must cover at least the following fields.
+
+```json
+{
+  "schemaVersion": "v2-implementation-status-v1",
+  "updatedAt": "2026-06-26T00:00:00+03:00",
+  "items": [
+    {
+      "id": "v2.page01.verifyEnv",
+      "page": "01 SETUP",
+      "label": "Verify .env",
+      "kind": "section",
+      "status": "red",
+      "statusLabel": "not implemented",
+      "componentSource": "inventory-pending",
+      "endpoint": "POST /api/init/verify-env",
+      "tests": [],
+      "proofs": [],
+      "docs": [
+        "docs/20_architecture_and_specs/openspec/V2_ImplementationStatus.md"
+      ],
+      "operatorNote": "Planned reused control; V2 placement proof missing."
+    }
+  ]
+}
+```
+
+Rules:
+
+- IDs must be stable and unique.
+- UI overlay colors must derive from `status`, not from ad hoc component state.
+- `V2_ImplementationStatus.md` must name the same element and current status.
+- If the JSON says `green`, a test/proof reference must exist.
+- If status evidence is missing, status must not be green.
+- The JSON file is the frontend-readable status source; the Markdown file is the operator-readable status record.
+
+### Page acceptance criteria matrix
+
+| Page | Minimum render acceptance | Minimum behavior acceptance | Minimum proof/status acceptance |
+| --- | --- | --- | --- |
+| `01 SETUP` | Verify `.env`, Database controls, Event Log, section `?` icons. | Buttons call existing setup/database handlers or are explicitly marked placeholder. | Endpoint tests/proofs mapped; V2 placement tests added. |
+| `02 AUTHENTICATION` | NEW AUTH card, auth actions, Event Log, section `?` icon. | New-auth endpoints only; no old login-card route drift. | Auth proof mapped; CLI fallback documented as fallback, not UI success. |
+| `03 STARTUP` | Raspberry scheduler controls, disabled WSL placeholders, RPI-STAGES, RPI-WORKERS, Event Log. | Real crontab actions only; Windows emulator excluded. | Crontab status/install/check proof or marked unverified. |
+| `04 WORKERS` | B3.1–B3.5 cards, shared rows, Event Log. | Worker controls call documented runtime endpoints or are marked placeholder. | Per-worker endpoint tests/proofs mapped. |
+| `05 TROUBLESHOOTING` | Pipeline maintenance buttons, shared rows, Event Log. | Stale lock detection/clear semantics are stale-only. | Original docs/commit found and new proof added before green. |
+| `06 RECOVERY` | Save/Load/Emulate buttons, Event Log. | Initial buttons alert exact labels; later state behavior follows recovery schema. | Placeholder tests first; later restart proof. |
+| `07 PIR` | Visible B5 subset only, PIR emulation button, RPI-WORKERS, Event Log. | Mouse/keyboard direct tests; PIR emulator simulates signal. | PIR hardware remains non-green until hardware proof exists. |
+| `08 PLAYBACK` | Visible B4 subsection, drag/drop queue/table, RPI-WORKERS, Event Log. | Image/video/other classification; non-media fails gracefully when selected. | Queue/rendering tests and media proof mapped. |
+| `09 REAL PLAYBACK` | Explanation first; later composed real operational surface. | Only proven pieces active; test controls disabled unless promoted. | Final autonomous playback and recovery proofs required. |
+
+### Final proof coverage matrix
+
+| Victory objective | Required evidence | Source pages involved | Notes |
+| --- | --- | --- | --- |
+| Authentication succeeds | Browser/new-auth proof or documented CLI fallback proof. | `02`, `09` | UI success cannot replace backend/session proof. |
+| Scheduler active | Raspberry crontab install/check/print proof. | `03`, `09` | Windows emulator evidence is not accepted for real path. |
+| Download starts | Runtime download worker proof/log. | `04`, `09` | Batch/config behavior must be visible or traceable. |
+| Pipeline progresses | Download → Index → GPS parser → Geocode → Queue stage evidence. | `04`, `05`, `09` | Stage row must reflect real state, not static labels. |
+| GPS/address works | GPS extraction and geocode/address result proof where metadata exists. | `04`, `08`, `09` | Missing-address policy is controlled by future toggle. |
+| Playback displays media | Visual/native/browser proof that image/video is shown. | `08`, `09` | Address overlay proof is required when address exists. |
+| Recovery works | Abrupt shutdown/restart proof with restored same media/queue context. | `06`, `09` | Exact video timestamp is not required. |
+| Screen on/off works | Mouse/keyboard tests and PIR emulator; later hardware proof. | `07`, `09` | PIR hardware is not green until real input is proven. |
+
+### Prohibited implementation patterns
+
+| Pattern | Reason |
+| --- | --- |
+| Copying screenshot HTML into multiple pages | Violates reuse-first architecture and makes status/proof sync fragile. |
+| Marking visible controls as complete without endpoint or UI tests | Creates fake readiness. |
+| Wiring scheduler buttons to Windows cron emulator for the real path | Conflicts with operator decision. |
+| Letting corrupt/incomplete files enter DB/pipeline | Violates recovery and pipeline integrity goals. |
+| Letting `09 REAL PLAYBACK` become a dump of every test button | Undermines the final operator endpoint. |
+| Keeping status strings only in Markdown | Frontend overlay needs structured JSON; docs and JSON must sync. |
+
+### Next required OpenSpec-to-code handoff
+
+The next implementation checkpoint should be a code inventory/reuse map, not page UI. It should update `V2_ImplementationStatus.md` with actual discovered component paths, endpoints, tests/proofs, and extraction decisions. Only after that inventory is reviewed should V2 shell/sidebar/component placement begin.

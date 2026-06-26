@@ -190,3 +190,70 @@ Also include:
 - preserved behavior;
 - changed behavior;
 - known risks/unresolved items.
+
+## 3+2 ACR coverage expansion — status metadata and inventory requirements
+
+Estonian timestamp: 2026-06-26 11:05 EEST
+
+This section expands status coverage so future implementation can keep the V2 frontend overlay, structured JSON, and this Markdown tracker synchronized.
+
+### Required status states
+
+| Status value | Color | Meaning | Evidence required before use |
+| --- | --- | --- | --- |
+| `not_implemented` | red | Planned but not present or intentionally placeholder-only. | OpenSpec entry only. |
+| `placeholder` | red or yellow | Visible UI exists but real behavior is not wired. | Render/alert test if visible. |
+| `in_progress` | yellow | Implementation is underway or partially wired. | Work-in-progress commit and known gaps. |
+| `needs_verification` | yellow | Believed to exist/work, but evidence is incomplete. | Inventory reference plus missing proof list. |
+| `needs_solution` | red | Known or suspected problem. | Issue-register entry. |
+| `wired` | yellow | UI calls intended endpoint/handler, but final proof is missing. | UI click test and backend endpoint mapping. |
+| `done_proven` | green | Implemented, tested/proven, and documented. | Frontend test plus backend test/proof references. |
+| `future` | red | Intentional later milestone. | OpenSpec boundary and issue/deferred note. |
+
+The color names are operator-facing shorthand. Code may use semantic statuses, but the rendered overlay must map them to the agreed colors: green for done/proven, yellow for in-progress or needs verification, red for not implemented/needs solution/future.
+
+### Required JSON fields per status item
+
+| Field | Required | Notes |
+| --- | --- | --- |
+| `id` | yes | Stable unique ID, e.g. `v2.page04.downloadWorker`. |
+| `page` | yes | One of the V2 page labels. |
+| `label` | yes | Human-visible control/card/section name. |
+| `kind` | yes | `page`, `section`, `button`, `row`, `value`, `overlay`, or `eventLog`. |
+| `status` | yes | Semantic status from the table above. |
+| `color` | yes | `green`, `yellow`, or `red` initially. |
+| `componentSource` | yes | Existing path, extracted component path, new component path, or `inventory-pending`. |
+| `endpoint` | when applicable | HTTP method/path or `visual-only`. |
+| `tests` | yes | Empty array allowed only when status is not green. |
+| `proofs` | yes | Empty array allowed only when status is not green. |
+| `issueIds` | when applicable | Links to `V2_IssueRegister.md` IDs. |
+| `docs` | yes | Markdown docs that describe this element. |
+| `operatorNote` | yes | Plain-language current reality. |
+
+### Inventory table template for next checkpoint
+
+The next non-UI checkpoint should fill this table from actual code inspection.
+
+| V2 element | Current source path | Endpoint/handler | Existing test/proof | Reuse decision | V2 test needed | Status JSON ID | Status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `01 SETUP / Verify .env` | inventory pending | `POST /api/init/verify-env` | inventory pending | inventory pending | render/click/result | `v2.page01.verifyEnv` | `not_implemented` |
+| `01 SETUP / Database controls` | inventory pending | init DB endpoints | inventory pending | inventory pending | render/click/result | `v2.page01.databaseControls` | `not_implemented` |
+| `02 AUTHENTICATION / NEW AUTH` | inventory pending | `/api/auth/new/*` | inventory pending | inventory pending | render/click/result | `v2.page02.newAuth` | `not_implemented` |
+| `03 STARTUP / Raspberry scheduler` | inventory pending | cron/scheduler endpoints | inventory pending | inventory pending | crontab status actions | `v2.page03.scheduler` | `not_implemented` |
+| `04 WORKERS / B3.1-B3.5` | inventory pending | runtime worker endpoints | inventory pending | inventory pending | per-worker click/status | `v2.page04.workerCards` | `not_implemented` |
+| `05 TROUBLESHOOTING / stale locks` | inventory pending | pipeline maintenance endpoints | inventory pending | inventory pending | stale-only behavior | `v2.page05.pipelineMaintenance` | `needs_verification` |
+| `06 RECOVERY / placeholders` | new simple buttons | browser alerts first | none | new minimal component | exact alert tests | `v2.page06.recoveryPlaceholders` | `not_implemented` |
+| `07 PIR / B5 subset` | inventory pending | activity handlers/PIR emulator | inventory pending | inventory pending | activity/emulator tests | `v2.page07.pirSimulation` | `needs_solution` |
+| `08 PLAYBACK / drag-drop queue` | new component likely | visual/local first | none | new reusable queue component | file classification tests | `v2.page08.dragDropQueue` | `not_implemented` |
+| `09 REAL PLAYBACK / explanation` | new page | visual only first | none | new page composition | render test | `v2.page09.realPlaybackExplanation` | `not_implemented` |
+
+### Status synchronization checklist
+
+Before any implementation report is final:
+
+1. Update the structured JSON status file for every changed V2 element.
+2. Update this Markdown tracker for every changed V2 element.
+3. Update `V2_IssueRegister.md` when an unresolved item appears, changes status, or closes.
+4. Ensure the V2 overlay labels and colors match the JSON.
+5. Ensure any green status has actual test/proof references.
+6. Include unresolved items/risks at the end of the report.

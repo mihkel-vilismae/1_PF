@@ -42,3 +42,18 @@ This register tracks V2 design questions, likely problems, and verification gaps
 ## Review rule
 
 Before any V2 implementation handoff, update this register if new issues are discovered or if a status changes.
+
+## 3+2 ACR added coverage issues
+
+Estonian timestamp: 2026-06-26 11:05 EEST
+
+| ID | Area | Problem | Desired behavior | Status | Related pages | Proof/test needed |
+| --- | --- | --- | --- | --- | --- | --- |
+| `V2-ISSUE-019` | Status JSON location | The exact frontend-readable JSON path has not been chosen. | Pick a path during code inventory that matches the existing frontend architecture and can be loaded by V2 pages. | open | all V2 | JSON load/render test. |
+| `V2-ISSUE-020` | Status/docs drift | JSON, overlay, and Markdown can disagree. | Add a sync check or test that catches missing IDs/status mismatches. | open | all V2 | JSON/docs sync verification. |
+| `V2-ISSUE-021` | Component inventory | Implementation cannot safely reuse controls until actual sources/tests are mapped. | Perform code inventory before UI placement. | open | all V2 | Inventory report/commit. |
+| `V2-ISSUE-022` | Result handling depth | Frontend buttons must handle backend success/error gracefully, but exact result-display depth varies by card. | Define per-card result rendering expectations during inventory and add practical tests. | open | operational pages | Frontend response tests. |
+| `V2-ISSUE-023` | Address toggle design | The allow/require-address behavior is intentionally deferred. | Add a future toggle/control without blocking initial playback when address data is unknown. | open | `08`, `09` | Missing-address playback test. |
+| `V2-ISSUE-024` | Final proof harness | Autonomous playback and recovery proofs are desired but not yet specified as scripts. | Define proof commands/evidence outputs after inventory. | open | `09` | End-to-end proof specs. |
+| `V2-ISSUE-025` | Disabled test controls | `09 REAL PLAYBACK` may display test controls disabled; accidental enablement would be unsafe. | Ensure disabled state is test-covered and status-marked. | open | `09` | Render/disabled-control test. |
+| `V2-ISSUE-026` | Cron interval defaults | Intervals must be customizable, but defaults must come from existing examples/configs. | Inventory existing cron examples/configs and document defaults before wiring UI. | open | `03`, `09` | Config/defaults trace. |

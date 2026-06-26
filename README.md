@@ -76,6 +76,7 @@ The current V2 documentation package also includes:
 - [`docs/20_architecture_and_specs/openspec/V2_GoalSummary.md`](docs/20_architecture_and_specs/openspec/V2_GoalSummary.md) — source-of-truth summary of the V2 planning intent;
 - [`docs/20_architecture_and_specs/openspec/V2_IssueRegister.md`](docs/20_architecture_and_specs/openspec/V2_IssueRegister.md) — open design questions, likely problems, and verification gaps;
 - [`docs/20_architecture_and_specs/openspec/V2_HRDecisionLog.md`](docs/20_architecture_and_specs/openspec/V2_HRDecisionLog.md) — operator answers to the V2 implementation-planning question set.
+- [`docs/50_audits_and_migrations/V2_REAL_PLAYBACK_OPENSPEC_COVERAGE_3PLUS2ACR_20260626.md`](docs/50_audits_and_migrations/V2_REAL_PLAYBACK_OPENSPEC_COVERAGE_3PLUS2ACR_20260626.md) — 3+2 ACR audit that greatly expanded OpenSpec implementation coverage before code changes.
 
 ## What is not claimed
 

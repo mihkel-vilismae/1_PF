@@ -115,3 +115,14 @@ Cron intervals must be customizable. Existing crontab examples/configs should be
 This document is a goal contract, not proof that the goals are already satisfied.
 
 Do not infer that `09 REAL PLAYBACK` is complete until implementation status, tests, and proof artifacts demonstrate the autonomous playback and autonomous recovery objectives above.
+
+## OpenSpec coverage hardening reference
+
+Estonian timestamp: 2026-06-26 11:05 EEST
+
+The V2 goals are implemented through the OpenSpec contract and the coverage-hardening audit:
+
+- [`../openspec/v2_operator_pages_openspec.md`](../openspec/v2_operator_pages_openspec.md) defines the page/component/reuse/proof contract.
+- [`../../50_audits_and_migrations/V2_REAL_PLAYBACK_OPENSPEC_COVERAGE_3PLUS2ACR_20260626.md`](../../50_audits_and_migrations/V2_REAL_PLAYBACK_OPENSPEC_COVERAGE_3PLUS2ACR_20260626.md) records the 3+2 ACR coverage expansion that added inventory gates, status JSON schema, acceptance criteria, and final proof matrices.
+
+These documents remain planning/contract artifacts until code, tests, and target evidence prove the behavior.

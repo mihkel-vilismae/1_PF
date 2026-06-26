@@ -104,3 +104,4 @@ The old `docs/categorized/other_documentation/default_project_settings_and_eleme
 - [Raspberry local tool checker OpenSpec](openspec/raspberry_local_tool_checker_openspec.md) — implemented Raspberry tool-readiness preflight contract and non-claims.
 
 - [Project Completeness Reporting OpenSpec](openspec/project_completeness_reporting_openspec.md) — defines source priority, proof honesty, and percentage rules for `print overall project completeness` reports.
+- [V2 Real Playback OpenSpec Coverage 3+2 ACR](../50_audits_and_migrations/V2_REAL_PLAYBACK_OPENSPEC_COVERAGE_3PLUS2ACR_20260626.md) — audit record for the expanded V2 OpenSpec implementation gates and proof/status coverage.
