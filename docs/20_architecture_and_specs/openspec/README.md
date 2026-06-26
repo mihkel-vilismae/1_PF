@@ -1,6 +1,6 @@
 # OpenSpec documentation
 
-> Current checkpoint: `v0.10.67`. This README was refreshed in the docs/launcher reconciliation pass; code, focused tests, proof artifacts, and runtime evidence override stale prose.
+> Current checkpoint: `v0.10.68`. This README was refreshed in the docs/launcher reconciliation pass; code, focused tests, proof artifacts, and runtime evidence override stale prose.
 
 This folder holds OpenSpec contracts, implementation-status trackers, and proof boundaries. Some entries are forward-looking; some record implemented-but-not-live-proven V2 work.
 
@@ -66,3 +66,5 @@ Current OpenSpec entries:
 - [V2 Real Playback OpenSpec Coverage 3+2 ACR](../../50_audits_and_migrations/V2_REAL_PLAYBACK_OPENSPEC_COVERAGE_3PLUS2ACR_20260626.md) — audit record for the coverage-hardening pass that added inventory gates, JSON status schema, acceptance criteria, proof matrix, and drift guards.
 
 - [V2 next implementation plan](../../40_backlog_and_tasks/V2_NEXT_IMPLEMENTATION_PLAN_20260626.md) — post-B12 implementation/proof sequence and remaining live-proof gates.
+
+- [V2 numeric status 3XACR and document handoff](../../50_audits_and_migrations/V2_NUMERIC_STATUS_3XACR_AND_DOC_HANDOFF_20260626.md) — 1-10 OpenSpec, implementation-status, and path-to-goal tables from the docs-only 3XACR/2XACR reconciliation pass.

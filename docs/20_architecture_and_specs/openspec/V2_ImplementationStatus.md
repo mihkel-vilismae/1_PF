@@ -322,3 +322,21 @@ The root README files and this status document were refreshed after B5 so the re
 | Structured JSON status source | `refreshed` | `dashboard/data/v2ImplementationStatus.json` page/block summaries now match v0.10.64 implementation reality while keeping live proof non-claims. |
 | Root README/quickstart docs | `refreshed` | Root entry points now report v0.10.65 and the current integrated V2/recovery/proof-gate boundary. |
 | B12 proof gate | `implemented/not live-passed` | The gate exists and blocks customer-ready claims until live autonomous playback and live abrupt-restart recovery evidence are supplied. |
+
+## v0.10.68 numeric 3XACR status reconciliation
+
+The durable numeric 3XACR tables live in [`../../50_audits_and_migrations/V2_NUMERIC_STATUS_3XACR_AND_DOC_HANDOFF_20260626.md`](../../50_audits_and_migrations/V2_NUMERIC_STATUS_3XACR_AND_DOC_HANDOFF_20260626.md). They add a conservative 1-10 completion estimate for OpenSpec coverage, implementation status, and the path toward the final `09 REAL PLAYBACK` goal.
+
+Current headline scores from that pass:
+
+| Area | Finished 1-10 | Reason |
+| --- | ---: | --- |
+| V2 route shell/status overlay | 9 | Implemented and tested across the nine-page V2 flow. |
+| Recovery schema/manual/autosave/restart-check | 8 | Code and tests exist, but abrupt target restart evidence remains required. |
+| `09 REAL PLAYBACK` composition/projection | 8 | Final page composes proven pieces and projects status, but does not prove autonomous target operation. |
+| Playback page queue/render/metadata bridge | 7 | Browser-local queue and backend bridge tests exist; target fullscreen/address proof remains. |
+| B12 proof gate/readiness manifest | 7 | Gate and manifest are implemented conservatively; live evidence is not attached. |
+| Target live proof evidence | 3 | Scripts and required evidence categories exist, but live target playback/recovery/PIR proof has not been run in this checkpoint. |
+
+This section does not change implementation truth. It only adds numeric readiness scoring for planning. Do not convert any target-live item to `proven` or green status until real target-machine evidence is attached.
+

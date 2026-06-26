@@ -53,5 +53,28 @@ The previous B6-B12 implementation sequence is complete as code/tests/docs slice
 
 ## Immediate recommendation
 
-Run `LIVE.1` and `LIVE.2` on the target machine before changing the B12 gate status. If target hardware is not available, run `SEC.1` or a docs-only proof-runbook cleanup slice instead.
+Run `LIVE.1` and `LIVE.2` on the target machine before changing the B12 gate status. If target hardware is not available, the next safe work is proof-runbook/evidence packaging cleanup, not more optimistic UI composition.
+
+## v0.10.68 numeric 3XACR path scores
+
+The full numeric table is recorded in [`../50_audits_and_migrations/V2_NUMERIC_STATUS_3XACR_AND_DOC_HANDOFF_20260626.md`](../50_audits_and_migrations/V2_NUMERIC_STATUS_3XACR_AND_DOC_HANDOFF_20260626.md). The current path priority remains:
+
+| Order | Path item | Finished 1-10 | Current boundary |
+| ---: | --- | ---: | --- |
+| 1 | Prepare target proof run package | 7 | Scripts/readiness manifest exist; target execution remains. |
+| 2 | Run Raspberry scheduler/crontab proof | 5 | UI/contract exists; target crontab proof remains. |
+| 3 | Run autonomous media pipeline proof | 6 | Worker cards/endpoints exist; target media movement remains. |
+| 4 | Run native image/video fullscreen proof | 5 | Target-gated proof scripts exist; display observation remains. |
+| 5 | Run address overlay proof | 5 | Overlay contracts exist; target visible overlay evidence remains. |
+| 6 | Run abrupt-stop/restart recovery proof | 6 | Recovery contracts are implemented; rough shutdown evidence remains. |
+| 7 | Run PIR hardware/screen proof | 4 | Emulator exists; hardware evidence remains. |
+| 8 | Attach evidence to B12 gate | 3 | Gate blocks until live evidence is explicit. |
+| 9 | DOCS.3 reconciliation | 4 | Docs are current for pre-live state; post-live update remains. |
+| 10 | Release-readiness decision | 6 | Product path is close but blocked by target live proof. |
+
+## Completed sequence through v0.10.68
+
+| Slice | Delivered in | Current reality |
+| --- | --- | --- |
 | `PROOF.1` | `v0.10.67` | Added a target live proof readiness manifest generator for autonomous playback, abrupt restart recovery, and PIR hardware evidence without marking the B12 gate live-passed. |
+| `DOCS.4` | `v0.10.68` | Added numeric 3XACR status/path tables and reconciled related docs to keep the next step focused on target evidence. |
