@@ -354,7 +354,7 @@
       "id": "v2.page.troubleshooting",
       "label": "05 TROUBLESHOOTING",
       "status": "in-progress",
-      "summary": "V2 Troubleshooting now contains shared RPI-STAGES and RPI-WORKERS visual rows. Stale-lock controls remain future."
+      "summary": "V2 Troubleshooting contains shared RPI-STAGES/RPI-WORKERS rows plus B6.1 Pipeline maintenance controls for Detect issues and Clear stale locks. Live stale-lock proof remains later."
     },
     {
       "id": "v2.page.workers",
@@ -379,6 +379,12 @@
       "label": "V2 status/help metadata foundation",
       "status": "in-progress",
       "summary": "Structured metadata backing future Explain controls, Explain values, and Implementation status overlays."
+    },
+    {
+      "id": "v2.block.05.pipeline-maintenance",
+      "label": "troubleshooting / Pipeline maintenance",
+      "status": "in-progress",
+      "summary": "B6.1 adds Detect issues in pipeline and Clear stale locks using existing runtime maintenance action IDs and /api/runtime/pipeline/* endpoints. Live stale-lock proof remains later."
     }
   ]
 }

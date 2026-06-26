@@ -52,7 +52,7 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | `02 AUTHENTICATION` | NEW AUTH session readiness | `1A-STASH-OFF - NEW AUTH` reused/wired in V2 | V2 render test + new-auth endpoint proof |
 | `03 STARTUP` | Raspberry scheduler/startup | reuse/extract Raspberry scheduler panel | Raspberry scheduler proof + V2 placement test |
 | `04 WORKERS` | worker stage controls | reuse/extract B3 stage controls | worker endpoint proofs + V2 placement test |
-| `05 TROUBLESHOOTING` | stale lock repair | reuse/extract pipeline maintenance controls | stale-lock behavior proof + V2 placement test |
+| `05 TROUBLESHOOTING` | stale lock repair | `B6.1` Pipeline maintenance controls placed/wired to existing maintenance action IDs | stale-lock behavior proof + V2 placement test |
 | `06 RECOVERY` | recovery placeholder now; real recovery later | alert-only first | placeholder test first; later save/load/autosave/restart proof |
 | `07 PIR` | activity/screen test | shell implemented; visible B5 subset later | route render test now; mouse/keyboard test and PIR simulation/hardware proof later |
 | `08 PLAYBACK` | queue/rendering test | shell implemented; visible B4 subset + drag/drop queue later | route render test now; rendering/queue tests and address overlay proof later |
@@ -118,8 +118,8 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 
 | Element | Status | Current evidence/notes | Required next proof/test |
 | --- | --- | --- | --- |
-| `Detect issues in pipeline` | needs verification | User recalls it may work; exact behavior must be confirmed. | Test/proof documents stale lock detection semantics. |
-| `Clear stale locks` | needs verification | User recalls it may work; exact behavior must be confirmed. | Test/proof documents stale-only clear semantics. |
+| `Detect issues in pipeline` | wired/needs verification | v0.10.48 places the V2 Troubleshooting button on existing action ID `detect-pipeline-issues` and backend endpoint `POST /api/runtime/pipeline/issues/detect`. | Live stale-lock detection proof remains later. |
+| `Clear stale locks` | wired/needs verification | v0.10.48 places the V2 Troubleshooting button on existing action ID `clear-stale-pipeline-locks` and backend endpoint `POST /api/runtime/pipeline/stale-locks/clear`. | Live stale-only clear proof remains later. |
 | `RPI-STAGES` | visual row delivered / needs runtime proof | v0.10.44 adds the shared Download → Index → GPS parser → Geocode → Queue idle row to Startup, Workers, and Troubleshooting. | Runtime stage health projection and proof remain later. |
 | `RPI-WORKERS` | visual row delivered / needs runtime proof | v0.10.45 adds Regular state worker, Playback worker, and On-off worker Waiting cards to Startup, Workers, Troubleshooting, PIR, and Playback. | Runtime worker-call projection and proof remain later. |
 | Event Log | visual/tested | Shared V2 wrapper renders Event history for current V2 pages, including `07`-`09` route shells. | Future page-specific slices must keep using wrapper. |

@@ -607,3 +607,8 @@ Acceptance boundary:
 ## v0.10.47 reconciliation note
 
 B1, B3, B4, and B5 implementation slices have placed the nine-page shell, V2 status/help overlay, Setup/Auth controls, Startup Raspberry scheduler controls, RPI-STAGES/RPI-WORKERS rows, and Workers B3.1-B3.5 cards. Troubleshooting maintenance, Recovery placeholders, PIR, Playback, Real Playback composition, recovery implementation, and victory proofs remain future work. See [`../../40_backlog_and_tasks/V2_NEXT_IMPLEMENTATION_PLAN_20260626.md`](../../40_backlog_and_tasks/V2_NEXT_IMPLEMENTATION_PLAN_20260626.md).
+
+
+## v0.10.48 B6.1 Troubleshooting pipeline maintenance
+
+`05 TROUBLESHOOTING` now includes a `Pipeline maintenance` card with `Detect issues in pipeline` and `Clear stale locks` buttons. The buttons reuse existing runtime action IDs and existing backend endpoints; live stale-lock repair proof remains a later B9/proof task.

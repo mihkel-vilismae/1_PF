@@ -4053,3 +4053,9 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 
 ### Removed
 - None
+
+## v0.10.48 - B6.1 V2 troubleshooting pipeline maintenance
+
+- Added `05 TROUBLESHOOTING` Pipeline maintenance card with `Detect issues in pipeline` and `Clear stale locks`.
+- Reused existing runtime maintenance action IDs/endpoints; no backend/server route changes.
+- Updated V2 implementation status JSON/docs and added focused placement coverage.

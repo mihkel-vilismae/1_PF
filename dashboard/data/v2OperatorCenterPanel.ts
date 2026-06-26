@@ -546,6 +546,20 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
           { id: '05.01.12', label: 'clear current logs', status: 'planned-safe', risk: 'destructive', interaction: 'guardedAction' },
         ],
       },
+      {
+        type: 'backendActionCard',
+        id: '05.pipeline-maintenance',
+        title: 'Pipeline maintenance',
+        body: 'Detect persisted pipeline issues and clear stale locks through the existing runtime maintenance endpoints. Clearing remains scoped to stale locks and must not claim a full repair proof until B9 evidence exists.',
+        statusKey: 'B3-DIAGNOSTICS',
+        resultKey: 'B3-DIAGNOSTICS',
+        logKey: 'B3-DIAGNOSTICS',
+        sourceBadge: { mode: 'real', label: 'PIPELINE MAINTENANCE' },
+        actions: [
+          { action: 'detect-pipeline-issues', label: 'Detect issues in pipeline', variant: 'secondary' },
+          { action: 'clear-stale-pipeline-locks', label: 'Clear stale locks', variant: 'danger' },
+        ],
+      },
       buildRpiStagesRow('05.rpi-stages', 'Troubleshooting'),
       buildRpiWorkersRow('05.rpi-workers', 'Troubleshooting'),
       {
