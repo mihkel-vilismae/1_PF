@@ -41,3 +41,7 @@ Current OpenSpec entries:
 
 - [Dashboard Final Release Mode 3+2XACR and 3AXCR Review](dashboard_final_release_mode_xacr_review.md) — docs-only multipass review and refined implementation prompt for the planned Final Release shell.
 
+- [V2 Operator Menu left sidebar OpenSpec](v2_operator_menu_left_sidebar_openspec.md) — freezes the six top-level v2 operator sidebar routes, separates order metadata from labels, forbids recursive child sidebar rendering, and defines sidebar acceptance checks.
+
+- [V2 Operator Menu left sidebar 6ACR review](v2_operator_menu_left_sidebar_6acr_review.md) — docs-only multipass review that narrows the implementation contract to the six left-sidebar route rows before center-panel block coverage.
+

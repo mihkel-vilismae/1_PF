@@ -4,7 +4,7 @@ This repository contains a dashboard-driven photo-frame system for managing stag
 
 ## Current baseline quick truth
 
-- Repository/package version: `0.10.21`.
+- Repository/package version: `0.10.22`.
 - Dashboard: Vite frontend under `dashboard/`, served by `npm run dev`.
 - Backend API: TypeScript server entrypoint `server/index.ts`, started by `npm run api`.
 - SQLite schema source: `database/schema.sql`; generated/local SQLite DB files remain runtime data and are not the schema source.
@@ -17,6 +17,14 @@ Proof/readiness claims still require current proof artifacts. Historical docs an
 
 The system documentation is organized in canonical numbered folders under `docs/`: `00_current_truth`, `10_runbooks`, `20_architecture_and_specs`, `30_status_snapshots`, `40_backlog_and_tasks`, `50_audits_and_migrations`, and `90_archive`. Implementation status in documentation is not current runtime truth unless the document cites current code, tests, generated evidence, or runtime output.
 
+
+## v0.10.22 V2 operator left sidebar OpenSpec baseline
+
+This baseline adds docs-only OpenSpec coverage for the V2 operator menu left sidebar. It freezes the sidebar to exactly six route rows: `setup.sh`, `authentication.sh`, `startup.sh`, `workers`, `troubleshooting`, and `recovery`, with numeric order kept separate from labels.
+
+The spec explicitly prevents implementing the planning tree as a generic recursive sidebar. Center-panel typed blocks remain a later OpenSpec/implementation slice. Runtime behavior, Test Mode, Real Mode, Final Release startup implementation, backend actions, auth, workers, crontab, troubleshooting, and recovery remain unchanged.
+
+See [`docs/20_architecture_and_specs/openspec/v2_operator_menu_left_sidebar_openspec.md`](docs/20_architecture_and_specs/openspec/v2_operator_menu_left_sidebar_openspec.md).
 
 ## v0.10.21 root documentation and version baseline
 
