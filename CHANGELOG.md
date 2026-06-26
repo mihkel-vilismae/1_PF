@@ -1,3 +1,8 @@
+## v0.10.60 - 2026-06-26
+
+- B10.2: added `09 REAL PLAYBACK` read-only action flow/status projection for scheduler, worker stages, queue bridge, metadata, rendering, and recovery gate state.
+- Added `dashboard/services/v2RealPlaybackProjection.ts` and projection rendering/tests without adding new backend routes or claiming recovery proof.
+
 ## v0.10.59 - 2026-06-26
 
 - B10.1: composed `09 REAL PLAYBACK` from proven V2 pieces only: Raspberry scheduler, RPI stages/workers, B3.1-B3.5 worker cards, playback rendering controls, queue bridge, and metadata bridge.

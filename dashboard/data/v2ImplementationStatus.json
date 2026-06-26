@@ -330,7 +330,7 @@
       "id": "v2.page.real-playback",
       "label": "09 REAL PLAYBACK",
       "status": "in-progress",
-      "summary": "09 REAL PLAYBACK now has a B10.1 integrated layout composed from proven pieces only. Real recovery, PIR hardware, and victory proof remain future gates."
+      "summary": "09 REAL PLAYBACK has a B10.1 integrated layout plus B10.2 read-only action-flow/status projection. Real recovery, PIR hardware, and victory proof remain future gates."
     },
     {
       "id": "v2.page.recovery",
@@ -481,6 +481,12 @@
       "label": "REAL PLAYBACK / gated future controls",
       "status": "not-implemented",
       "summary": "B10.1 lists recovery, PIR hardware, and final victory proof as disabled future gates rather than active controls."
+    },
+    {
+      "id": "v2.block.09.flow-status-projection",
+      "label": "REAL PLAYBACK / action flow status projection",
+      "status": "in-progress",
+      "summary": "B10.2 adds a read-only final-page projection of scheduler, pipeline, queue, metadata, rendering, and recovery gate state. It does not start workers or claim recovery proof."
     }
   ]
 }

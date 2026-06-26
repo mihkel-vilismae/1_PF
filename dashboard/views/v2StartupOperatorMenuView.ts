@@ -6,6 +6,7 @@
 import { V2_OPERATOR_CENTER_PANEL_PAGES, type V2OperatorActionItem, type V2OperatorBackendActionButton, type V2OperatorCenterPanelBlock, type V2OperatorSectionItem } from '../data/v2OperatorCenterPanel.ts';
 import { B5_ACTIVITY_SOURCES, getB5ActivitySourceLabel, normalizeB5ActivityDetectionState, type B5ActivitySource } from '../services/viewBActivityDetection.ts';
 import { buildPlaybackRenderingOptions, getSharedPlaybackRendererId, normalizePlaybackRenderingState, PLAYBACK_RENDERING_LIBRARY, PLAYBACK_RENDERING_PLATFORM_OPTIONS, PLAYBACK_RENDERING_PLATFORMS, PLAYBACK_RENDERING_MODES, type PlaybackRenderingMode, type PlaybackRenderingPlatform } from '../services/playbackRenderer.ts';
+import { buildV2RealPlaybackProjection } from '../services/v2RealPlaybackProjection.ts';
 import { V2_OPERATOR_SIDEBAR_ITEMS, type V2OperatorSidebarRoute } from '../data/v2OperatorSidebar.ts';
 import { getV2BlockStatusId, getV2ImplementationStatusElement } from '../data/v2ImplementationStatus.ts';
 import { renderLogEntries, renderResultSurface, renderSourceBadge, statusBadge, type HistoryEntry } from '../services/renderers.ts';
@@ -117,6 +118,8 @@ function renderV2CenterPanelBlock(block: V2OperatorCenterPanelBlock, runtimeStat
       return renderPlaybackRenderingControlsBlock(block, runtimeState);
     case 'playbackDropQueue':
       return renderPlaybackDropQueueBlock(block, v2PlaybackQueueItems);
+    case 'realPlaybackProjection':
+      return renderRealPlaybackProjectionBlock(block, runtimeState, v2PlaybackQueueItems);
     case 'sectionGroup':
       return renderSectionGroupBlock(block);
     case 'toggleGroup':
@@ -471,6 +474,29 @@ function getV2PlaybackRenderingReadyMessage(mode: PlaybackRenderingMode): string
   return 'Playback can continue without rendering.';
 }
 
+
+
+function renderRealPlaybackProjectionBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'realPlaybackProjection' }>, runtimeState: Record<string, any>, queueItems: readonly V2PlaybackQueueItem[]): string {
+  const projection = buildV2RealPlaybackProjection(runtimeState, queueItems);
+  return `
+    <article class="card v2-block v2-block--realPlaybackProjection" data-v2-real-playback-projection data-v2-block-type="realPlaybackProjection" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
+      ${renderBlockHeader(block.title, getV2BlockStatusId(block.id), block.status, block.risk)}
+      ${block.body ? `<p class="card__copy">${escapeHtml(block.body)}</p>` : ''}
+      <div class="v2-real-playback-readiness" data-v2-real-playback-readiness="${escapeHtml(projection.readiness)}">
+        <span class="pill">${escapeHtml(projection.readiness)}</span>
+        <strong>${escapeHtml(projection.summary)}</strong>
+      </div>
+      <div class="v2-real-playback-flow" role="list">
+        ${projection.rows.map((row) => `
+          <div class="v2-real-playback-flow__row" role="listitem" data-v2-real-playback-flow-row="${escapeHtml(row.id)}">
+            <span><strong>${escapeHtml(row.label)}</strong><small>${escapeHtml(row.message)}</small></span>
+            <span class="pill">${escapeHtml(row.status)}</span>
+          </div>
+        `).join('')}
+      </div>
+    </article>
+  `;
+}
 
 function renderPlaybackDropQueueBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'playbackDropQueue' }>, queueItems: readonly V2PlaybackQueueItem[]): string {
   return `

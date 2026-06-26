@@ -20,7 +20,8 @@ export type V2OperatorBlockType =
   | 'recoveryPlaceholderActions'
   | 'pirActivityTest'
   | 'playbackRenderingControls'
-  | 'playbackDropQueue';
+  | 'playbackDropQueue'
+  | 'realPlaybackProjection';
 
 export type V2OperatorRisk = 'safe' | 'guarded' | 'destructive' | 'future' | 'localSecretSensitive';
 
@@ -166,6 +167,14 @@ export type V2OperatorCenterPanelBlock =
     }
   | {
       type: 'playbackDropQueue';
+      id: string;
+      title: string;
+      body?: string;
+      status?: string;
+      risk?: V2OperatorRisk;
+    }
+  | {
+      type: 'realPlaybackProjection';
       id: string;
       title: string;
       body?: string;
@@ -809,6 +818,14 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
         ],
       },
       {
+        type: 'realPlaybackProjection',
+        id: '09.flow-status-projection',
+        title: 'Real Playback action flow / status projection',
+        body: 'Read-only final-page projection of scheduler, pipeline, queue, metadata, rendering, and recovery gate state. This does not start new work by itself.',
+        status: 'read-only projection',
+        risk: 'guarded',
+      },
+      {
         type: 'rpiSchedulerControls',
         id: '09.rpi-scheduler-controls',
         title: 'Real Playback scheduler controls',
@@ -876,4 +893,5 @@ export const V2_OPERATOR_ALLOWED_BLOCK_TYPES: readonly V2OperatorBlockType[] = [
   'pirActivityTest',
   'playbackRenderingControls',
   'playbackDropQueue',
+  'realPlaybackProjection',
 ] as const;
