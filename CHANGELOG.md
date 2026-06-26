@@ -1,3 +1,19 @@
+## 2026-06-26 16:42 EEST — v0.10.54
+
+### Added
+- Added B9.2 V2 button/action proof matrix documentation for B4/B5/B6 controls.
+- Added proof tests covering V2 control action IDs, endpoint/target text, and worker-card success/error result rendering.
+
+### Changed
+- Bumped repository/package version from `0.10.53` to `0.10.54`.
+- V2 worker backend actions now mirror success/error outcomes into their shared result surfaces.
+
+### Fixed
+- Worker-stage cards now show latest backend result details after a backend success or failure.
+
+### Removed
+- None.
+
 ## 2026-06-26 16:33 EEST — v0.10.53
 
 ### Added

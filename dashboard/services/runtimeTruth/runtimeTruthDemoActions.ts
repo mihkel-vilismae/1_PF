@@ -377,7 +377,7 @@ export function createRuntimeTruthDemoActions({
   }
 
   // Runs one backend pipeline stage while preserving aggregate B3 status updates.
-  function runBackendPipelineStage({ key, operation, endpoint, execute, onComplete = () => {} }) {
+  function runBackendPipelineStage({ key, operation, endpoint, execute, onComplete = () => {}, requestBody = {} }) {
     if (isPipelineBusy()) {
       rejectPipelineWhileBusy(key);
       return;
@@ -393,7 +393,9 @@ export function createRuntimeTruthDemoActions({
       operation,
       endpoint,
       execute,
-      onSuccess: (payload) => {
+      requestBody,
+      onSuccess: (payload, meta) => {
+        recordRuntimeBackendResult(key, operation, endpoint, 'success', payload, meta);
         patchState((draft) => {
           draft.truth.lastStageCompleted = key;
           if (key === 'B3.5' && payload?.queue) {
@@ -406,6 +408,10 @@ export function createRuntimeTruthDemoActions({
           }
         });
         setStatus('B3', 'success');
+      },
+      onError: (error) => {
+        recordRuntimeBackendResult(key, operation, endpoint, 'error', null, error?.meta ?? null, error);
+        setStatus('B3', 'error');
       },
       afterRun: () => {
         releasePipelineLock(key);
