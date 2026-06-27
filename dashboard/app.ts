@@ -15,6 +15,7 @@ import {
   pushLog,
   resetHistory,
   runAction,
+  refreshV2WorkerTruth,
   seedDemoState,
   selectDatabaseViewerTable,
   setActiveView,
@@ -90,6 +91,7 @@ const TRANSIT_EVENT_NAME = 'dashboard:transit';
 const COPY_HISTORY_LABEL = 'copy all log';
 const SCHEDULER_RUN_LOG_POLL_MS = 5000;
 const OS_PLAYBACK_OBSERVABILITY_POLL_MS = 5000;
+const V2_WORKER_TRUTH_POLL_MS = 5000;
 const OS_PLAYBACK_ROTATION_INTERVAL_SECONDS = 12;
 const OS_PLAYBACK_RESUME_HEARTBEAT_MIN_MS = 5000;
 const TEST_MODE_NEW_AUTH_DISABLED_MESSAGE = 'NEW AUTH login is disabled in Test Mode. Switch to Real Mode to use iCloudPD login controls.';
@@ -2470,6 +2472,7 @@ const tryInitPreload = () => {
 tryInitPreload();
 startSchedulerRunLogPolling();
 startOsPlaybackObservabilityPolling();
+startV2WorkerTruthPolling();
 void loadBackendVersion();
 
 document.addEventListener('mousemove', handleB5ActivityMouseMove);
@@ -2549,6 +2552,16 @@ function startOsPlaybackObservabilityPolling() {
     }
     void loadOsPlaybackObservability(platform);
   }, OS_PLAYBACK_OBSERVABILITY_POLL_MS);
+}
+
+// Polls V2 worker truth while the V2 operator shell is visible.
+function startV2WorkerTruthPolling() {
+  window.setInterval(() => {
+    if (!shouldRunLiveUpdates() || getState().activeView !== 'V2') {
+      return;
+    }
+    void refreshV2WorkerTruth(v2OperatorSidebarRoute === 'real-playback' ? 'real' : undefined);
+  }, V2_WORKER_TRUTH_POLL_MS);
 }
 
 function escapeHtml(value) {
