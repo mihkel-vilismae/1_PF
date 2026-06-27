@@ -65,6 +65,7 @@ import {
 import { createInspectionRoutes } from './routes/inspectionRoutes.ts';
 import { createRuntimeStatusRoutes } from './routes/runtimeStatusRoutes.ts';
 import { createV2WorkerTruthRoutes } from './routes/v2WorkerTruthRoutes.ts';
+import { createV2WorkerTruthService, normalizeV2WorkerTruthMode } from './v2WorkerTruthService.ts';
 import { createV2RecoveryStateService } from './recovery/v2RecoveryStateService.ts';
 import type { V2RecoveryStateSaveReason } from '../shared/v2RecoveryStateSchema.ts';
 import {
@@ -554,12 +555,12 @@ const routes: Record<string, RouteHandler> = {
   'POST /api/database-viewer/rows': databaseViewerRowsHandler,
   'POST /api/database-viewer/logging/start': databaseViewerLoggingStartHandler,
   'POST /api/database-viewer/logging/stop': databaseViewerLoggingStopHandler,
-  'POST /api/runtime/download/run': runtimeDownloadRunHandler,
-  'POST /api/runtime/download/real-run': runtimeRealDownloadRunHandler,
-  'POST /api/runtime/index/run': runtimeIndexRunHandler,
-  'POST /api/runtime/gps/run': runtimeGpsRunHandler,
-  'POST /api/runtime/geocode/run': runtimeGeocodeRunHandler,
-  'POST /api/runtime/queue/prepare': runtimeQueuePrepareHandler,
+  'POST /api/runtime/download/run': withV2RegularStageTruth('download', runtimeDownloadRunHandler),
+  'POST /api/runtime/download/real-run': withV2RegularStageTruth('download', runtimeRealDownloadRunHandler),
+  'POST /api/runtime/index/run': withV2RegularStageTruth('index', runtimeIndexRunHandler),
+  'POST /api/runtime/gps/run': withV2RegularStageTruth('gps-parser', runtimeGpsRunHandler),
+  'POST /api/runtime/geocode/run': withV2RegularStageTruth('geocode', runtimeGeocodeRunHandler),
+  'POST /api/runtime/queue/prepare': withV2RegularStageTruth('queue', runtimeQueuePrepareHandler),
   'POST /api/runtime/playback/select-current': runtimePlaybackSelectCurrentHandler,
   'GET /api/runtime/playback/current': runtimePlaybackCurrentHandler,
   'GET /api/runtime/playback/queue': runtimePlaybackQueueHandler,
@@ -650,6 +651,90 @@ const routes: Record<string, RouteHandler> = {
     createHttpError: (statusCode, code, message, details) => new HttpError(statusCode, code, message, details),
   }),
 };
+
+function withV2RegularStageTruth(stage: string, handler: RouteHandler): RouteHandler {
+  return async (args) => {
+    const logId = `${stage}-${Date.now()}-${randomUUID()}`;
+    await appendV2WorkerTruthEvent(args.context, {
+      worker: 'regular-worker',
+      stage,
+      status: 'started',
+      logId,
+      message: `${stage} stage started.`,
+    });
+    try {
+      const result = await handler(args);
+      const payload = isJsonObject(result.payload) ? result.payload : {};
+      await appendV2WorkerTruthEvent(args.context, {
+        worker: 'regular-worker',
+        stage,
+        status: 'finished',
+        logId,
+        message: extractV2WorkerTruthMessage(payload, `${stage} stage finished.`),
+        counts: extractV2WorkerTruthCounts(payload),
+      });
+      return result;
+    } catch (error) {
+      await appendV2WorkerTruthEvent(args.context, {
+        worker: 'regular-worker',
+        stage,
+        status: 'error',
+        logId,
+        message: `${stage} stage failed.`,
+        error: getErrorMessage(error),
+      });
+      throw error;
+    }
+  };
+}
+
+async function appendV2WorkerTruthEvent(context: RequestContext, event: Record<string, unknown>): Promise<void> {
+  try {
+    const mode = normalizeV2WorkerTruthMode(context.runtimeMode);
+    const service = createV2WorkerTruthService({ repoRoot, envValues: context.baseEnvValues });
+    await service.appendEvent(mode, event);
+  } catch (error) {
+    reportLoggerWriteError(error);
+  }
+}
+
+function extractV2WorkerTruthMessage(payload: JsonObject, fallback: string): string {
+  const messages = payload.messages;
+  if (Array.isArray(messages) && typeof messages[0] === 'string') {
+    return messages[0];
+  }
+  if (typeof payload.message === 'string') {
+    return payload.message;
+  }
+  return fallback;
+}
+
+function extractV2WorkerTruthCounts(payload: JsonObject): Record<string, number> {
+  const counts: Record<string, number> = {};
+  const keys = [
+    'processed_count',
+    'success_count',
+    'failure_count',
+    'inserted_count',
+    'skipped_count',
+  ];
+  for (const key of keys) {
+    const value = Number(payload[key]);
+    if (Number.isFinite(value)) {
+      counts[key] = value;
+    }
+  }
+  const download = isJsonObject(payload.download) ? payload.download : null;
+  if (download) {
+    for (const key of ['copiedFiles', 'failedFiles', 'mediaFilesBefore', 'mediaFilesAfter', 'newMediaFiles']) {
+      const value = Number(download[key]);
+      if (Number.isFinite(value)) {
+        counts[key] = value;
+      }
+    }
+  }
+  return counts;
+}
 
 // Handles every backend HTTP request and mirrors auth/login diagnostics when applicable.
 class HttpError extends Error {
