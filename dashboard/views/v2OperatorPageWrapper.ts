@@ -3,13 +3,7 @@ import { type V2OperatorSidebarItem, type V2OperatorSidebarRoute } from '../data
 import { getV2ImplementationStatusElement, getV2PageStatusId } from '../data/v2ImplementationStatus.ts';
 import { renderHistory, type HistoryEntry } from '../services/renderers.ts';
 import { escapeHtml } from '../services/renderers/sharedRendererUtils.ts';
-import {
-  getCurrentMode,
-  getReadinessStatus,
-  getReadinessStatusForMode,
-  getAllReadiness,
-  setCurrentMode,
-} from '../services/v2ReadinessService.ts';
+import { getCurrentMode, getReadinessStatus } from '../services/v2ReadinessService.ts';
 
 type V2OperatorPageWrapperOptions = {
   activeItem: V2OperatorSidebarItem;
