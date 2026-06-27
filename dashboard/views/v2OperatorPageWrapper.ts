@@ -3,6 +3,13 @@ import { type V2OperatorSidebarItem, type V2OperatorSidebarRoute } from '../data
 import { getV2ImplementationStatusElement, getV2PageStatusId } from '../data/v2ImplementationStatus.ts';
 import { renderHistory, type HistoryEntry } from '../services/renderers.ts';
 import { escapeHtml } from '../services/renderers/sharedRendererUtils.ts';
+import {
+  getCurrentMode,
+  getReadinessStatus,
+  getReadinessStatusForMode,
+  getAllReadiness,
+  setCurrentMode,
+} from '../services/v2ReadinessService.ts';
 
 type V2OperatorPageWrapperOptions = {
   activeItem: V2OperatorSidebarItem;
@@ -51,11 +58,20 @@ export function renderV2OperatorPageWrapper(options: V2OperatorPageWrapperOption
             ${renderV2ToolbarButton('toggle-value-inspect-mode', options.valueInspectMode ? 'Hide value guide' : 'Explain values', options.valueInspectMode, 'Explain where visible V2 values come from.')}
             ${renderV2ToolbarButton('toggle-v2-implementation-status', options.implementationStatusMode ? 'Hide implementation status' : 'Implementation status', options.implementationStatusMode, 'Highlight V2 implementation status from the JSON metadata registry.')}
           </div>
-          <!-- Readiness rings: .env, DB, login (placeholder statuses) -->
-          <div class="v2-readiness-rings">
-            ${renderV2ReadinessRing('env', options.activePage.route)}
-            ${renderV2ReadinessRing('db', options.activePage.route)}
-            ${renderV2ReadinessRing('login', options.activePage.route)}
+          <!-- Mode selector and readiness rings -->
+          <div class="v2-mode-and-readiness">
+            <label class="v2-mode-selector">
+              Mode:
+              <select data-action="select-mode" aria-label="Select runtime mode">
+                <option value="test" ${getCurrentMode() === 'test' ? 'selected' : ''}>TEST</option>
+                <option value="real" ${getCurrentMode() === 'real' ? 'selected' : ''}>REAL</option>
+              </select>
+            </label>
+            <div class="v2-readiness-rings">
+              ${renderV2ReadinessRing('env', options.activePage.route)}
+              ${renderV2ReadinessRing('db', options.activePage.route)}
+              ${renderV2ReadinessRing('login', options.activePage.route)}
+            </div>
           </div>
           <div class="v2-topbar-status">
             <span class="pill">Visual-only blocks</span>
@@ -143,7 +159,8 @@ function renderV2StatusHelpButton(statusId: string, label: string): string {
  * is derived from the type.
  */
 function renderV2ReadinessRing(type: 'env' | 'db' | 'login', _route: string): string {
-  const status = 'unknown';
+  // Use the readiness service to fetch the current status for the active mode.
+  const status = getReadinessStatus(type);
   const label = type === 'env' ? '.env' : type === 'db' ? 'DB' : 'Login';
   return `
     <span class="readiness-ring readiness-ring--${escapeHtml(status)}" data-readiness-type="${escapeHtml(type)}" title="${escapeHtml(label)} readiness status">
