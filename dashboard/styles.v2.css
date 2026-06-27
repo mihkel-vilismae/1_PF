@@ -630,3 +630,59 @@ body.v2-implementation-status-mode [data-v2-implementation-status="not-implement
   padding: 0.35rem 0.55rem;
   min-height: auto;
 }
+
+/* V2 Beeline mode/readiness and RPI truth markers */
+.v2-mode-and-readiness,
+.v2-readiness-rings {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.v2-mode-selector {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.readiness-ring {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.8rem;
+  height: 2.8rem;
+  border: 2px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.readiness-ring--unknown,
+.readiness-ring--blocked,
+.readiness-ring--error {
+  background: transparent;
+}
+
+.readiness-ring--complete {
+  box-shadow: inset 0 0 0 999px rgba(255, 255, 255, 0.18);
+}
+
+.v2-rpi-mode-pill {
+  display: inline-flex;
+  margin-bottom: 0.5rem;
+}
+
+.v2-rpi-batch-size-label {
+  display: grid;
+  gap: 0.2rem;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+}
+
+.v2-rpi-batch-size-label input {
+  max-width: 7rem;
+}

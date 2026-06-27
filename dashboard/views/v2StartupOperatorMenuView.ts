@@ -12,6 +12,7 @@ import { getV2BlockStatusId, getV2ImplementationStatusElement } from '../data/v2
 import { renderLogEntries, renderResultSurface, renderSourceBadge, statusBadge, type HistoryEntry } from '../services/renderers.ts';
 import { escapeHtml } from '../services/renderers/sharedRendererUtils.ts';
 import { renderV2OperatorPageWrapper } from './v2OperatorPageWrapper.ts';
+import { getCurrentMode, type V2RuntimeMode } from '../services/v2ReadinessService.ts';
 import { NEW_AUTH_BUTTONS, renderNewAuthActionRow } from './newAuthActionRows.ts';
 import { SCHEDULER_EMULATOR_BUTTONS, renderSchedulerActionButton } from './schedulerActionRows.ts';
 import { SCHEDULER_TARGETS } from '../../shared/schedulerPlatformCapabilities.ts';
@@ -263,16 +264,23 @@ function renderRpiSchedulerControlsBlock(block: Extract<V2OperatorCenterPanelBlo
 
 
 function renderRpiStagesRowBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'rpiStagesRow' }>): string {
+  const truthMode = resolveV2TruthMode(block.truthMode);
+  const truthLabel = truthMode.toUpperCase();
   return `
-    <article class="card v2-block v2-block--rpiStagesRow" data-v2-rpi-stages-row data-v2-block-type="rpiStagesRow" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
+    <article class="card v2-block v2-block--rpiStagesRow" data-v2-rpi-stages-row data-v2-rpi-truth-mode="${escapeHtml(truthMode)}" data-v2-block-type="rpiStagesRow" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
       ${renderBlockHeader(block.title, getV2BlockStatusId(block.id), block.status)}
+      <p class="pill v2-rpi-mode-pill">${escapeHtml(truthLabel)} truth source</p>
       ${block.body ? `<p class="card__copy">${escapeHtml(block.body)}</p>` : ''}
       <div class="v2-rpi-stage-flow" aria-label="DOWNLOAD to INDEX to GPS PARSER to GEOCODE to QUEUE">DOWNLOAD → INDEX → GPS PARSER → GEOCODE → QUEUE</div>
       <div class="v2-rpi-stage-card-row">
         ${block.stages.map((stage) => `
-          <div class="v2-rpi-stage-card" data-v2-rpi-stage="${escapeHtml(stage.id)}">
+          <div class="v2-rpi-stage-card" data-v2-rpi-stage="${escapeHtml(stage.id)}" data-v2-rpi-stage-mode="${escapeHtml(truthMode)}">
             <strong>${escapeHtml(stage.label)}</strong>
             <span class="pill">${escapeHtml(stage.status)}</span>
+            <label class="v2-rpi-batch-size-label">
+              <span>Batch size</span>
+              <input type="number" min="1" step="1" value="${escapeHtml(String(stage.batchSizeDefault))}" data-v2-rpi-stage-batch-size="${escapeHtml(stage.id)}" data-v2-rpi-stage-batch-mode="${escapeHtml(truthMode)}" />
+            </label>
           </div>
         `).join('')}
       </div>
@@ -282,13 +290,16 @@ function renderRpiStagesRowBlock(block: Extract<V2OperatorCenterPanelBlock, { ty
 
 
 function renderRpiWorkersRowBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'rpiWorkersRow' }>): string {
+  const truthMode = resolveV2TruthMode(block.truthMode);
+  const truthLabel = truthMode.toUpperCase();
   return `
-    <article class="card v2-block v2-block--rpiWorkersRow" data-v2-rpi-workers-row data-v2-block-type="rpiWorkersRow" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
+    <article class="card v2-block v2-block--rpiWorkersRow" data-v2-rpi-workers-row data-v2-rpi-truth-mode="${escapeHtml(truthMode)}" data-v2-block-type="rpiWorkersRow" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
       ${renderBlockHeader(block.title, getV2BlockStatusId(block.id), block.status)}
+      <p class="pill v2-rpi-mode-pill">${escapeHtml(truthLabel)} truth source</p>
       ${block.body ? `<p class="card__copy">${escapeHtml(block.body)}</p>` : ''}
       <div class="v2-rpi-worker-card-row">
         ${block.workers.map((worker) => `
-          <div class="v2-rpi-worker-card" data-v2-rpi-worker="${escapeHtml(worker.id)}">
+          <div class="v2-rpi-worker-card" data-v2-rpi-worker="${escapeHtml(worker.id)}" data-v2-rpi-worker-mode="${escapeHtml(truthMode)}">
             <header>
               <strong>${escapeHtml(worker.label)}</strong>
               <span class="pill">${escapeHtml(worker.status)}</span>
@@ -302,6 +313,10 @@ function renderRpiWorkersRowBlock(block: Extract<V2OperatorCenterPanelBlock, { t
       </div>
     </article>
   `;
+}
+
+function resolveV2TruthMode(mode: 'current' | 'test' | 'real' | undefined): V2RuntimeMode {
+  return mode === 'real' || mode === 'test' ? mode : getCurrentMode();
 }
 
 

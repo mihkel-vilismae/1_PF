@@ -66,6 +66,7 @@ export type V2OperatorRpiStageItem = {
   id: string;
   label: string;
   status: string;
+  batchSizeDefault: number;
 };
 
 export type V2OperatorRpiWorkerItem = {
@@ -132,6 +133,7 @@ export type V2OperatorCenterPanelBlock =
       body?: string;
       status?: string;
       stages: readonly V2OperatorRpiStageItem[];
+      truthMode?: 'current' | 'test' | 'real';
     }
   | {
       type: 'rpiWorkersRow';
@@ -140,6 +142,7 @@ export type V2OperatorCenterPanelBlock =
       body?: string;
       status?: string;
       workers: readonly V2OperatorRpiWorkerItem[];
+      truthMode?: 'current' | 'test' | 'real';
     }
   | {
       type: 'recoveryPlaceholderActions';
@@ -233,11 +236,11 @@ export type V2OperatorCenterPanelPage = {
 const visualOnly = 'Visual-only in this slice. No backend action is wired from V2.';
 
 const RPI_PIPELINE_STAGES = Object.freeze([
-  { id: 'download', label: 'Download', status: 'Idle' },
-  { id: 'index', label: 'Index', status: 'Idle' },
-  { id: 'gps-parser', label: 'GPS parser', status: 'Idle' },
-  { id: 'geocode', label: 'Geocode', status: 'Idle' },
-  { id: 'queue', label: 'Queue', status: 'Idle' },
+  { id: 'download', label: 'Download', status: 'Idle', batchSizeDefault: 25 },
+  { id: 'index', label: 'Index', status: 'Idle', batchSizeDefault: 25 },
+  { id: 'gps-parser', label: 'GPS parser', status: 'Idle', batchSizeDefault: 25 },
+  { id: 'geocode', label: 'Geocode', status: 'Idle', batchSizeDefault: 25 },
+  { id: 'queue', label: 'Queue', status: 'Idle', batchSizeDefault: 25 },
 ] satisfies readonly V2OperatorRpiStageItem[]);
 
 const RPI_WORKERS = Object.freeze([
@@ -246,24 +249,26 @@ const RPI_WORKERS = Object.freeze([
   { id: 'on-off-worker', label: 'On-off worker', status: 'Waiting', lastCalled: 'Never', sinceLastCall: 'No worker call observed yet' },
 ] satisfies readonly V2OperatorRpiWorkerItem[]);
 
-function buildRpiStagesRow(id: string, pageLabel: string): V2OperatorCenterPanelBlock {
+function buildRpiStagesRow(id: string, pageLabel: string, truthMode: 'current' | 'test' | 'real' = 'current'): V2OperatorCenterPanelBlock {
   return {
     type: 'rpiStagesRow',
     id,
     title: 'RPI-STAGES / Media pipeline stage row',
     body: `${pageLabel} shared stage row. It reports the intended Raspberry media pipeline order without starting a worker in this slice.`,
     status: 'visual status row',
+    truthMode,
     stages: RPI_PIPELINE_STAGES,
   };
 }
 
-function buildRpiWorkersRow(id: string, pageLabel: string): V2OperatorCenterPanelBlock {
+function buildRpiWorkersRow(id: string, pageLabel: string, truthMode: 'current' | 'test' | 'real' = 'current'): V2OperatorCenterPanelBlock {
   return {
     type: 'rpiWorkersRow',
     id,
     title: 'RPI-WORKERS / Worker call status row',
     body: `${pageLabel} shared worker-call row. It reports the three Raspberry worker entrypoints without calling a worker in this slice.`,
     status: '3 WORKERS',
+    truthMode,
     workers: RPI_WORKERS,
   };
 }
@@ -471,8 +476,8 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
     summary: 'Live worker status and controls as visual V2 blocks: regular worker, playback worker, screen on-off worker, and v3 statistics placeholder.',
     blocks: [
       // removed current status card because it was marked and is no longer shown
-      buildRpiStagesRow('04.rpi-stages', 'Workers'),
-      buildRpiWorkersRow('04.rpi-workers', 'Workers'),
+      buildRpiStagesRow('04.rpi-stages', 'Workers', 'test'),
+      buildRpiWorkersRow('04.rpi-workers', 'Workers', 'test'),
       ...V2_WORKER_STAGE_CARDS,
       // removed regular worker stageTable because it was marked and is no longer shown
       // removed playback worker card because it was marked and is no longer shown
@@ -665,8 +670,8 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
         logKey: '3A',
         sourceBadge: { mode: 'real', label: 'Raspberry real crontab' },
       },
-      buildRpiStagesRow('09.rpi-stages', 'Real Playback'),
-      buildRpiWorkersRow('09.rpi-workers', 'Real Playback'),
+      buildRpiStagesRow('09.rpi-stages', 'Real Playback', 'real'),
+      buildRpiWorkersRow('09.rpi-workers', 'Real Playback', 'real'),
       ...V2_WORKER_STAGE_CARDS.map((block) => ({
         ...block,
         id: block.id.replace('04.worker-', '09.worker-'),
