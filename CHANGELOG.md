@@ -1,3 +1,11 @@
+## 2026-06-27 04:25 EEST — v0.10.74
+
+- Ran ACR on the remaining V2 Beeline sliceplan and kept the implementation order safety-first: TEST/REAL path separation, source-of-truth API, then stage truth events.
+- Hardened `/api/init/verify-env` with required TEST/REAL path-pair readiness for download, DB, logs, full log, and V2 worker source-of-truth directories, including overlap and existence checks.
+- Added a backend-owned V2 worker source-of-truth service with JSONL parser/writer, `GET /api/v2/worker-truth`, and `POST /api/v2/worker-truth/event` routes.
+- Wrapped existing regular pipeline stage endpoints with V2 source-of-truth `started`, `finished`, and `error` events while preserving existing stage/database behavior.
+- Added service tests and a remaining-slice XACR status document.
+
 ## 2026-06-26 23:12 EEST — v0.10.68
 
 - Ran 3XACR numeric analysis over V2 OpenSpec coverage, implementation status, and path toward `09 REAL PLAYBACK`.
