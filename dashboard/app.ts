@@ -81,6 +81,7 @@ import { isV2OperatorSidebarRoute, type V2OperatorSidebarRoute } from './data/v2
 import { V2_IMPLEMENTATION_STATUS_REGISTRY, getV2ImplementationStatusElement } from './data/v2ImplementationStatus.ts';
 import { buildViewARefreshPlan } from './services/viewARefreshPlan.ts';
 import { captureScrollSnapshot, restoreScrollSnapshotAfterLayout } from './services/scrollPreservation.ts';
+import { isModeReadyForAutonomousPlayback, setCurrentMode } from './services/v2ReadinessService.ts';
 
 const app = document.getElementById('app');
 declare const __APP_VERSION__: string;
@@ -1242,6 +1243,20 @@ function bindEvents() {
     });
   });
 
+
+  app.querySelectorAll<HTMLSelectElement>('select[data-action="select-mode"]').forEach((select) => {
+    select.addEventListener('change', () => {
+      const selectedMode = select.value === 'real' ? 'real' : 'test';
+      setCurrentMode(selectedMode);
+      pushHistory('V2', 'info', `V2 source-of-truth mode changed to ${selectedMode.toUpperCase()}.`, {
+        action: 'select-mode',
+        selectedMode,
+        backendRuntimeModeChanged: false,
+      });
+      render();
+    });
+  });
+
   app.querySelectorAll<HTMLElement>('[data-view]').forEach((button) => {
     button.addEventListener('click', () => {
       const id = button.dataset.view;
@@ -1750,6 +1765,29 @@ function bindEvents() {
         const input = app.querySelector<HTMLTextAreaElement>('[data-scheduler-crontab-input]');
         if (input) {
           setSchedulerEditableCrontab(input.value);
+        }
+        if (dashboardVisualMode === 'v2' && v2OperatorSidebarRoute === 'real-playback') {
+          if (!isModeReadyForAutonomousPlayback('real')) {
+            const confirmedBlockedStart = window.confirm('REAL readiness rings are not all complete. Continue installing crontab anyway?');
+            if (!confirmedBlockedStart) {
+              pushHistory('SCHEDULER', 'warning', 'REAL crontab installation was cancelled because readiness rings were incomplete.', {
+                action: 'install-crontab',
+                route: v2OperatorSidebarRoute,
+                readinessGate: 'incomplete',
+              });
+              return;
+            }
+          }
+          const confirmedStart = window.confirm('Are you sure you want to start the real playback process?');
+          if (!confirmedStart) {
+            pushHistory('SCHEDULER', 'warning', 'REAL playback crontab installation was cancelled before start.', {
+              action: 'install-crontab',
+              route: v2OperatorSidebarRoute,
+              confirmed: false,
+            });
+            return;
+          }
+          setCurrentMode('real');
         }
         runAction(action, schedulerTargetPayload);
         return;
