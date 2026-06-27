@@ -1,4 +1,9 @@
 ## 2026-06-27 18:38 EEST — v0.10.78
+## 0.10.79 - 2026-06-27
+
+- Sanitized npm lockfile resolved URLs away from container-internal OpenAI artifact hosts.
+- Added project `.npmrc` pointing target proof runs at the public npm registry with retry settings.
+- Documented the verbose proofrunner logging ACR requirements for timestamped run folders and copyable log ZIPs.
 
 - Ran the saved `4SLICSE-XACRSLICEPLAN-ZIP-OFFER` / `4S-ACRPL-Z-O` workflow on the proof-focused remaining sliceplan.
 - Added target-machine readiness, real cron worker evidence, real playback display evidence, and final autonomous bundle proof commands.
