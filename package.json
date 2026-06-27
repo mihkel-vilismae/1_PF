@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.10.80",
+  "version": "0.10.81",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -178,7 +178,10 @@
     "proof:v2-final-autonomous-bundle-contract": "node tools/run-v2-final-autonomous-proof-bundle.mjs --contract",
     "proof:v2-run-regular-worker-once": "node tools/run-v2-worker-once-evidence-proof.mjs regular-worker --write",
     "proof:v2-run-playback-worker-once": "node tools/run-v2-worker-once-evidence-proof.mjs playback-worker --write",
-    "proof:v2-run-screen-worker-once": "node tools/run-v2-worker-once-evidence-proof.mjs screen-worker --write"
+    "proof:v2-run-screen-worker-once": "node tools/run-v2-worker-once-evidence-proof.mjs screen-worker --write",
+    "proof:v2-install-real-crontab": "node tools/run-v2-install-real-crontab-proof.mjs --evidence --write",
+    "proof:v2-real-cron-runtime": "node tools/run-v2-real-cron-runtime-proof.mjs --evidence --write",
+    "proof:v2-real-cron-cleanup": "node tools/run-v2-real-cron-cleanup-proof.mjs --evidence --write"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
