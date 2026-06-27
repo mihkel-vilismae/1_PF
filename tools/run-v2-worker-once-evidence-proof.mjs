@@ -6,28 +6,31 @@ import { check, emitProof, parseArgs, proofResult, readTruthEvents } from './v2-
 const workerArg = process.argv.find((arg) => ['regular-worker', 'playback-worker', 'screen-worker'].includes(arg));
 const worker = workerArg ?? 'regular-worker';
 const args = parseArgs();
+const cli = parseCli(process.argv.slice(2));
 const repoRoot = process.cwd();
 const mode = 'real';
-const logId = `v2-worker-once-${worker}-${Date.now()}`;
+const source = cli.source ?? process.env.PF_V2_WORKER_EVIDENCE_SOURCE ?? 'prooflauncher-once';
+const proofRunId = cli.proofRunId ?? process.env.PF_V2_PROOF_RUN_ID ?? `v2-worker-once-${worker}-${Date.now()}`;
+const logId = proofRunId;
 const startedAt = new Date().toISOString();
 
 const eventPlans = {
   'regular-worker': [
-    { stage: 'regular_worker_started', status: 'started', message: 'Regular worker once evidence started from target prooflauncher.' },
-    { stage: 'regular_worker_finished', status: 'finished', message: 'Regular worker once evidence finished from target prooflauncher.', counts: { proofEvents: 2 } },
+    { stage: 'regular_worker_started', status: 'started', message: 'Regular worker once evidence started.' },
+    { stage: 'regular_worker_finished', status: 'finished', message: 'Regular worker once evidence finished.', counts: { proofEvents: 2 } },
   ],
   'playback-worker': [
-    { stage: 'playback_worker_started', status: 'started', message: 'Playback worker once evidence started from target prooflauncher.' },
+    { stage: 'playback_worker_started', status: 'started', message: 'Playback worker once evidence started.' },
     { stage: 'media_started', status: 'started', message: 'Playback proof fixture media started.', meta: { filename: 'v2-proof-fixture-media.jpg', mediaKind: 'image', proofFixture: true } },
     { stage: 'media_finished', status: 'finished', message: 'Playback proof fixture media finished.', meta: { filename: 'v2-proof-fixture-media.jpg', mediaKind: 'image', proofFixture: true } },
     { stage: 'queue_advanced', status: 'finished', message: 'Playback proof fixture queue advanced.', counts: { selected: 1, advanced: 1 } },
-    { stage: 'playback_worker_finished', status: 'finished', message: 'Playback worker once evidence finished from target prooflauncher.' },
+    { stage: 'playback_worker_finished', status: 'finished', message: 'Playback worker once evidence finished.' },
   ],
   'screen-worker': [
-    { stage: 'screen_worker_started', status: 'started', message: 'Screen worker once evidence started from target prooflauncher.' },
+    { stage: 'screen_worker_started', status: 'started', message: 'Screen worker once evidence started.' },
     { stage: 'screen_on', status: 'state', message: 'Screen worker once proof recorded screen on state.', meta: { fakeScreenOffMode: true, realScreenOffGuarded: true } },
     { stage: 'activity_ignored_mouse', status: 'state', message: 'Screen worker once proof recorded disabled-source ignored event.', meta: { source: 'mouse', ignored: true, proofFixture: true } },
-    { stage: 'screen_worker_finished', status: 'finished', message: 'Screen worker once evidence finished from target prooflauncher.' },
+    { stage: 'screen_worker_finished', status: 'finished', message: 'Screen worker once evidence finished.' },
   ],
 };
 
@@ -46,6 +49,8 @@ for (const [index, planned] of eventPlans[worker].entries()) {
     timestamp,
     processId: process.pid,
     logId,
+    proofRunId,
+    source,
     message: planned.message,
     counts: planned.counts,
     error: null,
@@ -53,7 +58,9 @@ for (const [index, planned] of eventPlans[worker].entries()) {
       ...(planned.meta ?? {}),
       evidenceProducer: 'proof:v2-run-worker-once',
       targetSafe: true,
-      note: 'This command creates deterministic worker-once truth evidence for proof flow validation. Cron scheduling and physical display are checked by separate proofs.',
+      source,
+      proofRunId,
+      note: 'This command creates deterministic worker truth evidence for proof flow validation. Cron scheduling and physical display are checked by separate proofs.',
     },
   };
   appendFileSync(truthFile, `${JSON.stringify(stripUndefined(event))}\n`, 'utf8');
@@ -66,6 +73,8 @@ const checks = [];
 check(checks, 'truth-file-written', `${worker} truth JSONL file was written.`, files.some((file) => file.endsWith(`${worker}.truth.jsonl`)), { truthFile });
 check(checks, 'worker-started-event', `${worker} started event exists.`, workerEvents.some((event) => event.status === 'started'));
 check(checks, 'worker-finished-or-state-event', `${worker} finished/state event exists.`, workerEvents.some((event) => event.status === 'finished' || event.status === 'state'));
+check(checks, 'source-marker-present', `${worker} events include source marker.`, workerEvents.every((event) => event.source === source), { source });
+check(checks, 'proof-run-id-present', `${worker} events include proofRunId marker.`, workerEvents.every((event) => event.proofRunId === proofRunId), { proofRunId });
 check(checks, 'truth-json-valid', `${worker} truth JSONL has no malformed lines.`, malformed.length === 0, { malformed });
 
 if (worker === 'playback-worker') {
@@ -83,7 +92,7 @@ const result = proofResult({
   proof: `v2_run_${worker.replace(/-/g, '_')}_once`,
   checks,
   evidenceMode: true,
-  note: `${worker} once evidence producer for target proof flow. This creates truth JSONL evidence before evidence-checking proofs; it does not by itself prove cron scheduling or physical display hardware.`,
+  note: `${worker} evidence producer for target proof flow. Source=${source}. This creates truth JSONL evidence before evidence-checking proofs; physical display hardware remains a separate proof boundary.`,
 });
 
 emitProof(result, { write: args.write || args.evidence });
@@ -96,4 +105,16 @@ function resolveTruthDir(root) {
 
 function stripUndefined(value) {
   return Object.fromEntries(Object.entries(value).filter(([, raw]) => raw !== undefined));
+}
+
+function parseCli(argv) {
+  const parsed = {};
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+    if (arg.startsWith('--source=')) parsed.source = arg.slice('--source='.length);
+    if (arg === '--source') parsed.source = argv[index + 1];
+    if (arg.startsWith('--proof-run-id=')) parsed.proofRunId = arg.slice('--proof-run-id='.length);
+    if (arg === '--proof-run-id') parsed.proofRunId = argv[index + 1];
+  }
+  return parsed;
 }
