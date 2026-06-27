@@ -16,6 +16,7 @@ import {
   summarizeInitPayload,
 } from './runtimeTruthActionUtils.ts';
 import { buildInitialSchedulerCapability } from './runtimeTruthState.ts';
+import { setReadinessStatus } from '../v2ReadinessService.ts';
 
 export function createRuntimeTruthDatabaseActions({
   getState,
@@ -95,6 +96,12 @@ export function createRuntimeTruthDatabaseActions({
       const nextStatus = key === 'E4' && responsePayload?.logging?.active
         ? 'running'
         : mapPayloadStatusToUiStatus(responsePayload?.status);
+      if (key === '1A') {
+        setReadinessStatus('env', nextStatus === 'success' ? 'complete' : nextStatus === 'running' ? 'running' : 'blocked');
+      }
+      if (key === '2A') {
+        setReadinessStatus('db', nextStatus === 'success' ? 'complete' : nextStatus === 'running' ? 'running' : 'blocked');
+      }
       setStatus(key, nextStatus);
       pushLog(key, 'success', message, successDetails);
       pushHistory(source, 'success', `${operation} completed through ${endpoint.path}.`, successDetails);
@@ -128,6 +135,12 @@ export function createRuntimeTruthDatabaseActions({
           );
         }
       });
+      if (key === '1A') {
+        setReadinessStatus('env', 'error');
+      }
+      if (key === '2A') {
+        setReadinessStatus('db', 'error');
+      }
       setStatus(key, 'error');
       pushLog(key, 'error', message, errorDetails);
       pushHistory(source, 'error', `${operation} failed through ${endpoint.path}.`, errorDetails);
