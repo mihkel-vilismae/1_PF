@@ -26,6 +26,8 @@ import {
   stopOsPlaybackActivityMonitoring as stopOsPlaybackActivityStateMonitoring,
   type OsPlaybackActivitySource,
 } from './osPlaybackActivityDetection.ts';
+import { readV2WorkerTruth, type V2WorkerTruthPayload } from './v2WorkerTruthClient.ts';
+import { getCurrentMode, type V2RuntimeMode } from './v2ReadinessService.ts';
 
 type RuntimeTruthState = {
   activeView: string;
@@ -61,6 +63,7 @@ type RuntimeTruthState = {
   lastRunMode: string;
   lastRunData: Record<string, unknown>;
   osPlaybackActivity?: Record<string, unknown>;
+  v2WorkerTruth?: Partial<Record<V2RuntimeMode, V2WorkerTruthPayload & { loadStatus?: string; lastError?: string | null }>>;
   [key: string]: unknown;
 };
 type RuntimeTruthListener = (state: RuntimeTruthState) => void;
@@ -596,6 +599,62 @@ export function changeDatabaseViewerPage(delta: number | string): void {
     return;
   }
   void runtimeTruthBehavior.runDatabaseViewerRowsAction(selectedTableName, nextPage);
+}
+
+// Refreshes the combined V2 worker source-of-truth projection for one mode.
+// This is intentionally frontend-to-API only: the UI never reads worker truth files directly.
+export async function refreshV2WorkerTruth(mode: V2RuntimeMode = getCurrentMode()): Promise<void> {
+  const normalizedMode: V2RuntimeMode = mode === 'real' ? 'real' : 'test';
+  patchState((draft) => {
+    draft.v2WorkerTruth ??= {};
+    draft.v2WorkerTruth[normalizedMode] = {
+      ...(draft.v2WorkerTruth[normalizedMode] ?? {
+        schemaVersion: 1,
+        mode: normalizedMode,
+        status: 'ok',
+        events: [],
+        files: [],
+        malformed: [],
+        readAt: '',
+      }),
+      loadStatus: 'loading',
+      lastError: null,
+    };
+  });
+  try {
+    const response = await readV2WorkerTruth(normalizedMode);
+    const payload = response.payload ?? response as unknown as V2WorkerTruthPayload;
+    patchState((draft) => {
+      draft.v2WorkerTruth ??= {};
+      draft.v2WorkerTruth[normalizedMode] = {
+        ...payload,
+        loadStatus: payload.status === 'warning' ? 'warning' : 'ready',
+        lastError: null,
+      };
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    patchState((draft) => {
+      draft.v2WorkerTruth ??= {};
+      draft.v2WorkerTruth[normalizedMode] = {
+        ...(draft.v2WorkerTruth[normalizedMode] ?? {
+          schemaVersion: 1,
+          mode: normalizedMode,
+          status: 'warning',
+          events: [],
+          files: [],
+          malformed: [],
+          readAt: '',
+        }),
+        loadStatus: 'error',
+        lastError: message,
+      };
+    });
+    pushHistory('V2_WORKER_TRUTH', 'warning', `Failed to refresh ${normalizedMode.toUpperCase()} worker truth.`, {
+      mode: normalizedMode,
+      error: message,
+    });
+  }
 }
 
 export function runAction(action: string, payload: RuntimeActionPayload = {}): void {
