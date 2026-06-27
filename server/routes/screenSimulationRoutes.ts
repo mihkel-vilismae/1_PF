@@ -4,12 +4,15 @@
  * The server index wires these handlers into the existing route table.
  */
 import type { RouteHandler } from '../index.ts';
+import { createV2WorkerTruthService, normalizeV2WorkerTruthMode } from '../v2WorkerTruthService.ts';
 
 export interface ScreenSimulationConfig {
   pirEnabled: boolean;
   mouseEnabled: boolean;
   keyboardEnabled: boolean;
   simulateAllEnabled: boolean;
+  fakeScreenOffMode: boolean;
+  realScreenOffGuarded: boolean;
   inactivityTimeoutSeconds: number;
 }
 
@@ -30,6 +33,7 @@ export interface ScreenSimulationState {
 }
 
 export interface ScreenSimulationRouteDependencies {
+  repoRoot: string;
   createBadRequestError: (code: string, message: string, details: unknown) => Error;
   isJsonObject: (value: unknown) => value is Record<string, unknown>;
 }
@@ -42,6 +46,8 @@ export function createScreenSimulationRoutes(dependencies: ScreenSimulationRoute
       mouseEnabled: true,
       keyboardEnabled: true,
       simulateAllEnabled: true,
+      fakeScreenOffMode: true,
+      realScreenOffGuarded: false,
       inactivityTimeoutSeconds: 5,
     },
     'Initial backend-owned screen simulation state.',
@@ -60,9 +66,79 @@ export function createScreenSimulationRoutes(dependencies: ScreenSimulationRoute
     return { statusCode: 200, payload: screenSimulationState };
   };
 
+  const runtimeScreenSimulationActivityHandler: RouteHandler = async ({ body, context }) => {
+    const source = normalizeScreenActivitySource(body?.source);
+    const action = normalizeScreenActivityAction(body?.action);
+    const enabled = isScreenActivitySourceEnabled(screenSimulationState.simulation, source);
+    const now = new Date().toISOString();
+
+    if (!enabled && source !== 'timer') {
+      await appendScreenTruthEvent(dependencies.repoRoot, context, {
+        stage: `activity_ignored_${source}`,
+        status: 'state',
+        timestamp: now,
+        message: `${source} activity ignored because that source is disabled.`,
+        meta: { source, action, ignored: true },
+      });
+      return {
+        statusCode: 200,
+        payload: {
+          ...screenSimulationState,
+          accepted: false,
+          ignored: true,
+          message: `${source} activity ignored because that source is disabled.`,
+        },
+      };
+    }
+
+    const screenState = action === 'sleep' ? 'OFF' : 'ON';
+    screenSimulationState = {
+      ...screenSimulationState,
+      screen: {
+        ...screenSimulationState.screen,
+        screenState,
+        lastActivitySource: `${source} ${action}`,
+        playbackStatus: screenState === 'OFF'
+          ? (screenSimulationState.simulation.fakeScreenOffMode ? 'Fake screen-off overlay active' : 'Real screen-off guarded mode requested')
+          : 'Screen awake from enabled activity source',
+        lastCheckpoint: `${now} ${source} ${action}`,
+        updatedAt: now,
+      },
+      messages: [
+        `${source} ${action} accepted by backend-owned screen simulation.`,
+        screenSimulationState.simulation.fakeScreenOffMode
+          ? 'Fake screen-off mode is active; real display hardware is not controlled.'
+          : 'Real screen-off guarded mode was requested; hardware control remains guarded by platform implementation.',
+      ],
+    };
+
+    await appendScreenTruthEvent(dependencies.repoRoot, context, {
+      stage: screenState === 'OFF' ? 'screen_off' : 'screen_on',
+      status: 'state',
+      timestamp: now,
+      message: `${screenState === 'OFF' ? 'Screen off' : 'Screen on'} state recorded from ${source}.`,
+      meta: {
+        source,
+        action,
+        fakeScreenOffMode: screenSimulationState.simulation.fakeScreenOffMode,
+        realScreenOffGuarded: screenSimulationState.simulation.realScreenOffGuarded,
+      },
+    });
+
+    return {
+      statusCode: 200,
+      payload: {
+        ...screenSimulationState,
+        accepted: true,
+        ignored: false,
+      },
+    };
+  };
+
   return {
     'GET /api/runtime/screen-simulation/state': runtimeScreenSimulationStateHandler,
     'POST /api/runtime/screen-simulation/configure': runtimeScreenSimulationConfigureHandler,
+    'POST /api/runtime/screen-simulation/activity': runtimeScreenSimulationActivityHandler,
   };
 }
 
@@ -103,6 +179,8 @@ export function normalizeScreenSimulationConfig(
     mouseEnabled: Boolean(value.mouseEnabled),
     keyboardEnabled: Boolean(value.keyboardEnabled),
     simulateAllEnabled: Boolean(value.simulateAllEnabled),
+    fakeScreenOffMode: value.fakeScreenOffMode === undefined ? true : Boolean(value.fakeScreenOffMode),
+    realScreenOffGuarded: Boolean(value.realScreenOffGuarded),
     inactivityTimeoutSeconds: timeout,
   };
 
@@ -115,6 +193,33 @@ export function normalizeScreenSimulationConfig(
   }
 
   return config;
+}
+
+function normalizeScreenActivitySource(value: unknown): 'mouse' | 'keyboard' | 'pir' | 'timer' {
+  return value === 'keyboard' || value === 'pir' || value === 'timer' ? value : 'mouse';
+}
+
+function normalizeScreenActivityAction(value: unknown): 'wake' | 'sleep' {
+  return value === 'sleep' ? 'sleep' : 'wake';
+}
+
+function isScreenActivitySourceEnabled(config: ScreenSimulationConfig, source: 'mouse' | 'keyboard' | 'pir' | 'timer'): boolean {
+  if (source === 'timer') return true;
+  if (config.simulateAllEnabled) return true;
+  if (source === 'mouse') return config.mouseEnabled;
+  if (source === 'keyboard') return config.keyboardEnabled;
+  return config.pirEnabled;
+}
+
+async function appendScreenTruthEvent(repoRoot: string, context: any, event: Record<string, unknown>): Promise<void> {
+  const mode = normalizeV2WorkerTruthMode(context?.runtimeMode);
+  const service = createV2WorkerTruthService({ repoRoot, envValues: context?.baseEnvValues });
+  await service.appendEvent(mode, {
+    worker: 'screen-worker',
+    processId: process.pid,
+    logId: `screen-simulation-${Date.now()}`,
+    ...event,
+  });
 }
 
 // Builds the unchanged simulation-only response payload used by both screen routes.

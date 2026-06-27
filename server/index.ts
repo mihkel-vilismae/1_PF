@@ -639,6 +639,7 @@ const routes: Record<string, RouteHandler> = {
     runtimeOrchestrationLastHandler,
   }),
   ...createScreenSimulationRoutes({
+    repoRoot,
     createBadRequestError: (code, message, details) => new HttpError(400, code, message, details),
     isJsonObject,
   }),
