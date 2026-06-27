@@ -82,7 +82,7 @@ import { isV2OperatorSidebarRoute, type V2OperatorSidebarRoute } from './data/v2
 import { V2_IMPLEMENTATION_STATUS_REGISTRY, getV2ImplementationStatusElement } from './data/v2ImplementationStatus.ts';
 import { buildViewARefreshPlan } from './services/viewARefreshPlan.ts';
 import { captureScrollSnapshot, restoreScrollSnapshotAfterLayout } from './services/scrollPreservation.ts';
-import { isModeReadyForAutonomousPlayback, setCurrentMode } from './services/v2ReadinessService.ts';
+import { getCurrentMode, isModeReadyForAutonomousPlayback, setCurrentMode } from './services/v2ReadinessService.ts';
 
 const app = document.getElementById('app');
 declare const __APP_VERSION__: string;
@@ -1213,6 +1213,29 @@ function normalizeDebugWorkerKey(value: string | null | undefined): DebugWorkerK
   return value === 'regular' || value === 'playback' || value === 'screen' ? value : null;
 }
 
+function isV2ManualStageAction(action: string | undefined): action is 'run-b3-1' | 'run-b3-2' | 'run-b3-3' | 'run-b3-4' | 'run-b3-5' {
+  return action === 'run-b3-1' || action === 'run-b3-2' || action === 'run-b3-3' || action === 'run-b3-4' || action === 'run-b3-5';
+}
+
+function buildV2StageBatchPayload(action: string): Record<string, unknown> {
+  const stageId = action === 'run-b3-1'
+    ? 'download'
+    : action === 'run-b3-2'
+      ? 'index'
+      : action === 'run-b3-3'
+        ? 'gps-parser'
+        : action === 'run-b3-4'
+          ? 'geocode'
+          : 'queue';
+  const input = app.querySelector<HTMLInputElement>(`[data-v2-rpi-stage-batch-size="${stageId}"]`);
+  const batchSize = Math.max(1, Number(input?.value || 1));
+  return {
+    batchSize,
+    requestedBatchSize: batchSize,
+    stageId,
+  };
+}
+
 // Binds rendered controls to runtime-truth actions and local state updates.
 function bindEvents() {
   app.querySelectorAll<HTMLButtonElement>('[data-dashboard-visual-mode]').forEach((button) => {
@@ -1763,6 +1786,21 @@ function bindEvents() {
       }
       const schedulerTarget = button.dataset.schedulerTarget;
       const schedulerTargetPayload = schedulerTarget ? { target: schedulerTarget } : {};
+      if (isV2ManualStageAction(action)) {
+        if (dashboardVisualMode === 'v2' && v2OperatorSidebarRoute === 'workers' && getCurrentMode() === 'real') {
+          pushHistory('PIPELINE', 'warning', 'Manual TEST stage run was blocked because REAL mode is active.', {
+            action,
+            route: v2OperatorSidebarRoute,
+            currentMode: getCurrentMode(),
+          });
+          return;
+        }
+        runAction(action, {
+          ...buildV2StageBatchPayload(action),
+          sourceTruthMode: dashboardVisualMode === 'v2' ? getCurrentMode() : undefined,
+        });
+        return;
+      }
       if (action === 'install-crontab') {
         const input = app.querySelector<HTMLTextAreaElement>('[data-scheduler-crontab-input]');
         if (input) {

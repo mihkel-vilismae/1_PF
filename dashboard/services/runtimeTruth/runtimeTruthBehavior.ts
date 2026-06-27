@@ -449,6 +449,7 @@ export function createRuntimeTruthBehavior({
           operation: "Run download stage",
           endpoint: RUNTIME_EXECUTION_ENDPOINTS.downloadRun,
           execute: runRuntimeDownload,
+          requestBody: payload,
         }),
       "run-b3-2": () =>
         demoActions.runBackendPipelineStage({
@@ -456,6 +457,7 @@ export function createRuntimeTruthBehavior({
           operation: "Run index stage",
           endpoint: RUNTIME_EXECUTION_ENDPOINTS.indexRun,
           execute: runRuntimeIndex,
+          requestBody: payload,
         }),
       "run-b3-3": () =>
         demoActions.runBackendPipelineStage({
@@ -463,6 +465,7 @@ export function createRuntimeTruthBehavior({
           operation: "Run GPS stage",
           endpoint: RUNTIME_EXECUTION_ENDPOINTS.gpsRun,
           execute: runRuntimeGps,
+          requestBody: payload,
         }),
       "run-b3-4": () =>
         demoActions.runBackendPipelineStage({
@@ -470,6 +473,7 @@ export function createRuntimeTruthBehavior({
           operation: "Run geocode stage",
           endpoint: RUNTIME_EXECUTION_ENDPOINTS.geocodeRun,
           execute: runRuntimeGeocode,
+          requestBody: payload,
         }),
       "run-b3-5": (detail) => demoActions.runEnqueueStage(() => {}, detail),
       "detect-pipeline-issues": () => demoActions.detectPipelineIssues(),
