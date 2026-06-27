@@ -7,6 +7,7 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import type { DatabaseService } from '../database/databaseService.ts';
 import { selectCurrentPlayableItem, type PlaybackSelectionContext } from '../playback/playbackSelectionService.ts';
+import { createV2WorkerTruthService, type V2WorkerTruthMode } from '../v2WorkerTruthService.ts';
 import {
   NativePlaybackError,
   shouldAutoStartNativePlaybackFromWorker,
@@ -137,6 +138,14 @@ export async function runPlaybackWorker({
   };
 
   await fs.mkdir(runtimeDirectory, { recursive: true });
+  await appendPlaybackTruth(repoRoot, context, {
+    stage: 'playback_worker_started',
+    status: 'started',
+    timestamp: startedAt,
+    processId: process.pid,
+    logId: workerId,
+    message: 'Playback worker started.',
+  });
   const lockOutcome = await acquireOrClassifyWorkerLock({ lockPath, payload: lockPayload, now, staleLockSeconds });
 
   if (lockOutcome.duplicateSkipped) {
@@ -162,6 +171,15 @@ export async function runPlaybackWorker({
       messages: ['playback_worker duplicate invocation skipped because a same-worker lock is active.'],
     });
     await writeWorkerStatus(statusPath, result);
+    await appendPlaybackTruth(repoRoot, context, {
+      stage: 'playback_worker_skipped',
+      status: 'interrupted',
+      timestamp: result.finishedAt,
+      processId: process.pid,
+      logId: workerId,
+      message: 'Playback worker skipped because a same-worker lock is active.',
+      error: result.skippedReason,
+    });
     return result;
   }
 
@@ -198,6 +216,45 @@ export async function runPlaybackWorker({
       nativePlayback: nativeResult.nativePlayback,
       messages: [...selection.messages, ...nativeResult.messages],
     });
+    if (selection.outcome === 'selected') {
+      await appendPlaybackTruth(repoRoot, context, {
+        stage: 'media_started',
+        status: 'started',
+        timestamp: startedAt,
+        processId: process.pid,
+        logId: workerId,
+        message: 'Playback worker selected a playable media item.',
+        meta: summarizeSelectedPlaybackItem(selection.selectedItemSummary),
+      });
+      await appendPlaybackTruth(repoRoot, context, {
+        stage: 'media_finished',
+        status: 'finished',
+        timestamp: result.finishedAt,
+        processId: process.pid,
+        logId: workerId,
+        message: nativeResult.claimed ? 'Native playback launch was claimed for the selected item.' : 'Playback selection finished; native display was not claimed by worker config.',
+        meta: summarizeSelectedPlaybackItem(selection.selectedItemSummary),
+      });
+      await appendPlaybackTruth(repoRoot, context, {
+        stage: 'queue_advanced',
+        status: 'finished',
+        timestamp: result.finishedAt,
+        processId: process.pid,
+        logId: workerId,
+        message: 'Playback worker completed one queue selection cycle.',
+        counts: { selected: 1 },
+      });
+    } else {
+      await appendPlaybackTruth(repoRoot, context, {
+        stage: 'no_playable_media',
+        status: 'finished',
+        timestamp: result.finishedAt,
+        processId: process.pid,
+        logId: workerId,
+        message: selection.skippedReason ?? 'No playable media item was selected.',
+        counts: { selected: 0 },
+      });
+    }
   } catch (error) {
     result = buildResult({
       status: 'failed',
@@ -220,13 +277,58 @@ export async function runPlaybackWorker({
       nativePlayback: null,
       messages: [`playback_worker failed: ${getErrorMessage(error)}`],
     });
+    await appendPlaybackTruth(repoRoot, context, {
+      stage: 'playback_error',
+      status: 'error',
+      timestamp: result.finishedAt,
+      processId: process.pid,
+      logId: workerId,
+      message: 'Playback worker failed.',
+      error: getErrorMessage(error),
+    });
   } finally {
     if (lockOutcome.acquired) await fs.rm(lockPath, { force: true }).catch(() => undefined);
   }
 
   result.lock.released = true;
   await writeWorkerStatus(statusPath, result);
+  await appendPlaybackTruth(repoRoot, context, {
+    stage: 'playback_worker_finished',
+    status: result.status === 'failed' ? 'error' : 'finished',
+    timestamp: result.finishedAt,
+    processId: process.pid,
+    logId: workerId,
+    message: `Playback worker finished with status ${result.status}.`,
+    error: result.failureReason,
+  });
   return result;
+}
+
+async function appendPlaybackTruth(repoRoot: string, context: PlaybackSelectionContext, event: Record<string, unknown>): Promise<void> {
+  try {
+    const mode = resolvePlaybackTruthMode(context.envValues);
+    const service = createV2WorkerTruthService({ repoRoot, envValues: context.envValues });
+    await service.appendEvent(mode, { worker: 'playback-worker', ...event });
+  } catch {
+    // Truth logging must never break playback selection.
+  }
+}
+
+function resolvePlaybackTruthMode(envValues: Record<string, string | undefined>): V2WorkerTruthMode {
+  return envValues.PF_RUNTIME_MODE === 'test' || envValues.RUNTIME_MODE === 'test' ? 'test' : 'real';
+}
+
+function summarizeSelectedPlaybackItem(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return {};
+  }
+  const item = value as Record<string, unknown>;
+  return {
+    filename: item.filename ?? item.name ?? item.path ?? item.id ?? 'selected media',
+    mediaKind: item.mediaKind ?? item.kind ?? item.type ?? 'unknown',
+    url: item.displayUrl ?? item.url ?? item.path ?? '',
+    id: item.id ?? null,
+  };
 }
 
 function buildResult({

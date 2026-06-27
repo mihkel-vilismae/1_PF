@@ -102,6 +102,7 @@ let pendingLiveUpdateRender = false;
 let v2ImplementationStatusMode = false;
 let v2PlaybackQueueItems: V2PlaybackQueueItem[] = [];
 let v2PlaybackQueueItemCounter = 0;
+let v2PseudoPlaybackTimer: ReturnType<typeof setTimeout> | null = null;
 let v2RecoveryRestartCheckQueued = false;
 let hasInitPreloadRun = false;
 let hasInitNewAuthPreloadRun = false;
@@ -1706,6 +1707,18 @@ function bindEvents() {
         prepareV2PlaybackQueueItemForBackend(button.dataset.v2PlaybackQueueItemId);
         return;
       }
+      if (action === 'v2-pseudo-playback-start') {
+        startV2PseudoPlayback();
+        return;
+      }
+      if (action === 'v2-pseudo-playback-next') {
+        advanceV2PseudoPlayback('manual-next');
+        return;
+      }
+      if (action === 'v2-pseudo-playback-stop') {
+        stopV2PseudoPlayback();
+        return;
+      }
       if (action === 'emulate-pir-signal') {
         markB5ActivityDetected('pir');
         pushHistory('SCREEN', 'success', 'PIR emulator signal received.', {
@@ -1950,6 +1963,24 @@ function bindEvents() {
     });
   });
 
+  app.querySelectorAll<HTMLInputElement>('[data-v2-image-duration-input]').forEach((input) => {
+    input.addEventListener('change', () => {
+      const itemId = input.dataset.v2PlaybackQueueItemId;
+      const seconds = Math.max(1, Number(input.value || 10));
+      setV2ImageDuration(itemId, seconds);
+    });
+  });
+
+  app.querySelectorAll<HTMLVideoElement>('[data-v2-pseudo-video-current]').forEach((video) => {
+    video.addEventListener('ended', () => {
+      advanceV2PseudoPlayback('video-ended');
+    });
+    video.addEventListener('error', () => {
+      markV2PseudoPlaybackError(video.dataset.v2PlaybackQueueItemId, 'Video playback error; advancing to next playable item.');
+      advanceV2PseudoPlayback('video-error');
+    });
+  });
+
   app.querySelectorAll<HTMLElement>('[data-v2-playback-drop-zone]').forEach((dropZone) => {
     dropZone.addEventListener('dragover', (event) => {
       event.preventDefault();
@@ -2138,11 +2169,17 @@ function buildV2PlaybackQueueItem(file: File): V2PlaybackQueueItem {
   const mediaKind = classifyV2PlaybackFile(file);
   const metadata = buildBrowserLocalV2PlaybackMetadata();
   v2PlaybackQueueItemCounter += 1;
+  const objectUrl = (mediaKind === 'image' || mediaKind === 'video') && typeof URL !== 'undefined'
+    ? URL.createObjectURL(file)
+    : undefined;
   return {
     id: `v2-drop-${v2PlaybackQueueItemCounter}`,
     filename: file.name || `unnamed-${v2PlaybackQueueItemCounter}`,
     mediaKind,
+    objectUrl,
     durationLabel: mediaKind === 'video' ? 'metadata pending' : mediaKind === 'image' ? 'not applicable for image' : 'not playable as media',
+    imageDurationSeconds: mediaKind === 'image' ? 10 : undefined,
+    playbackStatus: mediaKind === 'other' ? 'skipped' : 'idle',
     gpsCoordinates: metadata.gpsCoordinates,
     gpsStatus: metadata.gpsStatus,
     address: metadata.address,
@@ -2154,6 +2191,87 @@ function buildV2PlaybackQueueItem(file: File): V2PlaybackQueueItem {
       ? 'Non-media cannot request backend queue prepare.'
       : 'Not sent to backend yet.',
   };
+}
+
+function getV2PseudoMediaItems(): V2PlaybackQueueItem[] {
+  return v2PlaybackQueueItems.filter((item) => item.mediaKind === 'image' || item.mediaKind === 'video');
+}
+
+function startV2PseudoPlayback(): void {
+  const mediaItems = getV2PseudoMediaItems();
+  if (!mediaItems.length) {
+    pushHistory('PLAYBACK', 'warning', 'Pseudo playback cannot start because the browser-local queue has no playable media.', {
+      action: 'v2-pseudo-playback-start',
+      productionMutation: false,
+    });
+    return;
+  }
+  const current = mediaItems.find((item) => item.playbackStatus === 'playing') ?? mediaItems[0];
+  setV2PseudoCurrentItem(current.id, 'start');
+}
+
+function stopV2PseudoPlayback(): void {
+  clearV2PseudoPlaybackTimer();
+  v2PlaybackQueueItems = v2PlaybackQueueItems.map((item) => item.playbackStatus === 'playing' ? { ...item, playbackStatus: 'idle' } : item);
+  pushHistory('PLAYBACK', 'info', 'Pseudo playback stopped. Real playback queue was not touched.', {
+    action: 'v2-pseudo-playback-stop',
+    productionMutation: false,
+  });
+  render();
+}
+
+function advanceV2PseudoPlayback(reason: string): void {
+  const mediaItems = getV2PseudoMediaItems();
+  if (!mediaItems.length) return;
+  const currentIndex = Math.max(0, mediaItems.findIndex((item) => item.playbackStatus === 'playing'));
+  const next = mediaItems[(currentIndex + 1) % mediaItems.length];
+  setV2PseudoCurrentItem(next.id, reason);
+}
+
+function setV2PseudoCurrentItem(itemId: string, reason: string): void {
+  clearV2PseudoPlaybackTimer();
+  const item = v2PlaybackQueueItems.find((candidate) => candidate.id === itemId) ?? null;
+  v2PlaybackQueueItems = v2PlaybackQueueItems.map((candidate) => {
+    if (candidate.id === itemId) return { ...candidate, playbackStatus: 'playing' };
+    if (candidate.playbackStatus === 'playing') return { ...candidate, playbackStatus: 'played' };
+    return candidate;
+  });
+  pushHistory('PLAYBACK', 'success', `Pseudo playback showing ${item?.filename ?? itemId}.`, {
+    action: 'v2-pseudo-playback-current',
+    itemId,
+    reason,
+    mediaKind: item?.mediaKind ?? 'unknown',
+    productionMutation: false,
+  });
+  render();
+  if (item?.mediaKind === 'image') {
+    const seconds = Math.max(1, Number(item.imageDurationSeconds ?? 10));
+    v2PseudoPlaybackTimer = setTimeout(() => advanceV2PseudoPlayback('image-duration-ended'), seconds * 1000);
+  }
+}
+
+function setV2ImageDuration(itemId: string | undefined, seconds: number): void {
+  if (!itemId) return;
+  v2PlaybackQueueItems = v2PlaybackQueueItems.map((item) => item.id === itemId ? { ...item, imageDurationSeconds: seconds, durationLabel: `${seconds}s image duration` } : item);
+  pushHistory('PLAYBACK', 'info', `Image duration set to ${seconds} second(s).`, {
+    action: 'v2-image-duration-change',
+    itemId,
+    seconds,
+    productionMutation: false,
+  });
+  render();
+}
+
+function markV2PseudoPlaybackError(itemId: string | undefined, message: string): void {
+  if (!itemId) return;
+  v2PlaybackQueueItems = v2PlaybackQueueItems.map((item) => item.id === itemId ? { ...item, playbackStatus: 'error', backendQueueMessage: message } : item);
+}
+
+function clearV2PseudoPlaybackTimer(): void {
+  if (v2PseudoPlaybackTimer) {
+    clearTimeout(v2PseudoPlaybackTimer);
+    v2PseudoPlaybackTimer = null;
+  }
 }
 
 function classifyV2PlaybackFile(file: File): V2PlaybackQueueItem['mediaKind'] {

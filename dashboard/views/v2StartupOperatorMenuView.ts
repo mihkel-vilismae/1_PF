@@ -21,7 +21,10 @@ export type V2PlaybackQueueItem = {
   id: string;
   filename: string;
   mediaKind: 'video' | 'image' | 'other';
+  objectUrl?: string;
   durationLabel: string;
+  imageDurationSeconds?: number;
+  playbackStatus?: 'idle' | 'playing' | 'played' | 'skipped' | 'error';
   gpsCoordinates: string;
   address: string;
   gpsStatus?: 'present' | 'missing';
@@ -522,6 +525,7 @@ function renderPlaybackRenderingControlsBlock(block: Extract<V2OperatorCenterPan
   const playbackRenderingState = normalizePlaybackRenderingState(runtimeState.playbackRendering);
   const playbackReady = Boolean(runtimeState.truth?.playbackActive || runtimeState.statusByKey?.B4 === 'success');
   const renderingOptions = buildPlaybackRenderingOptions(playbackReady);
+  const truthMedia = buildCurrentPlaybackTruthMedia(runtimeState);
   return `
     <article class="card v2-block v2-block--playbackRenderingControls" data-v2-playback-rendering-controls data-v2-block-type="playbackRenderingControls" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
       ${renderBlockHeader(block.title, getV2BlockStatusId(block.id), block.status)}
@@ -542,8 +546,45 @@ function renderPlaybackRenderingControlsBlock(block: Extract<V2OperatorCenterPan
           ${renderV2PlaybackRenderingModeButtons(renderingOptions, playbackRenderingState.mode, playbackReady)}
         </div>
         <p class="notice playback-rendering-panel__notice">${playbackReady ? escapeHtml(getV2PlaybackRenderingReadyMessage(playbackRenderingState.mode)) : 'Run B4 successfully before changing rendering mode or target.'}</p>
+        ${renderPlaybackRenderingStage(playbackRenderingState.mode, truthMedia)}
       </section>
     </article>
+  `;
+}
+
+function buildCurrentPlaybackTruthMedia(runtimeState: Record<string, any>): { filename: string; kind: string; url: string; message: string } | null {
+  const events = runtimeState.v2WorkerTruth?.real?.events ?? runtimeState.v2WorkerTruth?.test?.events ?? [];
+  const latest = Array.isArray(events)
+    ? [...events].reverse().find((event) => String(event?.worker ?? '').includes('playback'))
+    : null;
+  if (!latest) return null;
+  const meta = latest.meta && typeof latest.meta === 'object' ? latest.meta : {};
+  return {
+    filename: String(meta.filename ?? meta.file ?? latest.stage ?? 'current media'),
+    kind: String(meta.mediaKind ?? meta.kind ?? 'unknown'),
+    url: String(meta.url ?? meta.objectUrl ?? ''),
+    message: String(latest.message ?? latest.status ?? 'latest playback truth event'),
+  };
+}
+
+function renderPlaybackRenderingStage(mode: PlaybackRenderingMode, media: { filename: string; kind: string; url: string; message: string } | null): string {
+  const observeMode = mode === PLAYBACK_RENDERING_MODES.previewWindow;
+  const fullscreenMode = mode === PLAYBACK_RENDERING_MODES.fullscreen;
+  const stageClass = observeMode ? 'v2-real-playback-stage--observe' : fullscreenMode ? 'v2-real-playback-stage--fullscreen' : 'v2-real-playback-stage--off';
+  const mediaMarkup = media?.url
+    ? media.kind === 'video'
+      ? `<video src="${escapeHtml(media.url)}" controls ${fullscreenMode || observeMode ? 'autoplay' : ''}></video>`
+      : `<img src="${escapeHtml(media.url)}" alt="${escapeHtml(media.filename)}" />`
+    : '<div class="notice notice--neutral">No renderable playback media URL has been reported by worker truth yet.</div>';
+  return `
+    <section class="v2-real-playback-stage ${stageClass}" data-playback-rendering-stage="windows" data-v2-real-playback-render-mode="${escapeHtml(mode)}">
+      ${mediaMarkup}
+      <div class="v2-real-playback-overlay">
+        <strong>${escapeHtml(media?.filename ?? 'Waiting for playback worker')}</strong>
+        <span>${escapeHtml(media?.message ?? 'REAL playback overlay will appear here when media truth is available.')}</span>
+        <span>${observeMode ? 'Observe mode: RPI stages/workers remain visible.' : fullscreenMode ? 'Fullscreen mode selected.' : 'Playback without rendering selected.'}</span>
+      </div>
+    </section>
   `;
 }
 
@@ -616,6 +657,8 @@ function renderRealPlaybackProjectionBlock(block: Extract<V2OperatorCenterPanelB
 }
 
 function renderPlaybackDropQueueBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'playbackDropQueue' }>, queueItems: readonly V2PlaybackQueueItem[]): string {
+  const mediaItems = queueItems.filter((item) => item.mediaKind === 'image' || item.mediaKind === 'video');
+  const currentItem = mediaItems.find((item) => item.playbackStatus === 'playing') ?? mediaItems[0] ?? null;
   return `
     <article class="card v2-block v2-block--playbackDropQueue" data-v2-playback-drop-queue data-v2-block-type="playbackDropQueue" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
       ${renderBlockHeader(block.title, getV2BlockStatusId(block.id), block.status)}
@@ -624,6 +667,18 @@ function renderPlaybackDropQueueBlock(block: Extract<V2OperatorCenterPanelBlock,
         <input data-v2-playback-file-input type="file" multiple accept="image/*,video/*,*/*" />
         <span><strong>Drop files here</strong><small>Images, videos, and other files are accepted into this browser-local queue table.</small></span>
       </label>
+      <section class="selector-card selector-card--hybrid v2-pseudo-playback-panel" data-v2-pseudo-playback-panel>
+        <div>
+          <p class="selector-card__label">Pseudo playback loop</p>
+          <p class="stage-card__subtitle">Uses only the browser-local pseudo queue. It never reads or writes the real playback queue.</p>
+        </div>
+        <div class="button-row">
+          <button class="button button--primary" type="button" data-action="v2-pseudo-playback-start" ${mediaItems.length ? '' : 'disabled aria-disabled="true"'}>Start pseudo playback</button>
+          <button class="button button--secondary" type="button" data-action="v2-pseudo-playback-next" ${mediaItems.length ? '' : 'disabled aria-disabled="true"'}>Next item</button>
+          <button class="button button--secondary" type="button" data-action="v2-pseudo-playback-stop">Stop</button>
+        </div>
+        ${currentItem ? renderPseudoPlaybackMedia(currentItem) : '<p class="notice notice--neutral">Drop an image or video to enable pseudo playback.</p>'}
+      </section>
       <div class="v2-playback-queue-table-wrap">
         <table class="v2-playback-queue-table">
           <thead>
@@ -651,13 +706,16 @@ function renderPlaybackDropQueueBlock(block: Extract<V2OperatorCenterPanelBlock,
 }
 
 function renderPlaybackDropQueueRow(item: V2PlaybackQueueItem): string {
+  const imageDurationCell = item.mediaKind === 'image'
+    ? `<label class="v2-image-duration-cell"><input type="number" min="1" step="1" value="${escapeHtml(String(item.imageDurationSeconds ?? 10))}" data-v2-image-duration-input data-v2-playback-queue-item-id="${escapeHtml(item.id)}" /> sec</label>`
+    : escapeHtml(item.durationLabel);
   return `
     <tr data-v2-playback-queue-item="${escapeHtml(item.id)}" data-v2-playback-media-kind="${escapeHtml(item.mediaKind)}">
       <td>${escapeHtml(item.filename)}</td>
       <td>${item.mediaKind === 'video' ? 'yes' : 'no'}</td>
       <td>${item.mediaKind === 'image' ? 'yes' : 'no'}</td>
       <td>${item.mediaKind === 'other' ? 'yes — report not playable' : 'no'}</td>
-      <td>${escapeHtml(item.durationLabel)}</td>
+      <td>${imageDurationCell}</td>
       <td>${escapeHtml(item.gpsCoordinates)}</td>
       <td><span class="pill" data-v2-playback-gps-status="${escapeHtml(item.gpsStatus ?? 'missing')}">${escapeHtml(item.gpsStatus ?? 'missing')}</span></td>
       <td>${escapeHtml(item.address)}</td>
@@ -666,6 +724,18 @@ function renderPlaybackDropQueueRow(item: V2PlaybackQueueItem): string {
       <td>${renderPlaybackDropQueueBackendCell(item)}</td>
     </tr>
   `;
+}
+
+function renderPseudoPlaybackMedia(item: V2PlaybackQueueItem): string {
+  const url = item.objectUrl ?? '';
+  const overlay = `<div class="v2-pseudo-playback-overlay"><strong>${escapeHtml(item.filename)}</strong><span>${escapeHtml(item.mediaKind.toUpperCase())}</span><span>${escapeHtml(item.address || 'address unavailable')}</span></div>`;
+  if (!url) {
+    return `<div class="v2-pseudo-playback-stage">${overlay}<p class="notice notice--warning">This item has no browser object URL.</p></div>`;
+  }
+  const media = item.mediaKind === 'video'
+    ? `<video src="${escapeHtml(url)}" controls autoplay data-v2-pseudo-video-current data-v2-playback-queue-item-id="${escapeHtml(item.id)}"></video>`
+    : `<img src="${escapeHtml(url)}" alt="${escapeHtml(item.filename)}" data-v2-pseudo-image-current data-v2-playback-queue-item-id="${escapeHtml(item.id)}" />`;
+  return `<div class="v2-pseudo-playback-stage" data-v2-pseudo-current-item="${escapeHtml(item.id)}">${media}${overlay}</div>`;
 }
 
 function renderPlaybackDropQueueBackendCell(item: V2PlaybackQueueItem): string {

@@ -17,6 +17,7 @@ export interface V2WorkerTruthEvent {
   message?: string | null;
   counts?: Record<string, number>;
   error?: string | null;
+  meta?: Record<string, unknown>;
   sourceFile?: string;
   sourceLine?: number;
   raw?: unknown;
@@ -180,10 +181,18 @@ function normalizeEvent(
     message: normalizeNullableString(value.message),
     counts,
     error: normalizeNullableString(value.error),
+    meta: normalizeMeta(value.meta),
     sourceFile,
     sourceLine: sourceLine ?? undefined,
     raw: value,
   };
+}
+
+function normalizeMeta(value: unknown): Record<string, unknown> | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return undefined;
+  }
+  return { ...(value as Record<string, unknown>) };
 }
 
 function normalizeStatus(value: unknown): V2WorkerTruthStatus {
