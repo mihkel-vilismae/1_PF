@@ -1,44 +1,61 @@
-/*
- * Unified worker truth aggregator.
- *
- * This module exposes a function that will read and combine the individual
- * worker truth files written by the regular, playback and screen on/off workers.
- * Each worker writes a simplified log entry when it starts and finishes a stage.
- * The aggregator combines these events into a single time‑ordered list.  It
- * preserves the worker identity, stage, status and timestamp.  Once real
- * path/file definitions are stable the implementation should read from
- * runtime_data paths defined in the `.env` file.  For now the returned
- * array is empty, as V2 test and real mode have not been wired to workers.
- */
+import { requestJson } from '../apiClient.ts';
+
+export type UnifiedWorkerMode = 'test' | 'real';
+export type UnifiedWorkerStatus = 'started' | 'finished' | 'error' | 'interrupted' | 'state';
 
 export interface UnifiedWorkerEvent {
-  /** The worker ID, e.g. 'regular-worker', 'playback-worker', 'on-off-worker' */
-  worker: string;
-  /** The logical stage or action name, e.g. 'download', 'index', 'screen-off' */
+  schemaVersion: 1;
+  mode: UnifiedWorkerMode;
+  worker: 'regular-worker' | 'playback-worker' | 'screen-worker';
   stage: string;
-  /** The status of the event: 'started', 'finished' or 'error' */
-  status: 'started' | 'finished' | 'error';
-  /** ISO timestamp of when the event occurred */
+  status: UnifiedWorkerStatus;
   timestamp: string;
-  /** Optional process or log identifier */
-  id?: string;
-  /** Additional metadata from the worker entry */
-  meta?: Record<string, any>;
+  processId?: string | number | null;
+  logId?: string | null;
+  message?: string | null;
+  counts?: Record<string, number>;
+  error?: string | null;
+  sourceFile?: string;
+  sourceLine?: number;
+}
+
+export interface UnifiedWorkerTruthResponse {
+  schemaVersion: 1;
+  mode: UnifiedWorkerMode;
+  status: 'ok' | 'warning';
+  events: UnifiedWorkerEvent[];
+  files: Array<{
+    worker: string;
+    path: string;
+    exists: boolean;
+    parsedCount: number;
+    malformedCount: number;
+  }>;
+  malformed: Array<{ path: string; line: number; error: string; raw: string }>;
+  readAt: string;
+}
+
+export function normalizeUnifiedWorkerMode(value: unknown): UnifiedWorkerMode {
+  return value === 'real' ? 'real' : 'test';
 }
 
 /**
- * Returns an array of unified worker events for the selected mode.  When test
- * mode and real mode log files are separated, the implementation must pick
- * the correct file set based on the `mode` parameter.  For now this function
- * returns an empty list because the file locations and parsing rules are not
- * defined.  This placeholder allows future slices to import and use this
- * function without failing.
- *
- * @param mode Either 'test' or 'real' to choose the source of truth
+ * Reads the server-owned combined worker source-of-truth.  The browser never
+ * reads worker files directly; this API is the only frontend path to the three
+ * TEST/REAL worker truth files.
  */
-export async function getUnifiedWorkerEvents(mode: 'test' | 'real'): Promise<UnifiedWorkerEvent[]> {
-  // TODO: In a later slice, read and parse three worker truth files based on mode.
-  // Use process.env.TEST_WORKER_TRUTH_DIR and process.env.REAL_WORKER_TRUTH_DIR
-  // or similar.  Combine entries into a sorted list by timestamp.
-  return [];
+export async function getUnifiedWorkerEvents(mode: UnifiedWorkerMode): Promise<UnifiedWorkerTruthResponse> {
+  return requestJson(`/api/v2/worker-truth?mode=${encodeURIComponent(mode)}`) as Promise<UnifiedWorkerTruthResponse>;
+}
+
+/**
+ * Appends a normalized worker event through the backend.  This is useful for
+ * controlled tests and future worker adapters, but production workers should
+ * prefer server-side writers when possible.
+ */
+export async function appendUnifiedWorkerEvent(mode: UnifiedWorkerMode, event: Partial<UnifiedWorkerEvent>): Promise<unknown> {
+  return requestJson('/api/v2/worker-truth/event', {
+    method: 'POST',
+    body: { mode, event },
+  });
 }
