@@ -9,6 +9,9 @@ const requiredContractScripts = [
   'proof:v2-real-cron-evidence-contract',
   'proof:v2-real-playback-display-contract',
   'proof:v2-autonomous-contract',
+  'proof:v2-run-regular-worker-once',
+  'proof:v2-run-playback-worker-once',
+  'proof:v2-run-screen-worker-once',
 ];
 
 for (const scriptName of requiredContractScripts) {
@@ -20,6 +23,9 @@ if (args.evidence) {
   const statuses = Object.fromEntries(latestProofs.map((proof) => [proof.proof, proof.status]));
   const requiredEvidenceProofs = [
     'v2_real_machine_readiness',
+    'v2_run_regular_worker_once',
+    'v2_run_playback_worker_once',
+    'v2_run_screen_worker_once',
     'v2_real_cron_worker_evidence',
     'v2_real_playback_display',
     'v2_autonomous_proof_contract',
