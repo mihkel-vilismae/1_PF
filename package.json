@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.10.68",
+  "version": "0.10.73",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
