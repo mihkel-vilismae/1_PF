@@ -10,6 +10,7 @@ import {
   installEmulatorCrontab,
   runEmulator,
   stopEmulator,
+  testEmulatorCrontabWriting,
 } from '../initService.ts';
 import { buildInitLogDetails, normalizeActionResult, summarizeInitPayload } from './runtimeTruthActionUtils.ts';
 import {
@@ -125,35 +126,14 @@ export function createRuntimeTruthSchedulerActions({
     });
   }
 
-  // Stages a non-mutating crontab write test marker. The backend mutation is still owned by installCrontabAction.
-  function testCrontabWritingAction() {
-    const marker = `# PF_V2_CRONTAB_WRITE_TEST ${new Date().toISOString()}`;
-    patchState((draft) => {
-      const schedulerState = ensureSchedulerEmulatorState(draft);
-      const currentText = String(schedulerState.editableCrontab ?? '').trim();
-      schedulerState.editableCrontab = currentText ? `${currentText}\n${marker}` : marker;
-      draft.initResults[SCHEDULER_CARD_KEY] = {
-        outcome: 'success',
-        operation: 'Stage crontab write test marker',
-        method: 'LOCAL',
-        endpoint: 'v2/test-crontab-writing',
-        receivedAt: stamp(),
-        message: 'Temporary crontab write-test marker was staged in the editable textarea. Install is still guarded separately.',
-        payload: { marker, mutatesSystemCrontab: false },
-        request: null,
-        response: null,
-      };
-    });
-    setStatus(SCHEDULER_CARD_KEY, 'success');
-    pushLog(SCHEDULER_CARD_KEY, 'success', 'Temporary crontab write-test marker staged in textarea.', {
+  // Performs a real safe crontab write/read/remove test with a temporary comment marker.
+  async function testCrontabWritingAction(options: { target?: string } = {}) {
+    return runSchedulerAction({
+      buttonKey: 'install-crontab',
       operation: 'Test crontab writing',
-      marker,
-      mutatesSystemCrontab: false,
-    });
-    pushHistory(SCHEDULER_HISTORY_SOURCE, 'success', 'Temporary crontab write-test marker staged in textarea.', {
-      action: 'test-crontab-writing',
-      marker,
-      mutatesSystemCrontab: false,
+      endpoint: SCHEDULER_EMULATOR_ENDPOINTS.writeTestCrontab,
+      payload: { target: resolveSchedulerTarget(options) },
+      execute: () => testEmulatorCrontabWriting({ target: resolveSchedulerTarget(options) }),
     });
   }
 

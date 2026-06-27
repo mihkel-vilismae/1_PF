@@ -16,6 +16,7 @@ export interface SchedulerRouteHandlers {
   stopEmulatorHandler: RouteHandler;
   installEmulatorCrontabHandler: RouteHandler;
   activeEmulatorCrontabHandler: RouteHandler;
+  testCrontabWritingHandler: RouteHandler;
   schedulerRunLogHandler: RouteHandler;
 }
 
@@ -32,6 +33,7 @@ export function createSchedulerRoutes(handlers: SchedulerRouteHandlers): Record<
     'POST /api/init/cron/emulator/stop': handlers.stopEmulatorHandler,
     'POST /api/init/cron/emulator/crontab': handlers.installEmulatorCrontabHandler,
     'GET /api/init/cron/emulator/crontab': handlers.activeEmulatorCrontabHandler,
+    'POST /api/init/cron/emulator/crontab/write-test': handlers.testCrontabWritingHandler,
     'GET /api/init/cron/run-log': handlers.schedulerRunLogHandler,
   };
 }

@@ -547,6 +547,7 @@ const routes: Record<string, RouteHandler> = {
     stopEmulatorHandler,
     installEmulatorCrontabHandler,
     activeEmulatorCrontabHandler,
+    testCrontabWritingHandler,
     schedulerRunLogHandler,
   }),
   'POST /api/database-viewer/verify': databaseViewerVerifyHandler,
@@ -1281,6 +1282,76 @@ async function activeEmulatorCrontabHandler({ context, body, url }) {
   return buildSchedulerRouteResponse(context, schedulerEmulatorOperations.activeCrontab, {
     requestedTarget: getRequestedSchedulerTarget(url, body),
   });
+}
+
+// Performs a safe crontab write/read/remove proof with a temporary comment row.
+async function testCrontabWritingHandler({ context, body, url }) {
+  const requestedTarget = getRequestedSchedulerTarget(url, body);
+  const selection = await readSchedulerTargetSelection(context);
+  const target = requestedTarget && isSchedulerTarget(requestedTarget) ? requestedTarget : selection.selectedTarget;
+  const marker = `# PF_V2_CRONTAB_WRITE_TEST ${new Date().toISOString()}`;
+
+  if (target === SCHEDULER_TARGETS.raspberryRealCrontab) {
+    if (context.platform !== 'linux') {
+      return {
+        statusCode: 200,
+        payload: {
+          status: 'deferred',
+          messages: ['Real Raspberry crontab write-test is only executable from a Linux/Raspberry backend host.'],
+          schedulerTarget: target,
+          writeTest: { attempted: false, marker, reason: 'non-linux-host' },
+          schemaVersion: schedulerSchemaVersion,
+        },
+      };
+    }
+    const original = await readUserCrontab();
+    const withMarker = appendCrontabMarker(original, marker);
+    await installUserCrontab(withMarker);
+    const afterAdd = await readUserCrontab();
+    const added = afterAdd.includes(marker);
+    await installUserCrontab(original);
+    const afterRemove = await readUserCrontab();
+    const removed = !afterRemove.includes(marker);
+    return buildCrontabWriteTestPayload({ target, marker, added, removed, pathLabel: 'user-crontab' });
+  }
+
+  await fs.mkdir(path.dirname(cronEmulatorDefaultCrontabPath), { recursive: true });
+  const original = await readTextIfExists(cronEmulatorDefaultCrontabPath) ?? '';
+  const withMarker = appendCrontabMarker(original, marker);
+  await fs.writeFile(cronEmulatorDefaultCrontabPath, withMarker, 'utf8');
+  const afterAdd = await readTextIfExists(cronEmulatorDefaultCrontabPath) ?? '';
+  const added = afterAdd.includes(marker);
+  await fs.writeFile(cronEmulatorDefaultCrontabPath, original, 'utf8');
+  const afterRemove = await readTextIfExists(cronEmulatorDefaultCrontabPath) ?? '';
+  const removed = !afterRemove.includes(marker);
+  return buildCrontabWriteTestPayload({ target, marker, added, removed, pathLabel: cronEmulatorDefaultCrontabPath });
+}
+
+function appendCrontabMarker(current: string, marker: string): string {
+  const trimmed = String(current ?? '').replace(/\r\n/g, '\n').replace(/\r/g, '\n').trimEnd();
+  return `${trimmed ? `${trimmed}\n` : ''}${marker}\n`;
+}
+
+function buildCrontabWriteTestPayload({ target, marker, added, removed, pathLabel }) {
+  const ok = Boolean(added && removed);
+  return {
+    statusCode: ok ? 200 : 500,
+    payload: {
+      status: ok ? 'ok' : 'error',
+      messages: [ok
+        ? 'Temporary crontab marker was added, verified, removed, and verified absent.'
+        : 'Temporary crontab marker write-test failed.'],
+      schedulerTarget: target,
+      writeTest: {
+        attempted: true,
+        marker,
+        added,
+        removed,
+        path: pathLabel,
+      },
+      schemaVersion: schedulerSchemaVersion,
+    },
+  };
 }
 
 
