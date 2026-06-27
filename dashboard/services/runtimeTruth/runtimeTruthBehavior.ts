@@ -278,6 +278,12 @@ export function createRuntimeTruthBehavior({
       "install-crontab": () => void schedulerActions.installCrontabAction(payload),
       "get-active-crontab": () =>
         void schedulerActions.getActiveCrontabAction(payload),
+      "get-crontab": () =>
+        void schedulerActions.getActiveCrontabAction(payload),
+      "print-default-crontab": () =>
+        void schedulerActions.printDefaultCrontabAction(),
+      "test-crontab-writing": () =>
+        void schedulerActions.testCrontabWritingAction(),
       "refresh-scheduler-run-log": () =>
         void schedulerActions.refreshSchedulerRunLogAction(),
       "verify-db-viewer": () =>

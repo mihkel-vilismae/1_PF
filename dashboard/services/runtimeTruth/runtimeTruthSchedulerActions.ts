@@ -20,6 +20,12 @@ import { buildInitialSchedulerEmulatorButtonStates } from './runtimeTruthState.t
 
 const SCHEDULER_CARD_KEY = '3A';
 const SCHEDULER_HISTORY_SOURCE = 'SCHEDULER';
+const DEFAULT_V2_REAL_CRONTAB = [
+  '# PhotoFrame V2 default real crontab',
+  '*/3 * * * * cd "$PF_REPO_ROOT" && npm run api -- --scheduler screen-on-off-worker',
+  '*/10 * * * * cd "$PF_REPO_ROOT" && npm run api -- --scheduler regular-stage-worker',
+  '* * * * * cd "$PF_REPO_ROOT" && npm run api -- --scheduler playback-worker',
+].join('\n');
 
 type SchedulerEndpoint = {
   method: string;
@@ -87,6 +93,67 @@ export function createRuntimeTruthSchedulerActions({
       operation: 'Stop emulator',
       endpoint: SCHEDULER_EMULATOR_ENDPOINTS.stop,
       execute: () => stopEmulator({ target: resolveSchedulerTarget(options) }),
+    });
+  }
+
+
+  // Populates the editable crontab textarea with the Beeline default three-worker schedule.
+  function printDefaultCrontabAction() {
+    patchState((draft) => {
+      const schedulerState = ensureSchedulerEmulatorState(draft);
+      schedulerState.editableCrontab = DEFAULT_V2_REAL_CRONTAB;
+      draft.initResults[SCHEDULER_CARD_KEY] = {
+        outcome: 'success',
+        operation: 'Print default crontab',
+        method: 'LOCAL',
+        endpoint: 'v2/default-crontab',
+        receivedAt: stamp(),
+        message: 'Default V2 crontab printed into the editable crontab textarea.',
+        payload: { crontabText: DEFAULT_V2_REAL_CRONTAB, workerRows: 3 },
+        request: null,
+        response: null,
+      };
+    });
+    setStatus(SCHEDULER_CARD_KEY, 'success');
+    pushLog(SCHEDULER_CARD_KEY, 'success', 'Default V2 crontab printed into the editable crontab textarea.', {
+      operation: 'Print default crontab',
+      crontabRows: DEFAULT_V2_REAL_CRONTAB.split('\n').length,
+    });
+    pushHistory(SCHEDULER_HISTORY_SOURCE, 'success', 'Default V2 crontab printed into textarea.', {
+      action: 'print-default-crontab',
+      workerRows: 3,
+    });
+  }
+
+  // Stages a non-mutating crontab write test marker. The backend mutation is still owned by installCrontabAction.
+  function testCrontabWritingAction() {
+    const marker = `# PF_V2_CRONTAB_WRITE_TEST ${new Date().toISOString()}`;
+    patchState((draft) => {
+      const schedulerState = ensureSchedulerEmulatorState(draft);
+      const currentText = String(schedulerState.editableCrontab ?? '').trim();
+      schedulerState.editableCrontab = currentText ? `${currentText}\n${marker}` : marker;
+      draft.initResults[SCHEDULER_CARD_KEY] = {
+        outcome: 'success',
+        operation: 'Stage crontab write test marker',
+        method: 'LOCAL',
+        endpoint: 'v2/test-crontab-writing',
+        receivedAt: stamp(),
+        message: 'Temporary crontab write-test marker was staged in the editable textarea. Install is still guarded separately.',
+        payload: { marker, mutatesSystemCrontab: false },
+        request: null,
+        response: null,
+      };
+    });
+    setStatus(SCHEDULER_CARD_KEY, 'success');
+    pushLog(SCHEDULER_CARD_KEY, 'success', 'Temporary crontab write-test marker staged in textarea.', {
+      operation: 'Test crontab writing',
+      marker,
+      mutatesSystemCrontab: false,
+    });
+    pushHistory(SCHEDULER_HISTORY_SOURCE, 'success', 'Temporary crontab write-test marker staged in textarea.', {
+      action: 'test-crontab-writing',
+      marker,
+      mutatesSystemCrontab: false,
     });
   }
 
@@ -257,6 +324,8 @@ export function createRuntimeTruthSchedulerActions({
     stopEmulatorAction,
     installCrontabAction,
     getActiveCrontabAction,
+    printDefaultCrontabAction,
+    testCrontabWritingAction,
     refreshSchedulerRunLogAction,
   };
 }
