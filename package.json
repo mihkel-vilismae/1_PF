@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.10.76",
+  "version": "0.10.77",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -166,7 +166,8 @@
     "check:ai-context-policy": "node tools/check-ai-context-policy.mjs",
     "check:repo-report-protocol": "node tools/check-repo-report-protocol.mjs",
     "check:large-file-containment": "node tools/check-large-file-containment.mjs",
-    "proof:v2-target-live-readiness": "node tools/run-v2-target-live-proof-readiness.mjs"
+    "proof:v2-target-live-readiness": "node tools/run-v2-target-live-proof-readiness.mjs",
+    "proof:v2-autonomous-contract": "node tools/run-v2-autonomous-proof-contract.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
