@@ -1,3 +1,12 @@
+## 0.10.80 - 2026-06-28
+
+- Ran one-by-one XACR on the v0.10.79 prooflauncher/proof-flow blockers.
+- Fixed `proof:v2-autonomous-contract` so it writes a JSON proof artifact for final bundle collection.
+- Added required worker-once proof commands for regular, playback, and screen workers before evidence-checking proofs run.
+- Added deterministic REAL-mode worker truth JSONL evidence events, including playback `media_started`, `media_finished`, and `queue_advanced`.
+- Updated the final autonomous bundle gate to require worker-once proof artifacts.
+- Documented the create-evidence-before-check-evidence prooflauncher order for v0.10.80.
+
 ## 2026-06-27 18:38 EEST — v0.10.78
 ## 0.10.79 - 2026-06-27
 
