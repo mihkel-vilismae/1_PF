@@ -51,6 +51,12 @@ export function renderV2OperatorPageWrapper(options: V2OperatorPageWrapperOption
             ${renderV2ToolbarButton('toggle-value-inspect-mode', options.valueInspectMode ? 'Hide value guide' : 'Explain values', options.valueInspectMode, 'Explain where visible V2 values come from.')}
             ${renderV2ToolbarButton('toggle-v2-implementation-status', options.implementationStatusMode ? 'Hide implementation status' : 'Implementation status', options.implementationStatusMode, 'Highlight V2 implementation status from the JSON metadata registry.')}
           </div>
+          <!-- Readiness rings: .env, DB, login (placeholder statuses) -->
+          <div class="v2-readiness-rings">
+            ${renderV2ReadinessRing('env', options.activePage.route)}
+            ${renderV2ReadinessRing('db', options.activePage.route)}
+            ${renderV2ReadinessRing('login', options.activePage.route)}
+          </div>
           <div class="v2-topbar-status">
             <span class="pill">Visual-only blocks</span>
             <span class="pill v2-implementation-pill v2-implementation-pill--${escapeHtml(pageStatusName)}">${escapeHtml(pageStatusName)}</span>
@@ -127,5 +133,21 @@ function renderV2StatusHelpButton(statusId: string, label: string): string {
       aria-label="Show implementation status for ${escapeHtml(label)}"
       title="Show implementation status"
     >?</button>
+  `;
+}
+
+/*
+ * Renders a simple readiness ring. This is a placeholder implementation. In a future slice the
+ * status argument should come from runtimeState.readiness to show whether the .env, database,
+ * or login checks have passed. For now the status is hard-coded to `unknown` and the label
+ * is derived from the type.
+ */
+function renderV2ReadinessRing(type: 'env' | 'db' | 'login', _route: string): string {
+  const status = 'unknown';
+  const label = type === 'env' ? '.env' : type === 'db' ? 'DB' : 'Login';
+  return `
+    <span class="readiness-ring readiness-ring--${escapeHtml(status)}" data-readiness-type="${escapeHtml(type)}" title="${escapeHtml(label)} readiness status">
+      <span class="readiness-ring__label">${escapeHtml(label)}</span>
+    </span>
   `;
 }
