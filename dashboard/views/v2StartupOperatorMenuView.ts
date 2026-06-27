@@ -108,9 +108,9 @@ function renderV2CenterPanelBlock(block: V2OperatorCenterPanelBlock, runtimeStat
     case 'rpiSchedulerControls':
       return renderRpiSchedulerControlsBlock(block, runtimeState);
     case 'rpiStagesRow':
-      return renderRpiStagesRowBlock(block);
+      return renderRpiStagesRowBlock(block, runtimeState);
     case 'rpiWorkersRow':
-      return renderRpiWorkersRowBlock(block);
+      return renderRpiWorkersRowBlock(block, runtimeState);
     case 'recoveryPlaceholderActions':
       return renderRecoveryPlaceholderActionsBlock(block, runtimeState);
     case 'pirActivityTest':
@@ -263,56 +263,147 @@ function renderRpiSchedulerControlsBlock(block: Extract<V2OperatorCenterPanelBlo
 }
 
 
-function renderRpiStagesRowBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'rpiStagesRow' }>): string {
+function renderRpiStagesRowBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'rpiStagesRow' }>, runtimeState: Record<string, any>): string {
   const truthMode = resolveV2TruthMode(block.truthMode);
   const truthLabel = truthMode.toUpperCase();
+  const truthPayload = runtimeState.v2WorkerTruth?.[truthMode] ?? null;
+  const liveStages = buildLiveStageMap(truthPayload?.events ?? []);
+  const liveSummary = buildTruthSummaryLabel(truthPayload);
   return `
-    <article class="card v2-block v2-block--rpiStagesRow" data-v2-rpi-stages-row data-v2-rpi-truth-mode="${escapeHtml(truthMode)}" data-v2-block-type="rpiStagesRow" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
+    <article class="card v2-block v2-block--rpiStagesRow" data-v2-rpi-stages-row data-v2-rpi-truth-mode="${escapeHtml(truthMode)}" data-v2-rpi-live-event-count="${escapeHtml(String(truthPayload?.events?.length ?? 0))}" data-v2-block-type="rpiStagesRow" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
       ${renderBlockHeader(block.title, getV2BlockStatusId(block.id), block.status)}
       <p class="pill v2-rpi-mode-pill">${escapeHtml(truthLabel)} truth source</p>
+      <p class="card__copy v2-rpi-truth-summary">${escapeHtml(liveSummary)}</p>
       ${block.body ? `<p class="card__copy">${escapeHtml(block.body)}</p>` : ''}
       <div class="v2-rpi-stage-flow" aria-label="DOWNLOAD to INDEX to GPS PARSER to GEOCODE to QUEUE">DOWNLOAD → INDEX → GPS PARSER → GEOCODE → QUEUE</div>
       <div class="v2-rpi-stage-card-row">
-        ${block.stages.map((stage) => `
+        ${block.stages.map((stage) => {
+          const live = liveStages[stage.id] ?? liveStages[normalizeStageAlias(stage.id)] ?? null;
+          const displayStatus = live?.status ? formatTruthStatus(live.status) : stage.status;
+          const countSummary = formatTruthCounts(live?.counts);
+          const message = live?.message ?? live?.error ?? '';
+          return `
           <div class="v2-rpi-stage-card" data-v2-rpi-stage="${escapeHtml(stage.id)}" data-v2-rpi-stage-mode="${escapeHtml(truthMode)}">
             <strong>${escapeHtml(stage.label)}</strong>
-            <span class="pill">${escapeHtml(stage.status)}</span>
+            <span class="pill">${escapeHtml(displayStatus)}</span>
+            ${countSummary ? `<small>${escapeHtml(countSummary)}</small>` : ''}
+            ${message ? `<small>${escapeHtml(message)}</small>` : ''}
             <label class="v2-rpi-batch-size-label">
               <span>Batch size</span>
               <input type="number" min="1" step="1" value="${escapeHtml(String(stage.batchSizeDefault))}" data-v2-rpi-stage-batch-size="${escapeHtml(stage.id)}" data-v2-rpi-stage-batch-mode="${escapeHtml(truthMode)}" />
             </label>
           </div>
-        `).join('')}
+        `; }).join('')}
       </div>
     </article>
   `;
 }
 
 
-function renderRpiWorkersRowBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'rpiWorkersRow' }>): string {
+function renderRpiWorkersRowBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'rpiWorkersRow' }>, runtimeState: Record<string, any>): string {
   const truthMode = resolveV2TruthMode(block.truthMode);
   const truthLabel = truthMode.toUpperCase();
+  const truthPayload = runtimeState.v2WorkerTruth?.[truthMode] ?? null;
+  const liveWorkers = buildLiveWorkerMap(truthPayload?.events ?? []);
+  const liveSummary = buildTruthSummaryLabel(truthPayload);
   return `
-    <article class="card v2-block v2-block--rpiWorkersRow" data-v2-rpi-workers-row data-v2-rpi-truth-mode="${escapeHtml(truthMode)}" data-v2-block-type="rpiWorkersRow" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
+    <article class="card v2-block v2-block--rpiWorkersRow" data-v2-rpi-workers-row data-v2-rpi-truth-mode="${escapeHtml(truthMode)}" data-v2-rpi-live-event-count="${escapeHtml(String(truthPayload?.events?.length ?? 0))}" data-v2-block-type="rpiWorkersRow" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
       ${renderBlockHeader(block.title, getV2BlockStatusId(block.id), block.status)}
       <p class="pill v2-rpi-mode-pill">${escapeHtml(truthLabel)} truth source</p>
+      <p class="card__copy v2-rpi-truth-summary">${escapeHtml(liveSummary)}</p>
       ${block.body ? `<p class="card__copy">${escapeHtml(block.body)}</p>` : ''}
       <div class="v2-rpi-worker-card-row">
-        ${block.workers.map((worker) => `
+        ${block.workers.map((worker) => {
+          const live = liveWorkers[normalizeWorkerAlias(worker.id)] ?? null;
+          const displayStatus = live?.status ? formatTruthStatus(live.status) : worker.status;
+          const lastCalled = live?.timestamp ? formatTruthTimestamp(live.timestamp) : worker.lastCalled;
+          const sinceLastCall = live?.stage ? `${live.stage}${live.message ? ` · ${live.message}` : ''}` : worker.sinceLastCall;
+          return `
           <div class="v2-rpi-worker-card" data-v2-rpi-worker="${escapeHtml(worker.id)}" data-v2-rpi-worker-mode="${escapeHtml(truthMode)}">
             <header>
               <strong>${escapeHtml(worker.label)}</strong>
-              <span class="pill">${escapeHtml(worker.status)}</span>
+              <span class="pill">${escapeHtml(displayStatus)}</span>
             </header>
             <dl>
-              <div><dt>Last called</dt><dd>${escapeHtml(worker.lastCalled)}</dd></div>
-              <div><dt>Since last call</dt><dd>${escapeHtml(worker.sinceLastCall)}</dd></div>
+              <div><dt>Last called</dt><dd>${escapeHtml(lastCalled)}</dd></div>
+              <div><dt>Last event</dt><dd>${escapeHtml(sinceLastCall)}</dd></div>
             </dl>
           </div>
-        `).join('')}
+        `; }).join('')}
       </div>
     </article>
   `;
+}
+
+function buildTruthSummaryLabel(payload: any): string {
+  if (!payload) return 'Worker truth has not been refreshed yet.';
+  const status = payload.loadStatus ?? payload.status ?? 'unknown';
+  const count = Array.isArray(payload.events) ? payload.events.length : 0;
+  const malformed = Array.isArray(payload.malformed) ? payload.malformed.length : 0;
+  return malformed
+    ? `Worker truth ${status}; ${count} event(s), ${malformed} malformed line(s).`
+    : `Worker truth ${status}; ${count} event(s).`;
+}
+
+function buildLiveStageMap(events: any[]): Record<string, any> {
+  const map: Record<string, any> = {};
+  events.forEach((event) => {
+    if (!event?.stage) return;
+    const key = normalizeStageAlias(String(event.stage));
+    const previous = map[key];
+    if (!previous || String(event.timestamp ?? '').localeCompare(String(previous.timestamp ?? '')) >= 0) {
+      map[key] = event;
+    }
+  });
+  return map;
+}
+
+function buildLiveWorkerMap(events: any[]): Record<string, any> {
+  const map: Record<string, any> = {};
+  events.forEach((event) => {
+    if (!event?.worker) return;
+    const key = normalizeWorkerAlias(String(event.worker));
+    const previous = map[key];
+    if (!previous || String(event.timestamp ?? '').localeCompare(String(previous.timestamp ?? '')) >= 0) {
+      map[key] = event;
+    }
+  });
+  return map;
+}
+
+function normalizeStageAlias(value: string): string {
+  const normalized = value.trim().toLowerCase().replace(/_/g, '-');
+  if (normalized === 'gps' || normalized === 'parse-gps' || normalized === 'gps-parser') return 'gps-parser';
+  if (normalized === 'queue-prepare' || normalized === 'enqueue-playback') return 'queue';
+  return normalized;
+}
+
+function normalizeWorkerAlias(value: string): string {
+  const normalized = value.trim().toLowerCase().replace(/_/g, '-');
+  if (normalized === 'regular-state-worker' || normalized === 'regular') return 'regular-worker';
+  if (normalized === 'on-off-worker' || normalized === 'screen-on-off-worker' || normalized === 'screen') return 'screen-worker';
+  return normalized;
+}
+
+function formatTruthStatus(value: string): string {
+  if (value === 'finished') return 'Finished';
+  if (value === 'started') return 'Started';
+  if (value === 'error') return 'Error';
+  if (value === 'interrupted') return 'Interrupted';
+  return value ? value[0].toUpperCase() + value.slice(1) : 'Unknown';
+}
+
+function formatTruthCounts(counts: any): string {
+  if (!counts || typeof counts !== 'object' || Array.isArray(counts)) return '';
+  return Object.entries(counts)
+    .map(([key, value]) => `${key}: ${value}`)
+    .join(' · ');
+}
+
+function formatTruthTimestamp(value: string): string {
+  if (!value) return 'Unknown';
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
 }
 
 function resolveV2TruthMode(mode: 'current' | 'test' | 'real' | undefined): V2RuntimeMode {
