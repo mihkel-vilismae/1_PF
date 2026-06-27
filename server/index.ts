@@ -574,6 +574,7 @@ const routes: Record<string, RouteHandler> = {
   'POST /api/runtime/recovery/state/load': runtimeRecoveryStateLoadHandler,
   'POST /api/runtime/recovery/autosave': runtimeRecoveryAutosaveHandler,
   'POST /api/runtime/recovery/restart-check': runtimeRecoveryRestartCheckHandler,
+  'POST /api/runtime/recovery/emulate-power-off': runtimeRecoveryEmulatePowerOffHandler,
   'GET /api/native-playback/status': nativePlaybackStatusHandler,
   'POST /api/native-playback/detect': nativePlaybackDetectHandler,
   'POST /api/native-playback/start-current': nativePlaybackStartCurrentHandler,
@@ -2324,6 +2325,15 @@ async function runtimeRecoveryRestartCheckHandler(): Promise<HandlerResult> {
   return {
     statusCode: 200,
     payload: await v2RecoveryStateService.checkRestart(),
+  };
+}
+
+// Saves a pre-shutdown recovery snapshot and writes an unclean-shutdown flag for the next restart check.
+async function runtimeRecoveryEmulatePowerOffHandler({ body }: Pick<HandlerArgs, 'body'>): Promise<HandlerResult> {
+  const envelope = await v2RecoveryStateService.emulatePowerOff(body?.snapshot ?? body ?? {});
+  return {
+    statusCode: envelope.validation.ok ? 200 : 400,
+    payload: envelope,
   };
 }
 

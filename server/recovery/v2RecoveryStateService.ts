@@ -46,6 +46,7 @@ export function createV2RecoveryStateService({ repoRoot, bootId = `boot-${Date.n
   const recoveryDirectory = path.join(repoRoot, 'runtime_data', 'recovery');
   const stateFilePath = path.join(recoveryDirectory, 'v2-recovery-state.json');
   const bootFilePath = path.join(recoveryDirectory, 'v2-recovery-boot.json');
+  const uncleanShutdownFlagPath = path.join(recoveryDirectory, 'v2-unclean-shutdown.flag.json');
 
   async function saveSnapshot(input: unknown, reason: V2RecoveryStateSaveReason = 'manual-save', source: V2RecoverySaveSource = 'manual'): Promise<V2RecoveryStateEnvelope> {
     const savedAtIso = new Date().toISOString();
@@ -110,6 +111,7 @@ export function createV2RecoveryStateService({ repoRoot, bootId = `boot-${Date.n
 
   async function checkRestart(): Promise<V2RecoveryStateEnvelope> {
     const previousBoot = await readBootRecord();
+    const uncleanShutdownFlag = await readUncleanShutdownFlag();
     const currentBoot: RecoveryBootRecord = {
       schemaVersion: 1,
       bootId,
@@ -122,7 +124,10 @@ export function createV2RecoveryStateService({ repoRoot, bootId = `boot-${Date.n
 
     const snapshot = await readSnapshot();
     const validation = validateV2RecoveryStateSnapshot(snapshot);
-    const possibleRestartDetected = Boolean(previousBoot && previousBoot.bootId !== bootId && snapshot && validation.ok);
+    const possibleRestartDetected = Boolean((uncleanShutdownFlag || (previousBoot && previousBoot.bootId !== bootId)) && snapshot && validation.ok);
+    if (possibleRestartDetected) {
+      await clearUncleanShutdownFlag();
+    }
     return {
       status: 'restart-checked',
       snapshot,
@@ -137,6 +142,26 @@ export function createV2RecoveryStateService({ repoRoot, bootId = `boot-${Date.n
       message: possibleRestartDetected
         ? 'Possible restart detected with a valid recovery snapshot available.'
         : 'Restart check completed; no recovery action is required.',
+    };
+  }
+
+  async function emulatePowerOff(input: unknown = {}): Promise<V2RecoveryStateEnvelope> {
+    const reason = 'pre-shutdown';
+    const saved = await saveSnapshot(input, reason, 'pre-shutdown');
+    await fs.mkdir(recoveryDirectory, { recursive: true });
+    await fs.writeFile(uncleanShutdownFlagPath, `${JSON.stringify({
+      schemaVersion: 1,
+      writtenAtIso: new Date().toISOString(),
+      reason: 'emulated-power-off',
+      note: 'Guarded emulated power-off marker. Project-owned worker termination is handled by platform runner when available.',
+    }, null, 2)}\n`, 'utf8');
+    return {
+      ...saved,
+      status: 'autosaved',
+      source: 'pre-shutdown',
+      recoveryInProcess: true,
+      possibleRestartDetected: true,
+      message: `${saved.message} Emulated power-off flag written for the next restart check.`,
     };
   }
 
@@ -169,11 +194,34 @@ export function createV2RecoveryStateService({ repoRoot, bootId = `boot-${Date.n
     }
   }
 
+  async function readUncleanShutdownFlag(): Promise<Record<string, unknown> | null> {
+    try {
+      const parsed = JSON.parse(await fs.readFile(uncleanShutdownFlagPath, 'utf8'));
+      return parsed && typeof parsed === 'object' ? parsed as Record<string, unknown> : null;
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        return null;
+      }
+      throw error;
+    }
+  }
+
+  async function clearUncleanShutdownFlag(): Promise<void> {
+    try {
+      await fs.unlink(uncleanShutdownFlagPath);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+        throw error;
+      }
+    }
+  }
+
   return {
     stateFilePath,
     saveSnapshot,
     loadSnapshot,
     readStatus,
     checkRestart,
+    emulatePowerOff,
   };
 }
