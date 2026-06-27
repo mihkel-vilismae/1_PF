@@ -64,6 +64,7 @@ import {
 } from './testing_wholeLogicTestModeService.ts';
 import { createInspectionRoutes } from './routes/inspectionRoutes.ts';
 import { createRuntimeStatusRoutes } from './routes/runtimeStatusRoutes.ts';
+import { createV2WorkerTruthRoutes } from './routes/v2WorkerTruthRoutes.ts';
 import { createV2RecoveryStateService } from './recovery/v2RecoveryStateService.ts';
 import type { V2RecoveryStateSaveReason } from '../shared/v2RecoveryStateSchema.ts';
 import {
@@ -478,9 +479,14 @@ const envSchema: EnvSchemaEntry[] = [
   { key: 'user', label: 'Account email', required: true, sensitive: true, kind: 'string' },
   { key: 'pw', label: 'Account password', required: true, sensitive: true, kind: 'string' },
   { key: 'DOWNLOAD_DIR', label: 'Download directory', required: true, kind: 'path' },
+  { key: 'TEST_DOWNLOAD_DIR', label: 'Test download directory', required: true, kind: 'path' },
   { key: 'DB_PATH', label: 'SQLite database path', required: true, kind: 'path' },
+  { key: 'TEST_DB_PATH', label: 'Test SQLite database path', required: true, kind: 'path' },
   { key: 'LOG_DIR', label: 'Log directory', required: true, kind: 'path' },
+  { key: 'TEST_LOG_DIR', label: 'Test log directory', required: true, kind: 'path' },
   { key: 'ICLOUDPD_COOKIE_DIR', label: 'Cookie directory', required: true, kind: 'path' },
+  { key: 'V2_WORKER_TRUTH_DIR', label: 'Real worker source-of-truth directory', required: false, kind: 'path' },
+  { key: 'TEST_V2_WORKER_TRUTH_DIR', label: 'Test worker source-of-truth directory', required: false, kind: 'path' },
   { key: 'DOWNLOAD_RECENT', label: 'Recent download count', required: true, kind: 'integer' },
   { key: 'GEOCODE_LANGUAGE', label: 'Geocode language', required: true, kind: 'string' },
   { key: 'GEOCODE_BATCH_SIZE', label: 'Geocode batch size', required: true, kind: 'integer' },
@@ -637,6 +643,10 @@ const routes: Record<string, RouteHandler> = {
   ...createRuntimeTruthRoutes({
     runtimeTruthFilePath,
     runtimeTruthRelativePath,
+    createHttpError: (statusCode, code, message, details) => new HttpError(statusCode, code, message, details),
+  }),
+  ...createV2WorkerTruthRoutes({
+    repoRoot,
     createHttpError: (statusCode, code, message, details) => new HttpError(statusCode, code, message, details),
   }),
 };
@@ -881,39 +891,22 @@ async function verifyEnvHandler({ context }) {
   // Test Mode intentionally maps DB_PATH to TEST_DB_PATH for the current request, and
   // comparing after that projection would falsely report a real/test overlap.
   const envValues = context.baseEnvValues;
-  const overlapPairs = [];
-  for (const testKey of Object.keys(envValues)) {
-    if (!testKey.startsWith('TEST_')) continue;
-    const baseKey = testKey.slice(5);
-    const testRaw = envValues[testKey];
-    const realRaw = envValues[baseKey];
-    if (!testRaw || !realRaw) {
-      continue;
-    }
-    // Compute absolute paths relative to repo root when needed.
-    const testAbs = resolveRepoPath(testRaw.trim());
-    const realAbs = resolveRepoPath(realRaw.trim());
-    // Normalize case for comparison on case‑insensitive platforms.
-    const normTest = path.normalize(testAbs);
-    const normReal = path.normalize(realAbs);
-    const lowerTest = normTest.toLowerCase();
-    const lowerReal = normReal.toLowerCase();
-    const sep = path.sep;
-    // Determine if the two paths overlap. Either they are identical or one is a prefix of the other.
-    const overlaps =
-      lowerTest === lowerReal ||
-      lowerTest.startsWith(lowerReal + sep) ||
-      lowerReal.startsWith(lowerTest + sep);
-    if (overlaps) {
-      overlapPairs.push({ testKey, realKey: baseKey, testPath: normTest, realPath: normReal });
-    }
-  }
+  const testRealPathReadiness = await buildTestRealPathReadiness(envValues);
+  const overlapPairs = testRealPathReadiness.pairs.filter((pair) => pair.overlaps);
+  const missingModePaths = testRealPathReadiness.pairs.filter((pair) => pair.required && (!pair.testPresent || !pair.realPresent));
+  const missingExistingPaths = testRealPathReadiness.pairs.flatMap((pair) => pair.existenceIssues);
   if (overlapPairs.length) {
     messages.push('Detected overlap between test and real environment paths.');
   }
+  if (missingModePaths.length) {
+    messages.push(`${missingModePaths.length} required TEST/REAL path pair(s) are incomplete.`);
+  }
+  if (missingExistingPaths.length) {
+    messages.push(`${missingExistingPaths.length} required TEST/REAL path location(s) do not exist.`);
+  }
   // Determine overall status. Any overlaps or missing/invalid values result in an error.
   let status;
-  if (missingRequired.length || invalidRequired.length || overlapPairs.length) {
+  if (missingRequired.length || invalidRequired.length || overlapPairs.length || missingModePaths.length || missingExistingPaths.length) {
     status = 'error';
   } else if (optionalWarnings.length) {
     status = 'warning';
@@ -926,10 +919,69 @@ async function verifyEnvHandler({ context }) {
       status,
       messages,
       checks,
+      testRealPathReadiness,
       schemaVersion: 1,
       verifiedAt: new Date().toISOString(),
     },
   };
+}
+
+const testRealPathPairDefinitions = Object.freeze([
+  { realKey: 'DOWNLOAD_DIR', testKey: 'TEST_DOWNLOAD_DIR', required: true, mustExist: true, existenceTarget: 'path' },
+  { realKey: 'LOG_DIR', testKey: 'TEST_LOG_DIR', required: true, mustExist: true, existenceTarget: 'path' },
+  { realKey: 'DB_PATH', testKey: 'TEST_DB_PATH', required: true, mustExist: true, existenceTarget: 'parent' },
+  { realKey: 'FULL_LOG', testKey: 'TEST_FULL_LOG', required: false, mustExist: true, existenceTarget: 'parent' },
+  { realKey: 'V2_WORKER_TRUTH_DIR', testKey: 'TEST_V2_WORKER_TRUTH_DIR', required: false, mustExist: true, existenceTarget: 'path' },
+] as const);
+
+async function buildTestRealPathReadiness(envValues: EnvValues) {
+  const pairs = [];
+  for (const definition of testRealPathPairDefinitions) {
+    const realRaw = envValues[definition.realKey]?.trim();
+    const testRaw = envValues[definition.testKey]?.trim();
+    const realPresent = Boolean(realRaw);
+    const testPresent = Boolean(testRaw);
+    const realPath = realRaw ? path.normalize(resolveRepoPath(realRaw)) : null;
+    const testPath = testRaw ? path.normalize(resolveRepoPath(testRaw)) : null;
+    const overlaps = Boolean(realPath && testPath && pathsOverlap(realPath, testPath));
+    const existenceIssues = [];
+    if (definition.mustExist && realPath) {
+      const target = definition.existenceTarget === 'parent' ? path.dirname(realPath) : realPath;
+      if (!existsSync(target)) {
+        existenceIssues.push({ key: definition.realKey, path: target, target: definition.existenceTarget });
+      }
+    }
+    if (definition.mustExist && testPath) {
+      const target = definition.existenceTarget === 'parent' ? path.dirname(testPath) : testPath;
+      if (!existsSync(target)) {
+        existenceIssues.push({ key: definition.testKey, path: target, target: definition.existenceTarget });
+      }
+    }
+    pairs.push({
+      realKey: definition.realKey,
+      testKey: definition.testKey,
+      required: definition.required,
+      realPresent,
+      testPresent,
+      realPath,
+      testPath,
+      overlaps,
+      existenceIssues,
+    });
+  }
+  return {
+    status: pairs.some((pair) => pair.overlaps || (pair.required && (!pair.realPresent || !pair.testPresent)) || pair.existenceIssues.length)
+      ? 'blocked'
+      : 'ok',
+    pairs,
+  };
+}
+
+function pathsOverlap(firstPath: string, secondPath: string): boolean {
+  const first = path.normalize(firstPath).toLowerCase();
+  const second = path.normalize(secondPath).toLowerCase();
+  const sep = path.sep;
+  return first === second || first.startsWith(second + sep) || second.startsWith(first + sep);
 }
 
 async function databaseStatusHandler({ context }) {
