@@ -1,3 +1,12 @@
+## 0.10.81 - 2026-06-28
+
+- Ran XACR over the real-cron runtime proof plan and implemented a seconds-based proofrunner path.
+- Added a managed crontab installer proof that preserves existing crontab lines and replaces only the PhotoFrame V2 managed block.
+- Added `tools/v2-cron-proof-loop.sh`, launched by cron once per minute, to run regular/playback/screen worker evidence in seconds.
+- Added `proof:v2-real-cron-runtime` to record a pre-wait marker, wait in seconds, and verify post-marker worker truth events with cron/scheduler source markers.
+- Added optional `proof:v2-real-cron-cleanup` for removing only the managed block when needed.
+- Expanded final autonomous bundle gates to include real crontab install/runtime proof artifacts.
+
 ## 0.10.80 - 2026-06-28
 
 - Ran one-by-one XACR on the v0.10.79 prooflauncher/proof-flow blockers.

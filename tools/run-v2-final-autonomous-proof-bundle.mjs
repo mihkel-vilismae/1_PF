@@ -12,6 +12,9 @@ const requiredContractScripts = [
   'proof:v2-run-regular-worker-once',
   'proof:v2-run-playback-worker-once',
   'proof:v2-run-screen-worker-once',
+  'proof:v2-install-real-crontab',
+  'proof:v2-real-cron-runtime',
+  'proof:v2-real-cron-cleanup',
 ];
 
 for (const scriptName of requiredContractScripts) {
@@ -26,6 +29,8 @@ if (args.evidence) {
     'v2_run_regular_worker_once',
     'v2_run_playback_worker_once',
     'v2_run_screen_worker_once',
+    'v2_install_real_crontab',
+    'v2_real_cron_runtime',
     'v2_real_cron_worker_evidence',
     'v2_real_playback_display',
     'v2_autonomous_proof_contract',
