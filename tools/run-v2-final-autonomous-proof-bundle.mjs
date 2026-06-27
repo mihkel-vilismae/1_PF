@@ -15,6 +15,7 @@ const requiredContractScripts = [
   'proof:v2-install-real-crontab',
   'proof:v2-real-cron-runtime',
   'proof:v2-real-cron-cleanup',
+  'proof:v2-visual-physical-evidence',
 ];
 
 for (const scriptName of requiredContractScripts) {
@@ -35,6 +36,14 @@ if (args.evidence) {
   for (const proofName of requiredEvidenceProofs) {
     check(checks, `evidence-${proofName}`, `${proofName} latest proof passed.`, statuses[proofName] === 'PASSED', { status: statuses[proofName] ?? 'missing' });
   }
+
+  check(
+    checks,
+    'visual-physical-proof-status',
+    'Visual physical proof is captured separately and passed when operator photo/video plus confirmation evidence exists.',
+    statuses.v2_visual_physical_evidence === 'PASSED',
+    { visualPhysicalStatus: statuses.v2_visual_physical_evidence ?? 'missing' },
+  );
 
   const workerOnceProofs = [
     'v2_run_regular_worker_once',
@@ -57,7 +66,7 @@ const result = proofResult({
   checks,
   evidenceMode: args.evidence,
   note: args.evidence
-    ? 'Final bundle summary over latest local proof artifacts. Cron-runtime proof is accepted as stronger evidence than worker-once proofs when it passes on the target machine.'
+    ? 'Final bundle summary over latest local proof artifacts. Cron-runtime proof is accepted as stronger evidence than worker-once proofs when it passes on the target machine. Visual physical proof is reported as a separate required layer for physical display completion.'
     : 'Static contract proof that final autonomous bundle commands are registered.',
 });
 

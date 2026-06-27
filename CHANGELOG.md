@@ -1,3 +1,11 @@
+## 0.10.83 - 2026-06-28
+
+- Ran XACR over the post-v0.10.82 physical proof gap: backend cron/runtime evidence passed, but visual screen proof was still not captured.
+- Added `proof:v2-visual-physical-evidence` to validate operator photo/video evidence plus `operator_visual_confirmation.json`.
+- Added prooflauncher-created `operator_visual_evidence/` folders with instructions and confirmation templates for each run.
+- Updated final autonomous bundle checks to include the visual physical proof as a separate layer from backend autonomous proof.
+- Updated prooflauncher bundles to open the visual evidence folder, optionally wait for evidence, capture visual artifacts, and run required proofs only.
+
 ## 0.10.82 - 2026-06-28
 
 - Ran XACR over the v0.10.81 real-cron runtime failure where crontab rejected an overlong command line.
