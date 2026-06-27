@@ -1,3 +1,11 @@
+## 2026-06-27 17:58 EEST — v0.10.76
+
+- Ran XACR on the remaining sliceplan and implemented the next four slices in the autonomous playback beeline.
+- Added safe crontab write-test route `POST /api/init/cron/emulator/crontab/write-test` with temporary marker add/read/remove behavior and original-crontab restore.
+- Added browser-local pseudo playback loop for `08 PLAYBACK`, including image duration, video-ended advance, queue looping, and non-media skip/report behavior.
+- Added a shared rendering stage for playback render modes so `09 REAL PLAYBACK` can show observe/fullscreen overlay state from worker truth.
+- Added playback-worker truth events for worker start, selected media, media finish, queue advance, errors, and worker finish.
+
 ## 2026-06-27 04:25 EEST — v0.10.74
 
 - Ran ACR on the remaining V2 Beeline sliceplan and kept the implementation order safety-first: TEST/REAL path separation, source-of-truth API, then stage truth events.
