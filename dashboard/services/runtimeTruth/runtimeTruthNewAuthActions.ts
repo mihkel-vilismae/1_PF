@@ -34,6 +34,7 @@ import {
   extractSafeProviderCommunication,
   sanitizeNewAuthPayload,
 } from './newAuthActions/runtimeTruthNewAuthSanitize.ts';
+import { setReadinessStatus } from '../v2ReadinessService.ts';
 
 // Creates the NEW AUTH runtime-truth action bundle used by the dashboard card.
 export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, pushLog, setStatus, openModal, guards }) {
@@ -194,6 +195,9 @@ export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, push
         draft.newAuth[resultTarget] = buildNewAuthResult({ operation, endpoint, outcome: 'success', message, payload: safePayload, meta: sanitizeNewAuthPayload(result.meta) });
         recalculateNewAuthButtonStates(draft, { buttonKey, endpoint, status, message, payload: safePayload });
       });
+      if (isNewAuthSessionEndpoint(endpoint.path)) {
+        setReadinessStatus('login', status === 'success' ? 'complete' : status === 'pending' ? 'running' : 'blocked');
+      }
       setStatus(NEW_AUTH_CARD_KEY, status === 'success' ? 'success' : 'info');
       pushLog(NEW_AUTH_CARD_KEY, status === 'success' ? 'success' : 'info', message, buildNewAuthLogDetails({ operation, endpoint, outcome: 'success', meta: result.meta, payload: safePayload }));
       pushHistory(NEW_AUTH_HISTORY_SOURCE, status === 'success' ? 'success' : 'info', message, buildNewAuthHistoryDetails({
@@ -217,6 +221,9 @@ export function createRuntimeTruthNewAuthActions({ patchState, pushHistory, push
         draft.newAuth[resultTarget] = buildNewAuthResult({ operation, endpoint, outcome: 'error', message, payload: safePayload, meta: sanitizeNewAuthPayload(error?.meta ?? null) });
         recalculateNewAuthButtonStates(draft, { buttonKey, endpoint, status: 'failed', message, payload: safePayload });
       });
+      if (isNewAuthSessionEndpoint(endpoint.path)) {
+        setReadinessStatus('login', 'error');
+      }
       setStatus(NEW_AUTH_CARD_KEY, 'error');
       pushLog(NEW_AUTH_CARD_KEY, 'error', message, buildNewAuthLogDetails({ operation, endpoint, outcome: 'error', meta: error?.meta, payload: safePayload }));
       pushHistory(NEW_AUTH_HISTORY_SOURCE, 'error', message, buildNewAuthHistoryDetails({
