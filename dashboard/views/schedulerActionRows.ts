@@ -11,10 +11,11 @@ import {
 } from '../data/schedulerEmulatorStatusCopy.ts';
 import { escapeHtml } from '../services/renderers/sharedRendererUtils.ts';
 
+// Filtered scheduler buttons: removed run-emulator and stop-emulator because these controls are hidden in V2 for now
 export const SCHEDULER_EMULATOR_BUTTONS = Object.freeze([
   { action: 'check-emulator-scheduler', variant: 'secondary' },
-  { action: 'run-emulator', variant: 'primary' },
-  { action: 'stop-emulator', variant: 'secondary' },
+  // { action: 'run-emulator', variant: 'primary' }, // removed
+  // { action: 'stop-emulator', variant: 'secondary' }, // removed
   { action: 'install-crontab', variant: 'secondary' },
   { action: 'get-active-crontab', variant: 'secondary' },
 ] as const);

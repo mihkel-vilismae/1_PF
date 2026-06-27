@@ -333,14 +333,7 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
     title: 'setup.sh',
     summary: 'Small v2 preflight/orchestration page only. Full dependency installation stays a v3 milestone.',
     blocks: [
-      {
-        type: 'infoPanel',
-        id: '01.info',
-        title: 'Setup scope',
-        body: 'v2 setup is preflight/orchestration only. It may check and report readiness, but it does not install full dependencies in this slice.',
-        status: 'planned-safe',
-        risk: 'safe',
-      },
+      // removed Setup scope because it was marked and is no longer shown
       {
         type: 'backendActionCard',
         id: '01.verify-env',
@@ -370,15 +363,7 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
           { action: 'recreate-db', label: 'Recreate DB', variant: 'secondary' },
         ],
       },
-      {
-        type: 'actionList',
-        id: '01.actions',
-        title: 'Preflight actions',
-        body: visualOnly,
-        items: [
-          { id: '01.01', label: 'setup.sh', status: 'planned-safe', risk: 'safe', interaction: 'visualOnly', description: 'Run safe setup/preflight orchestration later when a backend contract exists.' },
-        ],
-      },
+      // removed Preflight actions because it was marked and is no longer shown
     ],
   },
   authentication: {
@@ -386,14 +371,7 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
     title: 'authentication.sh',
     summary: 'Local iCloudPD login/session page. Credentials, 2FA, cookies, and session secrets must stay local and redacted.',
     blocks: [
-      {
-        type: 'infoPanel',
-        id: '02.info',
-        title: 'Local-only authentication boundary',
-        body: 'This page owns only local iCloudPD login/session flow. It must not display raw credentials, 2FA codes, cookies, session files, or secret paths without an existing redaction contract.',
-        status: 'planned-safe',
-        risk: 'localSecretSensitive',
-      },
+      // removed Local-only authentication boundary because it was marked and is no longer shown
       {
         type: 'newAuthCard',
         id: '02.new-auth',
@@ -415,15 +393,7 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
           { label: 'Session action state', value: 'not wired' },
         ],
       },
-      {
-        type: 'actionList',
-        id: '02.actions',
-        title: 'Authentication actions',
-        body: visualOnly,
-        items: [
-          { id: '02.01', label: 'authentication.sh', status: 'planned-safe', risk: 'localSecretSensitive', interaction: 'visualOnly', description: 'Local iCloudPD login/session workflow placeholder.' },
-        ],
-      },
+      // removed Authentication actions because it was marked and is no longer shown
     ],
   },
   startup: {
@@ -437,25 +407,8 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
         title: 'Startup sections',
         body: 'These are grouped center-panel sections, not nested sidebar routes.',
         sections: [
-          {
-            id: '03.01',
-            title: '.env / environment variables',
-            body: 'If .env does not exist, a later guarded implementation may create it from defaults/example values. Missing defaults must be a non-crashing error.',
-            items: [
-              { id: '03.01.01', label: 'verify.env', status: 'planned-safe', risk: 'safe', interaction: 'visualOnly' },
-              { id: '03.01.02', label: 'open .env in text editor', status: 'planned-safe', risk: 'guarded', interaction: 'guardedAction' },
-            ],
-          },
-          {
-            id: '03.02',
-            title: 'database',
-            body: 'Database inspection and maintenance actions. Destructive operations must stay guarded.',
-            items: [
-              { id: '03.02.01', label: 'verify DB', status: 'planned-safe', risk: 'safe', interaction: 'visualOnly' },
-              { id: '03.02.02', label: 'recreate DB', status: 'planned-safe', risk: 'destructive', interaction: 'guardedAction' },
-              { id: '03.02.03', label: 'backup DB', status: 'v2 enabled', risk: 'safe', interaction: 'visualOnly', description: 'Initial format can be a simple SQL dump.' },
-            ],
-          },
+      // removed .env / environment variables section because it was marked and is no longer shown
+          // removed database section because it was marked and is no longer shown
           {
             id: '03.03',
             title: 'crontab',
@@ -501,74 +454,14 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
     title: 'workers',
     summary: 'Live worker status and controls as visual V2 blocks: regular worker, playback worker, screen on-off worker, and v3 statistics placeholder.',
     blocks: [
-      {
-        type: 'statusCard',
-        id: '04.01',
-        title: 'current status',
-        body: 'Summary placeholder for regular worker, playback worker, and screen on-off worker status.',
-        status: 'visual-only',
-        fields: [
-          { label: 'Regular worker', value: 'not wired from V2' },
-          { label: 'Playback worker', value: 'not wired from V2' },
-          { label: 'Screen on-off worker', value: 'not wired from V2' },
-        ],
-      },
+      // removed current status card because it was marked and is no longer shown
       buildRpiStagesRow('04.rpi-stages', 'Workers'),
       buildRpiWorkersRow('04.rpi-workers', 'Workers'),
       ...V2_WORKER_STAGE_CARDS,
-      {
-        type: 'stageTable',
-        id: '04.02',
-        title: 'regular worker',
-        body: 'Repeated stage rows. Batch size is a stage setting/display, not a navigation item. Rich statistics are v3 placeholders.',
-        status: 'visual-only',
-        actions: [
-          { id: '04.02.02', label: 'enable all', status: 'visual-only', risk: 'guarded', interaction: 'guardedAction' },
-          { id: '04.02.03', label: 'disable all', status: 'visual-only', risk: 'guarded', interaction: 'guardedAction' },
-        ],
-        stages: [
-          { id: '04.02.04', label: 'download', status: 'current status placeholder', batchSizeLabel: 'batch size', statisticsStatus: 'v3 placeholder' },
-          { id: '04.02.05', label: 'index', status: 'current status placeholder', batchSizeLabel: 'batch size', statisticsStatus: 'v3 placeholder' },
-          { id: '04.02.06', label: 'parse files for GPS', status: 'current status placeholder', batchSizeLabel: 'batch size', statisticsStatus: 'v3 placeholder' },
-          { id: '04.02.07', label: 'geocode', status: 'current status placeholder', batchSizeLabel: 'batch size', statisticsStatus: 'v3 placeholder' },
-          { id: '04.02.08', label: 'enqueue playback', status: 'current status placeholder', batchSizeLabel: 'batch size', statisticsStatus: 'v3 placeholder' },
-        ],
-      },
-      {
-        type: 'statusCard',
-        id: '04.03',
-        title: 'playback worker',
-        body: 'Current status and current image/video placeholder. Later hover/enter details may show full filename, GPS coordinates, and parsed address.',
-        status: 'visual-only',
-        fields: [
-          { label: '04.03.01', value: 'current status' },
-          { label: '04.03.02', value: 'current image / video' },
-        ],
-      },
-      {
-        type: 'toggleGroup',
-        id: '04.04',
-        title: 'screen on-off worker',
-        body: 'Toggle rows are visual-only until backend contracts exist.',
-        status: 'visual-only',
-        actions: [
-          { id: '04.04.02', label: 'enable all', status: 'visual-only', risk: 'guarded', interaction: 'guardedAction' },
-          { id: '04.04.03', label: 'disable all', status: 'visual-only', risk: 'guarded', interaction: 'guardedAction' },
-        ],
-        toggles: [
-          { id: '04.04.04', label: 'mouse', status: 'enabled/disabled placeholder', description: 'Hover shows enabled/disabled; Enter enables/disables later.' },
-          { id: '04.04.05', label: 'keyboard', status: 'enabled/disabled placeholder', description: 'Hover shows enabled/disabled; Enter enables/disables later.' },
-          { id: '04.04.06', label: 'PIR sensor', status: 'enabled/disabled placeholder', description: 'Hover shows enabled/disabled; Enter enables/disables later.' },
-        ],
-      },
-      {
-        type: 'futurePlaceholder',
-        id: '04.05',
-        title: 'statistics page',
-        body: 'v2 may collect runtime statistics; the rich statistics page remains v3.0.',
-        status: 'v3',
-        risk: 'future',
-      },
+      // removed regular worker stageTable because it was marked and is no longer shown
+      // removed playback worker card because it was marked and is no longer shown
+      // removed screen on-off worker toggleGroup because it was marked and is no longer shown
+      // removed statistics page because it was marked and is no longer shown
     ],
   },
   troubleshooting: {
@@ -576,26 +469,7 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
     title: 'troubleshooting',
     summary: 'Manual diagnostics, log/error model notes, and *EX examples that are not actions yet.',
     blocks: [
-      {
-        type: 'actionList',
-        id: '05.01',
-        title: 'manual troubleshooting actions',
-        body: 'Visual-only actions. Clear/delete operations are guarded placeholders.',
-        items: [
-          { id: '05.01.01', label: 'open default logging folder', status: 'planned-safe', risk: 'safe', interaction: 'visualOnly' },
-          { id: '05.01.02', label: 'mark this point in logs with a very distinct entry', status: 'planned-safe', risk: 'safe', interaction: 'visualOnly' },
-          { id: '05.01.03', label: 'export logs between marked points', status: 'planned-safe', risk: 'safe', interaction: 'visualOnly' },
-          { id: '05.01.04', label: 'find stale locks', status: 'planned-safe', risk: 'safe', interaction: 'visualOnly' },
-          { id: '05.01.05', label: 'clear stale locks', status: 'planned-safe', risk: 'guarded', interaction: 'guardedAction' },
-          { id: '05.01.06', label: 'show latest worker status files', status: 'planned-safe', risk: 'safe', interaction: 'visualOnly' },
-          { id: '05.01.07', label: 'test log write permissions', status: 'planned-safe', risk: 'safe', interaction: 'visualOnly' },
-          { id: '05.01.08', label: 'export troubleshooting bundle', status: 'planned-safe', risk: 'safe', interaction: 'visualOnly' },
-          { id: '05.01.09', label: 'show system health snapshot', status: 'planned-safe', risk: 'safe', interaction: 'visualOnly' },
-          { id: '05.01.10', label: 'check cron/service status', status: 'planned-safe', risk: 'safe', interaction: 'visualOnly' },
-          { id: '05.01.11', label: 'backup current logs', status: 'planned-safe', risk: 'safe', interaction: 'visualOnly' },
-          { id: '05.01.12', label: 'clear current logs', status: 'planned-safe', risk: 'destructive', interaction: 'guardedAction' },
-        ],
-      },
+      // removed manual troubleshooting actions because it was marked and is no longer shown
       {
         type: 'backendActionCard',
         id: '05.pipeline-maintenance',
@@ -656,52 +530,11 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
     title: 'recovery',
     summary: 'Snapshot inspection, backup policy, guarded save/restore placeholders, and stored backup snapshot list.',
     blocks: [
-      {
-        type: 'statusCard',
-        id: '06.recovery-state-schema',
-        title: 'Lightweight recovery state schema',
-        body: 'B11.1 defines the schema only. It captures same media/queue context, queue cursor, pipeline stage statuses, and corrupt-download exclusion without saving/loading real state yet.',
-        status: 'schema-only',
-        risk: 'guarded',
-        fields: [
-          { label: 'Schema version', value: '1' },
-          { label: 'Exact video timestamp', value: 'not required; same media from beginning is acceptable' },
-          { label: 'Secrets', value: 'not allowed in recovery snapshots' },
-          { label: 'Runtime behavior', value: 'manual save/load endpoints arrive in B11.2' },
-        ],
-      },
-      {
-        type: 'statusCard',
-        id: '06.01',
-        title: 'snapshot metadata',
-        body: 'Shows latest snapshot time and other snapshot-level metadata later. No state read/write happens from V2 in this slice.',
-        status: 'visual-only',
-        fields: [
-          { label: 'Latest snapshot time', value: 'shown in B11 result surface after save/load' },
-          { label: 'Compatibility', value: 'not evaluated' },
-        ],
-      },
-      {
-        type: 'infoPanel',
-        id: '06.02',
-        title: 'current backup snapshot generation policy',
-        body: 'Human-readable policy text placeholder. Changing policy may involve AI later and is not wired now.',
-        status: 'visual-only',
-      },
-      {
-        type: 'snapshotViewer',
-        id: '06.03',
-        title: 'current snapshot',
-        body: 'Human-readable structure, raw item/field list, and JSON-like values placeholder.',
-        status: 'visual-only',
-      },
-      {
-        type: 'snapshotViewer',
-        id: '06.04',
-        title: 'current backup snapshot',
-        body: 'Latest saved backup snapshot inspection placeholder before restore.',
-        status: 'visual-only',
-      },
+      // removed Lightweight recovery state schema because it was marked and is no longer shown
+      // removed snapshot metadata because it was marked and is no longer shown
+      // removed current backup snapshot generation policy because it was marked and is no longer shown
+      // removed current snapshot because it was marked and is no longer shown
+      // removed current backup snapshot because it was marked and is no longer shown
       {
         type: 'recoveryPlaceholderActions',
         id: '06.placeholder-actions',
@@ -714,16 +547,7 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
           { id: '06.emulate-power-off', label: 'EMULATE POWER OFF' },
         ],
       },
-      {
-        type: 'actionList',
-        id: '06.actions',
-        title: 'snapshot actions',
-        body: 'Legacy snapshot action notes remain visual-only. Restore must require selection, confirmation, compatibility check, and before/after summary when implemented for real.',
-        items: [
-          { id: '06.05', label: 'save state snapshot', status: 'v2 visual', risk: 'guarded', interaction: 'guardedAction' },
-          { id: '06.06', label: 'restore state snapshot', status: 'v2 visual', risk: 'destructive', interaction: 'guardedAction' },
-        ],
-      },
+      // removed snapshot actions because it was marked and is no longer shown
       {
         type: 'snapshotList',
         id: '06.07',
@@ -747,19 +571,7 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
         risk: 'guarded',
       },
       buildRpiWorkersRow('07.rpi-workers', 'PIR'),
-      {
-        type: 'statusCard',
-        id: '07.boundary',
-        title: 'PIR implementation boundary',
-        body: 'Mouse and keyboard activity can be tested directly later. Real PIR hardware integration remains future; initial V2 behavior should use an emulator button.',
-        status: 'not wired',
-        risk: 'future',
-        fields: [
-          { label: 'Real PIR hardware', value: 'future' },
-          { label: 'PIR emulator button', value: 'planned for B7' },
-          { label: 'Screen on/off logic', value: 'not wired in B1' },
-        ],
-      },
+      // removed PIR implementation boundary because it was marked and is no longer shown
     ],
   },
   playback: {
@@ -790,19 +602,7 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
         status: 'browser-local queue table',
       },
       buildRpiWorkersRow('08.rpi-workers', 'Playback'),
-      {
-        type: 'statusCard',
-        id: '08.boundary',
-        title: 'Playback implementation boundary',
-        body: 'The drag/drop queue, metadata table, non-media handling, rendering controls, and address-missing toggle are planned but not implemented in this route-shell batch.',
-        status: 'not wired',
-        risk: 'future',
-        fields: [
-          { label: 'Drag/drop queue', value: 'planned for B8' },
-          { label: 'Non-media handling', value: 'planned graceful skip/report' },
-          { label: 'Address overlay', value: 'future toggle decision' },
-        ],
-      },
+      // removed Playback implementation boundary because it was marked and is no longer shown
     ],
   },
   'real-playback': {
