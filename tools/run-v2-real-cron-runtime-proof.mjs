@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { check, emitProof, parseArgs, proofResult, readTruthEvents } from './v2-final-proof-utils.mjs';
@@ -63,6 +63,9 @@ for (const event of cronSourceEvents) {
 const workers = ['regular-worker', 'playback-worker', 'screen-worker'];
 const loopLogDir = path.join(proofsDir, 'cron_proof_loop_logs');
 const loopLogs = existsSync(loopLogDir) ? readdirSync(loopLogDir).filter((name) => name.endsWith('.log')) : [];
+const wrapperLogDir = path.join(proofsDir, 'cron_wrapper_logs');
+const wrapperLogs = existsSync(wrapperLogDir) ? readdirSync(wrapperLogDir).filter((name) => name.endsWith('.log')) : [];
+const wrapperStartsAfterMarker = readWrapperStartsAfterMarker(wrapperLogDir, wrapperLogs, markerMs);
 const stages = new Set(cronSourceEvents.map((event) => event.stage));
 
 const checks = [];
@@ -81,6 +84,8 @@ for (const worker of workers) {
 check(checks, 'playback-media-started-after-marker', 'Playback media_started exists after marker from cron/scheduler source.', stages.has('media_started'));
 check(checks, 'playback-media-finished-after-marker', 'Playback media_finished exists after marker from cron/scheduler source.', stages.has('media_finished'));
 check(checks, 'playback-queue-advanced-after-marker', 'Playback queue_advanced exists after marker from cron/scheduler source.', stages.has('queue_advanced'));
+check(checks, 'cron-wrapper-log-present', 'Short cron wrapper wrote a log file.', wrapperLogs.length > 0, { wrapperLogDir, wrapperLogs });
+check(checks, 'cron-wrapper-ran-after-marker', 'Short cron wrapper ran after the wait marker.', wrapperStartsAfterMarker.length > 0, { wrapperStartsAfterMarker: wrapperStartsAfterMarker.slice(-5) });
 check(checks, 'cron-proof-loop-log-present', 'Cron proof loop wrote a log file.', loopLogs.length > 0, { loopLogDir, loopLogs });
 
 const result = proofResult({
@@ -101,4 +106,27 @@ function log(message) {
 function sleepSeconds(seconds) {
   if (seconds <= 0) return;
   spawnSync('sleep', [String(seconds)], { stdio: 'ignore' });
+}
+
+function readWrapperStartsAfterMarker(wrapperLogDir, wrapperLogs, markerMs) {
+  const entries = [];
+  if (!existsSync(wrapperLogDir)) return entries;
+  for (const name of wrapperLogs) {
+    const filePath = path.join(wrapperLogDir, name);
+    let text = '';
+    try {
+      text = readFileSync(filePath, 'utf8');
+    } catch {
+      continue;
+    }
+    for (const line of text.split(/\r?\n/)) {
+      if (!line.includes('WRAPPER_START')) continue;
+      const match = line.match(/^\[([^\]]+)\]/);
+      const timestampMs = match ? Date.parse(match[1]) : Number.NaN;
+      if (Number.isFinite(timestampMs) && timestampMs > markerMs) {
+        entries.push({ filePath, line, timestamp: match[1] });
+      }
+    }
+  }
+  return entries;
 }

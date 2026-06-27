@@ -1,3 +1,11 @@
+## 0.10.82 - 2026-06-28
+
+- Ran XACR over the v0.10.81 real-cron runtime failure where crontab rejected an overlong command line.
+- Reworked `proof:v2-install-real-crontab` to install one short managed crontab line that calls `$HOME/.photoframe_v2/cron/proof_loop.sh`.
+- Moved long repo path, PATH, proof duration/interval/source environment, wrapper logging, and proof-loop execution into the generated wrapper script.
+- Updated `proof:v2-real-cron-runtime` to verify that the short wrapper ran after the wait marker before accepting cron-runtime proof evidence.
+- Updated the final autonomous bundle gate to accept passing cron-runtime evidence as the stronger source instead of requiring worker-once proof artifacts.
+
 ## 0.10.81 - 2026-06-28
 
 - Ran XACR over the real-cron runtime proof plan and implemented a seconds-based proofrunner path.

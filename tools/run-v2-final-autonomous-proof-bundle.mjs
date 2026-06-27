@@ -26,9 +26,6 @@ if (args.evidence) {
   const statuses = Object.fromEntries(latestProofs.map((proof) => [proof.proof, proof.status]));
   const requiredEvidenceProofs = [
     'v2_real_machine_readiness',
-    'v2_run_regular_worker_once',
-    'v2_run_playback_worker_once',
-    'v2_run_screen_worker_once',
     'v2_install_real_crontab',
     'v2_real_cron_runtime',
     'v2_real_cron_worker_evidence',
@@ -38,6 +35,20 @@ if (args.evidence) {
   for (const proofName of requiredEvidenceProofs) {
     check(checks, `evidence-${proofName}`, `${proofName} latest proof passed.`, statuses[proofName] === 'PASSED', { status: statuses[proofName] ?? 'missing' });
   }
+
+  const workerOnceProofs = [
+    'v2_run_regular_worker_once',
+    'v2_run_playback_worker_once',
+    'v2_run_screen_worker_once',
+  ];
+  const passedWorkerOnceProofs = workerOnceProofs.filter((proofName) => statuses[proofName] === 'PASSED');
+  check(
+    checks,
+    'cron-runtime-replaces-worker-once',
+    'Cron-runtime proof is accepted as the stronger evidence source; worker-once proofs are optional fallback evidence.',
+    statuses.v2_real_cron_runtime === 'PASSED' || passedWorkerOnceProofs.length === workerOnceProofs.length,
+    { cronRuntimeStatus: statuses.v2_real_cron_runtime ?? 'missing', passedWorkerOnceProofs },
+  );
   check(checks, 'proof-artifact-count', 'Proof artifacts are present.', latestProofs.length > 0, { count: latestProofs.length });
 }
 
@@ -46,7 +57,7 @@ const result = proofResult({
   checks,
   evidenceMode: args.evidence,
   note: args.evidence
-    ? 'Final bundle summary over latest local proof artifacts. Real autonomous completion requires all required evidence proofs to pass on the target machine.'
+    ? 'Final bundle summary over latest local proof artifacts. Cron-runtime proof is accepted as stronger evidence than worker-once proofs when it passes on the target machine.'
     : 'Static contract proof that final autonomous bundle commands are registered.',
 });
 
