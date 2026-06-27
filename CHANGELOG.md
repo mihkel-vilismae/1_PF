@@ -1,3 +1,11 @@
+## 2026-06-27 18:38 EEST — v0.10.78
+
+- Ran the saved `4SLICSE-XACRSLICEPLAN-ZIP-OFFER` / `4S-ACRPL-Z-O` workflow on the proof-focused remaining sliceplan.
+- Added target-machine readiness, real cron worker evidence, real playback display evidence, and final autonomous bundle proof commands.
+- Added shared proof utility helpers for JSON proof output, worker truth event scanning, proof artifact scanning, and version/script checks.
+- Added explicit V2 TEST/REAL worker truth path templates to `example.env`.
+- Documented the proof-focused XACR batch and bumped VERSION/package metadata to 0.10.78.
+
 ## 2026-06-27 17:58 EEST — v0.10.76
 
 - Ran XACR on the remaining sliceplan and implemented the next four slices in the autonomous playback beeline.
