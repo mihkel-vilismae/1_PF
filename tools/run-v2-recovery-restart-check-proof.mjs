@@ -37,5 +37,5 @@ emitProof(proofResult({
   proof: 'v2_recovery_restart_check',
   checks,
   evidenceMode: args.evidence,
-  note: 'Restart-check proof uses a seeded unclean-shutdown marker and does not require a physical reboot. Physical power-loss proof is deferred to v0.10.87.',
+  note: 'Restart-check proof uses a seeded unclean-shutdown marker and does not require a physical reboot. Physical power-loss proof is deferred to a later physical-proof release.',
 }), { write: args.write });

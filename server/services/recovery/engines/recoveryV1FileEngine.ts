@@ -144,7 +144,7 @@ export function createRecoveryV1FileEngine(options: RecoveryServiceOptions): Rec
     getEngineInfo: (): RecoveryEngineInfo => ({
       engineId: 'v1',
       label: 'Recovery V1 File Strategy',
-      version: '0.10.86',
+      version: '0.10.87',
       storage: 'filesystem',
       implemented: true,
       strategyRole: 'canonical-state-strategy',

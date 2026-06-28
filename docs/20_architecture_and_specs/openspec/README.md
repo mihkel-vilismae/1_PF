@@ -1,6 +1,6 @@
 # OpenSpec documentation
 
-> Current checkpoint: `v0.10.68`. This README was refreshed in the docs/launcher reconciliation pass; code, focused tests, proof artifacts, and runtime evidence override stale prose.
+> Current checkpoint: `v0.10.87`. This README was refreshed in the docs/launcher reconciliation pass; code, focused tests, proof artifacts, and runtime evidence override stale prose.
 
 This folder holds OpenSpec contracts, implementation-status trackers, and proof boundaries. Some entries are forward-looking; some record implemented-but-not-live-proven V2 work.
 
@@ -57,6 +57,10 @@ Current OpenSpec entries:
 - [V2 Operator Pages OpenSpec](v2_operator_pages_openspec.md) — full V2 page/component/reuse/proof contract for pages `01` through `09`, including implemented Event history/status overlay, Setup/Auth/Startup/Workers/Troubleshooting/Recovery/PIR/Playback placements, `09 REAL PLAYBACK` composition, and live-proof boundaries.
 
 - [V2 Implementation Status](V2_ImplementationStatus.md) — element-by-element status tracker for the V2 implementation and the sync target for the current implementation-status UI overlay.
+
+- [V2 Recovery State Schema](V2_RecoveryStateSchema.md) — canonical project-owned `recovery.snapshot.v1` state schema, endpoint behavior, proof commands, and non-goals.
+
+- [V2 Recovery Engine Strategy Contract](V2_RecoveryEngineStrategyContract.md) — active OpenSpec for swappable recovery strategies over one canonical recovery-state schema.
 
 - [V2 Goal Summary](V2_GoalSummary.md) — faithful summary of the V2 planning intent, requested page placements, component reuse constraint, and final `09 REAL PLAYBACK` path.
 

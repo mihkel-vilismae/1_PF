@@ -40,7 +40,7 @@ export function createRecoveryV2StubEngine(_options: RecoveryServiceOptions): Re
     getEngineInfo: (): RecoveryEngineInfo => ({
       engineId: 'v2-stub',
       label: 'Recovery V2 Stub Strategy',
-      version: '0.10.86-stub',
+      version: '0.10.87-stub',
       storage: 'stub',
       implemented: false,
       strategyRole: 'stub-strategy',

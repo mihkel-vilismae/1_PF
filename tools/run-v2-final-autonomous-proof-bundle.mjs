@@ -116,9 +116,9 @@ if (args.evidence) {
   check(
     checks,
     'recovery-physical-proof-deferred',
-    'Physical power-loss recovery proof is intentionally deferred to v0.10.87.',
+    'Physical power-loss recovery proof is intentionally deferred to a later physical-proof release.',
     true,
-    { deferredTarget: 'v0.10.87' },
+    { deferredTarget: 'later-physical-proof-release' },
   );
 
   const workerOnceProofs = [

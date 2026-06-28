@@ -44,6 +44,19 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | V2 Event history panel | `visual/tested` | v0.10.34 renders a reusable V2 event-history panel with existing `copy all log` and `Clear` actions. |
 | V2 status/help metadata foundation | `visual/tested` | v0.10.39 keeps `dashboard/data/v2ImplementationStatus.json` synchronized with every rendered V2 status target and B3 status/help controls. |
 
+| Recovery canonical state / strategy layer | `proven locally` | v0.10.87 completes the recovery OpenSpec correction: `recovery.snapshot.v1` is canonical project-owned state, `PF_V2_RECOVERY_ENGINE` selects strategy behavior, v1 remains file-backed/default, v2-stub is non-production but cross-engine state compatibility is proof-backed. Physical power-loss proof remains deferred. |
+
+## Recovery architecture current status
+
+| Layer | Current status | Proof/docs evidence | Numeric completeness |
+|---|---|---|---:|
+| Recovery service/subsystem | proven locally | `proof:v2-recovery-engine-contract`, `proof:v2-recovery-engine` | 10/10 |
+| Canonical recovery state | proven locally | `proof:v2-recovery-canonical-state-contract`; `V2_RecoveryStateSchema.md` | 10/10 |
+| Cross-engine strategy interchange | proven locally | `proof:v2-recovery-cross-engine-strategy-contract`; `V2_RecoveryEngineStrategyContract.md` | 10/10 |
+| v1 file strategy | proven locally | v1 file-backed save/load/restart/resume proofs | 10/10 |
+| v2-stub strategy | architecture proof only | understands canonical state, does not claim production recovery | 8/10 |
+| Physical power-loss recovery | deferred | no physical unplug/reboot proof in this version | 0/10 |
+
 ## Page status matrix
 
 | Page | Target role | Current intended state | Evidence needed before ready |
@@ -53,10 +66,10 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | `03 STARTUP` | Raspberry scheduler/startup | Raspberry scheduler controls plus RPI-STAGES/RPI-WORKERS are placed in V2 | Raspberry target crontab proof still needed |
 | `04 WORKERS` | worker stage controls | B3.1-B3.5 worker cards plus shared status rows are placed in V2 | Live pipeline worker proof still needed |
 | `05 TROUBLESHOOTING` | stale lock repair | `B6.1` Pipeline maintenance controls placed/wired to existing maintenance action IDs | stale-lock behavior proof + V2 placement test |
-| `06 RECOVERY` | recovery state and restart flow | B11.2 manual save/load endpoints and B11.3 autosave/restart-check are wired in V2 | Live abrupt-stop/restart proof still needed |
+| `06 RECOVERY` | recovery state and restart flow | Manual save/load, autosave, restart-check, resume-target, canonical state, and strategy selection are wired through `recoveryService`; v1/default and v2-stub architecture proofs pass locally | Raspberry physical abrupt-stop/power-loss evidence still needed |
 | `07 PIR` | activity/screen test | `B7.1` visible B5 subset and PIR emulator placed | route/render test now; deeper browser activity and hardware proof later |
 | `08 PLAYBACK` | queue/rendering test | `B8.1` rendering target/mode subsection, `B8.2` browser-local drag/drop queue table, `B8.3` media-only backend queue-prepare bridge, and `B8.4` GPS/address metadata bridge placed | render/queue tests now; address overlay proof later |
-| `09 REAL PLAYBACK` | final endpoint | B10.1 integrated layout + B10.2 read-only status projection composed from proven pieces only | composition/projection tests now; full autonomous playback + recovery proof later |
+| `09 REAL PLAYBACK` | final endpoint | Integrated layout/projection plus final autonomous bundle recovery-layer reporting for engine architecture, canonical state, cross-engine strategy, and deferred physical proof | Raspberry target autonomous/physical recovery evidence still needed |
 
 ## Shared component tracker
 
@@ -169,8 +182,8 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 | Integrated layout | visual/tested | v0.10.59 B10.1 composes scheduler, RPI rows, B3.1-B3.5 worker cards, playback rendering controls, queue bridge, and metadata bridge from proven pieces only. | `tests/v2RealPlaybackComposition.test.js`. |
 | Action flow/status projection | visual/tested | v0.10.60 B10.2 adds read-only scheduler/pipeline/queue/metadata/rendering/recovery-gate projection. | `tests/v2RealPlaybackProjection.test.js`. |
 | Integrated real operation | future | Final autonomous runtime proof is not yet claimed. | Final autonomous playback proof. |
-| Recovery schema | schema/tested | v0.10.62 B11.2 adds manual save/load endpoints and V2 wiring on top of the B11.1 schema. | `tests/v2RecoveryStateSchema.test.js`; `tests/v2RecoveryManualEndpoints.test.js`; autosave/restart flow is B11.3. |
-| Autonomous recovery | future | Must recover after rough shutdown/power loss. | Final recovery proof. |
+| Recovery schema | proven locally | v0.10.87 defines canonical `recovery.snapshot.v1` state with `metadata.createdByEngine` as provenance only; compatibility is schema-based. | `proof:v2-recovery-canonical-state-contract`; `V2_RecoveryStateSchema.md`. |
+| Autonomous recovery strategy | proven locally / target proof pending | v1 file strategy and v2-stub cross-engine strategy contract are proof-backed; physical power-loss behavior is intentionally not claimed. | `proof:v2-recovery-cross-engine-strategy-contract`; future physical proof. |
 | Screen on/off integration | future | Tier-2 goal. | Activity/recovery/playback integration proof. |
 
 ## Reporting requirement for future implementation

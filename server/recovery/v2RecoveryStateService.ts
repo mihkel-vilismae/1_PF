@@ -254,7 +254,7 @@ export function createV2RecoveryStateService({ repoRoot, bootId = `boot-${Date.n
       mode: normalizeRecoveryMode(saved.recoverySnapshot?.mode),
       source: 'emulate-power-off',
       snapshotId: saved.recoverySnapshot?.snapshotId,
-      reason: 'Guarded emulated power-off marker. Physical power-loss proof is deferred to v0.10.87.',
+      reason: 'Guarded emulated power-off marker. Physical power-loss proof is deferred to a later physical-proof release.',
     });
     return {
       ...saved,

@@ -1,3 +1,11 @@
+## 0.10.87 - 2026-06-28
+
+- Ran Batch 3 using 3+2ACR after the canonical recovery-state and cross-engine strategy proof slices.
+- Completed the OpenSpec documentation for recovery engines as interchangeable strategies over one project-owned `recovery.snapshot.v1` state schema.
+- Added `V2_RecoveryEngineStrategyContract.md` and rewrote `V2_RecoveryStateSchema.md` around schema-version compatibility and `metadata.createdByEngine` provenance.
+- Updated architecture, implementation-status, issue-register, proof-registry, and OpenSpec README docs so physical power-loss remains explicitly deferred while canonical-state/cross-engine strategy proofs are marked locally proven.
+- Bumped VERSION/package metadata to 0.10.87 as the finalized canonical recovery strategy contract checkpoint.
+
 ## 0.10.86 - 2026-06-28
 
 - Ran XACR on the v0.10.85 production-cron split baseline and the recovery engine implementation spec.

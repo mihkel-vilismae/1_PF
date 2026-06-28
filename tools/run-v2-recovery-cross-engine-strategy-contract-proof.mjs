@@ -94,7 +94,7 @@ check(
   'physical-proof-not-attempted',
   'This proof does not perform physical power-loss recovery.',
   true,
-  { deferredPhysicalProof: 'v0.10.87-or-later' },
+  { deferredPhysicalProof: 'later-physical-proof-release' },
 );
 
 emitProof(proofResult({

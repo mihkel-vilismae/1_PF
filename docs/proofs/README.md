@@ -174,6 +174,22 @@ Windows Task Scheduler is not part of PF_login project scope; the Raspberry Open
 `npm run proof:raspberry-generated-fixtures` validates `generated_test_data/` on a Raspberry-like target using `python3` and `ffprobe`. It returns `BLOCKED` off-target or when prerequisites are missing, and does not prove native playback, scheduler behavior, recovery, display focus, or production iCloud continuation. See [`raspberry_generated_fixture_proof.md`](raspberry_generated_fixture_proof.md).
 
 
+
+## V2 recovery canonical-state and strategy proofs
+
+The v0.10.87 recovery proof layer verifies the corrected architecture: the project owns canonical `recovery.snapshot.v1` state, while `PF_V2_RECOVERY_ENGINE` selects the recovery strategy.
+
+| Proof | Command | Claim |
+|---|---|---|
+| Recovery engine contract | `npm run proof:v2-recovery-engine-contract` | Recovery is a service/subsystem with registry/default strategy selection. |
+| Recovery engine runtime | `npm run proof:v2-recovery-engine` | v1 file strategy saves/checks/resumes over canonical state. |
+| Canonical state contract | `npm run proof:v2-recovery-canonical-state-contract` | Durable snapshots are engine-neutral and schema-version compatible. |
+| Cross-engine strategy contract | `npm run proof:v2-recovery-cross-engine-strategy-contract` | A v1-created canonical snapshot can be understood by another selected strategy. |
+| Emulated power-off | `npm run proof:v2-recovery-emulate-power-off` | Dirty-shutdown marker/checkpoint behavior is emulated without physical power loss. |
+| Restart check | `npm run proof:v2-recovery-restart-check` | Restart-check behavior is proof-backed over saved state/markers. |
+
+These proofs do not claim physical unplug/reboot recovery. Physical power-loss evidence remains a later Raspberry target proof.
+
 ## Registry and runtime proof-enabler commands
 
 These commands are part of the active proof-enabler and local/runtime proof lanes. They may prove local contracts, produce honest `BLOCKED` target-provider state, or validate registry/readiness data requirements without claiming final Raspberry v1 readiness by themselves.

@@ -57,3 +57,17 @@ Estonian timestamp: 2026-06-26 11:05 EEST
 | `V2-ISSUE-024` | Final proof harness | Autonomous playback and recovery proofs are desired but not yet specified as scripts. | Define proof commands/evidence outputs after inventory. | open | `09` | End-to-end proof specs. |
 | `V2-ISSUE-025` | Disabled test controls | `09 REAL PLAYBACK` may display test controls disabled; accidental enablement would be unsafe. | Ensure disabled state is test-covered and status-marked. | open | `09` | Render/disabled-control test. |
 | `V2-ISSUE-026` | Cron interval defaults | Intervals must be customizable, but defaults must come from existing examples/configs. | Inventory existing cron examples/configs and document defaults before wiring UI. | open | `03`, `09` | Config/defaults trace. |
+
+
+## v0.10.87 recovery canonical-strategy disposition
+
+Estonian timestamp: 2026-06-28 20:42 EEST
+
+| ID | Updated status | Reason | Remaining proof gap | Numeric completion |
+|---|---|---|---|---:|
+| `V2-ISSUE-001` | closed for schema contract | Canonical `recovery.snapshot.v1` is now documented and locally proof-backed. | Raspberry physical recovery proof still separate. | 10/10 |
+| `V2-ISSUE-002` | closed for current phase | Same-media resume from beginning is accepted; exact timestamp resume remains non-goal. | Future exact timestamp work only if promoted. | 9/10 |
+| `V2-ISSUE-017` | partially closed | Autosave/restart-check route through `recoveryService`; resource/frequency tuning remains later. | Target runtime tuning and physical evidence. | 8/10 |
+| `V2-ISSUE-024` | partially closed | Final autonomous bundle now reports recovery architecture/canonical-state/cross-engine strategy proofs. | Physical power-loss proof remains deferred. | 8/10 |
+
+This disposition does not rewrite historical rows above. It records the current truth after the recovery-engine architecture correction: recovery state is canonical and project-owned; engines are recovery strategies.

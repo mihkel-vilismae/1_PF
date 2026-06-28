@@ -86,7 +86,7 @@ if (args.contract) {
     proof: 'v2_recovery_engine_contract',
     checks,
     evidenceMode: false,
-    note: 'Static contract proof for the canonical-state v0.10.86 recovery service/strategy architecture. It does not attempt physical power-loss proof.',
+    note: 'Static contract proof for the canonical-state v0.10.87 recovery service/strategy architecture. It does not attempt physical power-loss proof.',
   }), { write: args.write });
 }
 
@@ -131,5 +131,5 @@ emitProof(proofResult({
   proof: 'v2_recovery_engine',
   checks,
   evidenceMode: args.evidence,
-  note: 'Runtime-safe filesystem proof for v0.10.86 recovery v1 strategy over canonical state. It emulates recovery state only and intentionally does not perform physical power-loss proof.',
+  note: 'Runtime-safe filesystem proof for v0.10.87 recovery v1 strategy over canonical state. It emulates recovery state only and intentionally does not perform physical power-loss proof.',
 }), { write: args.write });

@@ -61,6 +61,21 @@ Lock files are active-instance truth. Logs are evidence/history. SQLite stores d
 5. Playback should continue where possible during degraded states (for example offline or low-disk pipeline pause states), while online-dependent stages can pause.
 6. Recovery/live status must be projected to dashboard from backend-owned lock/log/DB state, not frontend simulation.
 
+
+### Recovery engine strategy boundary
+
+The active v0.10.87 recovery architecture treats recovery as a service/subsystem, not a fourth always-running worker. `PF_V2_RECOVERY_ENGINE` selects the recovery strategy; it does not select a private incompatible state format.
+
+| Boundary | Rule |
+|---|---|
+| Durable state | Project-owned canonical `recovery.snapshot.v1`. |
+| Strategy engine | Selected behavior for restart-check, resume-target, diagnostics, and fallback policy. |
+| Compatibility | Based on `schemaVersion`, not `metadata.createdByEngine`. |
+| Engine metadata | Informational provenance only. |
+| Future engines | Must use additive/namespaced metadata if extra strategy details are needed. |
+
+`v1` is the default file-backed strategy. `v2-stub` proves the architecture can select another strategy and understand canonical state, but it is not a production recovery implementation. Physical power-loss proof remains a later target-machine evidence gate.
+
 ### Concurrency and safety rules
 
 1. One worker instance per worker type at a time.
