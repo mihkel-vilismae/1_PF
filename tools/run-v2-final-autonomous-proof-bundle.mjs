@@ -16,6 +16,11 @@ const requiredContractScripts = [
   'proof:v2-real-cron-runtime',
   'proof:v2-real-cron-cleanup',
   'proof:v2-visual-physical-evidence',
+  'proof:v2-install-production-crontab',
+  'proof:v2-install-production-crontab-contract',
+  'proof:v2-production-cron-runtime',
+  'proof:v2-production-cron-runtime-contract',
+  'proof:v2-production-cron-cleanup',
   'proof:prooflauncher-logs-zip-hygiene-contract',
   'proof:prooflauncher-logs-zip-hygiene',
 ];
@@ -27,7 +32,7 @@ for (const scriptName of requiredContractScripts) {
 if (args.evidence) {
   const latestProofs = findLatestProofs();
   const statuses = Object.fromEntries(latestProofs.map((proof) => [proof.proof, proof.status]));
-  const requiredEvidenceProofs = [
+  const backendEvidenceProofs = [
     'v2_real_machine_readiness',
     'v2_install_real_crontab',
     'v2_real_cron_runtime',
@@ -35,9 +40,32 @@ if (args.evidence) {
     'v2_real_playback_display',
     'v2_autonomous_proof_contract',
   ];
-  for (const proofName of requiredEvidenceProofs) {
+  for (const proofName of backendEvidenceProofs) {
     check(checks, `evidence-${proofName}`, `${proofName} latest proof passed.`, statuses[proofName] === 'PASSED', { status: statuses[proofName] ?? 'missing' });
   }
+
+  const productionEvidenceProofs = [
+    'v2_install_production_crontab',
+    'v2_production_cron_runtime',
+  ];
+  for (const proofName of productionEvidenceProofs) {
+    check(checks, `production-evidence-${proofName}`, `${proofName} latest proof passed.`, statuses[proofName] === 'PASSED', { status: statuses[proofName] ?? 'missing' });
+  }
+
+  check(
+    checks,
+    'proof-cron-runtime-status',
+    'Proof cron runtime is reported separately and passed.',
+    statuses.v2_real_cron_runtime === 'PASSED',
+    { proofCronRuntimeStatus: statuses.v2_real_cron_runtime ?? 'missing' },
+  );
+  check(
+    checks,
+    'production-cron-runtime-status',
+    'Production cron runtime is reported separately and passed.',
+    statuses.v2_production_cron_runtime === 'PASSED',
+    { productionCronRuntimeStatus: statuses.v2_production_cron_runtime ?? 'missing' },
+  );
 
   check(
     checks,
@@ -68,8 +96,8 @@ const result = proofResult({
   checks,
   evidenceMode: args.evidence,
   note: args.evidence
-    ? 'Final bundle summary over latest local proof artifacts. Cron-runtime proof is accepted as stronger evidence than worker-once proofs when it passes on the target machine. Visual physical proof is reported as a separate required layer for physical display completion.'
-    : 'Static contract proof that final autonomous bundle commands are registered.',
+    ? 'Final bundle summary over latest local proof artifacts. Proof cron and production cron are reported separately; production cron runtime is required for the production autonomous path. Visual physical proof remains a separate required layer for physical display completion.'
+    : 'Static contract proof that final autonomous bundle commands are registered, including separate proof-cron and production-cron runtime proofs.',
 });
 
 emitProof(result, { write: args.write });

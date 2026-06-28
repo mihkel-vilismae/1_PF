@@ -1,3 +1,12 @@
+## 0.10.85 - 2026-06-28
+
+- Ran XACR to split proof cron from production cron after the v0.10.84 proof-passed/logs-only baseline.
+- Added `PF_V2_CRON_MODE=proof|production` support for the production crontab proof layer.
+- Added a separate `PHOTOFRAME_V2_PRODUCTION_CRON` managed crontab block with short worker-specific wrapper calls.
+- Added `proof:v2-install-production-crontab`, `proof:v2-production-cron-runtime`, and optional `proof:v2-production-cron-cleanup`.
+- Updated final autonomous bundle checks to report proof cron and production cron as separate proof layers.
+- Updated the prooflauncher to keep the existing proof-cron chain passing and then run the production-cron runtime proof before final bundling.
+
 ## 0.10.84 - 2026-06-28
 
 - Ran XACR slice-by-slice over the proof-passed v0.10.83 baseline cleanup batch.

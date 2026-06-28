@@ -7,7 +7,7 @@
 set -u -o pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ZIP_NAME="PF_login_v0.10.84_proofrunner_hygiene_baseline_full_git.zip"
+REPO_ZIP_NAME="PF_login_v0.10.85_production_cron_split_full_git.zip"
 REPO_ZIP="$SCRIPT_DIR/$REPO_ZIP_NAME"
 RUN_TS="$(date +%Y%m%d_%H%M%S)"
 RUN_PARENT="$SCRIPT_DIR/prooflauncher_runs"
@@ -74,6 +74,14 @@ TXT
   "notes": "Copy this file to operator_visual_confirmation.json and update after adding screen photo/video evidence."
 }
 JSON
+  fi
+}
+
+copy_seeded_visual_evidence() {
+  local seed_dir="$SCRIPT_DIR/seeded_visual_evidence"
+  if [ -d "$seed_dir" ]; then
+    log "Copying seeded visual evidence from: $seed_dir"
+    cp -a "$seed_dir/." "$VISUAL_EVIDENCE_DIR/" 2>/dev/null || true
   fi
 }
 
@@ -160,14 +168,14 @@ zip_run_folder() {
 capture_artifacts() {
   local repo_root="${1:-}"
   log "Capturing artifacts."
-  mkdir -p "$ARTIFACT_DIR/npm_logs" "$ARTIFACT_DIR/repo_runtime"
+  mkdir -p "$ARTIFACT_DIR/npm_logs" "$ARTIFACT_DIR/runtime_artifacts"
   cp -a "$HOME/.npm/_logs/." "$ARTIFACT_DIR/npm_logs/" 2>/dev/null || true
   cp -a "$VISUAL_EVIDENCE_DIR" "$ARTIFACT_DIR/" 2>/dev/null || true
 
   if [ -n "$repo_root" ] && [ -d "$repo_root" ]; then
-    cp -a "$repo_root/runtime_data/proofs" "$ARTIFACT_DIR/repo_runtime/" 2>/dev/null || true
-    cp -a "$repo_root/runtime_data/v2_worker_truth" "$ARTIFACT_DIR/repo_runtime/" 2>/dev/null || true
-    cp -a "$repo_root/runtime_data/logs" "$ARTIFACT_DIR/repo_runtime/" 2>/dev/null || true
+    cp -a "$repo_root/runtime_data/proofs" "$ARTIFACT_DIR/runtime_artifacts/" 2>/dev/null || true
+    cp -a "$repo_root/runtime_data/v2_worker_truth" "$ARTIFACT_DIR/runtime_artifacts/" 2>/dev/null || true
+    cp -a "$repo_root/runtime_data/logs" "$ARTIFACT_DIR/runtime_artifacts/" 2>/dev/null || true
     cp -a "$repo_root/test_runtime_data" "$ARTIFACT_DIR/" 2>/dev/null || true
     (cd "$repo_root" && git status --short > "$CMD_LOG_DIR/git_status_after.log" 2>&1) || true
   fi
@@ -191,14 +199,14 @@ wait_for_visual_evidence_if_requested() {
   done
 }
 
-log "=== PF_login v0.10.84 GENERATE PROOFRUNNER / visual physical proof bundle ==="
+log "=== PF_login v0.10.85 GENERATE PROOFRUNNER / production cron split proof bundle ==="
 log "Run timestamp: $RUN_TS"
 log "Script dir: $SCRIPT_DIR"
 log "Repo zip: $REPO_ZIP"
 log "Run dir: $RUN_DIR"
 log "Main log: $MAIN_LOG"
 log "Visual evidence dir: $VISUAL_EVIDENCE_DIR"
-log "Seconds runtime defaults: PF_V2_CRON_RUNTIME_WAIT_SECONDS=${PF_V2_CRON_RUNTIME_WAIT_SECONDS:-90}, PF_V2_CRON_PROOF_SECONDS=${PF_V2_CRON_PROOF_SECONDS:-45}, PF_V2_CRON_PROOF_INTERVAL_SECONDS=${PF_V2_CRON_PROOF_INTERVAL_SECONDS:-5}"
+log "Seconds runtime defaults: PF_V2_CRON_RUNTIME_WAIT_SECONDS=${PF_V2_CRON_RUNTIME_WAIT_SECONDS:-90}, PF_V2_CRON_PROOF_SECONDS=${PF_V2_CRON_PROOF_SECONDS:-45}, PF_V2_CRON_PROOF_INTERVAL_SECONDS=${PF_V2_CRON_PROOF_INTERVAL_SECONDS:-5}, PF_V2_PRODUCTION_CRON_RUNTIME_WAIT_SECONDS=${PF_V2_PRODUCTION_CRON_RUNTIME_WAIT_SECONDS:-75}"
 
 append_summary "PF_login prooflauncher run $RUN_TS"
 append_summary "script=prooflauncher_raspberry.sh"
@@ -209,6 +217,7 @@ append_summary "required_only=1"
 append_summary "runs_full_npm_test=0"
 
 write_visual_instructions
+copy_seeded_visual_evidence
 log "Opening visual evidence folder. Add screen photo/video evidence there when available."
 open_folder "$VISUAL_EVIDENCE_DIR"
 
@@ -231,6 +240,7 @@ else
     export PF_V2_CRON_RUNTIME_WAIT_SECONDS="${PF_V2_CRON_RUNTIME_WAIT_SECONDS:-90}"
     export PF_V2_CRON_PROOF_SECONDS="${PF_V2_CRON_PROOF_SECONDS:-45}"
     export PF_V2_CRON_PROOF_INTERVAL_SECONDS="${PF_V2_CRON_PROOF_INTERVAL_SECONDS:-5}"
+    export PF_V2_PRODUCTION_CRON_RUNTIME_WAIT_SECONDS="${PF_V2_PRODUCTION_CRON_RUNTIME_WAIT_SECONDS:-75}"
 
     {
       echo "PWD=$(pwd)"
@@ -255,14 +265,16 @@ else
     run_shell_cmd "02_proof_v2_real_machine_readiness" "npm run proof:v2-real-machine-readiness"
     run_shell_cmd "03_proof_v2_install_real_crontab" "npm run proof:v2-install-real-crontab"
     run_shell_cmd "04_proof_v2_real_cron_runtime" "npm run proof:v2-real-cron-runtime"
-    run_shell_cmd "05_proof_v2_real_cron_evidence" "npm run proof:v2-real-cron-evidence"
-    run_shell_cmd "06_proof_v2_real_playback_display" "npm run proof:v2-real-playback-display"
-    run_shell_cmd "07_proof_v2_autonomous_contract" "npm run proof:v2-autonomous-contract"
+    run_shell_cmd "05_proof_v2_install_production_crontab" "PF_V2_CRON_MODE=production npm run proof:v2-install-production-crontab"
+    run_shell_cmd "06_proof_v2_production_cron_runtime" "npm run proof:v2-production-cron-runtime"
+    run_shell_cmd "07_proof_v2_real_cron_evidence" "npm run proof:v2-real-cron-evidence"
+    run_shell_cmd "08_proof_v2_real_playback_display" "npm run proof:v2-real-playback-display"
+    run_shell_cmd "09_proof_v2_autonomous_contract" "npm run proof:v2-autonomous-contract"
     wait_for_visual_evidence_if_requested
-    run_shell_cmd "08_proof_v2_visual_physical_evidence" "npm run proof:v2-visual-physical-evidence"
-    run_shell_cmd "09_proof_v2_final_autonomous_bundle" "npm run proof:v2-final-autonomous-bundle"
+    run_shell_cmd "10_proof_v2_visual_physical_evidence" "npm run proof:v2-visual-physical-evidence"
+    run_shell_cmd "11_proof_v2_final_autonomous_bundle" "npm run proof:v2-final-autonomous-bundle"
 
-    log "Optional cleanup is available but not run by default: npm run proof:v2-real-cron-cleanup"
+    log "Optional cleanup is available but not run by default: npm run proof:v2-real-cron-cleanup and npm run proof:v2-production-cron-cleanup"
     capture_artifacts "$REPO_ROOT"
   fi
 fi

@@ -17,7 +17,7 @@ if (args.evidence) {
   const { events, files, malformed } = readTruthEvents('real');
   const workers = new Set(events.map((event) => event.worker));
   const stages = new Set(events.map((event) => event.stage));
-  const allowedSources = ['cron', 'cron-proof-loop', 'scheduler', 'prooflauncher-once'];
+  const allowedSources = ['cron', 'cron-proof-loop', 'production-cron', 'scheduler', 'prooflauncher-once'];
   const sourceEvents = events.filter((event) => allowedSources.includes(String(event.source ?? '')));
   check(checks, 'truth-files-present', 'Real worker truth files exist.', files.length > 0, { files });
   check(checks, 'regular-worker-events', 'Real regular-worker events exist.', workers.has('regular-worker'));

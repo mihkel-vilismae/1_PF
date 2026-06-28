@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.10.84",
+  "version": "0.10.85",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -185,7 +185,12 @@
     "proof:v2-visual-physical-evidence": "node tools/run-v2-visual-physical-evidence-proof.mjs --evidence --write",
     "proof:v2-visual-physical-evidence-contract": "node tools/run-v2-visual-physical-evidence-proof.mjs --contract",
     "proof:prooflauncher-logs-zip-hygiene": "node tools/run-prooflauncher-logs-zip-hygiene-proof.mjs --evidence --write",
-    "proof:prooflauncher-logs-zip-hygiene-contract": "node tools/run-prooflauncher-logs-zip-hygiene-proof.mjs --contract"
+    "proof:prooflauncher-logs-zip-hygiene-contract": "node tools/run-prooflauncher-logs-zip-hygiene-proof.mjs --contract",
+    "proof:v2-install-production-crontab": "node tools/run-v2-install-production-crontab-proof.mjs --evidence --write",
+    "proof:v2-install-production-crontab-contract": "node tools/run-v2-install-production-crontab-proof.mjs --contract",
+    "proof:v2-production-cron-runtime": "node tools/run-v2-production-cron-runtime-proof.mjs --evidence --write",
+    "proof:v2-production-cron-runtime-contract": "node tools/run-v2-production-cron-runtime-proof.mjs --contract",
+    "proof:v2-production-cron-cleanup": "node tools/run-v2-production-cron-cleanup-proof.mjs --evidence --write"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
