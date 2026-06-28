@@ -3,7 +3,7 @@ import { type V2OperatorSidebarItem, type V2OperatorSidebarRoute } from '../data
 import { getV2ImplementationStatusElement, getV2PageStatusId } from '../data/v2ImplementationStatus.ts';
 import { renderHistory, type HistoryEntry } from '../services/renderers.ts';
 import { escapeHtml } from '../services/renderers/sharedRendererUtils.ts';
-import { getCurrentMode, getReadinessStatus } from '../services/v2ReadinessService.ts';
+import { getCurrentMode, getV2ReadinessGateDefinitions, getV2ReadinessGateViewModel, type V2ReadinessKey } from '../services/v2ReadinessService.ts';
 
 type V2OperatorPageWrapperOptions = {
   activeItem: V2OperatorSidebarItem;
@@ -62,9 +62,7 @@ export function renderV2OperatorPageWrapper(options: V2OperatorPageWrapperOption
               </select>
             </label>
             <div class="v2-readiness-rings">
-              ${renderV2ReadinessRing('env', options.activePage.route)}
-              ${renderV2ReadinessRing('db', options.activePage.route)}
-              ${renderV2ReadinessRing('login', options.activePage.route)}
+              ${getV2ReadinessGateDefinitions().map((gate) => renderV2ReadinessRing(gate.key, options.activePage.route)).join('')}
             </div>
           </div>
           <div class="v2-topbar-status">
@@ -146,19 +144,22 @@ function renderV2StatusHelpButton(statusId: string, label: string): string {
   `;
 }
 
-/*
- * Renders a simple readiness ring. This is a placeholder implementation. In a future slice the
- * status argument should come from runtimeState.readiness to show whether the .env, database,
- * or login checks have passed. For now the status is hard-coded to `unknown` and the label
- * is derived from the type.
- */
-function renderV2ReadinessRing(type: 'env' | 'db' | 'login', _route: string): string {
-  // Use the readiness service to fetch the current status for the active mode.
-  const status = getReadinessStatus(type);
-  const label = type === 'env' ? '.env' : type === 'db' ? 'DB' : 'Login';
+function renderV2ReadinessRing(type: V2ReadinessKey, route: string): string {
+  const gate = getV2ReadinessGateViewModel(type);
   return `
-    <span class="readiness-ring readiness-ring--${escapeHtml(status)}" data-readiness-type="${escapeHtml(type)}" title="${escapeHtml(label)} readiness status">
-      <span class="readiness-ring__label">${escapeHtml(label)}</span>
+    <span
+      class="readiness-ring readiness-ring--${escapeHtml(gate.displayStatus)}"
+      data-readiness-type="${escapeHtml(type)}"
+      data-v2-readiness-route="${escapeHtml(route)}"
+      data-v2-readiness-mode="${escapeHtml(gate.mode)}"
+      data-v2-readiness-status="${escapeHtml(gate.status)}"
+      data-v2-readiness-proof-command="${escapeHtml(gate.proofCommand)}"
+      data-v2-readiness-claim-allowed-before-proof="${String(gate.claimAllowedBeforeProof)}"
+      title="${escapeHtml(`${gate.title}: ${gate.reason} Required proof: ${gate.proofCommand}`)}"
+      aria-label="${escapeHtml(`${gate.title}: ${gate.stateLabel}`)}"
+    >
+      <span class="readiness-ring__label">${escapeHtml(gate.ringLabel)}</span>
+      <span class="readiness-ring__state">${escapeHtml(gate.stateLabel)}</span>
     </span>
   `;
 }
