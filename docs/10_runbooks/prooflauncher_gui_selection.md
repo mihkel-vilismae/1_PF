@@ -6,17 +6,43 @@ When the operator starts `PROOF_WIN.PS1` or `PROOF_RASPBERRYOS.SH`, the launcher
 
 ## Options
 
-| Option | Mode | Meaning |
-|---:|---|---|
-| 1 | `all` | Run the full repo-ordered proof queue. |
-| 2 | `minimum` | Run only the minimum smoke/readiness proofs needed to check launcher health, docs/OpenSpec/registry consistency, full-test stability, v1 readiness summary, blocker summary, and final proofrunner summary. |
+| Option | Mode | Meaning | Recommended use |
+|---:|---|---|---|
+| 1 | `quick` | Fast post-slice smoke queue for docs, queue, handoff/runtime/progress/packaging contracts. | First local confidence pass after a code slice. |
+| 2 | `blockers` | Current readiness blocker families: iCloud/auth, real media, geocode, worker bridge, playback/display, and readiness summaries. | First Raspberry target pass after `quick` succeeds. |
+| 3 | `platform` | Platform/hardware/native/display/playback/cron proof family for the current launcher platform. | Use after blockers to check host-specific behavior. |
+| 4 | `failed-last` | Re-run proofs that failed in the previous launcher run; falls back to quick when no failed-history exists. | Triage loop after a failed proofrunner run. |
+| 5 | `minimum` | Legacy minimum smoke/readiness queue retained for compatibility. | Safe non-interactive default. |
+| 6 | `full` | Complete repo-ordered proof queue; legacy `all` maps here. | Final sweep, not the first run. |
 
-The launcher may also accept an environment override for automation:
+The launcher may also accept environment overrides for automation:
 
 ```text
-PF_PROOF_LAUNCHER_MODE=all
-PF_PROOF_LAUNCHER_MODE=minimum
+PF_PROOF_MODE=quick
+PF_PROOF_MODE=blockers
+PF_PROOF_MODE=platform
+PF_PROOF_MODE=failed-last
+PF_PROOF_MODE=minimum
+PF_PROOF_MODE=full
+PF_PROOF_MODE=changed
 ```
+
+Legacy compatibility remains accepted:
+
+```text
+PF_PROOF_LAUNCHER_MODE=all      # maps to full
+PF_PROOF_LAUNCHER_MODE=minimum  # maps to minimum
+```
+
+`PF_PROOF_MODE` is the preferred queue-selection variable. `PF_PROOF_LAUNCHER_MODE` is kept for old handoffs and should only be used as a compatibility alias.
+
+## Recommended run order
+
+```text
+quick -> blockers -> platform -> failed-last when needed -> full
+```
+
+`full` is still required before a major release candidate or complete regression sweep, but it should not be the first thing an operator runs on a fresh target machine.
 
 ## Minimum proof set
 
@@ -24,10 +50,7 @@ The minimum proof set is owned by `tools/proof-runner-queue-lib.mjs` as `MINIMUM
 
 ## Happy-path proofs
 
-`npm run proof:prooflauncher-gui-selection` proves both happy paths:
-
-1. `all` mode returns the full ordered proof queue.
-2. `minimum` mode returns a shorter queue with no missing required minimum proofs and final summary proofs last.
+`npm run proof:prooflauncher-gui-selection` proves that launcher mode selection exposes every documented operator mode and that final summary proofs remain last when the selected queue includes them.
 
 ## Timing UX
 
@@ -36,7 +59,6 @@ Launcher output should show elapsed time, estimated finish time, estimated time 
 ## Non-claims
 
 The menu does not prove real provider login, real download, real geocode, product pipeline, display/hardware behavior, or final v1 readiness. It only selects which proof commands are run.
-
 
 ## Timing history evidence contract
 

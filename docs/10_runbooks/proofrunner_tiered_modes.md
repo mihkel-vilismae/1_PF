@@ -51,6 +51,21 @@ export PF_PROOF_CHANGED_PROOFS="proof:regular-worker-product-contract,proof:proo
 ./PROOF_RASPBERRYOS.SH
 ```
 
+## Launcher menu contract
+
+Generated `2proofrunner 1repo` handoffs should expose these interactive choices:
+
+| Choice | Mode | Use |
+|---:|---|---|
+| 1 | `quick` | Fast post-slice smoke. |
+| 2 | `blockers` | Known readiness blockers. |
+| 3 | `platform` | Platform/native/display/cron family. |
+| 4 | `failed-last` | Triage the previous failed run. |
+| 5 | `minimum` | Legacy compatibility default. |
+| 6 | `full` | Complete final sweep. |
+
+`changed` is automation-first because it needs `PF_PROOF_CHANGED_PROOFS` to be useful.
+
 ## Result artifacts
 
 Launchers must record the selected mode in `repo_identity.json`, `last_run_stats.json` inputs, and `logs/proof_queue_plan.json`.

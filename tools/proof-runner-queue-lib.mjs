@@ -12,6 +12,43 @@ export const FINAL_SUMMARY_PROOFS = Object.freeze([
 
 export const WINDOWS_ONLY_SUFFIX = ':windows';
 
+
+export const INTERACTIVE_PROOF_RUNNER_MODE_OPTIONS = Object.freeze([
+  { choice: '1', mode: 'quick', label: 'quick smoke queue', recommendedOrder: 1, firstRun: true },
+  { choice: '2', mode: 'blockers', label: 'known readiness blockers queue', recommendedOrder: 2 },
+  { choice: '3', mode: 'platform', label: 'platform / hardware / cron / display queue', recommendedOrder: 3 },
+  { choice: '4', mode: 'failed-last', label: 'rerun last failed proofs', recommendedOrder: 4 },
+  { choice: '5', mode: 'minimum', label: 'legacy minimum release-smoke queue', recommendedOrder: 5, legacy: true },
+  { choice: '6', mode: 'full', label: 'complete proof queue / historical all', recommendedOrder: 6, finalSweep: true },
+]);
+
+export const AUTOMATION_ONLY_PROOF_RUNNER_MODES = Object.freeze([
+  { mode: 'changed', label: 'explicit changed proofs plus quick-core safety proofs' },
+]);
+
+export function normalizeProofRunnerLauncherSelection(selection = '') {
+  const raw = String(selection ?? '').trim().toLowerCase();
+  if (!raw) return 'minimum';
+  const byChoice = INTERACTIVE_PROOF_RUNNER_MODE_OPTIONS.find((option) => option.choice === raw);
+  if (byChoice) return byChoice.mode;
+  return normalizeProofRunnerMode(raw);
+}
+
+export function buildProofRunnerModeMenuLines() {
+  return INTERACTIVE_PROOF_RUNNER_MODE_OPTIONS.map((option) => {
+    const suffix = option.firstRun ? ' (recommended first run)' : option.finalSweep ? ' (final sweep, not first)' : '';
+    return `${option.choice}) ${option.mode} — ${option.label}${suffix}`;
+  });
+}
+
+export function getDocumentedProofRunnerModes() {
+  return [
+    ...INTERACTIVE_PROOF_RUNNER_MODE_OPTIONS.map((option) => option.mode),
+    ...AUTOMATION_ONLY_PROOF_RUNNER_MODES.map((option) => option.mode),
+    'all',
+  ];
+}
+
 export const PROOF_RUNNER_MODE_ALIASES = Object.freeze({
   all: 'full',
   full: 'full',

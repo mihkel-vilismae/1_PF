@@ -60,3 +60,8 @@ Use these when you need more than the quickstart:
 - `HOW_TO_RUN.md` must stay short and quickstart-oriented. Put long operator notes in `docs/10_runbooks/` and link them here.
 - Windows Task Scheduler is not part of PF_login project scope; use the project-owned scheduler/proof paths documented in proof runbooks.
 - Native playback and iCloud proofs remain explicit opt-in proof/operator flows; normal launchers do not silently claim those proofs.
+
+
+## Proofrunner modes
+
+Generated proofrunner handoffs should usually be run in this order: `quick`, `blockers`, `platform`, then `full` only for the final sweep. Use `PF_PROOF_MODE=quick|blockers|platform|failed-last|minimum|full`; legacy `PF_PROOF_LAUNCHER_MODE=all|minimum` remains accepted for older automation.
