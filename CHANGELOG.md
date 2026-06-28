@@ -1,3 +1,13 @@
+## 0.10.86 - 2026-06-28
+
+- Ran XACR on the v0.10.85 production-cron split baseline and the recovery engine implementation spec.
+- Added a decoupled recovery service contract with `PF_V2_RECOVERY_ENGINE=v1` default selection, a v1 file-backed engine, and a selectable `v2-stub` engine.
+- Routed existing save/load/autosave/emulated-power-off/restart-check API behavior through `recoveryService` while preserving dashboard-compatible response envelopes.
+- Added recovery startup checkpoint/restart-check behavior and a recovery resume-target API route without adding a fourth always-running worker.
+- Added `proof:v2-recovery-engine-contract`, `proof:v2-recovery-engine`, `proof:v2-recovery-emulate-power-off`, and `proof:v2-recovery-restart-check`.
+- Updated the final autonomous bundle and prooflauncher to report recovery as a separate proof layer while preserving cron/proofrunner behavior and logs-only ZIP hygiene.
+- Documented the v0.10.86 boundary: physical power-loss proof is explicitly deferred to v0.10.87.
+
 ## 0.10.85 - 2026-06-28
 
 - Ran XACR to split proof cron from production cron after the v0.10.84 proof-passed/logs-only baseline.
