@@ -1,3 +1,11 @@
+## 0.10.88 - 2026-06-28
+
+- Ran XACR merge refinement over the v0.10.35 governance branch and the v0.10.87 canonical recovery strategy branch.
+- Preserved v0.10.87 as the authoritative implementation baseline and merged the one missing v0.10.35 governance preflight commit without overwriting newer V2/recovery/proofrunner work.
+- Added the scaffold-fill preflight rule to `.codex/skills/pf-doc-governance-writer/SKILL.md` while preserving the newer canonical placement/truth-label structure.
+- Preserved `desktop.ini` from the v0.10.35 history for strict no-loss merge hygiene; it is recommended for explicit cleanup in a future removal-only commit if approved.
+- Bumped VERSION/package metadata to 0.10.88 as the merge-release checkpoint.
+
 ## 0.10.87 - 2026-06-28
 
 - Ran Batch 3 using 3+2ACR after the canonical recovery-state and cross-engine strategy proof slices.
