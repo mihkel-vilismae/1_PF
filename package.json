@@ -198,7 +198,8 @@
     "proof:v2-recovery-cross-engine-strategy-contract": "node --import tsx tools/run-v2-recovery-cross-engine-strategy-contract-proof.mjs --evidence --write",
     "proof:v2-recovery-emulate-power-off": "node --import tsx tools/run-v2-recovery-emulate-power-off-proof.mjs --evidence --write",
     "proof:v2-recovery-restart-check": "node --import tsx tools/run-v2-recovery-restart-check-proof.mjs --evidence --write",
-    "proof:v2-implementation-proof-gate-metadata": "node --test tests/v2ImplementationProofGateMetadata.test.js"
+    "proof:v2-implementation-proof-gate-metadata": "node --test tests/v2ImplementationProofGateMetadata.test.js",
+    "proof:generated-artifact-drift": "node tools/run-generated-artifact-drift-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
