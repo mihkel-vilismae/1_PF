@@ -2,7 +2,12 @@
 import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { createProofEnvelope, runCommand, writeProofArtifact } from './proof-utils.mjs';
-import { buildProofRunnerQueuePlanForMode, assertFinalSummaryProofsRunLast } from './proof-runner-queue-lib.mjs';
+import {
+  INTERACTIVE_PROOF_RUNNER_MODE_OPTIONS,
+  buildProofRunnerQueuePlanForMode,
+  normalizeProofRunnerLauncherSelection,
+  assertFinalSummaryProofsRunLast,
+} from './proof-runner-queue-lib.mjs';
 
 const require = createRequire(import.meta.url);
 const pkg = require('../package.json');
@@ -13,22 +18,58 @@ async function metadata() {
   return { version, gitCommit: git.stdout.trim() || 'unknown' };
 }
 
-const allPlan = buildProofRunnerQueuePlanForMode(pkg, { runMode: 'all', includeWindowsAliases: true });
-const minimumPlan = buildProofRunnerQueuePlanForMode(pkg, { runMode: 'minimum', includeWindowsAliases: true });
+const plans = Object.fromEntries(
+  INTERACTIVE_PROOF_RUNNER_MODE_OPTIONS.map((option) => [
+    option.mode,
+    buildProofRunnerQueuePlanForMode(pkg, { runMode: option.mode, includeWindowsAliases: true }),
+  ]),
+);
+const changedPlan = buildProofRunnerQueuePlanForMode(pkg, {
+  runMode: 'changed',
+  includeWindowsAliases: true,
+  changedProofs: ['proof:proofrunner-handoff-mode-contract'],
+});
 const checks = [
-  { name: 'all_mode_has_full_queue', passed: allPlan.ordered_count > minimumPlan.ordered_count, detail: { all: allPlan.ordered_count, minimum: minimumPlan.ordered_count } },
-  { name: 'minimum_mode_has_no_missing_required_proofs', passed: minimumPlan.missing_minimum_proofs.length === 0, detail: minimumPlan.missing_minimum_proofs },
-  { name: 'all_mode_final_summary_last', passed: assertFinalSummaryProofsRunLast(allPlan.ordered_proofs).passed, detail: allPlan.final_summary_proofs },
-  { name: 'minimum_mode_final_summary_last', passed: assertFinalSummaryProofsRunLast(minimumPlan.ordered_proofs).passed, detail: minimumPlan.final_summary_proofs },
+  {
+    name: 'interactive_modes_are_all_selectable',
+    passed: INTERACTIVE_PROOF_RUNNER_MODE_OPTIONS.every((option) => plans[option.mode]?.run_mode === option.mode),
+    detail: Object.fromEntries(Object.entries(plans).map(([mode, plan]) => [mode, plan.ordered_count])),
+  },
+  {
+    name: 'numeric_menu_choices_normalize_to_expected_modes',
+    passed: INTERACTIVE_PROOF_RUNNER_MODE_OPTIONS.every((option) => normalizeProofRunnerLauncherSelection(option.choice) === option.mode),
+    detail: INTERACTIVE_PROOF_RUNNER_MODE_OPTIONS.map((option) => ({ choice: option.choice, mode: option.mode, actual: normalizeProofRunnerLauncherSelection(option.choice) })),
+  },
+  {
+    name: 'legacy_all_maps_to_full',
+    passed: normalizeProofRunnerLauncherSelection('all') === 'full' && plans.full.ordered_count > plans.minimum.ordered_count,
+    detail: { full: plans.full.ordered_count, minimum: plans.minimum.ordered_count },
+  },
+  {
+    name: 'quick_is_distinct_from_minimum',
+    passed: normalizeProofRunnerLauncherSelection('quick') === 'quick' && plans.quick.ordered_count < plans.minimum.ordered_count,
+    detail: { quick: plans.quick.ordered_count, minimum: plans.minimum.ordered_count },
+  },
+  {
+    name: 'changed_mode_remains_available_for_automation',
+    passed: changedPlan.run_mode === 'changed' && changedPlan.ordered_proofs.includes('proof:proofrunner-handoff-mode-contract'),
+    detail: { changed_count: changedPlan.ordered_count, proofs: changedPlan.ordered_proofs },
+  },
+  {
+    name: 'final_summary_last_when_present',
+    passed: Object.values(plans).every((plan) => assertFinalSummaryProofsRunLast(plan.ordered_proofs).passed),
+    detail: Object.fromEntries(Object.entries(plans).map(([mode, plan]) => [mode, plan.ordered_proofs.slice(-5)])),
+  },
 ];
 const proofStatus = checks.every((check) => check.passed) ? 'PASSED' : 'FAILED';
+const meta = await metadata();
 const envelope = createProofEnvelope({
   proofKind: 'prooflauncher_gui_selection',
-  baselineVersion: (await metadata()).version,
-  gitCommit: (await metadata()).gitCommit,
+  baselineVersion: meta.version,
+  gitCommit: meta.gitCommit,
   proofStatus,
   runtimeMode: 'local_launcher_gui_selection_contract',
-  evidence: { checks, all_mode_count: allPlan.ordered_count, minimum_mode_count: minimumPlan.ordered_count, minimum_proofs: minimumPlan.ordered_proofs },
+  evidence: { checks, mode_counts: Object.fromEntries(Object.entries(plans).map(([mode, plan]) => [mode, plan.ordered_count])) },
   knownLimitations: ['This proves queue-selection happy paths only; it does not execute the selected queues.'],
 });
 const outputPath = await writeProofArtifact('prooflauncher_gui_selection', envelope);
