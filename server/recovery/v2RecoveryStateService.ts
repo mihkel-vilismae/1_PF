@@ -1,12 +1,24 @@
 /*
- * File-backed V2 recovery state persistence used by manual save/load and
- * autosave/restart gates. It stores no secrets and intentionally restores only
- * lightweight same-media/queue context.
+ * Compatibility facade for V2 dashboard recovery endpoints.
+ *
+ * v0.10.86 routes save/load/restart/emulated power-off behavior through the
+ * decoupled recovery service. The legacy envelope shape is preserved so the
+ * existing dashboard/API callers keep working while the durable implementation
+ * is now swappable through PF_V2_RECOVERY_ENGINE.
  */
-import { promises as fs } from 'node:fs';
 import path from 'node:path';
+import { createRecoveryService } from '../services/recovery/recoveryService.ts';
+import type {
+  PlaybackResumeTarget,
+  RecoveryCheckResult,
+  RecoveryMode,
+  RecoverySnapshot,
+  RecoverySnapshotSource,
+  RecoveryService,
+} from '../services/recovery/recoveryContract.ts';
 import {
   V2_RECOVERY_STATE_SCHEMA_VERSION,
+  createEmptyV2RecoveryStateSnapshot,
   normalizeV2RecoveryStateSnapshotInput,
   validateV2RecoveryStateSnapshot,
   type V2RecoveryStateSaveReason,
@@ -39,189 +51,233 @@ export type V2RecoveryStateEnvelope = {
   possibleRestartDetected?: boolean;
   previousBoot?: RecoveryBootRecord | null;
   currentBoot?: RecoveryBootRecord;
+  recoveryEngine?: string;
+  recoverySnapshot?: RecoverySnapshot | null;
+  recoveryCheck?: RecoveryCheckResult;
+  resumeTarget?: PlaybackResumeTarget;
   message: string;
 };
 
+function normalizeRecoveryMode(value: unknown): RecoveryMode {
+  return value === 'test' ? 'test' : 'real';
+}
+
+function mapSource(source: V2RecoverySaveSource, reason: V2RecoveryStateSaveReason): RecoverySnapshotSource {
+  if (source === 'manual') return 'manual';
+  if (source === 'pre-shutdown' || reason === 'pre-shutdown') return 'automatic';
+  if (source === 'restart-check' || reason === 'restart-detected') return 'worker-start';
+  return 'automatic';
+}
+
+function toRecoverySaveInput(snapshot: V2RecoveryStateSnapshot, source: V2RecoverySaveSource, mode: RecoveryMode) {
+  return {
+    mode,
+    source: mapSource(source, snapshot.reason),
+    reason: snapshot.reason,
+    snapshot,
+    playback: {
+      currentMediaId: snapshot.playback.currentMediaId ?? undefined,
+      currentMediaPath: snapshot.playback.currentFilename ?? undefined,
+      mediaKind: snapshot.playback.mediaKind,
+      queueCursorIndex: snapshot.playback.queueCursorIndex ?? undefined,
+      queueLength: snapshot.playback.queueLength,
+      playbackPositionSeconds: snapshot.playback.playbackPositionSeconds ?? undefined,
+      resumePolicy: snapshot.playback.currentMediaId || snapshot.playback.currentFilename ? 'same-media' : 'safe-queue-position',
+    },
+    queue: snapshot.queue,
+    pipeline: snapshot.pipeline,
+    regularWorker: {
+      activeStage: snapshot.pipeline.activeStage === 'playback' || snapshot.pipeline.activeStage === 'idle' ? 'none' : snapshot.pipeline.activeStage,
+    },
+    notes: snapshot.notes,
+  } as const;
+}
+
+function toLegacySnapshot(snapshot: RecoverySnapshot | null, savedAtIso = new Date().toISOString()): V2RecoveryStateSnapshot | null {
+  if (!snapshot) return null;
+  const legacy = createEmptyV2RecoveryStateSnapshot(snapshot.createdAt || savedAtIso, 'restart-detected');
+  legacy.playback.currentMediaId = snapshot.playback?.currentMediaId ?? null;
+  legacy.playback.currentFilename = snapshot.playback?.currentMediaPath ?? null;
+  legacy.playback.mediaKind = snapshot.playback?.mediaKind ?? 'unknown';
+  legacy.playback.queueCursorIndex = snapshot.playback?.queueCursorIndex ?? null;
+  legacy.playback.queueLength = snapshot.playback?.queueLength ?? 0;
+  legacy.playback.playbackPositionSeconds = snapshot.playback?.playbackPositionSeconds ?? null;
+  legacy.pipeline.activeStage = snapshot.regularWorker?.activeStage === 'none' ? 'idle' : snapshot.regularWorker?.activeStage ?? 'unknown';
+  legacy.notes = [
+    `Loaded through recoveryService engine=${snapshot.recoveryEngine}.`,
+    ...(snapshot.validation.warnings ?? []),
+  ];
+  return legacy;
+}
+
+function buildEnvelope({
+  status,
+  legacySnapshot,
+  stateFilePath,
+  source,
+  recoveryService,
+  recoverySnapshot,
+  recoveryCheck,
+  resumeTarget,
+  message,
+}: {
+  status: V2RecoveryStateEnvelope['status'];
+  legacySnapshot: V2RecoveryStateSnapshot | null;
+  stateFilePath: string;
+  source?: V2RecoverySaveSource;
+  recoveryService: RecoveryService;
+  recoverySnapshot?: RecoverySnapshot | null;
+  recoveryCheck?: RecoveryCheckResult;
+  resumeTarget?: PlaybackResumeTarget;
+  message: string;
+}): V2RecoveryStateEnvelope {
+  const validation = validateV2RecoveryStateSnapshot(legacySnapshot);
+  return {
+    status,
+    snapshot: legacySnapshot,
+    validation,
+    stateFile: stateFilePath,
+    schemaVersion: V2_RECOVERY_STATE_SCHEMA_VERSION,
+    source,
+    recoveryInProcess: Boolean(recoveryCheck?.possibleRestartDetected || recoverySnapshot),
+    possibleRestartDetected: recoveryCheck?.possibleRestartDetected,
+    recoveryEngine: recoveryService.getActiveEngine(),
+    recoverySnapshot: recoverySnapshot ?? null,
+    recoveryCheck,
+    resumeTarget,
+    message,
+  };
+}
+
 export function createV2RecoveryStateService({ repoRoot, bootId = `boot-${Date.now()}`, bootStartedAtIso = new Date().toISOString() }: RecoveryServiceOptions) {
   const recoveryDirectory = path.join(repoRoot, 'runtime_data', 'recovery');
-  const stateFilePath = path.join(recoveryDirectory, 'v2-recovery-state.json');
-  const bootFilePath = path.join(recoveryDirectory, 'v2-recovery-boot.json');
-  const uncleanShutdownFlagPath = path.join(recoveryDirectory, 'v2-unclean-shutdown.flag.json');
+  const stateFilePath = path.join(recoveryDirectory, 'latest_recovery_snapshot.json');
+  const recoveryService = createRecoveryService({ repoRoot });
 
   async function saveSnapshot(input: unknown, reason: V2RecoveryStateSaveReason = 'manual-save', source: V2RecoverySaveSource = 'manual'): Promise<V2RecoveryStateEnvelope> {
     const savedAtIso = new Date().toISOString();
-    const snapshot = normalizeV2RecoveryStateSnapshotInput(input, savedAtIso, reason);
-    snapshot.reason = reason;
-    snapshot.savedAtIso = savedAtIso;
-    const validation = validateV2RecoveryStateSnapshot(snapshot);
+    const legacySnapshot = normalizeV2RecoveryStateSnapshotInput(input, savedAtIso, reason);
+    legacySnapshot.reason = reason;
+    legacySnapshot.savedAtIso = savedAtIso;
+    const validation = validateV2RecoveryStateSnapshot(legacySnapshot);
     if (!validation.ok) {
       return {
         status: 'missing',
-        snapshot,
+        snapshot: legacySnapshot,
         validation,
         stateFile: stateFilePath,
         schemaVersion: V2_RECOVERY_STATE_SCHEMA_VERSION,
         source,
+        recoveryEngine: recoveryService.getActiveEngine(),
+        recoverySnapshot: null,
         message: `Recovery snapshot rejected: ${validation.errors.join('; ')}`,
       };
     }
 
-    await fs.mkdir(recoveryDirectory, { recursive: true });
-    await fs.writeFile(stateFilePath, `${JSON.stringify({ snapshot, source, savedAtIso }, null, 2)}\n`, 'utf8');
-    return {
+    const recoverySnapshot = await recoveryService.saveState(toRecoverySaveInput(legacySnapshot, source, 'real'));
+    const resumeTarget = await recoveryService.getPlaybackResumeTarget({ mode: 'real', snapshot: recoverySnapshot });
+    return buildEnvelope({
       status: source === 'autosave' || reason === 'autosave-stage-change' || reason === 'pre-shutdown' ? 'autosaved' : 'saved',
-      snapshot,
-      validation,
-      stateFile: stateFilePath,
-      schemaVersion: V2_RECOVERY_STATE_SCHEMA_VERSION,
+      legacySnapshot,
+      stateFilePath,
       source,
-      message: `Recovery snapshot ${source === 'manual' ? 'saved' : 'autosaved'} for ${snapshot.playback.currentFilename ?? 'no selected media'}.`,
-    };
+      recoveryService,
+      recoverySnapshot,
+      resumeTarget,
+      message: `Recovery snapshot ${source === 'manual' ? 'saved' : 'autosaved'} through ${recoveryService.getActiveEngine()} for ${legacySnapshot.playback.currentFilename ?? 'no selected media'}.`,
+    });
   }
 
   async function loadSnapshot(): Promise<V2RecoveryStateEnvelope> {
-    const snapshot = await readSnapshot();
-    const validation = validateV2RecoveryStateSnapshot(snapshot);
-    return {
-      status: snapshot ? 'loaded' : 'missing',
-      snapshot,
-      validation,
-      stateFile: stateFilePath,
-      schemaVersion: V2_RECOVERY_STATE_SCHEMA_VERSION,
-      recoveryInProcess: Boolean(snapshot),
-      message: snapshot
-        ? `Recovery snapshot loaded for ${snapshot.playback.currentFilename ?? 'no selected media'}. Same-media restart is allowed; exact timestamp is not required.`
+    const recoverySnapshot = await recoveryService.loadLatestState({ mode: 'real' });
+    const legacySnapshot = toLegacySnapshot(recoverySnapshot);
+    const resumeTarget = await recoveryService.getPlaybackResumeTarget({ mode: 'real', snapshot: recoverySnapshot });
+    return buildEnvelope({
+      status: legacySnapshot ? 'loaded' : 'missing',
+      legacySnapshot,
+      stateFilePath,
+      recoveryService,
+      recoverySnapshot,
+      resumeTarget,
+      message: legacySnapshot
+        ? `Recovery snapshot loaded through ${recoveryService.getActiveEngine()}. Same-media restart is allowed; exact timestamp is not required.`
         : 'No V2 recovery snapshot has been saved yet.',
-    };
+    });
   }
 
   async function readStatus(): Promise<V2RecoveryStateEnvelope> {
-    const snapshot = await readSnapshot();
-    const validation = validateV2RecoveryStateSnapshot(snapshot);
-    return {
-      status: snapshot ? 'loaded' : 'missing',
-      snapshot,
-      validation,
-      stateFile: stateFilePath,
-      schemaVersion: V2_RECOVERY_STATE_SCHEMA_VERSION,
-      recoveryInProcess: Boolean(snapshot),
-      message: snapshot ? 'V2 recovery snapshot is available.' : 'No V2 recovery snapshot is available.',
-    };
+    const recoverySnapshot = await recoveryService.loadLatestState({ mode: 'real' });
+    const legacySnapshot = toLegacySnapshot(recoverySnapshot);
+    const resumeTarget = await recoveryService.getPlaybackResumeTarget({ mode: 'real', snapshot: recoverySnapshot });
+    return buildEnvelope({
+      status: legacySnapshot ? 'loaded' : 'missing',
+      legacySnapshot,
+      stateFilePath,
+      recoveryService,
+      recoverySnapshot,
+      resumeTarget,
+      message: legacySnapshot ? 'V2 recovery snapshot is available through recoveryService.' : 'No V2 recovery snapshot is available.',
+    });
   }
 
   async function checkRestart(): Promise<V2RecoveryStateEnvelope> {
-    const previousBoot = await readBootRecord();
-    const uncleanShutdownFlag = await readUncleanShutdownFlag();
-    const currentBoot: RecoveryBootRecord = {
-      schemaVersion: 1,
-      bootId,
-      startedAtIso: bootStartedAtIso,
-      recordedAtIso: new Date().toISOString(),
-    };
-    await fs.mkdir(recoveryDirectory, { recursive: true });
-    await fs.writeFile(bootFilePath, `${JSON.stringify(currentBoot, null, 2)}
-`, 'utf8');
-
-    const snapshot = await readSnapshot();
-    const validation = validateV2RecoveryStateSnapshot(snapshot);
-    const possibleRestartDetected = Boolean((uncleanShutdownFlag || (previousBoot && previousBoot.bootId !== bootId)) && snapshot && validation.ok);
-    if (possibleRestartDetected) {
-      await clearUncleanShutdownFlag();
-    }
+    const recoveryCheck = await recoveryService.checkRestart({ mode: 'real', source: 'api-restart-check' });
+    const recoverySnapshot = await recoveryService.loadLatestState({ mode: 'real' });
+    const legacySnapshot = toLegacySnapshot(recoverySnapshot);
     return {
-      status: 'restart-checked',
-      snapshot,
-      validation,
-      stateFile: stateFilePath,
-      schemaVersion: V2_RECOVERY_STATE_SCHEMA_VERSION,
-      source: 'restart-check',
-      recoveryInProcess: possibleRestartDetected,
-      possibleRestartDetected,
-      previousBoot,
-      currentBoot,
-      message: possibleRestartDetected
-        ? 'Possible restart detected with a valid recovery snapshot available.'
-        : 'Restart check completed; no recovery action is required.',
+      ...buildEnvelope({
+        status: 'restart-checked',
+        legacySnapshot,
+        stateFilePath,
+        source: 'restart-check',
+        recoveryService,
+        recoverySnapshot,
+        recoveryCheck,
+        resumeTarget: recoveryCheck.resumeTarget,
+        message: recoveryCheck.possibleRestartDetected
+          ? 'Possible restart detected with a valid recovery snapshot available through recoveryService.'
+          : 'Restart check completed through recoveryService; no recovery action is required.',
+      }),
+      previousBoot: null,
+      currentBoot: {
+        schemaVersion: 1,
+        bootId,
+        startedAtIso: bootStartedAtIso,
+        recordedAtIso: new Date().toISOString(),
+      },
     };
   }
 
   async function emulatePowerOff(input: unknown = {}): Promise<V2RecoveryStateEnvelope> {
-    const reason = 'pre-shutdown';
-    const saved = await saveSnapshot(input, reason, 'pre-shutdown');
-    await fs.mkdir(recoveryDirectory, { recursive: true });
-    await fs.writeFile(uncleanShutdownFlagPath, `${JSON.stringify({
-      schemaVersion: 1,
-      writtenAtIso: new Date().toISOString(),
-      reason: 'emulated-power-off',
-      note: 'Guarded emulated power-off marker. Project-owned worker termination is handled by platform runner when available.',
-    }, null, 2)}\n`, 'utf8');
+    const saved = await saveSnapshot(input, 'pre-shutdown', 'pre-shutdown');
+    await recoveryService.markUncleanShutdown({
+      mode: normalizeRecoveryMode(saved.recoverySnapshot?.mode),
+      source: 'emulate-power-off',
+      snapshotId: saved.recoverySnapshot?.snapshotId,
+      reason: 'Guarded emulated power-off marker. Physical power-loss proof is deferred to v0.10.87.',
+    });
     return {
       ...saved,
       status: 'autosaved',
       source: 'pre-shutdown',
       recoveryInProcess: true,
       possibleRestartDetected: true,
-      message: `${saved.message} Emulated power-off flag written for the next restart check.`,
+      message: `${saved.message} Emulated power-off flag written through recoveryService for the next restart check.`,
     };
   }
 
-  async function readSnapshot(): Promise<V2RecoveryStateSnapshot | null> {
-    try {
-      const parsed = JSON.parse(await fs.readFile(stateFilePath, 'utf8'));
-      const snapshot = normalizeV2RecoveryStateSnapshotInput(parsed?.snapshot ?? parsed, parsed?.snapshot?.savedAtIso ?? new Date().toISOString(), 'manual-save');
-      return validateV2RecoveryStateSnapshot(snapshot).ok ? snapshot : null;
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-        return null;
-      }
-      throw error;
-    }
-  }
-
-
-  async function readBootRecord(): Promise<RecoveryBootRecord | null> {
-    try {
-      const parsed = JSON.parse(await fs.readFile(bootFilePath, 'utf8'));
-      if (parsed?.schemaVersion === 1 && typeof parsed.bootId === 'string' && typeof parsed.startedAtIso === 'string') {
-        return parsed as RecoveryBootRecord;
-      }
-      return null;
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-        return null;
-      }
-      throw error;
-    }
-  }
-
-  async function readUncleanShutdownFlag(): Promise<Record<string, unknown> | null> {
-    try {
-      const parsed = JSON.parse(await fs.readFile(uncleanShutdownFlagPath, 'utf8'));
-      return parsed && typeof parsed === 'object' ? parsed as Record<string, unknown> : null;
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-        return null;
-      }
-      throw error;
-    }
-  }
-
-  async function clearUncleanShutdownFlag(): Promise<void> {
-    try {
-      await fs.unlink(uncleanShutdownFlagPath);
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
-        throw error;
-      }
-    }
+  async function getPlaybackResumeTarget(): Promise<PlaybackResumeTarget> {
+    return recoveryService.getPlaybackResumeTarget({ mode: 'real' });
   }
 
   return {
     stateFilePath,
+    recoveryService,
     saveSnapshot,
     loadSnapshot,
     readStatus,
     checkRestart,
     emulatePowerOff,
+    getPlaybackResumeTarget,
   };
 }

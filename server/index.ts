@@ -136,6 +136,17 @@ const logger = createProjectLogger({
   onWriteError: reportLoggerWriteError,
 });
 await logger.initialize().catch(reportLoggerWriteError);
+void v2RecoveryStateService.recoveryService.recordWorkerCheckpoint({
+  mode: 'real',
+  worker: 'unknown',
+  event: 'server_startup',
+  details: { bootId: serverBootId, bootStartedAtIso: serverBootStartedAtIso },
+}).catch((error) => {
+  logger.info('V2 recovery startup checkpoint failed', { error: error instanceof Error ? error.message : String(error) }).catch(reportLoggerWriteError);
+});
+void v2RecoveryStateService.recoveryService.checkRestart({ mode: 'real', source: 'server-startup' }).catch((error) => {
+  logger.info('V2 recovery startup restart-check failed', { error: error instanceof Error ? error.message : String(error) }).catch(reportLoggerWriteError);
+});
 const dashboardRequestIdHeader = 'X-Dashboard-Request-Id';
 const schedulerRuntimeDirectory = path.join(repoRoot, 'runtime_data', 'scheduler');
 const schedulerTargetSelectionFilePath = path.join(schedulerRuntimeDirectory, 'selected-target.json');
@@ -574,6 +585,7 @@ const routes: Record<string, RouteHandler> = {
   'POST /api/runtime/recovery/state/load': runtimeRecoveryStateLoadHandler,
   'POST /api/runtime/recovery/autosave': runtimeRecoveryAutosaveHandler,
   'POST /api/runtime/recovery/restart-check': runtimeRecoveryRestartCheckHandler,
+  'GET /api/runtime/recovery/resume-target': runtimeRecoveryResumeTargetHandler,
   'POST /api/runtime/recovery/emulate-power-off': runtimeRecoveryEmulatePowerOffHandler,
   'GET /api/native-playback/status': nativePlaybackStatusHandler,
   'POST /api/native-playback/detect': nativePlaybackDetectHandler,
@@ -2325,6 +2337,14 @@ async function runtimeRecoveryRestartCheckHandler(): Promise<HandlerResult> {
   return {
     statusCode: 200,
     payload: await v2RecoveryStateService.checkRestart(),
+  };
+}
+
+// Reads the service-selected playback resume target without mutating playback state.
+async function runtimeRecoveryResumeTargetHandler(): Promise<HandlerResult> {
+  return {
+    statusCode: 200,
+    payload: await v2RecoveryStateService.getPlaybackResumeTarget(),
   };
 }
 
