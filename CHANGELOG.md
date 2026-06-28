@@ -1,3 +1,11 @@
+## 0.10.92 - 2026-06-28
+
+- Ran XACR Group 3 V2 readiness honesty UI implementation without changing live Raspberry, iCloud, cron, playback, PIR, or recovery behavior.
+- Added proof-gated blank readiness rings for `.env`, DB, and iCloud/auth in the shared V2 topbar; rings remain blank/unknown until current proofrunner/live evidence exists.
+- Added SETUP and REAL PLAYBACK pre-proof readiness checklists mapping each readiness ring to its required proof command and evidence boundary.
+- Added disabled-reason text for `09 REAL PLAYBACK` future recovery, PIR hardware, and final autonomous victory controls.
+- Added `proof:v2-readiness-honesty-ui` plus status-registry coverage so the new UI surfaces stay conservative and no V2 item is marked `done` before proof evidence.
+
 ## 0.10.91 - 2026-06-28
 
 - Ran XACR Group 2 static-contract/regression-guard implementation without changing live Raspberry, iCloud, cron, playback, PIR, or recovery behavior.
