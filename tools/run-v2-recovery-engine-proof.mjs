@@ -63,7 +63,9 @@ if (args.contract) {
   check(checks, 'service-selects-v1', 'Recovery service selects v1 by explicit engine id.', service.getActiveEngine() === 'v1');
   const stub = createRecoveryService({ repoRoot, engineId: 'v2-stub', env: {} });
   check(checks, 'service-selects-v2-stub', 'Recovery service can select v2-stub without crashing.', stub.getActiveEngine() === 'v2-stub' && stub.getEngineInfo().implemented === false);
-  check(checks, 'v1-file-engine-storage', 'V1 engine owns filesystem recovery paths.', ['runtime_data', 'recovery', 'latest_recovery_snapshot.json', 'unclean_shutdown.flag', 'restart_check_latest.json'].every((needle) => v1Text.includes(needle)));
+  check(checks, 'v1-file-engine-storage', 'V1 strategy uses filesystem recovery paths.', ['runtime_data', 'recovery', 'latest_recovery_snapshot.json', 'unclean_shutdown.flag', 'restart_check_latest.json'].every((needle) => v1Text.includes(needle)));
+  check(checks, 'canonical-state-contract-helper', 'Shared canonical snapshot helper exists and is used by v1/v2 engines.', existsSync('server/services/recovery/recoverySnapshotContract.ts') && v1Text.includes('normalizeRecoverySnapshot') && v2Text.includes('normalizeRecoverySnapshot'));
+  check(checks, 'snapshot-compatibility-by-schema', 'Recovery snapshot compatibility is schema-based, not active-engine-owned.', contractText.includes('metadata') && contractText.includes('createdByEngine') && !contractText.includes('recoveryEngine: RecoveryEngineId;\n  snapshotId'));
   check(checks, 'v2-stub-not-implemented', 'V2 stub advertises not_implemented behavior.', v2Text.includes('not_implemented'));
   check(checks, 'legacy-facade-routes-through-service', 'Existing recovery facade routes save/load/restart through recoveryService.', legacyFacade.includes('createRecoveryService') && legacyFacade.includes('recoveryService.saveState') && legacyFacade.includes('recoveryService.checkRestart'));
   check(checks, 'server-resume-route', 'Server exposes recovery resume-target route through recoveryService.', serverIndex.includes('/api/runtime/recovery/resume-target') && serverIndex.includes('getPlaybackResumeTarget'));
@@ -80,7 +82,7 @@ if (args.contract) {
     proof: 'v2_recovery_engine_contract',
     checks,
     evidenceMode: false,
-    note: 'Static contract proof for the decoupled v0.10.86 recovery service/engine architecture. It does not attempt physical power-loss proof.',
+    note: 'Static contract proof for the canonical-state v0.10.86 recovery service/strategy architecture. It does not attempt physical power-loss proof.',
   }), { write: args.write });
 }
 
@@ -111,7 +113,7 @@ const checkpoint = await service.recordWorkerCheckpoint({ mode: 'test', worker: 
 
 const recoveryDir = path.join(repoRoot, 'runtime_data', 'recovery');
 check(checks, 'active-engine-v1', 'Active recovery engine is v1.', service.getActiveEngine() === 'v1', { engineInfo: service.getEngineInfo() });
-check(checks, 'save-state-valid', 'saveState writes a valid v1 snapshot.', snapshot.validation.ok && snapshot.schemaVersion === 'recovery.snapshot.v1' && snapshot.recoveryEngine === 'v1', { snapshotId: snapshot.snapshotId });
+check(checks, 'save-state-valid', 'saveState writes a valid canonical snapshot.', snapshot.validation.ok && snapshot.schemaVersion === 'recovery.snapshot.v1' && snapshot.metadata?.createdByEngine === 'v1' && !Object.prototype.hasOwnProperty.call(snapshot, 'recoveryEngine'), { snapshotId: snapshot.snapshotId, metadata: snapshot.metadata });
 check(checks, 'latest-snapshot-loads', 'loadLatestState returns the saved snapshot.', loaded?.snapshotId === snapshot.snapshotId);
 check(checks, 'snapshot-files-exist', 'V1 snapshot and latest snapshot files exist.', existsSync(path.join(recoveryDir, 'latest_recovery_snapshot.json')) && existsSync(path.join(recoveryDir, 'snapshots')));
 check(checks, 'unclean-flag-written', 'markUncleanShutdown writes the unclean shutdown flag.', marked.status === 'passed' && marked.filePath && marked.filePath.endsWith('unclean_shutdown.flag'), { marked });
@@ -125,5 +127,5 @@ emitProof(proofResult({
   proof: 'v2_recovery_engine',
   checks,
   evidenceMode: args.evidence,
-  note: 'Runtime-safe filesystem proof for v0.10.86 recovery v1. It emulates recovery state only and intentionally does not perform physical power-loss proof.',
+  note: 'Runtime-safe filesystem proof for v0.10.86 recovery v1 strategy over canonical state. It emulates recovery state only and intentionally does not perform physical power-loss proof.',
 }), { write: args.write });

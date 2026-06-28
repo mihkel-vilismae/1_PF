@@ -12,16 +12,22 @@ export interface RecoveryEngineInfo {
   version: string;
   storage: 'filesystem' | 'stub';
   implemented: boolean;
+  strategyRole: 'canonical-state-strategy' | 'stub-strategy';
+  supportedSnapshotSchemaVersions: Array<RecoverySnapshot['schemaVersion']>;
   notes: string[];
 }
 
 export interface RecoverySnapshot {
   schemaVersion: 'recovery.snapshot.v1';
-  recoveryEngine: RecoveryEngineId;
   snapshotId: string;
   createdAt: string;
   mode: RecoveryMode;
   source: RecoverySnapshotSource;
+  metadata: {
+    createdByEngine?: RecoveryEngineId;
+    createdByAppVersion?: string;
+    [key: string]: unknown;
+  };
   playback?: {
     currentMediaId?: string;
     currentMediaPath?: string;

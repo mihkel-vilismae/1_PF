@@ -13,10 +13,13 @@ import type {
   SaveRecoveryStateInput,
   WorkerRecoveryCheckpointInput,
 } from '../recoveryContract.ts';
-
-function nowIso(): string {
-  return new Date().toISOString();
-}
+import {
+  SUPPORTED_RECOVERY_SNAPSHOT_SCHEMA_VERSIONS,
+  isRecoverySnapshot,
+  normalizeRecoveryMode,
+  normalizeRecoverySnapshot,
+  nowIso,
+} from '../recoverySnapshotContract.ts';
 
 function notImplemented(operation: string, mode: 'test' | 'real' = 'real'): RecoveryMutationResult {
   return {
@@ -26,13 +29,9 @@ function notImplemented(operation: string, mode: 'test' | 'real' = 'real'): Reco
     status: 'not_implemented',
     operation,
     createdAt: nowIso(),
-    warnings: ['v2-stub is selectable to prove decoupling, but it intentionally does not persist recovery state in v0.10.86.'],
+    warnings: ['v2-stub is selectable to prove strategy decoupling, but it intentionally does not persist recovery state in this slice.'],
     errors: [],
   };
-}
-
-function normalizeMode(value: unknown): 'test' | 'real' {
-  return value === 'test' ? 'test' : 'real';
 }
 
 export function createRecoveryV2StubEngine(_options: RecoveryServiceOptions): RecoveryEngine {
@@ -40,39 +39,33 @@ export function createRecoveryV2StubEngine(_options: RecoveryServiceOptions): Re
     getActiveEngine: () => 'v2-stub',
     getEngineInfo: (): RecoveryEngineInfo => ({
       engineId: 'v2-stub',
-      label: 'Recovery V2 Stub Engine',
+      label: 'Recovery V2 Stub Strategy',
       version: '0.10.86-stub',
       storage: 'stub',
       implemented: false,
-      notes: ['Selectable stub for future truth-replay or DB-backed recovery engines.'],
+      strategyRole: 'stub-strategy',
+      supportedSnapshotSchemaVersions: [...SUPPORTED_RECOVERY_SNAPSHOT_SCHEMA_VERSIONS],
+      notes: [
+        'Selectable stub for future recovery strategies.',
+        'Understands the canonical recovery.snapshot.v1 schema but does not persist durable recovery state.',
+      ],
     }),
     async saveState(input: SaveRecoveryStateInput = {}) {
-      const mode = normalizeMode(input.mode);
-      return {
-        schemaVersion: 'recovery.snapshot.v1',
-        recoveryEngine: 'v2-stub',
-        snapshotId: `v2-stub-${Date.now()}`,
-        createdAt: nowIso(),
-        mode,
-        source: input.source ?? 'manual',
-        validation: {
-          ok: false,
-          warnings: ['v2-stub selected; no durable state was written.'],
-          errors: ['v2-stub recovery engine is not implemented in v0.10.86.'],
-        },
-      };
+      const snapshot = normalizeRecoverySnapshot(input, { createdByEngine: 'v2-stub' });
+      snapshot.validation.warnings.push('v2-stub normalized canonical state but did not persist it durably.');
+      return snapshot;
     },
     async loadLatestState(_input: LoadRecoveryStateInput = {}) {
       return null;
     },
     async markUncleanShutdown(input: MarkUncleanShutdownInput = {}) {
-      return notImplemented('markUncleanShutdown', normalizeMode(input.mode));
+      return notImplemented('markUncleanShutdown', normalizeRecoveryMode(input.mode));
     },
     async clearUncleanShutdown(input: ClearUncleanShutdownInput = {}) {
-      return notImplemented('clearUncleanShutdown', normalizeMode(input.mode));
+      return notImplemented('clearUncleanShutdown', normalizeRecoveryMode(input.mode));
     },
     async checkRestart(input: RecoveryCheckInput = {}): Promise<RecoveryCheckResult> {
-      const mode = normalizeMode(input.mode);
+      const mode = normalizeRecoveryMode(input.mode);
       return {
         schemaVersion: 'recovery.check.v1',
         recoveryEngine: 'v2-stub',
@@ -83,22 +76,28 @@ export function createRecoveryV2StubEngine(_options: RecoveryServiceOptions): Re
         uncleanShutdownFlagPresent: false,
         snapshotFound: false,
         snapshotValid: false,
-        warnings: ['v2-stub selected; restart detection is intentionally not implemented in v0.10.86.'],
+        warnings: ['v2-stub selected; restart detection strategy is intentionally not implemented yet.'],
         errors: [],
       };
     },
     async getPlaybackResumeTarget(input: PlaybackResumeInput = {}): Promise<PlaybackResumeTarget> {
+      const mode = normalizeRecoveryMode(input.mode);
+      const canonicalSnapshot = isRecoverySnapshot(input.snapshot)
+        ? normalizeRecoverySnapshot({ snapshot: input.snapshot }, { createdByEngine: input.snapshot.metadata?.createdByEngine ?? 'v2-stub' })
+        : null;
       return {
         schemaVersion: 'recovery.playbackResumeTarget.v1',
         recoveryEngine: 'v2-stub',
-        mode: normalizeMode(input.mode),
+        mode: canonicalSnapshot?.mode ?? mode,
         decision: 'none',
-        reason: 'v2-stub recovery engine is selectable but not operational in v0.10.86.',
+        reason: canonicalSnapshot?.validation.ok
+          ? 'v2-stub understood the canonical snapshot schema but has no production resume strategy yet.'
+          : 'v2-stub recovery strategy is selectable but not operational yet.',
         confidence: 'low',
       };
     },
     async recordWorkerCheckpoint(input: WorkerRecoveryCheckpointInput) {
-      return notImplemented(`recordWorkerCheckpoint:${input.worker}:${input.event}`, normalizeMode(input.mode));
+      return notImplemented(`recordWorkerCheckpoint:${input.worker}:${input.event}`, normalizeRecoveryMode(input.mode));
     },
   };
 }

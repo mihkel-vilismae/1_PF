@@ -104,7 +104,7 @@ function toLegacySnapshot(snapshot: RecoverySnapshot | null, savedAtIso = new Da
   legacy.playback.playbackPositionSeconds = snapshot.playback?.playbackPositionSeconds ?? null;
   legacy.pipeline.activeStage = snapshot.regularWorker?.activeStage === 'none' ? 'idle' : snapshot.regularWorker?.activeStage ?? 'unknown';
   legacy.notes = [
-    `Loaded through recoveryService engine=${snapshot.recoveryEngine}.`,
+    `Loaded through recoveryService canonicalState createdBy=${snapshot.metadata?.createdByEngine ?? 'unknown'}.`,
     ...(snapshot.validation.warnings ?? []),
   ];
   return legacy;
