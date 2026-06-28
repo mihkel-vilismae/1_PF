@@ -1,3 +1,11 @@
+## 0.10.90 - 2026-06-28
+
+- Ran XACR Group 1 pre-proofrunner readiness polish slice-by-slice without changing live Raspberry/iCloud/cron/playback behavior.
+- Documented the full proofrunner tiered operator flow: `quick`, `blockers`, `platform`, `failed-last`, `minimum`, and `full`, with `changed` kept as automation-first mode.
+- Added shared launcher-mode metadata and a static handoff mode contract so generated Windows/Raspberry launchers must expose tiered modes and must not map `quick` to legacy `minimum`.
+- Added generated-handoff identity drift checks so active launcher/README surfaces must carry the current version, current HEAD, repo ZIP name, and SHA-256 context, and must reject stale v0.10.84/v0.10.86 launcher identities.
+- Expanded the launcher GUI selection proof to cover all interactive modes, legacy `all -> full`, and automation `changed` mode availability.
+
 ## 0.10.89 - 2026-06-28
 
 - Removed the tracked Windows `desktop.ini` folder metadata that was preserved only for the strict v0.10.88 no-loss merge.
