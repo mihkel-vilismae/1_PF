@@ -7,6 +7,10 @@ export type V2ImplementationStatusElement = {
   label: string;
   status: V2ImplementationStatusName;
   summary: string;
+  requiresProofRunner: boolean;
+  requiresLiveTarget: boolean;
+  claimAllowedBeforeProof: boolean;
+  proofCommand: string;
 };
 
 export type V2ImplementationStatusRegistry = {
@@ -14,6 +18,12 @@ export type V2ImplementationStatusRegistry = {
   scope: 'v2-only';
   sourceDocument: string;
   legend: Record<V2ImplementationStatusName, { label: string; color: string; meaning: string }>;
+  proofGatePolicy?: {
+    label: string;
+    defaultClaimAllowedBeforeProof: boolean;
+    meaning: string;
+    allowedPreProofClaims: string[];
+  };
   elements: V2ImplementationStatusElement[];
 };
 

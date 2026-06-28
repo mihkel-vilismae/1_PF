@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "scope": "v2-only",
   "sourceDocument": "docs/20_architecture_and_specs/openspec/V2_ImplementationStatus.md",
   "legend": {
@@ -19,480 +19,807 @@
       "meaning": "Documented requirement exists, but there is no working implementation yet."
     }
   },
+  "proofGatePolicy": {
+    "label": "Pre-proofrunner claim policy",
+    "defaultClaimAllowedBeforeProof": false,
+    "meaning": "V2 status metadata may describe wired/static surfaces before proofrunner execution, but no element may be claimed done/live-ready until its required proof evidence exists.",
+    "allowedPreProofClaims": [
+      "static-contract-present",
+      "ui-shell-visible",
+      "docs-synced",
+      "launcher-contract-present"
+    ]
+  },
   "elements": [
     {
       "id": "v2.block.01.actions",
       "label": "setup.sh / Preflight actions",
       "status": "in-progress",
-      "summary": "V2 Setup has wired Verify .env and Database controls using existing frontend actions/result surfaces. Live endpoint/environment proof remains required before readiness claims."
+      "summary": "V2 Setup has wired Verify .env and Database controls using existing frontend actions/result surfaces. Live endpoint/environment proof remains required before readiness claims.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-real-machine-readiness"
     },
     {
       "id": "v2.block.01.database-controls",
       "label": "setup.sh / 2A Database controls",
       "status": "in-progress",
-      "summary": "B4.2 reuses the existing database init action/result/log pipeline in the V2 Setup page. It exposes Check DB, Inspect DB, Delete DB, and Recreate DB through the existing browser action handlers and documented /api/init/database/* endpoints."
+      "summary": "B4.2 reuses the existing database init action/result/log pipeline in the V2 Setup page. It exposes Check DB, Inspect DB, Delete DB, and Recreate DB through the existing browser action handlers and documented /api/init/database/* endpoints.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-real-machine-readiness"
     },
     {
       "id": "v2.block.01.info",
       "label": "setup.sh / Setup scope",
       "status": "in-progress",
-      "summary": "v2 setup is preflight/orchestration only. It may check and report readiness, but it does not install full dependencies in this slice."
+      "summary": "v2 setup is preflight/orchestration only. It may check and report readiness, but it does not install full dependencies in this slice.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": false,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-real-machine-readiness"
     },
     {
       "id": "v2.block.01.verify-env",
       "label": "setup.sh / 1A Verify .env",
       "status": "in-progress",
-      "summary": "B4.1 reuses the existing verify-env action/result/log pipeline in the V2 Setup page. It calls POST /api/init/verify-env through the existing runtime-truth action and renders the shared latest backend result and local log surfaces."
+      "summary": "B4.1 reuses the existing verify-env action/result/log pipeline in the V2 Setup page. It calls POST /api/init/verify-env through the existing runtime-truth action and renders the shared latest backend result and local log surfaces.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-real-machine-readiness"
     },
     {
       "id": "v2.block.02.actions",
       "label": "authentication.sh / Authentication actions",
       "status": "in-progress",
-      "summary": "V2 Authentication has the NEW AUTH card wired to the /api/auth/new/* action family with shared action rows and sanitized result surfaces. Live auth/session proof remains required."
+      "summary": "V2 Authentication has the NEW AUTH card wired to the /api/auth/new/* action family with shared action rows and sanitized result surfaces. Live auth/session proof remains required.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:real-icloudpd-readiness"
     },
     {
       "id": "v2.block.02.info",
       "label": "authentication.sh / Local-only authentication boundary",
       "status": "in-progress",
-      "summary": "This page owns only local iCloudPD login/session flow. It must not display raw credentials, 2FA codes, cookies, session files, or secret paths without an existing redaction contract."
+      "summary": "This page owns only local iCloudPD login/session flow. It must not display raw credentials, 2FA codes, cookies, session files, or secret paths without an existing redaction contract.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:real-icloudpd-readiness"
     },
     {
       "id": "v2.block.02.new-auth",
       "label": "authentication.sh / 1A-STASH-OFF - NEW AUTH",
       "status": "in-progress",
-      "summary": "B4.3 reuses the existing NEW AUTH button states, /api/auth/new/* action IDs, shared latest-result rendering, and sanitized log/result surfaces in the V2 Authentication page. The existing secret/redaction boundary remains in force."
+      "summary": "B4.3 reuses the existing NEW AUTH button states, /api/auth/new/* action IDs, shared latest-result rendering, and sanitized log/result surfaces in the V2 Authentication page. The existing secret/redaction boundary remains in force.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:real-icloudpd-readiness"
     },
     {
       "id": "v2.block.02.status",
       "label": "authentication.sh / iCloudPD session status",
       "status": "in-progress",
-      "summary": "Session status placeholder. No session read/write action is executed from V2 in this slice."
+      "summary": "Session status placeholder. No session read/write action is executed from V2 in this slice.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:real-icloudpd-readiness"
     },
     {
       "id": "v2.block.03.01",
       "label": "startup.sh / .env / environment variables",
       "status": "in-progress",
-      "summary": "If .env does not exist, a later guarded implementation may create it from defaults/example values. Missing defaults must be a non-crashing error."
+      "summary": "If .env does not exist, a later guarded implementation may create it from defaults/example values. Missing defaults must be a non-crashing error.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-production-cron-runtime"
     },
     {
       "id": "v2.block.03.02",
       "label": "startup.sh / database",
       "status": "in-progress",
-      "summary": "Database inspection and maintenance actions. Destructive operations must stay guarded."
+      "summary": "Database inspection and maintenance actions. Destructive operations must stay guarded.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-production-cron-runtime"
     },
     {
       "id": "v2.block.03.03",
       "label": "startup.sh / crontab",
       "status": "in-progress",
-      "summary": "Crontab reads are safe to expose visually; writes must be previewed and guarded."
+      "summary": "Crontab reads are safe to expose visually; writes must be previewed and guarded.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-production-cron-runtime"
     },
     {
       "id": "v2.block.03.03.07",
       "label": "startup.sh / install custom worker",
       "status": "in-progress",
-      "summary": "Linked worker type + schedule selector row. Installation must remain previewable and guarded because it writes crontab."
+      "summary": "Linked worker type + schedule selector row. Installation must remain previewable and guarded because it writes crontab.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-production-cron-runtime"
     },
     {
       "id": "v2.block.03.rpi-scheduler-controls",
       "label": "startup.sh / 3A Scheduler controls",
       "status": "in-progress",
-      "summary": "B5.1 renders the Raspberry-focused scheduler controls in V2 Startup. The visible button labels keep the existing scheduler concepts while the buttons carry the Raspberry real-crontab target through existing scheduler backend handlers."
+      "summary": "B5.1 renders the Raspberry-focused scheduler controls in V2 Startup. The visible button labels keep the existing scheduler concepts while the buttons carry the Raspberry real-crontab target through existing scheduler backend handlers.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-production-cron-runtime"
     },
     {
       "id": "v2.block.03.rpi-stages",
       "label": "startup.sh / RPI-STAGES media pipeline stage row",
       "status": "in-progress",
-      "summary": "B5.2 adds the shared Raspberry media pipeline stage row to Startup with Download, Index, GPS parser, Geocode, and Queue cards, all intentionally Idle until real worker calls run."
+      "summary": "B5.2 adds the shared Raspberry media pipeline stage row to Startup with Download, Index, GPS parser, Geocode, and Queue cards, all intentionally Idle until real worker calls run.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-final-autonomous-bundle"
     },
     {
       "id": "v2.block.03.rpi-workers",
       "label": "startup.sh / RPI-WORKERS worker call status row",
       "status": "in-progress",
-      "summary": "B5.3 adds the shared worker call status row to Startup: Regular state worker, Playback worker, and On-off worker all render as Waiting with no observed calls yet."
+      "summary": "B5.3 adds the shared worker call status row to Startup: Regular state worker, Playback worker, and On-off worker all render as Waiting with no observed calls yet.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-real-playback-display"
     },
     {
       "id": "v2.block.03.sections",
       "label": "startup.sh / Startup sections",
       "status": "in-progress",
-      "summary": "These are grouped center-panel sections, not nested sidebar routes."
+      "summary": "These are grouped center-panel sections, not nested sidebar routes.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-production-cron-runtime"
     },
     {
       "id": "v2.block.04.01",
       "label": "workers / current status",
       "status": "in-progress",
-      "summary": "Summary placeholder for regular worker, playback worker, and screen on-off worker status."
+      "summary": "Summary placeholder for regular worker, playback worker, and screen on-off worker status.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-real-playback-display"
     },
     {
       "id": "v2.block.04.02",
       "label": "workers / regular worker",
       "status": "in-progress",
-      "summary": "Repeated stage rows. Batch size is a stage setting/display, not a navigation item. Rich statistics are v3 placeholders."
+      "summary": "Repeated stage rows. Batch size is a stage setting/display, not a navigation item. Rich statistics are v3 placeholders.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-final-autonomous-bundle"
     },
     {
       "id": "v2.block.04.03",
       "label": "workers / playback worker",
       "status": "in-progress",
-      "summary": "Current status and current image/video placeholder. Later hover/enter details may show full filename, GPS coordinates, and parsed address."
+      "summary": "Current status and current image/video placeholder. Later hover/enter details may show full filename, GPS coordinates, and parsed address.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-real-playback-display"
     },
     {
       "id": "v2.block.04.04",
       "label": "workers / screen on-off worker",
       "status": "in-progress",
-      "summary": "Toggle rows are visual-only until backend contracts exist."
+      "summary": "Toggle rows are visual-only until backend contracts exist.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-final-autonomous-bundle"
     },
     {
       "id": "v2.block.04.05",
       "label": "workers / statistics page",
       "status": "in-progress",
-      "summary": "v2 may collect runtime statistics; the rich statistics page remains v3.0."
+      "summary": "v2 may collect runtime statistics; the rich statistics page remains v3.0.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-final-autonomous-bundle"
     },
     {
       "id": "v2.block.04.rpi-stages",
       "label": "workers / RPI-STAGES media pipeline stage row",
       "status": "in-progress",
-      "summary": "B5.2 adds the same shared Raspberry media pipeline stage row to Workers so stage health is visible where worker controls will be added."
+      "summary": "B5.2 adds the same shared Raspberry media pipeline stage row to Workers so stage health is visible where worker controls will be added.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-final-autonomous-bundle"
     },
     {
       "id": "v2.block.04.rpi-workers",
       "label": "workers / RPI-WORKERS worker call status row",
       "status": "in-progress",
-      "summary": "B5.3 adds the shared worker call status row to Workers: Regular state worker, Playback worker, and On-off worker all render as Waiting with no observed calls yet."
+      "summary": "B5.3 adds the shared worker call status row to Workers: Regular state worker, Playback worker, and On-off worker all render as Waiting with no observed calls yet.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-real-playback-display"
     },
     {
       "id": "v2.block.04.worker-b3-1-download",
       "label": "workers / B3.1 Download",
       "status": "in-progress",
-      "summary": "B5.4 adds the V2 Workers Download card with REAL POST /api/runtime/download/run endpoint label, idle status badge, Run action, and local event log."
+      "summary": "B5.4 adds the V2 Workers Download card with REAL POST /api/runtime/download/run endpoint label, idle status badge, Run action, and local event log.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-final-autonomous-bundle"
     },
     {
       "id": "v2.block.04.worker-b3-2-index",
       "label": "workers / B3.2 Index",
       "status": "in-progress",
-      "summary": "B5.4 adds the V2 Workers Index card with REAL POST /api/runtime/index/run endpoint label, idle status badge, Run action, and local event log."
+      "summary": "B5.4 adds the V2 Workers Index card with REAL POST /api/runtime/index/run endpoint label, idle status badge, Run action, and local event log.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-final-autonomous-bundle"
     },
     {
       "id": "v2.block.04.worker-b3-3-gps",
       "label": "workers / B3.3 Parse GPS",
       "status": "in-progress",
-      "summary": "B5.4 adds the V2 Workers Parse GPS card with REAL POST /api/runtime/gps/run endpoint label, idle status badge, Run action, and local event log."
+      "summary": "B5.4 adds the V2 Workers Parse GPS card with REAL POST /api/runtime/gps/run endpoint label, idle status badge, Run action, and local event log.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-final-autonomous-bundle"
     },
     {
       "id": "v2.block.04.worker-b3-4-geocode",
       "label": "workers / B3.4 Geocode",
       "status": "in-progress",
-      "summary": "B5.4 adds the V2 Workers Geocode card with REAL POST /api/runtime/geocode/run endpoint label, idle status badge, Run action, and local event log. Geocoding remains the deterministic placeholder endpoint."
+      "summary": "B5.4 adds the V2 Workers Geocode card with REAL POST /api/runtime/geocode/run endpoint label, idle status badge, Run action, and local event log. Geocoding remains the deterministic placeholder endpoint.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-final-autonomous-bundle"
     },
     {
       "id": "v2.block.04.worker-b3-5-queue",
       "label": "workers / B3.5 Enqueue playback",
       "status": "in-progress",
-      "summary": "B5.4 adds the V2 Workers Enqueue playback card with REAL POST /api/runtime/queue/prepare endpoint label, idle status badge, Run action, and local event log."
+      "summary": "B5.4 adds the V2 Workers Enqueue playback card with REAL POST /api/runtime/queue/prepare endpoint label, idle status badge, Run action, and local event log.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-real-playback-display"
     },
     {
       "id": "v2.block.05.01",
       "label": "troubleshooting / manual troubleshooting actions",
       "status": "in-progress",
-      "summary": "V2 Troubleshooting has Pipeline maintenance actions for Detect issues and Clear stale locks using existing runtime action IDs. Mocked UI proof exists; live stale-lock repair proof remains required."
+      "summary": "V2 Troubleshooting has Pipeline maintenance actions for Detect issues and Clear stale locks using existing runtime action IDs. Mocked UI proof exists; live stale-lock repair proof remains required.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-target-live-readiness"
     },
     {
       "id": "v2.block.05.06",
       "label": "troubleshooting / examples (*EX)",
       "status": "in-progress",
-      "summary": "Examples are scenario/rule seeds, not executable actions. Promotion requires measurable condition, threshold, duration, handling, log output, proof/evidence output, and operator explanation."
+      "summary": "Examples are scenario/rule seeds, not executable actions. Promotion requires measurable condition, threshold, duration, handling, log output, proof/evidence output, and operator explanation.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": false,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-target-live-readiness"
     },
     {
       "id": "v2.block.05.errors",
       "label": "troubleshooting / error logging / error handling",
       "status": "in-progress",
-      "summary": "Page-specific error logs, combined/global error log, global high-priority error log, and final outer-layer catch/log handling before exit when possible."
+      "summary": "Page-specific error logs, combined/global error log, global high-priority error log, and final outer-layer catch/log handling before exit when possible.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-target-live-readiness"
     },
     {
       "id": "v2.block.05.logging",
       "label": "troubleshooting / logging / log handling",
       "status": "in-progress",
-      "summary": "Page-specific logs, global log, full verbose log, high-importance regular log, and conditional actions from measurable rules."
+      "summary": "Page-specific logs, global log, full verbose log, high-importance regular log, and conditional actions from measurable rules.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": false,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-target-live-readiness"
     },
     {
       "id": "v2.block.05.rpi-stages",
       "label": "troubleshooting / RPI-STAGES media pipeline stage row",
       "status": "in-progress",
-      "summary": "B5.2 adds the same shared Raspberry media pipeline stage row to Troubleshooting for diagnostic visibility without running any stage."
+      "summary": "B5.2 adds the same shared Raspberry media pipeline stage row to Troubleshooting for diagnostic visibility without running any stage.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-target-live-readiness"
     },
     {
       "id": "v2.block.05.rpi-workers",
       "label": "troubleshooting / RPI-WORKERS worker call status row",
       "status": "in-progress",
-      "summary": "B5.3 adds the shared worker call status row to Troubleshooting: Regular state worker, Playback worker, and On-off worker all render as Waiting with no observed calls yet."
+      "summary": "B5.3 adds the shared worker call status row to Troubleshooting: Regular state worker, Playback worker, and On-off worker all render as Waiting with no observed calls yet.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-real-playback-display"
     },
     {
       "id": "v2.block.06.01",
       "label": "recovery / snapshot metadata",
       "status": "in-progress",
-      "summary": "Shows latest snapshot time and other snapshot-level metadata later. No state read/write happens from V2 in this slice."
+      "summary": "Shows latest snapshot time and other snapshot-level metadata later. No state read/write happens from V2 in this slice.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-recovery-canonical-state-contract"
     },
     {
       "id": "v2.block.06.02",
       "label": "recovery / current backup snapshot generation policy",
       "status": "in-progress",
-      "summary": "Human-readable policy text placeholder. Changing policy may involve AI later and is not wired now."
+      "summary": "Human-readable policy text placeholder. Changing policy may involve AI later and is not wired now.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-recovery-canonical-state-contract"
     },
     {
       "id": "v2.block.06.03",
       "label": "recovery / current snapshot",
       "status": "in-progress",
-      "summary": "Human-readable structure, raw item/field list, and JSON-like values placeholder."
+      "summary": "Human-readable structure, raw item/field list, and JSON-like values placeholder.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-recovery-canonical-state-contract"
     },
     {
       "id": "v2.block.06.04",
       "label": "recovery / current backup snapshot",
       "status": "in-progress",
-      "summary": "Latest saved backup snapshot inspection placeholder before restore."
+      "summary": "Latest saved backup snapshot inspection placeholder before restore.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-recovery-canonical-state-contract"
     },
     {
       "id": "v2.block.06.07",
       "label": "recovery / currently stored backup snapshots",
       "status": "in-progress",
-      "summary": "Navigable stored-snapshot list placeholder with protocol version and compatibility status later."
+      "summary": "Navigable stored-snapshot list placeholder with protocol version and compatibility status later.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-recovery-canonical-state-contract"
     },
     {
       "id": "v2.block.06.actions",
       "label": "recovery / snapshot actions",
       "status": "in-progress",
-      "summary": "V2 Recovery now uses manual save/load state endpoints plus autosave/restart-check flow. It restores same media/queue context without secrets or exact timestamp claims; live abrupt-restart proof remains required."
+      "summary": "V2 Recovery now uses manual save/load state endpoints plus autosave/restart-check flow. It restores same media/queue context without secrets or exact timestamp claims; live abrupt-restart proof remains required.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-recovery-canonical-state-contract"
     },
     {
       "id": "v2.block.07.boundary",
       "label": "PIR / PIR implementation boundary",
       "status": "in-progress",
-      "summary": "Mouse and keyboard activity can be tested directly later. Real PIR hardware integration remains future; initial V2 behavior should use an emulator button."
+      "summary": "Mouse and keyboard activity can be tested directly later. Real PIR hardware integration remains future; initial V2 behavior should use an emulator button.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-visual-physical-evidence"
     },
     {
       "id": "v2.block.07.rpi-workers",
       "label": "PIR / RPI-WORKERS worker call status row",
       "status": "in-progress",
-      "summary": "B5.3 adds the shared worker call status row to PIR: Regular state worker, Playback worker, and On-off worker all render as Waiting with no observed calls yet."
+      "summary": "B5.3 adds the shared worker call status row to PIR: Regular state worker, Playback worker, and On-off worker all render as Waiting with no observed calls yet.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-real-playback-display"
     },
     {
       "id": "v2.block.07.shell",
       "label": "07 PIR shell blocks",
       "status": "in-progress",
-      "summary": "B1 shell/explanation blocks for the future isolated PIR page."
+      "summary": "B1 shell/explanation blocks for the future isolated PIR page.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-visual-physical-evidence"
     },
     {
       "id": "v2.block.08.boundary",
       "label": "PLAYBACK / Playback implementation boundary",
       "status": "in-progress",
-      "summary": "V2 Playback has rendering controls, browser-local drag/drop table, safe media-only backend queue-prepare bridge, and GPS/address metadata status bridge. It does not upload browser files or fabricate addresses."
+      "summary": "V2 Playback has rendering controls, browser-local drag/drop table, safe media-only backend queue-prepare bridge, and GPS/address metadata status bridge. It does not upload browser files or fabricate addresses.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-real-playback-display"
     },
     {
       "id": "v2.block.08.rpi-workers",
       "label": "PLAYBACK / RPI-WORKERS worker call status row",
       "status": "in-progress",
-      "summary": "B5.3 adds the shared worker call status row to Playback: Regular state worker, Playback worker, and On-off worker all render as Waiting with no observed calls yet."
+      "summary": "B5.3 adds the shared worker call status row to Playback: Regular state worker, Playback worker, and On-off worker all render as Waiting with no observed calls yet.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-real-playback-display"
     },
     {
       "id": "v2.block.08.shell",
       "label": "08 PLAYBACK shell blocks",
       "status": "in-progress",
-      "summary": "B1 shell/explanation blocks for the future isolated playback page."
+      "summary": "B1 shell/explanation blocks for the future isolated playback page.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-real-playback-display"
     },
     {
       "id": "v2.block.09.goal",
       "label": "REAL PLAYBACK / integrated goal",
       "status": "in-progress",
-      "summary": "B10.1 changes 09 REAL PLAYBACK from explanation-only to an integrated layout using only proven V2 pieces. It does not claim real recovery, PIR hardware, or final autonomous proof."
+      "summary": "B10.1 changes 09 REAL PLAYBACK from explanation-only to an integrated layout using only proven V2 pieces. It does not claim real recovery, PIR hardware, or final autonomous proof.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-final-autonomous-bundle"
     },
     {
       "id": "v2.block.09.sources",
       "label": "REAL PLAYBACK / Future source pages",
       "status": "in-progress",
-      "summary": "These entries document the planned composition sources. They are disabled explanation items, not functional controls."
+      "summary": "These entries document the planned composition sources. They are disabled explanation items, not functional controls.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-final-autonomous-bundle"
     },
     {
       "id": "v2.page.authentication",
       "label": "02 AUTHENTICATION",
       "status": "in-progress",
-      "summary": "02 AUTHENTICATION contains the V2 NEW AUTH card wired to new-auth action IDs only. Live auth/session evidence remains required before readiness claims."
+      "summary": "02 AUTHENTICATION contains the V2 NEW AUTH card wired to new-auth action IDs only. Live auth/session evidence remains required before readiness claims.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:real-icloudpd-readiness"
     },
     {
       "id": "v2.page.pir",
       "label": "07 PIR",
       "status": "in-progress",
-      "summary": "07 PIR contains the B7.1 visible B5 activity-test subset and PIR emulator button plus the shared RPI-WORKERS row. Real PIR hardware remains future."
+      "summary": "07 PIR contains the B7.1 visible B5 activity-test subset and PIR emulator button plus the shared RPI-WORKERS row. Real PIR hardware remains future.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-visual-physical-evidence"
     },
     {
       "id": "v2.page.playback",
       "label": "08 PLAYBACK",
       "status": "in-progress",
-      "summary": "08 PLAYBACK contains B8.1 rendering controls, B8.2 browser-local drag/drop queue table, and B8.3 safe media-only backend queue-prepare bridge plus the shared RPI-WORKERS row. Exact file upload/import remains future work."
+      "summary": "08 PLAYBACK contains B8.1 rendering controls, B8.2 browser-local drag/drop queue table, and B8.3 safe media-only backend queue-prepare bridge plus the shared RPI-WORKERS row. Exact file upload/import remains future work.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-real-playback-display"
     },
     {
       "id": "v2.page.real-playback",
       "label": "09 REAL PLAYBACK",
       "status": "in-progress",
-      "summary": "09 REAL PLAYBACK has the B10 integrated layout/projection and B12 victory proof gate. Live target-machine playback/recovery evidence remains required before customer-ready claims."
+      "summary": "09 REAL PLAYBACK has the B10 integrated layout/projection and B12 victory proof gate. Live target-machine playback/recovery evidence remains required before customer-ready claims.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-final-autonomous-bundle"
     },
     {
       "id": "v2.page.recovery",
       "label": "06 RECOVERY",
       "status": "in-progress",
-      "summary": "V2 Recovery contains B11.2 manual SAVE STATE / LOAD STATE endpoints and B11.3 autosave/restart-check flow. Live power-loss proof remains B12."
+      "summary": "V2 Recovery contains B11.2 manual SAVE STATE / LOAD STATE endpoints and B11.3 autosave/restart-check flow. Live power-loss proof remains B12.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-recovery-canonical-state-contract"
     },
     {
       "id": "v2.page.setup",
       "label": "01 SETUP",
       "status": "in-progress",
-      "summary": "01 SETUP contains Verify .env and Database controls wired to existing action contracts. Live environment/database proof remains required before readiness claims."
+      "summary": "01 SETUP contains Verify .env and Database controls wired to existing action contracts. Live environment/database proof remains required before readiness claims.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-real-machine-readiness"
     },
     {
       "id": "v2.page.startup",
       "label": "03 STARTUP",
       "status": "in-progress",
-      "summary": "V2 Startup now contains Raspberry scheduler controls, RPI-STAGES, and RPI-WORKERS visual rows. Worker execution proof remains later."
+      "summary": "V2 Startup now contains Raspberry scheduler controls, RPI-STAGES, and RPI-WORKERS visual rows. Worker execution proof remains later.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-final-autonomous-bundle"
     },
     {
       "id": "v2.page.troubleshooting",
       "label": "05 TROUBLESHOOTING",
       "status": "in-progress",
-      "summary": "V2 Troubleshooting contains shared RPI-STAGES/RPI-WORKERS rows plus B6.1 Pipeline maintenance controls for Detect issues and Clear stale locks. Live stale-lock proof remains later."
+      "summary": "V2 Troubleshooting contains shared RPI-STAGES/RPI-WORKERS rows plus B6.1 Pipeline maintenance controls for Detect issues and Clear stale locks. Live stale-lock proof remains later.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-target-live-readiness"
     },
     {
       "id": "v2.page.workers",
       "label": "04 WORKERS",
       "status": "in-progress",
-      "summary": "V2 Workers now contains shared RPI-STAGES/RPI-WORKERS rows and B3.1-B3.5 runtime worker cards. Live end-to-end proof remains future B9."
+      "summary": "V2 Workers now contains shared RPI-STAGES/RPI-WORKERS rows and B3.1-B3.5 runtime worker cards. Live end-to-end proof remains future B9.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-final-autonomous-bundle"
     },
     {
       "id": "v2.shared.event-history",
       "label": "V2 Event history panel",
       "status": "in-progress",
-      "summary": "Reuses the existing event-history renderer and copy/clear actions inside V2 pages."
+      "summary": "Reuses the existing event-history renderer and copy/clear actions inside V2 pages.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": false,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-target-live-readiness"
     },
     {
       "id": "v2.shared.page-wrapper",
       "label": "Shared V2 page wrapper",
       "status": "in-progress",
-      "summary": "Reusable V2 shell foundation that owns sidebar/main layout and shared event-history placement."
+      "summary": "Reusable V2 shell foundation that owns sidebar/main layout and shared event-history placement.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": false,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-target-live-readiness"
     },
     {
       "id": "v2.shared.status-help-metadata",
       "label": "V2 status/help metadata foundation",
       "status": "in-progress",
-      "summary": "Structured metadata backing future Explain controls, Explain values, and Implementation status overlays."
+      "summary": "Structured metadata backing future Explain controls, Explain values, and Implementation status overlays.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": false,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-target-live-readiness"
     },
     {
       "id": "v2.block.05.pipeline-maintenance",
       "label": "troubleshooting / Pipeline maintenance",
       "status": "in-progress",
-      "summary": "B6.1 adds Detect issues in pipeline and Clear stale locks using existing runtime maintenance action IDs and /api/runtime/pipeline/* endpoints. Live stale-lock proof remains later."
+      "summary": "B6.1 adds Detect issues in pipeline and Clear stale locks using existing runtime maintenance action IDs and /api/runtime/pipeline/* endpoints. Live stale-lock proof remains later.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-target-live-readiness"
     },
     {
       "id": "v2.block.06.placeholder-actions",
       "label": "recovery / Recovery placeholder buttons",
       "status": "in-progress",
-      "summary": "B11.2 wires SAVE STATE and LOAD STATE to manual recovery endpoints. EMULATE POWER OFF records a pre-shutdown snapshot without powering off the machine."
+      "summary": "B11.2 wires SAVE STATE and LOAD STATE to manual recovery endpoints. EMULATE POWER OFF records a pre-shutdown snapshot without powering off the machine.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-recovery-canonical-state-contract"
     },
     {
       "id": "v2.block.07.activity-detection",
       "label": "PIR / B5 activity detection visible subset",
       "status": "in-progress",
-      "summary": "B7.1 adds the visible B5 activity source checkboxes, Start Test, result rows, inactivity timeout, status rows, and a PIR emulator button. Real PIR hardware remains future."
+      "summary": "B7.1 adds the visible B5 activity source checkboxes, Start Test, result rows, inactivity timeout, status rows, and a PIR emulator button. Real PIR hardware remains future.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-visual-physical-evidence"
     },
     {
       "id": "v2.block.08.rendering-controls",
       "label": "PLAYBACK / B4 rendering target and mode controls",
       "status": "in-progress",
-      "summary": "B8.1 adds the isolated playback rendering target/mode subsection using the shared playbackRenderer state contract. Raspberry OS rendering remains disabled until proof exists."
+      "summary": "B8.1 adds the isolated playback rendering target/mode subsection using the shared playbackRenderer state contract. Raspberry OS rendering remains disabled until proof exists.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-real-playback-display"
     },
     {
       "id": "v2.block.08.drop-queue",
       "label": "PLAYBACK / drag/drop queue table",
       "status": "in-progress",
-      "summary": "B8.4 keeps the drag/drop queue browser-local, adds honest GPS/address metadata presence flags, blocks fake address generation, and preserves the B8.3 media-only backend queue bridge."
+      "summary": "B8.4 keeps the drag/drop queue browser-local, adds honest GPS/address metadata presence flags, blocks fake address generation, and preserves the B8.3 media-only backend queue bridge.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-real-playback-display"
     },
     {
       "id": "v2.block.09.proven-boundary",
       "label": "REAL PLAYBACK / Proven-piece boundary",
       "status": "in-progress",
-      "summary": "B10.1 documents which already-proven pieces are active on the final page and which recovery/PIR/victory-proof capabilities remain gated."
+      "summary": "B10.1 documents which already-proven pieces are active on the final page and which recovery/PIR/victory-proof capabilities remain gated.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-final-autonomous-bundle"
     },
     {
       "id": "v2.block.09.rpi-scheduler-controls",
       "label": "REAL PLAYBACK / scheduler controls",
       "status": "in-progress",
-      "summary": "B10.1 reuses the Raspberry real-crontab scheduler controls from 03 STARTUP on the final page without introducing a Windows CronEmulator real path."
+      "summary": "B10.1 reuses the Raspberry real-crontab scheduler controls from 03 STARTUP on the final page without introducing a Windows CronEmulator real path.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-final-autonomous-bundle"
     },
     {
       "id": "v2.block.09.rpi-stages",
       "label": "REAL PLAYBACK / RPI-STAGES row",
       "status": "in-progress",
-      "summary": "B10.1 reuses the shared RPI-STAGES row on 09 REAL PLAYBACK for final-page pipeline visibility."
+      "summary": "B10.1 reuses the shared RPI-STAGES row on 09 REAL PLAYBACK for final-page pipeline visibility.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-final-autonomous-bundle"
     },
     {
       "id": "v2.block.09.rpi-workers",
       "label": "REAL PLAYBACK / RPI-WORKERS row",
       "status": "in-progress",
-      "summary": "B10.1 reuses the shared RPI-WORKERS row on 09 REAL PLAYBACK for final-page worker-call visibility."
+      "summary": "B10.1 reuses the shared RPI-WORKERS row on 09 REAL PLAYBACK for final-page worker-call visibility.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-final-autonomous-bundle"
     },
     {
       "id": "v2.block.09.worker-b3-1-download",
       "label": "REAL PLAYBACK / B3 1 download",
       "status": "in-progress",
-      "summary": "B10.1 reuses the existing V2 worker stage card on 09 REAL PLAYBACK. The action ID and endpoint remain the proven B5.4 contract."
+      "summary": "B10.1 reuses the existing V2 worker stage card on 09 REAL PLAYBACK. The action ID and endpoint remain the proven B5.4 contract.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-final-autonomous-bundle"
     },
     {
       "id": "v2.block.09.worker-b3-2-index",
       "label": "REAL PLAYBACK / B3 2 index",
       "status": "in-progress",
-      "summary": "B10.1 reuses the existing V2 worker stage card on 09 REAL PLAYBACK. The action ID and endpoint remain the proven B5.4 contract."
+      "summary": "B10.1 reuses the existing V2 worker stage card on 09 REAL PLAYBACK. The action ID and endpoint remain the proven B5.4 contract.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-final-autonomous-bundle"
     },
     {
       "id": "v2.block.09.worker-b3-3-gps",
       "label": "REAL PLAYBACK / B3 3 gps",
       "status": "in-progress",
-      "summary": "B10.1 reuses the existing V2 worker stage card on 09 REAL PLAYBACK. The action ID and endpoint remain the proven B5.4 contract."
+      "summary": "B10.1 reuses the existing V2 worker stage card on 09 REAL PLAYBACK. The action ID and endpoint remain the proven B5.4 contract.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-final-autonomous-bundle"
     },
     {
       "id": "v2.block.09.worker-b3-4-geocode",
       "label": "REAL PLAYBACK / B3 4 geocode",
       "status": "in-progress",
-      "summary": "B10.1 reuses the existing V2 worker stage card on 09 REAL PLAYBACK. The action ID and endpoint remain the proven B5.4 contract."
+      "summary": "B10.1 reuses the existing V2 worker stage card on 09 REAL PLAYBACK. The action ID and endpoint remain the proven B5.4 contract.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-final-autonomous-bundle"
     },
     {
       "id": "v2.block.09.worker-b3-5-queue",
       "label": "REAL PLAYBACK / B3 5 queue",
       "status": "in-progress",
-      "summary": "B10.1 reuses the existing V2 worker stage card on 09 REAL PLAYBACK. The action ID and endpoint remain the proven B5.4 contract."
+      "summary": "B10.1 reuses the existing V2 worker stage card on 09 REAL PLAYBACK. The action ID and endpoint remain the proven B5.4 contract.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-final-autonomous-bundle"
     },
     {
       "id": "v2.block.09.rendering-controls",
       "label": "REAL PLAYBACK / rendering controls",
       "status": "in-progress",
-      "summary": "B10.1 reuses the 08 PLAYBACK rendering target/mode controls on 09 REAL PLAYBACK. Raspberry OS rendering remains disabled until hardware proof exists."
+      "summary": "B10.1 reuses the 08 PLAYBACK rendering target/mode controls on 09 REAL PLAYBACK. Raspberry OS rendering remains disabled until hardware proof exists.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-final-autonomous-bundle"
     },
     {
       "id": "v2.block.09.drop-queue",
       "label": "REAL PLAYBACK / queue bridge",
       "status": "in-progress",
-      "summary": "B10.1 reuses the 08 PLAYBACK drag/drop table, metadata bridge, non-media blocking, and safe media-only queue-prepare bridge."
+      "summary": "B10.1 reuses the 08 PLAYBACK drag/drop table, metadata bridge, non-media blocking, and safe media-only queue-prepare bridge.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-final-autonomous-bundle"
     },
     {
       "id": "v2.block.09.gated-future-controls",
       "label": "REAL PLAYBACK / gated future controls",
       "status": "not-implemented",
-      "summary": "B10.1 lists recovery, PIR hardware, and final victory proof as disabled future gates rather than active controls."
+      "summary": "B10.1 lists recovery, PIR hardware, and final victory proof as disabled future gates rather than active controls.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-final-autonomous-bundle"
     },
     {
       "id": "v2.block.09.flow-status-projection",
       "label": "REAL PLAYBACK / action flow status projection",
       "status": "in-progress",
-      "summary": "B10.2 adds a read-only final-page projection of scheduler, pipeline, queue, metadata, rendering, and recovery gate state. It does not start workers or claim recovery proof."
+      "summary": "B10.2 adds a read-only final-page projection of scheduler, pipeline, queue, metadata, rendering, and recovery gate state. It does not start workers or claim recovery proof.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-final-autonomous-bundle"
     },
     {
       "id": "v2.block.06.recovery-state-schema",
       "label": "recovery / lightweight recovery state schema",
       "status": "in-progress",
-      "summary": "B11.1-B11.3 define, persist, autosave, and restart-check the lightweight recovery snapshot contract: same media/queue context, corrupt-download exclusion, no secrets, and no exact timestamp requirement."
+      "summary": "B11.1-B11.3 define, persist, autosave, and restart-check the lightweight recovery snapshot contract: same media/queue context, corrupt-download exclusion, no secrets, and no exact timestamp requirement.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-recovery-canonical-state-contract"
     }
   ]
 }

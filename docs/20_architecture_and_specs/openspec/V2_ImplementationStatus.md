@@ -32,6 +32,19 @@ The JSON file is the frontend-readable status source; this document is the human
 
 Do not show a green/done state in the UI unless the corresponding row here is `tested` or `proven` with evidence. Initial colors are green = done/proven, yellow = in progress, and red = not implemented.
 
+## Proof-gate metadata rule
+
+`dashboard/data/v2ImplementationStatus.json` schema version 2 adds explicit proof-gate metadata to every status element:
+
+| Field | Required meaning |
+| --- | --- |
+| `requiresProofRunner` | `true` when a `done`/ready claim must be backed by the repo proof queue or a focused proof command. |
+| `requiresLiveTarget` | `true` when the claim depends on Raspberry/iCloud/cron/playback/PIR/recovery/runtime evidence rather than only static UI/doc contracts. |
+| `claimAllowedBeforeProof` | Must remain `false` for current V2 items. Static visibility may be described, but green/live-ready claims are blocked until evidence exists. |
+| `proofCommand` | Names the package script that should produce or gate the required evidence. The command must exist in `package.json`. |
+
+This metadata is a static contract, not a runtime success claim. Adding these fields does not mark any item complete, does not turn any ring green, and does not replace proofrunner execution.
+
 ## Current baseline summary
 
 | Area | Current status | Notes |
