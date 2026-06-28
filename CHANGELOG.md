@@ -1,3 +1,11 @@
+## 0.10.91 - 2026-06-28
+
+- Ran XACR Group 2 static-contract/regression-guard implementation without changing live Raspberry, iCloud, cron, playback, PIR, or recovery behavior.
+- Upgraded `dashboard/data/v2ImplementationStatus.json` to schema version 2 with proof-gate metadata: `requiresProofRunner`, `requiresLiveTarget`, `claimAllowedBeforeProof`, and `proofCommand`.
+- Added `proof:v2-implementation-proof-gate-metadata` so every V2 status item must name an existing proof command and must keep pre-proof ready/done claims blocked.
+- Added a generated-artifact drift scanner and `proof:generated-artifact-drift` to reject stale generated proofrunner identities, missing SHA-256 context, manifest noise, and launcher/README repo-ZIP name drift.
+- Documented the generated artifact drift contract and V2 proof-gate metadata rule as static pre-proofrunner guards only.
+
 ## 0.10.90 - 2026-06-28
 
 - Ran XACR Group 1 pre-proofrunner readiness polish slice-by-slice without changing live Raspberry/iCloud/cron/playback behavior.
