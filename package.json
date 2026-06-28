@@ -76,6 +76,7 @@
     "proof:prooflauncher-timing-history": "node tools/run-prooflauncher-timing-history-proof.mjs",
     "proof:proofrunner-handoff-artifact-export-contract": "node tools/run-proofrunner-handoff-artifact-export-contract-proof.mjs",
     "proof:proofrunner-handoff-runtime-contract": "node tools/run-proofrunner-handoff-runtime-contract-proof.mjs",
+    "proof:proofrunner-handoff-mode-contract": "node tools/run-proofrunner-handoff-mode-contract-proof.mjs",
     "proof:proofrunner-launcher-progress-contract": "node tools/run-proofrunner-launcher-progress-contract-proof.mjs",
     "proof:proofrunner-packaging-identity": "node tools/run-proofrunner-packaging-identity-proof.mjs",
     "proof:proofrunner-platform-filter-contract": "node tools/run-proofrunner-platform-filter-contract-proof.mjs",

@@ -66,6 +66,7 @@ export const QUICK_PROOF_RUNNER_PROOFS = Object.freeze([
   'proof:docs-reconciliation-audit',
   'proof:proof-runner-queue',
   'proof:proofrunner-handoff-artifact-export-contract',
+  'proof:proofrunner-handoff-mode-contract',
   'proof:proofrunner-handoff-runtime-contract',
   'proof:proofrunner-launcher-progress-contract',
   'proof:proofrunner-packaging-identity',
