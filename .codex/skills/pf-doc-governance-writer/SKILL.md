@@ -53,6 +53,15 @@ Use the repository's canonical placement rules:
 
 Do not add new canonical content to `docs/categorized/*`, root compatibility pointers, old task paths, or other legacy navigation locations unless the user explicitly asks for pointer-only handling.
 
+## Scaffold-Fill Preflight
+
+When the task asks to fill or continue a named scaffold, template, inventory, or handoff file, verify that exact path in the live repository before writing content.
+
+- If the scaffold exists, read it first and preserve its intended structure unless the user explicitly authorizes restructuring.
+- If the scaffold is missing but the request explicitly allows creating it, create it at the requested canonical path and record that live-baseline discrepancy in the document or handoff.
+- If the scaffold is missing and creation is not clearly authorized, stop before inventing the file and report the missing path plus the closest existing candidate paths.
+- Do not treat prompt text, remembered baseline notes, or an older ZIP name as proof that the scaffold exists in the active checkout.
+
 ## Truth Labels
 
 For substantive doc content, separate:
