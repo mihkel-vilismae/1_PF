@@ -163,3 +163,51 @@ export function analyzeProofrunnerModeNormalization() {
   }));
   return { status: checks.every((check) => check.passed) ? 'PASSED' : 'FAILED', checks };
 }
+
+
+export function analyzeGeneratedProofrunnerIdentitySurface({
+  texts = [],
+  expectedVersion,
+  expectedHead,
+  staleVersions = ['0.10.84', '0.10.86'],
+} = {}) {
+  const combined = (Array.isArray(texts) ? texts : [texts]).join('\n');
+  const expectedVersionToken = String(expectedVersion ?? '').trim();
+  const expectedHeadToken = String(expectedHead ?? '').trim();
+  const staleHits = staleVersions
+    .map((version) => String(version).trim())
+    .filter(Boolean)
+    .filter((version) => version !== expectedVersionToken && combined.includes(version));
+  const checks = [
+    {
+      name: 'contains_expected_version_marker',
+      passed: Boolean(expectedVersionToken) && combined.includes(expectedVersionToken),
+      detail: { expectedVersion: expectedVersionToken },
+    },
+    {
+      name: 'contains_expected_head_marker',
+      passed: Boolean(expectedHeadToken) && combined.includes(expectedHeadToken),
+      detail: { expectedHead: expectedHeadToken },
+    },
+    {
+      name: 'rejects_known_stale_launcher_versions',
+      passed: staleHits.length === 0,
+      detail: { staleVersions, staleHits },
+    },
+    {
+      name: 'identity_text_mentions_repo_zip_sha',
+      passed: /sha-?256/i.test(combined),
+      detail: 'Generated handoff identity text should include repo ZIP SHA-256 verification context.',
+    },
+  ];
+  return { status: checks.every((check) => check.passed) ? 'PASSED' : 'FAILED', checks };
+}
+
+export function buildAcceptedGeneratedHandoffIdentityText({ version, head, repoZipName = 'PF_login_full_git.zip', sha256 = 'abc123' } = {}) {
+  return `# PF_login v${version} — 2proofrunner 1repo handoff
+Baseline: v${version} / ${head}
+Repo ZIP: ${repoZipName}
+Repo ZIP SHA-256: ${sha256}
+Generated launchers must verify VERSION/package/package-lock/HEAD before proof discovery.`;
+}
+

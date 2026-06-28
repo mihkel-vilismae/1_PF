@@ -7,6 +7,8 @@ import {
   buildAcceptedBashModeSelectionSnippet,
   buildAcceptedPowerShellModeSelectionSnippet,
   buildProofrunnerModeReadmeSection,
+  analyzeGeneratedProofrunnerIdentitySurface,
+  buildAcceptedGeneratedHandoffIdentityText,
 } from './proofrunner-handoff-mode-contract-lib.mjs';
 
 async function metadata() {
@@ -21,11 +23,17 @@ const surface = analyzeHandoffModeSurfaceText({
   powershellText: buildAcceptedPowerShellModeSelectionSnippet(),
 });
 const normalization = analyzeProofrunnerModeNormalization();
+const meta = await metadata();
+const identity = analyzeGeneratedProofrunnerIdentitySurface({
+  texts: [buildAcceptedGeneratedHandoffIdentityText({ version: meta.version, head: meta.gitCommit, sha256: 'contract-placeholder-sha256' })],
+  expectedVersion: meta.version,
+  expectedHead: meta.gitCommit,
+});
 const checks = [
   { name: 'handoff_mode_surface', passed: surface.status === 'PASSED', detail: surface.checks },
   { name: 'launcher_mode_normalization', passed: normalization.status === 'PASSED', detail: normalization.checks },
+  { name: 'generated_handoff_identity_surface', passed: identity.status === 'PASSED', detail: identity.checks },
 ];
-const meta = await metadata();
 const envelope = createProofEnvelope({
   proofKind: 'proofrunner_handoff_mode_contract',
   baselineVersion: meta.version,

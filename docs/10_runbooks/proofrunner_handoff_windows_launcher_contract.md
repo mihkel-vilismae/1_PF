@@ -78,3 +78,15 @@ $WorkDir = Join-Path $WorkRoot "run_${RunId}_win"
 ## Bash heredoc Node queue output escaping
 
 Generated Raspberry/Linux launchers must avoid `join('\\n')` inside the embedded Node queue-discovery heredoc. Use `String.fromCharCode(10)` instead so Python or other launcher-generation code cannot turn `\n` into a real newline inside a JavaScript string literal.
+
+
+## Stale generated identity guard
+
+Every generated proofrunner handoff must carry the current repo identity in both launchers and in `README_PROOFRUNNER.md`:
+
+- current `VERSION` value;
+- current short Git HEAD;
+- repo ZIP filename;
+- repo ZIP SHA-256.
+
+Generated handoffs must fail validation if stale launcher identities such as `0.10.84` or `0.10.86` appear in the active generated launcher text. Historical changelog references may remain in normal docs, but not in the generated handoff surface that the operator runs.
