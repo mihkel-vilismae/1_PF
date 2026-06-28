@@ -45,11 +45,26 @@ Do not show a green/done state in the UI unless the corresponding row here is `t
 
 This metadata is a static contract, not a runtime success claim. Adding these fields does not mark any item complete, does not turn any ring green, and does not replace proofrunner execution.
 
+
+## Group 3 readiness honesty UI rule
+
+The V2 topbar now shows three global readiness rings for `.env`, DB, and iCloud/auth. These rings are intentionally blank/unknown by default. They must not become green from static UI rendering, local prose, or metadata alone.
+
+| Ring | Required proof command | Pre-proof UI state | Ready claim allowed before proof? |
+| --- | --- | --- | --- |
+| `.env` | `proof:v2-real-machine-readiness` | blank / not proven | no |
+| DB | `proof:v2-real-machine-readiness` | blank / not proven | no |
+| Auth | `proof:real-icloudpd-readiness` | blank / not proven | no |
+
+`01 SETUP` and `09 REAL PLAYBACK` include a pre-proof readiness checklist that maps these rings to the proof command and evidence requirement. The checklist is informational. It does not verify the live target, does not mutate `.env`, DB, auth, cron, playback, or recovery state, and does not replace proofrunner execution.
+
+`09 REAL PLAYBACK` gated future controls must show a disabled reason for recovery, PIR hardware, and final autonomous proof. Disabled reason text is part of the honesty contract: it explains why a visible final-page item is not an active control yet.
+
 ## Current baseline summary
 
 | Area | Current status | Notes |
 | --- | --- | --- |
-| V2 baseline | `wired/tested partial` | v0.10.64 has the nine-page V2 flow, shared Event history, B3 status/help overlay, B4/B5/B6/B7/B8 controls, B10 integrated `09 REAL PLAYBACK` layout/projection, B11 recovery endpoints/autosave/restart-check, and a B12 proof gate. Live target-machine proof remains required. |
+| V2 baseline | `wired/tested partial` | v0.10.92 has the nine-page V2 flow, shared Event history, B3 status/help overlay, B4/B5/B6/B7/B8 controls, B10 integrated `09 REAL PLAYBACK` layout/projection, B11 recovery endpoints/autosave/restart-check, a B12 proof gate, proof-gated implementation metadata, and blank readiness-honesty rings/checklists. Live target-machine proof remains required. |
 | Goals doc | `documented` | `docs/20_architecture_and_specs/v2_goals/goals.md` defines victory conditions. |
 | New docs package | `planned/documented` | This document and companion OpenSpec files define next implementation direction. |
 | Runtime implementation | `partially reused/wired` | V2 controls are placed against existing frontend action contracts plus B11 recovery endpoints. Some proofs are mocked or focused; Raspberry/live auth/live playback/live abrupt-restart evidence remains outside this docs slice. |
@@ -74,7 +89,7 @@ This metadata is a static contract, not a runtime success claim. Adding these fi
 
 | Page | Target role | Current intended state | Evidence needed before ready |
 | --- | --- | --- | --- |
-| `01 SETUP` | env/database readiness | `1A Verify .env` and `2A Database controls` reused/wired in V2 | Focused V2 placement/action tests exist; live environment/database proof still needed |
+| `01 SETUP` | env/database readiness | `1A Verify .env`, `2A Database controls`, and the blank pre-proof readiness checklist are visible in V2 | Focused V2 placement/action tests exist; live environment/database proof still needed |
 | `02 AUTHENTICATION` | NEW AUTH session readiness | `1A-STASH-OFF - NEW AUTH` reused/wired in V2 | Focused V2 placement/action tests exist; live auth/session proof still needed |
 | `03 STARTUP` | Raspberry scheduler/startup | Raspberry scheduler controls plus RPI-STAGES/RPI-WORKERS are placed in V2 | Raspberry target crontab proof still needed |
 | `04 WORKERS` | worker stage controls | B3.1-B3.5 worker cards plus shared status rows are placed in V2 | Live pipeline worker proof still needed |
@@ -82,7 +97,7 @@ This metadata is a static contract, not a runtime success claim. Adding these fi
 | `06 RECOVERY` | recovery state and restart flow | Manual save/load, autosave, restart-check, resume-target, canonical state, and strategy selection are wired through `recoveryService`; v1/default and v2-stub architecture proofs pass locally | Raspberry physical abrupt-stop/power-loss evidence still needed |
 | `07 PIR` | activity/screen test | `B7.1` visible B5 subset and PIR emulator placed | route/render test now; deeper browser activity and hardware proof later |
 | `08 PLAYBACK` | queue/rendering test | `B8.1` rendering target/mode subsection, `B8.2` browser-local drag/drop queue table, `B8.3` media-only backend queue-prepare bridge, and `B8.4` GPS/address metadata bridge placed | render/queue tests now; address overlay proof later |
-| `09 REAL PLAYBACK` | final endpoint | Integrated layout/projection plus final autonomous bundle recovery-layer reporting for engine architecture, canonical state, cross-engine strategy, and deferred physical proof | Raspberry target autonomous/physical recovery evidence still needed |
+| `09 REAL PLAYBACK` | final endpoint | Integrated layout/projection, blank pre-proof readiness checklist, disabled reasons for future gates, and final autonomous bundle recovery-layer reporting for engine architecture, canonical state, cross-engine strategy, and deferred physical proof | Raspberry target autonomous/physical recovery evidence still needed |
 
 ## Shared component tracker
 

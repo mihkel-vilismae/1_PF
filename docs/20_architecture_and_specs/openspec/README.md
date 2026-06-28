@@ -56,7 +56,7 @@ Current OpenSpec entries:
 
 - [V2 Operator Pages OpenSpec](v2_operator_pages_openspec.md) — full V2 page/component/reuse/proof contract for pages `01` through `09`, including implemented Event history/status overlay, Setup/Auth/Startup/Workers/Troubleshooting/Recovery/PIR/Playback placements, `09 REAL PLAYBACK` composition, and live-proof boundaries.
 
-- [V2 Implementation Status](V2_ImplementationStatus.md) — element-by-element status tracker for the V2 implementation and the sync target for the current implementation-status UI overlay.
+- [V2 Implementation Status](V2_ImplementationStatus.md) — element-by-element status tracker for the V2 implementation and the sync target for the current implementation-status UI overlay, including proof-gated readiness rings/checklists and disabled-reason honesty rules.
 
 - [V2 Recovery State Schema](V2_RecoveryStateSchema.md) — canonical project-owned `recovery.snapshot.v1` state schema, endpoint behavior, proof commands, and non-goals.
 
