@@ -62,6 +62,16 @@
       "proofCommand": "proof:v2-real-machine-readiness"
     },
     {
+      "id": "v2.block.01.readiness-checklist",
+      "label": "setup.sh / pre-proof readiness checklist",
+      "status": "in-progress",
+      "summary": "Group 3 adds a SETUP checklist mapping the blank .env, DB, and auth readiness rings to their required proof commands. It is a UI honesty surface only and does not mark any gate complete.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-real-machine-readiness"
+    },
+    {
       "id": "v2.block.01.verify-env",
       "label": "setup.sh / 1A Verify .env",
       "status": "in-progress",
@@ -146,6 +156,16 @@
       "label": "startup.sh / install custom worker",
       "status": "in-progress",
       "summary": "Linked worker type + schedule selector row. Installation must remain previewable and guarded because it writes crontab.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-production-cron-runtime"
+    },
+    {
+      "id": "v2.block.03.crontab-controls",
+      "label": "startup.sh / crontab management",
+      "status": "in-progress",
+      "summary": "Startup renders the safe crontab read/write card through existing backend action IDs. Real production cron success still requires Raspberry target proof evidence.",
       "requiresProofRunner": true,
       "requiresLiveTarget": true,
       "claimAllowedBeforeProof": false,
@@ -792,10 +812,30 @@
       "proofCommand": "proof:v2-final-autonomous-bundle"
     },
     {
+      "id": "v2.block.09.crontab-controls",
+      "label": "REAL PLAYBACK / crontab management",
+      "status": "in-progress",
+      "summary": "09 REAL PLAYBACK reuses the safe crontab read/write card for the final page while keeping real autonomous scheduling proof-gated.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-final-autonomous-bundle"
+    },
+    {
       "id": "v2.block.09.gated-future-controls",
       "label": "REAL PLAYBACK / gated future controls",
       "status": "not-implemented",
       "summary": "B10.1 lists recovery, PIR hardware, and final victory proof as disabled future gates rather than active controls.",
+      "requiresProofRunner": true,
+      "requiresLiveTarget": true,
+      "claimAllowedBeforeProof": false,
+      "proofCommand": "proof:v2-final-autonomous-bundle"
+    },
+    {
+      "id": "v2.block.09.readiness-checklist",
+      "label": "REAL PLAYBACK / pre-proof readiness checklist",
+      "status": "in-progress",
+      "summary": "Group 3 adds the same proof-gated checklist to 09 REAL PLAYBACK so final-page readiness stays visibly blocked until .env, DB, and auth evidence exists.",
       "requiresProofRunner": true,
       "requiresLiveTarget": true,
       "claimAllowedBeforeProof": false,

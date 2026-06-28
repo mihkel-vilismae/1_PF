@@ -12,7 +12,7 @@ import { getV2BlockStatusId, getV2ImplementationStatusElement } from '../data/v2
 import { renderLogEntries, renderResultSurface, renderSourceBadge, statusBadge, type HistoryEntry } from '../services/renderers.ts';
 import { escapeHtml } from '../services/renderers/sharedRendererUtils.ts';
 import { renderV2OperatorPageWrapper } from './v2OperatorPageWrapper.ts';
-import { getCurrentMode, type V2RuntimeMode } from '../services/v2ReadinessService.ts';
+import { getCurrentMode, getV2ReadinessChecklist, type V2RuntimeMode } from '../services/v2ReadinessService.ts';
 import { NEW_AUTH_BUTTONS, renderNewAuthActionRow } from './newAuthActionRows.ts';
 import { SCHEDULER_EMULATOR_BUTTONS, renderSchedulerActionButton } from './schedulerActionRows.ts';
 import { SCHEDULER_TARGETS } from '../../shared/schedulerPlatformCapabilities.ts';
@@ -124,6 +124,8 @@ function renderV2CenterPanelBlock(block: V2OperatorCenterPanelBlock, runtimeStat
       return renderPlaybackDropQueueBlock(block, v2PlaybackQueueItems);
     case 'realPlaybackProjection':
       return renderRealPlaybackProjectionBlock(block, runtimeState, v2PlaybackQueueItems);
+    case 'readinessChecklist':
+      return renderReadinessChecklistBlock(block);
     case 'sectionGroup':
       return renderSectionGroupBlock(block);
     case 'toggleGroup':
@@ -632,6 +634,32 @@ function getV2PlaybackRenderingReadyMessage(mode: PlaybackRenderingMode): string
   return 'Playback can continue without rendering.';
 }
 
+function renderReadinessChecklistBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'readinessChecklist' }>): string {
+  const checklist = getV2ReadinessChecklist();
+  return `
+    <article class="card v2-block v2-block--readinessChecklist" data-v2-readiness-checklist data-v2-block-type="readinessChecklist" data-v2-block-id="${escapeHtml(block.id)}" ${renderV2StatusAttributes(block.id)}>
+      ${renderBlockHeader(block.title, getV2BlockStatusId(block.id), block.status, block.risk)}
+      ${block.body ? `<p class="card__copy">${escapeHtml(block.body)}</p>` : ''}
+      <div class="v2-readiness-checklist" role="list">
+        ${checklist.map((gate) => `
+          <div
+            class="v2-readiness-checklist__row"
+            role="listitem"
+            data-v2-readiness-checklist-gate="${escapeHtml(gate.key)}"
+            data-v2-readiness-proof-command="${escapeHtml(gate.proofCommand)}"
+            data-v2-readiness-status="${escapeHtml(gate.status)}"
+            data-v2-readiness-claim-allowed-before-proof="${String(gate.claimAllowedBeforeProof)}"
+          >
+            <span><strong>${escapeHtml(gate.title)}</strong><small>${escapeHtml(gate.reason)}</small></span>
+            <span><strong>${escapeHtml(gate.proofLabel)}</strong><small>${escapeHtml(gate.proofCommand)}</small></span>
+            <span><strong>Required evidence</strong><small>${escapeHtml(gate.proofRequirement)}</small></span>
+          </div>
+        `).join('')}
+      </div>
+    </article>
+  `;
+}
+
 
 
 function renderRealPlaybackProjectionBlock(block: Extract<V2OperatorCenterPanelBlock, { type: 'realPlaybackProjection' }>, runtimeState: Record<string, any>, queueItems: readonly V2PlaybackQueueItem[]): string {
@@ -892,7 +920,7 @@ function renderActionItem(item: V2OperatorActionItem, parentType: 'actionList' |
   return `
     <${tag} class="v2-action-row" role="listitem" data-v2-child-item="${escapeHtml(item.id)}" data-v2-interaction="${escapeHtml(item.interaction ?? 'visualOnly')}" data-v2-risk="${escapeHtml(item.risk ?? 'safe')}">
       <span class="v2-action-row__id">${escapeHtml(item.id)}</span>
-      <span class="v2-action-row__body"><strong>${escapeHtml(item.label)}</strong>${item.description ? `<small>${escapeHtml(item.description)}</small>` : ''}</span>
+      <span class="v2-action-row__body"><strong>${escapeHtml(item.label)}</strong>${item.description ? `<small>${escapeHtml(item.description)}</small>` : ''}${item.disabledReason ? `<small class="v2-disabled-reason" data-v2-disabled-reason="${escapeHtml(item.disabledReason)}">${escapeHtml(item.disabledReason)}</small>` : ''}</span>
       <span class="pill">${escapeHtml(item.status ?? 'visual-only')}</span>
     </${tag}>
   `;
@@ -902,7 +930,7 @@ function renderSectionItem(item: V2OperatorSectionItem): string {
   return `
     <div class="v2-action-row" role="listitem" data-v2-child-item="${escapeHtml(item.id)}" data-v2-interaction="${escapeHtml(('interaction' in item ? item.interaction : undefined) ?? 'visualOnly')}" data-v2-risk="${escapeHtml(('risk' in item ? item.risk : undefined) ?? 'safe')}">
       <span class="v2-action-row__id">${escapeHtml(item.id)}</span>
-      <span class="v2-action-row__body"><strong>${escapeHtml(item.label)}</strong>${item.description ? `<small>${escapeHtml(item.description)}</small>` : ''}</span>
+      <span class="v2-action-row__body"><strong>${escapeHtml(item.label)}</strong>${item.description ? `<small>${escapeHtml(item.description)}</small>` : ''}${item.disabledReason ? `<small class="v2-disabled-reason" data-v2-disabled-reason="${escapeHtml(item.disabledReason)}">${escapeHtml(item.disabledReason)}</small>` : ''}</span>
       <span class="pill">${escapeHtml(item.status ?? 'visual-only')}</span>
     </div>
   `;

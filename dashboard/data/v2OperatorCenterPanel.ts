@@ -1,4 +1,5 @@
 import { type V2OperatorSidebarRoute } from './v2OperatorSidebar.ts';
+import { getV2ReadinessGateDefinitions } from '../services/v2ReadinessService.ts';
 
 export type V2OperatorBlockType =
   | 'infoPanel'
@@ -21,7 +22,8 @@ export type V2OperatorBlockType =
   | 'pirActivityTest'
   | 'playbackRenderingControls'
   | 'playbackDropQueue'
-  | 'realPlaybackProjection';
+  | 'realPlaybackProjection'
+  | 'readinessChecklist';
 
 export type V2OperatorRisk = 'safe' | 'guarded' | 'destructive' | 'future' | 'localSecretSensitive';
 
@@ -32,6 +34,7 @@ export type V2OperatorActionItem = {
   label: string;
   status?: string;
   description?: string;
+  disabledReason?: string;
   risk?: V2OperatorRisk;
   interaction?: 'visualOnly' | 'guardedAction' | 'disabledPlaceholder';
 };
@@ -52,6 +55,7 @@ export type V2OperatorToggleItem = {
   label: string;
   status?: string;
   description?: string;
+  disabledReason?: string;
 };
 
 export type V2OperatorStageItem = {
@@ -185,6 +189,14 @@ export type V2OperatorCenterPanelBlock =
       risk?: V2OperatorRisk;
     }
   | {
+      type: 'readinessChecklist';
+      id: string;
+      title: string;
+      body?: string;
+      status?: string;
+      risk?: V2OperatorRisk;
+    }
+  | {
       type: 'sectionGroup';
       id: string;
       title: string;
@@ -273,6 +285,18 @@ function buildRpiWorkersRow(id: string, pageLabel: string, truthMode: 'current' 
   };
 }
 
+function buildReadinessChecklistBlock(id: string, pageLabel: string): V2OperatorCenterPanelBlock {
+  const gateLabels = getV2ReadinessGateDefinitions().map((gate) => `${gate.ringLabel} → ${gate.proofCommand}`).join('; ');
+  return {
+    type: 'readinessChecklist',
+    id,
+    title: `${pageLabel} pre-proof readiness checklist`,
+    body: `Blank readiness rings stay blank until current proofrunner/live evidence exists. Required gates: ${gateLabels}.`,
+    status: 'proof-gated blank state',
+    risk: 'guarded',
+  };
+}
+
 const V2_WORKER_STAGE_CARDS = Object.freeze([
   {
     type: 'backendActionCard',
@@ -339,6 +363,7 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
     summary: 'Small v2 preflight/orchestration page only. Full dependency installation stays a v3 milestone.',
     blocks: [
       // removed Setup scope because it was marked and is no longer shown
+      buildReadinessChecklistBlock('01.readiness-checklist', 'SETUP'),
       {
         type: 'backendActionCard',
         id: '01.verify-env',
@@ -652,6 +677,7 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
           { label: 'Backend path', value: 'Uses existing action IDs/endpoints only; no new backend route is introduced by B10.1' },
         ],
       },
+      buildReadinessChecklistBlock('09.readiness-checklist', 'REAL PLAYBACK'),
       {
         type: 'realPlaybackProjection',
         id: '09.flow-status-projection',
@@ -714,9 +740,30 @@ export const V2_OPERATOR_CENTER_PANEL_PAGES: Record<V2OperatorSidebarRoute, V2Op
         title: 'Gated future controls',
         body: 'These final-page capabilities are intentionally disabled until their own schemas/proofs exist. They are not active controls in B10.1.',
         items: [
-          { id: '09.future-recovery', label: '06 RECOVERY — real save/load/autosave restart recovery', status: 'blocked until B11', risk: 'future', interaction: 'disabledPlaceholder' },
-          { id: '09.future-pir-hardware', label: '07 PIR — real hardware sensor proof', status: 'hardware proof later', risk: 'future', interaction: 'disabledPlaceholder' },
-          { id: '09.future-victory-proof', label: 'B12 — autonomous playback + recovery victory proof', status: 'final gate later', risk: 'future', interaction: 'disabledPlaceholder' },
+          {
+            id: '09.future-recovery',
+            label: '06 RECOVERY — real save/load/autosave restart recovery',
+            status: 'blocked until B11',
+            risk: 'future',
+            interaction: 'disabledPlaceholder',
+            disabledReason: 'Disabled until recovery state, restart-check, and physical recovery evidence are current for this target.',
+          },
+          {
+            id: '09.future-pir-hardware',
+            label: '07 PIR — real hardware sensor proof',
+            status: 'hardware proof later',
+            risk: 'future',
+            interaction: 'disabledPlaceholder',
+            disabledReason: 'Disabled until PIR hardware input is proven on the Raspberry target; emulator signals do not unlock this control.',
+          },
+          {
+            id: '09.future-victory-proof',
+            label: 'B12 — autonomous playback + recovery victory proof',
+            status: 'final gate later',
+            risk: 'future',
+            interaction: 'disabledPlaceholder',
+            disabledReason: 'Disabled until proof:v2-final-autonomous-bundle and physical evidence prove the final autonomous path.',
+          },
         ],
       },
     ],
@@ -745,4 +792,5 @@ export const V2_OPERATOR_ALLOWED_BLOCK_TYPES: readonly V2OperatorBlockType[] = [
   'playbackRenderingControls',
   'playbackDropQueue',
   'realPlaybackProjection',
+  'readinessChecklist',
 ] as const;
