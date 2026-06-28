@@ -23,8 +23,8 @@ const textAnalysis = analyzeGeneratedArtifactTextDrift({
   expectedSha256: 'feedbeef',
 });
 const manifestAnalysis = analyzeGeneratedHandoffManifest([
-  `PF_login_v${meta.version}_group2_static_contracts_full_git.zip`,
-  `PF_login_v${meta.version}_group2_static_contracts_full_git.zip.sha256`,
+  `PF_login_v${meta.version}_group3_readiness_honesty_full_git.zip`,
+  `PF_login_v${meta.version}_group3_readiness_honesty_full_git.zip.sha256`,
   'PROOF_RASPBERRYOS.SH',
   'PROOF_WIN.PS1',
   'README_PROOFRUNNER.md',
@@ -33,12 +33,12 @@ const manifestAnalysis = analyzeGeneratedHandoffManifest([
 
 const referenceAnalysis = analyzeGeneratedHandoffReferenceConsistency({
   entries: [
-    `PF_login_v${meta.version}_group2_static_contracts_full_git.zip`,
-    `PF_login_v${meta.version}_group2_static_contracts_full_git.zip.sha256`,
+    `PF_login_v${meta.version}_group3_readiness_honesty_full_git.zip`,
+    `PF_login_v${meta.version}_group3_readiness_honesty_full_git.zip.sha256`,
   ],
   texts: [
-    `Repo ZIP: PF_login_v${meta.version}_group2_static_contracts_full_git.zip`,
-    `REPO_ZIP_NAME=\"PF_login_v${meta.version}_group2_static_contracts_full_git.zip\"`,
+    `Repo ZIP: PF_login_v${meta.version}_group3_readiness_honesty_full_git.zip`,
+    `REPO_ZIP_NAME=\"PF_login_v${meta.version}_group3_readiness_honesty_full_git.zip\"`,
   ],
 });
 
