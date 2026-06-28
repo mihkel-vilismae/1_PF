@@ -1,3 +1,10 @@
+## 0.10.89 - 2026-06-28
+
+- Removed the tracked Windows `desktop.ini` folder metadata that was preserved only for the strict v0.10.88 no-loss merge.
+- Generated a fresh external `2proofrunner 1repo` handoff bundle from the current baseline, using current repo identity instead of the stale checked-in prooflauncher references.
+- Kept the cleanup behavior-only: no runtime, V2 page, worker, recovery, or proof contract behavior was changed.
+- Bumped VERSION/package metadata to 0.10.89 as the desktop metadata cleanup and proofrunner handoff checkpoint.
+
 ## 0.10.88 - 2026-06-28
 
 - Ran XACR merge refinement over the v0.10.35 governance branch and the v0.10.87 canonical recovery strategy branch.
