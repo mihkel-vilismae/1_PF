@@ -175,6 +175,7 @@ capture_artifacts() {
   if [ -n "$repo_root" ] && [ -d "$repo_root" ]; then
     cp -a "$repo_root/runtime_data/proofs" "$ARTIFACT_DIR/runtime_artifacts/" 2>/dev/null || true
     cp -a "$repo_root/runtime_data/v2_worker_truth" "$ARTIFACT_DIR/runtime_artifacts/" 2>/dev/null || true
+    cp -a "$repo_root/runtime_data/recovery" "$ARTIFACT_DIR/runtime_artifacts/" 2>/dev/null || true
     cp -a "$repo_root/runtime_data/logs" "$ARTIFACT_DIR/runtime_artifacts/" 2>/dev/null || true
     cp -a "$repo_root/test_runtime_data" "$ARTIFACT_DIR/" 2>/dev/null || true
     (cd "$repo_root" && git status --short > "$CMD_LOG_DIR/git_status_after.log" 2>&1) || true
@@ -199,7 +200,7 @@ wait_for_visual_evidence_if_requested() {
   done
 }
 
-log "=== PF_login v0.10.85 GENERATE PROOFRUNNER / production cron split proof bundle ==="
+log "=== PF_login v0.10.86 GENERATE PROOFRUNNER / recovery engine proof bundle ==="
 log "Run timestamp: $RUN_TS"
 log "Script dir: $SCRIPT_DIR"
 log "Repo zip: $REPO_ZIP"
@@ -263,16 +264,20 @@ else
 
     # REQUIRED PROOFS ONLY. This intentionally does NOT run npm test or every proof.
     run_shell_cmd "02_proof_v2_real_machine_readiness" "npm run proof:v2-real-machine-readiness"
-    run_shell_cmd "03_proof_v2_install_real_crontab" "npm run proof:v2-install-real-crontab"
-    run_shell_cmd "04_proof_v2_real_cron_runtime" "npm run proof:v2-real-cron-runtime"
-    run_shell_cmd "05_proof_v2_install_production_crontab" "PF_V2_CRON_MODE=production npm run proof:v2-install-production-crontab"
-    run_shell_cmd "06_proof_v2_production_cron_runtime" "npm run proof:v2-production-cron-runtime"
-    run_shell_cmd "07_proof_v2_real_cron_evidence" "npm run proof:v2-real-cron-evidence"
-    run_shell_cmd "08_proof_v2_real_playback_display" "npm run proof:v2-real-playback-display"
-    run_shell_cmd "09_proof_v2_autonomous_contract" "npm run proof:v2-autonomous-contract"
+    run_shell_cmd "03_proof_v2_recovery_engine_contract" "npm run proof:v2-recovery-engine-contract"
+    run_shell_cmd "04_proof_v2_recovery_engine" "npm run proof:v2-recovery-engine"
+    run_shell_cmd "05_proof_v2_recovery_emulate_power_off" "npm run proof:v2-recovery-emulate-power-off"
+    run_shell_cmd "06_proof_v2_recovery_restart_check" "npm run proof:v2-recovery-restart-check"
+    run_shell_cmd "07_proof_v2_install_real_crontab" "npm run proof:v2-install-real-crontab"
+    run_shell_cmd "08_proof_v2_real_cron_runtime" "npm run proof:v2-real-cron-runtime"
+    run_shell_cmd "09_proof_v2_install_production_crontab" "PF_V2_CRON_MODE=production npm run proof:v2-install-production-crontab"
+    run_shell_cmd "10_proof_v2_production_cron_runtime" "npm run proof:v2-production-cron-runtime"
+    run_shell_cmd "11_proof_v2_real_cron_evidence" "npm run proof:v2-real-cron-evidence"
+    run_shell_cmd "12_proof_v2_real_playback_display" "npm run proof:v2-real-playback-display"
+    run_shell_cmd "13_proof_v2_autonomous_contract" "npm run proof:v2-autonomous-contract"
     wait_for_visual_evidence_if_requested
-    run_shell_cmd "10_proof_v2_visual_physical_evidence" "npm run proof:v2-visual-physical-evidence"
-    run_shell_cmd "11_proof_v2_final_autonomous_bundle" "npm run proof:v2-final-autonomous-bundle"
+    run_shell_cmd "14_proof_v2_visual_physical_evidence" "npm run proof:v2-visual-physical-evidence"
+    run_shell_cmd "15_proof_v2_final_autonomous_bundle" "npm run proof:v2-final-autonomous-bundle"
 
     log "Optional cleanup is available but not run by default: npm run proof:v2-real-cron-cleanup and npm run proof:v2-production-cron-cleanup"
     capture_artifacts "$REPO_ROOT"

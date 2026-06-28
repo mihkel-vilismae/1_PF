@@ -190,7 +190,11 @@
     "proof:v2-install-production-crontab-contract": "node tools/run-v2-install-production-crontab-proof.mjs --contract",
     "proof:v2-production-cron-runtime": "node tools/run-v2-production-cron-runtime-proof.mjs --evidence --write",
     "proof:v2-production-cron-runtime-contract": "node tools/run-v2-production-cron-runtime-proof.mjs --contract",
-    "proof:v2-production-cron-cleanup": "node tools/run-v2-production-cron-cleanup-proof.mjs --evidence --write"
+    "proof:v2-production-cron-cleanup": "node tools/run-v2-production-cron-cleanup-proof.mjs --evidence --write",
+    "proof:v2-recovery-engine-contract": "node --import tsx tools/run-v2-recovery-engine-proof.mjs --contract",
+    "proof:v2-recovery-engine": "node --import tsx tools/run-v2-recovery-engine-proof.mjs --evidence --write",
+    "proof:v2-recovery-emulate-power-off": "node --import tsx tools/run-v2-recovery-emulate-power-off-proof.mjs --evidence --write",
+    "proof:v2-recovery-restart-check": "node --import tsx tools/run-v2-recovery-restart-check-proof.mjs --evidence --write"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

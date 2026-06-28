@@ -23,6 +23,10 @@ const requiredContractScripts = [
   'proof:v2-production-cron-cleanup',
   'proof:prooflauncher-logs-zip-hygiene-contract',
   'proof:prooflauncher-logs-zip-hygiene',
+  'proof:v2-recovery-engine-contract',
+  'proof:v2-recovery-engine',
+  'proof:v2-recovery-emulate-power-off',
+  'proof:v2-recovery-restart-check',
 ];
 
 for (const scriptName of requiredContractScripts) {
@@ -75,6 +79,29 @@ if (args.evidence) {
     { visualPhysicalStatus: statuses.v2_visual_physical_evidence ?? 'missing' },
   );
 
+  const recoveryEvidenceProofs = [
+    'v2_recovery_engine_contract',
+    'v2_recovery_engine',
+    'v2_recovery_emulate_power_off',
+    'v2_recovery_restart_check',
+  ];
+  const recoveryStatuses = Object.fromEntries(recoveryEvidenceProofs.map((proofName) => [proofName, statuses[proofName] ?? 'missing']));
+  const requiredRecoveryProofs = ['v2_recovery_engine_contract', 'v2_recovery_engine'];
+  check(
+    checks,
+    'recoveryEngineArchitecture',
+    'Recovery engine architecture layer is reported separately and passed for contract/runtime proofs.',
+    requiredRecoveryProofs.every((proofName) => statuses[proofName] === 'PASSED'),
+    { recoveryStatuses },
+  );
+  check(
+    checks,
+    'recovery-physical-proof-deferred',
+    'Physical power-loss recovery proof is intentionally deferred to v0.10.87.',
+    true,
+    { deferredTarget: 'v0.10.87' },
+  );
+
   const workerOnceProofs = [
     'v2_run_regular_worker_once',
     'v2_run_playback_worker_once',
@@ -96,8 +123,8 @@ const result = proofResult({
   checks,
   evidenceMode: args.evidence,
   note: args.evidence
-    ? 'Final bundle summary over latest local proof artifacts. Proof cron and production cron are reported separately; production cron runtime is required for the production autonomous path. Visual physical proof remains a separate required layer for physical display completion.'
-    : 'Static contract proof that final autonomous bundle commands are registered, including separate proof-cron and production-cron runtime proofs.',
+    ? 'Final bundle summary over latest local proof artifacts. Proof cron, production cron, visual physical evidence, and recovery engine architecture are reported as separate layers. Physical power-loss proof remains deferred to v0.10.87.'
+    : 'Static contract proof that final autonomous bundle commands are registered, including separate proof-cron, production-cron, and recovery engine proofs.',
 });
 
 emitProof(result, { write: args.write });
