@@ -73,10 +73,14 @@ if (args.contract) {
   check(checks, 'proof-scripts-registered', 'Recovery proof scripts are registered.', [
     'proof:v2-recovery-engine-contract',
     'proof:v2-recovery-engine',
+    'proof:v2-recovery-canonical-state-contract',
+    'proof:v2-recovery-cross-engine-strategy-contract',
     'proof:v2-recovery-emulate-power-off',
     'proof:v2-recovery-restart-check',
   ].every((scriptName) => Boolean(scripts[scriptName])));
   check(checks, 'final-bundle-recovery-layer', 'Final autonomous bundle reports recovery layer.', finalBundle.includes('recoveryEngineArchitecture') && finalBundle.includes('v2_recovery_engine'));
+  check(checks, 'final-bundle-canonical-strategy-layers', 'Final autonomous bundle reports canonical-state and cross-engine strategy layers.', finalBundle.includes('recoveryCanonicalState') && finalBundle.includes('recoveryCrossEngineStrategy') && finalBundle.includes('v2_recovery_canonical_state_contract') && finalBundle.includes('v2_recovery_cross_engine_strategy_contract'));
+
 
   emitProof(proofResult({
     proof: 'v2_recovery_engine_contract',

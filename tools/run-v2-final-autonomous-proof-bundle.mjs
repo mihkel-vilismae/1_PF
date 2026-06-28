@@ -25,6 +25,8 @@ const requiredContractScripts = [
   'proof:prooflauncher-logs-zip-hygiene',
   'proof:v2-recovery-engine-contract',
   'proof:v2-recovery-engine',
+  'proof:v2-recovery-canonical-state-contract',
+  'proof:v2-recovery-cross-engine-strategy-contract',
   'proof:v2-recovery-emulate-power-off',
   'proof:v2-recovery-restart-check',
 ];
@@ -82,18 +84,35 @@ if (args.evidence) {
   const recoveryEvidenceProofs = [
     'v2_recovery_engine_contract',
     'v2_recovery_engine',
+    'v2_recovery_canonical_state_contract',
+    'v2_recovery_cross_engine_strategy_contract',
     'v2_recovery_emulate_power_off',
     'v2_recovery_restart_check',
   ];
   const recoveryStatuses = Object.fromEntries(recoveryEvidenceProofs.map((proofName) => [proofName, statuses[proofName] ?? 'missing']));
-  const requiredRecoveryProofs = ['v2_recovery_engine_contract', 'v2_recovery_engine'];
+  const requiredRecoveryProofs = ['v2_recovery_engine_contract', 'v2_recovery_engine', 'v2_recovery_canonical_state_contract', 'v2_recovery_cross_engine_strategy_contract'];
   check(
     checks,
     'recoveryEngineArchitecture',
-    'Recovery engine architecture layer is reported separately and passed for contract/runtime proofs.',
+    'Recovery engine architecture layer is reported separately and passed for contract/runtime/canonical-state/cross-engine strategy proofs.',
     requiredRecoveryProofs.every((proofName) => statuses[proofName] === 'PASSED'),
     { recoveryStatuses },
   );
+  check(
+    checks,
+    'recoveryCanonicalState',
+    'Canonical recovery state contract is reported separately and passed.',
+    statuses.v2_recovery_canonical_state_contract === 'PASSED',
+    { canonicalStateStatus: statuses.v2_recovery_canonical_state_contract ?? 'missing' },
+  );
+  check(
+    checks,
+    'recoveryCrossEngineStrategy',
+    'Cross-engine strategy contract is reported separately and passed.',
+    statuses.v2_recovery_cross_engine_strategy_contract === 'PASSED',
+    { crossEngineStrategyStatus: statuses.v2_recovery_cross_engine_strategy_contract ?? 'missing' },
+  );
+
   check(
     checks,
     'recovery-physical-proof-deferred',
@@ -123,8 +142,8 @@ const result = proofResult({
   checks,
   evidenceMode: args.evidence,
   note: args.evidence
-    ? 'Final bundle summary over latest local proof artifacts. Proof cron, production cron, visual physical evidence, and recovery engine architecture are reported as separate layers. Physical power-loss proof remains deferred to v0.10.87.'
-    : 'Static contract proof that final autonomous bundle commands are registered, including separate proof-cron, production-cron, and recovery engine proofs.',
+    ? 'Final bundle summary over latest local proof artifacts. Proof cron, production cron, visual physical evidence, canonical recovery state, cross-engine recovery strategy, and recovery engine architecture are reported as separate layers. Physical power-loss proof remains deferred.'
+    : 'Static contract proof that final autonomous bundle commands are registered, including separate proof-cron, production-cron, canonical recovery-state, cross-engine strategy, and recovery engine proofs.',
 });
 
 emitProof(result, { write: args.write });
