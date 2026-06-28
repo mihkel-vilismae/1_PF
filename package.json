@@ -183,7 +183,9 @@
     "proof:v2-real-cron-runtime": "node tools/run-v2-real-cron-runtime-proof.mjs --evidence --write",
     "proof:v2-real-cron-cleanup": "node tools/run-v2-real-cron-cleanup-proof.mjs --evidence --write",
     "proof:v2-visual-physical-evidence": "node tools/run-v2-visual-physical-evidence-proof.mjs --evidence --write",
-    "proof:v2-visual-physical-evidence-contract": "node tools/run-v2-visual-physical-evidence-proof.mjs --contract"
+    "proof:v2-visual-physical-evidence-contract": "node tools/run-v2-visual-physical-evidence-proof.mjs --contract",
+    "proof:prooflauncher-logs-zip-hygiene": "node tools/run-prooflauncher-logs-zip-hygiene-proof.mjs --evidence --write",
+    "proof:prooflauncher-logs-zip-hygiene-contract": "node tools/run-prooflauncher-logs-zip-hygiene-proof.mjs --contract"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
