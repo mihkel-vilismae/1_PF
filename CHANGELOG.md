@@ -1,3 +1,11 @@
+## 0.10.84 - 2026-06-28
+
+- Ran XACR slice-by-slice over the proof-passed v0.10.83 baseline cleanup batch.
+- Froze v0.10.83 as the proof-passed baseline using the accepted slim logs-only evidence ZIP.
+- Added proofrunner log ZIP hygiene docs and `proof:prooflauncher-logs-zip-hygiene[-contract]` checks.
+- Updated final autonomous bundle contract to know about proofrunner log ZIP hygiene checks.
+- Prepared prooflauncher packaging to stage logs/evidence only and exclude `workspace/`, extracted repo files, `node_modules/`, and `.git/`.
+
 ## 0.10.83 - 2026-06-28
 
 - Ran XACR over the post-v0.10.82 physical proof gap: backend cron/runtime evidence passed, but visual screen proof was still not captured.
