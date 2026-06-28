@@ -16,6 +16,8 @@ const requiredContractScripts = [
   'proof:v2-real-cron-runtime',
   'proof:v2-real-cron-cleanup',
   'proof:v2-visual-physical-evidence',
+  'proof:prooflauncher-logs-zip-hygiene-contract',
+  'proof:prooflauncher-logs-zip-hygiene',
 ];
 
 for (const scriptName of requiredContractScripts) {
