@@ -279,3 +279,15 @@ npm run proof:dashboard-runtime-mode-boundary
 ```
 
 A passing proof means demo mode is blocked from those legacy real/test-only service contexts and must continue through terminal Demo Mode DEMO-owned surfaces instead.
+
+## Terminal Demo v1.0 release-freeze proof
+
+The v0.18.0 release-freeze gate verifies the fully green terminal Demo Mode RC package before promotion to v1.0:
+
+```bash
+npm run proof:terminal-demo-v1-release-freeze
+```
+
+On Windows, run `VERIFY_TERMINAL_DEMO_V1_RELEASE_FREEZE.CMD` from the repo root.
+
+A passing result reports `V1_READY_TO_RELEASE`. This is a release evidence gate only; it does not add new terminal-demo runtime behavior.

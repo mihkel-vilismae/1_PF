@@ -1,3 +1,12 @@
+# 0.18.0 - Terminal Demo v1.0 release-freeze evidence pack
+
+- Added `proof:terminal-demo-v1-release-freeze` as the final v1.0 go/no-go evidence gate.
+- Added root launcher `VERIFY_TERMINAL_DEMO_V1_RELEASE_FREEZE.CMD` for Windows operators.
+- Added `docs/20_architecture_and_specs/openspec/terminal_demo_v1_release_freeze_checklist.md` to freeze v1.0 release requirements.
+- Preserved terminal Demo Mode runtime behavior: no new worker execution, cron usage, real/test data access, native/fullscreen playback, or mock substitution was added.
+- The release-freeze proof collects build, typecheck, final terminal-demo proof, dashboard mode boundary proof, transferable package proof, and RC readiness evidence and reports `V1_READY_TO_RELEASE` only when all gates pass.
+- Bumped version metadata to `0.18.0`.
+
 # 0.17.0 - Dashboard runtime mode type boundary repair
 
 - Fixed the existing TypeScript blocker by adding explicit real/test-only request-context guards for legacy database, playback, native playback, and orchestration surfaces.

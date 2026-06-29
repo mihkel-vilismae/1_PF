@@ -210,3 +210,45 @@ npm run proof:dashboard-runtime-mode-boundary
 ```
 
 The RC readiness audit also runs this proof so the transferable RC package cannot regress by silently allowing demo mode into real/test-only service boundaries.
+
+
+## v0.18.0 v1.0 release-freeze evidence gate
+
+The v0.18.0 milestone is a release-freeze and final evidence-pack gate. It does not add terminal Demo Mode runtime behavior. Its job is to prove the v0.17.0 green state is still intact and to produce an explicit v1.0 go/no-go report.
+
+Proof command:
+
+```bash
+npm run proof:terminal-demo-v1-release-freeze
+```
+
+Windows launcher:
+
+```cmd
+VERIFY_TERMINAL_DEMO_V1_RELEASE_FREEZE.CMD
+```
+
+The release-freeze proof must keep these boundaries unchanged:
+
+- Demo Mode continues to use DEMO-owned media, truth, status, queue, and playback evidence surfaces.
+- Terminal Demo Mode does not use cron or crontab.
+- Terminal Demo Mode does not touch real/test data paths.
+- Real-demo behavior is not faked through the mock adapter/storyboard.
+- Worker execution remains explicitly guarded.
+- Native/fullscreen playback remains disabled for terminal Demo Mode.
+- Dashboard `demo` mode remains blocked from legacy real/test-only services.
+- Generated release-freeze evidence contains logs/status only and does not include source repository files.
+
+A passing proof writes `terminal_demo_v1_release_freeze.json` and `.md` under `terminal/demo/runtime_logs/v1_release_freeze/` and reports:
+
+```text
+V1_READY_TO_RELEASE
+```
+
+A blocked proof reports:
+
+```text
+NOT_READY_FOR_V1
+```
+
+The supporting go/no-go checklist is `docs/20_architecture_and_specs/openspec/terminal_demo_v1_release_freeze_checklist.md`.

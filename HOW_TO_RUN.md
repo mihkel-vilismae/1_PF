@@ -109,3 +109,19 @@ Use these when you need more than the quickstart:
 ## Proofrunner modes
 
 Generated proofrunner handoffs should usually be run in this order: `quick`, `blockers`, `platform`, then `full` only for the final sweep. Use `PF_PROOF_MODE=quick|blockers|platform|failed-last|minimum|full`; legacy `PF_PROOF_LAUNCHER_MODE=all|minimum` remains accepted for older automation.
+
+## Terminal Demo Mode v1.0 release-freeze proof
+
+From a clean extracted repository root on Windows, run:
+
+```cmd
+VERIFY_TERMINAL_DEMO_V1_RELEASE_FREEZE.CMD
+```
+
+Equivalent npm command:
+
+```bash
+npm run proof:terminal-demo-v1-release-freeze
+```
+
+This collects final build/typecheck/proof evidence under `terminal/demo/runtime_logs/v1_release_freeze/` and reports `V1_READY_TO_RELEASE` only when the package is ready for a v1.0 release-only milestone.
