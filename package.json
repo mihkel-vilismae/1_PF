@@ -234,7 +234,8 @@
     "proof:terminal-demo-v1-release": "node tools/run-terminal-demo-v1-release-proof.mjs",
     "proof:terminal-demo-db-image-playback-button": "node tools/run-terminal-demo-db-image-playback-button-proof.mjs",
     "proof:terminal-demo-real-entrypoint": "node tools/run-terminal-demo-real-entrypoint-proof.mjs",
-    "terminal-demo:live-image-fixture:setup": "node tools/run-terminal-demo-live-image-fixture.mjs"
+    "terminal-demo:live-image-fixture:setup": "node tools/run-terminal-demo-live-image-fixture.mjs",
+    "proof:terminal-demo-live-image-fixture": "node tools/run-terminal-demo-live-image-fixture-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
