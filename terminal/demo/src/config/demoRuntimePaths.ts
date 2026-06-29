@@ -6,7 +6,7 @@ import type { DemoRuntimePaths } from './runtimeTypes.js';
 import { readEnvPath, resolveAgainstRepoRoot } from './pathUtils.js';
 
 export const DEFAULT_DEMO_DB_PATH = 'runtime_data/demo/demo.sqlite';
-export const DEFAULT_DEMO_DOWNLOAD_DIR = 'generated_test_data';
+export const DEFAULT_DEMO_DOWNLOAD_DIR = 'runtime_data/demo/downloaded_files';
 export const DEFAULT_DEMO_WORKER_TRUTH_DIR = 'runtime_data/v2_worker_truth/demo';
 export const DEFAULT_DEMO_SCHEDULER_DIR = 'runtime_data/scheduler/demo';
 export const DEFAULT_DEMO_LOG_DIR = 'runtime_data/logs/demo';
