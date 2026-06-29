@@ -37,20 +37,21 @@ export function createQDemoDbQueueRows(input: {
   if (!pathSafety.safe) return { ...base, status: 'blocked', messages: [pathSafety.reason] };
 
   mkdirSync(path.dirname(input.boundary.dbPath), { recursive: true });
+  const codeRoot = process.cwd();
   const executedAt = input.executedAt ?? new Date().toISOString();
-  const stage2 = runPythonJson(input.boundary.repoRoot, [
-    path.join(input.boundary.repoRoot, sqliteAdminRelativePath),
+  const stage2 = runPythonJson(codeRoot, [
+    path.join(codeRoot, sqliteAdminRelativePath),
     'stage2_index_register',
     input.boundary.dbPath,
     input.boundary.downloadDir,
     executedAt,
-    path.join(input.boundary.repoRoot, schemaRelativePath)
+    path.join(codeRoot, schemaRelativePath)
   ]);
   if (stage2.status !== 'ok') {
     return { ...base, status: 'failed', messages: [`stage2_index_register failed: ${stage2.message}`, ...stage2.attempts] };
   }
 
-  const queue = runPythonJson(input.boundary.repoRoot, ['-c', buildQueueSql(), input.boundary.dbPath, input.boundary.downloadDir, JSON.stringify(rows), executedAt]);
+  const queue = runPythonJson(codeRoot, ['-c', buildQueueSql(), input.boundary.dbPath, input.boundary.downloadDir, JSON.stringify(rows), executedAt]);
   if (queue.status !== 'ok') return { ...base, status: 'failed', messages: [`q-created queue SQL failed: ${queue.message}`, ...queue.attempts] };
 
   const output = queue.output as Record<string, unknown>;
