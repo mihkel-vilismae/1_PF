@@ -1,4 +1,9 @@
 
+# 0.15.1 - Git commit version-bump housekeeping
+
+- Bumped repository and package version metadata to `0.15.1` for the current commit.
+- Preserved the existing terminal demo RC readiness audit behavior and surrounding proof scripts.
+
 ## 0.15.0 - Terminal Demo v1.0 RC readiness audit
 
 - Added `proof:terminal-demo-rc-readiness`, a narrow audit that runs final guard, operator rehearsal, and evidence diagnosis as one RC gate.
