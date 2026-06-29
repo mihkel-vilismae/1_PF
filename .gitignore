@@ -75,3 +75,7 @@ win11_repair_prompt_evidence_*/
 
 # Generated fixture archives should not be tracked; fixture files and manifests are tracked separately.
 generated_test_data/*.zip
+
+# Terminal demo local evidence/log output
+terminal/demo/runtime_logs/
+terminal/demo/runtime_logs/**

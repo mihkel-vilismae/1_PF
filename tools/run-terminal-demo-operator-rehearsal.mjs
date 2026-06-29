@@ -27,13 +27,24 @@ function check(label, passed, detail = '') {
   checks.push({ label, passed: Boolean(passed), detail });
 }
 
+function childEnv() {
+  const env = {};
+  for (const [key, value] of Object.entries(process.env)) {
+    if (!key.toLowerCase().startsWith('npm_')) env[key] = value;
+  }
+  env.TERMINAL_DEMO_COLUMNS = process.env.TERMINAL_DEMO_COLUMNS ?? '420';
+  return env;
+}
+
 function runCommand(label, command, args) {
   const logPath = path.join(evidenceRoot, `${slug(label)}.log`);
   const startedAt = new Date().toISOString();
   const result = spawnSync(command, args, {
     cwd: repoRoot,
     encoding: 'utf8',
-    env: { ...process.env, TERMINAL_DEMO_COLUMNS: process.env.TERMINAL_DEMO_COLUMNS ?? '420' },
+    timeout: 180000,
+    maxBuffer: 10 * 1024 * 1024,
+    env: childEnv(),
     shell: process.platform === 'win32'
   });
   const finishedAt = new Date().toISOString();
@@ -150,19 +161,23 @@ function writeStoredZip(sourceDir, zipPath) {
 
 const repoFolderName = path.basename(repoRoot);
 const allowWorkFolderName = process.env.TERMINAL_DEMO_ALLOW_WORK_FOLDER_NAME === '1';
-check('VERSION is 0.13.0', version === '0.13.0', `VERSION=${version}`);
+check('VERSION is 0.14.0', version === '0.14.0', `VERSION=${version}`);
 check('package.json version matches VERSION', packageJson.version === version, `package.json=${packageJson.version}`);
 check('repo folder name matches version', allowWorkFolderName || repoFolderName.includes(`v${version}`), `folder=${repoFolderName}`);
 check('Windows terminal runner exists', existsSync(path.join(repoRoot, 'terminal/demo/windows_runner.cmd')), 'terminal/demo/windows_runner.cmd');
 check('root verification launcher exists', existsSync(path.join(repoRoot, 'VERIFY_TERMINAL_DEMO.CMD')), 'VERIFY_TERMINAL_DEMO.CMD');
 check('terminal verification launcher exists', existsSync(path.join(repoRoot, 'terminal/demo/windows_verify_terminal_demo.cmd')), 'terminal/demo/windows_verify_terminal_demo.cmd');
 check('operator rehearsal script is registered', containsFile('package.json', 'proof:terminal-demo-operator-rehearsal'), 'package.json script');
+check('evidence diagnosis launcher exists', existsSync(path.join(repoRoot, 'ANALYZE_TERMINAL_DEMO_EVIDENCE.CMD')), 'ANALYZE_TERMINAL_DEMO_EVIDENCE.CMD');
+check('evidence diagnosis script is registered', containsFile('package.json', 'terminal-demo:evidence-diagnosis'), 'package.json script');
 check('runner diagnostics mention PhotoFrame repo and final proof',
   containsFile('terminal/demo/scripts/windows/run_terminal_demo.ps1', 'PhotoFrame repo:')
     && containsFile('terminal/demo/scripts/windows/run_terminal_demo.ps1', 'proof:terminal-demo-operator-rehearsal'),
   'Windows runner prints repo root and verification command.');
 
-const finalProof = runCommand('terminal-demo-final-proof', 'node', ['tools/run-terminal-demo-final-guard-proof.mjs', 'final']);
+console.error('[terminal-demo-operator-rehearsal] running final proof...');
+const finalProof = runCommand('terminal-demo-final-proof', process.execPath, ['tools/run-terminal-demo-final-guard-proof.mjs', 'final']);
+console.error('[terminal-demo-operator-rehearsal] final proof finished with exit ' + finalProof.exitCode);
 check('terminal demo final proof passes', finalProof.exitCode === 0 && finalProof.stdout.includes('"status": "PASSED"'), `exit=${finalProof.exitCode}`);
 
 check('terminal demo merge smoke is covered by final proof', finalProof.stdout.includes('smoke command passes'), 'Group 6B final proof invokes terminal/demo/scripts/verify-smoke.mjs.');
@@ -203,7 +218,9 @@ writeFileSync(markdownPath, [
 ].join('\n'));
 
 const zipPath = path.join(evidenceRoot, `terminal_demo_operator_rehearsal_${version}_${timestamp}.zip`);
+console.error('[terminal-demo-operator-rehearsal] writing evidence zip...');
 writeStoredZip(evidenceRoot, zipPath);
+console.error('[terminal-demo-operator-rehearsal] evidence zip written.');
 check('terminal-demo-only evidence ZIP exists', existsSync(zipPath), relative(zipPath));
 check('evidence ZIP is inside terminal/demo/runtime_logs/operator_rehearsal', relative(zipPath).startsWith('terminal/demo/runtime_logs/operator_rehearsal/'), relative(zipPath));
 check('evidence ZIP does not include source repo files', !collectFiles(evidenceRoot).some((file) => /(?:^|[\\/])src[\\/].*\.(?:ts|js)$/.test(path.relative(evidenceRoot, file))), 'Bundle source is evidence folder only.');

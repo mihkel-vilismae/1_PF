@@ -1,7 +1,7 @@
 # Terminal Demo Real Mode OpenSpec
 
 Generated: 2026-06-29  
-Status: v0.13.0 operator release-candidate rehearsal pack implemented; worker/native execution remains guarded pending later proof.
+Status: v0.14.0 operator evidence diagnosis loop implemented; worker/native execution remains guarded pending later proof.
 
 ## Goal
 
@@ -28,6 +28,7 @@ Turn the terminal mock-demo into a real terminal Demo Mode that uses PhotoFrame 
 | Playback worker execution | Guarded/manual command plan only; requires explicit execution and scheduler-safety flags | 6/10 |
 | Proof/de-mocking guard suite | Group 6B final proof pack implemented; path isolation, no-cron, media/truth, batch-size, Q route, queue, playback, mock separation, execution guard, and largest-file checks are scripted | 9/10 |
 | Operator rehearsal pack | Implemented; root Windows launcher and npm proof create status JSON/MD plus terminal-demo-only evidence ZIP | 9/10 |
+| Operator evidence diagnosis | Implemented; analyzes latest evidence folder or supplied ZIP and writes blocker/next-action report | 9/10 |
 
 ## Group 3B behavior
 
@@ -129,3 +130,15 @@ Version `0.13.0` adds packaging/evidence workflow for the current terminal Demo 
 - the evidence ZIP contains logs/status/proof outputs only, not the source repository.
 
 This milestone is a release-candidate rehearsal pack, not v1.0 final. It does not enable native/fullscreen playback or bypass guarded worker execution flags.
+
+## v0.14.0 operator evidence diagnosis loop
+
+Version `0.14.0` adds the evidence import/fix-loop layer after the v0.13 rehearsal pack:
+
+- root `ANALYZE_TERMINAL_DEMO_EVIDENCE.CMD` analyzes the latest operator rehearsal evidence or an explicit evidence ZIP/folder,
+- `terminal-demo:evidence-diagnosis` runs the same analyzer from npm,
+- `proof:terminal-demo-evidence-diagnosis` self-tests known blocker classification,
+- the analyzer writes `terminal_demo_evidence_diagnosis.json` and `.md` under `terminal/demo/runtime_logs/evidence_diagnosis/`,
+- common classifications include stale Windows runner root detection, missing Node/npm, missing dependencies, folder/version mismatch, expected guarded-execution messages, and failed rehearsal checks.
+
+This milestone is an evidence triage/fix-loop milestone. It does not enable native/fullscreen playback and does not bypass guarded worker execution flags.

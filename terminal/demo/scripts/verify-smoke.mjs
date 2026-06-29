@@ -1,8 +1,8 @@
 // Verifies the merged terminal Demo Mode smoke paths without mutating runtime data.
 // The script can run inside PhotoFrame or the older standalone prototype layout.
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, writeFileSync } from 'node:fs';
+import { homedir, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { readFileSync } from 'node:fs';
 
@@ -10,9 +10,10 @@ import { readFileSync } from 'node:fs';
 function run(args, env = {}) {
   const entry = resolveMainEntrypoint();
   const fullEnv = { ...process.env, TERMINAL_DEMO_COLUMNS: '420', ...env };
-  if (entry.endsWith('.js')) return execFileSync('node', [entry, ...args], { encoding: 'utf8', env: fullEnv });
-  if (hasLocalTsx()) return execFileSync('node', ['--import', 'tsx', entry, ...args], { encoding: 'utf8', env: fullEnv });
-  return execFileSync('npm', ['exec', '--yes', 'tsx', '--', entry, ...args], { encoding: 'utf8', env: fullEnv });
+  if (entry.endsWith('.js')) return execFileSync('node', [entry, ...args], { encoding: 'utf8', timeout: 120000, maxBuffer: 10 * 1024 * 1024, env: fullEnv });
+  const tsxImport = resolveTsxImport();
+  if (tsxImport) return execFileSync('node', ['--import', tsxImport, entry, ...args], { encoding: 'utf8', timeout: 120000, maxBuffer: 10 * 1024 * 1024, env: fullEnv });
+  return execFileSync('npm', ['exec', '--yes', 'tsx', '--', entry, ...args], { encoding: 'utf8', timeout: 120000, maxBuffer: 10 * 1024 * 1024, env: fullEnv });
 }
 
 // Locates the terminal entrypoint for merged and standalone checkouts.
@@ -23,9 +24,22 @@ function resolveMainEntrypoint() {
   throw new Error('Unable to locate terminal demo entrypoint.');
 }
 
-// Detects whether npm dependencies are already installed locally.
-function hasLocalTsx() {
-  return existsSync('node_modules/tsx/dist/loader.mjs') || existsSync('node_modules/tsx/index.mjs') || existsSync('terminal/demo/node_modules/tsx/dist/loader.mjs');
+// Resolves tsx without requiring nested npm exec when dependencies/cache exist.
+function resolveTsxImport() {
+  for (const candidate of [
+    'node_modules/tsx/dist/loader.mjs',
+    'node_modules/tsx/index.mjs',
+    'terminal/demo/node_modules/tsx/dist/loader.mjs'
+  ]) {
+    if (existsSync(candidate)) return candidate;
+  }
+  const npxRoot = join(process.env.npm_config_cache || join(homedir(), '.npm'), '_npx');
+  if (!existsSync(npxRoot)) return null;
+  for (const entry of readdirSync(npxRoot)) {
+    const cachedLoader = join(npxRoot, entry, 'node_modules', 'tsx', 'dist', 'loader.mjs');
+    if (existsSync(cachedLoader)) return cachedLoader;
+  }
+  return null;
 }
 
 // Removes ANSI escape codes before checking stable terminal text.

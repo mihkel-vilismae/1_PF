@@ -32,9 +32,11 @@ echo.
 if "%EXIT_CODE%"=="0" (
   echo [PhotoFrame Demo Terminal] Operator rehearsal proof PASSED.
   echo Evidence was written under terminal\demo\runtime_logs\operator_rehearsal\
+  echo To diagnose evidence later, run ANALYZE_TERMINAL_DEMO_EVIDENCE.CMD
 ) else (
   echo [PhotoFrame Demo Terminal] Operator rehearsal proof BLOCKED with exit code %EXIT_CODE%.
   echo Check terminal\demo\runtime_logs\operator_rehearsal\ for terminal_demo_status.md/json and command logs.
+  echo Then run ANALYZE_TERMINAL_DEMO_EVIDENCE.CMD to classify the blocker and next action.
 )
 
 echo Press any key to close this window.

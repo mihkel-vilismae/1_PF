@@ -1,6 +1,6 @@
 # PhotoFrame Terminal Demo Mode
 
-Version: `0.13.0`
+Version: `0.14.0`
 
 This folder is the merged terminal/TUI mock plus real-demo runtime-boundary, media-discovery, truth/status-read, command-plan, guarded W/Q orchestration, queue-reader, and playback selected-item visibility scaffold for the PhotoFrame Demo Mode beeline.
 ## Merged into PhotoFrame
@@ -383,3 +383,29 @@ In v0.6.0, `Q` auto-runs the expanded mock path over rows #1-#5. Rows #1, #3, an
 ## Group 3B-FINISH hardening
 
 `W` toggles selected `batch_size` between `1` and `5`. `Q` uses that value to choose the real-demo route: batch size `1` captures file-by-file chunks across the first five generated demo rows, while batch size `5` captures stage-by-stage batch snapshots across the first five rows. Q writes only a DEMO-owned manifest under `DEMO_RUNTIME_OUTPUT_DIR`; default worker execution remains planned/guarded, and explicit execution is blocked until demo scheduler/status isolation is proven.
+
+## Real-demo v0.14.0 evidence diagnosis loop
+
+Version `0.14.0` adds a diagnosis step after the operator rehearsal pack. It does not enable native playback or bypass guarded worker execution; it classifies evidence from the latest rehearsal folder or a supplied evidence ZIP.
+
+From the extracted repo root on Windows:
+
+```cmd
+VERIFY_TERMINAL_DEMO.CMD
+ANALYZE_TERMINAL_DEMO_EVIDENCE.CMD
+```
+
+For a specific evidence ZIP/folder:
+
+```cmd
+ANALYZE_TERMINAL_DEMO_EVIDENCE.CMD path\to\evidence.zip
+```
+
+Equivalent npm commands:
+
+```bash
+npm run proof:terminal-demo-operator-rehearsal
+npm run terminal-demo:evidence-diagnosis -- path/to/evidence.zip
+```
+
+The diagnosis report is written under `terminal/demo/runtime_logs/evidence_diagnosis/` and classifies common blockers such as stale runner root detection, missing Node/npm, missing dependencies, folder/version mismatch, and expected guarded-execution messages.

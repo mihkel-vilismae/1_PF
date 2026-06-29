@@ -1,6 +1,6 @@
 # How to Run
 
-> Current checkpoint: `v0.13.0`. This file is intentionally short; longer operator detail belongs in `docs/10_runbooks/`.
+> Current checkpoint: `v0.14.0`. This file is intentionally short; longer operator detail belongs in `docs/10_runbooks/`.
 
 ## Use this for quickstart
 
@@ -26,7 +26,7 @@ S:\_PHOTOFRAMES\PF_login_v0.10.67_target_live_proof_readiness_full_git\full_wind
 
 ## Current launcher and database paths
 
-- Repository/package version: `0.13.0`.
+- Repository/package version: `0.14.0`.
 - Windows launcher: `start_scripts/windows/START_WIN.PS1`.
 - Raspberry launcher: `start_scripts/raspberry/START_RASPBERRYOS.SH`.
 - Canonical SQLite schema: `database/schema.sql`.
@@ -50,6 +50,16 @@ Equivalent npm command:
 ```bash
 npm run proof:terminal-demo-operator-rehearsal
 ```
+If the rehearsal is BLOCKED or you have a terminal-demo evidence ZIP/folder, run:
+
+```cmd
+ANALYZE_TERMINAL_DEMO_EVIDENCE.CMD
+REM or with explicit evidence path:
+ANALYZE_TERMINAL_DEMO_EVIDENCE.CMD path\to\terminal_demo_operator_rehearsal.zip
+```
+
+This writes `terminal_demo_evidence_diagnosis.json` and `.md` under `terminal/demo/runtime_logs/evidence_diagnosis/`.
+
 
 ## Manual
 

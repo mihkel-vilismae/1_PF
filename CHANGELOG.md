@@ -1,3 +1,13 @@
+## 2026-06-29 — v0.14.0
+
+- Added the terminal Demo Mode operator evidence diagnosis loop for v0.14.0.
+- Added root `ANALYZE_TERMINAL_DEMO_EVIDENCE.CMD` and npm script `terminal-demo:evidence-diagnosis` so an operator can analyze the latest rehearsal evidence folder or a supplied evidence ZIP.
+- Added `proof:terminal-demo-evidence-diagnosis`, a self-test that verifies the diagnosis tool classifies known Windows runner root failures.
+- Updated `VERIFY_TERMINAL_DEMO.CMD` to point blocked operators to the diagnosis command.
+- Updated the operator rehearsal proof to verify the diagnosis launcher/script are present.
+- Updated README/HOW_TO_RUN/OpenSpec/handoff status for the v0.14.0 evidence import/fix-loop milestone.
+- Bumped version metadata to `0.14.0`.
+
 ## 2026-06-29 — v0.13.0
 
 - Added the operator release-candidate rehearsal pack for terminal Demo Mode.

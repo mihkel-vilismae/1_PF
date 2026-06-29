@@ -39,11 +39,7 @@ function includes(relativePath, needle) {
 }
 
 function run(command, args) {
-  return execFileSync(command, args, { cwd: repoRoot, encoding: 'utf8', env: { ...process.env, TERMINAL_DEMO_COLUMNS: '420' } });
-}
-
-function runNpm(script) {
-  return run('npm', ['run', script, '--silent']);
+  return execFileSync(command, args, { cwd: repoRoot, encoding: 'utf8', timeout: 120000, maxBuffer: 10 * 1024 * 1024, env: { ...process.env, TERMINAL_DEMO_COLUMNS: '420' } });
 }
 
 function requireSmoke(label, needles) {
@@ -67,7 +63,7 @@ function proofPathIsolation() {
       && includes('terminal/demo/src/playback/PhotoFramePlaybackCommandAdapter.ts', "PF_RUNTIME_MODE: 'demo'")
       && includes('terminal/demo/src/playback/PhotoFramePlaybackCommandAdapter.ts', 'DEMO_QUEUE_OUTPUT_PATH'),
     'Manual worker plans pass demo env values.');
-  check('execution-safety proof passes', runNpm('proof:terminal-demo-execution-safety').includes('"status": "PASSED"'), 'Static worker isolation proof remains green.');
+  check('execution-safety proof passes', run('node', ['tools/run-terminal-demo-execution-safety-proof.mjs']).includes('"status": "PASSED"'), 'Static worker isolation proof remains green.');
 }
 
 function proofNoCron() {
