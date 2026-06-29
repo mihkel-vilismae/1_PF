@@ -19,14 +19,14 @@ export function renderInspector(state: DemoTerminalState, title: string, width?:
 
   return panel(color.blue(title), [
     `${color.cyan('Layout:')} ${color.brightGreen('A/B/C wide dashboard')} when terminal width allows.`,
-    `${color.cyan('Adapter:')} ${state.runtimeBoundary.adapterMode}     ${color.cyan('Readiness:')} ${state.runtimeBoundary.readinessStatus}`,
+    `${color.cyan('Adapter:')} ${state.runtimeBoundary.adapterMode}     ${color.cyan('Readiness:')} ${state.runtimeBoundary.readinessStatus}     ${color.cyan('Batch:')} ${state.selectedBatchSize}`,
     `${color.cyan('Mode:')} ${manualMode ? color.yellow('manual storyboard') : color.brightCyan(isRealDemo ? 'real-demo scaffold idle' : 'auto/idle storyboard')}`,
     `${color.cyan('Active action:')} ${activeAction ? color.active(`[${activeAction.key}] ${activeAction.label}`) : color.muted('-')}`,
     `${color.cyan('Completed buttons:')} ${doneActions}`,
     '',
     color.magenta(isRealDemo ? 'Real-demo boundary' : 'Storyboard'),
     isRealDemo
-      ? color.muted('Group 3A: real media/truth reads plus dry-run command planning; no DB writes, no worker calls.')
+      ? color.muted('Group 3B: W toggles batch size; Q uses selected batch size through guarded manual/no-cron orchestration.')
       : activeLine === '-' ? color.muted('No active storyboard step.') : activeLine.replace('->', color.arrow('->')).replace('[ACTIVE]', color.active('[ACTIVE]')),
     `${color.cyan('Current run title:')} ${state.currentRun.title}`,
     '',
@@ -34,12 +34,12 @@ export function renderInspector(state: DemoTerminalState, title: string, width?:
     `${color.cyan('Stage:')} ${latestStage ? `${latestStage.name} ${latestStage.status} ${latestStage.details || ''}` : color.muted('none')}`,
     `${color.cyan('Worker:')} ${latestWorker ? `${latestWorker.name} ${latestWorker.status} ${latestWorker.lastEvent}` : color.muted('none')}`,
     `${color.cyan('Address:')} ${finalAddress === '-' ? color.muted('-') : color.brightGreen(finalAddress)}`,
-    `${color.cyan('Queue policy:')} ${isRealDemo ? 'Future real-demo queue reader will decide from DEMO queue.' : `Q enqueues rows with valid GPS and resolved address. Queued=${queuedRows.length}; skipped=${skippedRows.length}.`}`,
+    `${color.cyan('Queue policy:')} ${isRealDemo ? 'Real-demo Q uses selected batch size; Group 5 will wire real queue reader.' : `Q enqueues rows with valid GPS and resolved address. Queued=${queuedRows.length}; skipped=${skippedRows.length}.`}`,
     '',
     color.magenta('Controls'),
-    isRealDemo ? color.muted('Q/W/P real execution disabled in Group 3A.') : `${color.brightCyan('Q')} auto-runs the full storyboard.` ,
+    isRealDemo ? color.muted('W toggles batch 1 <-> 5. Q uses selected batch size.') : `${color.brightCyan('Q')} auto-runs the full storyboard.` ,
     isRealDemo ? color.muted('R refreshes boundary; X exits.') : `${color.brightCyan('Right/Left')} manually steps the same path.`,
-    isRealDemo ? color.muted('Later: W toggles batch size and Q runs real demo stages.') : `${color.brightCyan('R')} refreshes. ${color.brightCyan('X')} exits.`,
+    isRealDemo ? color.muted('Real execution requires PHOTOFRAME_TERMINAL_DEMO_EXECUTE=1; default is guarded planning + demo manifest write.') : `${color.brightCyan('R')} refreshes. ${color.brightCyan('X')} exits.`,
     '',
     color.magenta('Runner log area'),
     color.muted('[L]/[V] are Windows runner controls during install/build/verify.'),

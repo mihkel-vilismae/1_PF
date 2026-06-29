@@ -1,11 +1,11 @@
 # PhotoFrame Terminal Demo Mode
 
-Version: `0.10.94`
+Version: `0.10.96`
 
-This folder is the merged terminal/TUI mock plus Group 1/2/4/3A real-demo runtime-boundary, media-discovery, truth/status-read, and dry-run command-plan scaffold for the PhotoFrame Demo Mode beeline.
+This folder is the merged terminal/TUI mock plus Group 1/2/4/3A/3B real-demo runtime-boundary, media-discovery, truth/status-read, command-plan, and guarded W/Q orchestration scaffold for the PhotoFrame Demo Mode beeline.
 ## Merged into PhotoFrame
 
-As of PhotoFrame `0.10.94`, this terminal demo lives inside the main PhotoFrame repo at `terminal/demo/`. The real-demo adapter is still read-only and dry-run only; real worker execution begins in a later Group 3B slice.
+As of PhotoFrame `0.10.94`, this terminal demo lives inside the main PhotoFrame repo at `terminal/demo/`. The real-demo adapter now supports W batch-size toggling and Q selected-batch orchestration. Default worker execution remains guarded; use `PHOTOFRAME_TERMINAL_DEMO_EXECUTE=1` only when intentionally testing real worker calls against DEMO paths.
 
 PhotoFrame root commands:
 
@@ -116,6 +116,21 @@ PHOTOFRAME_REPO_ROOT=/path/to/PF_login_v0.10.93 npm run demo:terminal:real:comma
 ```
 
 Group 3A remains read-only: no worker calls, no DB writes, no truth JSONL writes, no queue writes, no manifest writes, and no cron.
+
+
+## Real-demo Group 3B guarded W/Q orchestration
+
+Version `0.10.96` adds the first real-demo W/Q orchestration path inside PhotoFrame:
+
+- `W` toggles selected `batch_size` between `1` and `5`,
+- selected batch size is visible in the terminal banner and inspector,
+- `Q` consumes the selected batch size,
+- `Q` writes a demo-owned manifest under `DEMO_RUNTIME_OUTPUT_DIR` after a path-safety check,
+- `Q` records a guarded manual/no-cron worker command result,
+- LEFT/RIGHT replay captured Q snapshots after a real-demo run,
+- default smoke behavior does not execute workers unless `PHOTOFRAME_TERMINAL_DEMO_EXECUTE=1` is explicitly set.
+
+Group 3B still does not implement the real playback queue reader, fullscreen playback, or screen on/off behavior.
 
 ## Current scope
 

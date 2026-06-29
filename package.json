@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.10.95",
+  "version": "0.10.96",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -208,7 +208,9 @@
     "demo:terminal:real:smoke": "tsx terminal/demo/src/main.ts --adapter=real-demo --real-demo-smoke",
     "proof:terminal-demo-merge-smoke": "node terminal/demo/scripts/verify-smoke.mjs",
     "demo:terminal:real:command-plan-smoke": "tsx terminal/demo/src/main.ts --adapter=real-demo --real-demo-command-plan-smoke",
-    "demo:terminal:real:config-smoke": "tsx terminal/demo/src/main.ts --adapter=real-demo --runtime-config-smoke"
+    "demo:terminal:real:config-smoke": "tsx terminal/demo/src/main.ts --adapter=real-demo --runtime-config-smoke",
+    "demo:terminal:real:w-toggle-smoke": "tsx terminal/demo/src/main.ts --adapter=real-demo --w-toggle-smoke",
+    "demo:terminal:real:q-batch5-smoke": "tsx terminal/demo/src/main.ts --adapter=real-demo --batch-size=5 --q-smoke"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

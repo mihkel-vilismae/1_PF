@@ -11,6 +11,7 @@ export type GeocodeStatus = 'not run' | 'resolved' | 'failed' | 'skipped';
 export type QueueStatus = 'not queued' | 'enqueued' | 'not eligible';
 export type StageStatus = 'Idle' | 'Started' | 'Finished' | 'Error';
 export type WorkerStatus = 'Waiting' | 'Started' | 'Finished' | 'Disabled' | 'Error';
+export type SupportedBatchSize = 1 | 5;
 
 export interface MediaRow {
   rowNumber: number;
@@ -73,6 +74,7 @@ export interface DemoTerminalState {
   runtimeBoundary: RuntimeBoundaryState;
   banner: string;
   warning: string;
+  selectedBatchSize: SupportedBatchSize;
   mediaRows: MediaRow[];
   actions: ActionItemState[];
   currentRun: CurrentRunState;

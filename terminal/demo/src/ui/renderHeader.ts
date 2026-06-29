@@ -14,7 +14,7 @@ export function renderHeader(state: DemoTerminalState, title: string, width?: nu
       : color.danger;
 
   return panel(color.brightGreen(title), [
-    `${color.cyan('Runtime:')} ${color.brightCyan(boundary.runtimeMode.toUpperCase())}     ${color.cyan('Adapter:')} ${color.magenta(boundary.adapterMode)}     ${color.cyan('Version:')} ${color.magenta(`v${state.version}`)}     ${color.cyan('No cron:')} ${color.brightGreen('yes')}`,
+    `${color.cyan('Runtime:')} ${color.brightCyan(boundary.runtimeMode.toUpperCase())}     ${color.cyan('Adapter:')} ${color.magenta(boundary.adapterMode)}     ${color.cyan('Version:')} ${color.magenta(`v${state.version}`)}     ${color.cyan('Batch:')} ${color.brightGreen(String(state.selectedBatchSize))}     ${color.cyan('No cron:')} ${color.brightGreen('yes')}`,
     `${color.cyan('Readiness:')} ${statusColor(boundary.readinessStatus.toUpperCase())}     ${color.cyan('Data:')} ${color.yellow(state.dataMode)}     ${color.cyan('Source:')} ${boundary.sourceSummary}`,
     color.yellow(state.warning),
     `${color.green('Boundary:')} terminal UI owns rendering/keys only; runtime adapter owns data source and worker calls.`,

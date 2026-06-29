@@ -3,7 +3,7 @@
 
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { ActionItemState, DemoTerminalState, MediaRow, StagePanelRow, WorkerPanelRow } from './DemoTerminalState.js';
+import type { ActionItemState, DemoTerminalState, MediaRow, StagePanelRow, WorkerPanelRow, SupportedBatchSize } from './DemoTerminalState.js';
 import type { RuntimeBoundaryState } from '../config/runtimeTypes.js';
 import type { DemoTruthReadResult } from '../truth/DemoTruthRepository.js';
 
@@ -11,16 +11,16 @@ const realDemoActions: ActionItemState[] = [
   {
     key: 'Q',
     label: 'Run selected demo batch',
-    enabled: false,
-    info: 'Disabled in Group 3A: dry-run command plan only; real execution waits for PhotoFrame merge.',
+    enabled: true,
+    info: 'Runs selected real-demo batch through guarded manual worker path; no cron.',
     active: false,
     done: false
   },
   {
     key: 'W',
     label: 'Toggle batch size',
-    enabled: false,
-    info: 'Disabled in Group 3A: W toggle execution waits for Group 3B; dry-run plans show batch_size=1 and 5.',
+    enabled: true,
+    info: 'Toggles selected batch size 1 <-> 5; does not run workers.',
     active: false,
     done: false
   },
@@ -77,7 +77,8 @@ export function createInitialRealDemoState(
   mediaRows: MediaRow[] = [],
   mediaMessages: string[] = [],
   truth: DemoTruthReadResult = { stages: [], workers: [], messages: [] },
-  dryRunPlanLines: string[] = []
+  dryRunPlanLines: string[] = [],
+  selectedBatchSize: SupportedBatchSize = 1
 ): DemoTerminalState {
   const version = readVersion();
   const statusText = boundary.readinessStatus.toUpperCase();
@@ -91,19 +92,21 @@ export function createInitialRealDemoState(
     dataMode: 'real_demo_truth',
     runtimeBoundary: boundary,
     banner: `PHOTOFRAME REAL DEMO TERMINAL v${version}`,
-    warning: `Group 3A dry-run command planning: boundary is ${statusText}; no real workers/stages are called yet.`,
+    warning: `Group 3B guarded Q/W orchestration: boundary is ${statusText}; W toggles batch size and Q uses the selected value.`,
+    selectedBatchSize,
     mediaRows,
     actions: realDemoActions.map((action) => ({ ...action })),
     currentRun: {
       title: 'CURRENT RUN',
       lines: [
-        'Real-demo beeline Group 3A is installed.',
-        'This screen resolves DEMO paths, reads generated demo media/truth, and plans manual worker commands.',
-        'Q/W/P real execution remains disabled; Group 3A is dry-run command planning only.',
+        'Real-demo beeline Group 3B is installed.',
+        'This screen resolves DEMO paths, reads generated demo media/truth, and can run guarded manual Q orchestration.',
+        'W toggles selected batch size. Q uses the selected batch size. No cron is used.',
         '',
         `Adapter: ${boundary.adapterMode}`,
         `Runtime mode: ${boundary.runtimeMode}`,
         `Readiness: ${boundary.readinessStatus}`,
+        `Selected batch_size: ${selectedBatchSize}`,
         `Media rows selected: ${selectedCount} (${validCount} valid, ${problemCount} problem/invalid)`,
         ...dryRunPlanLines.map((line) => `Command plan: ${line}`),
         ...mediaRows.map((row) => `Selected row #${row.rowNumber}: ${row.relativePath ?? row.fileName} gps=${row.gps}`),
@@ -116,7 +119,7 @@ export function createInitialRealDemoState(
     rpiWorkers: truth.workers.map((worker) => ({ ...worker })),
     playback: {
       runPlaybackEnabled: false,
-      info: 'Real demo queue reader is not wired yet; Group 3A only plans worker commands.',
+      info: 'Real demo queue reader is not wired yet; Group 3B only handles W/Q orchestration.',
       imageDurationSeconds: 5,
       fullScreenEnabled: false,
       fullScreenInfo: 'Not yet implemented.'

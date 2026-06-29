@@ -8,17 +8,23 @@ import { RealDemoTruthRepository } from '../truth/RealDemoTruthRepository.js';
 import { buildDryRunCommandPlans, formatDryRunPlanLines } from '../orchestration/DemoDryRunCommandPlanner.js';
 import type { DemoTerminalState } from '../state/DemoTerminalState.js';
 import type { DemoRuntimeAdapter } from './DemoRuntimeAdapter.js';
+import type { SupportedBatchSize } from '../run/SupportedBatchSize.js';
+import { toggleBatchSize } from '../run/SupportedBatchSize.js';
+import { runRealDemoQ } from '../run/RealDemoRunController.js';
+import { RunSnapshotStore } from '../run/RunSnapshotStore.js';
 
 /**
- * Group 3A real-demo scaffold.
+ * Group 3B real-demo adapter scaffold.
  *
- * This adapter reads generated demo media/truth/status and builds a dry-run
- * command plan for future manual worker execution. It still does not call
- * workers, mutate DB rows, write truth JSONL, or populate the real queue.
+ * It reads generated demo media/truth/status, lets W toggle selected batch size,
+ * and lets Q use that selected size through a guarded manual/no-cron runner.
+ * Real worker execution is available only behind PHOTOFRAME_TERMINAL_DEMO_EXECUTE=1.
  */
 export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
   readonly modeName = 'real-demo';
   private state: DemoTerminalState;
+  private selectedBatchSize: SupportedBatchSize = 1;
+  private snapshots = new RunSnapshotStore();
 
   constructor(private readonly boundary: RuntimeBoundaryState) {
     this.state = this.buildState();
@@ -29,6 +35,8 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
   }
 
   reset(): DemoTerminalState {
+    this.selectedBatchSize = 1;
+    this.snapshots.setSnapshots([]);
     this.state = this.buildState();
     return this.getState();
   }
@@ -40,19 +48,58 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
 
   async handleKey(key: string): Promise<DemoTerminalState[]> {
     const normalized = key.toUpperCase();
+    if (normalized === 'W') return [this.toggleBatchSize()];
+    if (normalized === 'Q') return this.runQStoryboard();
+    if (normalized === 'ARROWRIGHT') return [this.stepQStoryboard('right')];
+    if (normalized === 'ARROWLEFT') return [this.stepQStoryboard('left')];
     if (normalized === 'R') return [this.refresh()];
     return [this.getState()];
   }
 
   async runQStoryboard(): Promise<DemoTerminalState[]> {
-    return [this.getState()];
+    const source = this.readSources();
+    const frames = runRealDemoQ({
+      boundary: this.boundary,
+      batchSize: this.selectedBatchSize,
+      mediaRows: source.mediaRows,
+      mediaMessages: source.mediaMessages,
+      truth: source.truth
+    });
+    this.snapshots.setSnapshots(frames);
+    this.state = cloneState(frames[frames.length - 1] ?? this.buildState());
+    return frames.map(cloneState);
   }
 
-  stepQStoryboard(): DemoTerminalState {
+  stepQStoryboard(direction: 'left' | 'right'): DemoTerminalState {
+    this.state = this.snapshots.step(direction, this.state);
     return this.getState();
   }
 
-  private buildState(): DemoTerminalState {
+  private toggleBatchSize(): DemoTerminalState {
+    this.selectedBatchSize = toggleBatchSize(this.selectedBatchSize);
+    this.state = this.buildState([
+      `W pressed: selected batch_size=${this.selectedBatchSize}`,
+      'W only changes the setting; it does not run workers.',
+      'Press Q to run using the selected batch size.'
+    ]);
+    this.snapshots.setSnapshots([]);
+    return this.getState();
+  }
+
+  private buildState(extraLines: string[] = []): DemoTerminalState {
+    const source = this.readSources();
+    const dryRunPlanLines = formatDryRunPlanLines(buildDryRunCommandPlans(this.boundary, source.mediaRows));
+    return createInitialRealDemoState(
+      this.boundary,
+      source.mediaRows,
+      source.mediaMessages,
+      source.truth,
+      [...extraLines, ...dryRunPlanLines],
+      this.selectedBatchSize
+    );
+  }
+
+  private readSources(): { mediaRows: ReturnType<RealDemoMediaRepository['listDemoMediaRows']>['rows']; mediaMessages: string[]; truth: ReturnType<RealDemoTruthRepository['readDemoTruth']> } {
     const paths = {
       repoRoot: this.boundary.repoRoot,
       dbPath: this.boundary.dbPath,
@@ -65,9 +112,7 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
     };
     const mediaDiscovery = new RealDemoMediaRepository(paths).listDemoMediaRows();
     const truth = new RealDemoTruthRepository(paths).readDemoTruth();
-    const dryRunPlanLines = formatDryRunPlanLines(buildDryRunCommandPlans(this.boundary, mediaDiscovery.rows));
-
-    return createInitialRealDemoState(this.boundary, mediaDiscovery.rows, mediaDiscovery.messages, truth, dryRunPlanLines);
+    return { mediaRows: mediaDiscovery.rows, mediaMessages: mediaDiscovery.messages, truth };
   }
 }
 

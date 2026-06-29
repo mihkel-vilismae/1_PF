@@ -57,6 +57,8 @@ function createTruthFixtureRepo() {
 
   const truthDir = join(root, 'runtime_data', 'v2_worker_truth', 'demo');
   mkdirSync(truthDir, { recursive: true });
+  mkdirSync(join(root, 'runtime_data', 'demo', 'outputs'), { recursive: true });
+  mkdirSync(join(root, 'runtime_data', 'demo'), { recursive: true });
   writeFileSync(join(truthDir, 'regular-worker.truth.jsonl'), [
     { worker: 'regular-worker', stage: 'index', status: 'finished', timestamp: '2026-06-29T01:00:01.000Z', message: 'index finished', counts: { processed: 6 } },
     { worker: 'regular-worker', stage: 'gps', status: 'finished', timestamp: '2026-06-29T01:00:02.000Z', message: 'gps finished', counts: { gps_valid: 3, gps_missing: 1, gps_invalid: 2 } },
@@ -77,6 +79,8 @@ const runtimeConfig = run(['--adapter=real-demo', '--runtime-config-smoke']);
 const truthFixtureRepo = createTruthFixtureRepo();
 const realDemoWithTruth = run(['--real-demo-smoke'], { PHOTOFRAME_REPO_ROOT: truthFixtureRepo });
 const commandPlan = run(['--adapter=real-demo', '--real-demo-command-plan-smoke'], { PHOTOFRAME_REPO_ROOT: truthFixtureRepo });
+const realWToggle = run(['--adapter=real-demo', '--w-toggle-smoke'], { PHOTOFRAME_REPO_ROOT: truthFixtureRepo });
+const realQBatch5 = run(['--adapter=real-demo', '--batch-size=5', '--q-smoke'], { PHOTOFRAME_REPO_ROOT: truthFixtureRepo });
 
 const colorsEnabled = process.env.NO_COLOR !== '1' && process.env.NO_COLOR !== 'true';
 if (colorsEnabled) {
@@ -102,8 +106,8 @@ for (const [needle, label] of [
   ['PHOTOFRAME REAL DEMO TERMINAL', 'real-demo header'],
   ['Adapter: real-demo', 'real-demo adapter banner'],
   ['Data: real_demo_truth', 'real-demo data mode'],
-  ['Group 3A dry-run command planning', 'real-demo group 3A warning'],
-  ['Q/W/P real execution remains disabled', 'real-demo disabled actions note'],
+  ['Group 3B guarded Q/W orchestration', 'real-demo group 3B warning'],
+  ['W toggles selected batch size', 'real-demo batch toggle note'],
   ['GENERATED DEMO MEDIA', 'real-demo media title'],
   ['RPI-STAGES — DEMO TRUTH', 'real-demo stages truth'],
   ['RPI-WORKERS — DEMO TRUTH', 'real-demo workers truth']
@@ -120,10 +124,25 @@ for (const [needle, label] of [
   ['"batchSize": 1', 'command plan batch size 1'],
   ['"batchSize": 5', 'command plan batch size 5'],
   ['"noCron": true', 'command plan no cron'],
-  ['"mergeRequiredBeforeExecution": true', 'command plan merge warning'],
-  ['npm run api -- --scheduler regular-stage-worker', 'regular worker command plan'],
+    ['npm run api -- --scheduler regular-stage-worker', 'regular worker command plan'],
   ['terminal_demo_batch_size_5.manifest.json', 'batch 5 manifest plan']
 ]) assertIncludes(commandPlan, needle, label);
+
+
+for (const [needle, label] of [
+  ['W pressed: selected batch_size=5', 'W toggle selected batch 5'],
+  ['Batch: 5', 'header batch size 5'],
+  ['Press Q to run using the selected batch size.', 'W toggle Q hint']
+]) assertIncludes(realWToggle, needle, label);
+
+
+for (const [needle, label] of [
+  ['Q pressed: real-demo selected batch_size=5', 'Q consumes selected batch 5'],
+  ['Selection: first 5 generated demo rows', 'Q batch 5 row selection'],
+  ['Manifest: written', 'Q writes demo manifest'],
+  ['Execution: planned', 'Q guarded execution plan'],
+  ['No cron was used by the terminal.', 'Q no cron statement']
+]) assertIncludes(realQBatch5, needle, label);
 
 for (const [needle, label] of [
   ['"adapterMode": "real-demo"', 'runtime config adapter'],

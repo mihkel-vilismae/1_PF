@@ -1,3 +1,12 @@
+## 0.10.96 - 2026-06-29
+
+- Implemented terminal Demo Mode Group 3B guarded W/Q orchestration inside PhotoFrame.
+- Added visible selected batch size state; W toggles `batch_size` between 1 and 5 without running workers.
+- Added Q flow that consumes the selected batch size, writes a demo-owned batch manifest under `DEMO_RUNTIME_OUTPUT_DIR`, and records a guarded manual/no-cron worker command result.
+- Added terminal run snapshot replay for LEFT/RIGHT after real-demo Q flows and smoke coverage for W toggle plus batch-size 5 Q selection.
+- Extended backend runtime mode normalization so `PF_RUNTIME_MODE=demo`/`RUNTIME_MODE=demo` maps request context paths to DEMO-owned DB/download/log values for future guarded worker execution.
+- Kept default real worker execution guarded behind `PHOTOFRAME_TERMINAL_DEMO_EXECUTE=1`; no cron, real/test path writes, fullscreen, or screen/on-off behavior were added.
+
 ## 0.10.95 - 2026-06-29
 
 - Updated the root `.ai-context-ignore` as an AI-context loading policy, not a `.gitignore`, so large/history/proof/runtime files remain tracked but are skipped from default AI context unless the task directly touches their domain.

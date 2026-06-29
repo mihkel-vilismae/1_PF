@@ -2944,8 +2944,9 @@ function resolveDashboardRuntimeMode(input: { request?: IncomingMessage; url?: U
   const bodyMode = isJsonObject(input.body)
     ? input.body.runtimeMode ?? input.body.mode ?? null
     : null;
+  const envMode = process.env.PF_RUNTIME_MODE ?? process.env.RUNTIME_MODE ?? null;
 
-  return normalizeDashboardRuntimeMode(headerText ?? queryMode ?? bodyMode);
+  return normalizeDashboardRuntimeMode(headerText ?? queryMode ?? bodyMode ?? envMode);
 }
 
 async function loadEnvValues(): Promise<EnvValues> {

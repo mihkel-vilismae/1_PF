@@ -5,7 +5,7 @@
  */
 import path from 'node:path';
 
-export type DashboardRuntimeMode = 'real' | 'test';
+export type DashboardRuntimeMode = 'real' | 'test' | 'demo';
 
 export type RuntimeModeEnvValues = {
   [key: string]: string | undefined;
@@ -19,11 +19,14 @@ const DEFAULT_TEST_DB_PATH = `${TEST_RUNTIME_ROOT}/test_photo_frame.sqlite`;
 const DEFAULT_TEST_LOG_DIR = `${TEST_RUNTIME_ROOT}/logs`;
 const DEFAULT_TEST_COOKIE_DIR = `${TEST_RUNTIME_ROOT}/icloudpd_cookies`;
 const DEFAULT_TEST_RAW_STDIO_LOG_PATH = `${TEST_RUNTIME_ROOT}/private_logs/icloudpd_raw_stdio.log`;
+const DEFAULT_DEMO_RUNTIME_ROOT = 'runtime_data/demo';
 
 // Converts loosely supplied mode text into the only two supported runtime modes.
 export function normalizeDashboardRuntimeMode(value: unknown): DashboardRuntimeMode {
   const normalized = String(value ?? '').trim().toLowerCase();
-  return normalized === 'test' ? 'test' : 'real';
+  if (normalized === 'test') return 'test';
+  if (normalized === 'demo') return 'demo';
+  return 'real';
 }
 
 // Applies mode-specific environment overrides while leaving Real Mode unchanged.
@@ -31,6 +34,19 @@ export function applyDashboardRuntimeModeToEnvValues(
   envValues: RuntimeModeEnvValues,
   mode: DashboardRuntimeMode,
 ): RuntimeModeEnvValues {
+  if (mode === 'demo') {
+    const demoRoot = envValues.DEMO_RUNTIME_OUTPUT_DIR || DEFAULT_DEMO_RUNTIME_ROOT;
+    return {
+      ...envValues,
+      RUNTIME_MODE: 'demo',
+      PF_RUNTIME_MODE: 'demo',
+      DOWNLOAD_DIR: envValues.DEMO_DOWNLOAD_DIR || 'generated_test_data',
+      DB_PATH: envValues.DEMO_DB_PATH || `${DEFAULT_DEMO_RUNTIME_ROOT}/demo.sqlite`,
+      LOG_DIR: envValues.DEMO_LOG_DIR || `${DEFAULT_DEMO_RUNTIME_ROOT}/logs`,
+      DEMO_RUNTIME_OUTPUT_DIR: demoRoot,
+    };
+  }
+
   if (mode !== 'test') {
     return {
       ...envValues,

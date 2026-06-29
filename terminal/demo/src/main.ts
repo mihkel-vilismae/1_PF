@@ -16,6 +16,9 @@ const layout = readTerminalLayout();
 const args = new Set(process.argv.slice(2));
 const runtimeConfig = readTerminalRuntimeConfig(process.argv.slice(2));
 const adapter = createAdapter(runtimeConfig);
+if (args.has('--batch-size=5')) {
+  await adapter.handleKey('W');
+}
 
 function createAdapter(config: ReturnType<typeof readTerminalRuntimeConfig>): DemoRuntimeAdapter {
   if (config.adapterMode === 'real-demo') {
@@ -59,6 +62,13 @@ if (args.has('--real-demo-command-plan-smoke')) {
 
 if (args.has('--runtime-config-smoke')) {
   printFrame(JSON.stringify(runtimeConfig.boundary, null, 2));
+  process.exit(0);
+}
+
+
+if (args.has('--w-toggle-smoke')) {
+  const frames = await adapter.handleKey('W');
+  printFrame(renderScreen(frames[0] ?? adapter.getState(), layout));
   process.exit(0);
 }
 
@@ -118,6 +128,12 @@ process.stdin.on('data', async (chunk) => {
   const arrowKey = normalizeArrowKey(key);
   if (arrowKey) {
     const frames = await adapter.handleKey(arrowKey);
+    clearAndPrint(renderScreen(frames[0] ?? adapter.getState(), layout));
+    return;
+  }
+
+  if (key.toUpperCase() === 'W') {
+    const frames = await adapter.handleKey('W');
     clearAndPrint(renderScreen(frames[0] ?? adapter.getState(), layout));
     return;
   }
