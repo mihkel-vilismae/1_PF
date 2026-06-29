@@ -34,7 +34,7 @@ function slug(value) {
   return String(value).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'command';
 }
 
-function runCommand(label, command, args) {
+function runCommand(label, command, args, extraEnv = {}) {
   const logPath = path.join(evidenceRoot, `${slug(label)}.log`);
   const startedAt = new Date().toISOString();
   const result = spawnSync(command, args, {
@@ -43,7 +43,7 @@ function runCommand(label, command, args) {
     timeout: 240000,
     maxBuffer: 12 * 1024 * 1024,
     shell: process.platform === 'win32',
-    env: { ...process.env, TERMINAL_DEMO_COLUMNS: process.env.TERMINAL_DEMO_COLUMNS ?? '420' }
+    env: { ...process.env, ...extraEnv, TERMINAL_DEMO_COLUMNS: process.env.TERMINAL_DEMO_COLUMNS ?? '420' }
   });
   const finishedAt = new Date().toISOString();
   const exitCode = typeof result.status === 'number' ? result.status : 1;
@@ -141,7 +141,7 @@ check('OpenSpec documents transferable package proof',
 const finalProof = runCommand('terminal-demo-final-proof', process.execPath, ['tools/run-terminal-demo-final-guard-proof.mjs', 'final']);
 check('final guard proof passes', finalProof.exitCode === 0 && finalProof.stdout.includes('"status": "PASSED"'), `exit=${finalProof.exitCode}`);
 
-const rehearsal = runCommand('terminal-demo-operator-rehearsal', process.execPath, ['tools/run-terminal-demo-operator-rehearsal.mjs']);
+const rehearsal = runCommand('terminal-demo-operator-rehearsal', process.execPath, ['tools/run-terminal-demo-operator-rehearsal.mjs'], { TERMINAL_DEMO_OPERATOR_REHEARSAL_ASSUME_FINAL_PASSED: '1' });
 const rehearsalJson = parseJsonFromOutput(rehearsal.stdout);
 check('operator rehearsal command passes', rehearsal.exitCode === 0 && rehearsalJson?.status === 'PASSED', `exit=${rehearsal.exitCode}; status=${rehearsalJson?.status ?? 'unparsed'}`);
 check('operator rehearsal produced evidence ZIP', Boolean(rehearsalJson?.evidenceZip), rehearsalJson?.evidenceZip ?? 'missing');
