@@ -257,3 +257,14 @@ The V2 startup/sidebar work is documented in:
 The repository version is stored in both [`VERSION`](VERSION) and `package.json`. Release notes belong in [`CHANGELOG.md`](CHANGELOG.md).
 
 Use focused commits for focused changes. For implementation handoff ZIPs, preserve `.git` history and avoid squashing unrelated changes.
+
+
+## Terminal Demo transferable package proof
+
+The v0.16.0 terminal Demo Mode RC package includes tracked `TRANSFERABLE_REPO_PACKAGER.cmd` and can be checked with:
+
+```bash
+npm run proof:terminal-demo-transferable-package
+```
+
+On Windows, run `VERIFY_TERMINAL_DEMO_TRANSFERABLE_PACKAGE.CMD` from the repo root.

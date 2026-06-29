@@ -1,6 +1,6 @@
 # How to Run
 
-> Current checkpoint: `v0.14.0`. This file is intentionally short; longer operator detail belongs in `docs/10_runbooks/`.
+> Current checkpoint: `v0.16.0`. This file is intentionally short; longer operator detail belongs in `docs/10_runbooks/`.
 
 ## Use this for quickstart
 
@@ -26,7 +26,7 @@ S:\_PHOTOFRAMES\PF_login_v0.10.67_target_live_proof_readiness_full_git\full_wind
 
 ## Current launcher and database paths
 
-- Repository/package version: `0.14.0`.
+- Repository/package version: `0.16.0`.
 - Windows launcher: `start_scripts/windows/START_WIN.PS1`.
 - Raspberry launcher: `start_scripts/raspberry/START_RASPBERRYOS.SH`.
 - Canonical SQLite schema: `database/schema.sql`.
@@ -59,6 +59,23 @@ ANALYZE_TERMINAL_DEMO_EVIDENCE.CMD path\to\terminal_demo_operator_rehearsal.zip
 ```
 
 This writes `terminal_demo_evidence_diagnosis.json` and `.md` under `terminal/demo/runtime_logs/evidence_diagnosis/`.
+
+
+## Terminal Demo Mode transferable RC package proof
+
+From the extracted repository root on Windows, run:
+
+```cmd
+VERIFY_TERMINAL_DEMO_TRANSFERABLE_PACKAGE.CMD
+```
+
+Equivalent npm command:
+
+```bash
+npm run proof:terminal-demo-transferable-package
+```
+
+This verifies the package is a clean transferable RC package with Git history, tracked packager helper, version/package identity, root launchers, and evidence-only proof output.
 
 
 ## Manual

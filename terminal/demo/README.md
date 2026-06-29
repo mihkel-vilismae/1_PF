@@ -1,6 +1,6 @@
 # PhotoFrame Terminal Demo Mode
 
-Version: `0.15.0`
+Version: `0.16.0`
 
 This folder is the merged terminal/TUI mock plus real-demo runtime-boundary, media-discovery, truth/status-read, command-plan, guarded W/Q orchestration, queue-reader, and playback selected-item visibility scaffold for the PhotoFrame Demo Mode beeline.
 ## Merged into PhotoFrame
@@ -426,3 +426,22 @@ VERIFY_TERMINAL_DEMO_RC.CMD
 ```
 
 The audit runs the final terminal-demo guard proof, the operator rehearsal proof, and evidence diagnosis against the rehearsal evidence. It also checks that the root launchers and npm scripts print clear `PASSED` / `BLOCKED` summaries. Evidence is written under `terminal/demo/runtime_logs/rc_readiness/` and contains logs/status only, not the source repository.
+
+
+## v0.16.0 transferable RC package proof
+
+Version `0.16.0` adds packaging/proof hygiene only. It does not add terminal-demo runtime behavior. The formerly untracked `TRANSFERABLE_REPO_PACKAGER.cmd` is now an intentional repo-root packaging helper and is verified as a tracked file.
+
+Run the transferable package proof from the repo root:
+
+```bash
+npm run proof:terminal-demo-transferable-package
+```
+
+On Windows, use the root launcher:
+
+```cmd
+VERIFY_TERMINAL_DEMO_TRANSFERABLE_PACKAGE.CMD
+```
+
+The proof verifies `VERSION` / `package.json` / `package-lock.json` identity, Git HEAD readability, `git fsck --no-dangling`, clean worktree state after extraction, root launcher presence, tracked packager policy, and evidence-only output under `terminal/demo/runtime_logs/transferable_package/`. The v0.16.0 RC readiness audit also runs this proof before declaring `RC1_READY_FOR_OPERATOR_REHEARSAL`.

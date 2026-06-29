@@ -103,6 +103,7 @@ check('current milestone version is active', /^\d+\.\d+\.\d+$/.test(version), `V
 check('root operator verifier exists', existsSync(path.join(repoRoot, 'VERIFY_TERMINAL_DEMO.CMD')), 'VERIFY_TERMINAL_DEMO.CMD');
 check('root RC verifier exists', existsSync(path.join(repoRoot, 'VERIFY_TERMINAL_DEMO_RC.CMD')), 'VERIFY_TERMINAL_DEMO_RC.CMD');
 check('evidence diagnosis launcher exists', existsSync(path.join(repoRoot, 'ANALYZE_TERMINAL_DEMO_EVIDENCE.CMD')), 'ANALYZE_TERMINAL_DEMO_EVIDENCE.CMD');
+check('transferable package verifier exists', existsSync(path.join(repoRoot, 'VERIFY_TERMINAL_DEMO_TRANSFERABLE_PACKAGE.CMD')), 'VERIFY_TERMINAL_DEMO_TRANSFERABLE_PACKAGE.CMD');
 
 for (const script of [
   'proof:terminal-demo-final',
@@ -110,6 +111,7 @@ for (const script of [
   'terminal-demo:evidence-diagnosis',
   'proof:terminal-demo-evidence-diagnosis',
   'proof:terminal-demo-rc-readiness',
+  'proof:terminal-demo-transferable-package',
   'demo:terminal:real:smoke',
   'demo:terminal:mock:smoke'
 ]) {
@@ -122,11 +124,17 @@ check('operator verifier prints PASS/BLOCKED outcomes',
 check('RC verifier prints PASS/BLOCKED outcomes',
   textContains('VERIFY_TERMINAL_DEMO_RC.CMD', 'PASSED') && textContains('VERIFY_TERMINAL_DEMO_RC.CMD', 'BLOCKED'),
   'VERIFY_TERMINAL_DEMO_RC.CMD has clear terminal summary wording.');
+check('transferable package verifier prints PASS/BLOCKED outcomes',
+  textContains('VERIFY_TERMINAL_DEMO_TRANSFERABLE_PACKAGE.CMD', 'PASSED') && textContains('VERIFY_TERMINAL_DEMO_TRANSFERABLE_PACKAGE.CMD', 'BLOCKED'),
+  'VERIFY_TERMINAL_DEMO_TRANSFERABLE_PACKAGE.CMD has clear terminal summary wording.');
 check('terminal README documents RC audit command',
   textContains('terminal/demo/README.md', 'proof:terminal-demo-rc-readiness'),
   'terminal/demo/README.md');
 check('OpenSpec documents RC readiness gate',
   textContains('docs/20_architecture_and_specs/openspec/terminal_demo_real_mode_openspec.md', 'v1.0 RC readiness'),
+  'terminal demo OpenSpec');
+check('OpenSpec documents transferable package proof',
+  textContains('docs/20_architecture_and_specs/openspec/terminal_demo_real_mode_openspec.md', 'transferable RC package'),
   'terminal demo OpenSpec');
 
 const finalProof = runCommand('terminal-demo-final-proof', process.execPath, ['tools/run-terminal-demo-final-guard-proof.mjs', 'final']);
@@ -144,6 +152,11 @@ const diagnosis = runCommand('terminal-demo-evidence-diagnosis', process.execPat
 const diagnosisJson = parseJsonFromOutput(diagnosis.stdout);
 check('evidence diagnosis command passes on rehearsal evidence', diagnosis.exitCode === 0 && diagnosisJson?.status === 'PASSED', `exit=${diagnosis.exitCode}; status=${diagnosisJson?.status ?? 'unparsed'}`);
 check('evidence diagnosis writes reports', Boolean(diagnosisJson?.reports?.jsonPath && diagnosisJson?.reports?.markdownPath), JSON.stringify(diagnosisJson?.reports ?? {}));
+
+const packageProof = runCommand('terminal-demo-transferable-package-proof', process.execPath, ['tools/run-terminal-demo-transferable-package-proof.mjs']);
+const packageProofJson = parseJsonFromOutput(packageProof.stdout);
+check('transferable package proof passes', packageProof.exitCode === 0 && packageProofJson?.status === 'PASSED', `exit=${packageProof.exitCode}; status=${packageProofJson?.status ?? 'unparsed'}`);
+check('transferable package proof marks package ready', packageProofJson?.packageDecision === 'TRANSFERABLE_RC_PACKAGE_READY', packageProofJson?.packageDecision ?? 'missing');
 
 check('RC evidence folder excludes source files', !collectEvidenceFiles().some((file) => /(?:^|[\\/])(?:src|tools)[\\/].*\.(?:ts|js|mjs)$/.test(path.relative(evidenceRoot, file))), 'Only logs/status files are written under rc_readiness.');
 

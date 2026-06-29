@@ -1,3 +1,10 @@
+# 0.16.0 - Terminal Demo transferable RC package proof
+
+- Committed `TRANSFERABLE_REPO_PACKAGER.cmd` as an intentional repo-root packaging helper instead of leaving it as an untracked ZIP artifact.
+- Added `proof:terminal-demo-transferable-package` and `VERIFY_TERMINAL_DEMO_TRANSFERABLE_PACKAGE.CMD` to verify transferable package hygiene, Git history, clean extracted worktree state, root launchers, package identity, and evidence-only proof output.
+- Extended `proof:terminal-demo-rc-readiness` so RC1 readiness also requires the transferable package proof to pass.
+- Preserved terminal Demo Mode runtime behavior: no new worker execution, cron usage, real/test data access, native/fullscreen playback, or mock substitution was added.
+- Bumped version metadata to `0.16.0`.
 
 # 0.15.1 - Git commit version-bump housekeeping
 

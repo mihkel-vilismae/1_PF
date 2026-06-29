@@ -163,3 +163,30 @@ The gate is intentionally narrow. It must not introduce new runtime behavior, cr
 - RC readiness logs do not package the source repository.
 
 A passing result means `v0.15.0` is RC1-ready for operator rehearsal, not that production cron or real/test data may be used by Demo Mode.
+
+
+## v0.16.0 transferable RC package proof
+
+The transferable RC package proof is a packaging hygiene gate, not a terminal Demo Mode runtime feature. It must preserve the v1.0 RC safety boundaries: DEMO-owned paths only, no cron, no real/test data writes, no native/fullscreen playback enablement, and no mock substitution in the real-demo path.
+
+The proof command is:
+
+```bash
+npm run proof:terminal-demo-transferable-package
+```
+
+Windows operators may run:
+
+```cmd
+VERIFY_TERMINAL_DEMO_TRANSFERABLE_PACKAGE.CMD
+```
+
+The gate requires:
+
+- `VERSION`, `package.json`, and `package-lock.json` agree on the current milestone version.
+- `TRANSFERABLE_REPO_PACKAGER.cmd` is tracked by Git and contains the readable self-contained packager payload.
+- `.git` history is present, `git fsck --no-dangling` passes, and the extracted worktree is clean.
+- root operator launchers remain present and discoverable.
+- generated proof evidence stays under `terminal/demo/runtime_logs/transferable_package/` and does not include source repository files.
+
+A passing result means the RC package is transferable and clean enough for operator rehearsal packaging. It does not itself approve production cron, live Raspberry execution, or real/test data use.
