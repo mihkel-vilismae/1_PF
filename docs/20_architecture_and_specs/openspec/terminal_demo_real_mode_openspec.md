@@ -1,7 +1,7 @@
 # Terminal Demo Real Mode OpenSpec
 
 Generated: 2026-06-29  
-Status: v0.12.0 Group 6B final proofs/de-mocking guard pack implemented; worker/native execution remains guarded pending later proof.
+Status: v0.13.0 operator release-candidate rehearsal pack implemented; worker/native execution remains guarded pending later proof.
 
 ## Goal
 
@@ -27,6 +27,7 @@ Turn the terminal mock-demo into a real terminal Demo Mode that uses PhotoFrame 
 | Playback selected-item display | Implemented; reads DEMO scheduler playback-worker-status and renders selected file/type/address/status/duration | 8/10 |
 | Playback worker execution | Guarded/manual command plan only; requires explicit execution and scheduler-safety flags | 6/10 |
 | Proof/de-mocking guard suite | Group 6B final proof pack implemented; path isolation, no-cron, media/truth, batch-size, Q route, queue, playback, mock separation, execution guard, and largest-file checks are scripted | 9/10 |
+| Operator rehearsal pack | Implemented; root Windows launcher and npm proof create status JSON/MD plus terminal-demo-only evidence ZIP | 9/10 |
 
 ## Group 3B behavior
 
@@ -114,3 +115,17 @@ Version `0.12.0` adds the terminal real-demo proof-locking pack:
 - `proof:terminal-demo-final` aggregates the Group 6B proof pack.
 
 Group 6B does not enable native/fullscreen playback and does not bypass the explicit worker execution acknowledgement gate.
+
+
+## v0.13.0 operator release-candidate rehearsal pack
+
+Version `0.13.0` adds packaging/evidence workflow for the current terminal Demo Mode implementation:
+
+- root `VERIFY_TERMINAL_DEMO.CMD` runs the operator rehearsal proof from an extracted ZIP,
+- `terminal/demo/windows_verify_terminal_demo.cmd` forwards to the root verification launcher,
+- `proof:terminal-demo-operator-rehearsal` verifies version/package/folder identity, runner presence, and final proof status,
+- the rehearsal writes `terminal_demo_status.json` and `terminal_demo_status.md`,
+- the rehearsal creates a terminal-demo-only evidence ZIP under `terminal/demo/runtime_logs/operator_rehearsal/`,
+- the evidence ZIP contains logs/status/proof outputs only, not the source repository.
+
+This milestone is a release-candidate rehearsal pack, not v1.0 final. It does not enable native/fullscreen playback or bypass guarded worker execution flags.

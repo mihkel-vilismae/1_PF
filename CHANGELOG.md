@@ -1,3 +1,12 @@
+## 2026-06-29 — v0.13.0
+
+- Added the operator release-candidate rehearsal pack for terminal Demo Mode.
+- Added root `VERIFY_TERMINAL_DEMO.CMD` and `terminal/demo/windows_verify_terminal_demo.cmd` so an extracted ZIP can run the terminal demo final proof/status workflow with one Windows command.
+- Added `proof:terminal-demo-operator-rehearsal`, which verifies version/package/folder identity, runs the final terminal proof pack, writes `terminal_demo_status.json` and `terminal_demo_status.md`, and creates a terminal-demo-only evidence ZIP under `terminal/demo/runtime_logs/operator_rehearsal/`.
+- Improved Windows runner diagnostics to show the final verification command and evidence location.
+- Updated terminal Demo Mode README/OpenSpec/handoff status for the v0.13.0 release-candidate rehearsal milestone.
+- Bumped version metadata to `0.13.0`.
+
 ## 2026-06-29 — v0.12.0
 
 - Added Group 6B final terminal real-demo proof/de-mocking guard pack.

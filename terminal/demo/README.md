@@ -1,6 +1,6 @@
 # PhotoFrame Terminal Demo Mode
 
-Version: `0.12.0`
+Version: `0.13.0`
 
 This folder is the merged terminal/TUI mock plus real-demo runtime-boundary, media-discovery, truth/status-read, command-plan, guarded W/Q orchestration, queue-reader, and playback selected-item visibility scaffold for the PhotoFrame Demo Mode beeline.
 ## Merged into PhotoFrame
@@ -184,6 +184,32 @@ npm run proof:terminal-demo-final
 ```
 
 Group 6B still keeps native/fullscreen playback disabled and does not bypass guarded worker execution flags.
+
+
+## Real-demo v0.13.0 operator release-candidate rehearsal pack
+
+Version `0.13.0` adds an operator-focused rehearsal pack. It does not add major new runtime behavior; it makes the current terminal Demo Mode easier to verify from an extracted ZIP.
+
+One-command Windows verification from the repo root:
+
+```cmd
+VERIFY_TERMINAL_DEMO.CMD
+```
+
+Equivalent npm command:
+
+```bash
+npm run proof:terminal-demo-operator-rehearsal
+```
+
+The rehearsal proof verifies version/package/folder identity, runs the terminal final proof pack, writes `terminal_demo_status.json` and `terminal_demo_status.md`, and creates a terminal-demo-only evidence ZIP under:
+
+```text
+terminal/demo/runtime_logs/operator_rehearsal/
+```
+
+The evidence ZIP contains logs/status/proof outputs only. It must not include the extracted source repository.
+
 
 ## Current scope
 

@@ -1,6 +1,6 @@
 # How to Run
 
-> Current checkpoint: `v0.10.67`. This file is intentionally short; longer operator detail belongs in `docs/10_runbooks/`.
+> Current checkpoint: `v0.13.0`. This file is intentionally short; longer operator detail belongs in `docs/10_runbooks/`.
 
 ## Use this for quickstart
 
@@ -26,13 +26,30 @@ S:\_PHOTOFRAMES\PF_login_v0.10.67_target_live_proof_readiness_full_git\full_wind
 
 ## Current launcher and database paths
 
-- Repository/package version: `0.10.67`.
+- Repository/package version: `0.13.0`.
 - Windows launcher: `start_scripts/windows/START_WIN.PS1`.
 - Raspberry launcher: `start_scripts/raspberry/START_RASPBERRYOS.SH`.
 - Canonical SQLite schema: `database/schema.sql`.
 - Existing `.env` and SQLite DB files are preserved by the launchers; the DB is created only when the configured `DB_PATH` does not exist.
 - V2 dashboard mode is a runnable frontend startup option with nine left-sidebar rows, shared Event history, status/help controls, Setup/Auth/Startup/Workers/Troubleshooting/Recovery/PIR/Playback controls, an integrated `09 REAL PLAYBACK` layout/projection, and a B12 proof gate.
 - Live Raspberry, auth-provider, playback, and recovery success still require explicit proof artifacts; normal launchers do not claim those proofs.
+
+
+## Terminal Demo Mode rehearsal
+
+From the extracted repository root on Windows, run:
+
+```cmd
+VERIFY_TERMINAL_DEMO.CMD
+```
+
+This runs the terminal Demo Mode final proof pack and writes `terminal_demo_status.json`, `terminal_demo_status.md`, and a terminal-demo-only evidence ZIP under `terminal/demo/runtime_logs/operator_rehearsal/`.
+
+Equivalent npm command:
+
+```bash
+npm run proof:terminal-demo-operator-rehearsal
+```
 
 ## Manual
 

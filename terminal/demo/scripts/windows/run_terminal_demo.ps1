@@ -453,6 +453,7 @@ Write-Host ('PhotoFrame repo: {0}' -f $repoRoot)
 Write-Host ('Terminal root:   {0}' -f $terminalRoot)
 Write-Host ('Logs:            {0}' -f $logDir)
 Write-Host 'Mode: merged PhotoFrame terminal demo; default launch uses mock-demo adapter.' -ForegroundColor Yellow
+Write-Host 'Verification: run VERIFY_TERMINAL_DEMO.CMD or npm run proof:terminal-demo-operator-rehearsal for final proof/status ZIP.' -ForegroundColor Yellow
 
 Write-Step -Message 'Checking Node.js and npm'
 $nodeCmd = Get-Command node -ErrorAction SilentlyContinue
