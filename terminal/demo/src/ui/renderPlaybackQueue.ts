@@ -16,8 +16,12 @@ export function renderPlaybackQueue(state: DemoTerminalState, title: string, wid
   const addressWidth = Math.max(10, Math.floor(innerWidth * 0.25));
   const fileWidth = Math.max(14, innerWidth - numberWidth - typeWidth - addressWidth - statusWidth - (isRealDemo ? 4 : 3));
 
+  const firstSource = queuedRows[0]?.source ?? '';
+  const realSourceLabel = firstSource.startsWith('DEMO_DB_PATH')
+    ? `DEMO DB queue source: ${state.runtimeBoundary.dbPath}#slideshow_queue`
+    : `Real-demo queue source: ${state.runtimeBoundary.queueOutputPath}`;
   const lines: string[] = [
-    color.muted(isRealDemo ? `Real-demo queue source: ${state.runtimeBoundary.queueOutputPath}` : 'Demo playback queue table. Q enqueues eligible rows with resolved addresses.'),
+    color.muted(isRealDemo ? realSourceLabel : 'Demo playback queue table. Q enqueues eligible rows with resolved addresses.'),
     row([
       { value: '#', width: numberWidth },
       { value: 'File', width: fileWidth },
@@ -30,7 +34,8 @@ export function renderPlaybackQueue(state: DemoTerminalState, title: string, wid
 
   if (queuedRows.length === 0) {
     lines.push(color.yellow(isRealDemo ? 'No real demo queue rows loaded yet.' : 'No queued mock media yet.'));
-    lines.push(color.muted(isRealDemo ? 'Missing/empty queue disables playback safely.' : 'Q has not enqueued eligible rows yet.'));
+    if (isRealDemo) lines.push(color.yellow('No DEMO DB slideshow_queue rows loaded yet.'));
+    lines.push(color.muted(isRealDemo ? 'Missing/empty DEMO DB queue disables playback safely.' : 'Q has not enqueued eligible rows yet.'));
   } else {
     for (const queueRow of queuedRows) {
       lines.push(row([

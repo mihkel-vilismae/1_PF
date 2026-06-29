@@ -78,7 +78,7 @@ if (args.has('--q-smoke')) {
   process.exit(0);
 }
 
-if (args.has('--p-smoke')) {
+if (args.has('--p-smoke') || args.has('--db-image-playback-button-smoke')) {
   const frames = await adapter.handleKey('P');
   printFrame(renderScreen(frames[0] ?? adapter.getState(), layout));
   process.exit(0);

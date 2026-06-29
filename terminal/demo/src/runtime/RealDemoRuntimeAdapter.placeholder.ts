@@ -15,6 +15,8 @@ import { runRealDemoQ } from '../run/RealDemoRunController.js';
 import { RunSnapshotStore } from '../run/RunSnapshotStore.js';
 import { RealDemoPlaybackStatusRepository } from '../playback/RealDemoPlaybackStatusRepository.js';
 import { runOrPlanPlaybackWorker } from '../playback/PhotoFramePlaybackCommandAdapter.js';
+import { DbPlaybackRepository } from '../playback/DbPlaybackRepository.js';
+import { runDbImagePlaybackButton } from '../playback/DbImagePlaybackButton.js';
 
 /**
  * Group 3B real-demo adapter scaffold.
@@ -95,12 +97,29 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
 
 
   private runPlaybackSelection(): DemoTerminalState {
+    const dbPlayback = new DbPlaybackRepository(this.boundary).read();
+    if (dbPlayback.rows.length > 0) return this.runDbImagePlaybackSelection();
+
     const result = runOrPlanPlaybackWorker(this.boundary);
     this.state = this.buildState([
       'P pressed: playback selected-item display refresh.',
       `Playback command: ${result.command}`,
       `Playback execution: ${result.status}${result.exitCode === null ? '' : ` exit_code=${result.exitCode}`}`,
       ...result.messages.map((message) => `Playback command: ${message}`)
+    ]);
+    this.snapshots.setSnapshots([]);
+    return this.getState();
+  }
+
+  private runDbImagePlaybackSelection(): DemoTerminalState {
+    const result = runDbImagePlaybackButton(this.boundary);
+    this.state = this.buildState([
+      'P pressed: DB-backed windowed image playback.',
+      `DB image playback status: ${result.status}`,
+      result.viewerPath ? `Windowed playback viewer: ${result.viewerPath}` : 'Windowed playback viewer: not written',
+      result.filePath ? `Selected image file: ${result.filePath}` : 'Selected image file: none',
+      result.address ? `Address overlay: ${result.address}` : 'Address overlay: none',
+      ...result.messages.map((message) => `DB image playback: ${message}`)
     ]);
     this.snapshots.setSnapshots([]);
     return this.getState();
@@ -126,9 +145,9 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
     mediaRows: ReturnType<RealDemoMediaRepository['listDemoMediaRows']>['rows'];
     mediaMessages: string[];
     truth: ReturnType<RealDemoTruthRepository['readDemoTruth']>;
-    queueRows: ReturnType<RealDemoQueueRepository['readDemoQueue']>['rows'];
+    queueRows: ReturnType<DbPlaybackRepository['read']>['rows'];
     queueMessages: string[];
-    playbackStatus: ReturnType<RealDemoPlaybackStatusRepository['readPlaybackStatus']>;
+    playbackStatus: ReturnType<DbPlaybackRepository['read']>['status'];
   } {
     const paths = {
       repoRoot: this.boundary.repoRoot,
@@ -142,15 +161,17 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
     };
     const mediaDiscovery = new RealDemoMediaRepository(paths).listDemoMediaRows();
     const truth = new RealDemoTruthRepository(paths).readDemoTruth();
+    const dbPlayback = new DbPlaybackRepository(this.boundary).read();
     const queue = new RealDemoQueueRepository(paths).readDemoQueue();
     const playbackStatus = new RealDemoPlaybackStatusRepository(paths).readPlaybackStatus();
+    const useDbPlayback = dbPlayback.rows.length > 0;
     return {
       mediaRows: mediaDiscovery.rows,
       mediaMessages: mediaDiscovery.messages,
       truth,
-      queueRows: queue.rows,
-      queueMessages: queue.messages,
-      playbackStatus
+      queueRows: useDbPlayback ? dbPlayback.rows : queue.rows,
+      queueMessages: useDbPlayback ? dbPlayback.messages : queue.messages,
+      playbackStatus: useDbPlayback ? dbPlayback.status : playbackStatus
     };
   }
 }

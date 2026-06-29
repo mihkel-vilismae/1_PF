@@ -4528,3 +4528,11 @@ Added `proof:live-windows-scheduler`, a blocked-by-default target proof track fo
 - Added browser-local drag/drop/file-input queue table to `08 PLAYBACK`.
 - Added image/video/other classification, video duration metadata hydration when available, and graceful non-media reporting.
 - Kept GPS/address fields visible as placeholders pending pipeline metadata integration.
+
+## 1.1.0 - Terminal Demo DB image playback button
+
+- Added a narrow DB-backed terminal playback button slice.
+- `P` now uses `DEMO_DB_PATH` real playback table structure (`canonical_media_assets`, `media_asset_variants`, `slideshow_queue`, `runtime_state`) through existing `sqlite_admin.py` playback helpers.
+- Writes a windowed HTML image viewer with address overlay and opens it on Windows when supported.
+- Added `npm run proof:terminal-demo-db-image-playback-button` and `VERIFY_TERMINAL_DEMO_DB_IMAGE_PLAYBACK.CMD`.
+- No geocode, worker, screen-worker, DB schema redesign, cron behavior, or v2 final claim added.

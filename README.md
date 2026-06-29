@@ -299,3 +299,7 @@ npm run proof:terminal-demo-v1-release-freeze
 ```
 
 A passing release-freeze result reports `V1_READY_TO_RELEASE`.
+
+### Terminal Demo DB image playback button
+
+Version 1.1.0 adds a narrow playback button slice. The terminal `P` action reads `DEMO_DB_PATH`, uses the existing real SQLite playback helpers, selects a `READY` `slideshow_queue` row, resolves the media asset path, and writes/opens a windowed image viewer with the DB address overlay when Windows can open it. This does not add geocode, worker, screen-worker, cron, or v2 final behavior.

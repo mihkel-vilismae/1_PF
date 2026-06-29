@@ -141,3 +141,17 @@ npm run proof:terminal-demo-v1-release-freeze
 ```
 
 This collects final build/typecheck/proof evidence under `terminal/demo/runtime_logs/v1_release_freeze/` and reports `V1_READY_TO_RELEASE` only when the package is ready for a v1.0 release-only milestone.
+
+### Terminal Demo DB image playback button proof
+
+```powershell
+npm run proof:terminal-demo-db-image-playback-button
+```
+
+Expected decision:
+
+```text
+TERMINAL_DEMO_DB_IMAGE_PLAYBACK_BUTTON_READY
+```
+
+This proof uses a temporary isolated DEMO database with the real playback table structure and verifies the terminal playback button does not depend on `DEMO_QUEUE_OUTPUT_PATH` JSON or mock rows.
