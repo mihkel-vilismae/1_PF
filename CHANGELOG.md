@@ -1,3 +1,11 @@
+## 0.10.94 - 2026-06-29
+
+- Merged the terminal Demo Mode prototype into PhotoFrame under `terminal/demo/` as a read-only real-demo entrypoint and preserved the mock-demo visual adapter for UI testing.
+- Added PhotoFrame-level terminal scripts: `demo:terminal`, `demo:terminal:mock`, `demo:terminal:real`, smoke variants, and `proof:terminal-demo-merge-smoke`.
+- Kept the merged real-demo path non-mutating: no worker execution, manifest writes, DB writes, truth writes, queue writes, cron changes, fullscreen, or screen on/off implementation in this merge slice.
+- Added a terminal-demo product-worker quick reference so agents can avoid repeatedly loading the larger regular-worker product/evidence files unless the task directly touches that area.
+- Preserved the Group 3A dry-run command planner as the boundary before future Group 3B real worker execution.
+
 ## 0.10.93 - 2026-06-29
 
 - Generated the next prooflauncher/proofrunner guard slice from the v0.10.92 baseline without changing runtime worker, dashboard readiness, iCloud, cron, playback, PIR, or recovery behavior.

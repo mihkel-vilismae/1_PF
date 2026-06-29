@@ -1,0 +1,33 @@
+{
+  "screenId": "photoframe_mock_demo_terminal",
+  "category": "mock-demo terminal foundation with real-demo Group 4 media/truth scaffold",
+  "visualLayer": "terminal",
+  "dataMode": "mock_state_or_real_demo_truth",
+  "futureRuntimeMode": "demo",
+  "adapterModes": ["mock-demo", "real-demo"],
+  "sections": [
+    { "id": "header", "title": "PHOTOFRAME MOCK DEMO MODE", "kind": "runtime_banner" },
+    { "id": "generated_media", "title": "MOCK DEMO MEDIA", "kind": "table" },
+    { "id": "actions", "title": "ACTIONS", "kind": "key_menu" },
+    { "id": "current_run", "title": "CURRENT RUN", "kind": "stage_timeline" },
+    { "id": "rpi_stages", "title": "RPI-STAGES — MOCK DEMO STATE", "kind": "truth_panel" },
+    { "id": "rpi_workers", "title": "RPI-WORKERS — MOCK DEMO STATE", "kind": "truth_panel" },
+    { "id": "playback", "title": "PLAYBACK", "kind": "playback_panel" },
+    { "id": "screen_on_off", "title": "SCREEN ON/OFF WORKER", "kind": "disabled_placeholder" }
+  ],
+  "actions": [
+    { "key": "Q", "label": "Run 5 files -> Queue eligible", "usesRows": [1, 2, 3, 4, 5], "stageChain": ["index", "gps", "geocode", "queue_prepare"] },
+    { "key": "W", "label": "Run 1 file -> Queue for playback", "usesRows": [1], "stageChain": ["index", "gps", "geocode", "queue_prepare"] },
+    { "key": "P", "label": "Run Playback", "enabledWhen": "mock_queue_count >= 1" },
+    { "key": "F", "label": "Start full screen playback", "enabled": false, "info": "Not yet implemented." },
+    { "key": "R", "label": "Refresh mock screen" },
+    { "key": "X", "label": "Exit" }
+  ],
+  "fileOperationPolicy": {
+    "manualFileSelection": false,
+    "addFiles": false,
+    "batchSelection": "first_n_rows",
+    "runOneFileUses": "row_1",
+    "qBatchUses": "rows_1_to_5"
+  }
+}

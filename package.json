@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.10.93",
+  "version": "0.10.94",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -200,7 +200,15 @@
     "proof:v2-recovery-restart-check": "node --import tsx tools/run-v2-recovery-restart-check-proof.mjs --evidence --write",
     "proof:v2-implementation-proof-gate-metadata": "node --test tests/v2ImplementationProofGateMetadata.test.js",
     "proof:generated-artifact-drift": "node tools/run-generated-artifact-drift-proof.mjs",
-    "proof:v2-readiness-honesty-ui": "tsx --test tests/v2ReadinessHonestyUi.test.js"
+    "proof:v2-readiness-honesty-ui": "tsx --test tests/v2ReadinessHonestyUi.test.js",
+    "demo:terminal": "tsx terminal/demo/src/main.ts",
+    "demo:terminal:mock": "tsx terminal/demo/src/main.ts --adapter=mock-demo",
+    "demo:terminal:real": "tsx terminal/demo/src/main.ts --adapter=real-demo",
+    "demo:terminal:mock:smoke": "tsx terminal/demo/src/main.ts --adapter=mock-demo --smoke",
+    "demo:terminal:real:smoke": "tsx terminal/demo/src/main.ts --adapter=real-demo --real-demo-smoke",
+    "proof:terminal-demo-merge-smoke": "node terminal/demo/scripts/verify-smoke.mjs",
+    "demo:terminal:real:command-plan-smoke": "tsx terminal/demo/src/main.ts --adapter=real-demo --real-demo-command-plan-smoke",
+    "demo:terminal:real:config-smoke": "tsx terminal/demo/src/main.ts --adapter=real-demo --runtime-config-smoke"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

@@ -1,6 +1,6 @@
 # PF_login / PhotoFrame
 
-> Current checkpoint: `v0.10.67` after DOCS.2 OpenSpec/status reconciliation on top of the v0.10.64 recovery wiring and B12 autonomous playback/recovery proof gate. Code, focused tests, generated proof artifacts, and runtime evidence remain stronger than prose when they conflict.
+> Current checkpoint: `v0.10.94` after merging the terminal Demo Mode prototype as a read-only real-demo entrypoint. Code, focused tests, generated proof artifacts, and runtime evidence remain stronger than prose when they conflict. Code, focused tests, generated proof artifacts, and runtime evidence remain stronger than prose when they conflict.
 
 PF_login / PhotoFrame is a local dashboard-driven photo-frame system for staged media processing, operator inspection, and Raspberry/Windows playback workflows.
 
@@ -10,7 +10,7 @@ The project is intentionally proof-heavy. Source code, tests, OpenSpec documents
 
 | Field | Value |
 |---|---|
-| Version | `0.10.67` |
+| Version | `0.10.94` |
 | Main dashboard | Vite frontend in `dashboard/` |
 | Backend API | TypeScript server entrypoint at `server/index.ts` |
 | Database schema source | `database/schema.sql` |
@@ -112,6 +112,31 @@ runtime_data/     generated local runtime/proof data; ignored by Git
 VERSION           canonical repository version
 CHANGELOG.md      forward-only release history
 ```
+
+
+## Terminal Demo Mode entrypoint
+
+Version `0.10.94` adds the terminal Demo Mode prototype inside PhotoFrame at `terminal/demo/`. This is the merge checkpoint before Group 3B real worker execution.
+
+Run the read-only terminal smoke paths from the PhotoFrame root:
+
+```bash
+npm run demo:terminal:mock:smoke
+npm run demo:terminal:real:smoke
+npm run proof:terminal-demo-merge-smoke
+```
+
+Current real-demo boundary:
+
+```text
+reads generated_test_data rows
+reads DEMO truth/status files when present
+plans future worker commands in dry-run mode
+does not execute workers
+does not write manifests, DB rows, truth JSONL, queue output, or cron
+```
+
+See `terminal/demo/docs/photoframe-worker-product-pipeline-reference.md` for the cached regular-worker product-path reference.
 
 ## Run locally
 
