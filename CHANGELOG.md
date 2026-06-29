@@ -1,3 +1,10 @@
+## 0.10.99 - 2026-06-29
+
+- Implemented terminal Demo Mode Group 5A real-demo queue reader.
+- Added a DEMO_QUEUE_OUTPUT_PATH reader that safely handles missing, empty, malformed, array, playback-contract, and queue-object JSON shapes.
+- Wired real-demo `PLAYBACK_QUEUE` rendering and `[P] Run Playback` enabled/disabled state to actual demo queue records instead of media-row mock status.
+- Added queue fixture smoke coverage while keeping playback worker execution, fullscreen/native playback, DB writes, truth writes, and cron out of scope.
+
 ## 0.10.98 - 2026-06-29
 
 - Ran terminal Demo Mode Group 6A execution-safety gate refinement without enabling uncontrolled worker execution.

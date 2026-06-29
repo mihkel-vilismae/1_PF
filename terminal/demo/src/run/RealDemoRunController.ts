@@ -2,7 +2,7 @@
 // Keep this file focused so future slices can stay below the 300 LOC target.
 
 import type { RuntimeBoundaryState } from '../config/runtimeTypes.js';
-import type { MediaRow } from '../state/DemoTerminalState.js';
+import type { MediaRow, PlaybackQueueRow } from '../state/DemoTerminalState.js';
 import type { DemoTerminalState } from '../state/DemoTerminalState.js';
 import { buildDryRunCommandPlan } from '../orchestration/DemoDryRunCommandPlanner.js';
 import type { DemoTruthReadResult } from '../truth/DemoTruthRepository.js';
@@ -17,7 +17,9 @@ export interface RealRunInput {
   mediaRows: MediaRow[];
   mediaMessages: string[];
   truth: DemoTruthReadResult;
-  refresh?: () => { mediaRows: MediaRow[]; mediaMessages: string[]; truth: DemoTruthReadResult };
+  queueRows: PlaybackQueueRow[];
+  queueMessages: string[];
+  refresh?: () => { mediaRows: MediaRow[]; mediaMessages: string[]; truth: DemoTruthReadResult; queueRows: PlaybackQueueRow[]; queueMessages: string[] };
 }
 
 export function runRealDemoQ(input: RealRunInput): DemoTerminalState[] {
@@ -32,7 +34,7 @@ export function runRealDemoQ(input: RealRunInput): DemoTerminalState[] {
 
 function buildFrame(
   input: RealRunInput,
-  fresh: { mediaRows: MediaRow[]; mediaMessages: string[]; truth: DemoTruthReadResult },
+  fresh: { mediaRows: MediaRow[]; mediaMessages: string[]; truth: DemoTruthReadResult; queueRows: PlaybackQueueRow[]; queueMessages: string[] },
   lines: string[]
 ): DemoTerminalState {
   return createInitialRealDemoState(
@@ -41,6 +43,8 @@ function buildFrame(
     fresh.mediaMessages,
     fresh.truth,
     lines,
-    input.batchSize
+    input.batchSize,
+    fresh.queueRows,
+    fresh.queueMessages
   );
 }

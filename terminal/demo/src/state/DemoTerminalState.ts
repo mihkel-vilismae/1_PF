@@ -13,6 +13,17 @@ export type StageStatus = 'Idle' | 'Started' | 'Finished' | 'Error';
 export type WorkerStatus = 'Waiting' | 'Started' | 'Finished' | 'Disabled' | 'Error';
 export type SupportedBatchSize = 1 | 5;
 
+export interface PlaybackQueueRow {
+  queueId: string;
+  rowNumber: number | null;
+  fileName: string;
+  relativePath: string;
+  type: MediaType;
+  address: string;
+  status: string;
+  source: string;
+}
+
 export interface MediaRow {
   rowNumber: number;
   fileName: string;
@@ -76,6 +87,7 @@ export interface DemoTerminalState {
   warning: string;
   selectedBatchSize: SupportedBatchSize;
   mediaRows: MediaRow[];
+  playbackQueueRows: PlaybackQueueRow[];
   actions: ActionItemState[];
   currentRun: CurrentRunState;
   rpiStages: StagePanelRow[];

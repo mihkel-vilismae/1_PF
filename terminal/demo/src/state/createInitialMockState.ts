@@ -110,6 +110,7 @@ export function createInitialMockState(): DemoTerminalState {
     banner: `PHOTOFRAME MOCK DEMO MODE v${version}`,
     warning: 'Visual mock only: no real DB, no real workers, no real truth JSONL, no cron.',
     mediaRows: mockMediaRows.map((row) => ({ ...row })),
+    playbackQueueRows: [],
     actions: initialActions.map((action) => ({ ...action })),
     currentRun: {
       title: 'CURRENT RUN',

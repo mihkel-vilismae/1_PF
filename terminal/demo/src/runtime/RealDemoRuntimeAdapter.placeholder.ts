@@ -5,6 +5,7 @@ import type { RuntimeBoundaryState } from '../config/runtimeTypes.js';
 import { RealDemoMediaRepository } from '../data/RealDemoMediaRepository.js';
 import { createInitialRealDemoState } from '../state/createInitialRealDemoState.js';
 import { RealDemoTruthRepository } from '../truth/RealDemoTruthRepository.js';
+import { RealDemoQueueRepository } from '../queue/RealDemoQueueRepository.js';
 import { buildDryRunCommandPlans, formatDryRunPlanLines } from '../orchestration/DemoDryRunCommandPlanner.js';
 import type { DemoTerminalState } from '../state/DemoTerminalState.js';
 import type { DemoRuntimeAdapter } from './DemoRuntimeAdapter.js';
@@ -64,6 +65,8 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
       mediaRows: source.mediaRows,
       mediaMessages: source.mediaMessages,
       truth: source.truth,
+      queueRows: source.queueRows,
+      queueMessages: source.queueMessages,
       refresh: () => this.readSources()
     });
     this.snapshots.setSnapshots(frames);
@@ -96,11 +99,19 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
       source.mediaMessages,
       source.truth,
       [...extraLines, ...dryRunPlanLines],
-      this.selectedBatchSize
+      this.selectedBatchSize,
+      source.queueRows,
+      source.queueMessages
     );
   }
 
-  private readSources(): { mediaRows: ReturnType<RealDemoMediaRepository['listDemoMediaRows']>['rows']; mediaMessages: string[]; truth: ReturnType<RealDemoTruthRepository['readDemoTruth']> } {
+  private readSources(): {
+    mediaRows: ReturnType<RealDemoMediaRepository['listDemoMediaRows']>['rows'];
+    mediaMessages: string[];
+    truth: ReturnType<RealDemoTruthRepository['readDemoTruth']>;
+    queueRows: ReturnType<RealDemoQueueRepository['readDemoQueue']>['rows'];
+    queueMessages: string[];
+  } {
     const paths = {
       repoRoot: this.boundary.repoRoot,
       dbPath: this.boundary.dbPath,
@@ -113,7 +124,14 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
     };
     const mediaDiscovery = new RealDemoMediaRepository(paths).listDemoMediaRows();
     const truth = new RealDemoTruthRepository(paths).readDemoTruth();
-    return { mediaRows: mediaDiscovery.rows, mediaMessages: mediaDiscovery.messages, truth };
+    const queue = new RealDemoQueueRepository(paths).readDemoQueue();
+    return {
+      mediaRows: mediaDiscovery.rows,
+      mediaMessages: mediaDiscovery.messages,
+      truth,
+      queueRows: queue.rows,
+      queueMessages: queue.messages
+    };
   }
 }
 
@@ -122,6 +140,7 @@ function cloneState(state: DemoTerminalState): DemoTerminalState {
     ...state,
     runtimeBoundary: { ...state.runtimeBoundary, pathMessages: [...state.runtimeBoundary.pathMessages] },
     mediaRows: state.mediaRows.map((row) => ({ ...row })),
+    playbackQueueRows: state.playbackQueueRows.map((row) => ({ ...row })),
     actions: state.actions.map((action) => ({ ...action })),
     currentRun: { ...state.currentRun, lines: [...state.currentRun.lines] },
     rpiStages: state.rpiStages.map((stage) => ({ ...stage })),

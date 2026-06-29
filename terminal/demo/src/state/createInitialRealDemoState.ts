@@ -3,7 +3,7 @@
 
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { ActionItemState, DemoTerminalState, MediaRow, StagePanelRow, WorkerPanelRow, SupportedBatchSize } from './DemoTerminalState.js';
+import type { ActionItemState, DemoTerminalState, MediaRow, StagePanelRow, WorkerPanelRow, SupportedBatchSize, PlaybackQueueRow } from './DemoTerminalState.js';
 import type { RuntimeBoundaryState } from '../config/runtimeTypes.js';
 import type { DemoTruthReadResult } from '../truth/DemoTruthRepository.js';
 
@@ -28,7 +28,7 @@ const realDemoActions: ActionItemState[] = [
     key: 'P',
     label: 'Run Playback',
     enabled: false,
-    info: 'Disabled: real demo queue reader is not wired yet.',
+    info: 'Enabled when DEMO_QUEUE_OUTPUT_PATH has queued items.',
     active: false,
     done: false
   },
@@ -78,13 +78,16 @@ export function createInitialRealDemoState(
   mediaMessages: string[] = [],
   truth: DemoTruthReadResult = { stages: [], workers: [], messages: [] },
   dryRunPlanLines: string[] = [],
-  selectedBatchSize: SupportedBatchSize = 1
+  selectedBatchSize: SupportedBatchSize = 1,
+  playbackQueueRows: PlaybackQueueRow[] = [],
+  queueMessages: string[] = []
 ): DemoTerminalState {
   const version = readVersion();
   const statusText = boundary.readinessStatus.toUpperCase();
   const selectedCount = mediaRows.length;
   const validCount = mediaRows.filter((row) => row.gps === 'valid').length;
   const problemCount = mediaRows.filter((row) => row.gps === 'missing' || row.gps === 'invalid' || row.gps === 'not parsed').length;
+  const queueCount = playbackQueueRows.length;
 
   return {
     version,
@@ -92,15 +95,20 @@ export function createInitialRealDemoState(
     dataMode: 'real_demo_truth',
     runtimeBoundary: boundary,
     banner: `PHOTOFRAME REAL DEMO TERMINAL v${version}`,
-    warning: `Group 3B guarded Q/W orchestration: boundary is ${statusText}; W toggles batch size and Q uses the selected value.`,
+    warning: `Group 5A real queue reader + guarded Q/W orchestration: boundary is ${statusText}; W toggles batch size and Q uses the selected value.`,
     selectedBatchSize,
     mediaRows,
-    actions: realDemoActions.map((action) => ({ ...action })),
+    playbackQueueRows: playbackQueueRows.map((row) => ({ ...row })),
+    actions: realDemoActions.map((action) => action.key === 'P' ? {
+      ...action,
+      enabled: queueCount > 0,
+      info: queueCount > 0 ? `Ready: ${queueCount} real demo queue item${queueCount === 1 ? '' : 's'} available.` : 'Disabled: DEMO queue is empty or missing.'
+    } : { ...action }),
     currentRun: {
       title: 'CURRENT RUN',
       lines: [
-        'Real-demo beeline Group 3B is installed.',
-        'This screen resolves DEMO paths, reads generated demo media/truth, and can run guarded manual Q orchestration.',
+        'Real-demo beeline Group 5A is installed.',
+        'This screen resolves DEMO paths, reads generated demo media/truth/queue, and can run guarded manual Q orchestration.',
         'W toggles selected batch size. Q uses the selected batch size. No cron is used.',
         '',
         `Adapter: ${boundary.adapterMode}`,
@@ -108,18 +116,20 @@ export function createInitialRealDemoState(
         `Readiness: ${boundary.readinessStatus}`,
         `Selected batch_size: ${selectedBatchSize}`,
         `Media rows selected: ${selectedCount} (${validCount} valid, ${problemCount} problem/invalid)`,
+        `Real demo playback queue rows: ${queueCount}`,
         ...dryRunPlanLines.map((line) => `Command plan: ${line}`),
         ...mediaRows.map((row) => `Selected row #${row.rowNumber}: ${row.relativePath ?? row.fileName} gps=${row.gps}`),
         ...mediaMessages.map((message) => `Media discovery: ${message}`),
         ...truth.messages.map((message) => `Truth read: ${message}`),
+        ...queueMessages.map((message) => `Queue read: ${message}`),
         ...boundary.pathMessages.map((message) => `Path check: ${message}`)
       ]
     },
     rpiStages: truth.stages.map((stage) => ({ ...stage })),
     rpiWorkers: truth.workers.map((worker) => ({ ...worker })),
     playback: {
-      runPlaybackEnabled: false,
-      info: 'Real demo queue reader is not wired yet; Group 3B only handles W/Q orchestration.',
+      runPlaybackEnabled: queueCount > 0,
+      info: queueCount > 0 ? `Ready: ${queueCount} real demo queue item${queueCount === 1 ? '' : 's'} available.` : 'At least one real demo queue item is required before playback can run.',
       imageDurationSeconds: 5,
       fullScreenEnabled: false,
       fullScreenInfo: 'Not yet implemented.'

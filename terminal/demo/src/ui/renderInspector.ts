@@ -12,7 +12,7 @@ export function renderInspector(state: DemoTerminalState, title: string, width?:
   const latestStage = [...state.rpiStages].reverse().find((stage) => stage.status !== 'Idle');
   const latestWorker = state.rpiWorkers.find((worker) => worker.status === 'Started' || worker.status === 'Finished' || worker.status === 'Error');
   const manualMode = state.currentRun.lines.some((line) => /Manual storyboard mode/i.test(line));
-  const queuedRows = state.mediaRows.filter((row) => row.queue === 'enqueued');
+  const queuedRows = state.runtimeBoundary.adapterMode === 'real-demo' ? state.playbackQueueRows : state.mediaRows.filter((row) => row.queue === 'enqueued');
   const skippedRows = state.mediaRows.filter((row) => row.queue === 'not eligible');
   const finalAddress = queuedRows[0]?.address || state.mediaRows[0]?.address || '-';
   const isRealDemo = state.runtimeBoundary.adapterMode === 'real-demo';
@@ -26,7 +26,7 @@ export function renderInspector(state: DemoTerminalState, title: string, width?:
     '',
     color.magenta(isRealDemo ? 'Real-demo boundary' : 'Storyboard'),
     isRealDemo
-      ? color.muted('Group 3B: W toggles batch size; Q uses selected batch size through guarded manual/no-cron orchestration.')
+      ? color.muted('Group 5A: real-demo queue reader is wired; W/Q remain guarded manual/no-cron orchestration.')
       : activeLine === '-' ? color.muted('No active storyboard step.') : activeLine.replace('->', color.arrow('->')).replace('[ACTIVE]', color.active('[ACTIVE]')),
     `${color.cyan('Current run title:')} ${state.currentRun.title}`,
     '',
@@ -34,7 +34,7 @@ export function renderInspector(state: DemoTerminalState, title: string, width?:
     `${color.cyan('Stage:')} ${latestStage ? `${latestStage.name} ${latestStage.status} ${latestStage.details || ''}` : color.muted('none')}`,
     `${color.cyan('Worker:')} ${latestWorker ? `${latestWorker.name} ${latestWorker.status} ${latestWorker.lastEvent}` : color.muted('none')}`,
     `${color.cyan('Address:')} ${finalAddress === '-' ? color.muted('-') : color.brightGreen(finalAddress)}`,
-    `${color.cyan('Queue policy:')} ${isRealDemo ? 'Real-demo Q uses selected batch size; Group 5 will wire real queue reader.' : `Q enqueues rows with valid GPS and resolved address. Queued=${queuedRows.length}; skipped=${skippedRows.length}.`}`,
+    `${color.cyan('Queue policy:')} ${isRealDemo ? `Real-demo queue source loaded. Queued=${queuedRows.length}. Playback enabled only when queue > 0.` : `Q enqueues rows with valid GPS and resolved address. Queued=${queuedRows.length}; skipped=${skippedRows.length}.`}`,
     '',
     color.magenta('Controls'),
     isRealDemo ? color.muted('W toggles batch 1 <-> 5. Q uses selected batch size.') : `${color.brightCyan('Q')} auto-runs the full storyboard.` ,

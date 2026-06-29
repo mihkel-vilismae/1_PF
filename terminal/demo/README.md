@@ -1,6 +1,6 @@
 # PhotoFrame Terminal Demo Mode
 
-Version: `0.10.97`
+Version: `0.10.99`
 
 This folder is the merged terminal/TUI mock plus Group 1/2/4/3A/3B real-demo runtime-boundary, media-discovery, truth/status-read, command-plan, and guarded W/Q orchestration scaffold for the PhotoFrame Demo Mode beeline.
 ## Merged into PhotoFrame
@@ -130,7 +130,20 @@ Version `0.10.97` adds the first real-demo W/Q orchestration path inside PhotoFr
 - LEFT/RIGHT replay captured Q snapshots after a real-demo run,
 - default smoke behavior does not execute workers unless `PHOTOFRAME_TERMINAL_DEMO_EXECUTE=1` is explicitly set.
 
-Group 3B still does not implement the real playback queue reader, fullscreen playback, or screen on/off behavior.
+Group 5A implements the real-demo queue reader. Fullscreen playback, playback worker execution, and screen on/off behavior remain out of scope.
+
+
+## Real-demo Group 5A queue reader
+
+Version `0.10.99` adds the read-only real-demo queue reader:
+
+- reads `DEMO_QUEUE_OUTPUT_PATH` / `runtime_data/demo/outputs/display_queue.json`,
+- maps supported queue JSON shapes into the `PLAYBACK_QUEUE` table,
+- enables `[P] Run Playback` only when real demo queue rows exist,
+- safely handles missing, empty, or malformed queue files without crashing,
+- keeps playback worker execution and fullscreen/native playback disabled for later groups.
+
+Group 5A is read-only: no playback worker calls, no DB writes, no truth JSONL writes, no queue writes, and no cron.
 
 ## Current scope
 

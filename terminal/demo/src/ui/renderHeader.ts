@@ -21,6 +21,7 @@ export function renderHeader(state: DemoTerminalState, title: string, width?: nu
     `${color.cyan('Repo root:')} ${boundary.repoRoot}`,
     `${color.cyan('Demo DB:')} ${boundary.dbPath}`,
     `${color.cyan('Demo media:')} ${boundary.downloadDir}`,
-    `${color.cyan('Demo truth:')} ${boundary.workerTruthDir}`
+    `${color.cyan('Demo truth:')} ${boundary.workerTruthDir}`,
+    `${color.cyan('Demo queue:')} ${boundary.queueOutputPath}`
   ], width);
 }

@@ -26,6 +26,7 @@ function cloneState(state: DemoTerminalState): DemoTerminalState {
     ...state,
     runtimeBoundary: { ...state.runtimeBoundary, pathMessages: [...state.runtimeBoundary.pathMessages] },
     mediaRows: state.mediaRows.map((row) => ({ ...row })),
+    playbackQueueRows: state.playbackQueueRows.map((row) => ({ ...row })),
     actions: state.actions.map((action) => ({ ...action })),
     currentRun: { ...state.currentRun, lines: [...state.currentRun.lines] },
     rpiStages: state.rpiStages.map((stage) => ({ ...stage })),

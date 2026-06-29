@@ -1,7 +1,7 @@
 # Terminal Demo Real Mode OpenSpec
 
 Generated: 2026-06-29  
-Status: Group 6A execution-safety gate implemented; worker execution remains guarded pending final live proof.
+Status: Group 5A queue reader implemented; worker/playback execution remains guarded pending later proof.
 
 ## Goal
 
@@ -23,7 +23,8 @@ Turn the terminal mock-demo into a real terminal Demo Mode that uses PhotoFrame 
 | Demo-safe manifest write | Implemented under `DEMO_RUNTIME_OUTPUT_DIR` with path guard and first-5 run manifest | 10/10 |
 | Worker execution | Still guarded; scheduler/status/truth/log output isolation has static proof coverage, but live execution ack remains explicit | 7/10 |
 | Real/demo runtime env mapping | Implemented for guarded terminal stage plans, DEMO truth, DEMO scheduler/status, DEMO log, and DEMO queue/output paths | 9/10 |
-| Queue reader/playback | Planned for Group 5 | 0/10 |
+| Real demo queue reader | Implemented; reads DEMO_QUEUE_OUTPUT_PATH and drives PLAYBACK_QUEUE/P enabled state | 9/10 |
+| Playback worker selection | Planned for Group 5B | 0/10 |
 | Proof/de-mocking guard suite | Group 6A execution-safety proof added; remaining queue/playback and final de-mocking proofs still planned | 4/10 |
 
 ## Group 3B behavior
@@ -52,7 +53,7 @@ implement screen on/off behavior
 
 ## Next group
 
-Group 5 should add real demo queue reading and playback-selection display, then Group 6 should add path isolation, no-cron, batch-size, queue, and de-mocking proofs.
+Group 5B should add playback-selection display, then Group 6B should add path isolation, no-cron, batch-size, queue, playback, and de-mocking proofs.
 
 
 ## Group 3B-FINISH hardening
@@ -73,3 +74,12 @@ Group 5 should add real demo queue reading and playback-selection display, then 
 - The terminal execution adapter now passes `LOG_DIR`, `DEMO_LOG_DIR`, `DEMO_V2_WORKER_TRUTH_DIR`, `DEMO_SCHEDULER_DIR`, `DEMO_RUNTIME_OUTPUT_DIR`, and `DEMO_QUEUE_OUTPUT_PATH` to guarded worker processes.
 - The terminal still refuses real worker execution unless `PHOTOFRAME_TERMINAL_DEMO_EXECUTE=1` and the explicit scheduler-safety acknowledgement are both present.
 - `proof:terminal-demo-execution-safety` statically verifies the above no-cron and demo-isolation guards without running workers or writing runtime data.
+
+## Group 5A real queue reader
+
+- `DEMO_QUEUE_OUTPUT_PATH` is read as a real-demo queue source.
+- Missing, empty, or malformed queue files are safe non-crashing states.
+- Supported queue shapes include top-level arrays, `{ items }`, `{ queue: { items } }`, and `{ playback: { items } }`.
+- `PLAYBACK_QUEUE` renders real demo queue records when available.
+- `[P] Run Playback` is enabled only when at least one real demo queue item exists.
+- Group 5A does not call the playback worker, does not write DB/truth/queue files, does not use cron, and does not implement fullscreen/native playback.

@@ -57,8 +57,16 @@ function createTruthFixtureRepo() {
 
   const truthDir = join(root, 'runtime_data', 'v2_worker_truth', 'demo');
   mkdirSync(truthDir, { recursive: true });
-  mkdirSync(join(root, 'runtime_data', 'demo', 'outputs'), { recursive: true });
+  const outputDir = join(root, 'runtime_data', 'demo', 'outputs');
+  mkdirSync(outputDir, { recursive: true });
   mkdirSync(join(root, 'runtime_data', 'demo'), { recursive: true });
+  writeFileSync(join(outputDir, 'display_queue.json'), JSON.stringify({
+    schemaVersion: 1,
+    items: [
+      { queueId: 'demo-q-1', rowNumber: 1, fileName: 'gps_valid_01.jpg', relativePath: 'gps_valid/gps_valid_01.jpg', mediaType: 'image', address: 'Demo Queue Address, Tartu', status: 'ready' },
+      { queueId: 'demo-q-2', rowNumber: 3, fileName: 'apple_like_h264_mov_gps_tallinn.mov', relativePath: 'videos_with_gps/apple_like_h264_mov_gps_tallinn.mov', mediaType: 'video', address: 'Demo Queue Address, Tallinn', status: 'ready' }
+    ]
+  }, null, 2));
   writeFileSync(join(truthDir, 'regular-worker.truth.jsonl'), [
     { worker: 'regular-worker', stage: 'index', status: 'finished', timestamp: '2026-06-29T01:00:01.000Z', message: 'index finished', counts: { processed: 6 } },
     { worker: 'regular-worker', stage: 'gps', status: 'finished', timestamp: '2026-06-29T01:00:02.000Z', message: 'gps finished', counts: { gps_valid: 3, gps_missing: 1, gps_invalid: 2 } },
@@ -107,18 +115,26 @@ for (const [needle, label] of [
   ['PHOTOFRAME REAL DEMO TERMINAL', 'real-demo header'],
   ['Adapter: real-demo', 'real-demo adapter banner'],
   ['Data: real_demo_truth', 'real-demo data mode'],
-  ['Group 3B guarded Q/W orchestration', 'real-demo group 3B warning'],
+  ['Group 5A real queue reader', 'real-demo group 5A warning'],
   ['W toggles selected batch size', 'real-demo batch toggle note'],
   ['GENERATED DEMO MEDIA', 'real-demo media title'],
   ['RPI-STAGES — DEMO TRUTH', 'real-demo stages truth'],
-  ['RPI-WORKERS — DEMO TRUTH', 'real-demo workers truth']
+  ['RPI-WORKERS — DEMO TRUTH', 'real-demo workers truth'],
+  ['No real demo queue rows loaded yet.', 'real-demo empty queue state'],
+  ['[P] Run Playback disabled', 'real-demo playback disabled without queue']
 ]) assertIncludes(realDemo, needle, label);
 
 for (const [needle, label] of [
   ['Truth read: regular-worker.truth.jsonl: 4 parsed, 0 malformed', 'regular truth parsed'],
   ['Truth read: playback-worker.truth.jsonl: 1 parsed, 0 malformed', 'playback truth parsed'],
   ['queue finished | enqueued=3 not_eligible=3', 'queue stage mapped'],
-  ['Playback worker        Finished', 'playback worker mapped']
+  ['Playback worker        Finished', 'playback worker mapped'],
+  ['Queue read: Queue file parsed:', 'queue file parsed'],
+  ['Real demo playback queue rows: 2', 'queue count in current run'],
+  ['gps_valid_01.jpg', 'real queue item image'],
+  ['apple_like_h264_mov_gps_tallinn.mov', 'real queue item video'],
+  ['[P] Run Playback enabled', 'real playback enabled from queue'],
+  ['Ready: 2 real demo queue items available.', 'real playback ready text']
 ]) assertIncludes(realDemoWithTruth, needle, label);
 
 for (const [needle, label] of [
