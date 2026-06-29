@@ -536,6 +536,14 @@ Invoke-LoggedCommand `
     -Arguments @('--verbose', 'run', 'proof:terminal-demo-merge-smoke') `
     -LogPath (Join-Path $logDir ('npm-terminal-demo-merge-smoke-{0}.log' -f $timestamp))
 
+if ($Adapter -eq 'real-demo') {
+    Invoke-LoggedCommand `
+        -Label 'Preparing live DEMO DB image playback fixture' `
+        -FilePath 'npm' `
+        -Arguments @('--verbose', 'run', 'terminal-demo:live-image-fixture:setup') `
+        -LogPath (Join-Path $logDir ('npm-terminal-demo-live-image-fixture-{0}.log' -f $timestamp))
+}
+
 $launchScript = if ($Adapter -eq 'real-demo') { 'demo:terminal:real' } else { 'demo:terminal:mock' }
 $launchLabel = if ($Adapter -eq 'real-demo') { 'real demo terminal' } else { 'mock demo terminal' }
 
