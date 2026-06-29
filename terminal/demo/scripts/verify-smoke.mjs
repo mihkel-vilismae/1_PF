@@ -56,10 +56,10 @@ function assertIncludes(output, needle, label) {
   }
 }
 
-// Creates a minimal PhotoFrame-like repo fixture with media and demo truth.
-function createTruthFixtureRepo() {
-  const root = mkdtempSync(join(tmpdir(), 'photoframe-real-demo-truth-'));
-  const mediaRoot = join(root, 'generated_test_data');
+// Creates a minimal PhotoFrame-like repo fixture with generated media but no demo runtime.
+function createEmptyRealDemoFixtureRepo() {
+  const root = mkdtempSync(join(tmpdir(), 'photoframe-real-demo-empty-'));
+  const mediaRoot = join(root, 'runtime_data', 'demo', 'downloaded_files');
   for (const dir of ['gps_valid', 'no_gps', 'invalid_gps', 'corrupted', 'videos_with_gps']) mkdirSync(join(mediaRoot, dir), { recursive: true });
   for (const file of [
     'gps_valid/gps_valid_01.jpg',
@@ -69,6 +69,12 @@ function createTruthFixtureRepo() {
     'invalid_gps/invalid_gps_01.jpg',
     'corrupted/corrupted_random_01.jpg'
   ]) writeFileSync(join(mediaRoot, file), 'fixture');
+  return root;
+}
+
+// Creates a minimal PhotoFrame-like repo fixture with media and demo truth.
+function createTruthFixtureRepo() {
+  const root = createEmptyRealDemoFixtureRepo();
 
   const truthDir = join(root, 'runtime_data', 'v2_worker_truth', 'demo');
   mkdirSync(truthDir, { recursive: true });
@@ -131,7 +137,8 @@ const initial = run(['--smoke']);
 const final = run(['--q-smoke']);
 const story = run(['--q-storyboard-smoke']);
 const manual = run(['--manual-smoke']);
-const realDemo = run(['--real-demo-smoke']);
+const emptyRealDemoFixtureRepo = createEmptyRealDemoFixtureRepo();
+const realDemo = run(['--real-demo-smoke'], { PHOTOFRAME_REPO_ROOT: emptyRealDemoFixtureRepo });
 const runtimeConfig = run(['--adapter=real-demo', '--runtime-config-smoke']);
 const truthFixtureRepo = createTruthFixtureRepo();
 const realDemoWithTruth = run(['--real-demo-smoke'], { PHOTOFRAME_REPO_ROOT: truthFixtureRepo });
