@@ -68,7 +68,7 @@ function mapQueueRow(item: Record<string, unknown>, rowNumber: number): Playback
     type: asString(item.mediaType) === 'video' ? 'video' : 'image',
     address: asString(item.resolvedAddress),
     status: asString(item.queueStatus) || 'UNKNOWN',
-    source: 'DEMO_DB_PATH:slideshow_queue'
+    source: `DEMO_DB_PATH:${asString(item.queueSource) || 'slideshow_queue'}`
   };
 }
 
@@ -82,6 +82,6 @@ function mapSelectedItem(item: Record<string, unknown>, source: string): DemoPla
     address: asString(item.resolvedAddress),
     status: asString(item.queueStatus) || 'UNKNOWN',
     durationSeconds: null,
-    source: `DEMO_DB_PATH:${source}:playback_contract`
+    source: `DEMO_DB_PATH:${asString(item.queueSource) || source}:playback_contract`
   };
 }
