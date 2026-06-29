@@ -150,7 +150,7 @@ for (const [needle, label] of [
   ['PHOTOFRAME REAL DEMO TERMINAL', 'real-demo header'],
   ['Adapter: real-demo', 'real-demo adapter banner'],
   ['Data: real_demo_truth', 'real-demo data mode'],
-  ['v0.11.0 Group 5B playback selected-item visibility', 'real-demo group 5B warning'],
+  ['v0.12.0 Group 6B final proofs/de-mocking guard pack', 'real-demo group 5B warning'],
   ['W toggles selected batch size', 'real-demo batch toggle note'],
   ['GENERATED DEMO MEDIA', 'real-demo media title'],
   ['RPI-STAGES — DEMO TRUTH', 'real-demo stages truth'],

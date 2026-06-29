@@ -1,6 +1,6 @@
 # PhotoFrame Terminal Demo Mode
 
-Version: `0.11.0`
+Version: `0.12.0`
 
 This folder is the merged terminal/TUI mock plus real-demo runtime-boundary, media-discovery, truth/status-read, command-plan, guarded W/Q orchestration, queue-reader, and playback selected-item visibility scaffold for the PhotoFrame Demo Mode beeline.
 ## Merged into PhotoFrame
@@ -160,6 +160,30 @@ Version `0.11.0` adds the playback selected-item/status reader:
 - keeps native/fullscreen playback disabled.
 
 Group 5B does not install/use cron, does not claim native playback, and does not bypass the existing execution acknowledgement gate.
+
+
+
+## Real-demo Group 6B final proofs
+
+Version `0.12.0` adds the final proof/de-mocking guard milestone for the terminal real-demo path:
+
+- path isolation proof for DEMO runtime/manifest/output boundaries,
+- no-cron proof for Q/P manual command planning,
+- real media discovery and DEMO truth/status reader proofs,
+- W/Q batch-size route proof,
+- real Q route proof that does not import the mock storyboard or fake worker success,
+- queue reader and playback selected-item/status proofs,
+- mock-vs-real adapter separation proof,
+- execution guard proof for explicit worker flags,
+- largest-file proof for the terminal/proof slice.
+
+Run the aggregate proof:
+
+```bash
+npm run proof:terminal-demo-final
+```
+
+Group 6B still keeps native/fullscreen playback disabled and does not bypass guarded worker execution flags.
 
 ## Current scope
 

@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.11.0",
+  "version": "0.12.0",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -214,7 +214,16 @@
     "proof:terminal-demo-execution-safety": "node tools/run-terminal-demo-execution-safety-proof.mjs",
     "proof:terminal-demo-queue-reader": "node terminal/demo/scripts/verify-smoke.mjs",
     "demo:terminal:real:p-smoke": "tsx terminal/demo/src/main.ts --adapter=real-demo --p-smoke",
-    "proof:terminal-demo-playback-status": "node terminal/demo/scripts/verify-smoke.mjs"
+    "proof:terminal-demo-playback-status": "node terminal/demo/scripts/verify-smoke.mjs",
+    "proof:terminal-demo-path-isolation": "node tools/run-terminal-demo-final-guard-proof.mjs path-isolation",
+    "proof:terminal-demo-no-cron": "node tools/run-terminal-demo-final-guard-proof.mjs no-cron",
+    "proof:terminal-demo-media-discovery": "node tools/run-terminal-demo-final-guard-proof.mjs media-discovery",
+    "proof:terminal-demo-truth-reader": "node tools/run-terminal-demo-final-guard-proof.mjs truth-reader",
+    "proof:terminal-demo-batch-size": "node tools/run-terminal-demo-final-guard-proof.mjs batch-size",
+    "proof:terminal-demo-real-q-route": "node tools/run-terminal-demo-final-guard-proof.mjs real-q-route",
+    "proof:terminal-demo-mock-separation": "node tools/run-terminal-demo-final-guard-proof.mjs mock-separation",
+    "proof:terminal-demo-largest-files": "node tools/run-terminal-demo-final-guard-proof.mjs largest-files",
+    "proof:terminal-demo-final": "node tools/run-terminal-demo-final-guard-proof.mjs final"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

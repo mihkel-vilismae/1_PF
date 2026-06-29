@@ -1,3 +1,11 @@
+## 2026-06-29 — v0.12.0
+
+- Added Group 6B final terminal real-demo proof/de-mocking guard pack.
+- Added aggregate `proof:terminal-demo-final` and individual proofs for path isolation, no-cron, media discovery, truth reader, batch size, real Q route, queue reader, playback status, mock separation, execution guard, and largest-file reporting.
+- Updated terminal real-demo banner/source wording and OpenSpec to v0.12.0 proof-locked milestone status.
+- Preserved guarded execution boundary: Q/P worker execution still requires `PHOTOFRAME_TERMINAL_DEMO_EXECUTE=1` and `PHOTOFRAME_TERMINAL_DEMO_ACK_WORKER_DEMO_SCHEDULER_SAFE=1`.
+- Bumped version metadata to `0.12.0`.
+
 ## 2026-06-29 — v0.11.0
 
 ### Added

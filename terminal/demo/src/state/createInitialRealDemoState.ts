@@ -97,7 +97,7 @@ export function createInitialRealDemoState(
     dataMode: 'real_demo_truth',
     runtimeBoundary: boundary,
     banner: `PHOTOFRAME REAL DEMO TERMINAL v${version}`,
-    warning: `v0.11.0 Group 5B playback selected-item visibility: boundary is ${statusText}; queue and playback status are DEMO-sourced.`,
+    warning: `v0.12.0 Group 6B final proofs/de-mocking guard pack: boundary is ${statusText}; queue and playback status are DEMO-sourced.`,
     selectedBatchSize,
     mediaRows,
     playbackQueueRows: playbackQueueRows.map((row) => ({ ...row })),
@@ -109,7 +109,7 @@ export function createInitialRealDemoState(
     currentRun: {
       title: 'CURRENT RUN',
       lines: [
-        'Real-demo v0.11.0 Group 5B milestone is installed.',
+        'Real-demo v0.12.0 Group 6B final proof/de-mocking milestone is installed.',
         'This screen resolves DEMO paths, reads generated demo media/truth/queue/playback status, and can plan guarded manual Q/P orchestration.',
         'W toggles selected batch size. Q uses the selected batch size. P plans playback selection. No cron is used.',
         '',

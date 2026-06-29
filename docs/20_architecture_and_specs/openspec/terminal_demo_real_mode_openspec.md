@@ -1,7 +1,7 @@
 # Terminal Demo Real Mode OpenSpec
 
 Generated: 2026-06-29  
-Status: v0.11.0 Group 5B playback selected-item visibility implemented; worker/native execution remains guarded pending later proof.
+Status: v0.12.0 Group 6B final proofs/de-mocking guard pack implemented; worker/native execution remains guarded pending later proof.
 
 ## Goal
 
@@ -26,7 +26,7 @@ Turn the terminal mock-demo into a real terminal Demo Mode that uses PhotoFrame 
 | Real demo queue reader | Implemented; reads DEMO_QUEUE_OUTPUT_PATH and drives PLAYBACK_QUEUE/P enabled state | 9/10 |
 | Playback selected-item display | Implemented; reads DEMO scheduler playback-worker-status and renders selected file/type/address/status/duration | 8/10 |
 | Playback worker execution | Guarded/manual command plan only; requires explicit execution and scheduler-safety flags | 6/10 |
-| Proof/de-mocking guard suite | Group 6A execution-safety proof and Group 5B smoke coverage added; final de-mocking proofs still planned | 5/10 |
+| Proof/de-mocking guard suite | Group 6B final proof pack implemented; path isolation, no-cron, media/truth, batch-size, Q route, queue, playback, mock separation, execution guard, and largest-file checks are scripted | 9/10 |
 
 ## Group 3B behavior
 
@@ -54,7 +54,7 @@ implement screen on/off behavior
 
 ## Next group
 
-Group 6B should add final path isolation, no-cron, batch-size, queue, playback, and de-mocking proofs.
+Group 6B has added final path isolation, no-cron, batch-size, queue, playback, and de-mocking proofs. Remaining work is broader v1.0 release-candidate packaging and any optional live guarded worker execution proof.
 
 
 ## Group 3B-FINISH hardening
@@ -95,3 +95,22 @@ Group 6B should add final path isolation, no-cron, batch-size, queue, playback, 
 - Pressing `P` plans the manual/no-cron command `npm run api -- --scheduler playback-worker`.
 - Actual playback-worker execution remains guarded by `PHOTOFRAME_TERMINAL_DEMO_EXECUTE=1` plus `PHOTOFRAME_TERMINAL_DEMO_ACK_WORKER_DEMO_SCHEDULER_SAFE=1`.
 - Native/fullscreen playback remains disabled and out of this milestone scope.
+
+
+## Group 6B final proofs and de-mocking guards
+
+Version `0.12.0` adds the terminal real-demo proof-locking pack:
+
+- `proof:terminal-demo-path-isolation` verifies DEMO path boundaries and manifest/output guards.
+- `proof:terminal-demo-no-cron` verifies Q/P paths remain manual and do not spawn crontab.
+- `proof:terminal-demo-media-discovery` verifies real-demo rows come from generated demo media discovery.
+- `proof:terminal-demo-truth-reader` verifies RPI panels read DEMO truth/status or safe empty state.
+- `proof:terminal-demo-batch-size` verifies W toggles `1 <-> 5` and Q consumes the selected size.
+- `proof:terminal-demo-real-q-route` verifies real-demo Q does not import the mock storyboard and does not fake worker success.
+- `proof:terminal-demo-queue-reader` verifies `PLAYBACK_QUEUE` is sourced from `DEMO_QUEUE_OUTPUT_PATH`.
+- `proof:terminal-demo-playback-status` verifies selected/current playback item display is sourced from DEMO playback status.
+- `proof:terminal-demo-mock-separation` verifies mock and real adapters remain separated.
+- `proof:terminal-demo-largest-files` prints largest terminal/proof files and blocks new Group 6B proof source over 300 LOC.
+- `proof:terminal-demo-final` aggregates the Group 6B proof pack.
+
+Group 6B does not enable native/fullscreen playback and does not bypass the explicit worker execution acknowledgement gate.
