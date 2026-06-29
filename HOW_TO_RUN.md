@@ -1,6 +1,6 @@
 # How to Run
 
-> Current checkpoint: `v0.16.0`. This file is intentionally short; longer operator detail belongs in `docs/10_runbooks/`.
+> Current checkpoint: `v0.17.0`. This file is intentionally short; longer operator detail belongs in `docs/10_runbooks/`.
 
 ## Use this for quickstart
 
@@ -26,7 +26,7 @@ S:\_PHOTOFRAMES\PF_login_v0.10.67_target_live_proof_readiness_full_git\full_wind
 
 ## Current launcher and database paths
 
-- Repository/package version: `0.16.0`.
+- Repository/package version: `0.17.0`.
 - Windows launcher: `start_scripts/windows/START_WIN.PS1`.
 - Raspberry launcher: `start_scripts/raspberry/START_RASPBERRYOS.SH`.
 - Canonical SQLite schema: `database/schema.sql`.

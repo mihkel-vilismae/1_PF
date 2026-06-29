@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.16.0",
+  "version": "0.17.0",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -228,7 +228,8 @@
     "proof:terminal-demo-evidence-diagnosis": "node tools/run-terminal-demo-evidence-diagnosis.mjs --self-test",
     "proof:terminal-demo-rc-readiness": "node tools/run-terminal-demo-rc-readiness-audit.mjs",
     "terminal-demo:evidence-diagnosis": "node tools/run-terminal-demo-evidence-diagnosis.mjs",
-    "proof:terminal-demo-transferable-package": "node tools/run-terminal-demo-transferable-package-proof.mjs"
+    "proof:terminal-demo-transferable-package": "node tools/run-terminal-demo-transferable-package-proof.mjs",
+    "proof:dashboard-runtime-mode-boundary": "node tools/run-dashboard-runtime-mode-boundary-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

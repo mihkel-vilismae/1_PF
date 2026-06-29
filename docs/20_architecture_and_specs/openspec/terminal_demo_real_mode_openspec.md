@@ -190,3 +190,23 @@ The gate requires:
 - generated proof evidence stays under `terminal/demo/runtime_logs/transferable_package/` and does not include source repository files.
 
 A passing result means the RC package is transferable and clean enough for operator rehearsal packaging. It does not itself approve production cron, live Raspberry execution, or real/test data use.
+
+
+## v0.17.0 dashboard runtime mode type boundary
+
+The v0.17.0 repair makes the runtime-mode boundary explicit rather than widening legacy services blindly. `DashboardRuntimeMode` may include `demo` for dashboard selection and terminal Demo Mode surfaces, but legacy database, playback contract, native playback, and orchestration surfaces remain real/test-only.
+
+Required guardrails:
+
+- `demo` must not be passed directly into database, playback, native playback, or orchestration service contexts.
+- Real/test-only routes must call an explicit boundary helper before they reach those services.
+- Test-only proof routes must keep a separate Test Mode guard.
+- Terminal Demo Mode continues to use DEMO-owned media, truth, status, queue, and playback evidence surfaces.
+
+Proof command:
+
+```bash
+npm run proof:dashboard-runtime-mode-boundary
+```
+
+The RC readiness audit also runs this proof so the transferable RC package cannot regress by silently allowing demo mode into real/test-only service boundaries.

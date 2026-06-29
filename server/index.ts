@@ -228,6 +228,24 @@ interface RequestContext {
   [key: string]: unknown;
 }
 
+type RealOrTestRuntimeMode = Exclude<DashboardRuntimeMode, 'demo'>;
+type RealOrTestRequestContext = RequestContext & { runtimeMode?: RealOrTestRuntimeMode };
+type TestRequestContext = RequestContext & { runtimeMode: 'test' };
+
+function requireRealOrTestRequestContext(context: RequestContext, operation: string): RealOrTestRequestContext {
+  if (context.runtimeMode === 'demo') {
+    throw new HttpError(409, 'demo_mode_requires_terminal_demo_surface', `${operation} is real/test-only. Use terminal Demo Mode DEMO-owned surfaces instead.`);
+  }
+  return context as RealOrTestRequestContext;
+}
+
+function requireTestRequestContext(context: RequestContext, operation: string): TestRequestContext {
+  if (context.runtimeMode !== 'test') {
+    throw new HttpError(409, 'test_mode_required', `${operation} is only allowed in Test Mode.`);
+  }
+  return context as TestRequestContext;
+}
+
 interface DatabaseStatusPayload {
   exists: boolean;
   absolutePath?: string;
@@ -933,9 +951,10 @@ async function runRegularStageWorkerBackendStage(context: RequestContext, stage:
 }
 
 async function ensureRegularStageWorkerDatabase(context: RequestContext): Promise<void> {
-  const database = await buildDatabaseStatus(context);
+  const databaseContext = requireRealOrTestRequestContext(context, 'regular stage worker database preparation');
+  const database = await buildDatabaseStatus(databaseContext);
   if (!database.exists) {
-    await getDatabaseService().recreateEmptyDatabase(context);
+    await getDatabaseService().recreateEmptyDatabase(databaseContext);
   }
 }
 
@@ -1814,7 +1833,8 @@ function normalizeRealDownloadBatchSize(value: unknown): number {
 }
 
 async function runtimeIndexRunHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
-  const { database, indexedAt, indexing: rawIndexing } = await getDatabaseService().runStage2IndexRegister(context);
+  const runtimeContext = requireRealOrTestRequestContext(context, 'runtime index stage');
+  const { database, indexedAt, indexing: rawIndexing } = await getDatabaseService().runStage2IndexRegister(runtimeContext);
   const indexing = rawIndexing as Stage2IndexingPayload;
 
   return {
@@ -1836,7 +1856,8 @@ async function runtimeIndexRunHandler({ context }: Pick<HandlerArgs, 'context'>)
 }
 
 async function runtimeGpsRunHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
-  const { database, executedAt, gps: rawGps } = await getDatabaseService().runStage3ProcessGpsQueue(context);
+  const runtimeContext = requireRealOrTestRequestContext(context, 'runtime GPS stage');
+  const { database, executedAt, gps: rawGps } = await getDatabaseService().runStage3ProcessGpsQueue(runtimeContext);
   const gps = rawGps as StageQueueProcessingPayload;
 
   return {
@@ -1862,7 +1883,8 @@ async function runtimeGpsRunHandler({ context }: Pick<HandlerArgs, 'context'>): 
 }
 
 async function runtimeGeocodeRunHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
-  const { database, executedAt, geocode: rawGeocode } = await getDatabaseService().runStage4ProcessGeocodeQueue(context);
+  const runtimeContext = requireRealOrTestRequestContext(context, 'runtime geocode stage');
+  const { database, executedAt, geocode: rawGeocode } = await getDatabaseService().runStage4ProcessGeocodeQueue(runtimeContext);
   const geocode = rawGeocode as StageQueueProcessingPayload;
 
   return {
@@ -1888,7 +1910,8 @@ async function runtimeGeocodeRunHandler({ context }: Pick<HandlerArgs, 'context'
 }
 
 async function runtimeQueuePrepareHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
-  const { database, executedAt, queue: rawQueue } = await getDatabaseService().runStage5PrepareQueue(context);
+  const runtimeContext = requireRealOrTestRequestContext(context, 'runtime queue prepare stage');
+  const { database, executedAt, queue: rawQueue } = await getDatabaseService().runStage5PrepareQueue(runtimeContext);
   const queue = rawQueue as Stage5QueuePayload;
 
   return {
@@ -1910,26 +1933,29 @@ async function runtimeQueuePrepareHandler({ context }: Pick<HandlerArgs, 'contex
 
 // Returns native playback config and persisted process/status details without launching media.
 async function nativePlaybackStatusHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
+  const runtimeContext = requireRealOrTestRequestContext(context, 'native playback status');
   return {
     statusCode: 200,
-    payload: await getNativePlaybackStatus({ context: { ...context, repoRoot }, databaseService: getDatabaseService() }),
+    payload: await getNativePlaybackStatus({ context: { ...runtimeContext, repoRoot }, databaseService: getDatabaseService() }),
   };
 }
 
 // Detects whether the configured OS-native playback executable is available.
 async function nativePlaybackDetectHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
+  const runtimeContext = requireRealOrTestRequestContext(context, 'native playback detection');
   return {
     statusCode: 200,
-    payload: await detectNativePlayback({ context: { ...context, repoRoot }, databaseService: getDatabaseService() }),
+    payload: await detectNativePlayback({ context: { ...runtimeContext, repoRoot }, databaseService: getDatabaseService() }),
   };
 }
 
 // Starts native fullscreen playback for the current/next backend playback item when enabled.
 async function nativePlaybackStartCurrentHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
+  const runtimeContext = requireRealOrTestRequestContext(context, 'native playback start');
   try {
     return {
       statusCode: 200,
-      payload: await startCurrentNativePlayback({ context, databaseService: getDatabaseService(), repoRoot }),
+      payload: await startCurrentNativePlayback({ context: runtimeContext, databaseService: getDatabaseService(), repoRoot }),
     };
   } catch (error) {
     if (error instanceof NativePlaybackError) {
@@ -1941,23 +1967,22 @@ async function nativePlaybackStartCurrentHandler({ context }: Pick<HandlerArgs, 
 
 // Stops the native playback process owned by this backend instance.
 async function nativePlaybackStopHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
+  const runtimeContext = requireRealOrTestRequestContext(context, 'native playback stop');
   return {
     statusCode: 200,
-    payload: await stopNativePlayback({ context: { ...context, repoRoot }, databaseService: getDatabaseService() }),
+    payload: await stopNativePlayback({ context: { ...runtimeContext, repoRoot }, databaseService: getDatabaseService() }),
   };
 }
 
 
 // Seeds a deterministic generated_test_data video fixture into Test Mode for live video proof only.
 async function liveWindowsNativeVideoSeedHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
-  if (context.runtimeMode !== 'test') {
-    throw new HttpError(409, 'proof_video_seed_requires_test_mode', 'Live Windows native video proof seeding is only allowed in Test Mode.');
-  }
+  const testContext = requireTestRequestContext(context, 'live Windows native video proof seeding');
 
-  const fixtureRelativePath = context.envValues.PF_LIVE_WINDOWS_NATIVE_VIDEO_PROOF_FIXTURE
+  const fixtureRelativePath = testContext.envValues.PF_LIVE_WINDOWS_NATIVE_VIDEO_PROOF_FIXTURE
     || 'generated_test_data/videos_with_gps/apple_like_h264_mp4_gps_new_york.mp4';
   const databaseService = getDatabaseService();
-  const database = await databaseService.buildDatabaseStatus(context);
+  const database = await databaseService.buildDatabaseStatus(testContext);
   const executedAt = new Date().toISOString();
   const seed = await databaseService.runPythonJson([
     'seed_live_windows_native_video_fixture',
@@ -1973,7 +1998,7 @@ async function liveWindowsNativeVideoSeedHandler({ context }: Pick<HandlerArgs, 
     payload: {
       status: 'ok',
       proofOnly: true,
-      runtimeMode: context.runtimeMode,
+      runtimeMode: testContext.runtimeMode,
       database,
       seed,
       messages: [
@@ -1986,8 +2011,9 @@ async function liveWindowsNativeVideoSeedHandler({ context }: Pick<HandlerArgs, 
 }
 
 async function runtimePlaybackCurrentHandler({ context, url }: Pick<HandlerArgs, 'context' | 'url'>): Promise<HandlerResult> {
+  const playbackContext = requireRealOrTestRequestContext(context, 'playback current contract');
   const contract = await buildPlaybackContract({
-    context,
+    context: playbackContext,
     databaseService: getDatabaseService(),
     repoRoot,
     limit: normalizePlaybackContractLimit(url.searchParams.get('limit')),
@@ -2000,8 +2026,9 @@ async function runtimePlaybackCurrentHandler({ context, url }: Pick<HandlerArgs,
 }
 
 async function runtimePlaybackQueueHandler({ context, url }: Pick<HandlerArgs, 'context' | 'url'>): Promise<HandlerResult> {
+  const playbackContext = requireRealOrTestRequestContext(context, 'playback queue contract');
   const contract = await buildPlaybackContract({
-    context,
+    context: playbackContext,
     databaseService: getDatabaseService(),
     repoRoot,
     limit: normalizePlaybackContractLimit(url.searchParams.get('limit')),
@@ -2367,8 +2394,9 @@ function normalizeV2RecoverySaveReason(value: unknown, fallback: V2RecoveryState
 // Reads the latest persisted playback resume checkpoint for Windows/Raspberry views.
 async function runtimePlaybackResumeCheckpointGetHandler({ url, context }: Pick<HandlerArgs, 'url' | 'context'>): Promise<HandlerResult> {
   const platform = normalizePlaybackResumePlatform(url.searchParams.get('platform'));
-  const checkpoint = await getDatabaseService().getRuntimeState<PlaybackResumeCheckpoint>(context, buildPlaybackResumeStateKey(platform));
-  const validation = await validatePlaybackResumeCheckpoint(context, checkpoint);
+  const runtimeContext = requireRealOrTestRequestContext(context, 'playback resume checkpoint read');
+  const checkpoint = await getDatabaseService().getRuntimeState<PlaybackResumeCheckpoint>(runtimeContext, buildPlaybackResumeStateKey(platform));
+  const validation = await validatePlaybackResumeCheckpoint(runtimeContext, checkpoint);
 
   return {
     statusCode: 200,
@@ -2377,7 +2405,7 @@ async function runtimePlaybackResumeCheckpointGetHandler({ url, context }: Pick<
       platform,
       checkpoint,
       validation,
-      runtimeMode: context.runtimeMode ?? 'real',
+      runtimeMode: runtimeContext.runtimeMode ?? 'real',
       schemaVersion: PLAYBACK_RESUME_CHECKPOINT_SCHEMA_VERSION,
     },
   };
@@ -2386,12 +2414,13 @@ async function runtimePlaybackResumeCheckpointGetHandler({ url, context }: Pick<
 // Persists a frontend-reported playback resume checkpoint without changing playback selection.
 async function runtimePlaybackResumeCheckpointSaveHandler({ body, context }: Pick<HandlerArgs, 'body' | 'context'>): Promise<HandlerResult> {
   const checkpoint = normalizePlaybackResumeCheckpoint(body);
-  const validation = await validatePlaybackResumeCheckpoint(context, checkpoint);
+  const runtimeContext = requireRealOrTestRequestContext(context, 'playback resume checkpoint save');
+  const validation = await validatePlaybackResumeCheckpoint(runtimeContext, checkpoint);
   if (validation.status === 'invalid') {
     throw new HttpError(400, 'invalid_playback_resume_checkpoint', validation.reason, { validation, checkpoint });
   }
 
-  await getDatabaseService().setRuntimeState(context, buildPlaybackResumeStateKey(checkpoint.platform), checkpoint);
+  await getDatabaseService().setRuntimeState(runtimeContext, buildPlaybackResumeStateKey(checkpoint.platform), checkpoint);
 
   return {
     statusCode: 200,
@@ -2400,7 +2429,7 @@ async function runtimePlaybackResumeCheckpointSaveHandler({ body, context }: Pic
       platform: checkpoint.platform,
       checkpoint,
       validation,
-      runtimeMode: context.runtimeMode ?? 'real',
+      runtimeMode: runtimeContext.runtimeMode ?? 'real',
       schemaVersion: PLAYBACK_RESUME_CHECKPOINT_SCHEMA_VERSION,
     },
   };
@@ -2409,7 +2438,8 @@ async function runtimePlaybackResumeCheckpointSaveHandler({ body, context }: Pic
 // Clears the persisted playback resume checkpoint for a platform by storing a null state value.
 async function runtimePlaybackResumeCheckpointClearHandler({ body, url, context }: Pick<HandlerArgs, 'body' | 'url' | 'context'>): Promise<HandlerResult> {
   const platform = normalizePlaybackResumePlatform(isJsonObject(body) ? body.platform : url.searchParams.get('platform'));
-  await getDatabaseService().setRuntimeState(context, buildPlaybackResumeStateKey(platform), null);
+  const runtimeContext = requireRealOrTestRequestContext(context, 'playback resume checkpoint clear');
+  await getDatabaseService().setRuntimeState(runtimeContext, buildPlaybackResumeStateKey(platform), null);
 
   return {
     statusCode: 200,
@@ -2418,7 +2448,7 @@ async function runtimePlaybackResumeCheckpointClearHandler({ body, url, context 
       platform,
       checkpoint: null,
       validation: buildMissingPlaybackResumeValidation(),
-      runtimeMode: context.runtimeMode ?? 'real',
+      runtimeMode: runtimeContext.runtimeMode ?? 'real',
       schemaVersion: PLAYBACK_RESUME_CHECKPOINT_SCHEMA_VERSION,
     },
   };
@@ -2463,8 +2493,9 @@ async function validatePlaybackResumeCheckpoint(context: RequestContext, checkpo
   const stale = !Number.isFinite(heartbeatMs) || Date.now() - heartbeatMs > PLAYBACK_RESUME_CHECKPOINT_STALE_MS;
   let mediaFoundInContract = false;
   try {
+    const playbackContext = requireRealOrTestRequestContext(context, 'playback resume checkpoint validation');
     const contract = await buildPlaybackContract({
-      context,
+      context: playbackContext,
       databaseService: getDatabaseService(),
       repoRoot,
       limit: 50,
@@ -2562,8 +2593,9 @@ async function runtimePlaybackMediaHandler({ response, url, context }: Pick<Hand
   let mediaPath: string;
 
   if (requestedAssetId) {
+    const playbackContext = requireRealOrTestRequestContext(context, 'playback media resolution');
     const resolvedMedia = await resolvePlaybackAssetMediaPath({
-      context,
+      context: playbackContext,
       databaseService: getDatabaseService(),
       repoRoot,
       mediaAssetId: requestedAssetId,
@@ -2684,8 +2716,9 @@ const ORCHESTRATION_STAGE_PIPELINE: OrchestrationStageDefinition[] = [
 ];
 
 async function getOrchestrationState(context: RequestContext, key: string): Promise<OrchestrationState | null> {
+  const runtimeContext = requireRealOrTestRequestContext(context, 'runtime orchestration state read');
   try {
-    return await getDatabaseService().getRuntimeState(context, key);
+    return await getDatabaseService().getRuntimeState(runtimeContext, key);
   } catch {
     // If the database is missing or the bridge fails, treat as no state.
     return null;
@@ -2693,7 +2726,8 @@ async function getOrchestrationState(context: RequestContext, key: string): Prom
 }
 
 async function setOrchestrationState(context: RequestContext, key: string, value: OrchestrationState): Promise<void> {
-  await getDatabaseService().setRuntimeState(context, key, value);
+  const runtimeContext = requireRealOrTestRequestContext(context, 'runtime orchestration state write');
+  await getDatabaseService().setRuntimeState(runtimeContext, key, value);
 }
 
 async function runtimeOrchestrationRunHandler({ context }: Pick<HandlerArgs, 'context'>): Promise<HandlerResult> {
@@ -3149,11 +3183,11 @@ function previewValue(entry: EnvSchemaEntry, rawValue: string): string {
 }
 
 async function buildDatabaseStatus(context: RequestContext): Promise<DatabaseStatusResult> {
-  return getDatabaseService().buildDatabaseStatus(context);
+  return getDatabaseService().buildDatabaseStatus(requireRealOrTestRequestContext(context, 'database status'));
 }
 
 async function buildDatabaseViewerVerification(context: RequestContext): Promise<DatabaseViewerVerificationResult> {
-  return getDatabaseService().buildDatabaseViewerVerification(context);
+  return getDatabaseService().buildDatabaseViewerVerification(requireRealOrTestRequestContext(context, 'database viewer verification'));
 }
 
 function buildDatabaseViewerVerificationMessages(verification: Parameters<DatabaseService['buildDatabaseViewerVerificationMessages']>[0]): string[] {
@@ -3216,23 +3250,23 @@ function getDatabaseViewerLoggingCoverage(): string {
 }
 
 async function inspectDatabase(context: RequestContext): Promise<DatabaseInspectionResult> {
-  return getDatabaseService().inspectDatabase(context);
+  return getDatabaseService().inspectDatabase(requireRealOrTestRequestContext(context, 'database inspection'));
 }
 
 async function deleteDatabaseArtifacts(context: RequestContext): Promise<DatabaseDeleteArtifactsResult> {
-  return getDatabaseService().deleteDatabaseArtifacts(context);
+  return getDatabaseService().deleteDatabaseArtifacts(requireRealOrTestRequestContext(context, 'database artifact deletion'));
 }
 
 async function recreateEmptyDatabase(context: RequestContext): Promise<DatabaseRecreateResult> {
-  return getDatabaseService().recreateEmptyDatabase(context);
+  return getDatabaseService().recreateEmptyDatabase(requireRealOrTestRequestContext(context, 'database recreation'));
 }
 
 async function listDatabaseViewerTables(context: RequestContext): Promise<DatabaseTableListResult> {
-  return getDatabaseService().listDatabaseViewerTables(context);
+  return getDatabaseService().listDatabaseViewerTables(requireRealOrTestRequestContext(context, 'database table listing'));
 }
 
 async function loadDatabaseViewerRows(context: RequestContext, body: JsonObject): Promise<DatabaseRowsResult> {
-  return getDatabaseService().loadDatabaseViewerRows(context, body);
+  return getDatabaseService().loadDatabaseViewerRows(requireRealOrTestRequestContext(context, 'database row loading'), body);
 }
 
 async function readJsonBody(request: IncomingMessage): Promise<JsonObject> {

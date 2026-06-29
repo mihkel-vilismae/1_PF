@@ -112,6 +112,7 @@ for (const script of [
   'proof:terminal-demo-evidence-diagnosis',
   'proof:terminal-demo-rc-readiness',
   'proof:terminal-demo-transferable-package',
+  'proof:dashboard-runtime-mode-boundary',
   'demo:terminal:real:smoke',
   'demo:terminal:mock:smoke'
 ]) {
@@ -157,6 +158,11 @@ const packageProof = runCommand('terminal-demo-transferable-package-proof', proc
 const packageProofJson = parseJsonFromOutput(packageProof.stdout);
 check('transferable package proof passes', packageProof.exitCode === 0 && packageProofJson?.status === 'PASSED', `exit=${packageProof.exitCode}; status=${packageProofJson?.status ?? 'unparsed'}`);
 check('transferable package proof marks package ready', packageProofJson?.packageDecision === 'TRANSFERABLE_RC_PACKAGE_READY', packageProofJson?.packageDecision ?? 'missing');
+
+const modeBoundaryProof = runCommand('dashboard-runtime-mode-boundary-proof', process.execPath, ['tools/run-dashboard-runtime-mode-boundary-proof.mjs']);
+const modeBoundaryJson = parseJsonFromOutput(modeBoundaryProof.stdout);
+check('dashboard runtime mode boundary proof passes', modeBoundaryProof.exitCode === 0 && modeBoundaryJson?.status === 'PASSED', `exit=${modeBoundaryProof.exitCode}; status=${modeBoundaryJson?.status ?? 'unparsed'}`);
+check('dashboard demo mode stays out of real/test-only services', modeBoundaryJson?.decision === 'DEMO_BOUNDARY_EXPLICIT', modeBoundaryJson?.decision ?? 'missing');
 
 check('RC evidence folder excludes source files', !collectEvidenceFiles().some((file) => /(?:^|[\\/])(?:src|tools)[\\/].*\.(?:ts|js|mjs)$/.test(path.relative(evidenceRoot, file))), 'Only logs/status files are written under rc_readiness.');
 

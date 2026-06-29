@@ -261,10 +261,21 @@ Use focused commits for focused changes. For implementation handoff ZIPs, preser
 
 ## Terminal Demo transferable package proof
 
-The v0.16.0 terminal Demo Mode RC package includes tracked `TRANSFERABLE_REPO_PACKAGER.cmd` and can be checked with:
+The v0.17.0 terminal Demo Mode RC package includes tracked `TRANSFERABLE_REPO_PACKAGER.cmd` and can be checked with:
 
 ```bash
 npm run proof:terminal-demo-transferable-package
 ```
 
 On Windows, run `VERIFY_TERMINAL_DEMO_TRANSFERABLE_PACKAGE.CMD` from the repo root.
+
+
+## Dashboard runtime mode boundary proof
+
+The v0.17.0 typecheck repair keeps `demo` valid for dashboard/terminal Demo Mode selection while legacy database, playback, native playback, and orchestration services remain explicitly real/test-only. The boundary proof can be checked with:
+
+```bash
+npm run proof:dashboard-runtime-mode-boundary
+```
+
+A passing proof means demo mode is blocked from those legacy real/test-only service contexts and must continue through terminal Demo Mode DEMO-owned surfaces instead.

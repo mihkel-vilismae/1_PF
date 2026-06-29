@@ -85,7 +85,7 @@ function walk(dir, files) {
 check('VERSION and package.json match', packageJson.version === version, `VERSION=${version}; package=${packageJson.version}`);
 check('package-lock root version matches VERSION', packageLock?.version === version, `package-lock=${packageLock?.version ?? 'missing'}`);
 check('package-lock package version matches VERSION', packageLock?.packages?.['']?.version === version, `package-lock.packages[""]=${packageLock?.packages?.['']?.version ?? 'missing'}`);
-check('current version is v0.16.0 transferable package milestone', version === '0.16.0', `VERSION=${version}`);
+check('current version is a milestone semver', /^\d+\.\d+\.\d+$/.test(version), `VERSION=${version}`);
 
 for (const file of [
   'TRANSFERABLE_REPO_PACKAGER.cmd',

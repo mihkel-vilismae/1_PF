@@ -1,3 +1,11 @@
+# 0.17.0 - Dashboard runtime mode type boundary repair
+
+- Fixed the existing TypeScript blocker by adding explicit real/test-only request-context guards for legacy database, playback, native playback, and orchestration surfaces.
+- Preserved terminal Demo Mode as a DEMO-owned terminal surface instead of widening legacy real/test-only service contracts to accept `demo`.
+- Added `proof:dashboard-runtime-mode-boundary` and included it in the terminal Demo Mode RC readiness audit so demo mode cannot silently flow into real/test-only execution paths.
+- Preserved v0.16.0 transferable RC package behavior and kept `TRANSFERABLE_REPO_PACKAGER.cmd` tracked.
+- Bumped version metadata to `0.17.0`.
+
 # 0.16.0 - Terminal Demo transferable RC package proof
 
 - Committed `TRANSFERABLE_REPO_PACKAGER.cmd` as an intentional repo-root packaging helper instead of leaving it as an untracked ZIP artifact.
