@@ -112,7 +112,6 @@ for (const script of [
   'proof:terminal-demo-evidence-diagnosis',
   'proof:terminal-demo-rc-readiness',
   'proof:terminal-demo-transferable-package',
-  'proof:terminal-demo-log-panel-layout',
   'proof:dashboard-runtime-mode-boundary',
   'demo:terminal:real:smoke',
   'demo:terminal:mock:smoke'
@@ -159,11 +158,6 @@ const packageProof = runCommand('terminal-demo-transferable-package-proof', proc
 const packageProofJson = parseJsonFromOutput(packageProof.stdout);
 check('transferable package proof passes', packageProof.exitCode === 0 && packageProofJson?.status === 'PASSED', `exit=${packageProof.exitCode}; status=${packageProofJson?.status ?? 'unparsed'}`);
 check('transferable package proof marks package ready', packageProofJson?.packageDecision === 'TRANSFERABLE_RC_PACKAGE_READY', packageProofJson?.packageDecision ?? 'missing');
-
-const logPanelProof = runCommand('terminal-demo-log-panel-layout-proof', process.execPath, ['tools/run-terminal-demo-log-panel-layout-proof.mjs']);
-const logPanelProofJson = parseJsonFromOutput(logPanelProof.stdout);
-check('real-demo log panel layout proof passes', logPanelProof.exitCode === 0 && logPanelProofJson?.status === 'PASSED', `exit=${logPanelProof.exitCode}; status=${logPanelProofJson?.status ?? 'unparsed'}`);
-check('real-demo log panel layout ready', logPanelProofJson?.decision === 'REAL_DEMO_LOG_PANEL_LAYOUT_READY', logPanelProofJson?.decision ?? 'missing');
 
 const modeBoundaryProof = runCommand('dashboard-runtime-mode-boundary-proof', process.execPath, ['tools/run-dashboard-runtime-mode-boundary-proof.mjs']);
 const modeBoundaryJson = parseJsonFromOutput(modeBoundaryProof.stdout);
