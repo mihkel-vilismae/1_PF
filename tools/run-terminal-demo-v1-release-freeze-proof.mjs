@@ -100,7 +100,7 @@ function collectFiles(dir, files = []) {
 check('VERSION and package.json match', packageJson.version === version, `VERSION=${version}; package=${packageJson.version}`);
 check('package-lock root version matches VERSION', packageLock?.version === version, `package-lock=${packageLock?.version ?? 'missing'}`);
 check('package-lock package version matches VERSION', packageLock?.packages?.['']?.version === version, `package-lock.packages[""]=${packageLock?.packages?.['']?.version ?? 'missing'}`);
-check('version is a pre-v1 release-freeze milestone', /^0\.18\.0$/.test(version), `VERSION=${version}`);
+check('version is v1.0.0 final release', version === '1.0.0', `VERSION=${version}`);
 
 for (const script of [
   'build',

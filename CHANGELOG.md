@@ -1,3 +1,10 @@
+# 1.0.0 - Terminal Demo Mode v1 final release
+
+- Promoted Terminal Demo Mode from the v0.18.0 release-freeze gate to the v1.0.0 final release package.
+- Added `proof:terminal-demo-v1-release` and `VERIFY_TERMINAL_DEMO_V1_RELEASE.CMD` as the final release-only proof surface.
+- Updated v1 release checklist, OpenSpec, README, and HOW_TO_RUN to mark `TERMINAL_DEMO_MODE_V1_RELEASED` as the final release decision.
+- No terminal-demo runtime behavior was added or changed; this milestone is version/docs/package finalization only.
+
 # 0.18.0 - Terminal Demo v1.0 release-freeze evidence pack
 
 - Added `proof:terminal-demo-v1-release-freeze` as the final v1.0 go/no-go evidence gate.

@@ -1,15 +1,15 @@
 # Terminal Demo Mode v1.0 Release-Freeze Checklist
 
-Status: v0.18.0 release-freeze gate.
+Status: v1.0.0 final release gate.
 
 This document freezes the final go/no-go requirements for Terminal Demo Mode v1.0. It is a release confidence checklist, not a feature request. No new terminal-demo runtime behavior is introduced by this milestone.
 
 ## Release decision
 
-A package may be promoted toward `v1.0.0` only when the final release-freeze proof reports:
+The final v1.0.0 package is released only when the final release proof reports:
 
 ```text
-V1_READY_TO_RELEASE
+TERMINAL_DEMO_MODE_V1_RELEASED
 ```
 
 A blocked result is:
@@ -34,29 +34,35 @@ NOT_READY_FOR_V1
 
 ## Final command gate
 
-Run from a clean extracted package root:
+Run the final proof from a clean extracted package root:
 
 ```bash
-npm run proof:terminal-demo-v1-release-freeze
+npm run proof:terminal-demo-v1-release
 ```
 
 On Windows, run:
 
 ```cmd
-VERIFY_TERMINAL_DEMO_V1_RELEASE_FREEZE.CMD
+VERIFY_TERMINAL_DEMO_V1_RELEASE.CMD
 ```
 
-The proof collects command logs under:
+The final proof collects command logs under:
+
+```text
+terminal/demo/runtime_logs/v1_release/
+```
+
+It also invokes the release-freeze proof, which writes nested release-freeze evidence under:
 
 ```text
 terminal/demo/runtime_logs/v1_release_freeze/
 ```
 
-The release-freeze evidence folder is intentionally not source code. It stores command logs and JSON/Markdown status reports only.
+Both evidence folders are intentionally not source code. They store command logs and JSON/Markdown status reports only.
 
 ## Required green checks
 
-The release-freeze proof must verify these gates remain green:
+The final release proof must verify these gates remain green through the release-freeze proof:
 
 1. `npm run build`
 2. `npm run typecheck`
@@ -69,4 +75,4 @@ The broader POST-ACTIONS-1 handoff should also rerun operator rehearsal and evid
 
 ## v1.0 promotion rule
 
-If this checklist and the release-freeze proof pass from the generated package, the next milestone should be `v1.0.0` release-only: version/docs/package finalization, no terminal-demo runtime behavior change.
+If this checklist and the final release proof pass from the generated package, Terminal Demo Mode v1.0 is released. Future work must start from a post-v1 milestone and must not retroactively change the v1.0 contract.

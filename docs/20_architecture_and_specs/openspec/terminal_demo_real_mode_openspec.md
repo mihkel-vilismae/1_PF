@@ -252,3 +252,27 @@ NOT_READY_FOR_V1
 ```
 
 The supporting go/no-go checklist is `docs/20_architecture_and_specs/openspec/terminal_demo_v1_release_freeze_checklist.md`.
+## v1.0.0 final release package
+
+The v1.0.0 milestone is release-only. It promotes the passing v0.18.0 release-freeze state into the final Terminal Demo Mode v1 package. It must not add terminal Demo Mode runtime behavior.
+
+Final proof command:
+
+```bash
+npm run proof:terminal-demo-v1-release
+```
+
+Windows launcher:
+
+```cmd
+VERIFY_TERMINAL_DEMO_V1_RELEASE.CMD
+```
+
+The final proof reuses the release-freeze evidence gate and adds version/docs/package checks for `1.0.0`. A passing proof reports:
+
+```text
+TERMINAL_DEMO_MODE_V1_RELEASED
+```
+
+The final package preserves these v1 boundaries: DEMO-owned paths only, no cron, no real/test data access, no mock substitution in real-demo flow, guarded worker execution, non-fullscreen terminal playback, explicit dashboard demo mode boundaries, and evidence folders that contain logs/status reports only.
+

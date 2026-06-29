@@ -446,6 +446,22 @@ VERIFY_TERMINAL_DEMO_TRANSFERABLE_PACKAGE.CMD
 
 The proof verifies `VERSION` / `package.json` / `package-lock.json` identity, Git HEAD readability, `git fsck --no-dangling`, clean worktree state after extraction, root launcher presence, tracked packager policy, and evidence-only output under `terminal/demo/runtime_logs/transferable_package/`. The v0.16.0 RC readiness audit also runs this proof before declaring `RC1_READY_FOR_OPERATOR_REHEARSAL`.
 
+## v1.0.0 final release proof
+
+Version `1.0.0` is release-only package finalization. It adds no new terminal-demo runtime behavior.
+
+```bash
+npm run proof:terminal-demo-v1-release
+```
+
+Windows launcher:
+
+```cmd
+VERIFY_TERMINAL_DEMO_V1_RELEASE.CMD
+```
+
+A passing result reports `TERMINAL_DEMO_MODE_V1_RELEASED` after the release-freeze evidence gate remains green.
+
 ## v0.18.0 v1.0 release-freeze proof
 
 Version `0.18.0` adds a release-freeze and final evidence-pack proof only. It does not add new terminal-demo runtime behavior.
