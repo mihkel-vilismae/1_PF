@@ -90,3 +90,15 @@ Every generated proofrunner handoff must carry the current repo identity in both
 - repo ZIP SHA-256.
 
 Generated handoffs must fail validation if stale launcher identities such as `0.10.84` or `0.10.86` appear in the active generated launcher text. Historical changelog references may remain in normal docs, but not in the generated handoff surface that the operator runs.
+
+## Queue helper import resolution
+
+Generated launchers must not write `discover-proof-queue.mjs` into the handoff/run folder and then import `./tools/proof-runner-queue-lib.mjs`. Node ESM resolves relative imports from the helper file location, so that pattern can fail even if the launcher has changed the process working directory to the extracted repo root.
+
+Accepted patterns:
+
+- Bash/Linux/Raspberry: run the queue helper as repo-root stdin/module text from inside `cd "$repo_root"` / `cd "$REPO_ROOT"`.
+- PowerShell/Windows: write the temporary `discover-proof-queue.mjs` at `$RepoRoot` before invoking `node`, then remove it after queue discovery.
+- Advanced generators may also use an absolute repo-root file URL/import for `tools/proof-runner-queue-lib.mjs`.
+
+Queue discovery failure or an empty proof queue must remain a nonzero launcher failure. Generated launchers must not package a misleading zero-proof success ZIP.

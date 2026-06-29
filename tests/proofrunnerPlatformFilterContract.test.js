@@ -63,3 +63,55 @@ proof:proof-runner-final-summary`;
   assert.equal(analysis.status, 'FAILED');
   assert.equal(analysis.checks.find((check) => check.name === 'no_escape_sensitive_newline_join_literal').passed, false);
 });
+
+test('handoff launcher contract rejects temp queue helper outside repo root with relative ./tools import', () => {
+  const brokenBashLauncher = `discover_queue() {
+  local repo_root="$1"
+  local queue_js="$RUN_DIR/discover-proof-queue.mjs"
+  cat > "$queue_js" <<'NODE'
+import { buildProofRunnerQueuePlanForMode } from './tools/proof-runner-queue-lib.mjs';
+NODE
+  (cd "$repo_root" && node "$queue_js" "$queue_plan" > "$queue_txt")
+  if [ ! -s "$queue_txt" ]; then echo "Proof queue discovery failed"; return 1; fi
+  mapfile -t PROOFS < "$queue_txt"
+  if [ "\${PROOFS[@]}" = "0" ]; then echo "No proof scripts discovered"; return 1; fi
+}
+includeWindowsAliases: false
+skipped_windows_aliases
+proof:proof-runner-final-summary`;
+  const analysis = analyzeRaspberryHandoffLauncherText(brokenBashLauncher);
+  assert.equal(analysis.status, 'FAILED');
+  assert.equal(analysis.checks.find((check) => check.name === 'queue_helper_relative_import_resolves_from_repo_root').passed, false);
+});
+
+test('handoff launcher contract rejects PowerShell queue helper outside repo root with relative ./tools import', () => {
+  const brokenPowerShellLauncher = `$QueueJs = Join-Path $WorkRoot 'discover-proof-queue.mjs'
+@'
+import { buildProofRunnerQueuePlanForMode } from './tools/proof-runner-queue-lib.mjs';
+const plan = buildProofRunnerQueuePlanForMode(pkg, { runMode: mode, includeWindowsAliases: false });
+'@ | Set-Content $QueueJs
+Push-Location $RepoRoot
+try { node $QueueJs $QueuePlan | Set-Content $QueueTxt } finally { Pop-Location }
+if ($Proofs.Count -eq 0) { Write-Host 'No proof scripts discovered' }
+skipped_windows_aliases
+proof:proof-runner-final-summary`;
+  const analysis = analyzeRaspberryHandoffLauncherText(brokenPowerShellLauncher);
+  assert.equal(analysis.status, 'FAILED');
+  assert.equal(analysis.checks.find((check) => check.name === 'queue_helper_relative_import_resolves_from_repo_root').passed, false);
+});
+
+test('handoff launcher contract accepts PowerShell queue helper written at extracted repo root', () => {
+  const acceptedPowerShellLauncher = `$QueueJs = Join-Path $RepoRoot 'discover-proof-queue.mjs'
+@'
+import { buildProofRunnerQueuePlanForMode } from './tools/proof-runner-queue-lib.mjs';
+const plan = buildProofRunnerQueuePlanForMode(pkg, { runMode: mode, includeWindowsAliases: false });
+console.error('skipped_windows_aliases=' + JSON.stringify(plan.skipped_windows_aliases));
+process.stdout.write(plan.ordered_proofs.join(String.fromCharCode(10)));
+'@ | Set-Content $QueueJs
+Push-Location $RepoRoot
+try { node $QueueJs $QueuePlan | Set-Content $QueueTxt } finally { Pop-Location }
+if ($Proofs.Count -eq 0) { Write-Host 'No proof scripts discovered' }
+proof:proof-runner-final-summary`;
+  const analysis = analyzeRaspberryHandoffLauncherText(acceptedPowerShellLauncher);
+  assert.equal(analysis.status, 'PASSED');
+});

@@ -38,13 +38,48 @@ export function analyzePlatformProofQueuePlan(pkg, { platformRunner = 'raspberry
   };
 }
 
+
+function hasQueueDiscoveryFromRepoRoot(source) {
+  return /cd \"?\$REPO_ROOT\"?/.test(source)
+    || /cd \"?\$repo_root\"?/.test(source)
+    || /Push-Location \$RepoRoot/.test(source);
+}
+
+function hasUnsafeExternalRelativeQueueImport(source) {
+  const usesRelativeQueueImport = /from ['\"]\.\/tools\/proof-runner-queue-lib\.mjs['\"]/.test(source);
+  if (!usesRelativeQueueImport) return false;
+  return /queue_js=\"\$RUN_DIR\/discover-proof-queue\.mjs\"/.test(source)
+    || /local queue_js=\"\$RUN_DIR\/discover-proof-queue\.mjs\"/.test(source)
+    || /\$QueueJs\s*=\s*Join-Path\s+\$WorkRoot\s+['\"]discover-proof-queue\.mjs['\"]/i.test(source)
+    || /\$QueueJs\s*=\s*Join-Path\s+\$RunDir\s+['\"]discover-proof-queue\.mjs['\"]/i.test(source);
+}
+
+function hasSafeQueueLibResolution(source) {
+  const usesRelativeQueueImport = /from ['\"]\.\/tools\/proof-runner-queue-lib\.mjs['\"]/.test(source);
+  if (!usesRelativeQueueImport) {
+    return /proof-runner-queue-lib\.mjs/.test(source) && /pathToFileURL|fileURLToPath|new URL|REPO_ROOT|RepoRoot/.test(source);
+  }
+  const bashStdinFromRepoRoot = /cd \"?\$repo_root\"?[\s\S]{0,240}node --input-type=module[\s\S]{0,700}from ['\"]\.\/tools\/proof-runner-queue-lib\.mjs['\"]/.test(source)
+    || /cd \"?\$REPO_ROOT\"?[\s\S]{0,240}node --input-type=module[\s\S]{0,700}from ['\"]\.\/tools\/proof-runner-queue-lib\.mjs['\"]/.test(source);
+  const bashRepoRootScript = /queue_js=\"\$REPO_ROOT\/discover-proof-queue\.mjs\"[\s\S]{0,700}node \"\$queue_js\"/.test(source)
+    || /queue_js=\"\$repo_root\/discover-proof-queue\.mjs\"[\s\S]{0,700}node \"\$queue_js\"/.test(source);
+  const powershellRepoRootScript = /\$QueueJs\s*=\s*Join-Path\s+\$RepoRoot\s+['\"]discover-proof-queue\.mjs['\"][\s\S]{0,900}node\s+\$QueueJs/i.test(source);
+  return !hasUnsafeExternalRelativeQueueImport(source)
+    && (bashStdinFromRepoRoot || bashRepoRootScript || powershellRepoRootScript);
+}
+
 export function analyzeRaspberryHandoffLauncherText(text = '') {
   const source = String(text ?? '');
   const checks = [
     {
       name: 'runs_queue_discovery_from_repo_root',
-      passed: /cd \"?\$REPO_ROOT\"?/.test(source) || /Push-Location \$RepoRoot/.test(source),
-      detail: 'Launcher must run the queue helper from the extracted repo root so relative ./tools imports resolve correctly.',
+      passed: hasQueueDiscoveryFromRepoRoot(source),
+      detail: 'Launcher must run queue discovery with the extracted repo root as the active resolution root.',
+    },
+    {
+      name: 'queue_helper_relative_import_resolves_from_repo_root',
+      passed: hasSafeQueueLibResolution(source),
+      detail: 'If the generated queue helper imports ./tools/proof-runner-queue-lib.mjs, it must run via repo-root stdin/module text or from a helper file written at the repo root, not from the handoff/run folder.',
     },
     {
       name: 'fails_on_empty_or_failed_queue_discovery',

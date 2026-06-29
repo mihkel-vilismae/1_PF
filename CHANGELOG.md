@@ -1,3 +1,11 @@
+## 0.10.93 - 2026-06-29
+
+- Generated the next prooflauncher/proofrunner guard slice from the v0.10.92 baseline without changing runtime worker, dashboard readiness, iCloud, cron, playback, PIR, or recovery behavior.
+- Strengthened the handoff launcher queue-import contract so generated helpers cannot live in the run/handoff folder while importing `./tools/proof-runner-queue-lib.mjs`; relative queue imports must resolve from the extracted repo root.
+- Added regression tests for the exact Bash and PowerShell temp-helper failure pattern that can produce `ERR_MODULE_NOT_FOUND` during queue discovery.
+- Preserved queue authority in `tools/proof-runner-queue-lib.mjs`, including final summary proofs last, Windows `:windows` aliases only on Windows, and Raspberry/Linux alias exclusion.
+- Regenerated external prooflauncher handoff artifacts must use repo-root stdin/module execution on Bash or write the temporary PowerShell queue helper at `$RepoRoot` before running `node`.
+
 ## 0.10.92 - 2026-06-28
 
 - Ran XACR Group 3 V2 readiness honesty UI implementation without changing live Raspberry, iCloud, cron, playback, PIR, or recovery behavior.
