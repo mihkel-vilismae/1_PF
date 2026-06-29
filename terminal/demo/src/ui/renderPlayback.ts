@@ -10,19 +10,34 @@ export function renderPlayback(state: DemoTerminalState, title: string, width?: 
   const fullscreenState = state.playback.fullScreenEnabled ? color.brightGreen('enabled') : color.yellow('disabled');
   const isRealDemo = state.runtimeBoundary.adapterMode === 'real-demo';
   const queuedRows = isRealDemo ? state.playbackQueueRows : mockQueueRows(state);
-  const firstQueued = queuedRows[0];
-  const viewportLine = firstQueued
-    ? `Viewport: next ${isRealDemo ? 'real demo' : 'mock'} media ${fit(firstQueued.fileName, 24)} overlay: ${firstQueued.address}`
-    : isRealDemo ? 'Viewport: real demo queue empty or missing.' : 'Viewport: no queued mock media yet.';
+  const selected = state.playback.selectedItem;
+  const selectedLine = selected
+    ? `Selected: ${fit(selected.fileName, 24)} type=${selected.type} status=${selected.status}`
+    : isRealDemo ? `Selected: waiting (${state.playback.selectedStatus})` : 'Selected: no mock playback item yet.';
+  const addressLine = selected
+    ? `Overlay: ${selected.address || '-'} duration=${selected.durationSeconds ?? state.playback.imageDurationSeconds}s`
+    : 'Overlay: -';
+  const viewportLine = selected
+    ? `Viewport: selected ${isRealDemo ? 'real demo' : 'mock'} media ${fit(selected.fileName, 24)} overlay: ${selected.address || '-'}`
+    : buildNextQueuedLine(isRealDemo, queuedRows);
 
   return panel(color.magenta(title), [
     `${color.brightCyan('[P]')} Run Playback ${runState}`,
     `Info: ${state.playback.runPlaybackEnabled ? color.brightGreen(state.playback.info) : color.yellow(state.playback.info)}`,
+    color.queue(selectedLine),
+    selected ? color.queue(addressLine) : color.muted(addressLine),
+    isRealDemo ? color.muted(`Status source: ${state.playback.selectedSourcePath || 'waiting for playback-worker-status.json'}`) : color.muted('Status source: mock state'),
     `Image duration: ${color.brightGreen(String(state.playback.imageDurationSeconds))} seconds`,
     `${color.brightCyan('[F]')} Start full screen playback ${fullscreenState}`,
     `Info: ${dimNotYetImplemented(state.playback.fullScreenInfo)}`,
-    queuedRows.length > 0 ? color.queue(viewportLine) : color.muted(viewportLine)
+    selected || queuedRows.length > 0 ? color.queue(viewportLine) : color.muted(viewportLine)
   ], width);
+}
+
+function buildNextQueuedLine(isRealDemo: boolean, queuedRows: PlaybackQueueRow[]): string {
+  const firstQueued = queuedRows[0];
+  if (!firstQueued) return isRealDemo ? 'Viewport: real demo queue empty or missing.' : 'Viewport: no queued mock media yet.';
+  return `Viewport: next ${isRealDemo ? 'real demo' : 'mock'} media ${fit(firstQueued.fileName, 24)} overlay: ${firstQueued.address}`;
 }
 
 function mockQueueRows(state: DemoTerminalState): PlaybackQueueRow[] {

@@ -109,6 +109,7 @@ export function createInitialMockState(): DemoTerminalState {
     },
     banner: `PHOTOFRAME MOCK DEMO MODE v${version}`,
     warning: 'Visual mock only: no real DB, no real workers, no real truth JSONL, no cron.',
+    selectedBatchSize: 1,
     mediaRows: mockMediaRows.map((row) => ({ ...row })),
     playbackQueueRows: [],
     actions: initialActions.map((action) => ({ ...action })),
@@ -122,6 +123,10 @@ export function createInitialMockState(): DemoTerminalState {
       runPlaybackEnabled: false,
       info: 'At least one file must be enqueued before playback can run.',
       imageDurationSeconds: 5,
+      selectedItem: null,
+      selectedStatus: 'waiting',
+      selectedSourcePath: '',
+      selectedMessages: ['Mock playback has not selected an item yet.'],
       fullScreenEnabled: false,
       fullScreenInfo: 'Not yet implemented.'
     },

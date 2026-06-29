@@ -13,6 +13,8 @@ import type { SupportedBatchSize } from '../run/SupportedBatchSize.js';
 import { toggleBatchSize } from '../run/SupportedBatchSize.js';
 import { runRealDemoQ } from '../run/RealDemoRunController.js';
 import { RunSnapshotStore } from '../run/RunSnapshotStore.js';
+import { RealDemoPlaybackStatusRepository } from '../playback/RealDemoPlaybackStatusRepository.js';
+import { runOrPlanPlaybackWorker } from '../playback/PhotoFramePlaybackCommandAdapter.js';
 
 /**
  * Group 3B real-demo adapter scaffold.
@@ -51,6 +53,7 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
     const normalized = key.toUpperCase();
     if (normalized === 'W') return [this.toggleBatchSize()];
     if (normalized === 'Q') return this.runQStoryboard();
+    if (normalized === 'P') return [this.runPlaybackSelection()];
     if (normalized === 'ARROWRIGHT') return [this.stepQStoryboard('right')];
     if (normalized === 'ARROWLEFT') return [this.stepQStoryboard('left')];
     if (normalized === 'R') return [this.refresh()];
@@ -90,6 +93,19 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
     return this.getState();
   }
 
+
+  private runPlaybackSelection(): DemoTerminalState {
+    const result = runOrPlanPlaybackWorker(this.boundary);
+    this.state = this.buildState([
+      'P pressed: playback selected-item display refresh.',
+      `Playback command: ${result.command}`,
+      `Playback execution: ${result.status}${result.exitCode === null ? '' : ` exit_code=${result.exitCode}`}`,
+      ...result.messages.map((message) => `Playback command: ${message}`)
+    ]);
+    this.snapshots.setSnapshots([]);
+    return this.getState();
+  }
+
   private buildState(extraLines: string[] = []): DemoTerminalState {
     const source = this.readSources();
     const dryRunPlanLines = formatDryRunPlanLines(buildDryRunCommandPlans(this.boundary, source.mediaRows));
@@ -101,7 +117,8 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
       [...extraLines, ...dryRunPlanLines],
       this.selectedBatchSize,
       source.queueRows,
-      source.queueMessages
+      source.queueMessages,
+      source.playbackStatus
     );
   }
 
@@ -111,6 +128,7 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
     truth: ReturnType<RealDemoTruthRepository['readDemoTruth']>;
     queueRows: ReturnType<RealDemoQueueRepository['readDemoQueue']>['rows'];
     queueMessages: string[];
+    playbackStatus: ReturnType<RealDemoPlaybackStatusRepository['readPlaybackStatus']>;
   } {
     const paths = {
       repoRoot: this.boundary.repoRoot,
@@ -125,12 +143,14 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
     const mediaDiscovery = new RealDemoMediaRepository(paths).listDemoMediaRows();
     const truth = new RealDemoTruthRepository(paths).readDemoTruth();
     const queue = new RealDemoQueueRepository(paths).readDemoQueue();
+    const playbackStatus = new RealDemoPlaybackStatusRepository(paths).readPlaybackStatus();
     return {
       mediaRows: mediaDiscovery.rows,
       mediaMessages: mediaDiscovery.messages,
       truth,
       queueRows: queue.rows,
-      queueMessages: queue.messages
+      queueMessages: queue.messages,
+      playbackStatus
     };
   }
 }
@@ -145,7 +165,11 @@ function cloneState(state: DemoTerminalState): DemoTerminalState {
     currentRun: { ...state.currentRun, lines: [...state.currentRun.lines] },
     rpiStages: state.rpiStages.map((stage) => ({ ...stage })),
     rpiWorkers: state.rpiWorkers.map((worker) => ({ ...worker })),
-    playback: { ...state.playback },
+    playback: {
+      ...state.playback,
+      selectedItem: state.playback.selectedItem ? { ...state.playback.selectedItem } : null,
+      selectedMessages: [...state.playback.selectedMessages]
+    },
     screenOnOff: { ...state.screenOnOff }
   };
 }

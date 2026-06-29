@@ -1,8 +1,8 @@
 # PhotoFrame Terminal Demo Mode
 
-Version: `0.10.99`
+Version: `0.11.0`
 
-This folder is the merged terminal/TUI mock plus Group 1/2/4/3A/3B real-demo runtime-boundary, media-discovery, truth/status-read, command-plan, and guarded W/Q orchestration scaffold for the PhotoFrame Demo Mode beeline.
+This folder is the merged terminal/TUI mock plus real-demo runtime-boundary, media-discovery, truth/status-read, command-plan, guarded W/Q orchestration, queue-reader, and playback selected-item visibility scaffold for the PhotoFrame Demo Mode beeline.
 ## Merged into PhotoFrame
 
 As of PhotoFrame `0.10.94`, this terminal demo lives inside the main PhotoFrame repo at `terminal/demo/`. The real-demo adapter now supports W batch-size toggling and Q selected-batch orchestration. Default worker execution remains guarded; use `PHOTOFRAME_TERMINAL_DEMO_EXECUTE=1` only when intentionally testing real worker calls against DEMO paths.
@@ -13,6 +13,7 @@ PhotoFrame root commands:
 npm run demo:terminal:mock:smoke
 npm run demo:terminal:real:smoke
 npm run proof:terminal-demo-merge-smoke
+npm run proof:terminal-demo-playback-status
 ```
 
 The product-worker quick reference is kept in `terminal/demo/docs/photoframe-worker-product-pipeline-reference.md` so agents can avoid opening larger worker/evidence files unless needed.
@@ -144,6 +145,21 @@ Version `0.10.99` adds the read-only real-demo queue reader:
 - keeps playback worker execution and fullscreen/native playback disabled for later groups.
 
 Group 5A is read-only: no playback worker calls, no DB writes, no truth JSONL writes, no queue writes, and no cron.
+
+
+## Real-demo Group 5B playback selected-item visibility
+
+Version `0.11.0` adds the playback selected-item/status reader:
+
+- reads the demo playback worker status file from `DEMO_SCHEDULER_DIR/playback-worker-status.json`,
+- maps `selectedItemSummary`, `selection.playback.selected`, `currentItem`, and related selected/current item shapes into the playback panel,
+- shows selected file/type/address/status/duration when a demo playback status exists,
+- keeps missing, empty, or malformed playback status as a safe waiting state,
+- adds a guarded `[P]` playback command plan for `npm run api -- --scheduler playback-worker`,
+- keeps actual playback worker execution behind explicit safety flags,
+- keeps native/fullscreen playback disabled.
+
+Group 5B does not install/use cron, does not claim native playback, and does not bypass the existing execution acknowledgement gate.
 
 ## Current scope
 

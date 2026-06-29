@@ -2,6 +2,7 @@
 // Keep this file focused so future slices can stay below the 300 LOC target.
 
 import type { RuntimeBoundaryState } from '../config/runtimeTypes.js';
+import type { DemoPlaybackSelectedItem } from '../playback/DemoPlaybackStatusRepository.js';
 
 export type RuntimeMode = 'mock-demo' | 'demo';
 export type MediaType = 'image' | 'video';
@@ -67,6 +68,10 @@ export interface PlaybackState {
   runPlaybackEnabled: boolean;
   info: string;
   imageDurationSeconds: 1 | 5 | 10;
+  selectedItem: DemoPlaybackSelectedItem | null;
+  selectedStatus: 'waiting' | 'selected' | 'skipped' | 'failed' | 'unknown';
+  selectedSourcePath: string;
+  selectedMessages: string[];
   fullScreenEnabled: boolean;
   fullScreenInfo: string;
 }

@@ -1,7 +1,7 @@
 # Terminal Demo Real Mode OpenSpec
 
 Generated: 2026-06-29  
-Status: Group 5A queue reader implemented; worker/playback execution remains guarded pending later proof.
+Status: v0.11.0 Group 5B playback selected-item visibility implemented; worker/native execution remains guarded pending later proof.
 
 ## Goal
 
@@ -24,8 +24,9 @@ Turn the terminal mock-demo into a real terminal Demo Mode that uses PhotoFrame 
 | Worker execution | Still guarded; scheduler/status/truth/log output isolation has static proof coverage, but live execution ack remains explicit | 7/10 |
 | Real/demo runtime env mapping | Implemented for guarded terminal stage plans, DEMO truth, DEMO scheduler/status, DEMO log, and DEMO queue/output paths | 9/10 |
 | Real demo queue reader | Implemented; reads DEMO_QUEUE_OUTPUT_PATH and drives PLAYBACK_QUEUE/P enabled state | 9/10 |
-| Playback worker selection | Planned for Group 5B | 0/10 |
-| Proof/de-mocking guard suite | Group 6A execution-safety proof added; remaining queue/playback and final de-mocking proofs still planned | 4/10 |
+| Playback selected-item display | Implemented; reads DEMO scheduler playback-worker-status and renders selected file/type/address/status/duration | 8/10 |
+| Playback worker execution | Guarded/manual command plan only; requires explicit execution and scheduler-safety flags | 6/10 |
+| Proof/de-mocking guard suite | Group 6A execution-safety proof and Group 5B smoke coverage added; final de-mocking proofs still planned | 5/10 |
 
 ## Group 3B behavior
 
@@ -53,7 +54,7 @@ implement screen on/off behavior
 
 ## Next group
 
-Group 5B should add playback-selection display, then Group 6B should add path isolation, no-cron, batch-size, queue, playback, and de-mocking proofs.
+Group 6B should add final path isolation, no-cron, batch-size, queue, playback, and de-mocking proofs.
 
 
 ## Group 3B-FINISH hardening
@@ -83,3 +84,14 @@ Group 5B should add playback-selection display, then Group 6B should add path is
 - `PLAYBACK_QUEUE` renders real demo queue records when available.
 - `[P] Run Playback` is enabled only when at least one real demo queue item exists.
 - Group 5A does not call the playback worker, does not write DB/truth/queue files, does not use cron, and does not implement fullscreen/native playback.
+
+
+## Group 5B playback selected-item visibility
+
+- The terminal reads `DEMO_SCHEDULER_DIR/playback-worker-status.json` as the demo playback selected-item/status source.
+- Supported selected-item shapes include top-level `selectedItemSummary`, `selected`, `currentItem`, and nested `selection`/`playback` equivalents.
+- The playback panel shows selected file, media type, overlay address, status, duration, and status source path when present.
+- Missing, empty, or malformed playback status remains a non-crashing waiting state.
+- Pressing `P` plans the manual/no-cron command `npm run api -- --scheduler playback-worker`.
+- Actual playback-worker execution remains guarded by `PHOTOFRAME_TERMINAL_DEMO_EXECUTE=1` plus `PHOTOFRAME_TERMINAL_DEMO_ACK_WORKER_DEMO_SCHEDULER_SAFE=1`.
+- Native/fullscreen playback remains disabled and out of this milestone scope.

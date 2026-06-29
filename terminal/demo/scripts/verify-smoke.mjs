@@ -58,7 +58,9 @@ function createTruthFixtureRepo() {
   const truthDir = join(root, 'runtime_data', 'v2_worker_truth', 'demo');
   mkdirSync(truthDir, { recursive: true });
   const outputDir = join(root, 'runtime_data', 'demo', 'outputs');
+  const schedulerDir = join(root, 'runtime_data', 'scheduler', 'demo');
   mkdirSync(outputDir, { recursive: true });
+  mkdirSync(schedulerDir, { recursive: true });
   mkdirSync(join(root, 'runtime_data', 'demo'), { recursive: true });
   writeFileSync(join(outputDir, 'display_queue.json'), JSON.stringify({
     schemaVersion: 1,
@@ -74,6 +76,20 @@ function createTruthFixtureRepo() {
     { worker: 'regular-worker', stage: 'queue', status: 'finished', timestamp: '2026-06-29T01:00:04.000Z', message: 'queue finished', counts: { enqueued: 3, not_eligible: 3 } }
   ].map(JSON.stringify).join('\n') + '\n');
   writeFileSync(join(truthDir, 'playback-worker.truth.jsonl'), JSON.stringify({ worker: 'playback-worker', stage: 'playback', status: 'state', timestamp: '2026-06-29T01:00:05.000Z', message: '3 queued media ready' }) + '\n');
+  writeFileSync(join(schedulerDir, 'playback-worker-status.json'), JSON.stringify({
+    worker: 'playback_worker',
+    status: 'succeeded',
+    selectedItemSummary: {
+      mediaAssetId: 'asset-demo-q-1',
+      fileName: 'gps_valid_01.jpg',
+      relativePath: 'gps_valid/gps_valid_01.jpg',
+      mediaKind: 'image',
+      resolvedAddress: 'Selected Playback Address, Tartu',
+      displayDurationSeconds: 5
+    },
+    rendering: { claimed: false, note: 'Fixture selected item only; native fullscreen disabled.' },
+    schemaVersion: 1
+  }, null, 2));
   return root;
 }
 
@@ -108,6 +124,7 @@ const commandPlan = run(['--adapter=real-demo', '--real-demo-command-plan-smoke'
 const realWToggle = run(['--adapter=real-demo', '--w-toggle-smoke'], { PHOTOFRAME_REPO_ROOT: truthFixtureRepo });
 const realQBatch5 = run(['--adapter=real-demo', '--batch-size=5', '--q-smoke'], { PHOTOFRAME_REPO_ROOT: truthFixtureRepo });
 const realQBatch5Story = run(['--adapter=real-demo', '--batch-size=5', '--q-storyboard-smoke'], { PHOTOFRAME_REPO_ROOT: truthFixtureRepo });
+const realPSmoke = run(['--adapter=real-demo', '--p-smoke'], { PHOTOFRAME_REPO_ROOT: truthFixtureRepo });
 
 const colorsEnabled = process.env.NO_COLOR !== '1' && process.env.NO_COLOR !== 'true';
 if (colorsEnabled) {
@@ -133,13 +150,15 @@ for (const [needle, label] of [
   ['PHOTOFRAME REAL DEMO TERMINAL', 'real-demo header'],
   ['Adapter: real-demo', 'real-demo adapter banner'],
   ['Data: real_demo_truth', 'real-demo data mode'],
-  ['Group 5A real queue reader', 'real-demo group 5A warning'],
+  ['v0.11.0 Group 5B playback selected-item visibility', 'real-demo group 5B warning'],
   ['W toggles selected batch size', 'real-demo batch toggle note'],
   ['GENERATED DEMO MEDIA', 'real-demo media title'],
   ['RPI-STAGES — DEMO TRUTH', 'real-demo stages truth'],
   ['RPI-WORKERS — DEMO TRUTH', 'real-demo workers truth'],
   ['No real demo queue rows loaded yet.', 'real-demo empty queue state'],
-  ['[P] Run Playback disabled', 'real-demo playback disabled without queue']
+  ['[P] Run Playback disabled', 'real-demo playback disabled without queue'],
+  ['Selected: waiting (waiting)', 'real-demo missing selected item state'],
+  ['Playback status read: Playback status file missing:', 'real-demo missing playback status read']
 ]) assertIncludes(realDemo, needle, label);
 
 for (const [needle, label] of [
@@ -152,8 +171,24 @@ for (const [needle, label] of [
   ['gps_valid_01.jpg', 'real queue item image'],
   ['apple_like_h264_mov_gps_tallinn.mov', 'real queue item video'],
   ['[P] Run Playback enabled', 'real playback enabled from queue'],
-  ['Ready: 2 real demo queue items available.', 'real playback ready text']
+  ['Ready: 2 real demo queue items available.', 'real playback ready text'],
+  ['Playback status read: Playback status file parsed:', 'playback status parsed'],
+  ['Playback selected status: selected', 'playback selected status'],
+  ['Playback selected item: gps_valid_01.jpg', 'playback selected item current run'],
+  ['Selected Playback Address, Tartu', 'selected playback address'],
+  ['Status source:', 'playback status source line']
 ]) assertIncludes(realDemoWithTruth, needle, label);
+
+for (const [needle, label] of [
+  ['P pressed: playback selected-item display refresh.', 'P smoke pressed line'],
+  ['Playback command: npm run api -- --scheduler playback-worker', 'P smoke playback command'],
+  ['Playback execution: planned', 'P smoke guarded planned execution'],
+  ['playback worker execution is guarded by PHOTOFRAME_TERMINAL_DEMO_EXECUTE=1', 'P smoke execution guard'],
+  ['Selected: gps_valid_01.jpg', 'P smoke selected item panel filename'],
+  ['type=image status=selected', 'P smoke selected item panel status'],
+  ['Overlay: Selected Playback Address, Tartu duration=5s', 'P smoke selected overlay panel'],
+  ['No cron is used.', 'P smoke no cron current run']
+]) assertIncludes(realPSmoke, needle, label);
 
 for (const [needle, label] of [
   ['"batchSize": 1', 'command plan batch size 1'],

@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "0.10.100",
+  "version": "0.11.0",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -212,7 +212,9 @@
     "demo:terminal:real:w-toggle-smoke": "tsx terminal/demo/src/main.ts --adapter=real-demo --w-toggle-smoke",
     "demo:terminal:real:q-batch5-smoke": "tsx terminal/demo/src/main.ts --adapter=real-demo --batch-size=5 --q-smoke",
     "proof:terminal-demo-execution-safety": "node tools/run-terminal-demo-execution-safety-proof.mjs",
-    "proof:terminal-demo-queue-reader": "node terminal/demo/scripts/verify-smoke.mjs"
+    "proof:terminal-demo-queue-reader": "node terminal/demo/scripts/verify-smoke.mjs",
+    "demo:terminal:real:p-smoke": "tsx terminal/demo/src/main.ts --adapter=real-demo --p-smoke",
+    "proof:terminal-demo-playback-status": "node terminal/demo/scripts/verify-smoke.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

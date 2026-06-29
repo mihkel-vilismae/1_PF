@@ -78,6 +78,12 @@ if (args.has('--q-smoke')) {
   process.exit(0);
 }
 
+if (args.has('--p-smoke')) {
+  const frames = await adapter.handleKey('P');
+  printFrame(renderScreen(frames[0] ?? adapter.getState(), layout));
+  process.exit(0);
+}
+
 if (args.has('--q-storyboard-smoke')) {
   const frames = await adapter.runQStoryboard();
   frames.forEach((frame, index) => {
@@ -132,8 +138,8 @@ process.stdin.on('data', async (chunk) => {
     return;
   }
 
-  if (key.toUpperCase() === 'W') {
-    const frames = await adapter.handleKey('W');
+  if (key.toUpperCase() === 'W' || key.toUpperCase() === 'P') {
+    const frames = await adapter.handleKey(key.toUpperCase());
     clearAndPrint(renderScreen(frames[0] ?? adapter.getState(), layout));
     return;
   }

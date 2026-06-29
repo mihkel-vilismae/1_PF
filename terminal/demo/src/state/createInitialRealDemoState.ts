@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import type { ActionItemState, DemoTerminalState, MediaRow, StagePanelRow, WorkerPanelRow, SupportedBatchSize, PlaybackQueueRow } from './DemoTerminalState.js';
 import type { RuntimeBoundaryState } from '../config/runtimeTypes.js';
 import type { DemoTruthReadResult } from '../truth/DemoTruthRepository.js';
+import type { DemoPlaybackStatusReadResult } from '../playback/DemoPlaybackStatusRepository.js';
 
 const realDemoActions: ActionItemState[] = [
   {
@@ -80,7 +81,8 @@ export function createInitialRealDemoState(
   dryRunPlanLines: string[] = [],
   selectedBatchSize: SupportedBatchSize = 1,
   playbackQueueRows: PlaybackQueueRow[] = [],
-  queueMessages: string[] = []
+  queueMessages: string[] = [],
+  playbackStatus: DemoPlaybackStatusReadResult = { selectedItem: null, status: 'waiting', messages: [], sourcePath: '' }
 ): DemoTerminalState {
   const version = readVersion();
   const statusText = boundary.readinessStatus.toUpperCase();
@@ -95,7 +97,7 @@ export function createInitialRealDemoState(
     dataMode: 'real_demo_truth',
     runtimeBoundary: boundary,
     banner: `PHOTOFRAME REAL DEMO TERMINAL v${version}`,
-    warning: `Group 5A real queue reader + guarded Q/W orchestration: boundary is ${statusText}; W toggles batch size and Q uses the selected value.`,
+    warning: `v0.11.0 Group 5B playback selected-item visibility: boundary is ${statusText}; queue and playback status are DEMO-sourced.`,
     selectedBatchSize,
     mediaRows,
     playbackQueueRows: playbackQueueRows.map((row) => ({ ...row })),
@@ -107,9 +109,9 @@ export function createInitialRealDemoState(
     currentRun: {
       title: 'CURRENT RUN',
       lines: [
-        'Real-demo beeline Group 5A is installed.',
-        'This screen resolves DEMO paths, reads generated demo media/truth/queue, and can run guarded manual Q orchestration.',
-        'W toggles selected batch size. Q uses the selected batch size. No cron is used.',
+        'Real-demo v0.11.0 Group 5B milestone is installed.',
+        'This screen resolves DEMO paths, reads generated demo media/truth/queue/playback status, and can plan guarded manual Q/P orchestration.',
+        'W toggles selected batch size. Q uses the selected batch size. P plans playback selection. No cron is used.',
         '',
         `Adapter: ${boundary.adapterMode}`,
         `Runtime mode: ${boundary.runtimeMode}`,
@@ -117,11 +119,15 @@ export function createInitialRealDemoState(
         `Selected batch_size: ${selectedBatchSize}`,
         `Media rows selected: ${selectedCount} (${validCount} valid, ${problemCount} problem/invalid)`,
         `Real demo playback queue rows: ${queueCount}`,
+        `Playback selected status: ${playbackStatus.status}`,
+        `Playback selected item: ${playbackStatus.selectedItem?.fileName ?? 'none'}`,
+        `Playback status source: ${playbackStatus.sourcePath || 'not configured'}`,
         ...dryRunPlanLines.map((line) => `Command plan: ${line}`),
         ...mediaRows.map((row) => `Selected row #${row.rowNumber}: ${row.relativePath ?? row.fileName} gps=${row.gps}`),
         ...mediaMessages.map((message) => `Media discovery: ${message}`),
         ...truth.messages.map((message) => `Truth read: ${message}`),
         ...queueMessages.map((message) => `Queue read: ${message}`),
+        ...playbackStatus.messages.map((message) => `Playback status read: ${message}`),
         ...boundary.pathMessages.map((message) => `Path check: ${message}`)
       ]
     },
@@ -130,7 +136,11 @@ export function createInitialRealDemoState(
     playback: {
       runPlaybackEnabled: queueCount > 0,
       info: queueCount > 0 ? `Ready: ${queueCount} real demo queue item${queueCount === 1 ? '' : 's'} available.` : 'At least one real demo queue item is required before playback can run.',
-      imageDurationSeconds: 5,
+      imageDurationSeconds: playbackStatus.selectedItem?.durationSeconds === 1 || playbackStatus.selectedItem?.durationSeconds === 10 ? playbackStatus.selectedItem.durationSeconds : 5,
+      selectedItem: playbackStatus.selectedItem ? { ...playbackStatus.selectedItem } : null,
+      selectedStatus: playbackStatus.status,
+      selectedSourcePath: playbackStatus.sourcePath,
+      selectedMessages: [...playbackStatus.messages],
       fullScreenEnabled: false,
       fullScreenInfo: 'Not yet implemented.'
     },

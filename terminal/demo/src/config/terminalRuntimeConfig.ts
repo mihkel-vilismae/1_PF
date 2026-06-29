@@ -33,7 +33,7 @@ export function readTerminalRuntimeConfig(args = process.argv.slice(2), env: Nod
       queueOutputPath: demoPaths.queueOutputPath,
       pathMessages: safety.messages,
       sourceSummary: adapterMode === 'real-demo'
-        ? 'real-demo Group 5A: DEMO paths/media/truth/queue read-only plus guarded Q plan'
+        ? 'real-demo v0.11.0: DEMO media/truth/queue/playback-status plus guarded Q/P plan'
         : 'mock-demo: scripted visual state only'
     }
   };

@@ -1,3 +1,15 @@
+## 2026-06-29 — v0.11.0
+
+### Added
+- Implemented terminal Demo Mode Group 5B playback selected-item visibility as the first +0.1 milestone toward v1.0.
+- Added a safe real-demo playback status reader for `DEMO_SCHEDULER_DIR/playback-worker-status.json`.
+- Added selected/current playback item mapping for top-level and nested `selectedItemSummary`, `selected`, `currentItem`, and `nextItem` JSON shapes.
+- Added guarded manual/no-cron playback command planning for `npm run api -- --scheduler playback-worker` behind the existing explicit execution flags.
+- Added `demo:terminal:real:p-smoke` and `proof:terminal-demo-playback-status` smoke coverage.
+
+### Changed
+- The real-demo playback panel now displays selected file/type/address/status/duration and safely waits when no playback status exists.
+- Bumped version metadata to `0.11.0`.
 
 ## 2026-06-29 — v0.10.100
 
