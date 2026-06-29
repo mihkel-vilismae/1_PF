@@ -37,6 +37,25 @@ function clearAndPrint(output: string): void {
   process.stdout.write(`${output}\n`);
 }
 
+
+if (args.has('--real-demo-state-json-smoke')) {
+  const realConfig = readTerminalRuntimeConfig(['--adapter=real-demo']);
+  const realAdapter = new RealDemoRuntimeAdapterPlaceholder(realConfig.boundary);
+  printFrame(JSON.stringify(realAdapter.getState(), null, 2));
+  process.exit(0);
+}
+
+if (args.has('--mouse-hitbox-state-json-smoke')) {
+  const realConfig = readTerminalRuntimeConfig(['--adapter=real-demo']);
+  const realAdapter = new RealDemoRuntimeAdapterPlaceholder(realConfig.boundary);
+  realAdapter.handleMouse({ kind: 'click', x: 170, y: 24, button: 0 });
+  realAdapter.handleMouse({ kind: 'click', x: 140, y: 18, button: 0 });
+  realAdapter.handleMouse({ kind: 'click', x: 140, y: 18, button: 0 });
+  realAdapter.handleMouse({ kind: 'wheel-up', x: 170, y: 24, button: 64 });
+  printFrame(JSON.stringify(realAdapter.getState(), null, 2));
+  process.exit(0);
+}
+
 if (args.has('--real-demo-smoke')) {
   const config = readTerminalRuntimeConfig(['--adapter=real-demo']);
   const realAdapter = new RealDemoRuntimeAdapterPlaceholder(config.boundary);

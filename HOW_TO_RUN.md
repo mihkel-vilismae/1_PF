@@ -200,3 +200,19 @@ On Windows, use:
 ```
 
 Then confirm the header says `PHOTOFRAME REAL DEMO TERMINAL` and press `P`.
+## Terminal Demo real-demo log panel proof
+
+Run this from the extracted repo root to verify the v1.4.0 real-demo log panel layout and mouse hitboxes:
+
+```cmd
+VERIFY_TERMINAL_DEMO_LOG_PANEL.CMD
+```
+
+Or run the npm proof directly:
+
+```powershell
+npm run proof:terminal-demo-log-panel-layout
+```
+
+The proof checks that Area A contains the real-time `REAL-TIME LOG [-]` diagnostics panel, Area B no longer contains low-level truth/queue/path diagnostics, errors/warnings in Area B are rendered red, Area A has clickable focus/collapse hitboxes, mouse wheel scrolling is logged in proof mode, and keyboard shortcuts remain available.
+

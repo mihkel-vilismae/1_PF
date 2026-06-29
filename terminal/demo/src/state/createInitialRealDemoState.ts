@@ -181,7 +181,8 @@ function partitionCurrentAndLogLines(lines: string[]): { currentLines: string[];
 }
 
 function isDiagnosticLogLine(line: string): boolean {
-  return /^(Media discovery|Truth read|Queue read|Playback status read|Path check|Selected row #|Mouse hitbox|Mouse wheel|Log panel):/i.test(line)
+  return /^(Media discovery|Truth read|Queue read|Playback status read|Path check|Mouse hitbox|Mouse wheel|Log panel):/i.test(line)
+    || /^Selected row #/i.test(line)
     || /^DB image playback: (playback_contract|stage6_select_current|playback_asset_media_path|P pressed:|playback status source|Wrote windowed viewer)/i.test(line);
 }
 

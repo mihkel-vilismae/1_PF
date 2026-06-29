@@ -336,3 +336,13 @@ RUN_TERMINAL_DEMO_REAL.CMD
 The real-demo runner now prepares the fixture before launch by copying a real image from `generated_test_data/gps_valid/gps_valid_01.jpg` into `runtime_data/demo/downloaded_files/`, creating `runtime_data/demo/demo.sqlite`, and seeding the same real-mode table structure used by playback: `canonical_media_assets`, `media_asset_variants`, `slideshow_queue`, and `runtime_state`.
 
 This is a playback fixture only. It does not claim worker/geocode success and does not add cron or v2 final behavior.
+## Terminal Demo v1.4.0 log panel layout
+
+The real-demo terminal now separates command planning from diagnostics. Area B stays focused on current action/command-plan lines while low-level truth, queue, DB table verification, playback-status, media-discovery, selected-row, and path-check lines render in the scrollable Area A `REAL-TIME LOG [-]` panel. Area A also has proof-backed mouse hitboxes for focus, collapse/expand, and wheel scrolling where the terminal supports SGR mouse events.
+
+Verification:
+
+```powershell
+npm run proof:terminal-demo-log-panel-layout
+```
+

@@ -500,3 +500,10 @@ Decision: `REAL_DEMO_ENTRYPOINT_READY`.
 The real-demo Windows launcher prepares a live DEMO DB image playback fixture before launching. The setup copies one real image from `generated_test_data` into the DEMO-owned downloaded-files folder, creates the isolated DEMO SQLite database, applies the existing real schema, and seeds one READY `slideshow_queue` row.
 
 The fixture proves the `P` button has a real DB-backed image to consume without using mock rows or the legacy JSON queue output. It remains a fixture and does not claim real worker or geocode provider completion.
+## v1.4.0 real-demo log panel layout
+
+- Area A renders `REAL-TIME LOG [-]` and receives truth-read, queue-read, DB table verification, playback-status, media-discovery, selected-row, and path-check diagnostics.
+- Area B is reserved for current command/action plan lines; errors/warnings are highlighted red.
+- Area A has terminal mouse hitboxes for focus, `[-]` collapse/expand, and wheel scrolling when the terminal supports SGR mouse events.
+- Proof: `npm run proof:terminal-demo-log-panel-layout`.
+

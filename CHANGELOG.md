@@ -1,3 +1,12 @@
+# 1.4.0 - Terminal Demo real-demo log panel layout
+
+- Added a real-time scrollable `REAL-TIME LOG [-]` panel for real-demo diagnostics and routed truth-read, queue-read, playback-status, DB table verification, media discovery, selected-row, and path-check lines out of the current command plan.
+- Kept Area B focused on current command/action plan lines and expanded red error/warning handling for blocked/failed/warning command-plan output.
+- Added terminal mouse hitboxes for Area A log focus, Area A `[-]` collapse/expand, Area B command plan, and Area C preview, with SGR mouse parsing and proof-mode click/wheel logging.
+- Added `proof:terminal-demo-log-panel-layout` and `VERIFY_TERMINAL_DEMO_LOG_PANEL.CMD` to prove log routing, clickable/collapsible Area A hitboxes, mouse wheel scrolling, and preserved keyboard shortcuts.
+- Preserved scope: no geocode provider work, worker execution, screen-worker, cron, DB schema redesign, playback fixture behavior change, or v2 final claim was added.
+- Bumped version metadata to `1.4.0`.
+
 # 1.3.0 - Terminal Demo live DB image playback fixture
 
 - Added `terminal-demo:live-image-fixture:setup` to create the DEMO runtime folders, copy `generated_test_data/gps_valid/gps_valid_01.jpg` into `runtime_data/demo/downloaded_files/`, create `runtime_data/demo/demo.sqlite`, and seed a READY image row through the existing real schema tables.

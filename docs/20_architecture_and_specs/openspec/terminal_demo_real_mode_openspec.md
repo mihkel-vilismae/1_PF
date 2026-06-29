@@ -302,3 +302,9 @@ A passing proof verifies:
 - DB-backed playback is not claimed from mock-demo rows.
 
 Decision: `REAL_DEMO_ENTRYPOINT_READY`. This milestone adds no worker, geocode, screen-worker, schema redesign, cron, or v2 final behavior.
+## v1.4.0 real-demo log panel layout refinement
+
+Decision: `REAL_DEMO_LOG_PANEL_LAYOUT_READY`.
+
+The real-demo terminal must keep Area B focused on command/action plan output and route low-level diagnostics into Area A's scrollable `REAL-TIME LOG [-]` panel. Diagnostic lines include truth reads, queue reads, DB playback table verification, playback-status reads, media discovery, selected rows, and path checks. Area B error/warning/blocked/failed lines must be rendered red. Area A exposes proof-backed terminal hitboxes for focus, `[-]` collapse/expand, and mouse-wheel scroll logging while preserving keyboard shortcuts. This refinement does not add geocode provider work, worker execution, screen-worker behavior, cron, DB schema changes, or v2 final release claims.
+
