@@ -29,7 +29,7 @@ export function buildDemoBatchManifestPlan(
   mediaRows: MediaRow[],
   batchSize: SupportedDryRunBatchSize
 ): DemoBatchManifestPlan {
-  const runRowCount = Math.min(5, mediaRows.length);
+  const runRowCount = Math.min(batchSize === 1 ? 1 : 5, mediaRows.length);
   const selectedRows = mediaRows.slice(0, runRowCount).map((row) => ({
     rowNumber: row.rowNumber,
     relativePath: row.relativePath ?? row.fileName,

@@ -6,6 +6,7 @@ import type { DemoDryRunCommandPlan } from '../orchestration/DemoDryRunCommandPl
 import type { PlannedManifestRow } from '../orchestration/DemoBatchManifestPlan.js';
 import type { ManifestWriteResult } from './DemoBatchManifestWriter.js';
 import { runOrPlanRegularStageWorkerStage, type StageExecutionResult } from './PhotoFrameStageExecutionAdapter.js';
+import type { QCreatedQueueResult } from './RealDemoDbQueueProducer.js';
 import type { RuntimeBoundaryState } from '../config/runtimeTypes.js';
 import type { SupportedBatchSize } from './SupportedBatchSize.js';
 
@@ -22,6 +23,7 @@ export function buildRealDemoRouteFrames(input: {
   plan: DemoDryRunCommandPlan;
   manifest: ManifestWriteResult;
   batchSize: SupportedBatchSize;
+  qDbQueue: QCreatedQueueResult;
 }): RealDemoRouteFramePlan[] {
   const selectedRows = input.plan.manifest.selectedRows.slice(0, maxRunRows);
   const route = input.batchSize === 1 ? 'batch_size_1_file_by_file' : 'batch_size_5_stage_batch';
@@ -32,7 +34,9 @@ export function buildRealDemoRouteFrames(input: {
         `Ready to run real-demo Q with batch_size=${input.batchSize}`,
         `Route: ${route}`,
         `Rows in run manifest: ${selectedRows.length}`,
-        ...selectedRows.map((row) => `Will use row #${row.rowNumber}: ${row.relativePath} gps=${row.gps}`)
+        ...selectedRows.map((row) => `Will use row #${row.rowNumber}: ${row.relativePath} gps=${row.gps}`),
+        `Q DB queue creation: ${input.qDbQueue.status}`,
+        ...input.qDbQueue.messages.map((message) => `Q DB queue: ${message}`)
       ]
     },
     {
@@ -54,7 +58,7 @@ export function buildRealDemoRouteFrames(input: {
     for (const stage of stageOrder) frames.push(buildStageFrame(input, route, stage, selectedRows));
   }
 
-  frames.push(buildFinalFrame(input, selectedRows, route));
+  frames.push(buildFinalFrame(input, selectedRows, route, input.qDbQueue));
   return frames;
 }
 
@@ -99,7 +103,8 @@ function stageLines(
 function buildFinalFrame(
   input: { batchSize: SupportedBatchSize },
   rows: PlannedManifestRow[],
-  route: string
+  route: string,
+  qDbQueue: QCreatedQueueResult
 ): RealDemoRouteFramePlan {
   const validRows = rows.filter((row) => row.gps === 'valid');
   const problemRows = rows.filter((row) => row.gps !== 'valid');
@@ -111,7 +116,9 @@ function buildFinalFrame(
       `Rows considered: ${rows.length}`,
       `Expected eligible from discovered fixture metadata: ${validRows.map((row) => `#${row.rowNumber}`).join(', ') || 'none'}`,
       `Expected not eligible from discovered fixture metadata: ${problemRows.map((row) => `#${row.rowNumber}`).join(', ') || 'none'}`,
-      'Actual queue/truth result must come from DEMO truth/queue readers; terminal does not fabricate success.',
+      `Q-created DEMO DB queue status: ${qDbQueue.status}`,
+      `Q-created READY rows: ${qDbQueue.readyQueueRows}`,
+      'Actual queue/truth result comes from DEMO DB/truth readers; terminal does not fabricate worker success.',
       'No cron was used by the terminal.'
     ]
   };
