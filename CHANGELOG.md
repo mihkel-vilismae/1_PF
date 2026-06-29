@@ -1,3 +1,11 @@
+## 0.10.98 - 2026-06-29
+
+- Ran terminal Demo Mode Group 6A execution-safety gate refinement without enabling uncontrolled worker execution.
+- Added DEMO-aware V2 worker truth mode support so `runtimeMode=demo` writes/reads `runtime_data/v2_worker_truth/demo` instead of being normalized to TEST truth.
+- Redirected regular, playback, and instrumentation worker scheduler/status/lock output through a scheduler runtime directory resolver so DEMO mode uses `DEMO_SCHEDULER_DIR` / `runtime_data/scheduler/demo`.
+- Strengthened terminal manual execution environment to pass DEMO log, truth, scheduler, output, and queue paths plus no-cron/path-safety markers.
+- Added `proof:terminal-demo-execution-safety` as a static no-mutation proof for demo truth/scheduler/log path isolation and no-cron guards; the conservative execution acknowledgement remains required.
+
 ## 0.10.97 - 2026-06-29
 
 - Hardened terminal real-demo Group 3B orchestration finish pass.

@@ -707,7 +707,7 @@ function withV2RegularStageTruth(stage: string, handler: RouteHandler): RouteHan
 async function appendV2WorkerTruthEvent(context: RequestContext, event: Record<string, unknown>): Promise<void> {
   try {
     const mode = normalizeV2WorkerTruthMode(context.runtimeMode);
-    const service = createV2WorkerTruthService({ repoRoot, envValues: context.baseEnvValues });
+    const service = createV2WorkerTruthService({ repoRoot, envValues: context.envValues });
     await service.appendEvent(mode, event);
   } catch (error) {
     reportLoggerWriteError(error);

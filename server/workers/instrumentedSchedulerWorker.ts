@@ -6,6 +6,7 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { SCHEDULER_WORKER_NAMES, type SchedulerWorkerName } from '../../shared/schedulerWorkerCommands.ts';
+import { resolveSchedulerRuntimeDirectory } from './schedulerRuntimeDirectory.ts';
 
 type InstrumentedWorkerStatus = 'succeeded' | 'skipped' | 'failed';
 type JsonObject = Record<string, unknown>;
@@ -98,7 +99,7 @@ export async function runInstrumentedSchedulerWorker({
   const definition = getInstrumentedWorkerDefinition(workerName);
   if (!definition) throw new Error(`No instrumentation-only worker definition exists for ${workerName}.`);
 
-  const runtimeDirectory = path.join(repoRoot, 'runtime_data', 'scheduler');
+  const runtimeDirectory = resolveSchedulerRuntimeDirectory(repoRoot);
   const lockPath = path.join(runtimeDirectory, definition.lockFileName);
   const statusPath = path.join(runtimeDirectory, definition.statusFileName);
   const startedAt = now().toISOString();

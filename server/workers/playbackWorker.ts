@@ -8,6 +8,7 @@ import path from 'node:path';
 import type { DatabaseService } from '../database/databaseService.ts';
 import { selectCurrentPlayableItem, type PlaybackSelectionContext } from '../playback/playbackSelectionService.ts';
 import { createV2WorkerTruthService, type V2WorkerTruthMode } from '../v2WorkerTruthService.ts';
+import { resolveSchedulerRuntimeDirectory } from './schedulerRuntimeDirectory.ts';
 import {
   NativePlaybackError,
   shouldAutoStartNativePlaybackFromWorker,
@@ -126,7 +127,7 @@ export async function runPlaybackWorker({
   workerId = `playback-worker-${process.pid}`,
   staleLockSeconds = resolveStaleLockSeconds(process.env.PF_RASPBERRY_WORKER_STALE_LOCK_SECONDS),
 }: PlaybackWorkerOptions): Promise<PlaybackWorkerResult> {
-  const runtimeDirectory = path.join(repoRoot, 'runtime_data', 'scheduler');
+  const runtimeDirectory = resolveSchedulerRuntimeDirectory(repoRoot);
   const lockPath = path.join(runtimeDirectory, 'playback-worker-lock.json');
   const statusPath = path.join(runtimeDirectory, 'playback-worker-status.json');
   const startedAt = now().toISOString();
@@ -315,6 +316,7 @@ async function appendPlaybackTruth(repoRoot: string, context: PlaybackSelectionC
 }
 
 function resolvePlaybackTruthMode(envValues: Record<string, string | undefined>): V2WorkerTruthMode {
+  if (envValues.PF_RUNTIME_MODE === 'demo' || envValues.RUNTIME_MODE === 'demo') return 'demo';
   return envValues.PF_RUNTIME_MODE === 'test' || envValues.RUNTIME_MODE === 'test' ? 'test' : 'real';
 }
 

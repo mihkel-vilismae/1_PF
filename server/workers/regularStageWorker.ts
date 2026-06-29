@@ -9,6 +9,7 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { SCHEDULER_WORKER_NAMES } from '../../shared/schedulerWorkerCommands.ts';
+import { resolveSchedulerRuntimeDirectory } from './schedulerRuntimeDirectory.ts';
 
 export const REGULAR_STAGE_WORKER_IMPLEMENTATION_STATUS = 'b3_stage_state_machine_v1' as const;
 
@@ -171,7 +172,7 @@ export async function runRegularStageWorker({
   staleLockSeconds = resolveStaleLockSeconds(process.env.PF_RASPBERRY_WORKER_STALE_LOCK_SECONDS),
   maxStagesPerRun = Number.parseInt(process.env.PF_REGULAR_STAGE_WORKER_MAX_STAGES_PER_RUN ?? '', 10),
 }: RegularStageWorkerOptions): Promise<RegularStageWorkerResult> {
-  const runtimeDirectory = path.join(repoRoot, 'runtime_data', 'scheduler');
+  const runtimeDirectory = resolveSchedulerRuntimeDirectory(repoRoot);
   const lockPath = path.join(runtimeDirectory, 'regular-stage-worker-lock.json');
   const statusPath = path.join(runtimeDirectory, 'regular-stage-worker-status.json');
   const statePath = path.join(runtimeDirectory, 'regular-stage-worker-state.json');

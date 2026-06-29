@@ -21,7 +21,7 @@ const DEFAULT_TEST_COOKIE_DIR = `${TEST_RUNTIME_ROOT}/icloudpd_cookies`;
 const DEFAULT_TEST_RAW_STDIO_LOG_PATH = `${TEST_RUNTIME_ROOT}/private_logs/icloudpd_raw_stdio.log`;
 const DEFAULT_DEMO_RUNTIME_ROOT = 'runtime_data/demo';
 
-// Converts loosely supplied mode text into the only two supported runtime modes.
+// Converts loosely supplied mode text into the supported dashboard runtime modes.
 export function normalizeDashboardRuntimeMode(value: unknown): DashboardRuntimeMode {
   const normalized = String(value ?? '').trim().toLowerCase();
   if (normalized === 'test') return 'test';
@@ -43,6 +43,9 @@ export function applyDashboardRuntimeModeToEnvValues(
       DOWNLOAD_DIR: envValues.DEMO_DOWNLOAD_DIR || 'generated_test_data',
       DB_PATH: envValues.DEMO_DB_PATH || `${DEFAULT_DEMO_RUNTIME_ROOT}/demo.sqlite`,
       LOG_DIR: envValues.DEMO_LOG_DIR || `${DEFAULT_DEMO_RUNTIME_ROOT}/logs`,
+      DEMO_V2_WORKER_TRUTH_DIR: envValues.DEMO_V2_WORKER_TRUTH_DIR || 'runtime_data/v2_worker_truth/demo',
+      DEMO_SCHEDULER_DIR: envValues.DEMO_SCHEDULER_DIR || 'runtime_data/scheduler/demo',
+      DEMO_QUEUE_OUTPUT_PATH: envValues.DEMO_QUEUE_OUTPUT_PATH || `${DEFAULT_DEMO_RUNTIME_ROOT}/outputs/display_queue.json`,
       DEMO_RUNTIME_OUTPUT_DIR: demoRoot,
     };
   }

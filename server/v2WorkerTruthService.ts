@@ -1,7 +1,7 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
-export type V2WorkerTruthMode = 'test' | 'real';
+export type V2WorkerTruthMode = 'test' | 'real' | 'demo';
 export type V2WorkerTruthStatus = 'started' | 'finished' | 'error' | 'interrupted' | 'state';
 export type V2WorkerId = 'regular-worker' | 'playback-worker' | 'screen-worker';
 
@@ -53,7 +53,9 @@ const workerFiles: Record<V2WorkerId, string> = {
 };
 
 export function normalizeV2WorkerTruthMode(value: unknown): V2WorkerTruthMode {
-  return value === 'real' ? 'real' : 'test';
+  if (value === 'real') return 'real';
+  if (value === 'demo') return 'demo';
+  return 'test';
 }
 
 export function normalizeV2WorkerId(value: unknown): V2WorkerId {
@@ -65,7 +67,7 @@ export function normalizeV2WorkerId(value: unknown): V2WorkerId {
 
 export function createV2WorkerTruthService(options: V2WorkerTruthServiceOptions) {
   function resolveModeDirectory(mode: V2WorkerTruthMode): string {
-    const envKey = mode === 'real' ? 'V2_WORKER_TRUTH_DIR' : 'TEST_V2_WORKER_TRUTH_DIR';
+    const envKey = mode === 'real' ? 'V2_WORKER_TRUTH_DIR' : mode === 'demo' ? 'DEMO_V2_WORKER_TRUTH_DIR' : 'TEST_V2_WORKER_TRUTH_DIR';
     const configured = options.envValues?.[envKey]?.trim();
     if (configured) {
       return path.isAbsolute(configured) ? configured : path.resolve(options.repoRoot, configured);

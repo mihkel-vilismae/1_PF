@@ -96,8 +96,12 @@ function buildDemoWorkerEnv(input: StageExecutionInput): NodeJS.ProcessEnv {
     DEMO_DOWNLOAD_DIR: input.boundary.downloadDir,
     DEMO_V2_WORKER_TRUTH_DIR: input.boundary.workerTruthDir,
     DEMO_SCHEDULER_DIR: input.boundary.schedulerDir,
+    DEMO_LOG_DIR: input.boundary.logDir,
+    LOG_DIR: input.boundary.logDir,
     DEMO_RUNTIME_OUTPUT_DIR: input.boundary.runtimeOutputDir,
     DEMO_QUEUE_OUTPUT_PATH: input.boundary.queueOutputPath,
+    PHOTOFRAME_TERMINAL_DEMO_NO_CRON: '1',
+    PHOTOFRAME_TERMINAL_DEMO_PATH_SAFETY_PASSED: input.boundary.readinessStatus === 'ready' ? '1' : '0',
     PF_REGULAR_STAGE_WORKER_MAX_STAGES_PER_RUN: '5'
   };
 }

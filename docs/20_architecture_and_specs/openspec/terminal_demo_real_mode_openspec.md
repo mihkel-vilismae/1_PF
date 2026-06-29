@@ -1,7 +1,7 @@
 # Terminal Demo Real Mode OpenSpec
 
 Generated: 2026-06-29  
-Status: Group 3B-FINISH implemented as hardened guarded terminal orchestration inside PhotoFrame.
+Status: Group 6A execution-safety gate implemented; worker execution remains guarded pending final live proof.
 
 ## Goal
 
@@ -21,10 +21,10 @@ Turn the terminal mock-demo into a real terminal Demo Mode that uses PhotoFrame 
 | Visible selected batch size | Implemented in header/actions/current run/inspector | 10/10 |
 | Q consumes selected batch size | Implemented and snapshot-routed | 9/10 |
 | Demo-safe manifest write | Implemented under `DEMO_RUNTIME_OUTPUT_DIR` with path guard and first-5 run manifest | 10/10 |
-| Worker execution | Planned by default; explicit execute is blocked until demo scheduler isolation is proven | 6/10 |
-| Real/demo runtime env mapping | Implemented for guarded terminal stage plans; scheduler-output isolation still needs proof | 8/10 |
+| Worker execution | Still guarded; scheduler/status/truth/log output isolation has static proof coverage, but live execution ack remains explicit | 7/10 |
+| Real/demo runtime env mapping | Implemented for guarded terminal stage plans, DEMO truth, DEMO scheduler/status, DEMO log, and DEMO queue/output paths | 9/10 |
 | Queue reader/playback | Planned for Group 5 | 0/10 |
-| Proof/de-mocking guard suite | Planned for Group 6 | 2/10 |
+| Proof/de-mocking guard suite | Group 6A execution-safety proof added; remaining queue/playback and final de-mocking proofs still planned | 4/10 |
 
 ## Group 3B behavior
 
@@ -63,3 +63,13 @@ Group 5 should add real demo queue reading and playback-selection display, then 
 - Each route frame re-reads media/truth/status sources for the terminal snapshot.
 - The terminal does not fabricate worker success; final eligibility summaries are labelled as discovered-fixture expectations until DEMO truth/queue readers report actual output.
 - Explicit worker execution is blocked until scheduler/status outputs are proven DEMO-isolated.
+
+## Group 6A execution-safety gate
+
+- `V2WorkerTruthMode` now supports `demo`; demo truth is no longer normalized into test truth.
+- Demo truth defaults to `runtime_data/v2_worker_truth/demo` or `DEMO_V2_WORKER_TRUTH_DIR`.
+- Regular, playback, and instrumented scheduler workers resolve status/lock/state output through `resolveSchedulerRuntimeDirectory()`.
+- In Demo Mode, scheduler/status/lock output resolves to `DEMO_SCHEDULER_DIR` or `runtime_data/scheduler/demo`.
+- The terminal execution adapter now passes `LOG_DIR`, `DEMO_LOG_DIR`, `DEMO_V2_WORKER_TRUTH_DIR`, `DEMO_SCHEDULER_DIR`, `DEMO_RUNTIME_OUTPUT_DIR`, and `DEMO_QUEUE_OUTPUT_PATH` to guarded worker processes.
+- The terminal still refuses real worker execution unless `PHOTOFRAME_TERMINAL_DEMO_EXECUTE=1` and the explicit scheduler-safety acknowledgement are both present.
+- `proof:terminal-demo-execution-safety` statically verifies the above no-cron and demo-isolation guards without running workers or writing runtime data.
