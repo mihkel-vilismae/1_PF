@@ -1,3 +1,14 @@
+
+## 2026-06-29 — v0.10.100
+
+### Fixed
+- Fixed the merged terminal Demo Mode Windows runner so launching `terminal/demo/windows_runner.cmd` resolves the PhotoFrame repository root instead of incorrectly treating `terminal/demo` as a standalone package root.
+- Updated the Windows runner to call the merged PhotoFrame terminal smoke proof (`proof:terminal-demo-merge-smoke`) instead of the old standalone `verify:smoke` script.
+- Regenerated the full Git ZIP with a top-level folder matching `v0.10.100` instead of the stale `v0.10.95` folder name.
+
+### Changed
+- Bumped version metadata to `0.10.100`.
+
 ## 0.10.99 - 2026-06-29
 
 - Implemented terminal Demo Mode Group 5A real-demo queue reader.

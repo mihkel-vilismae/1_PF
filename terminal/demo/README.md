@@ -233,7 +233,7 @@ Run from the repository root on Windows:
 windows_runner.cmd
 ```
 
-The Windows runner installs dependencies, builds TypeScript, runs smoke verification, and then launches the interactive mock terminal. It prints the project version from `VERSION` / `package.json` at startup. During install/build/verify steps, press `L` to print the current Estonian timestamp, current step, current command, latest captured log row, full log path, and current verbose-display state. Press `V` to toggle live verbose log rows in the terminal. Full npm `--verbose` output is always written to `runtime_logs/windows_runner/` regardless of the `V` display toggle.
+The Windows runner may be launched from `terminal/demo/windows_runner.cmd` or from the PhotoFrame root helper. After the terminal was merged into PhotoFrame, the PowerShell helper walks upward to find the PhotoFrame repository root containing `package.json` and `terminal/demo/src/main.ts`, then runs npm scripts from that root. It installs dependencies, builds TypeScript, runs terminal-demo smoke verification, and then launches the interactive mock terminal. It prints the project version from the PhotoFrame root `VERSION` / `package.json` at startup. During install/build/verify steps, press `L` to print the current Estonian timestamp, current step, current command, latest captured log row, full log path, and current verbose-display state. Press `V` to toggle live verbose log rows in the terminal. Full npm `--verbose` output is always written to `terminal/demo/runtime_logs/windows_runner/` regardless of the `V` display toggle.
 
 If `npm ci` hits a network timeout such as `ETIMEDOUT`, the runner prints a timeout hint and retries the dependency install once using npm fetch retry settings.
 

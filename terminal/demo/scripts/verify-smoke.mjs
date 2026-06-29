@@ -77,6 +77,24 @@ function createTruthFixtureRepo() {
   return root;
 }
 
+
+const windowsRunnerScript = readFileSync('terminal/demo/scripts/windows/run_terminal_demo.ps1', 'utf8');
+for (const [needle, label] of [
+  ['Resolve-PhotoFrameRepoRoot', 'Windows runner PhotoFrame root resolver'],
+  ['terminal\\demo\\src\\main.ts', 'Windows runner merged terminal entrypoint check'],
+  ['proof:terminal-demo-merge-smoke', 'Windows runner merged smoke command'],
+  ['PhotoFrame repo:', 'Windows runner repo label'],
+  ['Terminal root:', 'Windows runner terminal label']
+]) {
+  if (!windowsRunnerScript.includes(needle)) throw new Error(`Missing ${label}: ${needle}`);
+}
+if (windowsRunnerScript.includes("$repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..\\..')")) {
+  throw new Error('Windows runner still resolves terminal/demo as package repo root.');
+}
+if (windowsRunnerScript.includes("'verify:smoke'")) {
+  throw new Error('Windows runner still calls standalone verify:smoke instead of merged PhotoFrame proof script.');
+}
+
 const version = readFileSync('VERSION', 'utf8').trim();
 const initial = run(['--smoke']);
 const final = run(['--q-smoke']);

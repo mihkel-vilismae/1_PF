@@ -413,19 +413,46 @@ function Invoke-LoggedCommand {
     }
 }
 
-$repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..\..')
+
+function Resolve-PhotoFrameRepoRoot {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string] $StartPath
+    )
+
+    $current = (Resolve-Path $StartPath).ProviderPath
+    while ($null -ne $current) {
+        $packageJsonPath = Join-Path $current 'package.json'
+        $terminalEntrypointPath = Join-Path $current 'terminal\demo\src\main.ts'
+        if ((Test-Path $packageJsonPath) -and (Test-Path $terminalEntrypointPath)) {
+            return (Resolve-Path $current).ProviderPath
+        }
+
+        $parent = Split-Path -Parent $current
+        if ([string]::IsNullOrWhiteSpace($parent) -or $parent -eq $current) {
+            break
+        }
+        $current = $parent
+    }
+
+    throw ('PhotoFrame repository root not found above: {0}. Expected package.json and terminal\demo\src\main.ts in the PhotoFrame root.' -f $StartPath)
+}
+
+$terminalRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).ProviderPath
+$repoRoot = Resolve-PhotoFrameRepoRoot -StartPath $terminalRoot
 Set-Location $repoRoot
 
 $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-$logDir = Join-Path $repoRoot 'runtime_logs\windows_runner'
+$logDir = Join-Path $terminalRoot 'runtime_logs\windows_runner'
 New-Item -ItemType Directory -Force -Path $logDir | Out-Null
 
 $projectVersion = Get-ProjectVersion -RepoRoot $repoRoot
 
-Write-Host ('PhotoFrame Mock Demo Terminal v{0} - Windows Runner' -f $projectVersion) -ForegroundColor Green
-Write-Host ('Repo: {0}' -f $repoRoot)
-Write-Host ('Logs: {0}' -f $logDir)
-Write-Host 'Mode: mock-demo terminal; no real workers, DB, truth JSONL, cron, or file import.' -ForegroundColor Yellow
+Write-Host ('PhotoFrame Demo Terminal v{0} - Windows Runner' -f $projectVersion) -ForegroundColor Green
+Write-Host ('PhotoFrame repo: {0}' -f $repoRoot)
+Write-Host ('Terminal root:   {0}' -f $terminalRoot)
+Write-Host ('Logs:            {0}' -f $logDir)
+Write-Host 'Mode: merged PhotoFrame terminal demo; default launch uses mock-demo adapter.' -ForegroundColor Yellow
 
 Write-Step -Message 'Checking Node.js and npm'
 $nodeCmd = Get-Command node -ErrorAction SilentlyContinue
@@ -445,7 +472,11 @@ Write-Info -Message ('Node: {0}' -f $nodeVersion)
 Write-Info -Message ('npm:  {0}' -f $npmVersion)
 
 if (-not (Test-Path (Join-Path $repoRoot 'package.json'))) {
-    throw ('package.json not found at repo root: {0}' -f $repoRoot)
+    throw ('package.json not found at PhotoFrame repo root: {0}' -f $repoRoot)
+}
+
+if (-not (Test-Path (Join-Path $repoRoot 'terminal\demo\src\main.ts'))) {
+    throw ('terminal demo entrypoint not found under PhotoFrame repo root: {0}' -f $repoRoot)
 }
 
 Assert-NoInternalPackageRegistryLeak -RepoRoot $repoRoot
@@ -482,19 +513,19 @@ Invoke-LoggedCommand `
     -MaxAttempts 2
 
 Invoke-LoggedCommand `
-    -Label 'Building TypeScript' `
+    -Label 'Building PhotoFrame frontend' `
     -FilePath 'npm' `
     -Arguments @('--verbose', 'run', 'build') `
     -LogPath (Join-Path $logDir ('npm-build-{0}.log' -f $timestamp))
 
 Invoke-LoggedCommand `
-    -Label 'Running smoke verification' `
+    -Label 'Running terminal demo smoke verification' `
     -FilePath 'npm' `
-    -Arguments @('--verbose', 'run', 'verify:smoke') `
-    -LogPath (Join-Path $logDir ('npm-verify-smoke-{0}.log' -f $timestamp))
+    -Arguments @('--verbose', 'run', 'proof:terminal-demo-merge-smoke') `
+    -LogPath (Join-Path $logDir ('npm-terminal-demo-merge-smoke-{0}.log' -f $timestamp))
 
 Write-Step -Message 'Launching mock demo terminal'
-Write-Info -Message 'Controls: Q = storyboard, R = refresh, X or Ctrl+C = exit.'
+Write-Info -Message 'Controls: Q = storyboard, W = batch-size toggle in real-demo, R = refresh, X or Ctrl+C = exit.'
 Write-Info -Message 'Interactive output is not tee-logged so raw keyboard handling remains stable.'
 Write-Host ''
 
@@ -506,4 +537,4 @@ if ($terminalExitCode -ne 0) {
 }
 
 Write-Host ''
-Write-Host 'PhotoFrame Mock Demo Terminal finished.' -ForegroundColor Green
+Write-Host 'PhotoFrame Demo Terminal finished.' -ForegroundColor Green
