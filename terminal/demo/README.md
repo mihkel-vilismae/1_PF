@@ -1,6 +1,6 @@
 # PhotoFrame Terminal Demo Mode
 
-Version: `0.14.0`
+Version: `0.15.0`
 
 This folder is the merged terminal/TUI mock plus real-demo runtime-boundary, media-discovery, truth/status-read, command-plan, guarded W/Q orchestration, queue-reader, and playback selected-item visibility scaffold for the PhotoFrame Demo Mode beeline.
 ## Merged into PhotoFrame
@@ -409,3 +409,20 @@ npm run terminal-demo:evidence-diagnosis -- path/to/evidence.zip
 ```
 
 The diagnosis report is written under `terminal/demo/runtime_logs/evidence_diagnosis/` and classifies common blockers such as stale runner root detection, missing Node/npm, missing dependencies, folder/version mismatch, and expected guarded-execution messages.
+
+
+## v0.15.0 v1.0 RC readiness audit
+
+Version `0.15.0` adds a narrow RC-readiness audit without changing the real-demo runtime behavior. It proves the operator-facing chain is discoverable and still safe:
+
+```bash
+npm run proof:terminal-demo-rc-readiness
+```
+
+On Windows, use the root launcher:
+
+```text
+VERIFY_TERMINAL_DEMO_RC.CMD
+```
+
+The audit runs the final terminal-demo guard proof, the operator rehearsal proof, and evidence diagnosis against the rehearsal evidence. It also checks that the root launchers and npm scripts print clear `PASSED` / `BLOCKED` summaries. Evidence is written under `terminal/demo/runtime_logs/rc_readiness/` and contains logs/status only, not the source repository.

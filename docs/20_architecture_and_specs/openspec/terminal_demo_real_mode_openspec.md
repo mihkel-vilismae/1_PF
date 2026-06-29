@@ -142,3 +142,24 @@ Version `0.14.0` adds the evidence import/fix-loop layer after the v0.13 rehears
 - common classifications include stale Windows runner root detection, missing Node/npm, missing dependencies, folder/version mismatch, expected guarded-execution messages, and failed rehearsal checks.
 
 This milestone is an evidence triage/fix-loop milestone. It does not enable native/fullscreen playback and does not bypass guarded worker execution flags.
+
+
+## v0.15.0 v1.0 RC readiness gate
+
+Terminal Demo Mode may be called RC1 only when the dedicated RC readiness proof passes from an extracted package root:
+
+```bash
+npm run proof:terminal-demo-rc-readiness
+```
+
+The gate is intentionally narrow. It must not introduce new runtime behavior, cron usage, real/test data access, or mock substitution. It verifies:
+
+- `VERSION` and `package.json` identity agree.
+- operator commands are discoverable from `package.json`;
+- root launchers expose clear `PASSED` / `BLOCKED` outcomes;
+- the final guard proof still passes;
+- the operator rehearsal proof still produces terminal-demo-only evidence;
+- evidence diagnosis can classify the rehearsal evidence and write reports;
+- RC readiness logs do not package the source repository.
+
+A passing result means `v0.15.0` is RC1-ready for operator rehearsal, not that production cron or real/test data may be used by Demo Mode.

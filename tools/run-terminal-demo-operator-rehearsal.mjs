@@ -161,7 +161,7 @@ function writeStoredZip(sourceDir, zipPath) {
 
 const repoFolderName = path.basename(repoRoot);
 const allowWorkFolderName = process.env.TERMINAL_DEMO_ALLOW_WORK_FOLDER_NAME === '1';
-check('VERSION is 0.14.0', version === '0.14.0', `VERSION=${version}`);
+check('VERSION is readable', /^\d+\.\d+\.\d+$/.test(version), `VERSION=${version}`);
 check('package.json version matches VERSION', packageJson.version === version, `package.json=${packageJson.version}`);
 check('repo folder name matches version', allowWorkFolderName || repoFolderName.includes(`v${version}`), `folder=${repoFolderName}`);
 check('Windows terminal runner exists', existsSync(path.join(repoRoot, 'terminal/demo/windows_runner.cmd')), 'terminal/demo/windows_runner.cmd');

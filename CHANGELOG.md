@@ -1,3 +1,10 @@
+
+## 0.15.0 - Terminal Demo v1.0 RC readiness audit
+
+- Added `proof:terminal-demo-rc-readiness`, a narrow audit that runs final guard, operator rehearsal, and evidence diagnosis as one RC gate.
+- Added `VERIFY_TERMINAL_DEMO_RC.CMD` for Windows operators to run the RC audit from an extracted package root.
+- Documented the v1.0 RC readiness gate and preserved the existing no-cron, DEMO-owned, non-mock real-demo behavior.
+
 ## 2026-06-29 — v0.14.0
 
 - Added the terminal Demo Mode operator evidence diagnosis loop for v0.14.0.
