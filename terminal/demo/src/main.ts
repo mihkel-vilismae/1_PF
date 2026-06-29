@@ -11,6 +11,7 @@ import { RealDemoMediaRepository } from './data/RealDemoMediaRepository.js';
 import { buildDryRunCommandPlans } from './orchestration/DemoDryRunCommandPlanner.js';
 import { renderScreen } from './ui/renderScreen.js';
 import { qStoryboardStepIds } from './scenarios/qGeocodeStoryboard.js';
+import { mouseTrackingDisableSequence, mouseTrackingEnableSequence, parseSgrMouseEvent } from './ui/terminalMouse.js';
 
 const layout = readTerminalLayout();
 const args = new Set(process.argv.slice(2));
@@ -78,6 +79,18 @@ if (args.has('--q-smoke')) {
   process.exit(0);
 }
 
+
+if (args.has('--mouse-hitbox-smoke')) {
+  const realConfig = readTerminalRuntimeConfig(['--adapter=real-demo']);
+  const realAdapter = new RealDemoRuntimeAdapterPlaceholder(realConfig.boundary);
+  realAdapter.handleMouse({ kind: 'click', x: 170, y: 24, button: 0 });
+  realAdapter.handleMouse({ kind: 'click', x: 140, y: 18, button: 0 });
+  realAdapter.handleMouse({ kind: 'click', x: 140, y: 18, button: 0 });
+  realAdapter.handleMouse({ kind: 'wheel-up', x: 170, y: 24, button: 64 });
+  printFrame(renderScreen(realAdapter.getState(), layout));
+  process.exit(0);
+}
+
 if (args.has('--p-smoke') || args.has('--db-image-playback-button-smoke')) {
   const frames = await adapter.handleKey('P');
   printFrame(renderScreen(frames[0] ?? adapter.getState(), layout));
@@ -109,13 +122,22 @@ if (args.has('--smoke') || !process.stdin.isTTY) {
 }
 
 clearAndPrint(renderScreen(adapter.getState(), layout));
+process.stdout.write(mouseTrackingEnableSequence());
 process.stdin.setRawMode(true);
 process.stdin.resume();
 process.stdin.setEncoding('utf8');
 
 process.stdin.on('data', async (chunk) => {
   const key = String(chunk);
+  const mouseEvent = parseSgrMouseEvent(key);
+  if (mouseEvent && adapter.handleMouse) {
+    const frames = await adapter.handleMouse(mouseEvent);
+    clearAndPrint(renderScreen(frames[0] ?? adapter.getState(), layout));
+    return;
+  }
+
   if (key === '\u0003' || key.toUpperCase() === 'X') {
+    process.stdout.write(mouseTrackingDisableSequence());
     process.stdin.setRawMode(false);
     process.stdin.pause();
     process.stdout.write(`\nExiting ${adapter.modeName} terminal.\n`);

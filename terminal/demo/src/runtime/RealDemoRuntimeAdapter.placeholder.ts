@@ -17,6 +17,8 @@ import { RealDemoPlaybackStatusRepository } from '../playback/RealDemoPlaybackSt
 import { runOrPlanPlaybackWorker } from '../playback/PhotoFramePlaybackCommandAdapter.js';
 import { DbPlaybackRepository } from '../playback/DbPlaybackRepository.js';
 import { runDbImagePlaybackButton } from '../playback/DbImagePlaybackButton.js';
+import type { TerminalMouseEvent } from '../ui/terminalMouse.js';
+import { findHitbox } from '../ui/terminalMouse.js';
 
 /**
  * Group 3B real-demo adapter scaffold.
@@ -30,6 +32,10 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
   private state: DemoTerminalState;
   private selectedBatchSize: SupportedBatchSize = 1;
   private snapshots = new RunSnapshotStore();
+  private logCollapsed = false;
+  private logFocused = false;
+  private logScrollOffset = 0;
+  private uiLogLines: string[] = [];
 
   constructor(private readonly boundary: RuntimeBoundaryState) {
     this.state = this.buildState();
@@ -42,6 +48,10 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
   reset(): DemoTerminalState {
     this.selectedBatchSize = 1;
     this.snapshots.setSnapshots([]);
+    this.logCollapsed = false;
+    this.logFocused = false;
+    this.logScrollOffset = 0;
+    this.uiLogLines = [];
     this.state = this.buildState();
     return this.getState();
   }
@@ -59,6 +69,38 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
     if (normalized === 'ARROWRIGHT') return [this.stepQStoryboard('right')];
     if (normalized === 'ARROWLEFT') return [this.stepQStoryboard('left')];
     if (normalized === 'R') return [this.refresh()];
+    return [this.getState()];
+  }
+
+  handleMouse(event: TerminalMouseEvent): DemoTerminalState[] {
+    if (event.kind === 'release') return [this.getState()];
+    const hit = findHitbox(this.state.realTimeLog.hitboxes, event);
+    if (event.kind === 'wheel-up' || event.kind === 'wheel-down') {
+      if (hit.hitboxId === 'area-a-log-panel' || hit.hitboxId === 'area-a-collapse-toggle') {
+        const delta = event.kind === 'wheel-up' ? 1 : -1;
+        this.logScrollOffset = Math.max(0, this.logScrollOffset + delta);
+        this.logFocused = true;
+        this.appendUiLog(`Mouse wheel: ${event.kind} over Area A; scroll_offset=${this.logScrollOffset}`);
+        this.state = this.buildState();
+      } else {
+        this.appendUiLog(`Mouse wheel: ${event.kind} ignored; hitbox=${hit.hitboxId}`);
+        this.state = this.buildState();
+      }
+      return [this.getState()];
+    }
+
+    if (hit.hitboxId === 'area-a-collapse-toggle') {
+      this.logCollapsed = !this.logCollapsed;
+      this.logFocused = true;
+      this.appendUiLog(`Mouse hitbox: area-a-collapse-toggle clicked; log_panel=${this.logCollapsed ? 'collapsed' : 'expanded'}`);
+    } else if (hit.hitboxId === 'area-a-log-panel') {
+      this.logFocused = true;
+      this.appendUiLog(`Mouse hitbox: area-a-log-panel clicked at x=${event.x} y=${event.y}`);
+    } else {
+      this.logFocused = false;
+      this.appendUiLog(`Mouse hitbox: ${hit.hitboxId} clicked at x=${event.x} y=${event.y}`);
+    }
+    this.state = this.buildState();
     return [this.getState()];
   }
 
@@ -137,8 +179,18 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
       this.selectedBatchSize,
       source.queueRows,
       source.queueMessages,
-      source.playbackStatus
+      source.playbackStatus,
+      {
+        collapsed: this.logCollapsed,
+        focused: this.logFocused,
+        scrollOffset: this.logScrollOffset,
+        extraLogLines: this.uiLogLines
+      }
     );
+  }
+
+  private appendUiLog(message: string): void {
+    this.uiLogLines = [...this.uiLogLines, message].slice(-80);
   }
 
   private readSources(): {

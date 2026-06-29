@@ -187,8 +187,8 @@ function isDiagnosticLogLine(line: string): boolean {
 
 function buildRealDemoHitboxes(): TerminalMouseHitbox[] {
   return [
-    { id: 'area-a-log-panel', label: 'Area A realtime log panel body', x1: 135, y1: 18, x2: 220, y2: 44 },
     { id: 'area-a-collapse-toggle', label: 'Area A [-] collapse/expand toggle', x1: 135, y1: 18, x2: 155, y2: 19 },
+    { id: 'area-a-log-panel', label: 'Area A realtime log panel body', x1: 135, y1: 18, x2: 220, y2: 44 },
     { id: 'area-b-command-plan', label: 'Area B command/action plan panel', x1: 70, y1: 1, x2: 134, y2: 44 },
     { id: 'area-c-preview', label: 'Area C preview/playback panel', x1: 1, y1: 18, x2: 69, y2: 44 }
   ];
