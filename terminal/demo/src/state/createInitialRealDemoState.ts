@@ -3,7 +3,7 @@
 
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { ActionItemState, DemoTerminalState, MediaRow, StagePanelRow, WorkerPanelRow, SupportedBatchSize, PlaybackQueueRow } from './DemoTerminalState.js';
+import type { ActionItemState, DemoTerminalState, MediaRow, StagePanelRow, WorkerPanelRow, SupportedBatchSize, PlaybackQueueRow, TerminalMouseHitbox } from './DemoTerminalState.js';
 import type { RuntimeBoundaryState } from '../config/runtimeTypes.js';
 import type { DemoTruthReadResult } from '../truth/DemoTruthRepository.js';
 import type { DemoPlaybackStatusReadResult } from '../playback/DemoPlaybackStatusRepository.js';
@@ -82,7 +82,8 @@ export function createInitialRealDemoState(
   selectedBatchSize: SupportedBatchSize = 1,
   playbackQueueRows: PlaybackQueueRow[] = [],
   queueMessages: string[] = [],
-  playbackStatus: DemoPlaybackStatusReadResult = { selectedItem: null, status: 'waiting', messages: [], sourcePath: '' }
+  playbackStatus: DemoPlaybackStatusReadResult = { selectedItem: null, status: 'waiting', messages: [], sourcePath: '' },
+  logOptions: { collapsed?: boolean; focused?: boolean; scrollOffset?: number; extraLogLines?: string[] } = {}
 ): DemoTerminalState {
   const version = readVersion();
   const statusText = boundary.readinessStatus.toUpperCase();
@@ -90,6 +91,30 @@ export function createInitialRealDemoState(
   const validCount = mediaRows.filter((row) => row.gps === 'valid').length;
   const problemCount = mediaRows.filter((row) => row.gps === 'missing' || row.gps === 'invalid' || row.gps === 'not parsed').length;
   const queueCount = playbackQueueRows.length;
+  const partitioned = partitionCurrentAndLogLines([
+    'Real-demo v0.12.0 Group 6B final proof/de-mocking milestone is installed.',
+    'This screen resolves DEMO paths, reads generated demo media/truth, and P uses DEMO_DB_PATH real playback tables.',
+    'W toggles selected batch size. Q uses the selected batch size. P selects a READY slideshow_queue row and renders windowed image playback.',
+    'No cron is used.',
+    '',
+    `Adapter: ${boundary.adapterMode}`,
+    `Runtime mode: ${boundary.runtimeMode}`,
+    `Readiness: ${boundary.readinessStatus}`,
+    `Selected batch_size: ${selectedBatchSize}`,
+    `Media rows selected: ${selectedCount} (${validCount} valid, ${problemCount} problem/invalid)`,
+    `Real demo playback queue rows: ${queueCount}`,
+    `Playback selected status: ${playbackStatus.status}`,
+    `Playback selected item: ${playbackStatus.selectedItem?.fileName ?? 'none'}`,
+    `Playback status source: ${playbackStatus.sourcePath || 'not configured'}`,
+    ...dryRunPlanLines.map((line) => `Command plan: ${line}`),
+    ...mediaRows.map((row) => `Selected row #${row.rowNumber}: ${row.relativePath ?? row.fileName} gps=${row.gps}`),
+    ...mediaMessages.map((message) => `Media discovery: ${message}`),
+    ...truth.messages.map((message) => `Truth read: ${message}`),
+    ...queueMessages.map((message) => `Queue read: ${message}`),
+    ...playbackStatus.messages.map((message) => `Playback status read: ${message}`),
+    ...boundary.pathMessages.map((message) => `Path check: ${message}`),
+    ...(logOptions.extraLogLines ?? [])
+  ]);
 
   return {
     version,
@@ -108,29 +133,16 @@ export function createInitialRealDemoState(
     } : { ...action }),
     currentRun: {
       title: 'CURRENT RUN',
-      lines: [
-        'Real-demo v0.12.0 Group 6B final proof/de-mocking milestone is installed.',
-        'This screen resolves DEMO paths, reads generated demo media/truth, and P uses DEMO_DB_PATH real playback tables.',
-        'W toggles selected batch size. Q uses the selected batch size. P selects a READY slideshow_queue row and renders windowed image playback.',
-        'No cron is used.',
-        '',
-        `Adapter: ${boundary.adapterMode}`,
-        `Runtime mode: ${boundary.runtimeMode}`,
-        `Readiness: ${boundary.readinessStatus}`,
-        `Selected batch_size: ${selectedBatchSize}`,
-        `Media rows selected: ${selectedCount} (${validCount} valid, ${problemCount} problem/invalid)`,
-        `Real demo playback queue rows: ${queueCount}`,
-        `Playback selected status: ${playbackStatus.status}`,
-        `Playback selected item: ${playbackStatus.selectedItem?.fileName ?? 'none'}`,
-        `Playback status source: ${playbackStatus.sourcePath || 'not configured'}`,
-        ...dryRunPlanLines.map((line) => `Command plan: ${line}`),
-        ...mediaRows.map((row) => `Selected row #${row.rowNumber}: ${row.relativePath ?? row.fileName} gps=${row.gps}`),
-        ...mediaMessages.map((message) => `Media discovery: ${message}`),
-        ...truth.messages.map((message) => `Truth read: ${message}`),
-        ...queueMessages.map((message) => `Queue read: ${message}`),
-        ...playbackStatus.messages.map((message) => `Playback status read: ${message}`),
-        ...boundary.pathMessages.map((message) => `Path check: ${message}`)
-      ]
+      lines: partitioned.currentLines
+    },
+    realTimeLog: {
+      title: 'REAL-TIME LOG',
+      lines: partitioned.logLines,
+      collapsed: logOptions.collapsed ?? false,
+      focused: logOptions.focused ?? false,
+      scrollOffset: logOptions.scrollOffset ?? 0,
+      visibleRows: 14,
+      hitboxes: buildRealDemoHitboxes()
     },
     rpiStages: truth.stages.map((stage) => ({ ...stage })),
     rpiWorkers: truth.workers.map((worker) => ({ ...worker })),
@@ -152,4 +164,32 @@ export function createInitialRealDemoState(
       info: 'Not yet implemented.'
     }
   };
+}
+
+
+function partitionCurrentAndLogLines(lines: string[]): { currentLines: string[]; logLines: string[] } {
+  const currentLines: string[] = [];
+  const logLines: string[] = [];
+  for (const line of lines) {
+    if (isDiagnosticLogLine(line)) {
+      logLines.push(line);
+    } else {
+      currentLines.push(line);
+    }
+  }
+  return { currentLines, logLines };
+}
+
+function isDiagnosticLogLine(line: string): boolean {
+  return /^(Media discovery|Truth read|Queue read|Playback status read|Path check|Selected row #|Mouse hitbox|Mouse wheel|Log panel):/i.test(line)
+    || /^DB image playback: (playback_contract|stage6_select_current|playback_asset_media_path|P pressed:|playback status source|Wrote windowed viewer)/i.test(line);
+}
+
+function buildRealDemoHitboxes(): TerminalMouseHitbox[] {
+  return [
+    { id: 'area-a-log-panel', label: 'Area A realtime log panel body', x1: 135, y1: 18, x2: 220, y2: 44 },
+    { id: 'area-a-collapse-toggle', label: 'Area A [-] collapse/expand toggle', x1: 135, y1: 18, x2: 155, y2: 19 },
+    { id: 'area-b-command-plan', label: 'Area B command/action plan panel', x1: 70, y1: 1, x2: 134, y2: 44 },
+    { id: 'area-c-preview', label: 'Area C preview/playback panel', x1: 1, y1: 18, x2: 69, y2: 44 }
+  ];
 }

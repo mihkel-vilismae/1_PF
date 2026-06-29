@@ -117,6 +117,15 @@ export function createInitialMockState(): DemoTerminalState {
       title: 'CURRENT RUN',
       lines: ['No run active. Press Q to run the scripted mock: rows #1-#5 -> queue eligible files.']
     },
+    realTimeLog: {
+      title: 'REAL-TIME LOG',
+      lines: ['Mock adapter selected: no real runtime diagnostics are read.'],
+      collapsed: false,
+      focused: false,
+      scrollOffset: 0,
+      visibleRows: 10,
+      hitboxes: []
+    },
     rpiStages: initialStages.map((stage) => ({ ...stage })),
     rpiWorkers: initialWorkers.map((worker) => ({ ...worker })),
     playback: {

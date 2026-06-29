@@ -6,7 +6,7 @@ import { color } from './ansi.js';
 import { panel } from './terminalBox.js';
 
 function isProblemLine(line: string): boolean {
-  return /not eligible|skipped|invalid GPS|missing GPS|no address|Error logged|Error:/i.test(line);
+  return /not eligible|skipped|invalid GPS|missing GPS|no address|Error logged|Error:|warning|failed|blocked|Start-Process failed|missing/i.test(line);
 }
 
 function decorateLine(line: string): string {

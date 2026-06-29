@@ -64,6 +64,27 @@ export interface CurrentRunState {
   lines: string[];
 }
 
+export type LogPanelHitboxId = 'area-a-log-panel' | 'area-a-collapse-toggle' | 'area-b-command-plan' | 'area-c-preview';
+
+export interface TerminalMouseHitbox {
+  id: LogPanelHitboxId;
+  label: string;
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+}
+
+export interface RealTimeLogPanelState {
+  title: string;
+  lines: string[];
+  collapsed: boolean;
+  focused: boolean;
+  scrollOffset: number;
+  visibleRows: number;
+  hitboxes: TerminalMouseHitbox[];
+}
+
 export interface PlaybackState {
   runPlaybackEnabled: boolean;
   info: string;
@@ -95,6 +116,7 @@ export interface DemoTerminalState {
   playbackQueueRows: PlaybackQueueRow[];
   actions: ActionItemState[];
   currentRun: CurrentRunState;
+  realTimeLog: RealTimeLogPanelState;
   rpiStages: StagePanelRow[];
   rpiWorkers: WorkerPanelRow[];
   playback: PlaybackState;

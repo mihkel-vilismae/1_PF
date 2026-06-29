@@ -69,6 +69,11 @@ function cloneState(state: DemoTerminalState): DemoTerminalState {
     playbackQueueRows: state.playbackQueueRows.map((row) => ({ ...row })),
     actions: state.actions.map((action) => ({ ...action })),
     currentRun: { ...state.currentRun, lines: [...state.currentRun.lines] },
+    realTimeLog: {
+      ...state.realTimeLog,
+      lines: [...state.realTimeLog.lines],
+      hitboxes: state.realTimeLog.hitboxes.map((hitbox) => ({ ...hitbox }))
+    },
     rpiStages: state.rpiStages.map((stage) => ({ ...stage })),
     rpiWorkers: state.rpiWorkers.map((worker) => ({ ...worker })),
     playback: { ...state.playback },

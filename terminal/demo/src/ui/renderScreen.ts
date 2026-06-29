@@ -14,6 +14,7 @@ import { renderInspector } from './renderInspector.js';
 import { renderMediaTable } from './renderMediaTable.js';
 import { renderPlayback } from './renderPlayback.js';
 import { renderPlaybackQueue } from './renderPlaybackQueue.js';
+import { renderRealTimeLog } from './renderRealTimeLog.js';
 import { renderRpiStages } from './renderRpiStages.js';
 import { renderRpiWorkers } from './renderRpiWorkers.js';
 import { renderScreenOnOff } from './renderScreenOnOff.js';
@@ -70,7 +71,8 @@ function renderWideScreen(state: DemoTerminalState, layout: TerminalLayout, term
   const panelC = stackBlocks([
     renderRpiStages(state, stagesTitle(state), panelCWidth),
     renderRpiWorkers(state, workersTitle(state), panelCWidth),
-    renderInspector(state, 'STORYBOARD / LOG / INSPECTOR', panelCWidth)
+    renderInspector(state, 'STORYBOARD / INSPECTOR', panelCWidth),
+    renderRealTimeLog(state, panelCWidth)
   ]);
 
   return [
@@ -103,7 +105,9 @@ function renderStackedScreen(state: DemoTerminalState, layout: TerminalLayout): 
     blank(),
     renderPlaybackQueue(state, 'PLAYBACK_QUEUE'),
     blank(),
-    renderInspector(state, 'STORYBOARD / LOG / INSPECTOR'),
+    renderInspector(state, 'STORYBOARD / INSPECTOR'),
+    blank(),
+    renderRealTimeLog(state),
     blank(),
     color.muted(helpText(state))
   ].join('\n');
