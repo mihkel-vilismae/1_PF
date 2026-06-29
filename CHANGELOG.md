@@ -1,3 +1,9 @@
+## 0.10.95 - 2026-06-29
+
+- Updated the root `.ai-context-ignore` as an AI-context loading policy, not a `.gitignore`, so large/history/proof/runtime files remain tracked but are skipped from default AI context unless the task directly touches their domain.
+- Added default exclusions for Codex skills, generated fixtures/runtime/proof artifacts, terminal demo inherited large mock/Windows runner files, product-worker evidence internals, generated archives/screenshots/media, and build/cache output.
+- Preserved the terminal Demo Mode merge baseline behavior: no worker execution, DB writes, truth writes, queue writes, cron changes, fullscreen, or screen on/off implementation.
+
 ## 0.10.94 - 2026-06-29
 
 - Merged the terminal Demo Mode prototype into PhotoFrame under `terminal/demo/` as a read-only real-demo entrypoint and preserved the mock-demo visual adapter for UI testing.

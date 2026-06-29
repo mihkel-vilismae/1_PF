@@ -2,15 +2,49 @@
 # This is not .gitignore. Files remain tracked and must be loaded on demand
 # when the task directly touches their domain.
 
+# ---------------------------------------------------------------------------
+# High-level rule
+# ---------------------------------------------------------------------------
+# Prefer small current source/spec files first. Load the large/history/proof files
+# below only when the request explicitly touches their domain.
+
 # Dependency lockfiles: load only for dependency/version-lock/npm-install work.
 package-lock.json
+terminal/demo/package-lock.json
 
-# Large canonical history: load top/relevant sections first; whole file on demand.
+# Large canonical history and broad project instructions: load relevant sections
+# only when changelog/governance/agent-instruction work requires them.
 CHANGELOG.md
+AGENTS.md
 
-# Generated fixtures and proof/runtime artifacts: load only for proof/fixture debugging.
+# Codex skills are reference material; load the specific skill only when the task
+# touches that workflow/domain.
+.codex/skills/**
+
+# Generated fixtures and proof/runtime artifacts: load only for proof/fixture,
+# generated media discovery, or runtime-output debugging.
 generated_test_data/**
 runtime_data/**
+proof_logs/**
+verification_batches/**
+operator_visual_evidence/**
+
+# Terminal demo inherited large files: load only for mock-storyboard or Windows
+# runner work. Prefer smaller real-demo adapter/data/truth/orchestration files
+# for current real-demo planning.
+terminal/demo/src/scenarios/qGeocodeStoryboard.ts
+terminal/demo/scripts/windows/run_terminal_demo.ps1
+
+# Product-worker/evidence files: use the quick reference first, then load these
+# only when the task directly touches product-worker evidence internals.
+# Quick reference: terminal/demo/docs/photoframe-worker-product-pipeline-reference.md
+server/workers/regularStageProductWorker.ts
+tools/regular-worker-product-evidence-producer-lib.mjs
+tools/regular-worker-product-evidence-lib.mjs
+docs/proofs/**
+tests/regularStageProductWorker.test.ts
+tests/regularWorkerProductContract.test.js
+tests/regularWorkerProductEvidenceTemplate.test.js
 
 # Archive and patch archaeology: load only for rollback/comparison/patch review.
 docs/90_archive/patches/**
@@ -20,10 +54,28 @@ docs/90_archive/patches/**
 docs/40_backlog_and_tasks/debug_page_keybook.json
 docs/40_backlog_and_tasks/overall_project_goal_registry.json
 
-# Dependency/build/cache output: not default AI context.
+# Generated archives/screenshots/images and local transfer artifacts: not default AI context.
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+*.mp4
+*.mov
+*.avi
+
+# Dependency/build/cache/editor/OS output: not default AI context.
 node_modules/**
 dist/**
 build/**
 coverage/**
 .cache/**
 .vite/**
+.DS_Store
+desktop.ini
+Thumbs.db
