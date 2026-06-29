@@ -65,16 +65,16 @@ export function buildDryRunCommandPlan(
       executionPolicy: 'dry-run-plan-only'
     })),
     notes: [
-      'Group 3A plans commands only; it does not execute workers or write manifests.',
+      'Group 3B-FINISH writes DEMO-owned manifests and plans/guards manual worker stages.',
       'Default cron calls use the same scheduler worker names, but terminal real-demo must stay manual/no-cron.',
-      'Merge into PhotoFrame is recommended before real command execution in Group 3B.'
+      'Worker execution stays guarded and blocked until demo scheduler isolation is proven.'
     ]
   };
 }
 
 export function formatDryRunPlanLines(plans: DemoDryRunCommandPlan[]): string[] {
   return plans.flatMap((plan) => [
-    `Dry-run plan: batch_size=${plan.batchSize} selected_rows=${plan.manifest.selectedRows.length} no_cron=${plan.noCron}`,
+    `Dry-run plan: batch_size=${plan.batchSize} run_rows=${plan.manifest.selectedRows.length} no_cron=${plan.noCron}`,
     `Manifest plan: ${plan.manifest.manifestPath} (${plan.manifest.writePolicy})`,
     `Worker command: ${plan.commands[0]?.command ?? 'none'}`,
     `Stage intents: ${plan.commands.map((command) => command.stage).join(' -> ')}`,

@@ -63,7 +63,8 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
       batchSize: this.selectedBatchSize,
       mediaRows: source.mediaRows,
       mediaMessages: source.mediaMessages,
-      truth: source.truth
+      truth: source.truth,
+      refresh: () => this.readSources()
     });
     this.snapshots.setSnapshots(frames);
     this.state = cloneState(frames[frames.length - 1] ?? this.buildState());

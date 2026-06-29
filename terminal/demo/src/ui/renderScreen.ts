@@ -43,7 +43,7 @@ function workersTitle(state: DemoTerminalState): string {
 
 function helpText(state: DemoTerminalState): string {
   return state.runtimeBoundary.adapterMode === 'real-demo'
-    ? 'Help: Group 3A real-demo dry-run command planning. R refreshes. Q/W/P real execution disabled. X exits. No cron.'
+    ? 'Help: Group 3B real-demo guarded orchestration. W toggles batch size. Q uses selected size. R refreshes. X exits. No cron.'
     : 'Help: Q auto-runs the storyboard. RIGHT/LEFT enters manual storyboard mode. R refreshes. X exits. Visual mock state only.';
 }
 
@@ -110,5 +110,7 @@ function renderStackedScreen(state: DemoTerminalState, layout: TerminalLayout): 
 }
 
 function resolveTerminalWidth(): number {
+  const override = Number.parseInt(process.env.TERMINAL_DEMO_COLUMNS ?? '', 10);
+  if (Number.isFinite(override) && override > 0) return override;
   return process.stdout.columns ?? DEFAULT_NON_TTY_COLUMNS;
 }

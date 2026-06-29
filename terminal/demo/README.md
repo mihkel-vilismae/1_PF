@@ -1,6 +1,6 @@
 # PhotoFrame Terminal Demo Mode
 
-Version: `0.10.96`
+Version: `0.10.97`
 
 This folder is the merged terminal/TUI mock plus Group 1/2/4/3A/3B real-demo runtime-boundary, media-discovery, truth/status-read, command-plan, and guarded W/Q orchestration scaffold for the PhotoFrame Demo Mode beeline.
 ## Merged into PhotoFrame
@@ -120,7 +120,7 @@ Group 3A remains read-only: no worker calls, no DB writes, no truth JSONL writes
 
 ## Real-demo Group 3B guarded W/Q orchestration
 
-Version `0.10.96` adds the first real-demo W/Q orchestration path inside PhotoFrame:
+Version `0.10.97` adds the first real-demo W/Q orchestration path inside PhotoFrame:
 
 - `W` toggles selected `batch_size` between `1` and `5`,
 - selected batch size is visible in the terminal banner and inspector,
@@ -299,3 +299,8 @@ The layout keeps the current run/playback area visible while moving RPI panels a
 In v0.6.1, negative pipeline outcomes such as `missing GPS`, `invalid GPS`, `skipped`, and `not eligible` use a reddish danger background instead of the green `[DONE]` success treatment. Eligible/enqueued outcomes remain green.
 
 In v0.6.0, `Q` auto-runs the expanded mock path over rows #1-#5. Rows #1, #3, and #5 resolve addresses and become `enqueued`; row #2 is skipped because GPS is missing; row #4 is skipped because GPS is invalid. The `PLAYBACK_QUEUE` panel then shows the enqueued rows.
+
+
+## Group 3B-FINISH hardening
+
+`W` toggles selected `batch_size` between `1` and `5`. `Q` uses that value to choose the real-demo route: batch size `1` captures file-by-file chunks across the first five generated demo rows, while batch size `5` captures stage-by-stage batch snapshots across the first five rows. Q writes only a DEMO-owned manifest under `DEMO_RUNTIME_OUTPUT_DIR`; default worker execution remains planned/guarded, and explicit execution is blocked until demo scheduler/status isolation is proven.

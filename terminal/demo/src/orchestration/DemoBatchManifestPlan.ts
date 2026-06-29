@@ -17,10 +17,11 @@ export interface PlannedManifestRow {
 
 export interface DemoBatchManifestPlan {
   batchSize: SupportedDryRunBatchSize;
+  runRowCount: number;
   manifestPath: string;
   selectedRows: PlannedManifestRow[];
   writePolicy: 'dry-run-only-no-file-written';
-  selectionPolicy: 'first_n_real_demo_rows';
+  selectionPolicy: 'first_5_real_demo_rows_chunked_by_batch_size';
 }
 
 export function buildDemoBatchManifestPlan(
@@ -28,7 +29,8 @@ export function buildDemoBatchManifestPlan(
   mediaRows: MediaRow[],
   batchSize: SupportedDryRunBatchSize
 ): DemoBatchManifestPlan {
-  const selectedRows = mediaRows.slice(0, batchSize).map((row) => ({
+  const runRowCount = Math.min(5, mediaRows.length);
+  const selectedRows = mediaRows.slice(0, runRowCount).map((row) => ({
     rowNumber: row.rowNumber,
     relativePath: row.relativePath ?? row.fileName,
     fileName: row.fileName,
@@ -38,9 +40,10 @@ export function buildDemoBatchManifestPlan(
 
   return {
     batchSize,
+    runRowCount,
     manifestPath: path.join(paths.runtimeOutputDir, `terminal_demo_batch_size_${batchSize}.manifest.json`),
     selectedRows,
     writePolicy: 'dry-run-only-no-file-written',
-    selectionPolicy: 'first_n_real_demo_rows'
+    selectionPolicy: 'first_5_real_demo_rows_chunked_by_batch_size'
   };
 }

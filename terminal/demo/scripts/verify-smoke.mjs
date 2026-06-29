@@ -9,7 +9,7 @@ import { readFileSync } from 'node:fs';
 // Runs the terminal entrypoint with compiled JS or tsx-loaded TypeScript.
 function run(args, env = {}) {
   const entry = resolveMainEntrypoint();
-  const fullEnv = { ...process.env, ...env };
+  const fullEnv = { ...process.env, TERMINAL_DEMO_COLUMNS: '420', ...env };
   if (entry.endsWith('.js')) return execFileSync('node', [entry, ...args], { encoding: 'utf8', env: fullEnv });
   if (hasLocalTsx()) return execFileSync('node', ['--import', 'tsx', entry, ...args], { encoding: 'utf8', env: fullEnv });
   return execFileSync('npm', ['exec', '--yes', 'tsx', '--', entry, ...args], { encoding: 'utf8', env: fullEnv });
@@ -81,6 +81,7 @@ const realDemoWithTruth = run(['--real-demo-smoke'], { PHOTOFRAME_REPO_ROOT: tru
 const commandPlan = run(['--adapter=real-demo', '--real-demo-command-plan-smoke'], { PHOTOFRAME_REPO_ROOT: truthFixtureRepo });
 const realWToggle = run(['--adapter=real-demo', '--w-toggle-smoke'], { PHOTOFRAME_REPO_ROOT: truthFixtureRepo });
 const realQBatch5 = run(['--adapter=real-demo', '--batch-size=5', '--q-smoke'], { PHOTOFRAME_REPO_ROOT: truthFixtureRepo });
+const realQBatch5Story = run(['--adapter=real-demo', '--batch-size=5', '--q-storyboard-smoke'], { PHOTOFRAME_REPO_ROOT: truthFixtureRepo });
 
 const colorsEnabled = process.env.NO_COLOR !== '1' && process.env.NO_COLOR !== 'true';
 if (colorsEnabled) {
@@ -137,12 +138,25 @@ for (const [needle, label] of [
 
 
 for (const [needle, label] of [
-  ['Q pressed: real-demo selected batch_size=5', 'Q consumes selected batch 5'],
-  ['Selection: first 5 generated demo rows', 'Q batch 5 row selection'],
-  ['Manifest: written', 'Q writes demo manifest'],
-  ['Execution: planned', 'Q guarded execution plan'],
+  ['Q finished guarded route for batch_size=5', 'Q consumes selected batch 5'],
+  ['Rows considered: 5', 'Q batch 5 row selection'],
+  ['Route: batch_size_5_stage_batch', 'Q batch 5 route'],
+  ['Expected eligible from discovered fixture metadata', 'Q expected eligible summary'],
+  ['Expected not eligible from discovered fixture metadata', 'Q expected ineligible summary'],
   ['No cron was used by the terminal.', 'Q no cron statement']
 ]) assertIncludes(realQBatch5, needle, label);
+
+
+for (const [needle, label] of [
+  ['Manifest: written', 'Q storyboard writes demo manifest'],
+  ['Stage snapshot: index', 'Q storyboard index snapshot'],
+  ['Stage snapshot: gps', 'Q storyboard gps snapshot'],
+  ['Stage snapshot: geocode', 'Q storyboard geocode snapshot'],
+  ['Stage snapshot: queue_prepare', 'Q storyboard queue snapshot'],
+  ['Execution: planned', 'Q storyboard guarded execution plan'],
+  ['Snapshot refresh: media/truth/status re-read for this terminal frame.', 'Q storyboard refresh marker'],
+  ['No fake worker success is written by the terminal.', 'Q storyboard no fake success marker']
+]) assertIncludes(realQBatch5Story, needle, label);
 
 for (const [needle, label] of [
   ['"adapterMode": "real-demo"', 'runtime config adapter'],

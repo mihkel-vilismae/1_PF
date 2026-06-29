@@ -1,3 +1,11 @@
+## 0.10.97 - 2026-06-29
+
+- Hardened terminal real-demo Group 3B orchestration finish pass.
+- Changed Q real-demo route semantics so `batch_size=1` captures file-by-file chunks across the first five demo rows and `batch_size=5` captures stage-by-stage batch snapshots across the first five demo rows.
+- Added DEMO-owned manifest run-row metadata and per-stage snapshot frame planning.
+- Strengthened manual/no-cron worker guard: explicit execution is blocked until demo scheduler/status isolation is proven.
+- Updated terminal smoke checks and OpenSpec for Group 3B-FINISH.
+
 ## 0.10.96 - 2026-06-29
 
 - Implemented terminal Demo Mode Group 3B guarded W/Q orchestration inside PhotoFrame.

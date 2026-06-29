@@ -8,8 +8,8 @@ import { buildDryRunCommandPlan } from '../orchestration/DemoDryRunCommandPlanne
 import type { DemoTruthReadResult } from '../truth/DemoTruthRepository.js';
 import { createInitialRealDemoState } from '../state/createInitialRealDemoState.js';
 import { writeDemoBatchManifest } from './DemoBatchManifestWriter.js';
-import { runOrPlanRegularStageWorker } from './PhotoFrameStageExecutionAdapter.js';
 import type { SupportedBatchSize } from './SupportedBatchSize.js';
+import { buildRealDemoRouteFrames } from './RealDemoRoutePlanner.js';
 
 export interface RealRunInput {
   boundary: RuntimeBoundaryState;
@@ -17,33 +17,30 @@ export interface RealRunInput {
   mediaRows: MediaRow[];
   mediaMessages: string[];
   truth: DemoTruthReadResult;
+  refresh?: () => { mediaRows: MediaRow[]; mediaMessages: string[]; truth: DemoTruthReadResult };
 }
 
 export function runRealDemoQ(input: RealRunInput): DemoTerminalState[] {
   const plan = buildDryRunCommandPlan(input.boundary, input.mediaRows, input.batchSize);
   const manifest = writeDemoBatchManifest(input.boundary, input.mediaRows, input.batchSize);
-  const stage = runOrPlanRegularStageWorker(input.boundary, plan, manifest.manifestPath);
-  const selected = input.mediaRows.slice(0, input.batchSize);
-  const lines = [
-    `Q pressed: real-demo selected batch_size=${input.batchSize}`,
-    `Selection: first ${input.batchSize} generated demo row${input.batchSize === 1 ? '' : 's'}`,
-    `Manifest: ${manifest.status} ${manifest.manifestPath}`,
-    ...manifest.messages.map((message) => `Manifest: ${message}`),
-    `Worker command: ${stage.command}`,
-    `Execution: ${stage.status}`,
-    ...stage.messages.map((message) => `Execution: ${message}`),
-    ...selected.map((row) => `Selected row #${row.rowNumber}: ${row.relativePath ?? row.fileName} gps=${row.gps}`),
-    input.batchSize === 1
-      ? 'Route: batch_size=1 file-by-file teaching route.'
-      : 'Route: batch_size=5 stage-by-stage batch route.',
-    'No cron was used by the terminal.'
-  ];
-  return [
-    buildFrame(input, [`Ready to run real-demo Q with batch_size=${input.batchSize}`, ...selected.map((row) => `Will use row #${row.rowNumber}: ${row.relativePath ?? row.fileName}`)]),
-    buildFrame(input, lines)
-  ];
+  const framePlans = buildRealDemoRouteFrames({ boundary: input.boundary, plan, manifest, batchSize: input.batchSize });
+  return framePlans.map((framePlan) => {
+    const fresh = input.refresh?.() ?? input;
+    return buildFrame(input, fresh, [`Frame: ${framePlan.title}`, ...framePlan.lines]);
+  });
 }
 
-function buildFrame(input: RealRunInput, lines: string[]): DemoTerminalState {
-  return createInitialRealDemoState(input.boundary, input.mediaRows, input.mediaMessages, input.truth, lines, input.batchSize);
+function buildFrame(
+  input: RealRunInput,
+  fresh: { mediaRows: MediaRow[]; mediaMessages: string[]; truth: DemoTruthReadResult },
+  lines: string[]
+): DemoTerminalState {
+  return createInitialRealDemoState(
+    input.boundary,
+    fresh.mediaRows,
+    fresh.mediaMessages,
+    fresh.truth,
+    lines,
+    input.batchSize
+  );
 }

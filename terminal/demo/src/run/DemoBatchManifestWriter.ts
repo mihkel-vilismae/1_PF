@@ -32,6 +32,7 @@ export function writeDemoBatchManifest(
     source: 'terminal-demo-real-run-controller',
     runtimeMode: 'demo',
     batchSize,
+    runRowCount: plan.runRowCount,
     selectionPolicy: plan.selectionPolicy,
     rows: plan.selectedRows,
     createdAt: new Date().toISOString(),
