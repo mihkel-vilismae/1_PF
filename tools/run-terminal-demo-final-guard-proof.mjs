@@ -23,6 +23,7 @@ const finalProofs = [
   'playback-status',
   'mock-separation',
   'execution-guard',
+  'q-db-queue-creation',
   'largest-files'
 ];
 
@@ -124,6 +125,15 @@ function proofExecutionGuard() {
   requireSmoke('execution guard', ['Playback execution: planned', 'playback worker execution is guarded by PHOTOFRAME_TERMINAL_DEMO_EXECUTE=1']);
 }
 
+
+function proofQDbQueueCreation() {
+  check('Q-created DEMO DB queue proof script is registered',
+    JSON.parse(read('package.json')).scripts['proof:terminal-demo-q-db-queue-creation'] === 'tsx tools/run-terminal-demo-q-db-queue-creation-proof.mjs',
+    'package.json exposes the q-created DEMO DB queue proof.');
+  const output = run('npm', ['run', 'proof:terminal-demo-q-db-queue-creation']);
+  check('Q creates DEMO DB queue rows through real tables', output.includes('REAL_DEMO_Q_DB_QUEUE_CREATION_READY'), 'Batch 1/5 q-created DB proof passes.');
+}
+
 function proofLargestFiles() {
   const rows = collectSourceFiles(['terminal/demo/src', 'terminal/demo/scripts', 'tools'])
     .map((file) => ({ file, loc: readFileSync(path.join(repoRoot, file), 'utf8').split(/\r?\n/).length }))
@@ -163,6 +173,7 @@ const proofMap = {
   'playback-status': proofPlaybackStatus,
   'mock-separation': proofMockSeparation,
   'execution-guard': proofExecutionGuard,
+  'q-db-queue-creation': proofQDbQueueCreation,
   'largest-files': proofLargestFiles
 };
 
