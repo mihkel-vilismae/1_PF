@@ -237,7 +237,8 @@
     "terminal-demo:live-image-fixture:setup": "node tools/run-terminal-demo-live-image-fixture.mjs",
     "proof:terminal-demo-live-image-fixture": "node tools/run-terminal-demo-live-image-fixture-proof.mjs",
     "proof:terminal-demo-log-panel-layout": "node tools/run-terminal-demo-log-panel-layout-proof.mjs",
-    "proof:terminal-demo-windows-viewer-launch": "node tools/run-terminal-demo-windows-viewer-launch-proof.mjs"
+    "proof:terminal-demo-windows-viewer-launch": "node tools/run-terminal-demo-windows-viewer-launch-proof.mjs",
+    "proof:terminal-demo-q-db-queue-creation": "tsx tools/run-terminal-demo-q-db-queue-creation-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
