@@ -1,3 +1,10 @@
+# 1.5.0 - Q-created DEMO DB queue rows
+
+- Added a real-demo Q DB queue producer that indexes DEMO_DOWNLOAD_DIR into DEMO_DB_PATH and writes READY slideshow_queue rows with source label `terminal-demo-q-created`.
+- Wired Q so batch size 1 creates one q-created row and batch size 5 creates up to five q-created rows while staying manual/no-cron and DEMO-scoped.
+- Added proof `proof:terminal-demo-q-db-queue-creation` and included it in the terminal final guard.
+- Kept GPS/geocode provider work, screen-worker, cron, schema redesign, and v2 final claims out of scope.
+
 # 1.4.1 - Terminal Demo Windows viewer launch repair
 
 - Repaired the DB image playback button Windows viewer launch path by replacing invalid `Start-Process -LiteralPath` usage with guarded `Start-Process -FilePath` execution that passes the viewer path as an argument.

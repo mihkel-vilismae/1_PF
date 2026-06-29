@@ -355,3 +355,14 @@ Proof command:
 ```cmd
 npm run proof:terminal-demo-windows-viewer-launch
 ```
+
+
+## Terminal Demo v1.5.0 - Q-created DEMO DB queue rows
+
+Pressing `Q` in real-demo now creates DEMO-scoped READY rows in `slideshow_queue` through the real DEMO DB tables. The source label is `terminal-demo-q-created`. Batch size `1` creates one selected queue row; batch size `5` creates up to five selected queue rows. This does not add GPS/geocode provider execution, screen-worker behavior, cron, schema redesign, or v2 final claims.
+
+Proof:
+
+```bash
+npm run proof:terminal-demo-q-db-queue-creation
+```

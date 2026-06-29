@@ -68,7 +68,7 @@ export class RealDemoMediaRepository implements DemoMediaRepository {
       `Generated media source: ${sourceDir}`,
       `Discovered media files: ${allFiles.length}`,
       `Selected real-demo fixture rows: ${rows.length} (${validRows.length} valid, ${problemRows.length} problem)`,
-      'Read-only Group 3A: demo DB/queue writes are not wired yet; media/truth reads and command planning are enabled.'
+      'v1.5.0: Q can create q-created DEMO DB slideshow_queue rows; media/truth reads and command planning remain DEMO-scoped.'
     ];
     if (validRows.length < 3) messages.push(`Warning: expected 3 valid fixtures, found ${validRows.length}.`);
     if (problemRows.length < 3) messages.push(`Warning: expected 3 problem fixtures, found ${problemRows.length}.`);
