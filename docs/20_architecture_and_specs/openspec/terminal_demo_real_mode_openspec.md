@@ -276,3 +276,29 @@ TERMINAL_DEMO_MODE_V1_RELEASED
 
 The final package preserves these v1 boundaries: DEMO-owned paths only, no cron, no real/test data access, no mock substitution in real-demo flow, guarded worker execution, non-fullscreen terminal playback, explicit dashboard demo mode boundaries, and evidence folders that contain logs/status reports only.
 
+
+
+## v1.2.0 real-demo entrypoint clarity
+
+The DB-backed playback button must be tested from the real-demo terminal, not the mock-demo storyboard runner. Version `1.2.0` adds explicit launchers:
+
+- `RUN_TERMINAL_DEMO_REAL.CMD` at the repository root,
+- `terminal/demo/windows_runner_real.cmd` under the terminal demo folder.
+
+The existing `terminal/demo/windows_runner.cmd` remains mock-demo by default for visual/storyboard rehearsal. The Windows runner helper accepts an explicit adapter so the mode is visible before launch.
+
+Required proof:
+
+```bash
+npm run proof:terminal-demo-real-entrypoint
+```
+
+A passing proof verifies:
+
+- the real-demo launcher exists and requests `real-demo`,
+- the real-demo smoke output visibly says `PHOTOFRAME REAL DEMO TERMINAL` and `Adapter: real-demo`,
+- mock-demo smoke remains visibly mock-only,
+- the DB playback button proof is tied to `demo:terminal:real`,
+- DB-backed playback is not claimed from mock-demo rows.
+
+Decision: `REAL_DEMO_ENTRYPOINT_READY`. This milestone adds no worker, geocode, screen-worker, schema redesign, cron, or v2 final behavior.

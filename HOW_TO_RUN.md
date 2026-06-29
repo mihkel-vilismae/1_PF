@@ -155,3 +155,25 @@ TERMINAL_DEMO_DB_IMAGE_PLAYBACK_BUTTON_READY
 ```
 
 This proof uses a temporary isolated DEMO database with the real playback table structure and verifies the terminal playback button does not depend on `DEMO_QUEUE_OUTPUT_PATH` JSON or mock rows.
+
+## Terminal Demo real-demo launcher
+
+For DB-backed playback work, start the real-demo terminal from the repository root:
+
+```cmd
+RUN_TERMINAL_DEMO_REAL.CMD
+```
+
+Or run the npm entrypoint directly:
+
+```bash
+npm run demo:terminal:real
+```
+
+The terminal header must say `PHOTOFRAME REAL DEMO TERMINAL` and `Adapter: real-demo`. If it says `PHOTOFRAME MOCK DEMO MODE`, you are in the visual storyboard mock and DB playback is not being proven there.
+
+Verification:
+
+```bash
+npm run proof:terminal-demo-real-entrypoint
+```

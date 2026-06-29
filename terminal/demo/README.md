@@ -479,3 +479,17 @@ VERIFY_TERMINAL_DEMO_V1_RELEASE_FREEZE.CMD
 ```
 
 The proof collects build, typecheck, final terminal-demo proof, dashboard mode boundary proof, transferable package proof, and RC readiness evidence under `terminal/demo/runtime_logs/v1_release_freeze/`. A passing result reports `V1_READY_TO_RELEASE`; a blocked result reports `NOT_READY_FOR_V1`. The evidence folder contains command logs and status reports only, not source repository files.
+
+## v1.2.0 real-demo entrypoint clarity
+
+Use `RUN_TERMINAL_DEMO_REAL.CMD` from the repo root, or `terminal/demo/windows_runner_real.cmd`, when testing DB-backed playback. These launchers intentionally start `npm run demo:terminal:real` through the Windows runner helper.
+
+The default `terminal/demo/windows_runner.cmd` remains mock-demo/storyboard-only. Mock-demo can still be useful for visual flow rehearsals, but it must not be mistaken for proof that DB playback is reading `DEMO_DB_PATH` or real playback tables.
+
+Proof:
+
+```bash
+npm run proof:terminal-demo-real-entrypoint
+```
+
+Decision: `REAL_DEMO_ENTRYPOINT_READY`.

@@ -1,3 +1,11 @@
+# 1.2.0 - Terminal Demo real-demo entrypoint clarity
+
+- Added `RUN_TERMINAL_DEMO_REAL.CMD` and `terminal/demo/windows_runner_real.cmd` so Windows operators can launch the real-demo terminal directly instead of landing in the mock-demo storyboard runner.
+- Updated the Windows runner helper to accept an explicit `mock-demo` / `real-demo` adapter while preserving the existing mock runner default.
+- Added `proof:terminal-demo-real-entrypoint` and `VERIFY_TERMINAL_DEMO_REAL_ENTRYPOINT.CMD` to prove the real-demo launcher shows `Adapter: real-demo`, the mock launcher remains clearly mock-only, and DB playback proof stays tied to real-demo rather than mock rows.
+- No worker, geocode, screen-worker, DB schema, cron, or v2 final behavior was added.
+- Bumped version metadata to `1.2.0`.
+
 # 1.0.0 - Terminal Demo Mode v1 final release
 
 - Promoted Terminal Demo Mode from the v0.18.0 release-freeze gate to the v1.0.0 final release package.

@@ -1,3 +1,8 @@
+param(
+    [ValidateSet('mock-demo', 'real-demo')]
+    [string] $Adapter = 'mock-demo'
+)
+
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
@@ -452,7 +457,13 @@ Write-Host ('PhotoFrame Demo Terminal v{0} - Windows Runner' -f $projectVersion)
 Write-Host ('PhotoFrame repo: {0}' -f $repoRoot)
 Write-Host ('Terminal root:   {0}' -f $terminalRoot)
 Write-Host ('Logs:            {0}' -f $logDir)
-Write-Host 'Mode: merged PhotoFrame terminal demo; default launch uses mock-demo adapter.' -ForegroundColor Yellow
+Write-Host ('Mode: merged PhotoFrame terminal demo; launch adapter: {0}.' -f $Adapter) -ForegroundColor Yellow
+if ($Adapter -eq 'real-demo') {
+    Write-Host 'REAL DEMO: DB-backed playback work must be tested here, not in mock-demo.' -ForegroundColor Green
+}
+else {
+    Write-Host 'MOCK DEMO: visual/storyboard only; DB-backed playback is intentionally not proven here.' -ForegroundColor Yellow
+}
 Write-Host 'Verification: run VERIFY_TERMINAL_DEMO.CMD or npm run proof:terminal-demo-operator-rehearsal for final proof/status ZIP.' -ForegroundColor Yellow
 
 Write-Step -Message 'Checking Node.js and npm'
@@ -525,16 +536,19 @@ Invoke-LoggedCommand `
     -Arguments @('--verbose', 'run', 'proof:terminal-demo-merge-smoke') `
     -LogPath (Join-Path $logDir ('npm-terminal-demo-merge-smoke-{0}.log' -f $timestamp))
 
-Write-Step -Message 'Launching mock demo terminal'
-Write-Info -Message 'Controls: Q = storyboard, W = batch-size toggle in real-demo, R = refresh, X or Ctrl+C = exit.'
+$launchScript = if ($Adapter -eq 'real-demo') { 'demo:terminal:real' } else { 'demo:terminal:mock' }
+$launchLabel = if ($Adapter -eq 'real-demo') { 'real demo terminal' } else { 'mock demo terminal' }
+
+Write-Step -Message ('Launching {0}' -f $launchLabel)
+Write-Info -Message 'Controls: Q = storyboard, W = batch-size toggle in real-demo, P = playback/DB playback when real-demo has DEMO DB queue rows, R = refresh, X or Ctrl+C = exit.'
 Write-Info -Message 'Interactive output is not tee-logged so raw keyboard handling remains stable.'
 Write-Host ''
 
-& npm run demo:terminal:mock
+& npm run $launchScript
 $terminalExitCode = $LASTEXITCODE
 
 if ($terminalExitCode -ne 0) {
-    throw ('Mock demo terminal exited with code {0}.' -f $terminalExitCode)
+    throw ('{0} exited with code {1}.' -f $launchLabel, $terminalExitCode)
 }
 
 Write-Host ''

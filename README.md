@@ -303,3 +303,21 @@ A passing release-freeze result reports `V1_READY_TO_RELEASE`.
 ### Terminal Demo DB image playback button
 
 Version 1.1.0 adds a narrow playback button slice. The terminal `P` action reads `DEMO_DB_PATH`, uses the existing real SQLite playback helpers, selects a `READY` `slideshow_queue` row, resolves the media asset path, and writes/opens a windowed image viewer with the DB address overlay when Windows can open it. This does not add geocode, worker, screen-worker, cron, or v2 final behavior.
+
+## Terminal Demo real-demo launcher
+
+Version `1.2.0` adds an explicit Windows launcher for the real-demo terminal:
+
+```cmd
+RUN_TERMINAL_DEMO_REAL.CMD
+```
+
+This launcher enters `Adapter: real-demo` and is the correct place to exercise DB-backed playback work. The older `terminal/demo/windows_runner.cmd` remains a mock-demo/storyboard launcher by default, so it must not be used as proof that DB playback is working.
+
+Proof command:
+
+```bash
+npm run proof:terminal-demo-real-entrypoint
+```
+
+A passing result reports `REAL_DEMO_ENTRYPOINT_READY`.
