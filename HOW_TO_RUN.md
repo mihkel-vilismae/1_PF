@@ -177,3 +177,26 @@ Verification:
 ```bash
 npm run proof:terminal-demo-real-entrypoint
 ```
+
+
+## Terminal Demo live image fixture proof
+
+To verify that real-demo has a DEMO DB image row ready for `P` playback:
+
+```powershell
+npm run proof:terminal-demo-live-image-fixture
+```
+
+Expected decision:
+
+```text
+REAL_DEMO_LIVE_IMAGE_PLAYBACK_FIXTURE_READY
+```
+
+On Windows, use:
+
+```powershell
+.\RUN_TERMINAL_DEMO_REAL.CMD
+```
+
+Then confirm the header says `PHOTOFRAME REAL DEMO TERMINAL` and press `P`.

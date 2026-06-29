@@ -321,3 +321,18 @@ npm run proof:terminal-demo-real-entrypoint
 ```
 
 A passing result reports `REAL_DEMO_ENTRYPOINT_READY`.
+
+
+## Terminal Demo live DB image playback fixture
+
+Version `1.3.0` adds a narrow real-demo fixture so the `P` playback button has an actual DEMO DB `slideshow_queue` image row to play.
+
+Run from the repo root:
+
+```cmd
+RUN_TERMINAL_DEMO_REAL.CMD
+```
+
+The real-demo runner now prepares the fixture before launch by copying a real image from `generated_test_data/gps_valid/gps_valid_01.jpg` into `runtime_data/demo/downloaded_files/`, creating `runtime_data/demo/demo.sqlite`, and seeding the same real-mode table structure used by playback: `canonical_media_assets`, `media_asset_variants`, `slideshow_queue`, and `runtime_state`.
+
+This is a playback fixture only. It does not claim worker/geocode success and does not add cron or v2 final behavior.

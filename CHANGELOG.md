@@ -1,3 +1,11 @@
+# 1.3.0 - Terminal Demo live DB image playback fixture
+
+- Added `terminal-demo:live-image-fixture:setup` to create the DEMO runtime folders, copy `generated_test_data/gps_valid/gps_valid_01.jpg` into `runtime_data/demo/downloaded_files/`, create `runtime_data/demo/demo.sqlite`, and seed a READY image row through the existing real schema tables.
+- Updated the real-demo Windows runner so `RUN_TERMINAL_DEMO_REAL.CMD` prepares the live DEMO DB image fixture before launching the terminal.
+- Added `proof:terminal-demo-live-image-fixture` and `VERIFY_TERMINAL_DEMO_LIVE_IMAGE_FIXTURE.CMD` to prove the fixture uses `DEMO_DB_PATH`, `canonical_media_assets`, `media_asset_variants`, `slideshow_queue`, and `runtime_state`, not JSON queue output or mock rows.
+- Preserved scope: no geocode provider implementation, worker execution, screen-worker, cron, DB schema redesign, or v2 final claim was added.
+- Bumped version metadata to `1.3.0`.
+
 # 1.2.0 - Terminal Demo real-demo entrypoint clarity
 
 - Added `RUN_TERMINAL_DEMO_REAL.CMD` and `terminal/demo/windows_runner_real.cmd` so Windows operators can launch the real-demo terminal directly instead of landing in the mock-demo storyboard runner.

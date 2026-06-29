@@ -493,3 +493,10 @@ npm run proof:terminal-demo-real-entrypoint
 ```
 
 Decision: `REAL_DEMO_ENTRYPOINT_READY`.
+
+
+## v1.3.0 live DEMO DB image playback fixture
+
+The real-demo Windows launcher prepares a live DEMO DB image playback fixture before launching. The setup copies one real image from `generated_test_data` into the DEMO-owned downloaded-files folder, creates the isolated DEMO SQLite database, applies the existing real schema, and seeds one READY `slideshow_queue` row.
+
+The fixture proves the `P` button has a real DB-backed image to consume without using mock rows or the legacy JSON queue output. It remains a fixture and does not claim real worker or geocode provider completion.
