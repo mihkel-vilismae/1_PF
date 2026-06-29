@@ -1,3 +1,11 @@
+# 1.4.1 - Terminal Demo Windows viewer launch repair
+
+- Repaired the DB image playback button Windows viewer launch path by replacing invalid `Start-Process -LiteralPath` usage with guarded `Start-Process -FilePath` execution that passes the viewer path as an argument.
+- Added a `cmd.exe start` fallback so the windowed playback HTML can still open when PowerShell start behavior is unavailable or fails.
+- Added `proof:terminal-demo-windows-viewer-launch` and `VERIFY_TERMINAL_DEMO_WINDOWS_VIEWER_LAUNCH.CMD` to prove the safe launch contract without executing Windows GUI actions during normal proof mode.
+- Preserved scope: no geocode provider work, worker execution, screen-worker, cron, DB schema redesign, DB fixture behavior change, log-panel behavior change, or v2 final claim was added.
+- Bumped version metadata to `1.4.1`.
+
 # 1.4.0 - Terminal Demo real-demo log panel layout
 
 - Added a real-time scrollable `REAL-TIME LOG [-]` panel for real-demo diagnostics and routed truth-read, queue-read, playback-status, DB table verification, media discovery, selected-row, and path-check lines out of the current command plan.

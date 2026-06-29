@@ -216,3 +216,12 @@ npm run proof:terminal-demo-log-panel-layout
 
 The proof checks that Area A contains the real-time `REAL-TIME LOG [-]` diagnostics panel, Area B no longer contains low-level truth/queue/path diagnostics, errors/warnings in Area B are rendered red, Area A has clickable focus/collapse hitboxes, mouse wheel scrolling is logged in proof mode, and keyboard shortcuts remain available.
 
+## Terminal Demo DB image playback viewer launch proof
+
+To verify the Windows viewer launch contract for the real-demo `P` playback button without opening GUI windows during normal proof mode:
+
+```cmd
+VERIFY_TERMINAL_DEMO_WINDOWS_VIEWER_LAUNCH.CMD
+```
+
+For live playback, run `RUN_TERMINAL_DEMO_REAL.CMD`, ensure `PHOTOFRAME_TERMINAL_DEMO_EXECUTE=1`, and press `P`.

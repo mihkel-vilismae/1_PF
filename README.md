@@ -346,3 +346,12 @@ Verification:
 npm run proof:terminal-demo-log-panel-layout
 ```
 
+## Terminal Demo v1.4.1 Windows viewer launch repair
+
+The DB-backed `P` image playback button now opens the generated windowed playback HTML through a safer Windows launch contract: PowerShell `Start-Process -FilePath` receives the viewer path as an argument, and `cmd.exe start` is kept as a fallback. This repairs the previous `Start-Process -LiteralPath` blocker while keeping proof mode non-GUI by default.
+
+Proof command:
+
+```cmd
+npm run proof:terminal-demo-windows-viewer-launch
+```

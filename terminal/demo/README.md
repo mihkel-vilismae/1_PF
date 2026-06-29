@@ -507,3 +507,12 @@ The fixture proves the `P` button has a real DB-backed image to consume without 
 - Area A has terminal mouse hitboxes for focus, `[-]` collapse/expand, and wheel scrolling when the terminal supports SGR mouse events.
 - Proof: `npm run proof:terminal-demo-log-panel-layout`.
 
+## v1.4.1 Windows viewer launch repair
+
+The real-demo DB image playback button still writes `runtime_data/demo/outputs/db-image-playback/windowed-playback.html`, but Windows opening now uses guarded `Start-Process -FilePath` plus a `cmd.exe start` fallback. This is a launch-only repair for the `P` button; it does not add geocode, workers, cron, schema changes, or v2 final behavior.
+
+Run the contract proof with:
+
+```cmd
+npm run proof:terminal-demo-windows-viewer-launch
+```

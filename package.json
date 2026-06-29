@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "1.4.0",
+  "version": "1.4.1",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -236,7 +236,8 @@
     "proof:terminal-demo-real-entrypoint": "node tools/run-terminal-demo-real-entrypoint-proof.mjs",
     "terminal-demo:live-image-fixture:setup": "node tools/run-terminal-demo-live-image-fixture.mjs",
     "proof:terminal-demo-live-image-fixture": "node tools/run-terminal-demo-live-image-fixture-proof.mjs",
-    "proof:terminal-demo-log-panel-layout": "node tools/run-terminal-demo-log-panel-layout-proof.mjs"
+    "proof:terminal-demo-log-panel-layout": "node tools/run-terminal-demo-log-panel-layout-proof.mjs",
+    "proof:terminal-demo-windows-viewer-launch": "node tools/run-terminal-demo-windows-viewer-launch-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

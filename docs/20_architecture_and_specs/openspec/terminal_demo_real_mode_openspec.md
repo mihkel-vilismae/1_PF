@@ -308,3 +308,8 @@ Decision: `REAL_DEMO_LOG_PANEL_LAYOUT_READY`.
 
 The real-demo terminal must keep Area B focused on command/action plan output and route low-level diagnostics into Area A's scrollable `REAL-TIME LOG [-]` panel. Diagnostic lines include truth reads, queue reads, DB playback table verification, playback-status reads, media discovery, selected rows, and path checks. Area B error/warning/blocked/failed lines must be rendered red. Area A exposes proof-backed terminal hitboxes for focus, `[-]` collapse/expand, and mouse-wheel scroll logging while preserving keyboard shortcuts. This refinement does not add geocode provider work, worker execution, screen-worker behavior, cron, DB schema changes, or v2 final release claims.
 
+## v1.4.1 DB playback Windows viewer launch repair
+
+The real-demo `P` playback path opens the generated windowed HTML viewer through a safe Windows launch contract. The implementation must not use `Start-Process -LiteralPath`; it must pass the viewer path as an argument to `Start-Process -FilePath`, verify that the viewer file exists before opening, and keep a `cmd.exe start` fallback. Proof mode keeps GUI opening disabled.
+
+Decision: `TERMINAL_DEMO_WINDOWS_VIEWER_LAUNCH_READY`.

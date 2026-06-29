@@ -17,6 +17,11 @@ export interface DbImagePlaybackButtonResult {
   filePath: string;
 }
 
+interface ViewerOpenResult {
+  ok: boolean;
+  messages: string[];
+}
+
 export function runDbImagePlaybackButton(boundary: RuntimeBoundaryState): DbImagePlaybackButtonResult {
   const messages = ['P pressed: DB-backed windowed image playback button.'];
   if (!existsSync(boundary.dbPath)) return blocked(messages, `DEMO_DB_PATH missing: ${boundary.dbPath}`);
@@ -51,9 +56,9 @@ export function runDbImagePlaybackButton(boundary: RuntimeBoundaryState): DbImag
     return { status: 'rendered', messages: [...messages, 'Windowed playback open skipped outside Windows/proof mode.'], viewerPath, address, filePath };
   }
 
-  const openResult = spawnSync('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', `Start-Process -LiteralPath ${JSON.stringify(viewerPath)}`], { encoding: 'utf8', timeout: 10000 });
-  if (openResult.status !== 0) return blocked(messages, `Windows Start-Process failed: ${openResult.stderr.trim() || openResult.stdout.trim()}`);
-  return { status: 'displayed', messages: [...messages, 'Windowed playback opened on Windows.'], viewerPath, address, filePath };
+  const openResult = openWindowedViewerOnWindows(viewerPath);
+  if (!openResult.ok) return blocked(messages, `Windows viewer launch failed: ${openResult.messages.join(' | ')}`);
+  return { status: 'displayed', messages: [...messages, ...openResult.messages, 'Windowed playback opened on Windows.'], viewerPath, address, filePath };
 }
 
 function blocked(messages: string[], reason: string): DbImagePlaybackButtonResult {
@@ -72,6 +77,56 @@ function writeWindowedViewer(boundary: RuntimeBoundaryState, filePath: string, a
   const imageUrl = pathToFileURL(filePath).href;
   writeFileSync(viewerPath, buildHtml(imageUrl, address), 'utf8');
   return viewerPath;
+}
+
+function openWindowedViewerOnWindows(viewerPath: string): ViewerOpenResult {
+  if (!existsSync(viewerPath)) return { ok: false, messages: [`viewer file missing: ${viewerPath}`] };
+
+  const powershellCommands = ['powershell.exe', 'powershell'];
+  const psScript = [
+    "$ErrorActionPreference = 'Stop'",
+    '$viewerPath = $args[0]',
+    'if (-not (Test-Path -LiteralPath $viewerPath)) { throw "Viewer path missing: $viewerPath" }',
+    'Start-Process -FilePath $viewerPath'
+  ].join('; ');
+
+  for (const command of powershellCommands) {
+    const result = spawnSync(command, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', psScript, viewerPath], {
+      encoding: 'utf8',
+      timeout: 10000
+    });
+    if (result.error && (result.error as NodeJS.ErrnoException).code === 'ENOENT') continue;
+    if (result.status === 0) return { ok: true, messages: [`Windows viewer launch: ${command} Start-Process -FilePath succeeded.`] };
+    const detail = formatSpawnFailure(`${command} Start-Process -FilePath`, result.status, result.stdout, result.stderr, result.error);
+    const fallback = openWindowedViewerWithCmdStart(viewerPath, detail);
+    if (fallback.ok) return fallback;
+    return fallback;
+  }
+
+  return openWindowedViewerWithCmdStart(viewerPath, 'PowerShell executable not found.');
+}
+
+function openWindowedViewerWithCmdStart(viewerPath: string, previousFailure: string): ViewerOpenResult {
+  const quotedViewerPath = viewerPath.replace(/"/g, '""');
+  const result = spawnSync('cmd.exe', ['/d', '/s', '/c', `start "" "${quotedViewerPath}"`], {
+    encoding: 'utf8',
+    timeout: 10000
+  });
+  if (result.status === 0) {
+    return {
+      ok: true,
+      messages: [previousFailure, 'Windows viewer launch fallback: cmd.exe start succeeded.']
+    };
+  }
+  return {
+    ok: false,
+    messages: [previousFailure, formatSpawnFailure('cmd.exe start fallback', result.status, result.stdout, result.stderr, result.error)]
+  };
+}
+
+function formatSpawnFailure(label: string, status: number | null, stdout: string, stderr: string, error?: Error): string {
+  const detail = stderr.trim() || stdout.trim() || error?.message || `exit ${status ?? 'unknown'}`;
+  return `${label} failed: ${detail}`;
 }
 
 function buildHtml(imageUrl: string, address: string): string {
