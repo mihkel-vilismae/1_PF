@@ -4,6 +4,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { readFileSync } from 'node:fs';
 
 // Runs the terminal entrypoint with compiled JS or tsx-loaded TypeScript.
@@ -31,13 +32,13 @@ function resolveTsxImport() {
     'node_modules/tsx/index.mjs',
     'terminal/demo/node_modules/tsx/dist/loader.mjs'
   ]) {
-    if (existsSync(candidate)) return candidate;
+    if (existsSync(candidate)) return pathToFileURL(join(process.cwd(), candidate)).href;
   }
   const npxRoot = join(process.env.npm_config_cache || join(homedir(), '.npm'), '_npx');
   if (!existsSync(npxRoot)) return null;
   for (const entry of readdirSync(npxRoot)) {
     const cachedLoader = join(npxRoot, entry, 'node_modules', 'tsx', 'dist', 'loader.mjs');
-    if (existsSync(cachedLoader)) return cachedLoader;
+    if (existsSync(cachedLoader)) return pathToFileURL(cachedLoader).href;
   }
   return null;
 }

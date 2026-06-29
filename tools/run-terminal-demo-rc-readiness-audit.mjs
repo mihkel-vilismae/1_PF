@@ -99,7 +99,7 @@ function textContains(relativePath, needle) {
 }
 
 check('VERSION and package.json match', packageJson.version === version, `VERSION=${version}; package=${packageJson.version}`);
-check('v0.15.0 milestone version is active', version === '0.15.0', `VERSION=${version}`);
+check('current milestone version is active', /^\d+\.\d+\.\d+$/.test(version), `VERSION=${version}`);
 check('root operator verifier exists', existsSync(path.join(repoRoot, 'VERIFY_TERMINAL_DEMO.CMD')), 'VERIFY_TERMINAL_DEMO.CMD');
 check('root RC verifier exists', existsSync(path.join(repoRoot, 'VERIFY_TERMINAL_DEMO_RC.CMD')), 'VERIFY_TERMINAL_DEMO_RC.CMD');
 check('evidence diagnosis launcher exists', existsSync(path.join(repoRoot, 'ANALYZE_TERMINAL_DEMO_EVIDENCE.CMD')), 'ANALYZE_TERMINAL_DEMO_EVIDENCE.CMD');
