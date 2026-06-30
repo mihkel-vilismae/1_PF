@@ -28,6 +28,7 @@ const finalProofs = [
   'batch-parity',
   'screen-worker-panel',
   'operator-layout-status',
+  'v2-operator-rc',
   'largest-files'
 ];
 
@@ -44,7 +45,7 @@ function includes(relativePath, needle) {
 }
 
 function run(command, args) {
-  return execFileSync(command, args, { cwd: repoRoot, encoding: 'utf8', timeout: 120000, maxBuffer: 10 * 1024 * 1024, env: { ...process.env, TERMINAL_DEMO_COLUMNS: '420' } });
+  return execFileSync(command, args, { cwd: repoRoot, encoding: 'utf8', timeout: 360000, maxBuffer: 30 * 1024 * 1024, env: { ...process.env, TERMINAL_DEMO_COLUMNS: '420' } });
 }
 
 function requireSmoke(label, needles) {
@@ -161,6 +162,15 @@ function proofOperatorLayoutStatus() {
   check('operator layout status proof passes', output.includes('REAL_DEMO_OPERATOR_LAYOUT_STATUS_READY'), 'Area A/B/C routing proof passes.');
 }
 
+
+function proofV2OperatorRc() {
+  check('v2 operator RC proof script is registered',
+    JSON.parse(read('package.json')).scripts['proof:terminal-demo-v2-operator-rc'] === 'node tools/run-terminal-demo-v2-operator-rc-proof.mjs',
+    'package.json exposes the v2 operator RC proof chain.');
+  const output = run('node', ['tools/run-terminal-demo-v2-operator-rc-proof.mjs']);
+  check('v2 operator RC proof chain passes', output.includes('REAL_DEMO_MODE_V2_RC_READY') && output.includes('"status": "PASSED"'), 'v1.5-v1.9 proof surfaces refreshed on v2.0 baseline.');
+}
+
 function proofLargestFiles() {
   const rows = collectSourceFiles(['terminal/demo/src', 'terminal/demo/scripts', 'tools'])
     .map((file) => ({ file, loc: readFileSync(path.join(repoRoot, file), 'utf8').split(/\r?\n/).length }))
@@ -205,6 +215,7 @@ const proofMap = {
   'batch-parity': proofBatchParity,
   'screen-worker-panel': proofScreenWorkerPanel,
   'operator-layout-status': proofOperatorLayoutStatus,
+  'v2-operator-rc': proofV2OperatorRc,
   'largest-files': proofLargestFiles
 };
 
@@ -217,6 +228,6 @@ if (proofName === 'final') {
 }
 
 const failed = checks.filter((entry) => !entry.passed);
-const result = { proof: `terminal-demo-${proofName}`, status: failed.length ? 'BLOCKED' : 'PASSED', checkedAt: new Date().toISOString(), checks };
+const result = { proof: `terminal-demo-${proofName}`, status: failed.length ? 'BLOCKED' : 'PASSED', checkedAt: new Date().toISOString(), decision: proofName === 'final' ? (failed.length ? 'REAL_DEMO_MODE_V2_RC_BLOCKED' : 'REAL_DEMO_MODE_V2_RC_READY') : undefined, checks };
 console.log(JSON.stringify(result, null, 2));
 if (failed.length) process.exitCode = 1;

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
- * PhotoFrame Terminal Demo v1.0 RC readiness audit.
+ * PhotoFrame Terminal Demo v2.0 RC readiness audit.
  * Runs existing terminal-demo proofs and verifies operator command discovery.
  * Evidence written here contains logs/status only, never the source repo.
  */
@@ -120,7 +120,7 @@ function textContains(relativePath, needle) {
 }
 
 check('VERSION and package.json match', packageJson.version === version, `VERSION=${version}; package=${packageJson.version}`);
-check('current milestone version is active', /^\d+\.\d+\.\d+$/.test(version), `VERSION=${version}`);
+check('v2.0.0 milestone version is active', version === '2.0.0', `VERSION=${version}`);
 check('root operator verifier exists', existsSync(path.join(repoRoot, 'VERIFY_TERMINAL_DEMO.CMD')), 'VERIFY_TERMINAL_DEMO.CMD');
 check('root RC verifier exists', existsSync(path.join(repoRoot, 'VERIFY_TERMINAL_DEMO_RC.CMD')), 'VERIFY_TERMINAL_DEMO_RC.CMD');
 check('evidence diagnosis launcher exists', existsSync(path.join(repoRoot, 'ANALYZE_TERMINAL_DEMO_EVIDENCE.CMD')), 'ANALYZE_TERMINAL_DEMO_EVIDENCE.CMD');
@@ -133,6 +133,7 @@ for (const script of [
   'proof:terminal-demo-evidence-diagnosis',
   'proof:terminal-demo-rc-readiness',
   'proof:terminal-demo-transferable-package',
+  'proof:terminal-demo-v2-operator-rc',
   'proof:dashboard-runtime-mode-boundary',
   'demo:terminal:real:smoke',
   'demo:terminal:mock:smoke'
@@ -161,10 +162,12 @@ check('OpenSpec documents transferable package proof',
 
 const finalProof = runCommand('terminal-demo-final-proof', process.execPath, ['tools/run-terminal-demo-final-guard-proof.mjs', 'final']);
 check('final guard proof passes', finalProof.exitCode === 0 && finalProof.stdout.includes('"status": "PASSED"'), `exit=${finalProof.exitCode}`);
+check('final guard reports v2 RC decision', finalProof.stdout.includes('REAL_DEMO_MODE_V2_RC_READY'), 'REAL_DEMO_MODE_V2_RC_READY');
 
 const rehearsal = runCommand('terminal-demo-operator-rehearsal', process.execPath, ['tools/run-terminal-demo-operator-rehearsal.mjs'], { TERMINAL_DEMO_OPERATOR_REHEARSAL_ASSUME_FINAL_PASSED: '1' });
 const rehearsalJson = parseJsonFromOutput(rehearsal.stdout);
 check('operator rehearsal command passes', rehearsal.exitCode === 0 && rehearsalJson?.status === 'PASSED', `exit=${rehearsal.exitCode}; status=${rehearsalJson?.status ?? 'unparsed'}`);
+check('operator rehearsal reports v2 decision', rehearsalJson?.operatorDecision === 'REAL_DEMO_MODE_V2_RC_READY', rehearsalJson?.operatorDecision ?? 'missing');
 check('operator rehearsal produced evidence ZIP', Boolean(rehearsalJson?.evidenceZip), rehearsalJson?.evidenceZip ?? 'missing');
 
 const evidenceArg = rehearsalJson?.evidenceZip ?? relative(latestFileUnder(path.join(repoRoot, 'terminal/demo/runtime_logs/operator_rehearsal'), 'terminal_demo_status.json') ?? '');
@@ -213,7 +216,8 @@ const result = {
   evidenceRoot: relative(evidenceRoot),
   commands,
   checks,
-  rcDecision: failed.length ? 'NOT_RC1' : 'RC1_READY_FOR_OPERATOR_REHEARSAL'
+  rcDecision: failed.length ? 'REAL_DEMO_MODE_V2_RC_BLOCKED' : 'REAL_DEMO_MODE_V2_RC_READY',
+  nextAction: failed.length ? 'Open terminal_demo_rc_readiness.md and command logs, then rerun after fixing blockers.' : 'Treat this package as the v2.0 Real Demo Mode operator RC baseline.'
 };
 
 writeFileSync(path.join(evidenceRoot, 'terminal_demo_rc_readiness.json'), JSON.stringify(result, null, 2));

@@ -4,7 +4,7 @@ setlocal
 set "REPO_ROOT=%~dp0"
 cd /d "%REPO_ROOT%"
 
-echo [PhotoFrame Demo Terminal] Running v1.0 RC readiness audit...
+echo [PhotoFrame Demo Terminal] Running v2.0 RC readiness audit...
 echo Repo: %CD%
 echo Command: npm run proof:terminal-demo-rc-readiness
 echo.
@@ -32,7 +32,7 @@ echo.
 if "%EXIT_CODE%"=="0" (
   echo [PhotoFrame Demo Terminal] RC readiness audit PASSED.
   echo Evidence was written under terminal\demo\runtime_logs\rc_readiness\
-  echo This package is ready to treat as Terminal Demo Mode RC1 unless live operator evidence says otherwise.
+  echo This package is ready to treat as Terminal Demo Mode v2.0 RC unless live operator evidence says otherwise.
 ) else (
   echo [PhotoFrame Demo Terminal] RC readiness audit BLOCKED with exit code %EXIT_CODE%.
   echo Check terminal\demo\runtime_logs\rc_readiness\ for terminal_demo_rc_readiness.md/json and command logs.

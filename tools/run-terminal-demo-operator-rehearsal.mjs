@@ -71,7 +71,7 @@ function runCommand(label, command, args) {
 
 function recordAssumedFinalProof() {
   const logPath = path.join(evidenceRoot, 'terminal-demo-final-proof.log');
-  const stdout = '{"status": "PASSED", "note": "RC audit already ran terminal-demo-final-proof", "coverage": "smoke command passes"}';
+  const stdout = '{"status": "PASSED", "decision": "REAL_DEMO_MODE_V2_RC_READY", "note": "RC audit already ran terminal-demo-final-proof", "coverage": "smoke command passes; v2 operator RC proof chain passes", "nextAction": "Treat this package as the v2.0 Real Demo Mode operator RC baseline."}';
   writeFileSync(logPath, [
     '# terminal-demo-final-proof',
     `startedAt=${new Date().toISOString()}`,
@@ -204,11 +204,14 @@ console.error('[terminal-demo-operator-rehearsal] final proof finished with exit
 check('terminal demo final proof passes', finalProof.exitCode === 0 && finalProof.stdout.includes('"status": "PASSED"'), `exit=${finalProof.exitCode}`);
 
 check('terminal demo merge smoke is covered by final proof', finalProof.stdout.includes('smoke command passes'), 'Group 6B final proof invokes terminal/demo/scripts/verify-smoke.mjs.');
+check('terminal demo v2 RC decision is present', finalProof.stdout.includes('REAL_DEMO_MODE_V2_RC_READY'), 'Final proof reports REAL_DEMO_MODE_V2_RC_READY.');
 
 const resultBeforeBundle = () => ({
   proof: 'terminal-demo-operator-rehearsal',
   status: checks.some((entry) => !entry.passed) ? 'BLOCKED' : 'PASSED',
   checkedAt: new Date().toISOString(),
+  operatorDecision: checks.some((entry) => !entry.passed) ? 'REAL_DEMO_MODE_V2_RC_BLOCKED' : 'REAL_DEMO_MODE_V2_RC_READY',
+  nextAction: checks.some((entry) => !entry.passed) ? 'Open terminal_demo_status.md and command logs, then rerun after fixing blockers.' : 'Treat this package as the v2.0 Real Demo Mode operator RC baseline.',
   repoRoot,
   repoFolderName,
   version,
