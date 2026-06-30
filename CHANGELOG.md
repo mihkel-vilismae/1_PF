@@ -1,3 +1,10 @@
+# 1.6.0 - Real-demo metadata/address queue path
+
+- Q now runs existing DEMO GPS parser and reverse-geocode stages before preparing q-created queue rows.
+- Added proof `proof:terminal-demo-metadata-address-queue` covering GPS sidecar parsing, provider-chain geocode, DB `address_text`, and P overlay equality.
+- Missing GPS and provider failures remain BLOCKED/degraded instead of fake success.
+- No screen worker, cron, schema redesign, or v2 final claim.
+
 # 1.5.0 - Q-created DEMO DB queue rows
 
 - Added a real-demo Q DB queue producer that indexes DEMO_DOWNLOAD_DIR into DEMO_DB_PATH and writes READY slideshow_queue rows with source label `terminal-demo-q-created`.

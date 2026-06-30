@@ -24,6 +24,7 @@ const finalProofs = [
   'mock-separation',
   'execution-guard',
   'q-db-queue-creation',
+  'metadata-address-queue',
   'largest-files'
 ];
 
@@ -134,6 +135,15 @@ function proofQDbQueueCreation() {
   check('Q creates DEMO DB queue rows through real tables', output.includes('REAL_DEMO_Q_DB_QUEUE_CREATION_READY'), 'Batch 1/5 q-created DB proof passes.');
 }
 
+
+function proofMetadataAddressQueue() {
+  check('metadata address queue proof script is registered',
+    JSON.parse(read('package.json')).scripts['proof:terminal-demo-metadata-address-queue'] === 'tsx tools/run-terminal-demo-metadata-address-queue-proof.mjs',
+    'package.json exposes the metadata/address queue proof.');
+  const output = run('npm', ['run', 'proof:terminal-demo-metadata-address-queue']);
+  check('Q metadata/address queue proof passes', output.includes('REAL_DEMO_METADATA_TO_ADDRESS_QUEUE_READY'), 'GPS parser + geocode provider chain + P overlay proof passes.');
+}
+
 function proofLargestFiles() {
   const rows = collectSourceFiles(['terminal/demo/src', 'terminal/demo/scripts', 'tools'])
     .map((file) => ({ file, loc: readFileSync(path.join(repoRoot, file), 'utf8').split(/\r?\n/).length }))
@@ -174,6 +184,7 @@ const proofMap = {
   'mock-separation': proofMockSeparation,
   'execution-guard': proofExecutionGuard,
   'q-db-queue-creation': proofQDbQueueCreation,
+  'metadata-address-queue': proofMetadataAddressQueue,
   'largest-files': proofLargestFiles
 };
 
