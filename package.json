@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "1.8.0",
+  "version": "1.9.0",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -241,7 +241,8 @@
     "proof:terminal-demo-q-db-queue-creation": "tsx tools/run-terminal-demo-q-db-queue-creation-proof.mjs",
     "proof:terminal-demo-metadata-address-queue": "tsx tools/run-terminal-demo-metadata-address-queue-proof.mjs",
     "proof:terminal-demo-batch-parity": "node tools/run-terminal-demo-batch-parity-proof.mjs",
-    "proof:terminal-demo-screen-worker-panel": "node tools/run-terminal-demo-screen-worker-panel-proof.mjs"
+    "proof:terminal-demo-screen-worker-panel": "node tools/run-terminal-demo-screen-worker-panel-proof.mjs",
+    "proof:terminal-demo-operator-layout-status": "node tools/run-terminal-demo-operator-layout-status-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

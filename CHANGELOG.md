@@ -1,3 +1,10 @@
+# 1.9.0 - Operator layout/status hardening
+
+- Labeled operator areas: Area A real-time log, Area B command plan, Area C playback/preview.
+- Routed Q DB queue and Q truth/status diagnostics into the real-time log panel.
+- Kept error/warning/blocked lines visibly red in command/log panels.
+- Added `proof:terminal-demo-operator-layout-status`.
+
 # 1.8.0 - Screen on/off worker demo panel
 
 - Added DEMO screen-worker panel fields for keyboard/mouse idle timer, latest input status, and guarded power-state display.
