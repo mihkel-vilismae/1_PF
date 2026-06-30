@@ -101,6 +101,10 @@ export interface ScreenOnOffState {
   keyboardEnabled: boolean;
   mouseEnabled: boolean;
   pirSensorEnabled: boolean;
+  idleSeconds: number;
+  powerState: 'guarded' | 'on' | 'off' | 'unknown';
+  latestStatus: string;
+  actionGuard: string;
   info: string;
 }
 

@@ -36,6 +36,8 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
   private logFocused = false;
   private logScrollOffset = 0;
   private uiLogLines: string[] = [];
+  private lastActivityAt = Date.now();
+  private latestScreenStatus = 'waiting for keyboard/mouse activity';
 
   constructor(private readonly boundary: RuntimeBoundaryState) {
     this.state = this.buildState();
@@ -52,6 +54,8 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
     this.logFocused = false;
     this.logScrollOffset = 0;
     this.uiLogLines = [];
+    this.lastActivityAt = Date.now();
+    this.latestScreenStatus = 'waiting for keyboard/mouse activity';
     this.state = this.buildState();
     return this.getState();
   }
@@ -62,6 +66,7 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
   }
 
   async handleKey(key: string): Promise<DemoTerminalState[]> {
+    this.noteInputActivity(`keyboard ${key.toUpperCase() || 'input'}`);
     const normalized = key.toUpperCase();
     if (normalized === 'W') return [this.toggleBatchSize()];
     if (normalized === 'Q') return this.runQStoryboard();
@@ -74,6 +79,7 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
 
   handleMouse(event: TerminalMouseEvent): DemoTerminalState[] {
     if (event.kind === 'release') return [this.getState()];
+    this.noteInputActivity(`mouse ${event.kind}`);
     const hit = findHitbox(this.state.realTimeLog.hitboxes, event);
     if (event.kind === 'wheel-up' || event.kind === 'wheel-down') {
       if (hit.hitboxId === 'area-a-log-panel' || hit.hitboxId === 'area-a-collapse-toggle') {
@@ -185,8 +191,19 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
         focused: this.logFocused,
         scrollOffset: this.logScrollOffset,
         extraLogLines: this.uiLogLines
+      },
+      {
+        idleSeconds: Math.max(0, Math.floor((Date.now() - this.lastActivityAt) / 1000)),
+        powerState: 'guarded',
+        latestStatus: this.latestScreenStatus,
+        actionGuard: 'No real screen power command runs unless explicitly enabled and platform-safe.'
       }
     );
+  }
+
+  private noteInputActivity(source: string): void {
+    this.lastActivityAt = Date.now();
+    this.latestScreenStatus = `last input: ${source}`;
   }
 
   private appendUiLog(message: string): void {

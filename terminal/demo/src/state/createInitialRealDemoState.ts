@@ -83,7 +83,8 @@ export function createInitialRealDemoState(
   playbackQueueRows: PlaybackQueueRow[] = [],
   queueMessages: string[] = [],
   playbackStatus: DemoPlaybackStatusReadResult = { selectedItem: null, status: 'waiting', messages: [], sourcePath: '' },
-  logOptions: { collapsed?: boolean; focused?: boolean; scrollOffset?: number; extraLogLines?: string[] } = {}
+  logOptions: { collapsed?: boolean; focused?: boolean; scrollOffset?: number; extraLogLines?: string[] } = {},
+  screenOptions: { idleSeconds?: number; powerState?: 'guarded' | 'on' | 'off' | 'unknown'; latestStatus?: string; actionGuard?: string } = {}
 ): DemoTerminalState {
   const version = readVersion();
   const statusText = boundary.readinessStatus.toUpperCase();
@@ -158,10 +159,14 @@ export function createInitialRealDemoState(
       fullScreenInfo: 'Not yet implemented.'
     },
     screenOnOff: {
-      keyboardEnabled: false,
-      mouseEnabled: false,
+      keyboardEnabled: true,
+      mouseEnabled: true,
       pirSensorEnabled: false,
-      info: 'Not yet implemented.'
+      idleSeconds: screenOptions.idleSeconds ?? 0,
+      powerState: screenOptions.powerState ?? 'guarded',
+      latestStatus: screenOptions.latestStatus ?? 'waiting for keyboard/mouse activity',
+      actionGuard: screenOptions.actionGuard ?? 'screen power command guarded; no real screen-off call by default',
+      info: 'Keyboard/mouse inactivity timer is active in DEMO panel; platform power action is guarded.'
     }
   };
 }

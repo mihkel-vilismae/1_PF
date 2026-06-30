@@ -143,6 +143,10 @@ export function createInitialMockState(): DemoTerminalState {
       keyboardEnabled: false,
       mouseEnabled: false,
       pirSensorEnabled: false,
+      idleSeconds: 0,
+      powerState: 'unknown',
+      latestStatus: 'mock screen worker inactive',
+      actionGuard: 'mock demo never calls real screen power actions',
       info: 'Not yet implemented.'
     }
   };
