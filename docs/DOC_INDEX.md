@@ -319,6 +319,8 @@ Use these documents when investigating result payload / JSON panel scroll resets
 
 | docs/20_architecture_and_specs/openspec/production_gps_geocode_placeholder_rules_openspec.md | current_truth | OpenSpec acceptance contract for v1.0 GPS/geocode placeholder rejection. | architecture_or_spec | current_requirements | current | gps, geocode, placeholders, v1.0, production_acceptance | Defines real GPS extraction, address cache provenance, real provider geocode, and deterministic placeholder non-acceptance for v1.0. |
 
+| docs/20_architecture_and_specs/openspec/terminal_demo_v2_operator_rc_handoff_openspec.md | current_truth | Terminal Demo v2.0 operator RC handoff OpenSpec from v1.9.0 implementation floor. | architecture_or_spec | current_requirements | current | terminal-demo, v2.0, openspec, handoff, proof-pack | Defines v2.0 operator RC goal, required proof pack, provider/screen/evidence boundaries, non-claims, and implementation prompt. |
+
 | `docs/proofs/raspberry_cron_worker_singleton_recovery_proof.md` | Planned Raspberry cron worker app-running proof contract; documentation-only in v0.8.44. |
 
 | `docs/proofs/raspberry_worker_evidence_generator_proof.md` | Raspberry worker evidence generator for `PF_RASPBERRY_CRON_WORKER_EVIDENCE_FILE`; target evidence required. |

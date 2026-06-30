@@ -90,7 +90,7 @@ Evidence ZIPs must include only logs/status/proof artifacts. They must not inclu
 - No DB schema redesign.
 - No migration of real/test paths into terminal Demo Mode.
 - No mock success claim for real-demo behavior.
-- No unguarded screen power command.
+- No unguarded real screen power command.
 - No production Raspberry v1/v2 claim unless Raspberry target evidence is supplied.
 
 ## v2.0 implementation prompt

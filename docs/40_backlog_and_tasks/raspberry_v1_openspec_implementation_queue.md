@@ -20,6 +20,7 @@ This queue converts the improved OpenSpec bundle into implementation-ready work 
 | `OSQ-DASH-001` | `raspberry_dashboard_status_view_openspec.md` | Implement proof-backed dashboard status projection | `npm run proof:raspberry-dashboard-status-view` | Proof command implemented; latest target artifact determines PASS/BLOCKED |
 | `OSQ-SCR-001` | `raspberry_screen_worker_non_blocking_openspec.md` | Add dedicated screen worker non-blocking proof | `npm run proof:raspberry-screen-worker-non-blocking` | Proof command implemented; no real scheduler-host process claim |
 | `OSQ-DOC-001` | all v1 OpenSpec docs | Keep static OpenSpec/docs audits passing | `npm run proof:raspberry-v1-docs-reconciliation` | Final v1 docs reconciliation proof command implemented |
+| `TDV2-RC-001` | `terminal_demo_real_mode_openspec.md`, `terminal_demo_v2_operator_rc_handoff_openspec.md` | Implement v2.0.0 Real Demo Mode operator RC from v1.9.0 | full v2.0 terminal demo proof pack | Handoff ready; implementation pending |
 
 ## OpenSpec implementation rule
 

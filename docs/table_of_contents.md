@@ -90,6 +90,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/20_architecture_and_specs/product_vision_and_authority.md` | Product goal and authority boundaries. |
 | `docs/20_architecture_and_specs/v2_goals/goals.md` | Authoritative V2 real playback goals: autonomous playback, autonomous recovery, and screen on/off tier-2 goal. |
 | `docs/20_architecture_and_specs/openspec/v2_operator_pages_openspec.md` | V2 pages `01` through `09`, shared components, reuse-first implementation contract, and proof boundaries. |
+| `docs/20_architecture_and_specs/openspec/terminal_demo_v2_operator_rc_handoff_openspec.md` | Terminal Demo v2.0 Real Demo Mode operator RC handoff, proof pack, boundaries, and implementation prompt. |
 | `docs/20_architecture_and_specs/openspec/V2_ImplementationStatus.md` | Element-by-element V2 implementation state tracker synchronized with the planned status overlay. |
 | `docs/20_architecture_and_specs/openspec/V2_GoalSummary.md` | Authoritative summary of the V2 planning conversation, requested placements, constraints, and final Real Playback intent. |
 | `docs/20_architecture_and_specs/openspec/V2_IssueRegister.md` | Known V2 design issues, unresolved items, and verification gaps. |
@@ -131,6 +132,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 
 | Path | Use |
 | --- | --- |
+| `docs/40_backlog_and_tasks/terminal_demo_v2_implementation_handoff.md` | Implementation handoff for turning v1.9.0 Terminal Demo into v2.0.0 operator RC. |
 | `docs/40_backlog_and_tasks/active_workflow/` | Active workflow notes and slice plans. |
 | `docs/40_backlog_and_tasks/active_workflow/runtime_gap_implementation_plan_20260530.md` | Ordered plan for remaining runtime proof and implementation gaps. |
 | `docs/40_backlog_and_tasks/task_documentation_still_to_implement/active_implementation_backlog.md` | Backlog items; verify against current implementation before acting. |

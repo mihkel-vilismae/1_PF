@@ -72,3 +72,5 @@ Current OpenSpec entries:
 - [V2 next implementation plan](../../40_backlog_and_tasks/V2_NEXT_IMPLEMENTATION_PLAN_20260626.md) — post-B12 implementation/proof sequence and remaining live-proof gates.
 
 - [V2 numeric status 3XACR and document handoff](../../50_audits_and_migrations/V2_NUMERIC_STATUS_3XACR_AND_DOC_HANDOFF_20260626.md) — 1-10 OpenSpec, implementation-status, and path-to-goal tables from the docs-only 3XACR/2XACR reconciliation pass.
+
+- [Terminal Demo v2.0 Operator RC Handoff OpenSpec](terminal_demo_v2_operator_rc_handoff_openspec.md) — v1.9.0-to-v2.0.0 operator RC handoff, proof pack, boundaries, non-claims, and implementation prompt.
