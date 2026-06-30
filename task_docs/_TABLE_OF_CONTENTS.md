@@ -24,7 +24,7 @@ Rules:
 | `2026-04-20_show-backend-status-mode.md` | `Archived Task Doc Pointer` | Estonian timestamp: 2026-05-25 00:03 EEST | `archived` | `2026-04-20` | `2026-05-24` | `3133909` | — |
 | `2026-04-20_show-real-vs-mock-mode.md` | `Archived Task Doc Pointer` | Estonian timestamp: 2026-05-25 00:03 EEST | `archived` | `2026-04-20` | `2026-05-24` | `3133909` | — |
 | `2026-04-20_view-e-database-viewer.md` | `Archived Task Doc Pointer` | Estonian timestamp: 2026-05-25 00:03 EEST | `archived` | `2026-04-20` | `2026-05-24` | `3133909` | — |
-| `README.md` | `Archived Task Doc Pointer` | Estonian timestamp: 2026-05-25 00:03 EEST | `reference` | `2026-04-20` | `2026-05-24` | `3133909` | Companion process doc for task_docs/ maintenance. |
+| `README.md` | `Archived Task Doc Pointer` | > Current checkpoint: v0.10.67. This README is historical/provenance or compatibility material; use the root README, current OpenSpec docs, and current proof e… | `reference` | `2026-04-20` | `2026-06-26` | `1f0e711` | Companion process doc for task_docs/ maintenance. |
 
 ## Maintenance Check
 
