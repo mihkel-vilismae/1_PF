@@ -1,7 +1,7 @@
 # Terminal Demo Real Mode OpenSpec
 
 Generated: 2026-06-29  
-Status: v0.14.0 operator evidence diagnosis loop implemented; worker/native execution remains guarded pending later proof.
+Status: v1.9.0 real-demo slices implemented; v2.0.0 operator RC documentation/handoff prepared. Worker/native execution remains guarded unless explicitly proven safe.
 
 ## Goal
 
@@ -21,14 +21,14 @@ Turn the terminal mock-demo into a real terminal Demo Mode that uses PhotoFrame 
 | Visible selected batch size | Implemented in header/actions/current run/inspector | 10/10 |
 | Q consumes selected batch size | Implemented and snapshot-routed | 9/10 |
 | Demo-safe manifest write | Implemented under `DEMO_RUNTIME_OUTPUT_DIR` with path guard and first-5 run manifest | 10/10 |
-| Worker execution | Still guarded; scheduler/status/truth/log output isolation has static proof coverage, but live execution ack remains explicit | 7/10 |
+| Worker execution | Still guarded; Q DB/metadata/status paths are manual and DEMO-scoped, but scheduled/cron execution remains out of scope | 8/10 |
 | Real/demo runtime env mapping | Implemented for guarded terminal stage plans, DEMO truth, DEMO scheduler/status, DEMO log, and DEMO queue/output paths | 9/10 |
 | Real demo queue reader | Implemented; reads DEMO_QUEUE_OUTPUT_PATH and drives PLAYBACK_QUEUE/P enabled state | 9/10 |
 | Playback selected-item display | Implemented; reads DEMO scheduler playback-worker-status and renders selected file/type/address/status/duration | 8/10 |
-| Playback worker execution | Guarded/manual command plan only; requires explicit execution and scheduler-safety flags | 6/10 |
+| Playback worker execution | DB-backed P viewer path implemented and Windows launch repaired; full/native worker execution remains guarded | 8/10 |
 | Proof/de-mocking guard suite | Group 6B final proof pack implemented; path isolation, no-cron, media/truth, batch-size, Q route, queue, playback, mock separation, execution guard, and largest-file checks are scripted | 9/10 |
 | Operator rehearsal pack | Implemented; root Windows launcher and npm proof create status JSON/MD plus terminal-demo-only evidence ZIP | 9/10 |
-| Operator evidence diagnosis | Implemented; analyzes latest evidence folder or supplied ZIP and writes blocker/next-action report | 9/10 |
+| Operator evidence diagnosis | Implemented; v2.0 must refresh the full proof pack from the current package rather than rely on old evidence | 9/10 |
 
 ## Group 3B behavior
 
@@ -277,6 +277,64 @@ TERMINAL_DEMO_MODE_V1_RELEASED
 The final package preserves these v1 boundaries: DEMO-owned paths only, no cron, no real/test data access, no mock substitution in real-demo flow, guarded worker execution, non-fullscreen terminal playback, explicit dashboard demo mode boundaries, and evidence folders that contain logs/status reports only.
 
 
+
+
+## v1.5.0 through v1.9.0 real-demo implementation status
+
+Status: implemented in the `1.9.0` baseline; this section records the post-v1.5 slice state that v2.0 must consume rather than rediscover.
+
+| Version | Slice | Implemented behavior | Proof surface | Score |
+| --- | --- | --- | --- | ---: |
+| `1.5.0` | Q-created DEMO DB rows | Pressing Q indexes `DEMO_DOWNLOAD_DIR` into `DEMO_DB_PATH`, writes real-shape `canonical_media_assets`, `media_asset_variants`, `slideshow_queue`, and `runtime_state`, and labels rows `terminal-demo-q-created`. | `npm run proof:terminal-demo-q-db-queue-creation` | 9/10 |
+| `1.6.0` | Metadata/address queue path | Q runs existing DEMO GPS parser and reverse-geocode stages before preparing q-created queue rows; missing GPS/provider failures stay degraded/BLOCKED rather than fake success. | `npm run proof:terminal-demo-metadata-address-queue` | 8/10 |
+| `1.7.0` | Batch 1/5 parity truth/status path | Manual Q writes DEMO truth/status events for Index, GPS parser, Geocode, and Queue stages; batch 1 and batch 5 use the same DB/helper shape. | `npm run proof:terminal-demo-batch-parity` | 8/10 |
+| `1.8.0` | Screen worker demo panel | Adds DEMO screen-worker panel fields for keyboard/mouse idle timer, latest input status, guarded screen power state, and reset-on-input behavior. | `npm run proof:terminal-demo-screen-worker-panel` | 8/10 |
+| `1.9.0` | Operator area/status routing | Labels Area A/B/C, routes Q DB and truth/status diagnostics to the real-time log, and keeps command plan/playback preview separate. | `npm run proof:terminal-demo-operator-layout-status` | 8/10 |
+
+The v1.9.0 state is not a v2.0 final claim. It is the implementation floor for the v2.0 operator RC slice.
+
+## v2.0.0 operator RC target from v1.9.0
+
+Decision target: `REAL_DEMO_MODE_V2_RC_READY`.
+
+v2.0.0 should consolidate the already-implemented real-demo pieces into one operator path and proof pack:
+
+1. Launch real-demo from the dedicated Windows real-demo entrypoint.
+2. Prepare or verify DEMO-owned media and `DEMO_DB_PATH`.
+3. Run Q manually with batch size 1 or 5.
+4. Confirm Q metadata/address stages wrote truthful GPS/geocode/address status.
+5. Confirm q-created rows are in real DB tables, not JSON/mock rows.
+6. Run P and prove the playback overlay equals DB `address_text` when address text exists.
+7. Show screen-worker panel state without running unguarded real screen power commands.
+8. Preserve Area A/B/C operator routing and clickable/hitbox behavior.
+9. Produce an evidence pack that contains logs/status/proof outputs only, never the source repository.
+10. Report explicit PASS/BLOCKED/NOT_RUN and next action.
+
+Required v2.0 proof refresh:
+
+```bash
+npm run proof:terminal-demo-q-db-queue-creation
+npm run proof:terminal-demo-metadata-address-queue
+npm run proof:terminal-demo-batch-parity
+npm run proof:terminal-demo-screen-worker-panel
+npm run proof:terminal-demo-operator-layout-status
+npm run proof:terminal-demo-final
+npm run proof:terminal-demo-operator-rehearsal
+npm run proof:terminal-demo-rc-readiness
+```
+
+v2.0 must not rely on prior-session proof claims if the fresh package proof can rerun them. If a proof is platform-gated or provider-gated, report it as BLOCKED/degraded with exact missing condition instead of assuming PASS.
+
+## v2.0.0 non-claims to preserve
+
+```text
+No cron or crontab installation.
+No DB schema redesign.
+No real/test path writes from terminal Demo Mode.
+No mock rows or mock storyboard success in real-demo.
+No unguarded real screen power command.
+No hidden network geocode success without provider configuration/evidence.
+```
 
 ## v1.2.0 real-demo entrypoint clarity
 
