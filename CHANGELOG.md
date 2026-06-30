@@ -1,3 +1,10 @@
+# 1.8.0 - Screen on/off worker demo panel
+
+- Added DEMO screen-worker panel fields for keyboard/mouse idle timer, latest input status, and guarded power-state display.
+- Keyboard and mouse activity reset the timer/status.
+- Real screen power commands remain guarded and are not called by default.
+- Added `proof:terminal-demo-screen-worker-panel`.
+
 # 1.7.0 - Batch size 1/5 real-demo execution parity
 
 - Manual Q now writes DEMO truth/status events for Index, GPS parser, Geocode, and Queue stages.
