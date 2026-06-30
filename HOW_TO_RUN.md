@@ -252,3 +252,19 @@ Main handoff docs:
 
 - `docs/20_architecture_and_specs/openspec/terminal_demo_v2_operator_rc_handoff_openspec.md`
 - `docs/40_backlog_and_tasks/terminal_demo_v2_implementation_handoff.md`
+
+
+## v2.0.0 Real Demo Mode operator RC
+
+Decision: `REAL_DEMO_MODE_V2_RC_READY` when the v2 proof chain passes. The v2 operator RC consolidates the implemented v1.5-v1.9 slices: DEMO-owned DB/media/truth/status/queue/playback, Q-created DB rows, metadata/address stages, batch 1/5 parity, guarded screen-worker panel, Area A/B/C layout routing, operator rehearsal evidence, and RC readiness reporting.
+
+Proof chain:
+
+```bash
+npm run proof:terminal-demo-v2-operator-rc
+npm run proof:terminal-demo-final
+npm run proof:terminal-demo-operator-rehearsal
+npm run proof:terminal-demo-rc-readiness
+```
+
+Non-claims: no cron, no DB schema redesign, no unguarded real screen power command, no mock success claim, and no production Raspberry v2 claim without target evidence.

@@ -1,3 +1,11 @@
+# 2.0.0 - Real Demo Mode operator RC
+
+- Promoted Terminal Real Demo Mode to the v2.0 operator RC proof surface.
+- Added `proof:terminal-demo-v2-operator-rc`, which refreshes the v1.5-v1.9 proof chain: q-created DB rows, metadata/address queue path, batch 1/5 parity, screen-worker panel, operator layout/status routing, and DB image playback.
+- Updated `proof:terminal-demo-final`, operator rehearsal, and RC readiness audit to report `REAL_DEMO_MODE_V2_RC_READY` on a passing v2.0 package.
+- Updated operator-facing RC launcher wording and docs for the v2.0 RC decision and next action.
+- Kept cron, DB schema redesign, unguarded screen power commands, mock success claims, and production Raspberry claims out of scope.
+
 # 1.9.1 - Terminal Demo v2 OpenSpec handoff docs
 
 - Updated `terminal_demo_real_mode_openspec.md` with the v1.5.0 through v1.9.0 implementation floor and the v2.0.0 operator RC target.

@@ -222,3 +222,5 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/50_audits_and_migrations/DEBUG_PAGE_DOCS_2ACR_REVIEW_20260617.md` | Second-pass 2ACR review of Debug page OpenSpec/runbook/goal-registry coverage and non-claims. |
 
 | `docs/40_backlog_and_tasks/overall_project_goal_registry.md` | Canonical active registry for project-completeness reports across v1 gates, Debug goals, and active backlog items. |
+
+- v2.0.0 Real Demo Mode operator RC: `proof:terminal-demo-v2-operator-rc` and `REAL_DEMO_MODE_V2_RC_READY`.

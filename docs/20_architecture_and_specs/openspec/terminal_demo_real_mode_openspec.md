@@ -371,3 +371,19 @@ The real-demo terminal must keep Area B focused on command/action plan output an
 The real-demo `P` playback path opens the generated windowed HTML viewer through a safe Windows launch contract. The implementation must not use `Start-Process -LiteralPath`; it must pass the viewer path as an argument to `Start-Process -FilePath`, verify that the viewer file exists before opening, and keep a `cmd.exe start` fallback. Proof mode keeps GUI opening disabled.
 
 Decision: `TERMINAL_DEMO_WINDOWS_VIEWER_LAUNCH_READY`.
+
+
+## v2.0.0 Real Demo Mode operator RC
+
+Decision: `REAL_DEMO_MODE_V2_RC_READY` when the v2 proof chain passes. The v2 operator RC consolidates the implemented v1.5-v1.9 slices: DEMO-owned DB/media/truth/status/queue/playback, Q-created DB rows, metadata/address stages, batch 1/5 parity, guarded screen-worker panel, Area A/B/C layout routing, operator rehearsal evidence, and RC readiness reporting.
+
+Proof chain:
+
+```bash
+npm run proof:terminal-demo-v2-operator-rc
+npm run proof:terminal-demo-final
+npm run proof:terminal-demo-operator-rehearsal
+npm run proof:terminal-demo-rc-readiness
+```
+
+Non-claims: no cron, no DB schema redesign, no unguarded real screen power command, no mock success claim, and no production Raspberry v2 claim without target evidence.
