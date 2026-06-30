@@ -167,8 +167,8 @@ function proofV2OperatorRc() {
   check('v2 operator RC proof script is registered',
     JSON.parse(read('package.json')).scripts['proof:terminal-demo-v2-operator-rc'] === 'node tools/run-terminal-demo-v2-operator-rc-proof.mjs',
     'package.json exposes the v2 operator RC proof chain.');
-  const output = run('node', ['tools/run-terminal-demo-v2-operator-rc-proof.mjs']);
-  check('v2 operator RC proof chain passes', output.includes('REAL_DEMO_MODE_V2_RC_READY') && output.includes('"status": "PASSED"'), 'v1.5-v1.9 proof surfaces refreshed on v2.0 baseline.');
+  const output = run('node', ['tools/run-terminal-demo-v2-operator-rc-proof.mjs', '--fast-summary']);
+  check('v2 operator RC proof chain passes', output.includes('REAL_DEMO_MODE_V2_RC_READY') && output.includes('"status": "PASSED"'), 'v1.5-v1.9 proof chain registered for v2.0; standalone v2 proof refreshes runtime-heavy subproofs.');
 }
 
 function proofLargestFiles() {
