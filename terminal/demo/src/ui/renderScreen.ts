@@ -44,7 +44,7 @@ function workersTitle(state: DemoTerminalState): string {
 
 function helpText(state: DemoTerminalState): string {
   return state.runtimeBoundary.adapterMode === 'real-demo'
-    ? 'Help: Group 3B real-demo guarded orchestration. W toggles batch size. Q uses selected size. R refreshes. X exits. No cron.'
+    ? 'Help: Real-demo operator path. Area A=logs, Area B=command plan, Area C=playback/status. W toggles batch size. Q uses selected size. R refreshes. X exits. No cron.'
     : 'Help: Q auto-runs the storyboard. RIGHT/LEFT enters manual storyboard mode. R refreshes. X exits. Visual mock state only.';
 }
 
@@ -62,8 +62,8 @@ function renderWideScreen(state: DemoTerminalState, layout: TerminalLayout, term
   ]);
 
   const panelB = stackBlocks([
-    renderCurrentRun(state, titleFor(layout, 'current_run', 'CURRENT RUN'), panelBWidth),
-    renderPlayback(state, titleFor(layout, 'playback', 'PLAYBACK'), panelBWidth),
+    renderCurrentRun(state, titleFor(layout, 'current_run', 'AREA B COMMAND PLAN'), panelBWidth),
+    renderPlayback(state, titleFor(layout, 'playback', 'AREA C PLAYBACK / PREVIEW'), panelBWidth),
     renderScreenOnOff(state, titleFor(layout, 'screen_on_off', 'SCREEN ON/OFF WORKER'), panelBWidth),
     renderPlaybackQueue(state, 'PLAYBACK_QUEUE', panelBWidth)
   ]);
@@ -93,13 +93,13 @@ function renderStackedScreen(state: DemoTerminalState, layout: TerminalLayout): 
     blank(),
     renderActions(state, titleFor(layout, 'actions', 'ACTIONS')),
     blank(),
-    renderCurrentRun(state, titleFor(layout, 'current_run', 'CURRENT RUN')),
+    renderCurrentRun(state, titleFor(layout, 'current_run', 'AREA B COMMAND PLAN')),
     blank(),
     renderRpiStages(state, stagesTitle(state)),
     blank(),
     renderRpiWorkers(state, workersTitle(state)),
     blank(),
-    renderPlayback(state, titleFor(layout, 'playback', 'PLAYBACK')),
+    renderPlayback(state, titleFor(layout, 'playback', 'AREA C PLAYBACK / PREVIEW')),
     blank(),
     renderScreenOnOff(state, titleFor(layout, 'screen_on_off', 'SCREEN ON/OFF WORKER')),
     blank(),
