@@ -33,6 +33,9 @@ function childEnv() {
     if (!key.toLowerCase().startsWith('npm_')) env[key] = value;
   }
   env.TERMINAL_DEMO_COLUMNS = process.env.TERMINAL_DEMO_COLUMNS ?? '420';
+  env.GEOCODE_PROVIDER_ORDER = process.env.GEOCODE_PROVIDER_ORDER || 'deterministic_placeholder';
+  env.GEOCODE_ALLOW_NETWORK_PROVIDERS = process.env.GEOCODE_ALLOW_NETWORK_PROVIDERS || '0';
+  env.GEOCODE_NETWORK_PROVIDERS_ENABLED = process.env.GEOCODE_NETWORK_PROVIDERS_ENABLED || '0';
   return env;
 }
 
