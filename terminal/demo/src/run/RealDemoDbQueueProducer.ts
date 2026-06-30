@@ -7,6 +7,7 @@ import path from 'node:path';
 import type { RuntimeBoundaryState } from '../config/runtimeTypes.js';
 import type { PlannedManifestRow } from '../orchestration/DemoBatchManifestPlan.js';
 import type { SupportedBatchSize } from './SupportedBatchSize.js';
+import { runQMetadataAddressStages, type QMetadataAddressResult } from './RealDemoQMetadataAddressProcessor.js';
 
 export interface QCreatedQueueResult {
   status: 'passed' | 'blocked' | 'failed';
@@ -17,6 +18,7 @@ export interface QCreatedQueueResult {
   readyQueueRows: number;
   dbPath: string;
   sourceLabel: 'q-created';
+  metadataAddress: QMetadataAddressResult;
   messages: string[];
 }
 
@@ -51,6 +53,7 @@ export function createQDemoDbQueueRows(input: {
     return { ...base, status: 'failed', messages: [`stage2_index_register failed: ${stage2.message}`, ...stage2.attempts] };
   }
 
+  const metadataAddress = runQMetadataAddressStages({ boundary: input.boundary, executedAt });
   const queue = runPythonJson(codeRoot, ['-c', buildQueueSql(), input.boundary.dbPath, input.boundary.downloadDir, JSON.stringify(rows), executedAt]);
   if (queue.status !== 'ok') return { ...base, status: 'failed', messages: [`q-created queue SQL failed: ${queue.message}`, ...queue.attempts] };
 
@@ -61,11 +64,13 @@ export function createQDemoDbQueueRows(input: {
     insertedQueueRows: numberValue(output.insertedQueueRows),
     updatedQueueRows: numberValue(output.updatedQueueRows),
     readyQueueRows: numberValue(output.readyQueueRows),
+    metadataAddress,
     messages: [
       'Q-created DEMO DB queue source: DEMO_DB_PATH + real slideshow_queue tables.',
       `Q-created selected rows: ${rows.map((row) => `#${row.rowNumber} ${row.relativePath}`).join(' | ')}`,
       `stage2 scanned=${numberValue((stage2.output as Record<string, unknown>).scannedMediaCount)} inserted_assets=${numberValue((stage2.output as Record<string, unknown>).insertedCanonicalCount)} updated_assets=${numberValue((stage2.output as Record<string, unknown>).updatedCanonicalCount)}`,
       `Q-created slideshow_queue rows: inserted=${numberValue(output.insertedQueueRows)} updated=${numberValue(output.updatedQueueRows)} ready=${numberValue(output.readyQueueRows)}`,
+      ...metadataAddress.messages,
       'Queue row source label: q-created',
       'No cron was used by Q DB queue creation.',
       'No JSON queue file was used as source of truth.'
@@ -83,6 +88,7 @@ function baseResult(input: { boundary: RuntimeBoundaryState; batchSize: Supporte
     readyQueueRows: 0,
     dbPath: input.boundary.dbPath,
     sourceLabel: 'q-created',
+    metadataAddress: { status: 'blocked', gpsProcessed: 0, gpsSuccess: 0, gpsFailure: 0, geocodeProcessed: 0, geocodeSuccess: 0, geocodeFailure: 0, addressTextRows: 0, providerNames: [], messages: [] },
     messages: []
   };
 }
