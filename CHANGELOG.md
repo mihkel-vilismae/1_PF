@@ -1,3 +1,9 @@
+# 1.7.0 - Batch size 1/5 real-demo execution parity
+
+- Manual Q now writes DEMO truth/status events for Index, GPS parser, Geocode, and Queue stages.
+- Batch 1 and 5 remain manual, DEMO-scoped, and no-cron while sharing the same DB helper path.
+- Added `proof:terminal-demo-batch-parity`.
+
 # 1.6.0 - Real-demo metadata/address queue path
 
 - Q now runs existing DEMO GPS parser and reverse-geocode stages before preparing q-created queue rows.
