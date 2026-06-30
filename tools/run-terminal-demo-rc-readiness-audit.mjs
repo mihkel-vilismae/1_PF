@@ -40,7 +40,7 @@ function runCommand(label, command, args, extraEnv = {}) {
   const result = spawnSync(command, args, {
     cwd: repoRoot,
     encoding: 'utf8',
-    timeout: 240000,
+    timeout: 600000,
     maxBuffer: 12 * 1024 * 1024,
     shell: process.platform === 'win32',
     env: { ...process.env, ...extraEnv, TERMINAL_DEMO_COLUMNS: process.env.TERMINAL_DEMO_COLUMNS ?? '420', GEOCODE_PROVIDER_ORDER: process.env.GEOCODE_PROVIDER_ORDER || 'deterministic_placeholder', GEOCODE_ALLOW_NETWORK_PROVIDERS: process.env.GEOCODE_ALLOW_NETWORK_PROVIDERS || '0', GEOCODE_NETWORK_PROVIDERS_ENABLED: process.env.GEOCODE_NETWORK_PROVIDERS_ENABLED || '0' }

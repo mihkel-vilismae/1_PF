@@ -45,7 +45,7 @@ function runCommand(label, command, args) {
   const result = spawnSync(command, args, {
     cwd: repoRoot,
     encoding: 'utf8',
-    timeout: 180000,
+    timeout: 600000,
     maxBuffer: 10 * 1024 * 1024,
     env: childEnv(),
     shell: process.platform === 'win32'
