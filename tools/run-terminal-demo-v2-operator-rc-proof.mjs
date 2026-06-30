@@ -14,8 +14,8 @@ const version = readText('VERSION').trim();
 const packageJson = JSON.parse(readText('package.json'));
 const loader = path.join(repoRoot, 'node_modules', 'tsx', 'dist', 'loader.mjs');
 const commands = [
-  tsxProof('q-created-db-queue', 'tools/run-terminal-demo-q-db-queue-creation-proof.mjs', 'REAL_DEMO_Q_DB_QUEUE_CREATION_READY'),
-  tsxProof('metadata-address-queue', 'tools/run-terminal-demo-metadata-address-queue-proof.mjs', 'REAL_DEMO_METADATA_TO_ADDRESS_QUEUE_READY'),
+  npmProof('q-created-db-queue', 'proof:terminal-demo-q-db-queue-creation', 'REAL_DEMO_Q_DB_QUEUE_CREATION_READY'),
+  npmProof('metadata-address-queue', 'proof:terminal-demo-metadata-address-queue', 'REAL_DEMO_METADATA_TO_ADDRESS_QUEUE_READY'),
   nodeProof('batch-parity', 'tools/run-terminal-demo-batch-parity-proof.mjs', 'REAL_DEMO_BATCH_EXECUTION_PARITY_READY'),
   nodeProof('screen-worker-panel', 'tools/run-terminal-demo-screen-worker-panel-proof.mjs', 'REAL_DEMO_SCREEN_WORKER_PANEL_READY'),
   nodeProof('operator-layout-status', 'tools/run-terminal-demo-operator-layout-status-proof.mjs', 'REAL_DEMO_OPERATOR_LAYOUT_STATUS_READY'),
@@ -54,18 +54,17 @@ if (failed.length) process.exitCode = 1;
 function readText(relativePath) { return readFileSync(path.join(repoRoot, relativePath), 'utf8'); }
 function relative(absolutePath) { return path.relative(repoRoot, absolutePath).replace(/\\/g, '/'); }
 function check(label, passed, detail = '') { checks.push({ label, passed: Boolean(passed), detail }); }
-function nodeProof(label, script, expectedDecision) { return { label, args: [script], expectedDecision, type: 'node' }; }
-function tsxProof(label, script, expectedDecision) {
-  return { label, args: ['--import', pathToFileURL(loader).href, script], expectedDecision, type: 'tsx' };
-}
+function nodeProof(label, script, expectedDecision) { return { label, command: process.execPath, args: [script], expectedDecision, type: 'node' }; }
+function npmProof(label, script, expectedDecision) { return { label, command: 'npm', args: ['run', script], expectedDecision, type: 'npm' }; }
 function runProof(command) {
   const started = Date.now();
-  const result = spawnSync(process.execPath, command.args, {
+  const result = spawnSync(command.command, command.args, {
     cwd: repoRoot,
     encoding: 'utf8',
     timeout: 300000,
     maxBuffer: 20 * 1024 * 1024,
-    env: { ...process.env, TERMINAL_DEMO_COLUMNS: process.env.TERMINAL_DEMO_COLUMNS ?? '420' }
+    env: { ...process.env, TERMINAL_DEMO_COLUMNS: process.env.TERMINAL_DEMO_COLUMNS ?? '420' },
+    shell: process.platform === 'win32'
   });
   const output = `${result.stdout ?? ''}\n${result.stderr ?? ''}`;
   const parsed = parseJson(output);
