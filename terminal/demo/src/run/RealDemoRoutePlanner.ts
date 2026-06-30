@@ -24,6 +24,7 @@ export function buildRealDemoRouteFrames(input: {
   manifest: ManifestWriteResult;
   batchSize: SupportedBatchSize;
   qDbQueue: QCreatedQueueResult;
+  qTruthMessages?: string[];
 }): RealDemoRouteFramePlan[] {
   const selectedRows = input.plan.manifest.selectedRows.slice(0, maxRunRows);
   const route = input.batchSize === 1 ? 'batch_size_1_file_by_file' : 'batch_size_5_stage_batch';
@@ -36,7 +37,8 @@ export function buildRealDemoRouteFrames(input: {
         `Rows in run manifest: ${selectedRows.length}`,
         ...selectedRows.map((row) => `Will use row #${row.rowNumber}: ${row.relativePath} gps=${row.gps}`),
         `Q DB queue creation: ${input.qDbQueue.status}`,
-        ...input.qDbQueue.messages.map((message) => `Q DB queue: ${message}`)
+        ...input.qDbQueue.messages.map((message) => `Q DB queue: ${message}`),
+        ...(input.qTruthMessages ?? []).map((message) => `Q truth/status: ${message}`)
       ]
     },
     {

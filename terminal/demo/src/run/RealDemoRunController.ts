@@ -11,6 +11,7 @@ import { writeDemoBatchManifest } from './DemoBatchManifestWriter.js';
 import type { SupportedBatchSize } from './SupportedBatchSize.js';
 import { buildRealDemoRouteFrames } from './RealDemoRoutePlanner.js';
 import { createQDemoDbQueueRows } from './RealDemoDbQueueProducer.js';
+import { writeQDemoTruthEvents } from './RealDemoQTruthWriter.js';
 
 export interface RealRunInput {
   boundary: RuntimeBoundaryState;
@@ -26,8 +27,10 @@ export interface RealRunInput {
 export function runRealDemoQ(input: RealRunInput): DemoTerminalState[] {
   const plan = buildDryRunCommandPlan(input.boundary, input.mediaRows, input.batchSize);
   const manifest = writeDemoBatchManifest(input.boundary, input.mediaRows, input.batchSize);
-  const qDbQueue = createQDemoDbQueueRows({ boundary: input.boundary, rows: plan.manifest.selectedRows, batchSize: input.batchSize });
-  const framePlans = buildRealDemoRouteFrames({ boundary: input.boundary, plan, manifest, batchSize: input.batchSize, qDbQueue });
+  const executedAt = new Date().toISOString();
+  const qDbQueue = createQDemoDbQueueRows({ boundary: input.boundary, rows: plan.manifest.selectedRows, batchSize: input.batchSize, executedAt });
+  const qTruth = writeQDemoTruthEvents({ boundary: input.boundary, qResult: qDbQueue, executedAt });
+  const framePlans = buildRealDemoRouteFrames({ boundary: input.boundary, plan, manifest, batchSize: input.batchSize, qDbQueue, qTruthMessages: qTruth.messages });
   return framePlans.map((framePlan) => {
     const fresh = input.refresh?.() ?? input;
     return buildFrame(input, fresh, [`Frame: ${framePlan.title}`, ...framePlan.lines]);
