@@ -63,7 +63,7 @@ function runProof(command) {
     encoding: 'utf8',
     timeout: 300000,
     maxBuffer: 20 * 1024 * 1024,
-    env: { ...process.env, TERMINAL_DEMO_COLUMNS: process.env.TERMINAL_DEMO_COLUMNS ?? '420' },
+    env: { ...process.env, TERMINAL_DEMO_COLUMNS: process.env.TERMINAL_DEMO_COLUMNS ?? '420', GEOCODE_PROVIDER_ORDER: process.env.GEOCODE_PROVIDER_ORDER || 'deterministic_placeholder', GEOCODE_ALLOW_NETWORK_PROVIDERS: process.env.GEOCODE_ALLOW_NETWORK_PROVIDERS || '0', GEOCODE_NETWORK_PROVIDERS_ENABLED: process.env.GEOCODE_NETWORK_PROVIDERS_ENABLED || '0' },
     shell: process.platform === 'win32'
   });
   const output = `${result.stdout ?? ''}\n${result.stderr ?? ''}`;

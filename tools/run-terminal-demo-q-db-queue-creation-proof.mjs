@@ -8,6 +8,9 @@ import { DbPlaybackRepository } from '../terminal/demo/src/playback/DbPlaybackRe
 import { runDbImagePlaybackButton } from '../terminal/demo/src/playback/DbImagePlaybackButton.ts';
 
 const repoRoot = process.cwd();
+process.env.GEOCODE_PROVIDER_ORDER = process.env.GEOCODE_PROVIDER_ORDER || 'deterministic_placeholder';
+process.env.GEOCODE_ALLOW_NETWORK_PROVIDERS = process.env.GEOCODE_ALLOW_NETWORK_PROVIDERS || '0';
+process.env.GEOCODE_NETWORK_PROVIDERS_ENABLED = process.env.GEOCODE_NETWORK_PROVIDERS_ENABLED || '0';
 const proof = 'terminal-demo-q-db-queue-creation';
 const runs = {
   batch1: runScenario(1),
