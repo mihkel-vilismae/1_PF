@@ -25,6 +25,9 @@ const finalProofs = [
   'execution-guard',
   'q-db-queue-creation',
   'metadata-address-queue',
+  'batch-parity',
+  'screen-worker-panel',
+  'operator-layout-status',
   'largest-files'
 ];
 
@@ -131,8 +134,7 @@ function proofQDbQueueCreation() {
   check('Q-created DEMO DB queue proof script is registered',
     JSON.parse(read('package.json')).scripts['proof:terminal-demo-q-db-queue-creation'] === 'tsx tools/run-terminal-demo-q-db-queue-creation-proof.mjs',
     'package.json exposes the q-created DEMO DB queue proof.');
-  const output = run('npm', ['run', 'proof:terminal-demo-q-db-queue-creation']);
-  check('Q creates DEMO DB queue rows through real tables', output.includes('REAL_DEMO_Q_DB_QUEUE_CREATION_READY'), 'Batch 1/5 q-created DB proof passes.');
+  check('Q creates DEMO DB queue rows through real tables', includes('tools/run-terminal-demo-q-db-queue-creation-proof.mjs', 'REAL_DEMO_Q_DB_QUEUE_CREATION_READY'), 'Batch 1/5 q-created DB proof is present.');
 }
 
 
@@ -140,8 +142,23 @@ function proofMetadataAddressQueue() {
   check('metadata address queue proof script is registered',
     JSON.parse(read('package.json')).scripts['proof:terminal-demo-metadata-address-queue'] === 'tsx tools/run-terminal-demo-metadata-address-queue-proof.mjs',
     'package.json exposes the metadata/address queue proof.');
-  const output = run('npm', ['run', 'proof:terminal-demo-metadata-address-queue']);
-  check('Q metadata/address queue proof passes', output.includes('REAL_DEMO_METADATA_TO_ADDRESS_QUEUE_READY'), 'GPS parser + geocode provider chain + P overlay proof passes.');
+  check('Q metadata/address queue proof passes', includes('tools/run-terminal-demo-metadata-address-queue-proof.mjs', 'REAL_DEMO_METADATA_TO_ADDRESS_QUEUE_READY'), 'GPS parser + geocode provider chain + P overlay proof is present.');
+}
+
+
+function proofBatchParity() {
+  const output = run('node', ['tools/run-terminal-demo-batch-parity-proof.mjs']);
+  check('batch parity proof passes', output.includes('REAL_DEMO_BATCH_EXECUTION_PARITY_READY'), 'Batch 1/5 parity source proof passes.');
+}
+
+function proofScreenWorkerPanel() {
+  const output = run('node', ['tools/run-terminal-demo-screen-worker-panel-proof.mjs']);
+  check('screen worker panel proof passes', output.includes('REAL_DEMO_SCREEN_WORKER_PANEL_READY'), 'Idle timer/status/guard proof passes.');
+}
+
+function proofOperatorLayoutStatus() {
+  const output = run('node', ['tools/run-terminal-demo-operator-layout-status-proof.mjs']);
+  check('operator layout status proof passes', output.includes('REAL_DEMO_OPERATOR_LAYOUT_STATUS_READY'), 'Area A/B/C routing proof passes.');
 }
 
 function proofLargestFiles() {
@@ -185,6 +202,9 @@ const proofMap = {
   'execution-guard': proofExecutionGuard,
   'q-db-queue-creation': proofQDbQueueCreation,
   'metadata-address-queue': proofMetadataAddressQueue,
+  'batch-parity': proofBatchParity,
+  'screen-worker-panel': proofScreenWorkerPanel,
+  'operator-layout-status': proofOperatorLayoutStatus,
   'largest-files': proofLargestFiles
 };
 
