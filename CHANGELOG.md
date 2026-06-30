@@ -1,3 +1,11 @@
+# 1.9.1 - Terminal Demo v2 OpenSpec handoff docs
+
+- Updated `terminal_demo_real_mode_openspec.md` with the v1.5.0 through v1.9.0 implementation floor and the v2.0.0 operator RC target.
+- Added `terminal_demo_v2_operator_rc_handoff_openspec.md` as the implementation-ready OpenSpec handoff for v2.0.0.
+- Added `terminal_demo_v2_implementation_handoff.md` with risks, proof refresh commands, and do-not-do boundaries for the v2.0 implementation pass.
+- Registered `proof:terminal-demo-v2-handoff-docs` to prove the docs/handoff/index coverage.
+- Preserved runtime scope: docs/OpenSpec/proof-handoff only; no runtime code behavior change, no cron, no DB schema redesign, no unguarded screen command, and no v2 final claim.
+
 # 1.9.0 - Operator layout/status hardening
 
 - Labeled operator areas: Area A real-time log, Area B command plan, Area C playback/preview.

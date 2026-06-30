@@ -527,3 +527,19 @@ Proof:
 ```bash
 npm run proof:terminal-demo-q-db-queue-creation
 ```
+
+
+## Terminal Demo v1.9.1 - v2.0 OpenSpec handoff
+
+This docs-only slice updates the Terminal Demo Real Mode OpenSpec and adds the v2.0.0 operator RC handoff docs. It does not change runtime behavior and does not claim v2.0 final readiness.
+
+Docs/proof command:
+
+```bash
+npm run proof:terminal-demo-v2-handoff-docs
+```
+
+Main handoff docs:
+
+- `docs/20_architecture_and_specs/openspec/terminal_demo_v2_operator_rc_handoff_openspec.md`
+- `docs/40_backlog_and_tasks/terminal_demo_v2_implementation_handoff.md`
