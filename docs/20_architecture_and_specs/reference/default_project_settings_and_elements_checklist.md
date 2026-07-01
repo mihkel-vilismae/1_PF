@@ -550,3 +550,21 @@ Terminal-style operator interfaces should use this vocabulary when applicable:
 | `ViewKey` | Keyboard key that selects a view when no modal owns input. |
 
 For PhotoFrame terminal Demo Mode, reserve `D` for Default, `L` for Logs, `I` for iCloudPD login, and `1`-`6` for stage/playback views. Empty shell slices must not execute real button actions.
+
+
+### Terminal Shell Component Composition Defaults
+
+Terminal-style operator interfaces should compose repeated UI blocks from reusable helpers instead of duplicating strings and layout code across views.
+
+Recommended reusable pieces:
+
+| Component | Purpose |
+|---|---|
+| `SectionFrame` | Shared bordered section wrapper. |
+| `ViewMapSection` | Shared hotkey-to-view navigation table. |
+| `StatusRing` | Shared status marker/icon beside status labels. |
+| `StatusRow` | Shared read-only label/value/status row. |
+| `RpiStagesSection` | Shared RPI stage truth/status section. |
+| `RpiWorkersSection` | Shared RPI worker truth/status section. |
+
+For shell-first work, documentation must distinguish `planned shell contract` from `implemented runtime behavior`. Shell buttons may be visible, but must not execute auth, workers, cron, playback, DB writes, or file copies until a later implementation slice explicitly wires and proves that behavior.

@@ -41,6 +41,38 @@ Proof:
 npm run proof:terminal-demo-view0-map-view6-blank
 ```
 
+## Remaining view shell beeline preflight
+
+Version `2.0.11` adds an honest planning and proof guard for the next beeline after View `0` and View `6`.
+
+Scope guard:
+
+- View `0` is frozen for this chat: keep the current map page, map navigation, and empty `TESTING` section unless explicitly reopened.
+- View `6` is frozen for this chat: keep the blank playback shell unless explicitly reopened.
+- Future work targets View `D`, `L`, `I`, and stage views `1` through `5` as shell contracts first.
+- Planned buttons remain shell-only until explicitly implemented. Do not run auth, log tailing, file copy, workers, DB writes, playback, or cron from this preflight.
+
+Planned shell targets:
+
+| View | Planned shell contract |
+|---|---|
+| `D` | Add an `iCloudPD authorization` section with read-only status and a `Go to login view` navigation control. |
+| `I` | Add only the newer NEW AUTH button set; older compatibility auth buttons are forbidden. |
+| `L` | Add log/status/truth file inspection panels as shell placeholders only. |
+| `1` | Add Download stage shell with `Copy one file from generated test images` as a non-executing button shell. |
+| `2` | Add Indexing stage shell. |
+| `3` | Add GPS Parser stage shell. |
+| `4` | Add Geocode stage shell. |
+| `5` | Add Enqueue stage shell. |
+
+Reusable UI rule: views should compose reusable components such as `SectionFrame`, `ViewMapSection`, planned `StatusRing`, planned `StatusRow`, planned `RpiStagesSection`, and planned `RpiWorkersSection` instead of duplicating rendering logic.
+
+Proof:
+
+```bash
+npm run proof:terminal-demo-view-shell-beeline-preflight
+```
+
 ## Section header ID overlay
 
 Version `2.0.7` adds a display-only section header ID overlay for operator screenshots and implementation discussions. Press `H` to toggle `section_header_id_overlay` on/off. The default view stays unprefixed. When enabled, each `SectionHeader` receives a stable Pane/Section prefix such as:
