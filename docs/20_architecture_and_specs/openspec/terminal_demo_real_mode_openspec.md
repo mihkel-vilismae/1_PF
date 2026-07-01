@@ -398,3 +398,25 @@ Proof:
 ```bash
 npm run proof:terminal-demo-q-operator-status
 ```
+
+## v2.0.6 start_stage_modal docs and launcher contract
+
+Decision: `START_STAGE_MODAL_OPERATOR_DOCS_READY`.
+
+The real-demo terminal documents `S` as the operator key that opens `start_stage_modal`. The modal rows are: key `1` Download disabled, key `2` Index, key `3` GPS Parser, key `4` Geocode, and key `5` Enqueue for Playback. Keys `2`-`5` run DEMO-owned DB effects while retaining the existing `regular-stage-worker` command contract and `noCron=true` evidence.
+
+Each row has an independent manual `batch_size`, default `1`, allowed values `1` and `3`. The modal batch-size setting is separate from Q batch-size behavior.
+
+Required proof chain:
+
+```bash
+npm run proof:terminal-demo-start-stage-modal
+npm run proof:terminal-demo-start-stage-modal-shared-path
+npm run proof:terminal-demo-start-stage-modal-db-effects
+npm run proof:terminal-demo-start-stage-modal-docs
+```
+
+Launcher coverage: `RUN_TERMINAL_DEMO_REAL.CMD` and `terminal/demo/windows_runner_real.cmd` must visibly mention `S` / `start_stage_modal`, disabled Download/key `1`, and keys `2`-`5` for manual stages.
+
+Non-claims: no Download start, no cron/crontab install or invocation, no DB schema redesign, no mock success claim, and no production Raspberry v2 claim without target evidence.
+

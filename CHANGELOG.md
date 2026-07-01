@@ -1,3 +1,24 @@
+# 2.0.6 - Start stage modal docs and launcher audit
+
+- Updated terminal Demo Mode docs, OpenSpec coverage, launcher guidance, and proof docs for the `start_stage_modal` feature delivered in v2.0.3-v2.0.5.
+- Documented the key table: `S` opens `start_stage_modal`, `1` remains disabled for Download, and `2`-`5` run Index/GPS Parser/Geocode/Enqueue against the DEMO DB.
+- Documented independent per-stage manual batch sizes with default `1` and allowed modal values `1` and `3`.
+- Added launcher copy so `RUN_TERMINAL_DEMO_REAL.CMD` and `terminal/demo/windows_runner_real.cmd` visibly tell operators how to open and use the modal.
+- Added `proof:terminal-demo-start-stage-modal-docs` to guard docs, OpenSpec, proof docs, package scripts, and launcher wording.
+
+Scope: Batch 4 docs/terminal/launcher audit only. No runtime execution changes, no cron, no Download start, no DB schema redesign, and no new Raspberry production claim.
+
+# 2.0.5 - Start stage modal DB effects
+
+- Executed enabled `start_stage_modal` keys `2`-`5` against the DEMO SQLite fixture using existing sqlite stage helper operations.
+- Preserved the shared `regular-stage-worker` command contract and `noCron=true` evidence from v2.0.4 while adding real DEMO DB effects.
+- Wrote DEMO-scoped regular-worker truth/status evidence for manual modal runs.
+- Appended DB effect results to `runtime_data/logs/demo/terminal-button-actions.jsonl`.
+- Kept Download/key `1` visible but disabled.
+- Added `proof:terminal-demo-start-stage-modal-db-effects`.
+
+Scope: Batch 3 DB effects for keys `2`-`5` only. No cron, no Download stage start, no DB schema redesign, no production Raspberry claim.
+
 # 2.0.4 - Start stage modal shared worker path guard
 
 - Routed enabled `start_stage_modal` keys through a shared manual-stage controller that plans against the existing `regular-stage-worker` command contract.

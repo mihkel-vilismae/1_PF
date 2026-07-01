@@ -11,6 +11,9 @@ if not exist "%RUNNER_PS1%" (
 )
 
 echo [PhotoFrame Demo Terminal] Starting Windows REAL demo runner...
+echo [PhotoFrame Demo Terminal] Operator key S opens start_stage_modal.
+echo [PhotoFrame Demo Terminal] start_stage_modal keys: 1 Download disabled; 2 Index; 3 GPS Parser; 4 Geocode; 5 Enqueue for Playback.
+echo [PhotoFrame Demo Terminal] Modal batch_size default is 1; allowed modal values are 1 and 3.
 
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%RUNNER_PS1%" -Adapter real-demo
 set "EXIT_CODE=%ERRORLEVEL%"

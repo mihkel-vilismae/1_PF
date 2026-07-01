@@ -19,7 +19,7 @@ npm run proof:terminal-demo-playback-status
 The product-worker quick reference is kept in `terminal/demo/docs/photoframe-worker-product-pipeline-reference.md` so agents can avoid opening larger worker/evidence files unless needed.
 
 
-It is intentionally small. The mock adapter still drives the visual demo, and the real-demo adapter currently resolves/verifies DEMO runtime boundaries, reads generated demo media files, reads DEMO truth/status files, and plans future manual worker commands without executing workers or writing DB/truth data yet.
+It is intentionally small. The mock adapter still drives the visual rehearsal. The real-demo adapter resolves DEMO runtime boundaries, reads generated demo media/truth/status, supports Q/P operator paths, and now exposes `start_stage_modal` for manual stage starts against the DEMO DB while preserving no-cron safety.
 
 
 ## Real-demo Group 1 scaffold
@@ -581,3 +581,37 @@ Proof:
 ```bash
 npm run proof:terminal-demo-q-operator-status
 ```
+
+## v2.0.3-v2.0.6 start_stage_modal manual stage start
+
+Press `S` in real-demo mode to open `start_stage_modal`. The modal shows one row per stage.
+
+| The key pressed | Action it must take |
+|---|---|
+| `S` | Open/display `start_stage_modal`. |
+| `1` | Show Download, but keep it disabled for now. |
+| `2` | Run Index against the DEMO DB through the shared regular worker path contract. |
+| `3` | Run GPS Parser against the DEMO DB through the shared regular worker path contract. |
+| `4` | Run Geocode against the DEMO DB through the shared regular worker path contract. |
+| `5` | Run Enqueue for Playback against the DEMO DB through the shared regular worker path contract. |
+
+Each modal row has an independent manual `batch_size`. The default is `1`; allowed modal values are `1` and `3`. The modal keeps Q batch-size behavior separate.
+
+The enabled rows retain the existing `regular-stage-worker` command contract: `npm run api -- --scheduler regular-stage-worker`. The real-demo terminal records `noCron=true`; it does not install or invoke cron. Manual evidence is written to `runtime_data/logs/demo/terminal-button-actions.jsonl`, with stage, batch size, route, DB effect, truth/status, and manifest details.
+
+Proofs:
+
+```bash
+npm run proof:terminal-demo-start-stage-modal
+npm run proof:terminal-demo-start-stage-modal-shared-path
+npm run proof:terminal-demo-start-stage-modal-db-effects
+npm run proof:terminal-demo-start-stage-modal-docs
+```
+
+Docs/OpenSpec:
+
+- `docs/20_architecture_and_specs/openspec/terminal_demo_start_stage_modal_openspec.md`
+- `docs/proofs/terminal_demo_start_stage_modal_docs_proof.md`
+
+Non-claims: key `1` does not start Download; no cron/crontab is installed or invoked; no DB schema redesign; no production Raspberry claim without target evidence.
+
