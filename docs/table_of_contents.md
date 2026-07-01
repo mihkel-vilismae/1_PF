@@ -51,11 +51,19 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/10_runbooks/gps_metadata_sources.md` | GPS metadata source formats for EXIF, sidecars, filename tokens, and path tokens. |
 | `docs/10_runbooks/geocode_provider_activation.md` | Safe geocode provider activation and cache-first verification. |
 | `docs/10_runbooks/documentation_workflow_and_inventory.md` | Documentation workflow and inventory rules. |
+| `docs/10_runbooks/master_branch_roundtrip_workflow.md` | Reusable workflow for branching from `master`, preserving merge handoff metadata, and uploading sibling branches together before merge-back. |
 | `docs/10_runbooks/improve_create_skills_flow_prompt.md` | Reusable 3x2 ACR prompt for extracting/upgrading workflow skills from the current chat. |
 | `docs/10_runbooks/voice_ai_transcript_intake.md` | Workflow for extracting safe requirements and proof notes from messy Voice AI transcripts. |
 | `docs/10_runbooks/debug_page_runbook.md` | Operator/developer runbook for the planned Debug page, crontab setup, worker debug panes, and safety checks. |
 | `docs/10_runbooks/raspberry_project_owned_launcher.md` | Raspberry project-owned launcher skeleton runbook. |
 | `docs/10_runbooks/overall_project_completeness_reporting.md` | Source-backed workflow for overall project completeness tables, status handling, and proof honesty. |
+
+## Repo-local skills
+
+| Path | Use |
+| --- | --- |
+| `../.codex/skills/master-branch-roundtrip/SKILL.md` | Repo-local workflow for branching from `master`, preserving branch handoff metadata, and preparing safe merge-back uploads. |
+| `../.codex/skills/branch-merge-intake-handoff/SKILL.md` | Repo-local intake workflow for auditing multiple branch ZIPs and handoff bundles before implementation merge work. |
 
 
 ## Proof artifacts

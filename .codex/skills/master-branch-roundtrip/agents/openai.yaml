@@ -1,0 +1,4 @@
+interface:
+  display_name: "Master Branch Roundtrip"
+  short_description: "Prepare and merge branches back to master"
+  default_prompt: "Use $master-branch-roundtrip to prepare this branch from master for an easier future merge back into master."
