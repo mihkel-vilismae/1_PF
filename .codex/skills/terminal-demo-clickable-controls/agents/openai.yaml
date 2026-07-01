@@ -1,0 +1,4 @@
+interface:
+  display_name: "Terminal Demo Controls"
+  short_description: "Implement terminal-demo controls safely."
+  default_prompt: "Use $terminal-demo-clickable-controls to add or audit terminal/demo keyboard, mouse, PIR, or clickable control behavior safely."
