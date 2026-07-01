@@ -1106,6 +1106,14 @@ Scope: Q/operator reporting and persistent action logging only. No cron, DB sche
 ### Removed
 - None.
 
+
+## 2.0.10 - Terminal View 0 map and View 6 blank shell
+
+- Added View `0` as `Table of Contents and Debug` with a View Map section and an empty Testing section.
+- Kept View `6` as a blank playback page shell only; no playback buttons or playback execution were added.
+- Added proof `proof:terminal-demo-view0-map-view6-blank`.
+- Integrated the uploaded View 0 and View 6 planning docs only as scoped planning inputs; test-page modal behavior and View 6 playback controls remain deferred.
+
 ## DATE_NOT_RECORDED
 ## v0.10.13 - queue prep keeps playable media eligible
 

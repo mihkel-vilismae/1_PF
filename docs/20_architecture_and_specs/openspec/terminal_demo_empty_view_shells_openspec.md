@@ -25,6 +25,7 @@ Define the first view-system slice for terminal Demo Mode. This slice creates em
 
 | View key | View shell |
 |---|---|
+| `0` | Table of Contents and Debug map/testing shell. |
 | `D` | Default operator view. |
 | `L` | Logs view. |
 | `I` | iCloudPD login view. |
@@ -38,6 +39,7 @@ Define the first view-system slice for terminal Demo Mode. This slice creates em
 ## Behavior contract
 
 - `D` remains the current real-demo operator screen.
+- `0` renders a map/testing shell only.
 - `L`, `I`, and `1`-`6` render empty view shells only.
 - Empty view shells must state that no buttons, workers, auth, playback, DB writes, file copies, or cron calls run from this slice.
 - When `start_stage_modal` is open, modal keys `1`-`5` keep their existing modal behavior and must not switch views.

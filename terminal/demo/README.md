@@ -22,6 +22,25 @@ The product-worker quick reference is kept in `terminal/demo/docs/photoframe-wor
 It is intentionally small. The mock adapter still drives the visual rehearsal. The real-demo adapter resolves DEMO runtime boundaries, reads generated demo media/truth/status, supports Q/P operator paths, and now exposes `start_stage_modal` for manual stage starts against the DEMO DB while preserving no-cron safety.
 
 
+
+## View 0 map and View 6 blank shell
+
+Version `2.0.10` adds the narrowed beeline shell for View `0` and View `6`.
+
+- Press `0` to open `VIEW 0 — TABLE OF CONTENTS AND DEBUG`.
+- View `0` contains a `VIEW MAP` section listing `[D]`, `[L]`, `[I]`, and `[1]` through `[6]`.
+- Pressing a listed key from View `0` routes to that page when no modal owns input.
+- View `0` also contains a second empty section named `TESTING`.
+- View `6` remains a blank playback page shell only. No playback buttons are rendered in this slice.
+
+This slice integrates the uploaded planning docs `PF_login_View0_Map_Debug_Page_Overview_ACR.md` and `PF_login_View6_Playback_Page_Overview_XACR.md` only within the narrowed scope above. Test-page modal behavior, View 6 playback buttons, fixture copy, queue playback, auth, DB writes, file copies, workers, and cron remain deferred.
+
+Proof:
+
+```bash
+npm run proof:terminal-demo-view0-map-view6-blank
+```
+
 ## Section header ID overlay
 
 Version `2.0.7` adds a display-only section header ID overlay for operator screenshots and implementation discussions. Press `H` to toggle `section_header_id_overlay` on/off. The default view stays unprefixed. When enabled, each `SectionHeader` receives a stable Pane/Section prefix such as:
