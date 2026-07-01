@@ -18,6 +18,7 @@ import { runOrPlanPlaybackWorker } from '../playback/PhotoFramePlaybackCommandAd
 import { DbPlaybackRepository } from '../playback/DbPlaybackRepository.js';
 import { runDbImagePlaybackButton } from '../playback/DbImagePlaybackButton.js';
 import type { TerminalMouseEvent } from '../ui/terminalMouse.js';
+import { cloneStartStageModalState, createStartStageModalState, handleStartStageModalKey, openStartStageModal, type ManualStageKey } from '../startStageModal/StartStageModalState.js';
 import { findHitbox } from '../ui/terminalMouse.js';
 
 /**
@@ -38,6 +39,7 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
   private uiLogLines: string[] = [];
   private lastActivityAt = Date.now();
   private latestScreenStatus = 'waiting for keyboard/mouse activity';
+  private startStageModal = createStartStageModalState(false);
 
   constructor(private readonly boundary: RuntimeBoundaryState) {
     this.state = this.buildState();
@@ -56,6 +58,7 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
     this.uiLogLines = [];
     this.lastActivityAt = Date.now();
     this.latestScreenStatus = 'waiting for keyboard/mouse activity';
+    this.startStageModal = createStartStageModalState(false);
     this.state = this.buildState();
     return this.getState();
   }
@@ -68,6 +71,8 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
   async handleKey(key: string): Promise<DemoTerminalState[]> {
     this.noteInputActivity(`keyboard ${key.toUpperCase() || 'input'}`);
     const normalized = key.toUpperCase();
+    if (normalized === 'S') return [this.openStartStageModal()];
+    if (isManualStageKey(normalized)) return [this.handleStartStageModalKey(normalized)];
     if (normalized === 'W') return [this.toggleBatchSize()];
     if (normalized === 'Q') return this.runQStoryboard();
     if (normalized === 'P') return [this.runPlaybackSelection()];
@@ -129,6 +134,21 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
 
   stepQStoryboard(direction: 'left' | 'right'): DemoTerminalState {
     this.state = this.snapshots.step(direction, this.state);
+    return this.getState();
+  }
+
+  private openStartStageModal(): DemoTerminalState {
+    this.startStageModal = openStartStageModal(this.startStageModal);
+    this.state = this.buildState(['S pressed: start_stage_modal opened.']);
+    this.snapshots.setSnapshots([]);
+    return this.getState();
+  }
+
+  private handleStartStageModalKey(key: ManualStageKey): DemoTerminalState {
+    const result = handleStartStageModalKey(this.startStageModal, key);
+    this.startStageModal = result.state;
+    this.state = this.buildState(result.messages);
+    this.snapshots.setSnapshots([]);
     return this.getState();
   }
 
@@ -197,7 +217,8 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
         powerState: 'guarded',
         latestStatus: this.latestScreenStatus,
         actionGuard: 'No real screen power command runs unless explicitly enabled and platform-safe.'
-      }
+      },
+      this.startStageModal
     );
   }
 
@@ -251,6 +272,7 @@ function cloneState(state: DemoTerminalState): DemoTerminalState {
     runtimeBoundary: { ...state.runtimeBoundary, pathMessages: [...state.runtimeBoundary.pathMessages] },
     mediaRows: state.mediaRows.map((row) => ({ ...row })),
     playbackQueueRows: state.playbackQueueRows.map((row) => ({ ...row })),
+    startStageModal: cloneStartStageModalState(state.startStageModal),
     actions: state.actions.map((action) => ({ ...action })),
     currentRun: { ...state.currentRun, lines: [...state.currentRun.lines] },
     realTimeLog: {
@@ -267,4 +289,8 @@ function cloneState(state: DemoTerminalState): DemoTerminalState {
     },
     screenOnOff: { ...state.screenOnOff }
   };
+}
+
+function isManualStageKey(key: string): key is ManualStageKey {
+  return /^[1-5]$/.test(key);
 }

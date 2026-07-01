@@ -4,11 +4,20 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { ActionItemState, DemoTerminalState, MediaRow, StagePanelRow, WorkerPanelRow, SupportedBatchSize, PlaybackQueueRow, TerminalMouseHitbox } from './DemoTerminalState.js';
+import { createStartStageModalState, type StartStageModalState } from '../startStageModal/StartStageModalState.js';
 import type { RuntimeBoundaryState } from '../config/runtimeTypes.js';
 import type { DemoTruthReadResult } from '../truth/DemoTruthRepository.js';
 import type { DemoPlaybackStatusReadResult } from '../playback/DemoPlaybackStatusRepository.js';
 
 const realDemoActions: ActionItemState[] = [
+  {
+    key: 'S',
+    label: 'Open start_stage_modal',
+    enabled: true,
+    info: 'Shows manual stage rows with independent batch sizes. Download is disabled for now.',
+    active: false,
+    done: false
+  },
   {
     key: 'Q',
     label: 'Run selected demo batch',
@@ -84,7 +93,8 @@ export function createInitialRealDemoState(
   queueMessages: string[] = [],
   playbackStatus: DemoPlaybackStatusReadResult = { selectedItem: null, status: 'waiting', messages: [], sourcePath: '' },
   logOptions: { collapsed?: boolean; focused?: boolean; scrollOffset?: number; extraLogLines?: string[] } = {},
-  screenOptions: { idleSeconds?: number; powerState?: 'guarded' | 'on' | 'off' | 'unknown'; latestStatus?: string; actionGuard?: string } = {}
+  screenOptions: { idleSeconds?: number; powerState?: 'guarded' | 'on' | 'off' | 'unknown'; latestStatus?: string; actionGuard?: string } = {},
+  startStageModal: StartStageModalState = createStartStageModalState(false)
 ): DemoTerminalState {
   const version = readVersion();
   const statusText = boundary.readinessStatus.toUpperCase();
@@ -127,6 +137,7 @@ export function createInitialRealDemoState(
     banner: `PHOTOFRAME REAL DEMO TERMINAL v${version}`,
     warning: `Real Demo Mode v${version} operator guard pack: boundary is ${statusText}; DB playback button reads DEMO_DB_PATH real tables.`,
     selectedBatchSize,
+    startStageModal,
     mediaRows,
     playbackQueueRows: playbackQueueRows.map((row) => ({ ...row })),
     actions: realDemoActions.map((action) => {

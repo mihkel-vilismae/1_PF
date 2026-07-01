@@ -4,6 +4,7 @@
 import { buildQStoryboardFrame, buildQStoryboardFrames, qStoryboardStepIds } from '../scenarios/qGeocodeStoryboard.js';
 import { createInitialMockState } from '../state/createInitialMockState.js';
 import type { DemoTerminalState } from '../state/DemoTerminalState.js';
+import { cloneStartStageModalState, handleStartStageModalKey, openStartStageModal, type ManualStageKey } from '../startStageModal/StartStageModalState.js';
 import type { DemoRuntimeAdapter } from './DemoRuntimeAdapter.js';
 
 export class MockDemoRuntimeAdapter implements DemoRuntimeAdapter {
@@ -36,6 +37,15 @@ export class MockDemoRuntimeAdapter implements DemoRuntimeAdapter {
     if (normalized === 'ARROWLEFT') {
       return [this.stepQStoryboard('left')];
     }
+    if (normalized === 'S') {
+      this.state = { ...this.state, startStageModal: openStartStageModal(this.state.startStageModal) };
+      return [this.getState()];
+    }
+    if (isManualStageKey(normalized)) {
+      const result = handleStartStageModalKey(this.state.startStageModal, normalized);
+      this.state = { ...this.state, startStageModal: result.state };
+      return [this.getState()];
+    }
     if (normalized === 'R') {
       return [this.refresh()];
     }
@@ -67,6 +77,7 @@ function cloneState(state: DemoTerminalState): DemoTerminalState {
     runtimeBoundary: { ...state.runtimeBoundary, pathMessages: [...state.runtimeBoundary.pathMessages] },
     mediaRows: state.mediaRows.map((row) => ({ ...row })),
     playbackQueueRows: state.playbackQueueRows.map((row) => ({ ...row })),
+    startStageModal: cloneStartStageModalState(state.startStageModal),
     actions: state.actions.map((action) => ({ ...action })),
     currentRun: { ...state.currentRun, lines: [...state.currentRun.lines] },
     realTimeLog: {
@@ -79,4 +90,8 @@ function cloneState(state: DemoTerminalState): DemoTerminalState {
     playback: { ...state.playback },
     screenOnOff: { ...state.screenOnOff }
   };
+}
+
+function isManualStageKey(key: string): key is ManualStageKey {
+  return /^[1-5]$/.test(key);
 }

@@ -6,8 +6,17 @@ import { join } from 'node:path';
 import { mockMediaRows } from '../data/mockMediaRows.js';
 import { resolveDemoRuntimePaths } from '../config/demoRuntimePaths.js';
 import type { ActionItemState, DemoTerminalState, StagePanelRow, WorkerPanelRow } from './DemoTerminalState.js';
+import { createStartStageModalState } from '../startStageModal/StartStageModalState.js';
 
 const initialActions: ActionItemState[] = [
+  {
+    key: 'S',
+    label: 'Open start_stage_modal',
+    enabled: true,
+    info: 'Shows the five-row manual stage-start modal shell.',
+    active: false,
+    done: false
+  },
   {
     key: 'Q',
     label: 'Run 5 files -> Queue eligible',
@@ -110,6 +119,7 @@ export function createInitialMockState(): DemoTerminalState {
     banner: `PHOTOFRAME MOCK DEMO MODE v${version}`,
     warning: 'Visual mock only: no real DB, no real workers, no real truth JSONL, no cron.',
     selectedBatchSize: 1,
+    startStageModal: createStartStageModalState(false),
     mediaRows: mockMediaRows.map((row) => ({ ...row })),
     playbackQueueRows: [],
     actions: initialActions.map((action) => ({ ...action })),

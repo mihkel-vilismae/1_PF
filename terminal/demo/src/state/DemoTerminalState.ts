@@ -3,6 +3,7 @@
 
 import type { RuntimeBoundaryState } from '../config/runtimeTypes.js';
 import type { DemoPlaybackSelectedItem } from '../playback/DemoPlaybackStatusRepository.js';
+import type { StartStageModalState } from '../startStageModal/StartStageModalState.js';
 
 export type RuntimeMode = 'mock-demo' | 'demo';
 export type MediaType = 'image' | 'video';
@@ -116,6 +117,7 @@ export interface DemoTerminalState {
   banner: string;
   warning: string;
   selectedBatchSize: SupportedBatchSize;
+  startStageModal: StartStageModalState;
   mediaRows: MediaRow[];
   playbackQueueRows: PlaybackQueueRow[];
   actions: ActionItemState[];

@@ -18,6 +18,7 @@ import { renderRealTimeLog } from './renderRealTimeLog.js';
 import { renderRpiStages } from './renderRpiStages.js';
 import { renderRpiWorkers } from './renderRpiWorkers.js';
 import { renderScreenOnOff } from './renderScreenOnOff.js';
+import { renderStartStageModal } from './renderStartStageModal.js';
 
 const WIDE_LAYOUT_MIN_COLUMNS = 180;
 const DEFAULT_NON_TTY_COLUMNS = 220;
@@ -44,8 +45,8 @@ function workersTitle(state: DemoTerminalState): string {
 
 function helpText(state: DemoTerminalState): string {
   return state.runtimeBoundary.adapterMode === 'real-demo'
-    ? 'Help: Real-demo operator path. Area A=logs, Area B=command plan, Area C=playback/status. W toggles batch size. Q uses selected size. R refreshes. X exits. No cron.'
-    : 'Help: Q auto-runs the storyboard. RIGHT/LEFT enters manual storyboard mode. R refreshes. X exits. Visual mock state only.';
+    ? 'Help: Real-demo operator path. S opens start_stage_modal. Area A=logs, Area B=command plan, Area C=playback/status. W toggles Q batch size. Q uses selected size. R refreshes. X exits. No cron.'
+    : 'Help: S opens start_stage_modal. Q auto-runs the storyboard. RIGHT/LEFT enters manual storyboard mode. R refreshes. X exits. Visual mock state only.';
 }
 
 function renderWideScreen(state: DemoTerminalState, layout: TerminalLayout, terminalWidth: number): string {
@@ -58,7 +59,8 @@ function renderWideScreen(state: DemoTerminalState, layout: TerminalLayout, term
   const panelA = stackBlocks([
     renderHeader(state, state.banner, panelAWidth),
     renderMediaTable(state, mediaTitle(state), panelAWidth),
-    renderActions(state, titleFor(layout, 'actions', 'ACTIONS'), panelAWidth)
+    renderActions(state, titleFor(layout, 'actions', 'ACTIONS'), panelAWidth),
+    renderStartStageModal(state, panelAWidth)
   ]);
 
   const panelB = stackBlocks([
@@ -92,6 +94,7 @@ function renderStackedScreen(state: DemoTerminalState, layout: TerminalLayout): 
     renderMediaTable(state, mediaTitle(state)),
     blank(),
     renderActions(state, titleFor(layout, 'actions', 'ACTIONS')),
+    ...(state.startStageModal.isOpen ? [blank(), renderStartStageModal(state)] : []),
     blank(),
     renderCurrentRun(state, titleFor(layout, 'current_run', 'AREA B COMMAND PLAN')),
     blank(),
