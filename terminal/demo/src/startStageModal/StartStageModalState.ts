@@ -53,7 +53,7 @@ export function handleStartStageModalKey(state: StartStageModalState, key: Manua
   const row = next.rows.find((candidate) => candidate.key === key);
   if (!next.isOpen || !row) return { state: next, messages: [] };
 
-  next.rows = next.rows.map((candidate) => ({ ...candidate, status: candidate.enabled ? 'ready' : 'disabled' }));
+  next.rows = next.rows.map((candidate) => ({ ...candidate, status: candidate.enabled ? candidate.status : 'disabled' }));
   const selected = next.rows.find((candidate) => candidate.key === key);
   if (!selected?.enabled) {
     next.lastMessage = 'Download manual start is visible but disabled for now.';

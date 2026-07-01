@@ -10,6 +10,8 @@ import { runOrPlanRegularStageWorkerStage } from './PhotoFrameStageExecutionAdap
 import { writeManualStageActionLog } from './ManualStageActionLogger.js';
 import { writeManualStageManifest } from './ManualStageManifestWriter.js';
 import { mapManualStageToWorkerIntent } from './ManualStageWorkerPathMapper.js';
+import { executeManualStageDbEffect } from './ManualStageDbExecutor.js';
+import { writeManualStageTruth } from './ManualStageTruthWriter.js';
 
 export interface ManualStageRunResult {
   status: 'disabled' | 'planned' | 'blocked' | 'passed' | 'failed';
@@ -33,12 +35,19 @@ export function runManualStageFromModal(input: {
   const execution = manifest.status === 'blocked'
     ? { status: 'blocked' as const, command: worker.npmCommand, exitCode: null, messages: manifest.messages }
     : runOrPlanRegularStageWorkerStage({ boundary: input.boundary, plan, manifestPath: manifest.manifestPath, stage, rows: manifest.selectedRows, route });
+  const dbEffect = execution.status === 'failed' || execution.status === 'blocked'
+    ? null
+    : executeManualStageDbEffect({ boundary: input.boundary, stage, batchSize: input.row.batchSize, rows: manifest.selectedRows, executedAt: startedAt });
+  const truth = dbEffect ? writeManualStageTruth({ boundary: input.boundary, stage, dbEffect, executedAt: startedAt }) : null;
+  const finalStatus = dbEffect?.status ?? execution.status;
   const messages = [
     `manual stage route: source=manual-stage-modal key=${input.row.key}`,
     `shared worker path: ${worker.workerName} ${worker.npmCommand}`,
     `cron reference reused only as contract: ${worker.cronReference}`,
     ...manifest.messages,
-    ...execution.messages
+    ...execution.messages,
+    ...(dbEffect?.messages ?? []),
+    ...(truth?.messages ?? [])
   ];
   const log = writeManualStageActionLog({
     boundary: input.boundary,
@@ -49,13 +58,15 @@ export function runManualStageFromModal(input: {
     workerName: worker.workerName,
     command: execution.command,
     cronReference: worker.cronReference,
-    resultStatus: execution.status,
+    resultStatus: finalStatus,
     selectedRows: manifest.selectedRows.length,
     manifestPath: manifest.manifestPath,
     messages,
-    startedAt
+    startedAt,
+    dbEffect: dbEffect ? { operation: dbEffect.operation, status: dbEffect.status, counts: dbEffect.counts, dbPath: dbEffect.dbPath } : null,
+    truthStatus: truth?.status ?? null
   });
-  return { status: execution.status, messages: [...messages, log.message] };
+  return { status: finalStatus, messages: [...messages, log.message] };
 }
 
 function buildManualPlan(

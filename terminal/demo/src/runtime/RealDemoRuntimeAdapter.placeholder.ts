@@ -149,10 +149,11 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
     const result = handleStartStageModalKey(this.startStageModal, key);
     this.startStageModal = result.state;
     const row = this.startStageModal.rows.find((candidate) => candidate.key === key);
-    const source = row?.enabled ? this.readSources() : null;
-    const execution = row && source ? runManualStageFromModal({ boundary: this.boundary, row, mediaRows: source.mediaRows }) : null;
-    if (execution) this.startStageModal = markStartStageModalRowStatus(this.startStageModal, key, execution.status, execution.messages[0] ?? result.state.lastMessage);
-    this.state = this.buildState([...(execution?.messages ?? result.messages)]);
+    const sourceRows = row?.enabled ? this.state.mediaRows : null;
+    const execution = row && sourceRows ? runManualStageFromModal({ boundary: this.boundary, row, mediaRows: sourceRows }) : null;
+    const messages = execution?.messages ?? result.messages;
+    if (execution) this.startStageModal = markStartStageModalRowStatus(this.startStageModal, key, execution.status, messages[0] ?? result.state.lastMessage);
+    this.state = { ...this.state, startStageModal: cloneStartStageModalState(this.startStageModal), currentRun: { title: 'CURRENT RUN', lines: messages.slice(0, 36) } };
     this.snapshots.setSnapshots([]);
     return this.getState();
   }
@@ -295,6 +296,4 @@ function cloneState(state: DemoTerminalState): DemoTerminalState {
   };
 }
 
-function isManualStageKey(key: string): key is ManualStageKey {
-  return /^[1-5]$/.test(key);
-}
+function isManualStageKey(key: string): key is ManualStageKey { return /^[1-5]$/.test(key); }

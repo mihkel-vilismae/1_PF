@@ -27,6 +27,8 @@ export function writeManualStageActionLog(input: {
   manifestPath: string;
   messages: string[];
   startedAt: string;
+  dbEffect?: { operation: string; status: string; counts: Record<string, number>; dbPath: string } | null;
+  truthStatus?: string | null;
 }): ManualStageActionLogResult {
   const logPath = join(input.boundary.logDir, 'terminal-button-actions.jsonl');
   try {
@@ -47,6 +49,8 @@ export function writeManualStageActionLog(input: {
       cronReference: input.cronReference,
       selectedRows: input.selectedRows,
       manifestPath: input.manifestPath,
+      dbEffect: input.dbEffect ?? null,
+      truthStatus: input.truthStatus ?? null,
       noCron: true,
       messages: input.messages
     })}\n`, 'utf8');
