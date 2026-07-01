@@ -1,3 +1,14 @@
+# 2.0.2 - Q operator status/logging cleanup
+
+- Marked `Q` as completed in the real-demo operator/storyboard status after a manual Q run.
+- Added persistent Q button/action evidence to `runtime_data/logs/demo/terminal-button-actions.jsonl` with batch size, route, selected rows, queue counts, stage statuses, and `noCron=true`.
+- Normalized expected mixed/offline GPS/geocode results as degraded instead of unexplained hard Error states.
+- Stopped rendering `Expected not eligible ... none` and zero failure counters as error/red operator lines.
+- Replaced stale hardcoded `v0.12.0 Group 6B` real-demo copy with version-aware operator text.
+- Added `proof:terminal-demo-q-operator-status` and included it in final/v2 proof coverage.
+
+Scope: Q/operator reporting and persistent action logging only. No cron, DB schema redesign, screen-worker behavior change, geocode provider expansion, or v2 claim change.
+
 # 2.0.1 - Windows P viewer launch hotfix
 
 - Replaced the real-demo `P` Windows viewer launch adapter with `Invoke-Item -LiteralPath`, `rundll32.exe url.dll,FileProtocolHandler`, then `explorer.exe`.

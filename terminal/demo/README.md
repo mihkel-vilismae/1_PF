@@ -570,3 +570,14 @@ Proof:
 ```bash
 npm run proof:terminal-demo-windows-viewer-launch
 ```
+
+
+## v2.0.2 Q operator status/logging cleanup
+
+The real-demo terminal now records manual `Q` runs as completed operator actions and writes persistent Q button evidence to `runtime_data/logs/demo/terminal-button-actions.jsonl`. The Q event includes batch size, route, selected row count, q-created queue counts, stage status summary, and `noCron=true`. Expected demo/offline GPS/geocode degradation is displayed as degraded/blocked with context rather than an unexplained hard Error, and stale `v0.12.0 Group 6B` copy has been removed from the real-demo operator UI.
+
+Proof:
+
+```bash
+npm run proof:terminal-demo-q-operator-status
+```
