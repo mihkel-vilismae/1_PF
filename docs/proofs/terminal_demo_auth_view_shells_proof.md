@@ -14,7 +14,7 @@ npm run proof:terminal-demo-auth-view-shells
 - View `I` lists only the newer NEW AUTH button shells.
 - Older compatibility auth buttons are absent.
 - No auth execution is claimed or triggered by this shell.
-- View `0` and View `6` are unchanged.
+- View `0` and View `6` have later view-specific contracts that this auth shell does not regress.
 
 ## Non-claims
 

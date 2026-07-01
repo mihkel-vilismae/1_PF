@@ -5,6 +5,7 @@ import type { RuntimeBoundaryState } from '../config/runtimeTypes.js';
 import type { DemoPlaybackSelectedItem } from '../playback/DemoPlaybackStatusRepository.js';
 import type { StartStageModalState } from '../startStageModal/StartStageModalState.js';
 import type { TerminalViewKey } from '../views/TerminalViewRegistry.js';
+import type { View0TestSelectorState } from '../view0/View0TestSelectorState.js';
 
 export type RuntimeMode = 'mock-demo' | 'demo';
 export type MediaType = 'image' | 'video';
@@ -100,9 +101,14 @@ export interface PlaybackState {
 }
 
 export interface ScreenOnOffState {
+  monitorEnabled: boolean;
+  monitorActive: boolean;
   keyboardEnabled: boolean;
   mouseEnabled: boolean;
   pirSensorEnabled: boolean;
+  lastActivitySource: 'none' | 'keyboard' | 'mouse' | 'pir';
+  lastActivityAt: string;
+  activityLog: string[];
   idleSeconds: number;
   powerState: 'guarded' | 'on' | 'off' | 'unknown';
   latestStatus: string;
@@ -119,6 +125,8 @@ export interface DemoTerminalState {
   warning: string;
   selectedBatchSize: SupportedBatchSize;
   activeViewKey: TerminalViewKey;
+  activeTestPageCode: string | null;
+  view0TestSelector: View0TestSelectorState;
   sectionHeaderIdsVisible: boolean;
   startStageModal: StartStageModalState;
   mediaRows: MediaRow[];

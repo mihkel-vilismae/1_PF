@@ -7,15 +7,15 @@ export interface TerminalViewDefinition {
   key: TerminalViewKey;
   label: string;
   purpose: string;
-  shellStatus: 'empty_shell';
+  shellStatus: 'empty_shell' | 'implemented_terminal_slice';
 }
 
 export const terminalViewRegistry: readonly TerminalViewDefinition[] = [
   {
     key: '0',
     label: 'Table of Contents and Debug',
-    purpose: 'Map page with main view links and an empty Testing section.',
-    shellStatus: 'empty_shell'
+    purpose: 'Map page with main view links and safe test-page routing.',
+    shellStatus: 'implemented_terminal_slice'
   },
   {
     key: 'D',
@@ -68,8 +68,8 @@ export const terminalViewRegistry: readonly TerminalViewDefinition[] = [
   {
     key: '6',
     label: 'Playback view',
-    purpose: 'Future image/video playback control view.',
-    shellStatus: 'empty_shell'
+    purpose: 'Fixture-backed playback contract with Codex placeholder controls.',
+    shellStatus: 'implemented_terminal_slice'
   }
 ] as const;
 

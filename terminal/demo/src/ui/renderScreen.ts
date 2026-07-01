@@ -25,10 +25,12 @@ import { renderViewZero } from './renderViewZero.js';
 import { renderIcloudAuthorization } from './renderIcloudAuthorization.js';
 import { renderIcloudLoginView } from './renderIcloudLoginView.js';
 import { renderLogsView } from './renderLogsView.js';
+import { renderViewSixPlayback } from './renderViewSixPlayback.js';
 
 const WIDE_LAYOUT_MIN_COLUMNS = 180;
 const DEFAULT_NON_TTY_COLUMNS = 220;
 
+// Routes the current terminal state to its active view renderer.
 export function renderScreen(state: DemoTerminalState, layout: TerminalLayout, terminalWidth = resolveTerminalWidth()): string {
   if (state.activeViewKey === '0') {
     return [renderViewZero(state, Math.min(terminalWidth, DEFAULT_NON_TTY_COLUMNS)), color.muted(helpText(state))].join('\n');
@@ -40,6 +42,10 @@ export function renderScreen(state: DemoTerminalState, layout: TerminalLayout, t
 
   if (state.activeViewKey === 'I') {
     return [renderIcloudLoginView(state, Math.min(terminalWidth, DEFAULT_NON_TTY_COLUMNS)), color.muted(helpText(state))].join('\n');
+  }
+
+  if (state.activeViewKey === '6') {
+    return [renderViewSixPlayback(state, Math.min(terminalWidth, DEFAULT_NON_TTY_COLUMNS)), color.muted(helpText(state))].join('\n');
   }
 
   if (state.activeViewKey !== 'D') {

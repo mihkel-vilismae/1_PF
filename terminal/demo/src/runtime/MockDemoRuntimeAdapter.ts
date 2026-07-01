@@ -8,6 +8,7 @@ import { handleStartStageModalKey, openStartStageModal, type ManualStageKey } fr
 import { cloneDemoTerminalState } from '../state/cloneDemoTerminalState.js';
 import type { DemoRuntimeAdapter } from './DemoRuntimeAdapter.js';
 import { canSwitchTerminalView, withActiveTerminalView } from '../views/TerminalViewState.js';
+import { applyScreenOnOffState, recordScreenOnOffActivity, toggleScreenOnOffState, type ScreenMonitorActivityInput } from '../screenOnOff/terminalScreenMonitorState.js';
 
 export class MockDemoRuntimeAdapter implements DemoRuntimeAdapter {
   readonly modeName = 'mock-demo';
@@ -28,8 +29,13 @@ export class MockDemoRuntimeAdapter implements DemoRuntimeAdapter {
     return this.getState();
   }
 
+  // Handles mock-demo keyboard input while preserving modal and view-switch priority.
   async handleKey(key: string): Promise<DemoTerminalState[]> {
     const normalized = key.toUpperCase();
+    if (normalized === 'F') {
+      this.state = applyScreenOnOffState(this.state, toggleScreenOnOffState(this.state.screenOnOff));
+      return [this.getState()];
+    }
     if (normalized === 'Q') {
       return this.runQStoryboard();
     }
@@ -60,6 +66,12 @@ export class MockDemoRuntimeAdapter implements DemoRuntimeAdapter {
       return [this.refresh()];
     }
     return [this.getState()];
+  }
+
+  // Records one local screen-monitor input without touching real hardware or backend state.
+  async handleScreenMonitorActivity(input: ScreenMonitorActivityInput): Promise<DemoTerminalState> {
+    this.state = applyScreenOnOffState(this.state, recordScreenOnOffActivity(this.state.screenOnOff, input));
+    return this.getState();
   }
 
   async runQStoryboard(): Promise<DemoTerminalState[]> {

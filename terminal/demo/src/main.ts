@@ -18,6 +18,7 @@ const rawArgs = process.argv.slice(2);
 const args = new Set(rawArgs);
 const viewShellArg = rawArgs.find((arg) => arg.startsWith('--view-shell-smoke='));
 const viewZeroLinkArg = rawArgs.find((arg) => arg.startsWith('--view0-link-smoke='));
+const view6FixtureButtonArg = rawArgs.find((arg) => arg.startsWith('--view6-fixture-button-smoke='));
 const runtimeConfig = readTerminalRuntimeConfig(process.argv.slice(2));
 const adapter = createAdapter(runtimeConfig);
 if (args.has('--batch-size=5')) {
@@ -141,6 +142,29 @@ if (viewZeroLinkArg) {
   process.exit(0);
 }
 
+if (args.has('--view0-default-test-route-smoke')) {
+  await adapter.handleKey('0');
+  await adapter.handleKey('ENTER');
+  await adapter.handleKey('ENTER');
+  await adapter.handleKey('ENTER');
+  printFrame(renderScreen(adapter.getState(), layout));
+  process.exit(0);
+}
+
+if (args.has('--view0-custom-test-route-smoke')) {
+  for (const key of ['0', 'ENTER', '7', 'ENTER', 'D', 'ENTER']) await adapter.handleKey(key);
+  printFrame(renderScreen(adapter.getState(), layout));
+  process.exit(0);
+}
+
+if (view6FixtureButtonArg) {
+  const key = view6FixtureButtonArg.split('=')[1] ?? '1';
+  await adapter.handleKey('6');
+  await adapter.handleKey(key);
+  printFrame(renderScreen(adapter.getState(), layout));
+  process.exit(0);
+}
+
 if (args.has('--empty-view-shells-smoke')) {
   const frames = [];
   for (const viewKey of ['0', 'D', 'L', 'I', '1', '2', '3', '4', '5', '6']) {
@@ -218,6 +242,12 @@ process.stdin.on('data', async (chunk) => {
     process.exit(0);
   }
 
+  if (key === '\r' || key === '\n') {
+    const frames = await adapter.handleKey('ENTER');
+    clearAndPrint(renderScreen(frames[0] ?? adapter.getState(), layout));
+    return;
+  }
+
   if (key.toUpperCase() === 'Q') {
     const frames = await adapter.handleKey('Q');
     for (const frame of frames) {
@@ -234,7 +264,7 @@ process.stdin.on('data', async (chunk) => {
     return;
   }
 
-  if (key.toUpperCase() === 'H' || key.toUpperCase() === 'W' || key.toUpperCase() === 'P' || key.toUpperCase() === 'S' || /^[0-6DLI]$/i.test(key)) {
+  if (key.toUpperCase() === 'H' || key.toUpperCase() === 'W' || key.toUpperCase() === 'P' || key.toUpperCase() === 'S' || /^[0-9A-Z]$/i.test(key)) {
     const frames = await adapter.handleKey(key.toUpperCase());
     clearAndPrint(renderScreen(frames[0] ?? adapter.getState(), layout));
     return;

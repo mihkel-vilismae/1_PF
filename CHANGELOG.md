@@ -1,3 +1,16 @@
+# 2.0.17 - Merge View 0 and View 6 terminal branches
+
+## 2026-07-02
+
+- Merged the View `0` map/testing branch into current `master` with default `0A` and custom `7D` terminal-demo test routes.
+- Added shared terminal action logging at `runtime_data/logs/demo/terminal-button-actions.jsonl` with `branchFeature` markers for `view0_map_testing` and `view6_fixture_playback`.
+- Merged the View `6` fixture-backed playback contract page with disabled future queue-backed buttons and enabled fixture placeholder buttons.
+- Added View `6` fixture copies under `terminal/demo/test_data/playback_fixtures/`.
+- Added the View `6` Codex placeholder modal with exact text `this will be done by Codex`, `CODEX_DEFERRED`, and `launchesPlayback=false` evidence.
+- Updated terminal-demo proof scripts and docs so the historical `proof:terminal-demo-view0-map-view6-blank` compatibility command no longer claims View `6` is blank.
+
+Scope: terminal-demo local View `0` and View `6` merge only. No real playback, queue-backed playback execution, fullscreen playback, address-overlay playback, auth/session work, DB writes, workers, cron, or hardware behavior is claimed.
+
 # 2.0.16 - Master remote alignment
 
 ## 2026-07-02

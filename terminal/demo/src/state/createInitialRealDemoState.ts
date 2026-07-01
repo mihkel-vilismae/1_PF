@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import type { ActionItemState, DemoTerminalState, MediaRow, StagePanelRow, WorkerPanelRow, SupportedBatchSize, PlaybackQueueRow, TerminalMouseHitbox } from './DemoTerminalState.js';
 import { createStartStageModalState, type StartStageModalState } from '../startStageModal/StartStageModalState.js';
 import type { TerminalViewKey } from '../views/TerminalViewRegistry.js';
+import { createView0TestSelectorState, type View0TestSelectorState } from '../view0/View0TestSelectorState.js';
 import type { RuntimeBoundaryState } from '../config/runtimeTypes.js';
 import type { DemoTruthReadResult } from '../truth/DemoTruthRepository.js';
 import type { DemoPlaybackStatusReadResult } from '../playback/DemoPlaybackStatusRepository.js';
@@ -91,6 +92,7 @@ function readVersion(): string {
   }
 }
 
+// Builds the initial real-demo terminal state from current runtime sources.
 export function createInitialRealDemoState(
   boundary: RuntimeBoundaryState,
   mediaRows: MediaRow[] = [],
@@ -105,7 +107,9 @@ export function createInitialRealDemoState(
   screenOptions: { idleSeconds?: number; powerState?: 'guarded' | 'on' | 'off' | 'unknown'; latestStatus?: string; actionGuard?: string } = {},
   startStageModal: StartStageModalState = createStartStageModalState(false),
   sectionHeaderIdsVisible = false,
-  activeViewKey: TerminalViewKey = 'D'
+  activeViewKey: TerminalViewKey = 'D',
+  view0TestSelector: View0TestSelectorState = createView0TestSelectorState(),
+  activeTestPageCode: string | null = null
 ): DemoTerminalState {
   const version = readVersion();
   const statusText = boundary.readinessStatus.toUpperCase();
@@ -149,6 +153,8 @@ export function createInitialRealDemoState(
     warning: `Real Demo Mode v${version} operator guard pack: boundary is ${statusText}; DB playback button reads DEMO_DB_PATH real tables.`,
     selectedBatchSize,
     activeViewKey,
+    activeTestPageCode,
+    view0TestSelector,
     sectionHeaderIdsVisible,
     startStageModal,
     mediaRows,
@@ -189,9 +195,14 @@ export function createInitialRealDemoState(
       fullScreenInfo: 'Not yet implemented.'
     },
     screenOnOff: {
+      monitorEnabled: false,
+      monitorActive: false,
       keyboardEnabled: true,
       mouseEnabled: true,
-      pirSensorEnabled: false,
+      pirSensorEnabled: true,
+      lastActivitySource: 'none',
+      lastActivityAt: 'Never',
+      activityLog: [],
       idleSeconds: screenOptions.idleSeconds ?? 0,
       powerState: screenOptions.powerState ?? 'guarded',
       latestStatus: screenOptions.latestStatus ?? 'waiting for keyboard/mouse activity',
@@ -202,6 +213,7 @@ export function createInitialRealDemoState(
 }
 
 
+// Splits high-level current-run lines from diagnostic log lines.
 function partitionCurrentAndLogLines(lines: string[]): { currentLines: string[]; logLines: string[] } {
   const currentLines: string[] = [];
   const logLines: string[] = [];
@@ -215,12 +227,14 @@ function partitionCurrentAndLogLines(lines: string[]): { currentLines: string[];
   return { currentLines, logLines };
 }
 
+// Identifies lines that belong in the realtime log panel.
 function isDiagnosticLogLine(line: string): boolean {
   return /^(Media discovery|Truth read|Queue read|Playback status read|Path check|Mouse hitbox|Mouse wheel|Log panel|Q DB queue|Q truth\/status):/i.test(line)
     || /^Selected row #/i.test(line)
     || /^DB image playback: (playback_contract|stage6_select_current|playback_asset_media_path|P pressed:|playback status source|Wrote windowed viewer)/i.test(line);
 }
 
+// Defines stable mouse hitboxes for the real-demo terminal layout.
 function buildRealDemoHitboxes(): TerminalMouseHitbox[] {
   return [
     { id: 'area-a-collapse-toggle', label: 'Area A [-] collapse/expand toggle', x1: 135, y1: 18, x2: 155, y2: 19 },

@@ -28,6 +28,10 @@ export function createInitialScreenOnOffState(): ScreenOnOffState {
     lastActivitySource: 'none',
     lastActivityAt: 'Never',
     activityLog: [],
+    idleSeconds: 0,
+    powerState: 'guarded',
+    latestStatus: 'screen-worker monitor local simulation idle',
+    actionGuard: 'local monitor only; no real screen power command',
     info: 'Simulation-only screen-worker monitor is disabled. Press F to arm it. PIR stays emulated in this slice.',
   };
 }

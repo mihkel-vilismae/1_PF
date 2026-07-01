@@ -14,6 +14,6 @@ The proof renders View `L` and verifies:
 - The seven core log/status/truth labels are visible.
 - The seven planned runtime paths are visible.
 - The renderer does not import file APIs or tail/watch files.
-- View `0` and View `6` are unchanged.
+- View `0` and View `6` have later view-specific contracts that this logs shell does not regress.
 
 Scope: shell placeholders only. No file tailing, no auth, no workers, no DB writes, no playback, no file copy, and no cron.

@@ -1,10 +1,13 @@
 #!/usr/bin/env node
+// Compatibility proof for logs view shell after View 0/View 6 promotion.
+// Logs shell behavior is guarded while View 0 and View 6 keep their own contracts.
+// Runs terminal smoke paths directly through Node/tsx to avoid nested npm issues.
+
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const repoRoot = process.cwd();
-const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 const ansiPattern = /\u001b\[[0-9;]*m/g;
 
 const logLabels = [
@@ -27,23 +30,27 @@ const logPaths = [
   'runtime_data/scheduler/demo/screen-on-off-worker-status.json'
 ];
 
+// Renders the real-demo terminal for a focused smoke argument set.
 function runTerminal(args) {
-  return execFileSync(npmCommand, ['run', '-s', 'demo:terminal:real', '--', ...args], {
+  return execFileSync(process.execPath, ['--import', 'tsx', 'terminal/demo/src/main.ts', '--adapter=real-demo', ...args], {
     cwd: repoRoot,
-    env: { ...process.env, TERMINAL_DEMO_COLUMNS: '240' },
+    env: { ...process.env, TERMINAL_DEMO_COLUMNS: '240', NO_COLOR: '1' },
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe']
   }).replace(ansiPattern, '');
 }
 
+// Reads a repository text file for documentation coverage checks.
 function read(relativePath) {
   return readFileSync(join(repoRoot, relativePath), 'utf8');
 }
 
+// Asserts that output or docs include an expected marker.
 function assertIncludes(text, expected, label) {
   if (!text.includes(expected)) throw new Error(`${label}: expected ${expected}`);
 }
 
+// Asserts that output does not include a forbidden marker.
 function assertNotIncludes(text, unexpected, label) {
   if (text.includes(unexpected)) throw new Error(`${label}: unexpected ${unexpected}`);
 }
@@ -60,13 +67,13 @@ for (const label of logLabels) assertIncludes(logsView, label, `log label ${labe
 for (const path of logPaths) assertIncludes(logsView, path, `log path ${path}`);
 
 const view0 = runTerminal(['--view-shell-smoke=0']);
-assertIncludes(view0, 'VIEW 0 — TABLE OF CONTENTS AND DEBUG', 'view 0 remains unchanged');
+assertIncludes(view0, 'MAP AND TESTING - VIEW 0', 'view 0 map/testing contract remains available');
 assertIncludes(view0, 'TESTING', 'view 0 testing remains');
 
 const view6 = runTerminal(['--view-shell-smoke=6']);
-assertIncludes(view6, 'PLAYBACK VIEW', 'view 6 remains present');
-assertIncludes(view6, 'EMPTY VIEW SHELL ONLY', 'view 6 remains blank');
-assertNotIncludes(view6, 'Play queued images in HTML browser', 'view 6 remains untouched');
+assertIncludes(view6, 'VIEW 6 - PLAYBACK', 'view 6 remains present');
+assertIncludes(view6, 'QUEUE-BACKED PLAYBACK - FUTURE DISABLED', 'view 6 queue playback remains deferred');
+assertIncludes(view6, 'FIXTURE-BACKED PLAYBACK - CURRENT ENABLED', 'view 6 fixture contract remains available');
 
 const logsRenderer = read('terminal/demo/src/ui/renderLogsView.ts');
 for (const forbidden of ['node:fs', 'readFile', 'watchFile']) {
@@ -86,11 +93,11 @@ for (const marker of [
   'LOG PANEL PLACEHOLDERS',
   'shell placeholders only',
   'no file tailing',
-  'View `0` and View `6` are unchanged'
+  'View `0` and View `6` have later view-specific contracts'
 ]) {
   assertIncludes(docs, marker, 'logs shell docs marker');
 }
 for (const label of logLabels) assertIncludes(docs, label, `docs log label ${label}`);
 
 console.log('terminal_demo_logs_view_shell: PASS');
-console.log('verified: View L logs shell labels/placeholders, no file tailing, no runtime side effects, View 0/View 6 unchanged');
+console.log('verified: View L logs shell labels/placeholders, no file tailing, no runtime side effects, View 0/View 6 contracts preserved');

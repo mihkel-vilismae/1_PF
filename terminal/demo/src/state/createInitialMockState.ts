@@ -7,6 +7,7 @@ import { mockMediaRows } from '../data/mockMediaRows.js';
 import { resolveDemoRuntimePaths } from '../config/demoRuntimePaths.js';
 import type { ActionItemState, DemoTerminalState, StagePanelRow, WorkerPanelRow } from './DemoTerminalState.js';
 import { createStartStageModalState } from '../startStageModal/StartStageModalState.js';
+import { createView0TestSelectorState } from '../view0/View0TestSelectorState.js';
 
 const initialActions: ActionItemState[] = [
   {
@@ -89,6 +90,7 @@ const initialWorkers: WorkerPanelRow[] = [
   { name: 'On-off worker', status: 'Disabled', lastCalled: 'Never', lastEvent: 'Not yet implemented.' }
 ];
 
+// Reads the repository version for the mock terminal banner.
 function readVersion(): string {
   const candidates = [
     join(process.cwd(), 'VERSION'),
@@ -102,6 +104,7 @@ function readVersion(): string {
   }
 }
 
+// Builds the initial mock-demo state without reading real runtime sources.
 export function createInitialMockState(): DemoTerminalState {
   const version = readVersion();
   const demoPaths = resolveDemoRuntimePaths();
@@ -128,6 +131,8 @@ export function createInitialMockState(): DemoTerminalState {
     warning: 'Visual mock only: no real DB, no real workers, no real truth JSONL, no cron.',
     selectedBatchSize: 1,
     activeViewKey: 'D',
+    activeTestPageCode: null,
+    view0TestSelector: createView0TestSelectorState(),
     sectionHeaderIdsVisible: false,
     startStageModal: createStartStageModalState(false),
     mediaRows: mockMediaRows.map((row) => ({ ...row })),
@@ -160,9 +165,14 @@ export function createInitialMockState(): DemoTerminalState {
       fullScreenInfo: 'Not yet implemented.'
     },
     screenOnOff: {
+      monitorEnabled: false,
+      monitorActive: false,
       keyboardEnabled: false,
       mouseEnabled: false,
-      pirSensorEnabled: false,
+      pirSensorEnabled: true,
+      lastActivitySource: 'none',
+      lastActivityAt: 'Never',
+      activityLog: [],
       idleSeconds: 0,
       powerState: 'unknown',
       latestStatus: 'mock screen worker inactive',

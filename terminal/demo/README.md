@@ -23,22 +23,35 @@ It is intentionally small. The mock adapter still drives the visual rehearsal. T
 
 
 
-## View 0 map and View 6 blank shell
+## View 0 map/testing and View 6 fixture contract
 
-Version `2.0.10` adds the narrowed beeline shell for View `0` and View `6`.
+Version `2.0.17` merges the View `0` map/testing branch and View `6` fixture-playback placeholder branch into current `master`.
 
-- Press `0` to open `VIEW 0 — TABLE OF CONTENTS AND DEBUG`.
+- Press `0` to open `map and testing - view 0`.
 - View `0` contains a `VIEW MAP` section listing `[D]`, `[L]`, `[I]`, and `[1]` through `[6]`.
 - Pressing a listed key from View `0` routes to that page when no modal owns input.
-- View `0` also contains a second empty section named `TESTING`.
-- View `6` remains a blank playback page shell only. No playback buttons are rendered in this slice.
+- View `0` also contains a `TESTING` section with the default test route `0A`.
+- Press `0 -> Enter -> Enter -> Enter` to reach `TEST PAGE 0A`.
+- Press `0 -> Enter -> 7 -> Enter -> D -> Enter` to reach `TEST PAGE 7D`.
+- View `6` renders a fixture-backed playback contract page.
+- View `6` keeps queue-backed playback disabled and uses terminal-demo-owned fixture copies.
+- Pressing a View `6` fixture button opens the exact placeholder modal `this will be done by Codex` and logs `CODEX_DEFERRED`.
 
-This slice integrates the uploaded planning docs `PF_login_View0_Map_Debug_Page_Overview_ACR.md` and `PF_login_View6_Playback_Page_Overview_XACR.md` only within the narrowed scope above. Test-page modal behavior, View 6 playback buttons, fixture copy, queue playback, auth, DB writes, file copies, workers, and cron remain deferred.
+Real browser playback, fullscreen playback, address-overlay playback, queue-backed playback execution, auth, DB writes, file copies, workers, and cron remain deferred.
+
+Real-demo terminal shared logging contract: View `0` and View `6` use `runtime_data/logs/demo/terminal-button-actions.jsonl` through the branch-safe schema described in `terminal_demo_shared_logging_openspec.md`. Branch markers are `view0_map_testing` and `view6_fixture_playback`.
 
 Proof:
 
 ```bash
 npm run proof:terminal-demo-view0-map-view6-blank
+npm run proof:terminal-demo-shared-logging-contract
+npm run proof:terminal-demo-view0-default-test-route
+npm run proof:terminal-demo-view0-custom-test-route
+npm run proof:terminal-demo-view6-fixture-playback-contract
+npm run proof:terminal-demo-view6-codex-placeholder
+npm run proof:terminal-demo-view6-codex-placeholder-complete
+npm run proof:terminal-demo-view6-codex-playback-handoff
 ```
 
 ## Remaining view shell beeline preflight
@@ -48,7 +61,7 @@ Version `2.0.11` adds an honest planning and proof guard for the next beeline af
 Scope guard:
 
 - View `0` is frozen for this chat: keep the current map page, map navigation, and empty `TESTING` section unless explicitly reopened.
-- View `6` is frozen for this chat: keep the blank playback shell unless explicitly reopened.
+- View `6` now owns the fixture-backed playback placeholder contract; queue-backed and real playback remain deferred unless explicitly reopened.
 - Future work targets View `D`, `L`, `I`, and stage views `1` through `5` as shell contracts first.
 - Planned buttons remain shell-only until explicitly implemented. Do not run auth, log tailing, file copy, workers, DB writes, playback, or cron from this preflight.
 

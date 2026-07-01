@@ -1,37 +1,43 @@
 #!/usr/bin/env node
+// Compatibility proof for terminal-demo view shells after View 6 promotion.
+// Views 1-5 remain empty stage shells; View 6 now owns the fixture contract.
+// Runs terminal smoke paths directly through Node/tsx to avoid nested npm issues.
+
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const repoRoot = process.cwd();
-const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 const ansiPattern = /\u001b\[[0-9;]*m/g;
 const genericEmptyViews = [
   ['1', 'DOWNLOAD STAGE VIEW'],
   ['2', 'INDEXING STAGE VIEW'],
   ['3', 'GPS PARSER STAGE VIEW'],
   ['4', 'GEOCODE STAGE VIEW'],
-  ['5', 'ENQUEUE VIEW'],
-  ['6', 'PLAYBACK VIEW']
+  ['5', 'ENQUEUE VIEW']
 ];
 
+// Renders the real-demo terminal for a focused smoke argument set.
 function runTerminal(args) {
-  return execFileSync(npmCommand, ['run', '-s', 'demo:terminal:real', '--', ...args], {
+  return execFileSync(process.execPath, ['--import', 'tsx', 'terminal/demo/src/main.ts', '--adapter=real-demo', ...args], {
     cwd: repoRoot,
-    env: { ...process.env, TERMINAL_DEMO_COLUMNS: '240' },
+    env: { ...process.env, TERMINAL_DEMO_COLUMNS: '240', NO_COLOR: '1' },
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe']
   }).replace(ansiPattern, '');
 }
 
+// Reads a repository text file for documentation coverage checks.
 function read(relativePath) {
   return readFileSync(join(repoRoot, relativePath), 'utf8');
 }
 
+// Asserts that output or docs include an expected marker.
 function assertIncludes(text, expected, label) {
   if (!text.includes(expected)) throw new Error(`${label}: expected ${expected}`);
 }
 
+// Asserts that output does not include a forbidden marker.
 function assertNotIncludes(text, unexpected, label) {
   if (text.includes(unexpected)) throw new Error(`${label}: unexpected ${unexpected}`);
 }
@@ -47,6 +53,11 @@ for (const [key, title] of genericEmptyViews) {
   assertIncludes(output, 'EMPTY VIEW SHELL ONLY', `view ${key} empty shell status`);
   assertIncludes(output, 'No buttons, workers, auth, playback, DB writes, file copies, or cron calls', `view ${key} no-effect guard`);
 }
+
+const view6 = runTerminal(['--view-shell-smoke=6']);
+assertIncludes(view6, 'VIEW 6 - PLAYBACK', 'view 6 title');
+assertIncludes(view6, 'FIXTURE-BACKED PLAYBACK - CURRENT ENABLED', 'view 6 promoted fixture section');
+assertNotIncludes(view6, 'EMPTY VIEW SHELL ONLY', 'view 6 no longer generic empty shell');
 
 const logsView = runTerminal(['--view-shell-smoke=L']);
 assertIncludes(logsView, 'VIEW L — LOGS VIEW', 'view L now renders logs shell title');
@@ -73,4 +84,4 @@ for (const marker of ['View', 'Pane', 'Section', 'Subsection', 'Modal', 'D', 'L'
 }
 
 console.log('terminal_demo_empty_view_shells: PASS');
-console.log('verified: D stays default, L renders logs shell, I renders auth shell, 1-6 generic shells keep modal priority and no-effect guards');
+console.log('verified: D stays default, L renders logs shell, I renders auth shell, 1-5 generic shells keep modal priority, and View 6 is promoted to fixture contract');

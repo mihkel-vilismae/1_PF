@@ -31,6 +31,11 @@ This matrix is a navigation aid for deciding which PF_login documents can be tru
 | `docs/20_architecture_and_specs/openspec/endpoint_contract_inventory_openspec.md` | current_latest_baseline | Same-origin HTTP API route inventory; guarded by `npm run contract:endpoints:check`. |
 | `docs/20_architecture_and_specs/reference/BRANCH_HANDOFF_AND_MERGE_CONTRACT.md` | current_latest_baseline | Reusable branch ZIP handoff and merge-intake standard; workflow contract only, not implementation proof. |
 | `docs/50_audits_and_migrations/TERMINAL_DEMO_VIEW0_VIEW6_MERGE_INTAKE_20260702.md` | current_latest_baseline | Pre-implementation View 0 / View 6 branch merge audit; no merge or post-merge proof claimed. |
+| `docs/20_architecture_and_specs/openspec/terminal_demo_shared_logging_openspec.md` | current_latest_baseline | Shared terminal-demo branch action logging contract for merged View 0 and View 6 terminal slices. |
+| `docs/20_architecture_and_specs/openspec/terminal_demo_view0_default_test_route_openspec.md` | current_latest_baseline | View 0 default `0A` route contract; terminal-demo local only. |
+| `docs/20_architecture_and_specs/openspec/terminal_demo_view0_custom_test_route_openspec.md` | current_latest_baseline | View 0 custom route contract; terminal-demo local only. |
+| `docs/20_architecture_and_specs/openspec/terminal_demo_view6_fixture_playback_contract_openspec.md` | current_latest_baseline | View 6 fixture-backed placeholder contract; no real playback or queue execution claim. |
+| `docs/20_architecture_and_specs/openspec/terminal_demo_view6_codex_playback_handoff.md` | current_latest_baseline | Handoff for later Codex-owned View 6 real playback wiring; placeholder boundary only. |
 | `docs/20_architecture_and_specs/view_e_validation_hermetic_contract.md` | current_latest_baseline | View E validation hermeticity contract; guarded by `tests/viewEValidationHermetic.test.js`. |
 | `docs/50_audits_and_migrations/DOC_CONSISTENCY_AUDIT_20260611.md` | current_latest_baseline | Latest documentation issue registry and recommended next doc/implementation slices. |
 | `docs/50_audits_and_migrations/PF_LOGIN_PROJECT_STATUS_ANALYSIS_20260611.md` | recent_verify_against_code | v0.8.33 structured status report for the v0.8.32 baseline; useful as prior audit context, but superseded for docs/OpenSpec grading by the 2026-06-16 audit. |

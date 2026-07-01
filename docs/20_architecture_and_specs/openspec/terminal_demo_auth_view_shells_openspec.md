@@ -10,7 +10,7 @@ This slice implements the remaining-view beeline Batch B shell contract for the 
 
 It is a UI shell only. It does not execute iCloudPD, read or delete session files, generate evidence packs, call workers, mutate the DEMO DB, copy files, start playback, or touch cron.
 
-View `0` and View `6` are unchanged in this slice.
+View `0` and View `6` have later view-specific contracts that this auth slice must not regress.
 
 ## View `D` — iCloudPD authorization section
 
@@ -52,6 +52,6 @@ Older compatibility auth buttons are forbidden in View `I`.
 - No auth/session files are read, written, deleted, listed, or packaged.
 - No login status is verified.
 - No auth evidence pack is generated.
-- No View `0` behavior change.
-- No View `6` behavior change.
+- No View `0` auth behavior change.
+- No View `6` auth behavior change.
 - No worker, DB, playback, file-copy, or cron behavior.

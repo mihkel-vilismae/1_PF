@@ -90,6 +90,13 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/proofs/raspberry_native_image_playback_proof.md` | Raspberry target native image playback proof contract. |
 | `docs/proofs/raspberry_native_video_playback_proof.md` | Raspberry target native video playback proof contract. |
 | `docs/proofs/overall_project_completeness_registry_proof.md` | Static proof that the overall project goal registry is source-backed and proof-honest. |
+| `docs/proofs/terminal_demo_shared_logging_contract_proof.md` | Shared terminal-demo View 0/View 6 action-log proof. |
+| `docs/proofs/terminal_demo_view0_default_test_route_proof.md` | View 0 default `0A` terminal route proof. |
+| `docs/proofs/terminal_demo_view0_custom_test_route_proof.md` | View 0 custom terminal route proof. |
+| `docs/proofs/terminal_demo_view6_fixture_playback_contract_proof.md` | View 6 fixture-backed playback contract proof. |
+| `docs/proofs/terminal_demo_view6_codex_placeholder_proof.md` | View 6 fixture button placeholder proof. |
+| `docs/proofs/terminal_demo_view6_codex_placeholder_complete_proof.md` | Aggregated View 6 placeholder completion proof. |
+| `docs/proofs/terminal_demo_view6_codex_playback_handoff_proof.md` | View 6 Codex playback handoff proof. |
 
 ## Architecture and specs
 
@@ -130,6 +137,11 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/20_architecture_and_specs/reference/BRANCH_HANDOFF_AND_MERGE_CONTRACT.md` | Reusable branch ZIP handoff and merge-intake contract standard. |
 | `docs/20_architecture_and_specs/reference/default_project_settings_and_elements_checklist.md` | Default project settings and reusable UI/runtime elements. |
 | `docs/20_architecture_and_specs/reference/project_status_enum_registry.md` | Normalized status and proof-command-state vocabulary for completeness reporting. |
+| `docs/20_architecture_and_specs/openspec/terminal_demo_shared_logging_openspec.md` | Shared terminal action JSONL schema for merged View 0 and View 6 branch features. |
+| `docs/20_architecture_and_specs/openspec/terminal_demo_view0_default_test_route_openspec.md` | View 0 default `0A` test-route contract. |
+| `docs/20_architecture_and_specs/openspec/terminal_demo_view0_custom_test_route_openspec.md` | View 0 custom test-route contract, including `7D`. |
+| `docs/20_architecture_and_specs/openspec/terminal_demo_view6_fixture_playback_contract_openspec.md` | View 6 fixture-backed playback placeholder contract. |
+| `docs/20_architecture_and_specs/openspec/terminal_demo_view6_codex_playback_handoff.md` | View 6 handoff for later Codex-owned real playback wiring. |
 
 ## Status snapshots
 

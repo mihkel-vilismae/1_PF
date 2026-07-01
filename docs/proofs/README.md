@@ -92,6 +92,14 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Raspberry reboot recovery | `npm run proof:raspberry-reboot-recovery` | Manual pre/post reboot recovery proof |
 | Raspberry physical power-loss recovery | `npm run proof:raspberry-power-loss-recovery` | Manual physical power-loss/restored-power proof |
 | Raspberry cron worker singleton/recovery proof plan | planned; no runtime command in v0.8.44 | documentation-only Raspberry app-running proof contract |
+| Terminal Demo shared logging contract | `npm run proof:terminal-demo-shared-logging-contract` | local terminal-demo JSONL schema proof |
+| Terminal Demo View 0 map/View 6 compatibility | `npm run proof:terminal-demo-view0-map-view6-blank` | local compatibility proof for View 0 map and merged View 6 contract |
+| Terminal Demo View 0 default route | `npm run proof:terminal-demo-view0-default-test-route` | local View 0 `0A` route proof |
+| Terminal Demo View 0 custom route | `npm run proof:terminal-demo-view0-custom-test-route` | local View 0 `7D` route proof |
+| Terminal Demo View 6 fixture playback contract | `npm run proof:terminal-demo-view6-fixture-playback-contract` | local fixture contract proof; no real playback claim |
+| Terminal Demo View 6 Codex placeholder | `npm run proof:terminal-demo-view6-codex-placeholder` | local placeholder modal/log proof; no real playback claim |
+| Terminal Demo View 6 Codex placeholder complete | `npm run proof:terminal-demo-view6-codex-placeholder-complete` | local aggregate placeholder boundary proof |
+| Terminal Demo View 6 Codex playback handoff | `npm run proof:terminal-demo-view6-codex-playback-handoff` | local handoff-doc proof for later Codex-owned playback wiring |
 
 | Raspberry dashboard status view | `npm run proof:raspberry-dashboard-status-view` | Raspberry target/local projection proof |
 | Raspberry screen-worker non-blocking | `npm run proof:raspberry-screen-worker-non-blocking` | Raspberry target/design proof |
@@ -102,7 +110,7 @@ Proof artifacts must not include Apple IDs, passwords, 2FA codes, cookies, API k
 | Proof runner final readiness summary | `npm run proof:proof-runner-final-summary` | local proof-report summary guard |
 | Proof runner queue order | `npm run proof:proof-runner-queue` | local proof-runner ordering contract |
 
-The table above is intentionally complete for current `proof:*` package scripts. As of this repository version, `package.json` exposes 115 proof package scripts and every one must appear in this table. `tests/docsNpmScriptReferences.test.js` guards active documentation against stale `npm run ...` script references and against missing proof-runner inventory entries.
+The table above is intentionally complete for current `proof:*` package scripts. Every current proof package script must appear in this table. `tests/docsNpmScriptReferences.test.js` guards active documentation against stale `npm run ...` script references and against missing proof-runner inventory entries.
 
 When adding, renaming, or removing a `proof:*` script, update this table in the same change as the package script so the proof catalog does not drift from the runnable command surface. Keep runtime-mode wording conservative: table entries describe how to run a proof command, not that the underlying hardware/provider/runtime behavior is already proven.
 

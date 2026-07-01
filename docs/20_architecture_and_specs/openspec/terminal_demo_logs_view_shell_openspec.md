@@ -55,7 +55,7 @@ Required visible sections:
 | File writing | The view must not mutate logs/status/truth files. |
 | Worker execution | Logs view shell is display-only. |
 | DB/auth/playback/cron behavior | Outside this shell slice. |
-| View `0` or View `6` changes | Frozen for this chat unless explicitly reopened. |
+| View `0` or View `6` logs behavior changes | Later view-specific contracts exist, but this logs shell slice must not add logs-side effects to them. |
 
 ## Acceptance criteria
 
@@ -63,4 +63,4 @@ Required visible sections:
 - The seven core labels and paths are visible.
 - The page states it is `shell placeholders only`.
 - The page states there is no file tailing or reading.
-- View `0` and View `6` are unchanged.
+- View `0` and View `6` have later view-specific contracts that remain outside the logs shell.

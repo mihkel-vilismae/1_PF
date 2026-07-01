@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "2.0.16",
+  "version": "2.0.17",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -259,6 +259,13 @@
     "proof:workflow-acr-usage-ledger": "node tools/run-acr-usage-ledger-proof.mjs",
     "proof:terminal-demo-empty-view-shells": "node tools/run-terminal-demo-empty-view-shells-proof.mjs",
     "proof:terminal-demo-view0-map-view6-blank": "node tools/run-terminal-demo-view0-map-view6-blank-proof.mjs",
+    "proof:terminal-demo-shared-logging-contract": "node tools/run-terminal-demo-shared-logging-contract-proof.mjs",
+    "proof:terminal-demo-view0-default-test-route": "node tools/run-terminal-demo-view0-default-test-route-proof.mjs",
+    "proof:terminal-demo-view0-custom-test-route": "node tools/run-terminal-demo-view0-custom-test-route-proof.mjs",
+    "proof:terminal-demo-view6-fixture-playback-contract": "node tools/run-terminal-demo-view6-fixture-playback-contract-proof.mjs",
+    "proof:terminal-demo-view6-codex-placeholder": "node tools/run-terminal-demo-view6-codex-placeholder-proof.mjs",
+    "proof:terminal-demo-view6-codex-placeholder-complete": "node tools/run-terminal-demo-view6-codex-placeholder-complete-proof.mjs",
+    "proof:terminal-demo-view6-codex-playback-handoff": "node tools/run-terminal-demo-view6-codex-playback-handoff-proof.mjs",
     "proof:terminal-demo-view-shell-beeline-preflight": "node tools/run-terminal-demo-view-shell-beeline-preflight-proof.mjs",
     "proof:terminal-demo-auth-view-shells": "node tools/run-terminal-demo-auth-view-shells-proof.mjs",
     "proof:terminal-demo-logs-view-shell": "node tools/run-terminal-demo-logs-view-shell-proof.mjs"

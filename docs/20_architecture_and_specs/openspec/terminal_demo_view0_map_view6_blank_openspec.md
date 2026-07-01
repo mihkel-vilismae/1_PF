@@ -1,4 +1,4 @@
-# Terminal Demo View 0 Map + View 6 Blank Shell OpenSpec
+# Terminal Demo View 0 Map + View 6 Merged Contract OpenSpec
 
 ## Version
 
@@ -11,14 +11,14 @@ This slice integrates the uploaded branch planning docs only within the narrowed
 - `PF_login_View0_Map_Debug_Page_Overview_ACR.md`
 - `PF_login_View6_Playback_Page_Overview_XACR.md`
 
-Deferred items from those docs, such as View 0 test-page modals and View 6 playback controls, are intentionally not implemented here.
+This compatibility OpenSpec started as the View 0 map / View 6 blank shell scope. In the merged View 0 + View 6 integration, View 0 now includes safe test-page routing and View 6 now renders the fixture-backed playback contract while keeping real playback deferred.
 
 ## Scope
 
 | View | Required behavior in this slice |
 |---|---|
-| `0` | Render `Table of Contents and Debug` with a `View Map` section and an empty `Testing` section. |
-| `6` | Remain a blank/empty playback page shell only. |
+| `0` | Render `map and testing - view 0` with `View Map`, `Testing`, default route `0A`, and typed test routes. |
+| `6` | Render fixture-backed playback contract controls and a Codex placeholder modal, with queue-backed playback disabled. |
 
 ## View 0 map list
 
@@ -40,16 +40,14 @@ Pressing a listed key from View `0` must route to that page when no modal owns i
 
 ## Testing section
 
-View `0` also renders a second section named `Testing`. It is empty except for safe placeholder copy. It does not run debug actions.
+View `0` also renders a second section named `Testing`. It accepts `Enter` to open the selector, accepts default route `0A`, and accepts typed routes such as `7D`. It does not run debug actions.
 
-## View 6 blank page
+## View 6 fixture contract
 
-View `6` must remain an empty shell. It must not render playback buttons in this slice.
+View `6` renders disabled future queue-backed controls and enabled fixture-backed placeholder controls. Pressing a fixture button opens the exact placeholder message `this will be done by Codex` and logs `CODEX_DEFERRED` with `launchesPlayback=false`.
 
 ## Non-goals
 
-- No View `0` Enter/test-page modal yet.
-- No test page code routing such as `0A` or `7D` yet.
-- No View `6` playback buttons yet.
-- No fixture copy, queue access, browser playback, fullscreen playback, or overlay playback.
+- No real browser playback, fullscreen playback, or overlay playback.
+- No queue-backed playback execution.
 - No workers, auth, DB writes, file copies, or cron behavior.
