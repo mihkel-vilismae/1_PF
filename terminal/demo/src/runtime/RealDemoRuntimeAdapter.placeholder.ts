@@ -18,8 +18,9 @@ import { runOrPlanPlaybackWorker } from '../playback/PhotoFramePlaybackCommandAd
 import { DbPlaybackRepository } from '../playback/DbPlaybackRepository.js';
 import { runDbImagePlaybackButton } from '../playback/DbImagePlaybackButton.js';
 import type { TerminalMouseEvent } from '../ui/terminalMouse.js';
-import { cloneStartStageModalState, createStartStageModalState, handleStartStageModalKey, openStartStageModal, type ManualStageKey } from '../startStageModal/StartStageModalState.js';
+import { cloneStartStageModalState, createStartStageModalState, handleStartStageModalKey, markStartStageModalRowStatus, openStartStageModal, type ManualStageKey } from '../startStageModal/StartStageModalState.js';
 import { findHitbox } from '../ui/terminalMouse.js';
+import { runManualStageFromModal } from '../run/ManualStageRunController.js';
 
 /**
  * Group 3B real-demo adapter scaffold.
@@ -147,7 +148,11 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
   private handleStartStageModalKey(key: ManualStageKey): DemoTerminalState {
     const result = handleStartStageModalKey(this.startStageModal, key);
     this.startStageModal = result.state;
-    this.state = this.buildState(result.messages);
+    const row = this.startStageModal.rows.find((candidate) => candidate.key === key);
+    const source = row?.enabled ? this.readSources() : null;
+    const execution = row && source ? runManualStageFromModal({ boundary: this.boundary, row, mediaRows: source.mediaRows }) : null;
+    if (execution) this.startStageModal = markStartStageModalRowStatus(this.startStageModal, key, execution.status, execution.messages[0] ?? result.state.lastMessage);
+    this.state = this.buildState([...(execution?.messages ?? result.messages)]);
     this.snapshots.setSnapshots([]);
     return this.getState();
   }
@@ -162,7 +167,6 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
     this.snapshots.setSnapshots([]);
     return this.getState();
   }
-
 
   private runPlaybackSelection(): DemoTerminalState {
     const dbPlayback = new DbPlaybackRepository(this.boundary).read();

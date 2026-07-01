@@ -4,7 +4,7 @@
 export type ManualStageKey = '1' | '2' | '3' | '4' | '5';
 export type ManualStageBatchSize = 1 | 3;
 export type ManualStageId = 'download' | 'index' | 'gps_parser' | 'geocode' | 'enqueue_playback';
-export type ManualStageRowStatus = 'disabled' | 'ready' | 'selected';
+export type ManualStageRowStatus = 'disabled' | 'ready' | 'selected' | 'planned' | 'blocked' | 'passed' | 'failed';
 
 export interface StartStageModalRow {
   key: ManualStageKey;
@@ -61,8 +61,8 @@ export function handleStartStageModalKey(state: StartStageModalState, key: Manua
   }
 
   selected.status = 'selected';
-  next.lastMessage = `${selected.label} selected with batch_size=${selected.batchSize}; execution wiring is reserved for the next batch.`;
-  return { state: next, messages: [`start_stage_modal: key ${key} selected ${selected.label}; batch_size=${selected.batchSize}; no worker path called in modal-shell batch.`] };
+  next.lastMessage = `${selected.label} selected with batch_size=${selected.batchSize}; preparing shared worker-path plan.`;
+  return { state: next, messages: [`start_stage_modal: key ${key} selected ${selected.label}; batch_size=${selected.batchSize}; shared worker-path plan requested.`] };
 }
 
 export function toggleStartStageRowBatchSize(state: StartStageModalState, key: ManualStageKey): StartStageModalState {
@@ -70,6 +70,19 @@ export function toggleStartStageRowBatchSize(state: StartStageModalState, key: M
   next.rows = next.rows.map((row) => row.key === key ? { ...row, batchSize: row.batchSize === 1 ? 3 : 1 } : { ...row });
   const row = next.rows.find((candidate) => candidate.key === key);
   next.lastMessage = row ? `${row.label} batch_size=${row.batchSize}` : next.lastMessage;
+  return next;
+}
+
+
+export function markStartStageModalRowStatus(
+  state: StartStageModalState,
+  key: ManualStageKey,
+  status: ManualStageRowStatus,
+  message: string
+): StartStageModalState {
+  const next = cloneStartStageModalState(state);
+  next.rows = next.rows.map((row) => row.key === key ? { ...row, status } : row);
+  next.lastMessage = message;
   return next;
 }
 

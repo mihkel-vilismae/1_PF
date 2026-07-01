@@ -4,7 +4,7 @@
 import { spawnSync } from 'node:child_process';
 import type { RuntimeBoundaryState } from '../config/runtimeTypes.js';
 import type { DemoDryRunCommandPlan } from '../orchestration/DemoDryRunCommandPlanner.js';
-import type { DemoStageIntent } from '../orchestration/PhotoFrameWorkerCommandContract.js';
+import { commandForWorker, type DemoStageIntent } from '../orchestration/PhotoFrameWorkerCommandContract.js';
 import type { PlannedManifestRow } from '../orchestration/DemoBatchManifestPlan.js';
 
 export interface StageExecutionResult {
@@ -20,12 +20,12 @@ export interface StageExecutionInput {
   manifestPath: string;
   stage: DemoStageIntent;
   rows: PlannedManifestRow[];
-  route: 'batch_size_1_file_by_file' | 'batch_size_5_stage_batch';
+  route: string;
 }
 
-const regularWorkerCommand = 'npm run api -- --scheduler regular-stage-worker';
-
 export function runOrPlanRegularStageWorkerStage(input: StageExecutionInput): StageExecutionResult {
+  const worker = commandForWorker('regular-stage-worker');
+  const regularWorkerCommand = worker.npmCommand;
   const execute = process.env.PHOTOFRAME_TERMINAL_DEMO_EXECUTE === '1';
   const noCronGuard = verifyNoCronCommand(regularWorkerCommand);
   if (!noCronGuard.safe) {
@@ -35,6 +35,8 @@ export function runOrPlanRegularStageWorkerStage(input: StageExecutionInput): St
   const baseMessages = [
     'no cron is used; this is a manual terminal-triggered command plan',
     `route=${input.route}`,
+    `worker=${worker.workerName}`,
+    `cron_reference=${worker.cronReference}`,
     `stage=${input.stage}`,
     `batch_size=${input.plan.batchSize}`,
     `manifest=${input.manifestPath}`,

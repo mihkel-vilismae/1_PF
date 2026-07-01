@@ -5,7 +5,7 @@ import path from 'node:path';
 import type { DemoRuntimePaths } from '../config/runtimeTypes.js';
 import type { MediaRow } from '../state/DemoTerminalState.js';
 
-export type SupportedDryRunBatchSize = 1 | 5;
+export type SupportedDryRunBatchSize = 1 | 3 | 5;
 
 export interface PlannedManifestRow {
   rowNumber: number;
@@ -29,7 +29,7 @@ export function buildDemoBatchManifestPlan(
   mediaRows: MediaRow[],
   batchSize: SupportedDryRunBatchSize
 ): DemoBatchManifestPlan {
-  const runRowCount = Math.min(batchSize === 1 ? 1 : 5, mediaRows.length);
+  const runRowCount = Math.min(batchSize, mediaRows.length);
   const selectedRows = mediaRows.slice(0, runRowCount).map((row) => ({
     rowNumber: row.rowNumber,
     relativePath: row.relativePath ?? row.fileName,

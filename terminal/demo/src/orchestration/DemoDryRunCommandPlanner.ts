@@ -12,15 +12,15 @@ export interface PlannedStageCommand {
   command: string;
   cwd: string;
   env: Record<string, string>;
-  executionPolicy: 'dry-run-plan-only';
+  executionPolicy: 'dry-run-plan-only' | 'manual-start-stage-modal-shared-worker-path';
 }
 
 export interface DemoDryRunCommandPlan {
   batchSize: SupportedDryRunBatchSize;
   runtimeMode: 'demo';
-  trigger: 'manual-user-triggered-terminal-q';
+  trigger: 'manual-user-triggered-terminal-q' | 'manual-start-stage-modal';
   noCron: true;
-  mergeRequiredBeforeExecution: true;
+  mergeRequiredBeforeExecution: boolean;
   manifest: DemoBatchManifestPlan;
   commands: PlannedStageCommand[];
   notes: string[];
