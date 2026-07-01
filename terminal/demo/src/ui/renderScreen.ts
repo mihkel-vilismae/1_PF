@@ -24,6 +24,7 @@ import { renderEmptyView } from './renderEmptyView.js';
 import { renderViewZero } from './renderViewZero.js';
 import { renderIcloudAuthorization } from './renderIcloudAuthorization.js';
 import { renderIcloudLoginView } from './renderIcloudLoginView.js';
+import { renderLogsView } from './renderLogsView.js';
 
 const WIDE_LAYOUT_MIN_COLUMNS = 180;
 const DEFAULT_NON_TTY_COLUMNS = 220;
@@ -31,6 +32,10 @@ const DEFAULT_NON_TTY_COLUMNS = 220;
 export function renderScreen(state: DemoTerminalState, layout: TerminalLayout, terminalWidth = resolveTerminalWidth()): string {
   if (state.activeViewKey === '0') {
     return [renderViewZero(state, Math.min(terminalWidth, DEFAULT_NON_TTY_COLUMNS)), color.muted(helpText(state))].join('\n');
+  }
+
+  if (state.activeViewKey === 'L') {
+    return [renderLogsView(state, Math.min(terminalWidth, DEFAULT_NON_TTY_COLUMNS)), color.muted(helpText(state))].join('\n');
   }
 
   if (state.activeViewKey === 'I') {
