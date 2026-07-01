@@ -42,7 +42,7 @@ const assertions = {
   independent_batch_size_toggle_to_three: toggled.rows.find((row) => row.key === '3')?.batchSize === 3 && toggled.rows.filter((row) => row.key !== '3').every((row) => row.batchSize === 1),
   allowed_batch_sizes_are_one_and_three: JSON.stringify(manualStageBatchSizes) === JSON.stringify([1, 3]),
   key_1_stays_disabled_no_execution: downloadDisabled.lastMessage.includes('disabled') && downloadDisabled.rows[0]?.status === 'disabled',
-  key_2_routes_to_shared_worker_plan: indexSelected.rows.find((row) => row.key === '2')?.status === 'planned' && /manual-stage-modal|shared worker path/i.test(indexSelected.lastMessage),
+  key_2_routes_to_shared_worker_path: ['blocked', 'passed'].includes(indexSelected.rows.find((row) => row.key === '2')?.status ?? '') && /manual-stage-modal|shared worker path/i.test(indexSelected.lastMessage),
   rendered_modal_contains_element_name: rendered.includes('start_stage_modal') && rendered.includes('Enqueue for Playback')
 };
 const passed = Object.values(assertions).every(Boolean);
@@ -50,7 +50,7 @@ console.log(JSON.stringify({
   proof,
   status: passed ? 'PASSED' : 'BLOCKED',
   checkedAt: new Date().toISOString(),
-  decision: passed ? 'START_STAGE_MODAL_BATCH2_MODAL_CONTRACT_READY' : 'START_STAGE_MODAL_BATCH2_MODAL_CONTRACT_BLOCKED',
+  decision: passed ? 'START_STAGE_MODAL_BATCH3_MODAL_CONTRACT_READY' : 'START_STAGE_MODAL_BATCH3_MODAL_CONTRACT_BLOCKED',
   assertions,
   keyTable: opened.rows.map((row) => ({ key: row.key, action: row.action, enabled: row.enabled, batchSize: row.batchSize }))
 }, null, 2));
