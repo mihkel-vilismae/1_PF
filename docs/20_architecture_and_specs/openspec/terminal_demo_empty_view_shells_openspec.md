@@ -40,7 +40,7 @@ Define the first view-system slice for terminal Demo Mode. This slice creates em
 
 - `D` remains the current real-demo operator screen.
 - `0` renders a map/testing shell only.
-- `L`, `I`, and `1`-`6` render empty view shells only.
+- `1`-`6` render empty view shells only. Later slices have promoted `I` to the NEW AUTH shell and `L` to the logs shell while preserving the original no-effect boundary.
 - Empty view shells must state that no buttons, workers, auth, playback, DB writes, file copies, or cron calls run from this slice.
 - When `start_stage_modal` is open, modal keys `1`-`5` keep their existing modal behavior and must not switch views.
 - `H`, `S`, `Q`, `P`, `W`, `R`, and `X` retain their existing meanings.

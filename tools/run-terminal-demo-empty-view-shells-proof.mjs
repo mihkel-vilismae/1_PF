@@ -6,9 +6,7 @@ import { join } from 'node:path';
 const repoRoot = process.cwd();
 const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 const ansiPattern = /\u001b\[[0-9;]*m/g;
-const views = [
-  ['D', 'PHOTOFRAME REAL DEMO TERMINAL'],
-  ['L', 'LOGS VIEW'],
+const genericEmptyViews = [
   ['1', 'DOWNLOAD STAGE VIEW'],
   ['2', 'INDEXING STAGE VIEW'],
   ['3', 'GPS PARSER STAGE VIEW'],
@@ -42,13 +40,18 @@ const defaultView = runTerminal(['--view-shell-smoke=D']);
 assertIncludes(defaultView, 'PHOTOFRAME REAL DEMO TERMINAL', 'default view still renders operator screen');
 assertNotIncludes(defaultView, 'EMPTY VIEW SHELL ONLY', 'default view is not replaced by empty shell');
 
-for (const [key, title] of views.slice(1)) {
+for (const [key, title] of genericEmptyViews) {
   const output = runTerminal([`--view-shell-smoke=${key}`]);
   assertIncludes(output, title, `view ${key} title`);
   assertIncludes(output, `View key: ${key}`, `view ${key} key`);
   assertIncludes(output, 'EMPTY VIEW SHELL ONLY', `view ${key} empty shell status`);
   assertIncludes(output, 'No buttons, workers, auth, playback, DB writes, file copies, or cron calls', `view ${key} no-effect guard`);
 }
+
+const logsView = runTerminal(['--view-shell-smoke=L']);
+assertIncludes(logsView, 'VIEW L — LOGS VIEW', 'view L now renders logs shell title');
+assertIncludes(logsView, 'CORE LOG / STATUS SHELLS', 'view L logs shell section');
+assertNotIncludes(logsView, 'EMPTY VIEW SHELL ONLY', 'view L is no longer generic empty shell');
 
 const loginView = runTerminal(['--view-shell-smoke=I']);
 assertIncludes(loginView, 'VIEW I — ICLOUDPD LOGIN VIEW', 'view I now renders auth shell title');
@@ -70,4 +73,4 @@ for (const marker of ['View', 'Pane', 'Section', 'Subsection', 'Modal', 'D', 'L'
 }
 
 console.log('terminal_demo_empty_view_shells: PASS');
-console.log('verified: D stays default, L/1-6 stay generic empty shells, I renders auth shell, modal keys keep priority, no-effect guard is rendered');
+console.log('verified: D stays default, L renders logs shell, I renders auth shell, 1-6 generic shells keep modal priority and no-effect guards');
