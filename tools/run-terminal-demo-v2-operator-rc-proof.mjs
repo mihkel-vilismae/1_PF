@@ -19,12 +19,13 @@ const commands = [
   nodeProof('batch-parity', 'tools/run-terminal-demo-batch-parity-proof.mjs', 'REAL_DEMO_BATCH_EXECUTION_PARITY_READY'),
   nodeProof('screen-worker-panel', 'tools/run-terminal-demo-screen-worker-panel-proof.mjs', 'REAL_DEMO_SCREEN_WORKER_PANEL_READY'),
   nodeProof('operator-layout-status', 'tools/run-terminal-demo-operator-layout-status-proof.mjs', 'REAL_DEMO_OPERATOR_LAYOUT_STATUS_READY'),
+  nodeProof('windows-p-viewer-launch', 'tools/run-terminal-demo-windows-viewer-launch-proof.mjs', 'REAL_DEMO_WINDOWS_P_VIEWER_LAUNCH_READY'),
   nodeProof('db-image-playback-button', 'tools/run-terminal-demo-db-image-playback-button-proof.mjs', 'TERMINAL_DEMO_DB_IMAGE_PLAYBACK_BUTTON_READY')
 ];
 const checks = [];
 const fastSummary = process.argv.includes('--fast-summary');
 
-check('VERSION is v2.0.0', version === '2.0.0', `VERSION=${version}`);
+check('VERSION is v2.0.x operator RC patch line', /^2\.0\.\d+$/.test(version), `VERSION=${version}`);
 check('package.json version matches VERSION', packageJson.version === version, `package=${packageJson.version}`);
 check('package-lock version matches VERSION', JSON.parse(readText('package-lock.json')).version === version, 'package-lock.json');
 check('tsx loader available for TypeScript proof imports', existsSync(loader), relative(loader));

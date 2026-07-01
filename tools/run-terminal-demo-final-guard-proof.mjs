@@ -28,6 +28,7 @@ const finalProofs = [
   'batch-parity',
   'screen-worker-panel',
   'operator-layout-status',
+  'windows-viewer-launch',
   'v2-operator-rc',
   'largest-files'
 ];
@@ -163,6 +164,12 @@ function proofOperatorLayoutStatus() {
 }
 
 
+
+function proofWindowsViewerLaunch() {
+  const output = run('node', ['tools/run-terminal-demo-windows-viewer-launch-proof.mjs']);
+  check('Windows P viewer launch proof passes', output.includes('REAL_DEMO_WINDOWS_P_VIEWER_LAUNCH_READY'), 'Safe Invoke-Item/rundll32/explorer chain and button action JSONL proof passes.');
+}
+
 function proofV2OperatorRc() {
   check('v2 operator RC proof script is registered',
     JSON.parse(read('package.json')).scripts['proof:terminal-demo-v2-operator-rc'] === 'node tools/run-terminal-demo-v2-operator-rc-proof.mjs',
@@ -215,6 +222,7 @@ const proofMap = {
   'batch-parity': proofBatchParity,
   'screen-worker-panel': proofScreenWorkerPanel,
   'operator-layout-status': proofOperatorLayoutStatus,
+  'windows-viewer-launch': proofWindowsViewerLaunch,
   'v2-operator-rc': proofV2OperatorRc,
   'largest-files': proofLargestFiles
 };

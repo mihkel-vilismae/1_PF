@@ -1,3 +1,12 @@
+# 2.0.1 - Windows P viewer launch hotfix
+
+- Replaced the real-demo `P` Windows viewer launch adapter with `Invoke-Item -LiteralPath`, `rundll32.exe url.dll,FileProtocolHandler`, then `explorer.exe`.
+- Removed the fragile `cmd.exe start` fallback from the accepted launch path.
+- Preserved `viewerPath`, `filePath`, and `address` when the viewer is written but OS launch is blocked.
+- Added persistent `P` button action logging at `runtime_data/logs/demo/terminal-button-actions.jsonl`.
+- Updated `proof:terminal-demo-windows-viewer-launch` to prove the new chain, no `cmd.exe start`, blocked-open path preservation, and JSONL action logging.
+- Scope remains hotfix-only: no cron, no DB schema redesign, no screen-worker/geocode changes, and no new v2 claim.
+
 # 2.0.0 - Real Demo Mode operator RC
 
 - Promoted Terminal Real Demo Mode to the v2.0 operator RC proof surface.

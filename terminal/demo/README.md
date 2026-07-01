@@ -559,3 +559,14 @@ npm run proof:terminal-demo-rc-readiness
 ```
 
 Non-claims: no cron, no DB schema redesign, no unguarded real screen power command, no mock success claim, and no production Raspberry v2 claim without target evidence.
+
+
+## v2.0.1 Windows P viewer launch hotfix
+
+Pressing `P` still uses the DB-backed DEMO playback path, but Windows viewer launching now uses a safer chain: `Invoke-Item -LiteralPath`, then `rundll32.exe url.dll,FileProtocolHandler`, then `explorer.exe`. The old fragile `cmd.exe start` fallback is not part of the accepted launch path. If the viewer file is written but Windows refuses to open it, the terminal keeps showing the viewer path, selected image path, and address instead of erasing them. P button actions are persisted to `runtime_data/logs/demo/terminal-button-actions.jsonl`.
+
+Proof:
+
+```bash
+npm run proof:terminal-demo-windows-viewer-launch
+```
