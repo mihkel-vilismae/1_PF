@@ -127,6 +127,7 @@ export function createInitialMockState(): DemoTerminalState {
     banner: `PHOTOFRAME MOCK DEMO MODE v${version}`,
     warning: 'Visual mock only: no real DB, no real workers, no real truth JSONL, no cron.',
     selectedBatchSize: 1,
+    activeViewKey: 'D',
     sectionHeaderIdsVisible: false,
     startStageModal: createStartStageModalState(false),
     mediaRows: mockMediaRows.map((row) => ({ ...row })),

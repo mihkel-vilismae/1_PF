@@ -14,7 +14,9 @@ import { qStoryboardStepIds } from './scenarios/qGeocodeStoryboard.js';
 import { mouseTrackingDisableSequence, mouseTrackingEnableSequence, parseSgrMouseEvent } from './ui/terminalMouse.js';
 
 const layout = readTerminalLayout();
-const args = new Set(process.argv.slice(2));
+const rawArgs = process.argv.slice(2);
+const args = new Set(rawArgs);
+const viewShellArg = rawArgs.find((arg) => arg.startsWith('--view-shell-smoke='));
 const runtimeConfig = readTerminalRuntimeConfig(process.argv.slice(2));
 const adapter = createAdapter(runtimeConfig);
 if (args.has('--batch-size=5')) {
@@ -123,6 +125,29 @@ if (args.has('--start-stage-modal-section-ids-smoke')) {
   process.exit(0);
 }
 
+if (viewShellArg) {
+  const viewKey = viewShellArg.split('=')[1] ?? 'D';
+  await adapter.handleKey(viewKey);
+  printFrame(renderScreen(adapter.getState(), layout));
+  process.exit(0);
+}
+
+if (args.has('--empty-view-shells-smoke')) {
+  const frames = [];
+  for (const viewKey of ['D', 'L', 'I', '1', '2', '3', '4', '5', '6']) {
+    frames.push(...await adapter.handleKey(viewKey));
+  }
+  printFrame(renderScreen(frames[frames.length - 1] ?? adapter.getState(), layout));
+  process.exit(0);
+}
+
+if (args.has('--empty-view-modal-priority-smoke')) {
+  await adapter.handleKey('S');
+  await adapter.handleKey('2');
+  printFrame(renderScreen(adapter.getState(), layout));
+  process.exit(0);
+}
+
 if (args.has('--start-stage-modal-smoke')) {
   await adapter.handleKey('S');
   if (args.has('--start-stage-modal-key1-smoke')) await adapter.handleKey('1');
@@ -200,7 +225,7 @@ process.stdin.on('data', async (chunk) => {
     return;
   }
 
-  if (key.toUpperCase() === 'H' || key.toUpperCase() === 'W' || key.toUpperCase() === 'P' || key.toUpperCase() === 'S' || /^[1-5]$/.test(key)) {
+  if (key.toUpperCase() === 'H' || key.toUpperCase() === 'W' || key.toUpperCase() === 'P' || key.toUpperCase() === 'S' || /^[1-6DLI]$/i.test(key)) {
     const frames = await adapter.handleKey(key.toUpperCase());
     clearAndPrint(renderScreen(frames[0] ?? adapter.getState(), layout));
     return;

@@ -20,11 +20,16 @@ import { renderRpiStages } from './renderRpiStages.js';
 import { renderRpiWorkers } from './renderRpiWorkers.js';
 import { renderScreenOnOff } from './renderScreenOnOff.js';
 import { renderStartStageModal } from './renderStartStageModal.js';
+import { renderEmptyView } from './renderEmptyView.js';
 
 const WIDE_LAYOUT_MIN_COLUMNS = 180;
 const DEFAULT_NON_TTY_COLUMNS = 220;
 
 export function renderScreen(state: DemoTerminalState, layout: TerminalLayout, terminalWidth = resolveTerminalWidth()): string {
+  if (state.activeViewKey !== 'D') {
+    return [renderEmptyView(state, Math.min(terminalWidth, DEFAULT_NON_TTY_COLUMNS)), color.muted(helpText(state))].join('\n');
+  }
+
   if (terminalWidth >= WIDE_LAYOUT_MIN_COLUMNS) {
     return renderWideScreen(state, layout, terminalWidth);
   }
@@ -46,8 +51,8 @@ function workersTitle(state: DemoTerminalState): string {
 
 function helpText(state: DemoTerminalState): string {
   return state.runtimeBoundary.adapterMode === 'real-demo'
-    ? 'Help: Real-demo operator path. H toggles section header IDs. S opens start_stage_modal. Area A=logs, Area B=command plan, Area C=playback/status. W toggles Q batch size. Q uses selected size. R refreshes. X exits. No cron.'
-    : 'Help: H toggles section header IDs. S opens start_stage_modal. Q auto-runs the storyboard. RIGHT/LEFT enters manual storyboard mode. R refreshes. X exits. Visual mock state only.';
+    ? 'Help: View keys D/L/I/1-6 switch empty view shells when no modal owns input. H toggles section header IDs. S opens start_stage_modal. W toggles Q batch size. Q/P keep existing behavior. R refreshes. X exits. No cron.'
+    : 'Help: View keys D/L/I/1-6 switch empty view shells when no modal owns input. H toggles section header IDs. S opens start_stage_modal. Q auto-runs the storyboard. R refreshes. X exits. Visual mock state only.';
 }
 
 function renderWideScreen(state: DemoTerminalState, layout: TerminalLayout, terminalWidth: number): string {

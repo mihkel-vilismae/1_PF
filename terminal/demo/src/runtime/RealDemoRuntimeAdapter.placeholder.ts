@@ -22,14 +22,9 @@ import { cloneStartStageModalState, createStartStageModalState, handleStartStage
 import { cloneDemoTerminalState } from '../state/cloneDemoTerminalState.js';
 import { findHitbox } from '../ui/terminalMouse.js';
 import { runManualStageFromModal } from '../run/ManualStageRunController.js';
+import { canSwitchTerminalView, withActiveTerminalView } from '../views/TerminalViewState.js';
+import type { TerminalViewKey } from '../views/TerminalViewRegistry.js';
 
-/**
- * Group 3B real-demo adapter scaffold.
- *
- * It reads generated demo media/truth/status, lets W toggle selected batch size,
- * and lets Q use that selected size through a guarded manual/no-cron runner.
- * Real worker execution is available only behind PHOTOFRAME_TERMINAL_DEMO_EXECUTE=1.
- */
 export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
   readonly modeName = 'real-demo';
   private state: DemoTerminalState;
@@ -43,6 +38,7 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
   private latestScreenStatus = 'waiting for keyboard/mouse activity';
   private startStageModal = createStartStageModalState(false);
   private sectionHeaderIdsVisible = false;
+  private activeViewKey: TerminalViewKey = 'D';
 
   constructor(private readonly boundary: RuntimeBoundaryState) {
     this.state = this.buildState();
@@ -63,6 +59,7 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
     this.latestScreenStatus = 'waiting for keyboard/mouse activity';
     this.startStageModal = createStartStageModalState(false);
     this.sectionHeaderIdsVisible = false;
+    this.activeViewKey = 'D';
     this.state = this.buildState();
     return this.getState();
   }
@@ -77,7 +74,8 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
     const normalized = key.toUpperCase();
     if (normalized === 'S') return [this.openStartStageModal()];
     if (normalized === 'H') return [this.toggleSectionHeaderIds()];
-    if (isManualStageKey(normalized)) return [this.handleStartStageModalKey(normalized)];
+    if (isManualStageKey(normalized) && this.startStageModal.isOpen) return [this.handleStartStageModalKey(normalized)];
+    if (canSwitchTerminalView(normalized, this.startStageModal.isOpen)) return [this.switchView(normalized)];
     if (normalized === 'W') return [this.toggleBatchSize()];
     if (normalized === 'Q') return this.runQStoryboard();
     if (normalized === 'P') return [this.runPlaybackSelection()];
@@ -163,6 +161,13 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
   }
 
 
+  private switchView(key: TerminalViewKey): DemoTerminalState {
+    this.activeViewKey = key;
+    this.state = withActiveTerminalView(this.buildState(), key);
+    this.snapshots.setSnapshots([]);
+    return this.getState();
+  }
+
   private toggleSectionHeaderIds(): DemoTerminalState {
     this.sectionHeaderIdsVisible = !this.sectionHeaderIdsVisible;
     this.state = this.buildState([
@@ -239,7 +244,8 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
         actionGuard: 'No real screen power command runs unless explicitly enabled and platform-safe.'
       },
       this.startStageModal,
-      this.sectionHeaderIdsVisible
+      this.sectionHeaderIdsVisible,
+      this.activeViewKey
     );
   }
 

@@ -7,6 +7,7 @@ import type { DemoTerminalState } from '../state/DemoTerminalState.js';
 import { handleStartStageModalKey, openStartStageModal, type ManualStageKey } from '../startStageModal/StartStageModalState.js';
 import { cloneDemoTerminalState } from '../state/cloneDemoTerminalState.js';
 import type { DemoRuntimeAdapter } from './DemoRuntimeAdapter.js';
+import { canSwitchTerminalView, withActiveTerminalView } from '../views/TerminalViewState.js';
 
 export class MockDemoRuntimeAdapter implements DemoRuntimeAdapter {
   readonly modeName = 'mock-demo';
@@ -46,9 +47,13 @@ export class MockDemoRuntimeAdapter implements DemoRuntimeAdapter {
       this.state = { ...this.state, startStageModal: openStartStageModal(this.state.startStageModal) };
       return [this.getState()];
     }
-    if (isManualStageKey(normalized)) {
+    if (isManualStageKey(normalized) && this.state.startStageModal.isOpen) {
       const result = handleStartStageModalKey(this.state.startStageModal, normalized);
       this.state = { ...this.state, startStageModal: result.state };
+      return [this.getState()];
+    }
+    if (canSwitchTerminalView(normalized, this.state.startStageModal.isOpen)) {
+      this.state = withActiveTerminalView(this.state, normalized);
       return [this.getState()];
     }
     if (normalized === 'R') {

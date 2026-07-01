@@ -5,6 +5,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { ActionItemState, DemoTerminalState, MediaRow, StagePanelRow, WorkerPanelRow, SupportedBatchSize, PlaybackQueueRow, TerminalMouseHitbox } from './DemoTerminalState.js';
 import { createStartStageModalState, type StartStageModalState } from '../startStageModal/StartStageModalState.js';
+import type { TerminalViewKey } from '../views/TerminalViewRegistry.js';
 import type { RuntimeBoundaryState } from '../config/runtimeTypes.js';
 import type { DemoTruthReadResult } from '../truth/DemoTruthRepository.js';
 import type { DemoPlaybackStatusReadResult } from '../playback/DemoPlaybackStatusRepository.js';
@@ -103,7 +104,8 @@ export function createInitialRealDemoState(
   logOptions: { collapsed?: boolean; focused?: boolean; scrollOffset?: number; extraLogLines?: string[] } = {},
   screenOptions: { idleSeconds?: number; powerState?: 'guarded' | 'on' | 'off' | 'unknown'; latestStatus?: string; actionGuard?: string } = {},
   startStageModal: StartStageModalState = createStartStageModalState(false),
-  sectionHeaderIdsVisible = false
+  sectionHeaderIdsVisible = false,
+  activeViewKey: TerminalViewKey = 'D'
 ): DemoTerminalState {
   const version = readVersion();
   const statusText = boundary.readinessStatus.toUpperCase();
@@ -146,6 +148,7 @@ export function createInitialRealDemoState(
     banner: `PHOTOFRAME REAL DEMO TERMINAL v${version}`,
     warning: `Real Demo Mode v${version} operator guard pack: boundary is ${statusText}; DB playback button reads DEMO_DB_PATH real tables.`,
     selectedBatchSize,
+    activeViewKey,
     sectionHeaderIdsVisible,
     startStageModal,
     mediaRows,

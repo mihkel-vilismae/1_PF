@@ -4,6 +4,7 @@
 import type { RuntimeBoundaryState } from '../config/runtimeTypes.js';
 import type { DemoPlaybackSelectedItem } from '../playback/DemoPlaybackStatusRepository.js';
 import type { StartStageModalState } from '../startStageModal/StartStageModalState.js';
+import type { TerminalViewKey } from '../views/TerminalViewRegistry.js';
 
 export type RuntimeMode = 'mock-demo' | 'demo';
 export type MediaType = 'image' | 'video';
@@ -117,6 +118,7 @@ export interface DemoTerminalState {
   banner: string;
   warning: string;
   selectedBatchSize: SupportedBatchSize;
+  activeViewKey: TerminalViewKey;
   sectionHeaderIdsVisible: boolean;
   startStageModal: StartStageModalState;
   mediaRows: MediaRow[];
