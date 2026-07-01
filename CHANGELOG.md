@@ -1,3 +1,13 @@
+# 2.0.4 - Start stage modal shared worker path guard
+
+- Routed enabled `start_stage_modal` keys through a shared manual-stage controller that plans against the existing `regular-stage-worker` command contract.
+- Kept Download/key `1` disabled and kept Batch 2 to guarded planning/logging only; DB stage effects remain for the next implementation batch.
+- Added DEMO-only manual stage manifests under `DEMO_RUNTIME_OUTPUT_DIR` for batch sizes `1` and `3`.
+- Added persistent manual stage evidence to `runtime_data/logs/demo/terminal-button-actions.jsonl` with key, stage, batch size, worker command, cron reference, route, selected rows, and `noCron=true`.
+- Added `proof:terminal-demo-start-stage-modal-shared-path` to prove the modal route uses the same regular worker command contract instead of a duplicate/manual shortcut path.
+
+Scope: Batch 2 route/adapter/same-path guard only. No cron installation, no DB schema redesign, no real Download start, and no DB stage effects for keys `2`-`5` yet.
+
 # 2.0.3 - Terminal start stage modal shell
 
 - Added the `start_stage_modal` terminal state/model and rendering shell.

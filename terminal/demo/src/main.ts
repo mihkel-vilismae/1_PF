@@ -113,6 +113,7 @@ if (args.has('--mouse-hitbox-smoke')) {
 if (args.has('--start-stage-modal-smoke')) {
   await adapter.handleKey('S');
   if (args.has('--start-stage-modal-key1-smoke')) await adapter.handleKey('1');
+  if (args.has('--start-stage-modal-key2-smoke')) await adapter.handleKey('2');
   printFrame(renderScreen(adapter.getState(), layout));
   process.exit(0);
 }
