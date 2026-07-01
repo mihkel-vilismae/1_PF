@@ -57,6 +57,13 @@ Keep these fields current:
 - commands run and actual results;
 - known unresolved merge hotspots.
 
+Write branch-local proofs and docs so they survive sibling merges:
+
+- Say "unchanged in this branch slice" rather than broadly "unchanged" when another sibling branch may later own that surface.
+- Avoid freezing a sibling view, route, proof, or placeholder as permanently blank or deferred unless that is a deliberate cross-branch contract.
+- Record which proof assertions are branch-local and must be refreshed after merge-back.
+- Prefer proof wording that guards the owning behavior and adjacent no-side-effect boundaries instead of pinning unrelated surfaces to old text.
+
 Pay extra attention when editing shared files such as:
 
 - `VERSION`
@@ -94,6 +101,8 @@ Do not merge branch A first and then treat that merged result as the new baselin
 - Require explicit reconciliation for shared log schemas, package scripts, docs navigation, and shared registries.
 - Require a new final merged version when sibling branches reused the same earlier version number for different content.
 - Treat branch-local proof results as branch evidence only until the merged target is verified again.
+- Refresh branch-local proof assertions that mention sibling surfaces before committing the merged target.
+- Replace Windows-hostile nested proof runners with portable direct commands when they block target verification.
 
 ## Stop conditions
 

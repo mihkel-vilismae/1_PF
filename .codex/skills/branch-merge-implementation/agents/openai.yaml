@@ -1,0 +1,4 @@
+interface:
+  display_name: "Branch Merge Implementation"
+  short_description: "Merge audited branches into master safely"
+  default_prompt: "Use $branch-merge-implementation after branch merge intake is complete to merge audited branch artifacts into master with verification."

@@ -36,6 +36,8 @@ When the task also includes proof or evidence ZIPs, use `proof-bundle-export-aud
 4. Build a file-ownership and conflict map.
    - Separate branch-owned new files, shared source files, shared docs, shared package/version files, proof runners, fixture files, and runtime artifacts that must not be committed.
    - Mark files that are likely to conflict or need additive reconciliation.
+   - Mark stale-proof assertions that say a sibling view, route, proof, or behavior is "unchanged" when another branch intends to promote or replace it.
+   - Mark proof-runner portability hazards, especially Node proof scripts that spawn nested `npm.cmd` on Windows when a direct `node --import tsx` command would be more stable.
 5. Simulate conflicts safely.
    - Use a temporary clone or worktree from committed target HEAD.
    - Never run the merge simulation in the live dirty target tree.
@@ -54,6 +56,19 @@ When the task also includes proof or evidence ZIPs, use `proof-bundle-export-aud
    - Prefer a clean integration branch/worktree.
    - Preserve current target behavior by default.
    - If two branches reuse the same version for different content, require a new target version during actual integration.
+   - If the user asks to actually merge after intake, hand off to `branch-merge-implementation` rather than stretching this intake skill into implementation work.
+
+## Implementation-Readiness Checklist
+
+Before recommending implementation, confirm:
+
+- live target identity was refreshed after any new commits or pushes;
+- source branch ZIPs or repositories are available, not just copied prompt prose;
+- shared package/version/changelog files have a reconciliation plan;
+- shared docs indexes and proof docs have a reconciliation plan;
+- branch-local proof results will be rerun on the merged target;
+- stale "unchanged" proof assertions have been identified for refresh;
+- shared logging, evidence, or action JSONL schemas have one compatible target shape.
 
 ## Required Stop Conditions
 
@@ -65,6 +80,8 @@ Stop and report rather than smoothing over these gaps:
 - the live target tree is dirty and the task asks for direct merge implementation there
 - version/package identity is reused across different branch contents and would make the merge target misleading
 - shared logging or proof schema conflicts would cause silent behavior drift
+- stale proof assertions would keep passing while describing behavior that is no longer true
+- proof runners are known to fail on the active host for tooling reasons and no portable rerun plan exists
 
 ## Safety And Non-Claims
 
@@ -73,6 +90,7 @@ Stop and report rather than smoothing over these gaps:
 - Do not trust copied prompt text for version, HEAD, proof status, or branch cleanliness when Git metadata can be checked.
 - Do not recommend "merge branch A, then merge branch B" if that would turn the first branch into an accidental new baseline.
 - Do not mutate uploaded artifacts or the active target repository during intake unless the user explicitly asks for implementation after the intake is complete.
+- Do not treat branch-local proof outputs as proof of the final merged target.
 
 ## Output Contract
 
