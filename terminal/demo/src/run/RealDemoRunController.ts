@@ -12,6 +12,7 @@ import type { SupportedBatchSize } from './SupportedBatchSize.js';
 import { buildRealDemoRouteFrames } from './RealDemoRoutePlanner.js';
 import { createQDemoDbQueueRows } from './RealDemoDbQueueProducer.js';
 import { writeQDemoTruthEvents } from './RealDemoQTruthWriter.js';
+import { writeQButtonActionLog } from './RealDemoQActionLogger.js';
 
 export interface RealRunInput {
   boundary: RuntimeBoundaryState;
@@ -30,7 +31,9 @@ export function runRealDemoQ(input: RealRunInput): DemoTerminalState[] {
   const executedAt = new Date().toISOString();
   const qDbQueue = createQDemoDbQueueRows({ boundary: input.boundary, rows: plan.manifest.selectedRows, batchSize: input.batchSize, executedAt });
   const qTruth = writeQDemoTruthEvents({ boundary: input.boundary, qResult: qDbQueue, executedAt });
-  const framePlans = buildRealDemoRouteFrames({ boundary: input.boundary, plan, manifest, batchSize: input.batchSize, qDbQueue, qTruthMessages: qTruth.messages });
+  const route = input.batchSize === 1 ? 'batch_size_1_file_by_file' : 'batch_size_5_stage_batch';
+  const qActionLog = writeQButtonActionLog({ boundary: input.boundary, qResult: qDbQueue, qTruth, route, batchSize: input.batchSize, selectedRows: plan.manifest.selectedRows.length, startedAt: executedAt });
+  const framePlans = buildRealDemoRouteFrames({ boundary: input.boundary, plan, manifest, batchSize: input.batchSize, qDbQueue, qTruthMessages: [...qTruth.messages, qActionLog.message] });
   return framePlans.map((framePlan) => {
     const fresh = input.refresh?.() ?? input;
     return buildFrame(input, fresh, [`Frame: ${framePlan.title}`, ...framePlan.lines]);

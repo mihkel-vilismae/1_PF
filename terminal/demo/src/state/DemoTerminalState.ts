@@ -10,8 +10,8 @@ export type IndexedStatus = 'no' | 'yes';
 export type GpsStatus = 'not parsed' | 'missing' | 'invalid' | 'valid';
 export type GeocodeStatus = 'not run' | 'resolved' | 'failed' | 'skipped';
 export type QueueStatus = 'not queued' | 'enqueued' | 'not eligible';
-export type StageStatus = 'Idle' | 'Started' | 'Finished' | 'Error';
-export type WorkerStatus = 'Waiting' | 'Started' | 'Finished' | 'Disabled' | 'Error';
+export type StageStatus = 'Idle' | 'Started' | 'Finished' | 'Degraded' | 'Error';
+export type WorkerStatus = 'Waiting' | 'Started' | 'Finished' | 'Degraded' | 'Disabled' | 'Error';
 export type SupportedBatchSize = 1 | 5;
 
 export interface PlaybackQueueRow {

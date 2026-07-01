@@ -4,7 +4,7 @@
 import type { StagePanelRow, WorkerPanelRow } from '../state/DemoTerminalState.js';
 
 export type DemoTruthWorkerId = 'regular-worker' | 'playback-worker' | 'screen-worker';
-export type DemoTruthStatus = 'started' | 'finished' | 'error' | 'interrupted' | 'state';
+export type DemoTruthStatus = 'started' | 'finished' | 'degraded' | 'error' | 'interrupted' | 'state';
 
 export interface DemoTruthEvent {
   worker: DemoTruthWorkerId;

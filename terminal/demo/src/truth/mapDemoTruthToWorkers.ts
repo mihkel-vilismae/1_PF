@@ -49,6 +49,7 @@ function fromStatus(name: WorkerPanelRow['name'], status: DemoSchedulerStatus): 
 
 function mapStatus(value: DemoTruthEvent['status']): WorkerStatus {
   if (value === 'finished' || value === 'state') return 'Finished';
-  if (value === 'error' || value === 'interrupted') return 'Error';
+  if (value === 'degraded' || value === 'interrupted') return 'Degraded';
+  if (value === 'error') return 'Error';
   return 'Started';
 }

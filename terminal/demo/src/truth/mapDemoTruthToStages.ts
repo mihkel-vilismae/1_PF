@@ -31,7 +31,8 @@ function normalizeStageName(value: string): StagePanelRow['name'] {
 
 function mapStatus(value: DemoTruthEvent['status']): StageStatus {
   if (value === 'finished' || value === 'state') return 'Finished';
-  if (value === 'error' || value === 'interrupted') return 'Error';
+  if (value === 'degraded' || value === 'interrupted') return 'Degraded';
+  if (value === 'error') return 'Error';
   return 'Started';
 }
 

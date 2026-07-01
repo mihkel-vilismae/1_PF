@@ -31,8 +31,8 @@ function buildEvents(input: { qResult: QCreatedQueueResult; executedAt: string }
   const q = input.qResult;
   return [
     event('Index', 'finished', input.executedAt, 'DEMO media indexed through stage2', { selected: q.selectedRows }),
-    event('GPS parser', q.metadataAddress.gpsProcessed > 0 ? 'finished' : 'interrupted', input.executedAt, 'DEMO GPS metadata stage completed/degraded', { processed: q.metadataAddress.gpsProcessed, success: q.metadataAddress.gpsSuccess, failed: q.metadataAddress.gpsFailure }),
-    event('Geocode', q.metadataAddress.geocodeProcessed > 0 ? 'finished' : 'interrupted', input.executedAt, 'DEMO geocode provider stage completed/degraded', { processed: q.metadataAddress.geocodeProcessed, success: q.metadataAddress.geocodeSuccess, failed: q.metadataAddress.geocodeFailure }),
+    event('GPS parser', q.metadataAddress.gpsSuccess > 0 ? 'finished' : 'degraded', input.executedAt, 'DEMO GPS metadata stage completed/degraded', { processed: q.metadataAddress.gpsProcessed, success: q.metadataAddress.gpsSuccess, failed: q.metadataAddress.gpsFailure }),
+    event('Geocode', q.metadataAddress.geocodeSuccess > 0 ? 'finished' : 'degraded', input.executedAt, 'DEMO geocode provider stage completed/degraded', { processed: q.metadataAddress.geocodeProcessed, success: q.metadataAddress.geocodeSuccess, failed: q.metadataAddress.geocodeFailure }),
     event('Queue', q.readyQueueRows > 0 ? 'finished' : 'interrupted', input.executedAt, 'DEMO slideshow_queue rows prepared', { ready: q.readyQueueRows, inserted: q.insertedQueueRows, updated: q.updatedQueueRows })
   ];
 }
