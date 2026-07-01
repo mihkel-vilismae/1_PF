@@ -1,7 +1,7 @@
 // Defines the terminal Demo Mode view registry.
 // Keep this file focused so future slices can stay below the 300 LOC target.
 
-export type TerminalViewKey = 'D' | 'L' | 'I' | '1' | '2' | '3' | '4' | '5' | '6';
+export type TerminalViewKey = '0' | 'D' | 'L' | 'I' | '1' | '2' | '3' | '4' | '5' | '6';
 
 export interface TerminalViewDefinition {
   key: TerminalViewKey;
@@ -11,6 +11,12 @@ export interface TerminalViewDefinition {
 }
 
 export const terminalViewRegistry: readonly TerminalViewDefinition[] = [
+  {
+    key: '0',
+    label: 'Table of Contents and Debug',
+    purpose: 'Map page with main view links and an empty Testing section.',
+    shellStatus: 'empty_shell'
+  },
   {
     key: 'D',
     label: 'Default operator view',

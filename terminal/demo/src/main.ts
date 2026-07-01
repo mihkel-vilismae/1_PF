@@ -17,6 +17,7 @@ const layout = readTerminalLayout();
 const rawArgs = process.argv.slice(2);
 const args = new Set(rawArgs);
 const viewShellArg = rawArgs.find((arg) => arg.startsWith('--view-shell-smoke='));
+const viewZeroLinkArg = rawArgs.find((arg) => arg.startsWith('--view0-link-smoke='));
 const runtimeConfig = readTerminalRuntimeConfig(process.argv.slice(2));
 const adapter = createAdapter(runtimeConfig);
 if (args.has('--batch-size=5')) {
@@ -132,9 +133,17 @@ if (viewShellArg) {
   process.exit(0);
 }
 
+if (viewZeroLinkArg) {
+  const targetViewKey = viewZeroLinkArg.split('=')[1] ?? 'D';
+  await adapter.handleKey('0');
+  await adapter.handleKey(targetViewKey);
+  printFrame(renderScreen(adapter.getState(), layout));
+  process.exit(0);
+}
+
 if (args.has('--empty-view-shells-smoke')) {
   const frames = [];
-  for (const viewKey of ['D', 'L', 'I', '1', '2', '3', '4', '5', '6']) {
+  for (const viewKey of ['0', 'D', 'L', 'I', '1', '2', '3', '4', '5', '6']) {
     frames.push(...await adapter.handleKey(viewKey));
   }
   printFrame(renderScreen(frames[frames.length - 1] ?? adapter.getState(), layout));
@@ -225,7 +234,7 @@ process.stdin.on('data', async (chunk) => {
     return;
   }
 
-  if (key.toUpperCase() === 'H' || key.toUpperCase() === 'W' || key.toUpperCase() === 'P' || key.toUpperCase() === 'S' || /^[1-6DLI]$/i.test(key)) {
+  if (key.toUpperCase() === 'H' || key.toUpperCase() === 'W' || key.toUpperCase() === 'P' || key.toUpperCase() === 'S' || /^[0-6DLI]$/i.test(key)) {
     const frames = await adapter.handleKey(key.toUpperCase());
     clearAndPrint(renderScreen(frames[0] ?? adapter.getState(), layout));
     return;
