@@ -22,6 +22,26 @@ The product-worker quick reference is kept in `terminal/demo/docs/photoframe-wor
 It is intentionally small. The mock adapter still drives the visual rehearsal. The real-demo adapter resolves DEMO runtime boundaries, reads generated demo media/truth/status, supports Q/P operator paths, and now exposes `start_stage_modal` for manual stage starts against the DEMO DB while preserving no-cron safety.
 
 
+## Section header ID overlay
+
+Version `2.0.7` adds a display-only section header ID overlay for operator screenshots and implementation discussions. Press `H` to toggle `section_header_id_overlay` on/off. The default view stays unprefixed. When enabled, each `SectionHeader` receives a stable Pane/Section prefix such as:
+
+| Section | Overlay header |
+|---|---|
+| Actions | `L-3 ACTIONS` |
+| Playback | `C-2 PLAYBACK` |
+| RPI stages | `R-1 RPI-STAGES — DEMO TRUTH` |
+| `start_stage_modal` when open | `L-4 START STAGE MODAL` |
+
+Vocabulary: a `Pane` is a large left/center/right terminal region; a `Section` is a bordered functional block inside a pane; a `SectionHeader` is the visible title; a `SectionBody` is the content below that title. The overlay only changes visible headers. It does not run workers, mutate the DEMO DB, or change cron behavior.
+
+Proof:
+
+```bash
+npm run proof:terminal-demo-section-header-ids
+```
+
+
 ## Real-demo Group 1 scaffold
 
 Version `0.7.0` adds the first real-demo beeline boundary slice:

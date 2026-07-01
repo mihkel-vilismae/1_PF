@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "2.0.6",
+  "version": "2.0.7",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -251,7 +251,9 @@
     "proof:terminal-demo-start-stage-modal-shared-path": "tsx tools/run-terminal-demo-start-stage-modal-shared-path-proof.mjs",
     "demo:terminal:real:start-stage-modal-key2-smoke": "tsx terminal/demo/src/main.ts --adapter=real-demo --start-stage-modal-smoke --start-stage-modal-key2-smoke",
     "proof:terminal-demo-start-stage-modal-db-effects": "tsx tools/run-terminal-demo-start-stage-modal-db-effects-proof.mjs",
-    "proof:terminal-demo-start-stage-modal-docs": "node tools/run-terminal-demo-start-stage-modal-docs-proof.mjs"
+    "proof:terminal-demo-start-stage-modal-docs": "node tools/run-terminal-demo-start-stage-modal-docs-proof.mjs",
+    "demo:terminal:real:section-header-ids-smoke": "tsx terminal/demo/src/main.ts --adapter=real-demo --section-header-ids-smoke",
+    "proof:terminal-demo-section-header-ids": "node tools/run-terminal-demo-section-header-ids-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

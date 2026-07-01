@@ -1,5 +1,14 @@
 # 2.0.6 - Start stage modal docs and launcher audit
 
+## 2026-07-01
+## v2.0.7 - Terminal section header ID overlay
+
+- Added `H` toggle for display-only `section_header_id_overlay`.
+- Documented Pane / Section / SectionHeader / SectionBody vocabulary.
+- Added stable header IDs including `L-3 ACTIONS`, `C-2 PLAYBACK`, `R-1 RPI-STAGES`, and `L-4 START STAGE MODAL`.
+- Added `proof:terminal-demo-section-header-ids` and default project settings guidance for terminal section inspection IDs.
+
+
 - Updated terminal Demo Mode docs, OpenSpec coverage, launcher guidance, and proof docs for the `start_stage_modal` feature delivered in v2.0.3-v2.0.5.
 - Documented the key table: `S` opens `start_stage_modal`, `1` remains disabled for Download, and `2`-`5` run Index/GPS Parser/Geocode/Enqueue against the DEMO DB.
 - Documented independent per-stage manual batch sizes with default `1` and allowed modal values `1` and `3`.

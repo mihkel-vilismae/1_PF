@@ -305,6 +305,22 @@ These controls should help users understand:
 - Whether data is real, mock, demo, cached, inferred, or backend-confirmed.
 - Whether the backend is reachable and what endpoint/state supports the UI.
 
+
+### Terminal Pane / Section Inspection IDs
+
+For terminal-style UIs with multiple panes and bordered sections, prefer a documented section-header ID overlay. This makes screenshots, bug reports, and operator prompts easier to reference without guessing names.
+
+Recommended vocabulary:
+
+| Term | Meaning |
+|---|---|
+| `Pane` | A large top-level terminal region such as left, center, or right. |
+| `Section` | A bordered functional block inside a pane. |
+| `SectionHeader` | The visible title of a section. |
+| `SectionBody` | The content inside the section. |
+
+Recommended behavior: provide a safe toggle such as `H` that shows `section_header_id_overlay` prefixes in the form `{pane-code}-{section-ordinal}`. Example headers: `L-3 ACTIONS`, `C-2 PLAYBACK`, and `R-1 RPI-STAGES`. The overlay should be display-only and must not trigger backend actions, workers, cron, or data mutation.
+
 ## Real vs Mock Rules
 
 Projects must not present fake/demo/mock data as real system state.
