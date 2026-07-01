@@ -1,3 +1,15 @@
+# 2.0.11 - Remaining view shell beeline preflight
+
+## 2026-07-01
+
+- Added honest docs/OpenSpec/proof coverage for the next terminal view-shell beeline.
+- Froze View `0` and View `6` for this chat unless explicitly reopened.
+- Documented planned shell contracts for View `D`, `L`, `I`, and stage views `1`-`5` without claiming implementation.
+- Documented NEW AUTH-only constraints for View `I`, logs shell labels for View `L`, stage shell intent for `1`-`5`, and reusable terminal component guidance.
+- Added `proof:terminal-demo-view-shell-beeline-preflight` as a documentation/scope preflight guard.
+
+Scope: documentation and proof guard only. No View `0` behavior change, no View `6` behavior change, no auth execution, no log tailing, no file copy, no workers, no DB writes, no playback, and no cron.
+
 # 2.0.9 - Terminal empty view shells
 
 ## 2026-07-01
