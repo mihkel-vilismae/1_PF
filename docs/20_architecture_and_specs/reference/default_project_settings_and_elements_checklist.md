@@ -570,6 +570,23 @@ Recommended reusable pieces:
 For shell-first work, documentation must distinguish `planned shell contract` from `implemented runtime behavior`. Shell buttons may be visible, but must not execute auth, workers, cron, playback, DB writes, or file copies until a later implementation slice explicitly wires and proves that behavior.
 
 
+
+### PF_login Logs View Shell Defaults
+
+For PF_login terminal Demo Mode, View `L` may render log/status/truth labels as shell placeholders before live tailing is implemented. A shell slice may list these labels without reading or tailing files:
+
+| Label | Purpose |
+|---|---|
+| `terminal-button-actions.jsonl` | Terminal button/action evidence ledger. |
+| `regular-worker.truth.jsonl` | Regular worker/stage truth events. |
+| `playback-worker.truth.jsonl` | Playback worker truth events. |
+| `screen-worker.truth.jsonl` | Screen worker truth events. |
+| `regular-worker.status.json` | Latest regular worker status snapshot. |
+| `playback-worker-status.json` | Latest playback worker status snapshot. |
+| `screen-on-off-worker-status.json` | Latest screen worker status snapshot. |
+
+Logs shells must say `shell placeholders only` and must not tail/read runtime files until a later behavior slice explicitly wires and proves that capability. View `0` and View `6` are unchanged by the logs-shell slice.
+
 ### PF_login iCloudPD Auth Shell Defaults
 
 For PF_login terminal Demo Mode, View `D` may show an `iCloudPD authorization` section and View `I` may show NEW AUTH button shells. These are shell-only unless a later slice explicitly wires and proves iCloudPD execution. Older compatibility auth buttons must not appear in View `I`. View `0` and View `6` are unchanged by the auth-shell slice.

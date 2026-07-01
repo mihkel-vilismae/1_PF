@@ -1,3 +1,14 @@
+# 2.0.13 - View L logs shell
+
+## 2026-07-01
+
+- Implemented the remaining-view Batch C shell for View `L`.
+- Added `VIEW L — LOGS VIEW`, `CORE LOG / STATUS SHELLS`, and `LOG PANEL PLACEHOLDERS` sections.
+- Listed the seven core demo log/status/truth labels and their planned runtime paths.
+- Added `proof:terminal-demo-logs-view-shell`, OpenSpec, proof docs, README coverage, and default settings guidance.
+
+Scope: shell placeholders only. No file tailing, no file reading, no file writing, no auth, no log mutation, no file copy, no workers, no DB writes, no playback, no cron, and no View `0` or View `6` behavior change.
+
 # 2.0.12 - Default auth and View I login shells
 
 ## 2026-07-01

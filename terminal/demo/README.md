@@ -105,6 +105,39 @@ Proof:
 npm run proof:terminal-demo-auth-view-shells
 ```
 
+
+## View `L` logs shell
+
+Version `2.0.13` renders View `L` as a logs shell page. It is a shell-only page for the seven core demo log/status/truth labels.
+
+Sections:
+
+| Section | Purpose |
+|---|---|
+| `VIEW L — LOGS VIEW` | Identifies the logs shell and states the no-effects boundary. |
+| `CORE LOG / STATUS SHELLS` | Lists the seven core runtime file labels and planned paths. |
+| `LOG PANEL PLACEHOLDERS` | Shows display-only placeholders for future log panels. |
+
+Core labels:
+
+| # | Label |
+|---:|---|
+| 1 | `terminal-button-actions.jsonl` |
+| 2 | `regular-worker.truth.jsonl` |
+| 3 | `playback-worker.truth.jsonl` |
+| 4 | `screen-worker.truth.jsonl` |
+| 5 | `regular-worker.status.json` |
+| 6 | `playback-worker-status.json` |
+| 7 | `screen-on-off-worker-status.json` |
+
+Scope: shell placeholders only. There is no file tailing, no file reading, no file writing, no worker run, no auth action, no DB write, no playback, no file copy, and no cron. View `0` and View `6` are unchanged.
+
+Proof:
+
+```bash
+npm run proof:terminal-demo-logs-view-shell
+```
+
 ## Section header ID overlay
 
 Version `2.0.7` adds a display-only section header ID overlay for operator screenshots and implementation discussions. Press `H` to toggle `section_header_id_overlay` on/off. The default view stays unprefixed. When enabled, each `SectionHeader` receives a stable Pane/Section prefix such as:
