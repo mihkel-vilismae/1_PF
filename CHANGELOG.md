@@ -1,3 +1,12 @@
+# 2.0.16 - Master remote alignment
+
+## 2026-07-02
+
+- Recorded that PF_login / `1_PF` uses `master` as the canonical branch and that local `main` references are typo/staging artifacts.
+- Renamed the local working branch to `master` and reconciled the GitHub `origin/master` file-mode normalization commit without force-pushing.
+
+Scope: Git branch/remote hygiene and project instruction update only. No product runtime behavior, terminal Demo Mode behavior, proof logic, or branch-feature implementation changed.
+
 # 2.0.15 - Skill reconciliation updates
 
 ## 2026-07-02

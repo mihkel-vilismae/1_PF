@@ -93,6 +93,12 @@
 - Preserve the distinction between docs/OpenSpec-only baseline bumps and runtime implementation bumps in changelog, root README, and handoff summaries.
 - For future implementation work, compare behavior against the active baseline snapshot rather than a later dirty workspace or an older remembered version.
 
+## PF_login / 1_PF Git Branch Rule
+
+- The upstream GitHub repository is `https://github.com/mihkel-vilismae/1_PF.git`.
+- Use `master` as the canonical base branch for this repository.
+- Treat local `main` references for this repository as typo/staging artifacts, not the intended base branch, unless the user explicitly reverses this rule.
+
 ## VERSION Output Rule
 
 - When the user says `VERSION`, print the full repository version block.
