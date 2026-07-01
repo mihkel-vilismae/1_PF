@@ -2,7 +2,7 @@
 // Keep this file focused so future slices can stay below the 300 LOC target.
 
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { RuntimeBoundaryState } from '../config/runtimeTypes.js';
@@ -20,9 +20,23 @@ export interface DbImagePlaybackButtonResult {
 interface ViewerOpenResult {
   ok: boolean;
   messages: string[];
+  attempts: string[];
+}
+
+interface PartialPlaybackState {
+  viewerPath?: string;
+  address?: string;
+  filePath?: string;
 }
 
 export function runDbImagePlaybackButton(boundary: RuntimeBoundaryState): DbImagePlaybackButtonResult {
+  const startedAt = new Date().toISOString();
+  const result = runDbImagePlaybackButtonInternal(boundary);
+  writePButtonActionLog(boundary, result, startedAt);
+  return result;
+}
+
+function runDbImagePlaybackButtonInternal(boundary: RuntimeBoundaryState): DbImagePlaybackButtonResult {
   const messages = ['P pressed: DB-backed windowed image playback button.'];
   if (!existsSync(boundary.dbPath)) return blocked(messages, `DEMO_DB_PATH missing: ${boundary.dbPath}`);
 
@@ -52,17 +66,31 @@ export function runDbImagePlaybackButton(boundary: RuntimeBoundaryState): DbImag
   const viewerPath = writeWindowedViewer(boundary, filePath, address);
   messages.push(`Windowed playback viewer written: ${viewerPath}`);
 
-  if (process.platform !== 'win32' || process.env.TERMINAL_DEMO_DB_PLAYBACK_PROOF === '1') {
+  if (!shouldOpenViewerOnThisPlatform()) {
     return { status: 'rendered', messages: [...messages, 'Windowed playback open skipped outside Windows/proof mode.'], viewerPath, address, filePath };
   }
 
   const openResult = openWindowedViewerOnWindows(viewerPath);
-  if (!openResult.ok) return blocked(messages, `Windows viewer launch failed: ${openResult.messages.join(' | ')}`);
-  return { status: 'displayed', messages: [...messages, ...openResult.messages, 'Windowed playback opened on Windows.'], viewerPath, address, filePath };
+  const openMessages = [...messages, ...openResult.messages];
+  if (!openResult.ok) {
+    return blocked(openMessages, `Windows viewer launch failed after ${openResult.attempts.join(' -> ')}`, { viewerPath, address, filePath });
+  }
+  return { status: 'displayed', messages: [...openMessages, 'Windowed playback opened on Windows.'], viewerPath, address, filePath };
 }
 
-function blocked(messages: string[], reason: string): DbImagePlaybackButtonResult {
-  return { status: 'blocked', messages: [...messages, `BLOCKED: ${reason}`], viewerPath: '', address: '', filePath: '' };
+function blocked(messages: string[], reason: string, partial: PartialPlaybackState = {}): DbImagePlaybackButtonResult {
+  return {
+    status: 'blocked',
+    messages: [...messages, `BLOCKED: ${reason}`],
+    viewerPath: partial.viewerPath ?? '',
+    address: partial.address ?? '',
+    filePath: partial.filePath ?? ''
+  };
+}
+
+function shouldOpenViewerOnThisPlatform(): boolean {
+  if (process.env.TERMINAL_DEMO_DB_PLAYBACK_FORCE_WINDOWS_OPEN === '1') return true;
+  return process.platform === 'win32' && process.env.TERMINAL_DEMO_DB_PLAYBACK_PROOF !== '1';
 }
 
 function isUnderDemoMediaRoot(filePath: string, demoDownloadDir: string): boolean {
@@ -80,53 +108,86 @@ function writeWindowedViewer(boundary: RuntimeBoundaryState, filePath: string, a
 }
 
 function openWindowedViewerOnWindows(viewerPath: string): ViewerOpenResult {
-  if (!existsSync(viewerPath)) return { ok: false, messages: [`viewer file missing: ${viewerPath}`] };
+  if (!existsSync(viewerPath)) return { ok: false, messages: [`viewer file missing: ${viewerPath}`], attempts: ['viewer-file-exists'] };
+  if (process.env.TERMINAL_DEMO_DB_PLAYBACK_FAKE_OPEN_FAILURE === '1') {
+    return {
+      ok: false,
+      attempts: ['Invoke-Item -LiteralPath', 'rundll32 FileProtocolHandler', 'explorer.exe'],
+      messages: [
+        'Windows viewer launch attempt: Invoke-Item -LiteralPath simulated failure.',
+        'Windows viewer launch attempt: rundll32 FileProtocolHandler simulated failure.',
+        'Windows viewer launch attempt: explorer.exe simulated failure.'
+      ]
+    };
+  }
 
-  const powershellCommands = ['powershell.exe', 'powershell'];
+  const attempts: string[] = [];
+  const messages: string[] = [];
+  const invokeItem = tryInvokeItemLaunch(viewerPath);
+  attempts.push('Invoke-Item -LiteralPath');
+  messages.push(...invokeItem.messages);
+  if (invokeItem.ok) return { ok: true, attempts, messages };
+
+  const fileUrl = pathToFileURL(viewerPath).href;
+  const rundll = trySpawnLaunch('rundll32 FileProtocolHandler', 'rundll32.exe', ['url.dll,FileProtocolHandler', fileUrl]);
+  attempts.push('rundll32 FileProtocolHandler');
+  messages.push(...rundll.messages);
+  if (rundll.ok) return { ok: true, attempts, messages };
+
+  const explorer = trySpawnLaunch('explorer.exe', 'explorer.exe', [viewerPath]);
+  attempts.push('explorer.exe');
+  messages.push(...explorer.messages);
+  return { ok: explorer.ok, attempts, messages };
+}
+
+function tryInvokeItemLaunch(viewerPath: string): ViewerOpenResult {
   const psScript = [
     "$ErrorActionPreference = 'Stop'",
     '$viewerPath = $args[0]',
     'if (-not (Test-Path -LiteralPath $viewerPath)) { throw "Viewer path missing: $viewerPath" }',
-    'Start-Process -FilePath $viewerPath'
+    'Invoke-Item -LiteralPath $viewerPath'
   ].join('; ');
-
-  for (const command of powershellCommands) {
-    const result = spawnSync(command, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', psScript, viewerPath], {
-      encoding: 'utf8',
-      timeout: 10000
-    });
+  for (const command of ['powershell.exe', 'powershell']) {
+    const result = spawnSync(command, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', psScript, viewerPath], { encoding: 'utf8', timeout: 10000 });
     if (result.error && (result.error as NodeJS.ErrnoException).code === 'ENOENT') continue;
-    if (result.status === 0) return { ok: true, messages: [`Windows viewer launch: ${command} Start-Process -FilePath succeeded.`] };
-    const detail = formatSpawnFailure(`${command} Start-Process -FilePath`, result.status, result.stdout, result.stderr, result.error);
-    const fallback = openWindowedViewerWithCmdStart(viewerPath, detail);
-    if (fallback.ok) return fallback;
-    return fallback;
+    if (result.status === 0) return { ok: true, attempts: ['Invoke-Item -LiteralPath'], messages: [`Windows viewer launch: ${command} Invoke-Item -LiteralPath succeeded.`] };
+    return { ok: false, attempts: ['Invoke-Item -LiteralPath'], messages: [formatSpawnFailure(`${command} Invoke-Item -LiteralPath`, result.status, result.stdout, result.stderr, result.error)] };
   }
-
-  return openWindowedViewerWithCmdStart(viewerPath, 'PowerShell executable not found.');
+  return { ok: false, attempts: ['Invoke-Item -LiteralPath'], messages: ['Invoke-Item -LiteralPath failed: PowerShell executable not found.'] };
 }
 
-function openWindowedViewerWithCmdStart(viewerPath: string, previousFailure: string): ViewerOpenResult {
-  const quotedViewerPath = viewerPath.replace(/"/g, '""');
-  const result = spawnSync('cmd.exe', ['/d', '/s', '/c', `start "" "${quotedViewerPath}"`], {
-    encoding: 'utf8',
-    timeout: 10000
-  });
-  if (result.status === 0) {
-    return {
-      ok: true,
-      messages: [previousFailure, 'Windows viewer launch fallback: cmd.exe start succeeded.']
-    };
-  }
-  return {
-    ok: false,
-    messages: [previousFailure, formatSpawnFailure('cmd.exe start fallback', result.status, result.stdout, result.stderr, result.error)]
-  };
+function trySpawnLaunch(label: string, command: string, args: string[]): ViewerOpenResult {
+  const result = spawnSync(command, args, { encoding: 'utf8', timeout: 10000 });
+  if (result.status === 0) return { ok: true, attempts: [label], messages: [`Windows viewer launch: ${label} succeeded.`] };
+  return { ok: false, attempts: [label], messages: [formatSpawnFailure(label, result.status, result.stdout, result.stderr, result.error)] };
 }
 
 function formatSpawnFailure(label: string, status: number | null, stdout: string, stderr: string, error?: Error): string {
   const detail = stderr.trim() || stdout.trim() || error?.message || `exit ${status ?? 'unknown'}`;
   return `${label} failed: ${detail}`;
+}
+
+function writePButtonActionLog(boundary: RuntimeBoundaryState, result: DbImagePlaybackButtonResult, startedAt: string): void {
+  try {
+    mkdirSync(boundary.logDir, { recursive: true });
+    const event = {
+      timestamp: new Date().toISOString(),
+      startedAt,
+      button: 'P',
+      action: 'db_image_playback',
+      status: result.status,
+      viewerWritten: Boolean(result.viewerPath),
+      viewerPath: result.viewerPath,
+      selectedFile: result.filePath,
+      address: result.address,
+      attempts: result.messages.filter((message) => /Invoke-Item|rundll32|explorer\.exe|viewer launch/i.test(message)),
+      reason: result.messages.find((message) => message.startsWith('BLOCKED:')) ?? '',
+      messages: result.messages
+    };
+    appendFileSync(join(boundary.logDir, 'terminal-button-actions.jsonl'), `${JSON.stringify(event)}\n`, 'utf8');
+  } catch {
+    // A logging failure must not block or fake the playback result.
+  }
 }
 
 function buildHtml(imageUrl: string, address: string): string {
