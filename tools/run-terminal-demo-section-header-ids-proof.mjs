@@ -43,6 +43,7 @@ for (const marker of [
   'L-1 PHOTOFRAME REAL DEMO TERMINAL',
   'L-2 GENERATED DEMO MEDIA',
   'L-3 ACTIONS',
+  'L-4 ICLOUDPD AUTHORIZATION',
   'C-1 CURRENT RUN',
   'C-2 PLAYBACK',
   'C-3 SCREEN ON/OFF WORKER',
@@ -58,7 +59,7 @@ assertIncludes(overlay, 'H pressed: section header IDs shown.', 'overlay status 
 assertIncludes(overlay, 'H toggles section header IDs', 'operator help copy');
 
 const modalOverlay = runTerminal(['--start-stage-modal-section-ids-smoke']);
-assertIncludes(modalOverlay, 'L-4 START STAGE MODAL', 'modal overlay marker');
+assertIncludes(modalOverlay, 'L-5 START STAGE MODAL', 'modal overlay marker');
 
 const docs = [
   'terminal/demo/README.md',
@@ -74,6 +75,7 @@ for (const marker of [
   'section_header_id_overlay',
   'H',
   'L-3 ACTIONS',
+  'L-4 ICLOUDPD AUTHORIZATION',
   'C-2 PLAYBACK',
   'R-1 RPI-STAGES'
 ]) {
@@ -81,4 +83,4 @@ for (const marker of [
 }
 
 console.log('terminal_demo_section_header_ids: PASS');
-console.log('verified: H toggles header prefixes, default view stays unprefixed, modal gets L-4, docs/default-settings coverage exists');
+console.log('verified: H toggles header prefixes, default view stays unprefixed, auth gets L-4, modal gets L-5, docs/default-settings coverage exists');

@@ -1,3 +1,16 @@
+# 2.0.12 - Default auth and View I login shells
+
+## 2026-07-01
+
+- Implemented the remaining-view Batch B shell: default View `D` now renders an `ICLOUDPD AUTHORIZATION` section.
+- Added a read-only authorization status row and `[I] Go to login view` navigation shell using reusable `StatusRing` and `StatusRow` helpers.
+- Implemented View `I` as a NEW AUTH login shell with the newer button set only.
+- Proved older compatibility auth buttons are absent from View `I`.
+- Updated section-header IDs so `L-4` is `ICLOUDPD AUTHORIZATION` and `L-5` is `START STAGE MODAL` when the modal is open.
+- Added `proof:terminal-demo-auth-view-shells` and updated existing shell/header proofs for the new shell state.
+
+Scope: shell UI only. No iCloudPD process starts, no auth/session files are read/written/deleted/listed/packaged, no evidence pack is generated, no View `0` behavior change, no View `6` behavior change, no log tailing, no file copy, no workers, no DB writes, no playback, and no cron.
+
 # 2.0.11 - Remaining view shell beeline preflight
 
 ## 2026-07-01

@@ -73,6 +73,38 @@ Proof:
 npm run proof:terminal-demo-view-shell-beeline-preflight
 ```
 
+## Default authorization and View I login shells
+
+Version `2.0.12` implements the Batch B shell contract for iCloudPD authorization surfaces.
+
+- View `D` now includes an `ICLOUDPD AUTHORIZATION` section.
+- The section contains a read-only `Authorization status: planned shell only` row rendered with reusable status helpers.
+- The section contains `[I] Go to login view`; pressing `I` opens View `I`.
+- View `I` renders only the newer NEW AUTH button shells.
+- Older compatibility auth buttons are forbidden in View `I`.
+- View `0` and View `6` are unchanged.
+
+NEW AUTH shell buttons:
+
+| Button shell |
+|---|
+| `Verify iCloudPD install` |
+| `Verify with iCloudPD` |
+| `Login using .env values` |
+| `Check login` |
+| `Log out and remove existing session` |
+| `Show auth/session paths and files` |
+| `Generate auth evidence pack` |
+| `List auth evidence packs` |
+
+Scope: shell only. No iCloudPD process starts, no session files are read/written/deleted, no evidence pack is generated, no worker runs, no DB write happens, no playback/file-copy/cron behavior is added.
+
+Proof:
+
+```bash
+npm run proof:terminal-demo-auth-view-shells
+```
+
 ## Section header ID overlay
 
 Version `2.0.7` adds a display-only section header ID overlay for operator screenshots and implementation discussions. Press `H` to toggle `section_header_id_overlay` on/off. The default view stays unprefixed. When enabled, each `SectionHeader` receives a stable Pane/Section prefix such as:
@@ -82,7 +114,8 @@ Version `2.0.7` adds a display-only section header ID overlay for operator scree
 | Actions | `L-3 ACTIONS` |
 | Playback | `C-2 PLAYBACK` |
 | RPI stages | `R-1 RPI-STAGES — DEMO TRUTH` |
-| `start_stage_modal` when open | `L-4 START STAGE MODAL` |
+| iCloudPD authorization | `L-4 ICLOUDPD AUTHORIZATION` |
+| `start_stage_modal` when open | `L-5 START STAGE MODAL` |
 
 Vocabulary: a `Pane` is a large left/center/right terminal region; a `Section` is a bordered functional block inside a pane; a `SectionHeader` is the visible title; a `SectionBody` is the content below that title. The overlay only changes visible headers. It does not run workers, mutate the DEMO DB, or change cron behavior.
 

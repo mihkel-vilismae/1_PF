@@ -37,7 +37,8 @@ Examples from the wide terminal view:
 | `L-1` | PhotoFrame terminal banner/header section. |
 | `L-2` | Generated/mock demo media section. |
 | `L-3` | Actions section. |
-| `L-4` | `start_stage_modal` section when open. |
+| `L-4` | `iCloudPD authorization` section. |
+| `L-5` | `start_stage_modal` modal section when open. |
 | `C-1` | Current run / command plan section. |
 | `C-2` | Playback section. |
 | `C-3` | Screen on/off worker section. |
@@ -57,6 +58,6 @@ The overlay is display-only. It does not run workers, mutate the DEMO DB, change
 npm run proof:terminal-demo-section-header-ids
 ```
 
-The proof verifies that the default real-demo smoke view stays unprefixed, `H` shows `L-3 ACTIONS`, `C-2 PLAYBACK`, and `R-1 RPI-STAGES`, and `H` plus `S` shows `L-4 START STAGE MODAL`.
+The proof verifies that the default real-demo smoke view stays unprefixed, `H` shows `L-3 ACTIONS`, `C-2 PLAYBACK`, and `R-1 RPI-STAGES`, and `H` shows `L-4 ICLOUDPD AUTHORIZATION`, and `H` plus `S` shows `L-5 START STAGE MODAL`.
 
 Decision: `TERMINAL_DEMO_SECTION_HEADER_IDS_READY`.

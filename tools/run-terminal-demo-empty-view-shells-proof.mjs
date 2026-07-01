@@ -9,7 +9,6 @@ const ansiPattern = /\u001b\[[0-9;]*m/g;
 const views = [
   ['D', 'PHOTOFRAME REAL DEMO TERMINAL'],
   ['L', 'LOGS VIEW'],
-  ['I', 'ICLOUDPD LOGIN VIEW'],
   ['1', 'DOWNLOAD STAGE VIEW'],
   ['2', 'INDEXING STAGE VIEW'],
   ['3', 'GPS PARSER STAGE VIEW'],
@@ -51,6 +50,11 @@ for (const [key, title] of views.slice(1)) {
   assertIncludes(output, 'No buttons, workers, auth, playback, DB writes, file copies, or cron calls', `view ${key} no-effect guard`);
 }
 
+const loginView = runTerminal(['--view-shell-smoke=I']);
+assertIncludes(loginView, 'VIEW I — ICLOUDPD LOGIN VIEW', 'view I now renders auth shell title');
+assertIncludes(loginView, 'NEW AUTH BUTTON SHELLS', 'view I auth button shell');
+assertNotIncludes(loginView, 'EMPTY VIEW SHELL ONLY', 'view I is no longer generic empty shell');
+
 const modalPriority = runTerminal(['--empty-view-modal-priority-smoke']);
 assertIncludes(modalPriority, 'START STAGE MODAL', 'modal priority keeps modal visible');
 assertIncludes(modalPriority, 'Index', 'modal key 2 still targets index row');
@@ -66,4 +70,4 @@ for (const marker of ['View', 'Pane', 'Section', 'Subsection', 'Modal', 'D', 'L'
 }
 
 console.log('terminal_demo_empty_view_shells: PASS');
-console.log('verified: D stays default, L/I/1-6 are empty shells, modal keys keep priority, no-effect guard is rendered');
+console.log('verified: D stays default, L/1-6 stay generic empty shells, I renders auth shell, modal keys keep priority, no-effect guard is rendered');

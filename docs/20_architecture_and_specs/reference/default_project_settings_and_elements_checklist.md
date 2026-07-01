@@ -549,7 +549,7 @@ Terminal-style operator interfaces should use this vocabulary when applicable:
 | `Modal` | View-scoped overlay visible only when opened/enabled. |
 | `ViewKey` | Keyboard key that selects a view when no modal owns input. |
 
-For PhotoFrame terminal Demo Mode, reserve `D` for Default, `L` for Logs, `I` for iCloudPD login, and `1`-`6` for stage/playback views. Empty shell slices must not execute real button actions.
+For PhotoFrame terminal Demo Mode, reserve `D` for Default, `L` for Logs, `I` for iCloudPD login, and `1`-`6` for stage/playback views. Shell slices must not execute real button actions. View `D` may include a read-only authorization shell, and View `I` may list NEW AUTH button shells without executing iCloudPD.
 
 
 ### Terminal Shell Component Composition Defaults
@@ -562,9 +562,14 @@ Recommended reusable pieces:
 |---|---|
 | `SectionFrame` | Shared bordered section wrapper. |
 | `ViewMapSection` | Shared hotkey-to-view navigation table. |
-| `StatusRing` | Shared status marker/icon beside status labels. |
-| `StatusRow` | Shared read-only label/value/status row. |
+| `StatusRing` | Shared status marker/icon beside status labels; implemented as a display-only terminal helper in PF_login v2.0.12. |
+| `StatusRow` | Shared read-only label/value/status row; implemented as a display-only terminal helper in PF_login v2.0.12. |
 | `RpiStagesSection` | Shared RPI stage truth/status section. |
 | `RpiWorkersSection` | Shared RPI worker truth/status section. |
 
 For shell-first work, documentation must distinguish `planned shell contract` from `implemented runtime behavior`. Shell buttons may be visible, but must not execute auth, workers, cron, playback, DB writes, or file copies until a later implementation slice explicitly wires and proves that behavior.
+
+
+### PF_login iCloudPD Auth Shell Defaults
+
+For PF_login terminal Demo Mode, View `D` may show an `iCloudPD authorization` section and View `I` may show NEW AUTH button shells. These are shell-only unless a later slice explicitly wires and proves iCloudPD execution. Older compatibility auth buttons must not appear in View `I`. View `0` and View `6` are unchanged by the auth-shell slice.

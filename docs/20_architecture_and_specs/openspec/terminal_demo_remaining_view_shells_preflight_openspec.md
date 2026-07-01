@@ -2,7 +2,7 @@
 
 ## Version
 
-Introduced in `2.0.11`.
+Introduced in `2.0.11`; updated in `2.0.12` after Batch B implemented the View `D` authorization shell and View `I` NEW AUTH shell.
 
 ## Purpose
 
@@ -21,9 +21,9 @@ The goal is to prepare the remaining view-shell work without claiming that those
 
 | View key | Current state |
 |---|---|
-| `D` | Implemented as the existing default operator screen. Planned: add iCloudPD authorization shell. |
+| `D` | Implemented as the existing default operator screen with the iCloudPD authorization shell added in `2.0.12`. |
 | `L` | Empty shell exists. Planned: logs/status/truth inspection shell. |
-| `I` | Empty shell exists. Planned: NEW AUTH login shell only. |
+| `I` | NEW AUTH login shell implemented in `2.0.12`; button actions remain placeholders only. |
 | `1` | Empty shell exists. Planned: Download stage shell. |
 | `2` | Empty shell exists. Planned: Indexing stage shell. |
 | `3` | Empty shell exists. Planned: GPS Parser stage shell. |
@@ -34,7 +34,7 @@ The goal is to prepare the remaining view-shell work without claiming that those
 
 ### View `D` — Default operator view
 
-Planned addition: an `iCloudPD authorization` section.
+Implemented shell addition: an `iCloudPD authorization` section. This remains a shell and does not execute auth.
 
 | Planned item | Shell contract |
 |---|---|
@@ -43,7 +43,7 @@ Planned addition: an `iCloudPD authorization` section.
 
 ### View `I` — iCloudPD login view
 
-View `I` must use only the newer NEW AUTH button set.
+View `I` uses only the newer NEW AUTH button set as shell buttons.
 
 | Planned button shell |
 |---|
@@ -90,8 +90,8 @@ Views should compose reusable terminal UI components instead of duplicating sect
 |---|---|
 | `SectionFrame` | Implemented foundation component. Use for shared section framing. |
 | `ViewMapSection` | Implemented foundation component. Use for hotkey-to-view map rendering. |
-| `StatusRing` | Planned component for status markers. |
-| `StatusRow` | Planned component for read-only status rows. |
+| `StatusRing` | Implemented component for display-only status markers. |
+| `StatusRow` | Implemented component for read-only status rows. |
 | `RpiStagesSection` | Planned reusable RPI stage truth/status section. |
 | `RpiWorkersSection` | Planned reusable RPI worker truth/status section. |
 
@@ -99,7 +99,7 @@ Views should compose reusable terminal UI components instead of duplicating sect
 
 - Do not modify View `0` behavior.
 - Do not modify View `6` behavior.
-- Do not implement iCloudPD auth execution.
+- Do not implement iCloudPD auth execution; View `D` and View `I` shells are visible only.
 - Do not tail/read log files in View `L` yet.
 - Do not copy generated media from View `1` yet.
 - Do not run indexing, GPS parsing, geocode, or enqueue actions from stage views yet.
