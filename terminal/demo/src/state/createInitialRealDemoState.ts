@@ -19,6 +19,14 @@ const realDemoActions: ActionItemState[] = [
     done: false
   },
   {
+    key: 'H',
+    label: 'Toggle section header IDs',
+    enabled: true,
+    info: 'Shows or hides stable pane/section prefixes such as L-3, C-2, and R-1.',
+    active: false,
+    done: false
+  },
+  {
     key: 'Q',
     label: 'Run selected demo batch',
     enabled: true,
@@ -94,7 +102,8 @@ export function createInitialRealDemoState(
   playbackStatus: DemoPlaybackStatusReadResult = { selectedItem: null, status: 'waiting', messages: [], sourcePath: '' },
   logOptions: { collapsed?: boolean; focused?: boolean; scrollOffset?: number; extraLogLines?: string[] } = {},
   screenOptions: { idleSeconds?: number; powerState?: 'guarded' | 'on' | 'off' | 'unknown'; latestStatus?: string; actionGuard?: string } = {},
-  startStageModal: StartStageModalState = createStartStageModalState(false)
+  startStageModal: StartStageModalState = createStartStageModalState(false),
+  sectionHeaderIdsVisible = false
 ): DemoTerminalState {
   const version = readVersion();
   const statusText = boundary.readinessStatus.toUpperCase();
@@ -137,6 +146,7 @@ export function createInitialRealDemoState(
     banner: `PHOTOFRAME REAL DEMO TERMINAL v${version}`,
     warning: `Real Demo Mode v${version} operator guard pack: boundary is ${statusText}; DB playback button reads DEMO_DB_PATH real tables.`,
     selectedBatchSize,
+    sectionHeaderIdsVisible,
     startStageModal,
     mediaRows,
     playbackQueueRows: playbackQueueRows.map((row) => ({ ...row })),

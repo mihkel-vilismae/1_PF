@@ -110,6 +110,19 @@ if (args.has('--mouse-hitbox-smoke')) {
   process.exit(0);
 }
 
+if (args.has('--section-header-ids-smoke')) {
+  await adapter.handleKey('H');
+  printFrame(renderScreen(adapter.getState(), layout));
+  process.exit(0);
+}
+
+if (args.has('--start-stage-modal-section-ids-smoke')) {
+  await adapter.handleKey('H');
+  await adapter.handleKey('S');
+  printFrame(renderScreen(adapter.getState(), layout));
+  process.exit(0);
+}
+
 if (args.has('--start-stage-modal-smoke')) {
   await adapter.handleKey('S');
   if (args.has('--start-stage-modal-key1-smoke')) await adapter.handleKey('1');
@@ -187,7 +200,7 @@ process.stdin.on('data', async (chunk) => {
     return;
   }
 
-  if (key.toUpperCase() === 'W' || key.toUpperCase() === 'P' || key.toUpperCase() === 'S' || /^[1-5]$/.test(key)) {
+  if (key.toUpperCase() === 'H' || key.toUpperCase() === 'W' || key.toUpperCase() === 'P' || key.toUpperCase() === 'S' || /^[1-5]$/.test(key)) {
     const frames = await adapter.handleKey(key.toUpperCase());
     clearAndPrint(renderScreen(frames[0] ?? adapter.getState(), layout));
     return;

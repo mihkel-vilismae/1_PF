@@ -5,6 +5,7 @@ import process from 'node:process';
 import type { DemoTerminalState } from '../state/DemoTerminalState.js';
 import type { TerminalLayout } from '../layout/readTerminalLayout.js';
 import { titleFor } from '../layout/readTerminalLayout.js';
+import { sectionTitle } from '../layout/sectionHeaderIds.js';
 import { color } from './ansi.js';
 import { blank, joinColumns, stackBlocks } from './terminalBox.js';
 import { renderActions } from './renderActions.js';
@@ -45,8 +46,8 @@ function workersTitle(state: DemoTerminalState): string {
 
 function helpText(state: DemoTerminalState): string {
   return state.runtimeBoundary.adapterMode === 'real-demo'
-    ? 'Help: Real-demo operator path. S opens start_stage_modal. Area A=logs, Area B=command plan, Area C=playback/status. W toggles Q batch size. Q uses selected size. R refreshes. X exits. No cron.'
-    : 'Help: S opens start_stage_modal. Q auto-runs the storyboard. RIGHT/LEFT enters manual storyboard mode. R refreshes. X exits. Visual mock state only.';
+    ? 'Help: Real-demo operator path. H toggles section header IDs. S opens start_stage_modal. Area A=logs, Area B=command plan, Area C=playback/status. W toggles Q batch size. Q uses selected size. R refreshes. X exits. No cron.'
+    : 'Help: H toggles section header IDs. S opens start_stage_modal. Q auto-runs the storyboard. RIGHT/LEFT enters manual storyboard mode. R refreshes. X exits. Visual mock state only.';
 }
 
 function renderWideScreen(state: DemoTerminalState, layout: TerminalLayout, terminalWidth: number): string {
@@ -55,26 +56,27 @@ function renderWideScreen(state: DemoTerminalState, layout: TerminalLayout, term
   const panelAWidth = Math.max(62, Math.floor(available * 0.36));
   const panelBWidth = Math.max(60, Math.floor(available * 0.34));
   const panelCWidth = Math.max(46, available - panelAWidth - panelBWidth);
+  const showIds = state.sectionHeaderIdsVisible;
 
   const panelA = stackBlocks([
-    renderHeader(state, state.banner, panelAWidth),
-    renderMediaTable(state, mediaTitle(state), panelAWidth),
-    renderActions(state, titleFor(layout, 'actions', 'ACTIONS'), panelAWidth),
-    renderStartStageModal(state, panelAWidth)
+    renderHeader(state, sectionTitle(showIds, 'banner', state.banner), panelAWidth),
+    renderMediaTable(state, sectionTitle(showIds, 'media', mediaTitle(state)), panelAWidth),
+    renderActions(state, sectionTitle(showIds, 'actions', titleFor(layout, 'actions', 'ACTIONS')), panelAWidth),
+    renderStartStageModal(state, panelAWidth, sectionTitle(showIds, 'startStageModal', 'START STAGE MODAL'))
   ]);
 
   const panelB = stackBlocks([
-    renderCurrentRun(state, titleFor(layout, 'current_run', 'AREA B COMMAND PLAN'), panelBWidth),
-    renderPlayback(state, titleFor(layout, 'playback', 'AREA C PLAYBACK / PREVIEW'), panelBWidth),
-    renderScreenOnOff(state, titleFor(layout, 'screen_on_off', 'SCREEN ON/OFF WORKER'), panelBWidth),
-    renderPlaybackQueue(state, 'PLAYBACK_QUEUE', panelBWidth)
+    renderCurrentRun(state, sectionTitle(showIds, 'currentRun', titleFor(layout, 'current_run', 'AREA B COMMAND PLAN')), panelBWidth),
+    renderPlayback(state, sectionTitle(showIds, 'playback', titleFor(layout, 'playback', 'AREA C PLAYBACK / PREVIEW')), panelBWidth),
+    renderScreenOnOff(state, sectionTitle(showIds, 'screenOnOff', titleFor(layout, 'screen_on_off', 'SCREEN ON/OFF WORKER')), panelBWidth),
+    renderPlaybackQueue(state, sectionTitle(showIds, 'playbackQueue', 'PLAYBACK_QUEUE'), panelBWidth)
   ]);
 
   const panelC = stackBlocks([
-    renderRpiStages(state, stagesTitle(state), panelCWidth),
-    renderRpiWorkers(state, workersTitle(state), panelCWidth),
-    renderInspector(state, 'STORYBOARD / INSPECTOR', panelCWidth),
-    renderRealTimeLog(state, panelCWidth)
+    renderRpiStages(state, sectionTitle(showIds, 'rpiStages', stagesTitle(state)), panelCWidth),
+    renderRpiWorkers(state, sectionTitle(showIds, 'rpiWorkers', workersTitle(state)), panelCWidth),
+    renderInspector(state, sectionTitle(showIds, 'inspector', 'STORYBOARD / INSPECTOR'), panelCWidth),
+    renderRealTimeLog(state, panelCWidth, sectionTitle(showIds, 'realTimeLog', state.realTimeLog.title))
   ]);
 
   return [
@@ -88,29 +90,30 @@ function renderWideScreen(state: DemoTerminalState, layout: TerminalLayout, term
 }
 
 function renderStackedScreen(state: DemoTerminalState, layout: TerminalLayout): string {
+  const showIds = state.sectionHeaderIdsVisible;
   return [
-    renderHeader(state, state.banner),
+    renderHeader(state, sectionTitle(showIds, 'banner', state.banner)),
     blank(),
-    renderMediaTable(state, mediaTitle(state)),
+    renderMediaTable(state, sectionTitle(showIds, 'media', mediaTitle(state))),
     blank(),
-    renderActions(state, titleFor(layout, 'actions', 'ACTIONS')),
-    ...(state.startStageModal.isOpen ? [blank(), renderStartStageModal(state)] : []),
+    renderActions(state, sectionTitle(showIds, 'actions', titleFor(layout, 'actions', 'ACTIONS'))),
+    ...(state.startStageModal.isOpen ? [blank(), renderStartStageModal(state, undefined, sectionTitle(showIds, 'startStageModal', 'START STAGE MODAL'))] : []),
     blank(),
-    renderCurrentRun(state, titleFor(layout, 'current_run', 'AREA B COMMAND PLAN')),
+    renderCurrentRun(state, sectionTitle(showIds, 'currentRun', titleFor(layout, 'current_run', 'AREA B COMMAND PLAN'))),
     blank(),
-    renderRpiStages(state, stagesTitle(state)),
+    renderRpiStages(state, sectionTitle(showIds, 'rpiStages', stagesTitle(state))),
     blank(),
-    renderRpiWorkers(state, workersTitle(state)),
+    renderRpiWorkers(state, sectionTitle(showIds, 'rpiWorkers', workersTitle(state))),
     blank(),
-    renderPlayback(state, titleFor(layout, 'playback', 'AREA C PLAYBACK / PREVIEW')),
+    renderPlayback(state, sectionTitle(showIds, 'playback', titleFor(layout, 'playback', 'AREA C PLAYBACK / PREVIEW'))),
     blank(),
-    renderScreenOnOff(state, titleFor(layout, 'screen_on_off', 'SCREEN ON/OFF WORKER')),
+    renderScreenOnOff(state, sectionTitle(showIds, 'screenOnOff', titleFor(layout, 'screen_on_off', 'SCREEN ON/OFF WORKER'))),
     blank(),
-    renderPlaybackQueue(state, 'PLAYBACK_QUEUE'),
+    renderPlaybackQueue(state, sectionTitle(showIds, 'playbackQueue', 'PLAYBACK_QUEUE')),
     blank(),
-    renderInspector(state, 'STORYBOARD / INSPECTOR'),
+    renderInspector(state, sectionTitle(showIds, 'inspector', 'STORYBOARD / INSPECTOR')),
     blank(),
-    renderRealTimeLog(state),
+    renderRealTimeLog(state, undefined, sectionTitle(showIds, 'realTimeLog', state.realTimeLog.title)),
     blank(),
     color.muted(helpText(state))
   ].join('\n');

@@ -18,6 +18,14 @@ const initialActions: ActionItemState[] = [
     done: false
   },
   {
+    key: 'H',
+    label: 'Toggle section header IDs',
+    enabled: true,
+    info: 'Shows or hides pane/section prefixes such as L-3, C-2, and R-1.',
+    active: false,
+    done: false
+  },
+  {
     key: 'Q',
     label: 'Run 5 files -> Queue eligible',
     enabled: true,
@@ -119,6 +127,7 @@ export function createInitialMockState(): DemoTerminalState {
     banner: `PHOTOFRAME MOCK DEMO MODE v${version}`,
     warning: 'Visual mock only: no real DB, no real workers, no real truth JSONL, no cron.',
     selectedBatchSize: 1,
+    sectionHeaderIdsVisible: false,
     startStageModal: createStartStageModalState(false),
     mediaRows: mockMediaRows.map((row) => ({ ...row })),
     playbackQueueRows: [],

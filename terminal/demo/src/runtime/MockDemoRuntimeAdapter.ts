@@ -4,7 +4,8 @@
 import { buildQStoryboardFrame, buildQStoryboardFrames, qStoryboardStepIds } from '../scenarios/qGeocodeStoryboard.js';
 import { createInitialMockState } from '../state/createInitialMockState.js';
 import type { DemoTerminalState } from '../state/DemoTerminalState.js';
-import { cloneStartStageModalState, handleStartStageModalKey, openStartStageModal, type ManualStageKey } from '../startStageModal/StartStageModalState.js';
+import { handleStartStageModalKey, openStartStageModal, type ManualStageKey } from '../startStageModal/StartStageModalState.js';
+import { cloneDemoTerminalState } from '../state/cloneDemoTerminalState.js';
 import type { DemoRuntimeAdapter } from './DemoRuntimeAdapter.js';
 
 export class MockDemoRuntimeAdapter implements DemoRuntimeAdapter {
@@ -13,7 +14,7 @@ export class MockDemoRuntimeAdapter implements DemoRuntimeAdapter {
   private qStoryboardIndex = -1;
 
   getState(): DemoTerminalState {
-    return cloneState(this.state);
+    return cloneDemoTerminalState(this.state);
   }
 
   reset(): DemoTerminalState {
@@ -37,6 +38,10 @@ export class MockDemoRuntimeAdapter implements DemoRuntimeAdapter {
     if (normalized === 'ARROWLEFT') {
       return [this.stepQStoryboard('left')];
     }
+    if (normalized === 'H') {
+      this.state = { ...this.state, sectionHeaderIdsVisible: !this.state.sectionHeaderIdsVisible };
+      return [this.getState()];
+    }
     if (normalized === 'S') {
       this.state = { ...this.state, startStageModal: openStartStageModal(this.state.startStageModal) };
       return [this.getState()];
@@ -55,8 +60,8 @@ export class MockDemoRuntimeAdapter implements DemoRuntimeAdapter {
   async runQStoryboard(): Promise<DemoTerminalState[]> {
     const frames = buildQStoryboardFrames();
     this.qStoryboardIndex = qStoryboardStepIds.length - 1;
-    this.state = cloneState(frames[frames.length - 1] ?? createInitialMockState());
-    return frames.map((frame) => cloneState(frame));
+    this.state = cloneDemoTerminalState(frames[frames.length - 1] ?? createInitialMockState());
+    return frames.map((frame) => cloneDemoTerminalState(frame));
   }
 
   stepQStoryboard(direction: 'left' | 'right'): DemoTerminalState {
@@ -69,27 +74,6 @@ export class MockDemoRuntimeAdapter implements DemoRuntimeAdapter {
     this.state = buildQStoryboardFrame(this.qStoryboardIndex, true);
     return this.getState();
   }
-}
-
-function cloneState(state: DemoTerminalState): DemoTerminalState {
-  return {
-    ...state,
-    runtimeBoundary: { ...state.runtimeBoundary, pathMessages: [...state.runtimeBoundary.pathMessages] },
-    mediaRows: state.mediaRows.map((row) => ({ ...row })),
-    playbackQueueRows: state.playbackQueueRows.map((row) => ({ ...row })),
-    startStageModal: cloneStartStageModalState(state.startStageModal),
-    actions: state.actions.map((action) => ({ ...action })),
-    currentRun: { ...state.currentRun, lines: [...state.currentRun.lines] },
-    realTimeLog: {
-      ...state.realTimeLog,
-      lines: [...state.realTimeLog.lines],
-      hitboxes: state.realTimeLog.hitboxes.map((hitbox) => ({ ...hitbox }))
-    },
-    rpiStages: state.rpiStages.map((stage) => ({ ...stage })),
-    rpiWorkers: state.rpiWorkers.map((worker) => ({ ...worker })),
-    playback: { ...state.playback },
-    screenOnOff: { ...state.screenOnOff }
-  };
 }
 
 function isManualStageKey(key: string): key is ManualStageKey {

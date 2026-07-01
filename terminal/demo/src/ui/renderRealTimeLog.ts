@@ -37,10 +37,10 @@ function visibleLines(state: DemoTerminalState): string[] {
   return selected.length > 0 ? selected.map(decorateLogLine) : [color.muted('No real-demo diagnostics yet.')];
 }
 
-export function renderRealTimeLog(state: DemoTerminalState, width?: number): string {
+export function renderRealTimeLog(state: DemoTerminalState, width?: number, titleOverride?: string): string {
   const marker = state.realTimeLog.collapsed ? '[+]' : '[-]';
   const focus = state.realTimeLog.focused ? ' FOCUSED' : '';
   const scroll = state.realTimeLog.scrollOffset > 0 ? ` scroll=${state.realTimeLog.scrollOffset}` : '';
-  const title = `${color.blue(state.realTimeLog.title)} ${color.brightCyan(marker)}${color.muted(focus + scroll)}`;
+  const title = `${color.blue(titleOverride ?? state.realTimeLog.title)} ${color.brightCyan(marker)}${color.muted(focus + scroll)}`;
   return panel(title, visibleLines(state), width);
 }

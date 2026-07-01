@@ -19,6 +19,7 @@ import { DbPlaybackRepository } from '../playback/DbPlaybackRepository.js';
 import { runDbImagePlaybackButton } from '../playback/DbImagePlaybackButton.js';
 import type { TerminalMouseEvent } from '../ui/terminalMouse.js';
 import { cloneStartStageModalState, createStartStageModalState, handleStartStageModalKey, markStartStageModalRowStatus, openStartStageModal, type ManualStageKey } from '../startStageModal/StartStageModalState.js';
+import { cloneDemoTerminalState } from '../state/cloneDemoTerminalState.js';
 import { findHitbox } from '../ui/terminalMouse.js';
 import { runManualStageFromModal } from '../run/ManualStageRunController.js';
 
@@ -41,13 +42,14 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
   private lastActivityAt = Date.now();
   private latestScreenStatus = 'waiting for keyboard/mouse activity';
   private startStageModal = createStartStageModalState(false);
+  private sectionHeaderIdsVisible = false;
 
   constructor(private readonly boundary: RuntimeBoundaryState) {
     this.state = this.buildState();
   }
 
   getState(): DemoTerminalState {
-    return cloneState(this.state);
+    return cloneDemoTerminalState(this.state);
   }
 
   reset(): DemoTerminalState {
@@ -60,6 +62,7 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
     this.lastActivityAt = Date.now();
     this.latestScreenStatus = 'waiting for keyboard/mouse activity';
     this.startStageModal = createStartStageModalState(false);
+    this.sectionHeaderIdsVisible = false;
     this.state = this.buildState();
     return this.getState();
   }
@@ -73,6 +76,7 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
     this.noteInputActivity(`keyboard ${key.toUpperCase() || 'input'}`);
     const normalized = key.toUpperCase();
     if (normalized === 'S') return [this.openStartStageModal()];
+    if (normalized === 'H') return [this.toggleSectionHeaderIds()];
     if (isManualStageKey(normalized)) return [this.handleStartStageModalKey(normalized)];
     if (normalized === 'W') return [this.toggleBatchSize()];
     if (normalized === 'Q') return this.runQStoryboard();
@@ -129,8 +133,8 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
       refresh: () => this.readSources()
     });
     this.snapshots.setSnapshots(frames);
-    this.state = cloneState(frames[frames.length - 1] ?? this.buildState());
-    return frames.map(cloneState);
+    this.state = cloneDemoTerminalState(frames[frames.length - 1] ?? this.buildState());
+    return frames.map(cloneDemoTerminalState);
   }
 
   stepQStoryboard(direction: 'left' | 'right'): DemoTerminalState {
@@ -154,6 +158,17 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
     const messages = execution?.messages ?? result.messages;
     if (execution) this.startStageModal = markStartStageModalRowStatus(this.startStageModal, key, execution.status, messages[0] ?? result.state.lastMessage);
     this.state = { ...this.state, startStageModal: cloneStartStageModalState(this.startStageModal), currentRun: { title: 'CURRENT RUN', lines: messages.slice(0, 36) } };
+    this.snapshots.setSnapshots([]);
+    return this.getState();
+  }
+
+
+  private toggleSectionHeaderIds(): DemoTerminalState {
+    this.sectionHeaderIdsVisible = !this.sectionHeaderIdsVisible;
+    this.state = this.buildState([
+      `H pressed: section header IDs ${this.sectionHeaderIdsVisible ? 'shown' : 'hidden'}.`,
+      'Section IDs identify pane and top-to-bottom section order, for example L-3, C-2, R-1.'
+    ]);
     this.snapshots.setSnapshots([]);
     return this.getState();
   }
@@ -223,7 +238,8 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
         latestStatus: this.latestScreenStatus,
         actionGuard: 'No real screen power command runs unless explicitly enabled and platform-safe.'
       },
-      this.startStageModal
+      this.startStageModal,
+      this.sectionHeaderIdsVisible
     );
   }
 
@@ -269,31 +285,6 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
       playbackStatus: useDbPlayback ? dbPlayback.status : playbackStatus
     };
   }
-}
-
-function cloneState(state: DemoTerminalState): DemoTerminalState {
-  return {
-    ...state,
-    runtimeBoundary: { ...state.runtimeBoundary, pathMessages: [...state.runtimeBoundary.pathMessages] },
-    mediaRows: state.mediaRows.map((row) => ({ ...row })),
-    playbackQueueRows: state.playbackQueueRows.map((row) => ({ ...row })),
-    startStageModal: cloneStartStageModalState(state.startStageModal),
-    actions: state.actions.map((action) => ({ ...action })),
-    currentRun: { ...state.currentRun, lines: [...state.currentRun.lines] },
-    realTimeLog: {
-      ...state.realTimeLog,
-      lines: [...state.realTimeLog.lines],
-      hitboxes: state.realTimeLog.hitboxes.map((hitbox) => ({ ...hitbox }))
-    },
-    rpiStages: state.rpiStages.map((stage) => ({ ...stage })),
-    rpiWorkers: state.rpiWorkers.map((worker) => ({ ...worker })),
-    playback: {
-      ...state.playback,
-      selectedItem: state.playback.selectedItem ? { ...state.playback.selectedItem } : null,
-      selectedMessages: [...state.playback.selectedMessages]
-    },
-    screenOnOff: { ...state.screenOnOff }
-  };
 }
 
 function isManualStageKey(key: string): key is ManualStageKey { return /^[1-5]$/.test(key); }

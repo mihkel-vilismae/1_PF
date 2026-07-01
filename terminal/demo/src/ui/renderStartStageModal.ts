@@ -6,7 +6,7 @@ import type { StartStageModalRow } from '../startStageModal/StartStageModalState
 import { color } from './ansi.js';
 import { panel } from './terminalBox.js';
 
-export function renderStartStageModal(state: DemoTerminalState, width?: number): string {
+export function renderStartStageModal(state: DemoTerminalState, width?: number, title = 'START STAGE MODAL'): string {
   const modal = state.startStageModal;
   if (!modal.isOpen) return '';
   const lines = [
@@ -17,7 +17,7 @@ export function renderStartStageModal(state: DemoTerminalState, width?: number):
     '',
     color.muted(`Status: ${modal.lastMessage}`)
   ];
-  return panel(color.magenta('START STAGE MODAL'), lines, width);
+  return panel(color.magenta(title), lines, width);
 }
 
 function renderRow(row: StartStageModalRow): string {

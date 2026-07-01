@@ -117,6 +117,7 @@ export interface DemoTerminalState {
   banner: string;
   warning: string;
   selectedBatchSize: SupportedBatchSize;
+  sectionHeaderIdsVisible: boolean;
   startStageModal: StartStageModalState;
   mediaRows: MediaRow[];
   playbackQueueRows: PlaybackQueueRow[];
