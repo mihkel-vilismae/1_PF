@@ -74,3 +74,5 @@ The old `docs/categorized/other_documentation/documentation_workflow_and_invento
 - [Overall Project Completeness Reporting Runbook](overall_project_completeness_reporting.md) defines the operator workflow for source-backed completeness tables, status handling, planned proof command separation, and Debug docs/runtime split.
 - [Proofrunner handoff artifact export contract](proofrunner_handoff_artifact_export_contract.md) defines shell-summary handoff and failed proof artifact packaging requirements.
 - [Proofrunner packaging identity contract](proofrunner_packaging_identity_contract.md) defines version-aligned repo ZIP/handoff root naming requirements.
+
+- [ACR Usage Tracking](acr_usage_tracking.md) — workflow ledger commands for future ACR command counts split by `user_called` and `assistant_automatic`.

@@ -512,3 +512,26 @@ A project satisfies the default settings when:
 - It preserves Git history.
 - It follows snapshot-safe, regression-aware workflow rules.
 
+
+## ACR Workflow Usage Tracking
+
+Projects that use ACR-style planning commands may include a runtime-only ledger for future usage counts:
+
+```text
+runtime_data/workflow/acr-command-usage.jsonl
+```
+
+The ledger should separate operator-requested analysis from assistant workflow analysis with these source values:
+
+| Source | Meaning |
+|---|---|
+| `user_called` | The user explicitly requested the ACR command. |
+| `assistant_automatic` | The assistant ran the ACR command as part of an agreed workflow. |
+
+Recommended helper commands:
+
+| Script | Purpose |
+|---|---|
+| `workflow:acr:record` | Append one validated ACR usage event. |
+| `workflow:acr:summary` | Print totals by command and source. |
+| `proof:workflow-acr-usage-ledger` | Prove the ledger, summary, docs, and package script coverage. |

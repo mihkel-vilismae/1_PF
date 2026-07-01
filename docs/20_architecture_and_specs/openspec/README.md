@@ -74,3 +74,5 @@ Current OpenSpec entries:
 - [V2 numeric status 3XACR and document handoff](../../50_audits_and_migrations/V2_NUMERIC_STATUS_3XACR_AND_DOC_HANDOFF_20260626.md) — 1-10 OpenSpec, implementation-status, and path-to-goal tables from the docs-only 3XACR/2XACR reconciliation pass.
 
 - [Terminal Demo v2.0 Operator RC Handoff OpenSpec](terminal_demo_v2_operator_rc_handoff_openspec.md) — v1.9.0-to-v2.0.0 operator RC handoff, proof pack, boundaries, non-claims, and implementation prompt.
+
+- [ACR Usage Ledger OpenSpec](acr_usage_ledger_openspec.md) — runtime JSONL contract for counting future ACR commands by `user_called` vs `assistant_automatic` source.

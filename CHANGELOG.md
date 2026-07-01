@@ -1,3 +1,15 @@
+# 2.0.8 - ACR usage ledger
+
+## 2026-07-01
+
+- Added `workflow:acr:record` and `workflow:acr:summary` for future ACR command usage tracking.
+- Added `runtime_data/workflow/acr-command-usage.jsonl` as the runtime JSONL ledger path.
+- Separated usage source counts into `user_called` and `assistant_automatic`.
+- Added `proof:workflow-acr-usage-ledger` to prove command validation, source separation, summary totals, and docs coverage.
+- Documented the ACR usage tracker in the runbook, OpenSpec, and proof docs.
+
+Scope: workflow telemetry only. No terminal UI changes, no Demo Mode runtime behavior changes, no DB schema redesign, and no retroactive chat-history count claim.
+
 # 2.0.6 - Start stage modal docs and launcher audit
 
 ## 2026-07-01

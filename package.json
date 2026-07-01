@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "2.0.7",
+  "version": "2.0.8",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -253,7 +253,10 @@
     "proof:terminal-demo-start-stage-modal-db-effects": "tsx tools/run-terminal-demo-start-stage-modal-db-effects-proof.mjs",
     "proof:terminal-demo-start-stage-modal-docs": "node tools/run-terminal-demo-start-stage-modal-docs-proof.mjs",
     "demo:terminal:real:section-header-ids-smoke": "tsx terminal/demo/src/main.ts --adapter=real-demo --section-header-ids-smoke",
-    "proof:terminal-demo-section-header-ids": "node tools/run-terminal-demo-section-header-ids-proof.mjs"
+    "proof:terminal-demo-section-header-ids": "node tools/run-terminal-demo-section-header-ids-proof.mjs",
+    "workflow:acr:record": "node tools/acr-usage-ledger.mjs record",
+    "workflow:acr:summary": "node tools/acr-usage-ledger.mjs summary",
+    "proof:workflow-acr-usage-ledger": "node tools/run-acr-usage-ledger-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
