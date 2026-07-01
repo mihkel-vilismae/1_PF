@@ -28,6 +28,8 @@ This matrix is a navigation aid for deciding which PF_login documents can be tru
 | `docs/20_architecture_and_specs/openspec/raspberry_native_image_playback_proof_openspec.md` | current_latest_baseline | Raspberry target native image playback proof contract; no video/scheduler/recovery claim. |
 | `docs/20_architecture_and_specs/openspec/raspberry_native_video_playback_proof_openspec.md` | current_latest_baseline | Raspberry target native video playback proof contract; no scheduler/recovery claim. |
 | `docs/20_architecture_and_specs/openspec/endpoint_contract_inventory_openspec.md` | current_latest_baseline | Same-origin HTTP API route inventory; guarded by `npm run contract:endpoints:check`. |
+| `docs/20_architecture_and_specs/reference/BRANCH_HANDOFF_AND_MERGE_CONTRACT.md` | current_latest_baseline | Reusable branch ZIP handoff and merge-intake standard; workflow contract only, not implementation proof. |
+| `docs/50_audits_and_migrations/TERMINAL_DEMO_VIEW0_VIEW6_MERGE_INTAKE_20260702.md` | current_latest_baseline | Pre-implementation View 0 / View 6 branch merge audit; no merge or post-merge proof claimed. |
 | `docs/20_architecture_and_specs/view_e_validation_hermetic_contract.md` | current_latest_baseline | View E validation hermeticity contract; guarded by `tests/viewEValidationHermetic.test.js`. |
 | `docs/50_audits_and_migrations/DOC_CONSISTENCY_AUDIT_20260611.md` | current_latest_baseline | Latest documentation issue registry and recommended next doc/implementation slices. |
 | `docs/50_audits_and_migrations/PF_LOGIN_PROJECT_STATUS_ANALYSIS_20260611.md` | recent_verify_against_code | v0.8.33 structured status report for the v0.8.32 baseline; useful as prior audit context, but superseded for docs/OpenSpec grading by the 2026-06-16 audit. |

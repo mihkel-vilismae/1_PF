@@ -1,3 +1,14 @@
+# 2.0.14 - Branch merge intake and artifact cleanup
+
+## 2026-07-02
+
+- Added a reusable branch ZIP handoff and merge-intake contract standard.
+- Added a pre-implementation View `0` / View `6` merge intake audit from the supplied branch artifacts and handoff prompts.
+- Updated documentation navigation and freshness inventory for the new merge-intake docs.
+- Removed tracked local artifact files: `__unzipped_archives/PF_login_v2.0.9_empty_view_shells_full_git/PF_login_v2.0.8_acr_usage_ledger_full_git` and `terminal/demo/runtime_logs.zip`.
+
+Scope: documentation/workflow and artifact cleanup only. No terminal Demo Mode runtime merge was performed, no View `0` or View `6` behavior was changed in the target branch, and no post-merge proof was claimed.
+
 # 2.0.13 - View L logs shell
 
 ## 2026-07-01

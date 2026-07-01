@@ -119,6 +119,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/20_architecture_and_specs/openspec/README.md` | OpenSpec area overview and documentation-only boundary. |
 | `docs/20_architecture_and_specs/openspec/project_completeness_reporting_openspec.md` | Source priority, status enum, proof-artifact, planned-command, Debug split, and percentage rules for overall project completeness reports. |
 | `docs/20_architecture_and_specs/reference/LOGGING_STANDARD_CONTRACT.md` | Logging standard contract. |
+| `docs/20_architecture_and_specs/reference/BRANCH_HANDOFF_AND_MERGE_CONTRACT.md` | Reusable branch ZIP handoff and merge-intake contract standard. |
 | `docs/20_architecture_and_specs/reference/default_project_settings_and_elements_checklist.md` | Default project settings and reusable UI/runtime elements. |
 | `docs/20_architecture_and_specs/reference/project_status_enum_registry.md` | Normalized status and proof-command-state vocabulary for completeness reporting. |
 
@@ -152,6 +153,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/50_audits_and_migrations/DOC_CONSISTENCY_AUDIT_20260611.md` | Current documentation consistency audit, stale-reference cleanup, and next-slice recommendations. |
 | `docs/50_audits_and_migrations/PF_LOGIN_PROJECT_STATUS_ANALYSIS_20260611.md` | Current v0.8.33 project status, implementation coverage, OpenSpec coverage, endpoint/interface inventory, proof matrix, issues, and next slices. |
 | `docs/50_audits_and_migrations/DOCS_OPENSPEC_COVERAGE_GRADING_AUDIT_20260616.md` | Dated v0.8.86.a documentation/OpenSpec coverage grading audit, v1 status table, and next documentation-governance fixes. |
+| `docs/50_audits_and_migrations/TERMINAL_DEMO_VIEW0_VIEW6_MERGE_INTAKE_20260702.md` | Pre-implementation intake for merging the View 0 and View 6 terminal-demo branch artifacts into current main. |
 
 ## Archive and compatibility pointers
 

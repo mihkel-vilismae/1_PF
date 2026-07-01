@@ -31,6 +31,7 @@ These audit/migration documents are now canonical in this folder:
 - [Documentation Consistency Audit — 2026-06-11](DOC_CONSISTENCY_AUDIT_20260611.md)
 - [PF_login Project Status Analysis — 2026-06-11](PF_LOGIN_PROJECT_STATUS_ANALYSIS_20260611.md)
 - [Documentation and OpenSpec Coverage Grading Audit — 2026-06-16](DOCS_OPENSPEC_COVERAGE_GRADING_AUDIT_20260616.md)
+- [Terminal Demo View 0 / View 6 Merge Intake — 2026-07-02](TERMINAL_DEMO_VIEW0_VIEW6_MERGE_INTAKE_20260702.md)
 
 Their old paths remain as compatibility pointers only. These documents are planning/review artifacts and must be rechecked against current code, tests, and generated evidence before being used as implementation truth.
 
