@@ -22,6 +22,8 @@ import { renderScreenOnOff } from './renderScreenOnOff.js';
 import { renderStartStageModal } from './renderStartStageModal.js';
 import { renderEmptyView } from './renderEmptyView.js';
 import { renderViewZero } from './renderViewZero.js';
+import { renderIcloudAuthorization } from './renderIcloudAuthorization.js';
+import { renderIcloudLoginView } from './renderIcloudLoginView.js';
 
 const WIDE_LAYOUT_MIN_COLUMNS = 180;
 const DEFAULT_NON_TTY_COLUMNS = 220;
@@ -29,6 +31,10 @@ const DEFAULT_NON_TTY_COLUMNS = 220;
 export function renderScreen(state: DemoTerminalState, layout: TerminalLayout, terminalWidth = resolveTerminalWidth()): string {
   if (state.activeViewKey === '0') {
     return [renderViewZero(state, Math.min(terminalWidth, DEFAULT_NON_TTY_COLUMNS)), color.muted(helpText(state))].join('\n');
+  }
+
+  if (state.activeViewKey === 'I') {
+    return [renderIcloudLoginView(state, Math.min(terminalWidth, DEFAULT_NON_TTY_COLUMNS)), color.muted(helpText(state))].join('\n');
   }
 
   if (state.activeViewKey !== 'D') {
@@ -72,6 +78,7 @@ function renderWideScreen(state: DemoTerminalState, layout: TerminalLayout, term
     renderHeader(state, sectionTitle(showIds, 'banner', state.banner), panelAWidth),
     renderMediaTable(state, sectionTitle(showIds, 'media', mediaTitle(state)), panelAWidth),
     renderActions(state, sectionTitle(showIds, 'actions', titleFor(layout, 'actions', 'ACTIONS')), panelAWidth),
+    renderIcloudAuthorization(sectionTitle(showIds, 'icloudAuthorization', 'ICLOUDPD AUTHORIZATION'), panelAWidth),
     renderStartStageModal(state, panelAWidth, sectionTitle(showIds, 'startStageModal', 'START STAGE MODAL'))
   ]);
 
@@ -107,6 +114,8 @@ function renderStackedScreen(state: DemoTerminalState, layout: TerminalLayout): 
     renderMediaTable(state, sectionTitle(showIds, 'media', mediaTitle(state))),
     blank(),
     renderActions(state, sectionTitle(showIds, 'actions', titleFor(layout, 'actions', 'ACTIONS'))),
+    blank(),
+    renderIcloudAuthorization(sectionTitle(showIds, 'icloudAuthorization', 'ICLOUDPD AUTHORIZATION')),
     ...(state.startStageModal.isOpen ? [blank(), renderStartStageModal(state, undefined, sectionTitle(showIds, 'startStageModal', 'START STAGE MODAL'))] : []),
     blank(),
     renderCurrentRun(state, sectionTitle(showIds, 'currentRun', titleFor(layout, 'current_run', 'AREA B COMMAND PLAN'))),
