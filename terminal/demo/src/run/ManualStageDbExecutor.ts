@@ -75,9 +75,11 @@ function runPythonJson(repoRoot: string, args: string[]): { status: 'ok' | 'erro
   for (const command of ['python3', 'py', 'python']) {
     const finalArgs = command === 'py' ? ['-3', ...args] : args;
     const result = spawnSync(command, finalArgs, { cwd: repoRoot, encoding: 'utf8', timeout: 45000, env: safeStageEnv() });
-    attempts.push(`${command} ${finalArgs.slice(0, 3).join(' ')} => ${result.status ?? 'null'}`);
-    if ((result.error as NodeJS.ErrnoException | undefined)?.code === 'ENOENT') continue;
-    if (result.status !== 0) return { status: 'error', message: result.stderr || result.stdout || String(result.error), attempts };
+    const error = result.error as NodeJS.ErrnoException | undefined;
+    attempts.push(`${command} ${finalArgs.slice(0, 3).join(' ')} => ${result.status ?? 'null'}${result.signal ? ` signal=${result.signal}` : ''}${error?.message ? ` error=${error.message}` : ''}`);
+    if (error?.code === 'ENOENT') continue;
+    if (result.status === null) continue;
+    if (result.status !== 0) return { status: 'error', message: result.stderr || result.stdout || error?.message || `exit ${result.status}`, attempts };
     try { return { status: 'ok', output: JSON.parse(result.stdout), attempts }; }
     catch { return { status: 'error', message: `non-JSON Python output: ${result.stdout}`, attempts }; }
   }
