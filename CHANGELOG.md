@@ -1,3 +1,14 @@
+# 2.0.3 - Terminal start stage modal shell
+
+- Added the `start_stage_modal` terminal state/model and rendering shell.
+- Added `S` as the operator key that opens the five-row manual stage modal.
+- Added modal rows for keys `1` through `5`: Download, Index, GPS Parser, Geocode, and Enqueue for Playback.
+- Kept Download/key `1` visible but disabled for now.
+- Added independent per-row modal `batch_size` defaults of `1` with allowed modal values `1` and `3`; Q batch-size behavior remains unchanged.
+- Added `proof:terminal-demo-start-stage-modal` for the Batch 1 shell contract.
+
+Scope: modal shell/state/render/key handling only. No cron, no worker execution path, no DB schema redesign, and no manual stage execution for keys `2`-`5` yet.
+
 # 2.0.2 - Q operator status/logging cleanup
 
 - Marked `Q` as completed in the real-demo operator/storyboard status after a manual Q run.

@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "2.0.2",
+  "version": "2.0.3",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -245,7 +245,9 @@
     "proof:terminal-demo-operator-layout-status": "node tools/run-terminal-demo-operator-layout-status-proof.mjs",
     "proof:terminal-demo-v2-handoff-docs": "node tools/run-terminal-demo-v2-handoff-docs-proof.mjs",
     "proof:terminal-demo-v2-operator-rc": "node tools/run-terminal-demo-v2-operator-rc-proof.mjs",
-    "proof:terminal-demo-q-operator-status": "tsx tools/run-terminal-demo-q-operator-status-proof.mjs"
+    "proof:terminal-demo-q-operator-status": "tsx tools/run-terminal-demo-q-operator-status-proof.mjs",
+    "demo:terminal:real:start-stage-modal-smoke": "tsx terminal/demo/src/main.ts --adapter=real-demo --start-stage-modal-smoke",
+    "proof:terminal-demo-start-stage-modal": "tsx tools/run-terminal-demo-start-stage-modal-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
