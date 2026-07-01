@@ -635,3 +635,25 @@ Docs/OpenSpec:
 
 Non-claims: key `1` does not start Download; no cron/crontab is installed or invoked; no DB schema redesign; no production Raspberry claim without target evidence.
 
+
+## Terminal empty view shells
+
+Version `2.0.9` adds the first view-system foundation slice.
+
+The active view registry is:
+
+| View key | Empty view shell |
+|---|---|
+| `D` | Default operator view. |
+| `L` | Logs view. |
+| `I` | iCloudPD login view. |
+| `1` | Download stage view. |
+| `2` | Indexing stage view. |
+| `3` | GPS Parser stage view. |
+| `4` | Geocode stage view. |
+| `5` | Enqueue view. |
+| `6` | Playback view. |
+
+Vocabulary: `View` contains `Pane`; `Pane` contains `Section`; `Section` may contain `Subsection`; `Modal` is a view-scoped overlay.
+
+This slice is intentionally a shell only. The non-default views show empty placeholder screens and do not run buttons, workers, auth, playback, DB writes, file copies, or cron. When `start_stage_modal` is open, modal keys `1`-`5` keep their modal behavior instead of switching views.

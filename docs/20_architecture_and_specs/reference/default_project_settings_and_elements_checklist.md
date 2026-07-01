@@ -535,3 +535,18 @@ Recommended helper commands:
 | `workflow:acr:record` | Append one validated ACR usage event. |
 | `workflow:acr:summary` | Print totals by command and source. |
 | `proof:workflow-acr-usage-ledger` | Prove the ledger, summary, docs, and package script coverage. |
+
+## Terminal View Vocabulary Defaults
+
+Terminal-style operator interfaces should use this vocabulary when applicable:
+
+| Term | Meaning |
+|---|---|
+| `View` | Whole full-screen terminal screen/state. |
+| `Pane` | Large top-level region inside a view. |
+| `Section` | Bordered block inside a pane. |
+| `Subsection` | Smaller block inside a section. |
+| `Modal` | View-scoped overlay visible only when opened/enabled. |
+| `ViewKey` | Keyboard key that selects a view when no modal owns input. |
+
+For PhotoFrame terminal Demo Mode, reserve `D` for Default, `L` for Logs, `I` for iCloudPD login, and `1`-`6` for stage/playback views. Empty shell slices must not execute real button actions.

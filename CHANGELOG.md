@@ -1,3 +1,16 @@
+# 2.0.9 - Terminal empty view shells
+
+## 2026-07-01
+
+- Added the first terminal Demo Mode view-system shell slice.
+- Registered view keys `D`, `L`, `I`, and `1`-`6`.
+- Kept `D` as the existing default operator view.
+- Added empty shells for Logs, iCloudPD login, Download, Indexing, GPS Parser, Geocode, Enqueue, and Playback views.
+- Preserved `start_stage_modal` priority so modal keys `1`-`5` keep their existing behavior while the modal is open.
+- Added `proof:terminal-demo-empty-view-shells` and OpenSpec/proof docs/default-settings vocabulary coverage.
+
+Scope: empty view shells only. No new buttons, no auth execution, no playback execution, no file copy, no DB mutation, no worker call, and no cron.
+
 # 2.0.8 - ACR usage ledger
 
 ## 2026-07-01
