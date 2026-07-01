@@ -8,12 +8,14 @@ import { panel, row } from './terminalBox.js';
 function workerStatus(value: WorkerStatus): string {
   if (value === 'Finished') return color.brightGreen(value);
   if (value === 'Started') return color.active(value);
+  if (value === 'Degraded') return color.yellow(value);
   if (value === 'Disabled') return color.muted(value);
   if (value === 'Error') return color.red(value);
   return color.yellow(value);
 }
 
 function workerEvent(value: string): string {
+  if (/degraded/i.test(value)) return color.yellow(value);
   if (/not yet implemented/i.test(value)) return dimNotYetImplemented(value);
   if (/error|skipped|not eligible|invalid|missing/i.test(value)) return color.danger(value);
   if (value.includes('finished')) return color.brightGreen(value);

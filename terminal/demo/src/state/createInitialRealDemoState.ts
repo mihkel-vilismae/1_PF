@@ -92,8 +92,10 @@ export function createInitialRealDemoState(
   const validCount = mediaRows.filter((row) => row.gps === 'valid').length;
   const problemCount = mediaRows.filter((row) => row.gps === 'missing' || row.gps === 'invalid' || row.gps === 'not parsed').length;
   const queueCount = playbackQueueRows.length;
+  const qCompleted = dryRunPlanLines.some((line) => /Q finished|Q-created DEMO DB queue status|Q action event written/i.test(line));
+  const qActive = dryRunPlanLines.some((line) => /Ready to run real-demo Q|Q route:|Stage snapshot:/i.test(line)) && !qCompleted;
   const partitioned = partitionCurrentAndLogLines([
-    'Real-demo v0.12.0 Group 6B final proof/de-mocking milestone is installed.',
+    `Real Demo Mode v${version} operator path is installed.`,
     'This screen resolves DEMO paths, reads generated demo media/truth, and P uses DEMO_DB_PATH real playback tables.',
     'W toggles selected batch size. Q uses the selected batch size. P selects a READY slideshow_queue row and renders windowed image playback.',
     'No cron is used.',
@@ -123,15 +125,19 @@ export function createInitialRealDemoState(
     dataMode: 'real_demo_truth',
     runtimeBoundary: boundary,
     banner: `PHOTOFRAME REAL DEMO TERMINAL v${version}`,
-    warning: `v0.12.0 Group 6B final proofs/de-mocking guard pack: boundary is ${statusText}; DB playback button reads DEMO_DB_PATH real tables.`,
+    warning: `Real Demo Mode v${version} operator guard pack: boundary is ${statusText}; DB playback button reads DEMO_DB_PATH real tables.`,
     selectedBatchSize,
     mediaRows,
     playbackQueueRows: playbackQueueRows.map((row) => ({ ...row })),
-    actions: realDemoActions.map((action) => action.key === 'P' ? {
-      ...action,
-      enabled: queueCount > 0,
-      info: queueCount > 0 ? `Ready: ${queueCount} real demo queue item${queueCount === 1 ? '' : 's'} available.` : 'Disabled: DEMO queue is empty or missing.'
-    } : { ...action }),
+    actions: realDemoActions.map((action) => {
+      if (action.key === 'P') return {
+        ...action,
+        enabled: queueCount > 0,
+        info: queueCount > 0 ? `Ready: ${queueCount} real demo queue item${queueCount === 1 ? '' : 's'} available.` : 'Disabled: DEMO queue is empty or missing.'
+      };
+      if (action.key === 'Q') return { ...action, active: qActive, done: qCompleted };
+      return { ...action };
+    }),
     currentRun: {
       title: 'CURRENT RUN',
       lines: partitioned.currentLines

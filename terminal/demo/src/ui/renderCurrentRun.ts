@@ -6,6 +6,9 @@ import { color } from './ansi.js';
 import { panel } from './terminalBox.js';
 
 function isProblemLine(line: string): boolean {
+  if (/Expected not eligible from discovered fixture metadata:\s*none/i.test(line)) return false;
+  if (/failed_or_missing=0/i.test(line)) return false;
+  if (/status:\s*(passed|finished)/i.test(line)) return false;
   return /not eligible|skipped|invalid GPS|missing GPS|no address|Error logged|Error:|warning|failed|blocked|Start-Process failed|missing/i.test(line);
 }
 

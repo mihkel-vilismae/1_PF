@@ -12,6 +12,7 @@ function isProblemDetail(value: string): boolean {
 function stageStatus(value: StageStatus, details = ''): string {
   if (value === 'Finished') return isProblemDetail(details) ? color.doneProblem(value) : color.brightGreen(value);
   if (value === 'Started') return color.active(value);
+  if (value === 'Degraded') return color.yellow(value);
   if (value === 'Error') return color.danger(value);
   return color.muted(value);
 }
@@ -24,7 +25,7 @@ export function renderRpiStages(state: DemoTerminalState, title: string, width?:
       row([
         { value: color.stage(stage.name), width: 15 },
         { value: stageStatus(stage.status, stage.details), width: 10 },
-        { value: stage.details ? (isProblemDetail(stage.details) ? color.danger(stage.details) : color.yellow(stage.details)) : color.muted('-'), width: 65 }
+        { value: stage.details ? (stage.status === 'Degraded' ? color.yellow(stage.details) : isProblemDetail(stage.details) ? color.danger(stage.details) : color.yellow(stage.details)) : color.muted('-'), width: 65 }
       ])
     )
   ];

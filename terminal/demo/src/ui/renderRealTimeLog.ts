@@ -6,11 +6,14 @@ import { color } from './ansi.js';
 import { panel } from './terminalBox.js';
 
 function isProblemLine(line: string): boolean {
+  if (/failed_or_missing=0|Q action event written/i.test(line)) return false;
+  if (/status:\s*(passed|finished)/i.test(line)) return false;
   return /error|failed|blocked|missing|invalid|warning|start-process failed|not configured/i.test(line);
 }
 
 function decorateLogLine(line: string): string {
   if (line.startsWith('Mouse hitbox:') || line.startsWith('Log panel:') || line.startsWith('Mouse wheel:')) return color.brightCyan(line);
+  if (line.includes('Q action event written:')) return color.brightGreen(line);
   if (line.startsWith('Queue read: Real table verified:')) return color.brightGreen(line);
   if (isProblemLine(line)) return color.dangerDim(line);
   if (line.startsWith('Queue read:') || line.startsWith('Truth read:') || line.startsWith('Path check:')) return color.muted(line);
