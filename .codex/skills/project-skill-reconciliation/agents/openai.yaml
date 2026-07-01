@@ -1,4 +1,4 @@
 interface:
   display_name: "Project Skill Reconciliation"
-  short_description: "Extract and reconcile reusable project skills"
-  default_prompt: "Use $project-skill-reconciliation to ACR this project chat and create or update only suitable non-duplicative skills."
+  short_description: "Extract, verify, and reconcile project skills"
+  default_prompt: "Use $project-skill-reconciliation to ACR this project chat, verify claimed recent outputs in the live checkout, and create or update only suitable non-duplicative skills."

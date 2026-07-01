@@ -1,0 +1,4 @@
+interface:
+  display_name: "Baseline Artifact Identity Validator"
+  short_description: "Verify repo, ZIP, and artifact identity safely"
+  default_prompt: "Use $baseline-artifact-identity-validator to check live repo identity and compare this ZIP or handoff artifact safely."

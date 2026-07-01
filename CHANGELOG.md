@@ -1,3 +1,13 @@
+# 2.0.15 - Skill reconciliation updates
+
+## 2026-07-02
+
+- Added the `baseline-artifact-identity-validator` repo-local skill for safe ZIP, proof bundle, handoff artifact, and live-repo identity checks.
+- Added the `branch-merge-intake-handoff` repo-local skill for branch ZIP merge intake, split-baseline verification, conflict simulation, and pre-merge handoff reporting.
+- Updated `project-skill-reconciliation` so recent chat claims must be verified against the live checkout before they are treated as implemented skills, docs, commands, or artifacts.
+
+Scope: repo-local skill workflow only. No product runtime behavior, terminal Demo Mode behavior, branch merge implementation, or proof result changed.
+
 # 2.0.14 - Branch merge intake and artifact cleanup
 
 ## 2026-07-02

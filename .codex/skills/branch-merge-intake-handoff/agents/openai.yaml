@@ -1,0 +1,4 @@
+interface:
+  display_name: "Branch Merge Intake Handoff"
+  short_description: "Audit branch ZIP merge intake and handoff safety"
+  default_prompt: "Use $branch-merge-intake-handoff to audit these branch ZIPs and handoff files before any merge implementation."

@@ -1,6 +1,6 @@
 ---
 name: project-skill-reconciliation
-description: Analyze PF_login project chats, audits, and recurring workflows with ACR to create, update, reject, or defer repo-local skills without duplication. Use when the user says ACR analyze chats, create/update suitable skills, improve workflow skills, reconcile skill memory, or extract reusable project lessons.
+description: Analyze PF_login project chats, audits, and recurring workflows with ACR to create, update, reject, or defer repo-local skills without duplication. Use when the user says ACR analyze chats, create/update suitable skills, improve workflow skills, reconcile skill memory, or extract reusable project lessons, especially when recent-thread claims must be verified against the live checkout.
 ---
 
 # Project Skill Reconciliation
@@ -24,6 +24,7 @@ When claims depend on current product behavior, inspect current code/tests/proof
    - Check branch, working-tree state, `VERSION`, package version, and HEAD.
    - For readiness/proof work, read the current evaluator mapping and latest exact `proof_kind` artifacts by `proof_timestamp`.
    - Flag stale readiness summaries, artifact identity mismatches, and prompt claims that no longer match the repository.
+   - When recent chats claim that a skill, doc, command, or artifact was already created, verify that the referenced path or output actually exists in the live checkout before treating it as implemented.
 2. Extract recurring tasks, failure modes, decision rules, safety boundaries, and proof interpretation problems from the supplied chat and relevant recent project records.
 3. Search existing repo-local and available global skills for overlap.
 4. Classify each candidate as project-specific, global, artifact-specific, or one-time.
@@ -39,6 +40,7 @@ For each candidate, test:
 - Does it preserve the active baseline, architecture, real/mock boundary, proof honesty, and secret safety?
 - Does it hard-code a current example that should instead be discovered from code?
 - Does it trust copied version, HEAD, proof status, blocker lists, or slice order that should be re-derived live?
+- Is the candidate supported by a live file or artifact, or only by a prior assistant/thread claim that did not land in the checkout?
 - Would it create a parallel workflow or encourage unapproved side effects?
 
 Classify as `ACCEPT`, `UPGRADE`, `DEFER`, or `REJECT`.
@@ -52,10 +54,11 @@ Classify as `ACCEPT`, `UPGRADE`, `DEFER`, or `REJECT`.
 5. Rewrite, skip, or reorder stale orchestrator slices from current artifacts and platform/operator constraints.
 6. Include the verified live baseline and stale assumptions removed in the refined prompt.
 7. Add explicit safety constraints and non-claims.
-8. Initialize new skills with `skill-creator` tooling.
-9. Update existing skills with the smallest reviewable diff.
-10. Generate or refresh `agents/openai.yaml`.
-11. Validate every changed skill with `quick_validate.py`.
+8. Downgrade missing prior-thread claimed outputs to proposals, stale claims, or deferred items instead of reporting them as implemented.
+9. Initialize new skills with `skill-creator` tooling.
+10. Update existing skills with the smallest reviewable diff.
+11. Generate or refresh `agents/openai.yaml`.
+12. Validate every changed skill with `quick_validate.py`.
 
 ## Change Rules
 
@@ -71,6 +74,7 @@ Report:
 
 - recurring patterns found;
 - accepted, upgraded, deferred, and rejected candidates;
+- recent-thread claims that were verified live versus claims that were stale or missing in the checkout;
 - overlap decisions;
 - verified live baseline and stale prompt assumptions removed;
 - exact skill files changed;
