@@ -64,7 +64,7 @@ function normalizeWorker(value: unknown, fallback: DemoTruthWorkerId): DemoTruth
 }
 
 function normalizeStatus(value: unknown): DemoTruthStatus {
-  return value === 'finished' || value === 'error' || value === 'interrupted' || value === 'state' ? value : 'started';
+  return value === 'finished' || value === 'degraded' || value === 'error' || value === 'interrupted' || value === 'state' ? value : 'started';
 }
 
 function stringValue(value: unknown, fallback: string): string {
