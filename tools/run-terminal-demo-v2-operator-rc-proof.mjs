@@ -19,6 +19,7 @@ const commands = [
   nodeProof('batch-parity', 'tools/run-terminal-demo-batch-parity-proof.mjs', 'REAL_DEMO_BATCH_EXECUTION_PARITY_READY'),
   nodeProof('screen-worker-panel', 'tools/run-terminal-demo-screen-worker-panel-proof.mjs', 'REAL_DEMO_SCREEN_WORKER_PANEL_READY'),
   nodeProof('operator-layout-status', 'tools/run-terminal-demo-operator-layout-status-proof.mjs', 'REAL_DEMO_OPERATOR_LAYOUT_STATUS_READY'),
+  npmProof('q-operator-status', 'proof:terminal-demo-q-operator-status', 'REAL_DEMO_Q_OPERATOR_STATUS_READY'),
   nodeProof('windows-p-viewer-launch', 'tools/run-terminal-demo-windows-viewer-launch-proof.mjs', 'REAL_DEMO_WINDOWS_P_VIEWER_LAUNCH_READY'),
   nodeProof('db-image-playback-button', 'tools/run-terminal-demo-db-image-playback-button-proof.mjs', 'TERMINAL_DEMO_DB_IMAGE_PLAYBACK_BUTTON_READY')
 ];

@@ -28,6 +28,7 @@ const finalProofs = [
   'batch-parity',
   'screen-worker-panel',
   'operator-layout-status',
+  'q-operator-status',
   'windows-viewer-launch',
   'v2-operator-rc',
   'largest-files'
@@ -165,6 +166,12 @@ function proofOperatorLayoutStatus() {
 
 
 
+
+function proofQOperatorStatus() {
+  const output = run('npm', ['run', 'proof:terminal-demo-q-operator-status']);
+  check('Q operator status proof passes', output.includes('REAL_DEMO_Q_OPERATOR_STATUS_READY'), 'Q completion/action JSONL/stale-copy/severity proof passes.');
+}
+
 function proofWindowsViewerLaunch() {
   const output = run('node', ['tools/run-terminal-demo-windows-viewer-launch-proof.mjs']);
   check('Windows P viewer launch proof passes', output.includes('REAL_DEMO_WINDOWS_P_VIEWER_LAUNCH_READY'), 'Safe Invoke-Item/rundll32/explorer chain and button action JSONL proof passes.');
@@ -222,6 +229,7 @@ const proofMap = {
   'batch-parity': proofBatchParity,
   'screen-worker-panel': proofScreenWorkerPanel,
   'operator-layout-status': proofOperatorLayoutStatus,
+  'q-operator-status': proofQOperatorStatus,
   'windows-viewer-launch': proofWindowsViewerLaunch,
   'v2-operator-rc': proofV2OperatorRc,
   'largest-files': proofLargestFiles
