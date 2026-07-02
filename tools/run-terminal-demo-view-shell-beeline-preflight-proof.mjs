@@ -38,7 +38,7 @@ const combinedDocs = [openspec, proofDoc, readme, defaults, changelog].join('\n'
 for (const marker of [
   'View `0`',
   'View `6`',
-  'Frozen for this chat',
+  'Stable for this beeline',
   'planned shell contract',
   'iCloudPD authorization',
   'Go to login view',
@@ -87,21 +87,29 @@ for (const falseClaim of [
   'View `1` is implemented',
   'logs are tailed',
   'auth execution is implemented',
-  'file copy is implemented'
+  'View `1` file copy is implemented'
 ]) {
   assertNotIncludes(combinedDocs, falseClaim, 'docs must not claim future work is implemented');
 }
 
 const view0 = runTerminal(['--view-shell-smoke=0']);
-assertIncludes(view0, 'VIEW 0 — TABLE OF CONTENTS AND DEBUG', 'view 0 remains map page');
+assertIncludes(view0, 'MAP AND TESTING - VIEW 0', 'view 0 map/testing page');
 assertIncludes(view0, 'VIEW MAP', 'view 0 map section remains');
 assertIncludes(view0, 'TESTING', 'view 0 testing section remains');
+assertIncludes(view0, 'Default test route: 0A.', 'view 0 default route remains');
+assertIncludes(view0, 'Custom route example: 0 -> Enter -> 7 -> Enter -> D -> Enter -> 7D.', 'view 0 custom route remains');
 
 const view6 = runTerminal(['--view-shell-smoke=6']);
-assertIncludes(view6, 'PLAYBACK VIEW', 'view 6 remains present');
-assertIncludes(view6, 'EMPTY VIEW SHELL ONLY', 'view 6 remains blank');
-assertNotIncludes(view6, 'Play queued images in HTML browser', 'view 6 playback buttons remain deferred');
-assertNotIncludes(view6, 'Play fixture image in HTML browser', 'view 6 fixture buttons remain deferred');
+assertIncludes(view6, 'VIEW 6 - PLAYBACK', 'view 6 playback page remains present');
+assertIncludes(view6, 'real fixture-backed playback implementation', 'view 6 real fixture status');
+assertIncludes(view6, 'QUEUE-BACKED PLAYBACK - FUTURE DISABLED', 'view 6 queue section remains disabled');
+assertIncludes(view6, 'FIXTURE-BACKED PLAYBACK - CURRENT ENABLED', 'view 6 fixture section remains enabled');
+assertIncludes(view6, 'They now write browser-renderable HTML viewer artifacts for image/video display.', 'view 6 artifact boundary');
+assertIncludes(view6, 'Play queued images in HTML browser', 'view 6 future queue button contract remains visible');
+assertIncludes(view6, 'Play fixture image in HTML browser', 'view 6 fixture button remains visible');
+assertIncludes(view6, 'Source: future playback queue table / slideshow_queue switch, intentionally deferred.', 'view 6 queue still deferred');
+assertNotIncludes(view6, 'EMPTY VIEW SHELL ONLY', 'view 6 is no longer blank');
+assertNotIncludes(view6, 'this will be done by Codex', 'view 6 no longer shows Codex placeholder as primary behavior');
 
 console.log('terminal_demo_view_shell_beeline_preflight: PASS');
-console.log('verified: scope guard, docs-only planned shell contracts, reusable component guidance, and frozen View 0/View 6 behavior');
+console.log('verified: scope guard, remaining shell contracts, reusable component guidance, and current View 0/View 6 behavior');

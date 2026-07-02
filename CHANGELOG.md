@@ -1,5 +1,11 @@
 # 2.0.17 - Merge View 0 and View 6 terminal branches
 
+## 2.0.19 - View 6 validation proof hardening
+
+- Hardened `proof:terminal-demo-view-shell-beeline-preflight` after View 0 route work and View 6 real fixture playback superseded the old blank-shell assertions.
+- Updated remaining view-shell preflight docs to preserve the current View 0/View 6 behavior while keeping View L and Views 1-5 honest as remaining work.
+- No playback queue execution, DB writes, cron, auth execution, worker execution, or View 1 file-copy behavior added.
+
 ## 2026-07-02
 
 - Merged the View `0` map/testing branch into current `master` with default `0A` and custom `7D` terminal-demo test routes.
