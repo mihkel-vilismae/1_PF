@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "2.0.21",
+  "version": "2.0.22",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -271,7 +271,10 @@
     "proof:terminal-demo-logs-view-shell": "node tools/run-terminal-demo-logs-view-shell-proof.mjs",
     "proof:terminal-demo-view6-real-fixture-playback": "node tools/run-terminal-demo-view6-real-fixture-playback-proof.mjs",
     "proof:terminal-demo-view6-validation-snapshot": "node tools/run-terminal-demo-view6-validation-snapshot-proof.mjs",
-    "proof:terminal-demo-logs-registry": "node --import tsx tools/run-terminal-demo-logs-registry-proof.mjs"
+    "proof:terminal-demo-logs-registry": "node --import tsx tools/run-terminal-demo-logs-registry-proof.mjs",
+    "proof:terminal-demo-logs-snapshot-reader": "node --import tsx tools/run-terminal-demo-logs-snapshot-reader-proof.mjs",
+    "proof:terminal-demo-logs-view-overview": "node --import tsx tools/run-terminal-demo-logs-view-overview-proof.mjs",
+    "proof:terminal-demo-logs-detail-panel": "node --import tsx tools/run-terminal-demo-logs-detail-panel-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

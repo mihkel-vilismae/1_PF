@@ -6,6 +6,7 @@ import type { DemoPlaybackSelectedItem } from '../playback/DemoPlaybackStatusRep
 import type { StartStageModalState } from '../startStageModal/StartStageModalState.js';
 import type { TerminalViewKey } from '../views/TerminalViewRegistry.js';
 import type { View0TestSelectorState } from '../view0/View0TestSelectorState.js';
+import type { TerminalLogSnapshot } from '../logs/TerminalLogsSnapshotReader.js';
 
 export type RuntimeMode = 'mock-demo' | 'demo';
 export type MediaType = 'image' | 'video';
@@ -100,6 +101,12 @@ export interface PlaybackState {
   fullScreenInfo: string;
 }
 
+
+export interface LogsViewState {
+  snapshots: readonly TerminalLogSnapshot[];
+  selectedLogId: string;
+}
+
 export interface ScreenOnOffState {
   monitorEnabled: boolean;
   monitorActive: boolean;
@@ -127,6 +134,7 @@ export interface DemoTerminalState {
   activeViewKey: TerminalViewKey;
   activeTestPageCode: string | null;
   view0TestSelector: View0TestSelectorState;
+  logsView: LogsViewState;
   sectionHeaderIdsVisible: boolean;
   startStageModal: StartStageModalState;
   mediaRows: MediaRow[];

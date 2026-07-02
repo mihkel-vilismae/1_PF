@@ -71,7 +71,7 @@ Planned shell targets:
 |---|---|
 | `D` | Add an `iCloudPD authorization` section with read-only status and a `Go to login view` navigation control. |
 | `I` | Add only the newer NEW AUTH button set; older compatibility auth buttons are forbidden. |
-| `L` | Add log/status/truth file inspection panels as shell placeholders only. |
+| `L` | Implement log/status/truth file inspection panels as read-only snapshots. |
 | `1` | Add Download stage shell with `Copy one file from generated test images` as a non-executing button shell. |
 | `2` | Add Indexing stage shell. |
 | `3` | Add GPS Parser stage shell. |
@@ -119,50 +119,51 @@ npm run proof:terminal-demo-auth-view-shells
 ```
 
 
-## View `L` logs shell
+## View `L` logs read-only inspection view
 
-Version `2.0.13` renders View `L` as a logs shell page. It is a shell-only page for the seven core demo log/status/truth labels.
+Version `2.0.22` promotes View `L` from shell labels into a real read-only log/status/truth snapshot inspector.
 
 Sections:
 
 | Section | Purpose |
 |---|---|
-| `VIEW L — LOGS VIEW` | Identifies the logs shell and states the no-effects boundary. |
-| `CORE LOG / STATUS SHELLS` | Lists the seven core runtime file labels and planned paths. |
-| `LOG PANEL PLACEHOLDERS` | Shows display-only placeholders for future log panels. |
+| `VIEW L — LOGS VIEW` | Identifies View `L` as a read-only snapshot inspector and states the no-effects boundary. |
+| `CORE LOG / STATUS SNAPSHOTS` | Shows the seven allowlisted files with status, kind, size, line count, label, and path. |
+| `SELECTED LOG DETAIL` | Shows a bounded selected-file detail panel with path, role, kind, size, line count, modified time, message, and tail/preview content. |
 
-Core labels:
+Core files:
 
-| # | Label |
+| # | File |
 |---:|---|
-| 1 | `terminal-button-actions.jsonl` |
-| 2 | `regular-worker.truth.jsonl` |
-| 3 | `playback-worker.truth.jsonl` |
-| 4 | `screen-worker.truth.jsonl` |
-| 5 | `regular-worker.status.json` |
-| 6 | `playback-worker-status.json` |
-| 7 | `screen-on-off-worker-status.json` |
+| 1 | `runtime_data/logs/demo/terminal-button-actions.jsonl` |
+| 2 | `runtime_data/v2_worker_truth/demo/regular-worker.truth.jsonl` |
+| 3 | `runtime_data/v2_worker_truth/demo/playback-worker.truth.jsonl` |
+| 4 | `runtime_data/v2_worker_truth/demo/screen-worker.truth.jsonl` |
+| 5 | `runtime_data/scheduler/demo/regular-worker.status.json` |
+| 6 | `runtime_data/scheduler/demo/playback-worker-status.json` |
+| 7 | `runtime_data/scheduler/demo/screen-on-off-worker-status.json` |
 
-Scope: shell placeholders only. There is no file tailing, no file reading, no file writing, no worker run, no auth action, no DB write, no playback, no file copy, and no cron. View `0` and View `6` are unchanged.
+Snapshot states:
 
-Proof:
+| State | Meaning |
+|---|---|
+| `missing` | The allowlisted file does not exist. |
+| `empty` | The file exists but contains no content. |
+| `ready` | JSON/JSONL content parses successfully. |
+| `invalid_json` | A `.json` status file exists but cannot be parsed. |
+| `invalid_jsonl` | A `.jsonl` file exists but at least one line cannot be parsed. |
+| `too_large` | The file exceeds the safe snapshot byte limit and is not read. |
 
-```bash
-npm run proof:terminal-demo-logs-view-shell
-```
+Scope: read-only snapshot inspection only. View `L` may read the seven allowlisted files while active. It must not create, modify, append, delete, tail/watch live, write DB, start workers, run auth, launch playback, copy files, or touch cron.
 
-Version `2.0.21` adds the canonical View `L` log registry for the next read-only implementation slices. The registry lives at:
-
-```text
-terminal/demo/src/logs/TerminalLogsRegistry.ts
-```
-
-It contains exactly seven allowed log/status/truth entries and only defines identities, labels, paths, file kinds, roles, and purposes. It does not read, tail, watch, create, or modify runtime files. The existing shell view derives its labels from this canonical registry.
-
-Proof:
+Proofs:
 
 ```bash
 npm run proof:terminal-demo-logs-registry
+npm run proof:terminal-demo-logs-snapshot-reader
+npm run proof:terminal-demo-logs-view-overview
+npm run proof:terminal-demo-logs-detail-panel
+npm run proof:terminal-demo-logs-view-shell
 ```
 
 ## Section header ID overlay

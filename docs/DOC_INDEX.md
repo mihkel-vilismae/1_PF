@@ -26,7 +26,10 @@ This index classifies non-skill documentation files and separates current truth 
 ## Recent additions
 
 - `docs/proofs/terminal_demo_logs_registry_proof.md` — proof for the View `L` canonical seven-entry log/status/truth registry.
-- `docs/20_architecture_and_specs/openspec/terminal_demo_logs_view_shell_openspec.md` — now documents the v2.0.21 canonical View `L` registry slice.
+- `docs/proofs/terminal_demo_logs_snapshot_reader_proof.md` — proof for the View `L` read-only snapshot reader states and no-mutation behavior.
+- `docs/proofs/terminal_demo_logs_view_overview_proof.md` — proof for the View `L` seven-file overview table.
+- `docs/proofs/terminal_demo_logs_detail_panel_proof.md` — proof for the View `L` selected detail panel and bounded preview/tail content.
+- `docs/20_architecture_and_specs/openspec/terminal_demo_logs_view_shell_openspec.md` — documents the v2.0.22 View `L` read-only snapshot inspector and registry.
 - `docs/30_status_snapshots/2026-07-02/view6_validation_preflight_hardening/README.md` — historical index for the v2.0.19 View 6 validation/hardening snapshot.
 - `docs/30_status_snapshots/2026-07-02/view6_validation_preflight_hardening/PF_login_v2.0.19_view6_validation_slice_by_slice_report.md` — slice-by-slice validation report for View 6 real fixture-backed playback hardening.
 - `docs/30_status_snapshots/2026-07-02/view6_validation_preflight_hardening/PF_login_v2.0.19_view6_validation_proof_artifacts.zip` — compact proof artifact bundle for the v2.0.19 View 6 validation run.

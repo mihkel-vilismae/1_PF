@@ -28,6 +28,8 @@ import { isView6FixtureButtonKey, runView6FixturePlayback } from '../playback/Vi
 import { createView0TestSelectorState, type View0TestSelectorState } from '../view0/View0TestSelectorState.js';
 import { handleView0DefaultEnter, handleView0SelectorInput, writeView0Opened } from '../view0/View0DefaultTestRouteController.js';
 import { applyScreenOnOffState, createInitialScreenOnOffState, recordScreenOnOffActivity, toggleScreenOnOffState, type ScreenMonitorActivityInput } from '../screenOnOff/terminalScreenMonitorState.js';
+import { readTerminalLogsSnapshots } from '../logs/TerminalLogsSnapshotReader.js';
+import { terminalLogsRegistry } from '../logs/TerminalLogsRegistry.js';
 
 export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
   readonly modeName = 'real-demo';
@@ -45,6 +47,7 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
   private activeViewKey: TerminalViewKey = 'D';
   private view0TestSelector: View0TestSelectorState = createView0TestSelectorState();
   private activeTestPageCode: string | null = null;
+  private selectedLogId = terminalLogsRegistry[0].id;
   private screenMonitor = createInitialScreenOnOffState();
 
   constructor(private readonly boundary: RuntimeBoundaryState) {
@@ -70,6 +73,7 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
     this.activeViewKey = 'D';
     this.view0TestSelector = createView0TestSelectorState();
     this.activeTestPageCode = null;
+    this.selectedLogId = terminalLogsRegistry[0].id;
     this.screenMonitor = createInitialScreenOnOffState();
     this.state = this.buildState();
     return this.getState();
@@ -321,7 +325,13 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
       this.sectionHeaderIdsVisible,
       this.activeViewKey,
       this.view0TestSelector,
-      this.activeTestPageCode
+      this.activeTestPageCode,
+      {
+        snapshots: this.activeViewKey === 'L'
+          ? readTerminalLogsSnapshots({ runtimeRoot: this.boundary.repoRoot })
+          : [],
+        selectedLogId: this.selectedLogId
+      }
     );
     return this.applyScreenMonitor(baseState);
   }

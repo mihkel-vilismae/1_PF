@@ -1,3 +1,10 @@
+# 2.0.22 - View L read-only logs snapshot inspector
+
+- Added `TerminalLogsSnapshotReader` for the seven allowlisted View `L` log/status/truth files.
+- Promoted View `L` from shell placeholders to a read-only snapshot inspector with `CORE LOG / STATUS SNAPSHOTS` and `SELECTED LOG DETAIL` sections.
+- Added proofs for the snapshot reader, overview table, selected detail panel, and compatibility shell command.
+- Preserved the read-only boundary: no file creation/mutation, DB writes, worker execution, auth execution, playback, file copy, cron behavior, or View 0/View 6 behavior changes.
+
 # 2.0.21 - View L canonical logs registry
 
 - Added `terminal/demo/src/logs/TerminalLogsRegistry.ts` as the canonical seven-entry allowlist for View `L` log/status/truth inspection.

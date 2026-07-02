@@ -249,3 +249,9 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/40_backlog_and_tasks/overall_project_goal_registry.md` | Canonical active registry for project-completeness reports across v1 gates, Debug goals, and active backlog items. |
 
 - v2.0.0 Real Demo Mode operator RC: `proof:terminal-demo-v2-operator-rc` and `REAL_DEMO_MODE_V2_RC_READY`.
+
+### View L logs inspection proofs
+
+- `docs/proofs/terminal_demo_logs_snapshot_reader_proof.md`
+- `docs/proofs/terminal_demo_logs_view_overview_proof.md`
+- `docs/proofs/terminal_demo_logs_detail_panel_proof.md`

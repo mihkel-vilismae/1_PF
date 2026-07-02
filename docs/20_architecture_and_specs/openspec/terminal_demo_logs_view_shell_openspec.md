@@ -1,94 +1,100 @@
-# Terminal Demo Logs View Shell OpenSpec
+# Terminal Demo Logs View OpenSpec
 
-Version: 2.0.13
+Version: 2.0.22
 
 ## Purpose
 
-View `L` is the terminal Demo Mode Logs view shell. It gives the operator a visible place for the core demo action, truth, and status files before live tailing is implemented.
-
-This slice is shell-only. It renders labels and placeholder panels, but it does not read, tail, watch, or write any runtime log/status/truth file.
+View `L` is the terminal Demo Mode read-only log/status/truth inspection view. It gives the operator a bounded snapshot of the seven core demo runtime files without mutating runtime state.
 
 ## View contract
 
 | View key | Name | Status |
 |---|---|---|
-| `L` | Logs view | Implemented as a shell placeholder page. |
+| `L` | Logs view | Implemented as a read-only snapshot inspector. |
 
 Required visible sections:
 
 | Section | Purpose |
 |---|---|
-| `VIEW L — LOGS VIEW` | States that this is a shell-only logs page. |
-| `CORE LOG / STATUS SHELLS` | Lists the seven core runtime files. |
-| `LOG PANEL PLACEHOLDERS` | Provides non-reading placeholders for future panels. |
+| `VIEW L — LOGS VIEW` | States the read-only snapshot and no-side-effect boundary. |
+| `CORE LOG / STATUS SNAPSHOTS` | Renders all seven allowlisted files with status, type, size, line count, and path. |
+| `SELECTED LOG DETAIL` | Renders bounded detail/tail/preview information for the selected file. |
 
-## Core file labels
+## Canonical file registry
 
-| # | Runtime file label |
-|---:|---|
-| 1 | `terminal-button-actions.jsonl` |
-| 2 | `regular-worker.truth.jsonl` |
-| 3 | `playback-worker.truth.jsonl` |
-| 4 | `screen-worker.truth.jsonl` |
-| 5 | `regular-worker.status.json` |
-| 6 | `playback-worker-status.json` |
-| 7 | `screen-on-off-worker-status.json` |
-
-## Runtime paths
-
-| Label | Planned runtime path |
-|---|---|
-| `terminal-button-actions.jsonl` | `runtime_data/logs/demo/terminal-button-actions.jsonl` |
-| `regular-worker.truth.jsonl` | `runtime_data/v2_worker_truth/demo/regular-worker.truth.jsonl` |
-| `playback-worker.truth.jsonl` | `runtime_data/v2_worker_truth/demo/playback-worker.truth.jsonl` |
-| `screen-worker.truth.jsonl` | `runtime_data/v2_worker_truth/demo/screen-worker.truth.jsonl` |
-| `regular-worker.status.json` | `runtime_data/scheduler/demo/regular-worker.status.json` |
-| `playback-worker-status.json` | `runtime_data/scheduler/demo/playback-worker-status.json` |
-| `screen-on-off-worker-status.json` | `runtime_data/scheduler/demo/screen-on-off-worker-status.json` |
-
-## Non-goals
-
-| Non-goal | Reason |
-|---|---|
-| Live tailing | Deferred until a later logs behavior slice. |
-| File reading | This shell must not require runtime files to exist. |
-| File writing | The view must not mutate logs/status/truth files. |
-| Worker execution | Logs view shell is display-only. |
-| DB/auth/playback/cron behavior | Outside this shell slice. |
-| View `0` or View `6` logs behavior changes | Later view-specific contracts exist, but this logs shell slice must not add logs-side effects to them. |
-
-## Acceptance criteria
-
-- Pressing `L` opens the Logs view shell.
-- The seven core labels and paths are visible.
-- The page states it is `shell placeholders only`.
-- The page states there is no file tailing or reading.
-- View `0` and View `6` have later view-specific contracts that remain outside the logs shell.
-
-
-## Canonical registry slice
-
-Version `2.0.21` promotes the seven-file list into a canonical TypeScript registry:
+The only allowed file identities come from:
 
 ```text
 terminal/demo/src/logs/TerminalLogsRegistry.ts
 ```
 
-The registry is the only allowed source for the View `L` core log/status/truth file identities in this slice. It contains exactly seven entries with these fields:
+| # | Runtime file |
+|---:|---|
+| 1 | `runtime_data/logs/demo/terminal-button-actions.jsonl` |
+| 2 | `runtime_data/v2_worker_truth/demo/regular-worker.truth.jsonl` |
+| 3 | `runtime_data/v2_worker_truth/demo/playback-worker.truth.jsonl` |
+| 4 | `runtime_data/v2_worker_truth/demo/screen-worker.truth.jsonl` |
+| 5 | `runtime_data/scheduler/demo/regular-worker.status.json` |
+| 6 | `runtime_data/scheduler/demo/playback-worker-status.json` |
+| 7 | `runtime_data/scheduler/demo/screen-on-off-worker-status.json` |
 
-| Field | Meaning |
+## Snapshot reader contract
+
+The reader lives at:
+
+```text
+terminal/demo/src/logs/TerminalLogsSnapshotReader.ts
+```
+
+It returns one snapshot per registry entry and supports:
+
+| State | Meaning |
 |---|---|
-| `id` | Stable machine identifier for the allowed file. |
-| `label` | Operator-facing filename label. |
-| `relativePath` | Runtime path relative to the repository/runtime root. |
-| `kind` | `jsonl` or `json`. |
-| `role` | `action_log`, `truth_log`, or `status_snapshot`. |
-| `purpose` | Short operator-facing reason this file exists. |
+| `missing` | File does not exist. |
+| `empty` | File exists with zero bytes. |
+| `ready` | JSON or JSONL content parses. |
+| `invalid_json` | JSON status file is malformed. |
+| `invalid_jsonl` | JSONL log has a malformed line. |
+| `too_large` | File exceeds the safe read limit. |
 
-This registry slice remains read-only by construction: it imports no file APIs and does not read, tail, watch, create, append, or delete any runtime file. Snapshot reading is deferred to the next slice.
+## Detail panel contract
 
-Proof:
+The selected detail panel shows:
+
+- path;
+- role and file kind;
+- status;
+- byte size;
+- line count;
+- last modified time if available;
+- registry purpose;
+- reader message;
+- bounded tail/preview lines.
+
+## Runtime boundary
+
+Allowed:
+
+- read the seven allowlisted files when View `L` is active;
+- render missing/empty/ready/invalid/too-large states;
+- render bounded previews.
+
+Forbidden:
+
+- creating, modifying, appending, deleting, or watching files;
+- writing DB data;
+- starting workers;
+- running auth/session behavior;
+- launching playback;
+- running cron;
+- changing View `0` or View `6` behavior.
+
+## Proofs
 
 ```bash
 npm run proof:terminal-demo-logs-registry
+npm run proof:terminal-demo-logs-snapshot-reader
+npm run proof:terminal-demo-logs-view-overview
+npm run proof:terminal-demo-logs-detail-panel
+npm run proof:terminal-demo-logs-view-shell
 ```

@@ -3,13 +3,14 @@
 
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { ActionItemState, DemoTerminalState, MediaRow, StagePanelRow, WorkerPanelRow, SupportedBatchSize, PlaybackQueueRow, TerminalMouseHitbox } from './DemoTerminalState.js';
+import type { ActionItemState, DemoTerminalState, MediaRow, StagePanelRow, WorkerPanelRow, SupportedBatchSize, PlaybackQueueRow, TerminalMouseHitbox, LogsViewState } from './DemoTerminalState.js';
 import { createStartStageModalState, type StartStageModalState } from '../startStageModal/StartStageModalState.js';
 import type { TerminalViewKey } from '../views/TerminalViewRegistry.js';
 import { createView0TestSelectorState, type View0TestSelectorState } from '../view0/View0TestSelectorState.js';
 import type { RuntimeBoundaryState } from '../config/runtimeTypes.js';
 import type { DemoTruthReadResult } from '../truth/DemoTruthRepository.js';
 import type { DemoPlaybackStatusReadResult } from '../playback/DemoPlaybackStatusRepository.js';
+import { terminalLogsRegistry } from '../logs/TerminalLogsRegistry.js';
 
 const realDemoActions: ActionItemState[] = [
   {
@@ -109,7 +110,8 @@ export function createInitialRealDemoState(
   sectionHeaderIdsVisible = false,
   activeViewKey: TerminalViewKey = 'D',
   view0TestSelector: View0TestSelectorState = createView0TestSelectorState(),
-  activeTestPageCode: string | null = null
+  activeTestPageCode: string | null = null,
+  logsView: LogsViewState = { snapshots: [], selectedLogId: terminalLogsRegistry[0].id }
 ): DemoTerminalState {
   const version = readVersion();
   const statusText = boundary.readinessStatus.toUpperCase();
@@ -155,6 +157,7 @@ export function createInitialRealDemoState(
     activeViewKey,
     activeTestPageCode,
     view0TestSelector,
+    logsView,
     sectionHeaderIdsVisible,
     startStageModal,
     mediaRows,

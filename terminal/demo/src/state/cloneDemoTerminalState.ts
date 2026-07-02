@@ -14,6 +14,15 @@ export function cloneDemoTerminalState(state: DemoTerminalState): DemoTerminalSt
     playbackQueueRows: state.playbackQueueRows.map((row) => ({ ...row })),
     startStageModal: cloneStartStageModalState(state.startStageModal),
     view0TestSelector: cloneView0TestSelectorState(state.view0TestSelector),
+    logsView: {
+      selectedLogId: state.logsView.selectedLogId,
+      snapshots: state.logsView.snapshots.map((snapshot) => ({
+        ...snapshot,
+        entry: { ...snapshot.entry },
+        previewLines: [...snapshot.previewLines],
+        tailLines: [...snapshot.tailLines]
+      }))
+    },
     actions: state.actions.map((action) => ({ ...action })),
     currentRun: { ...state.currentRun, lines: [...state.currentRun.lines] },
     realTimeLog: {

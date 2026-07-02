@@ -26,8 +26,8 @@ export const terminalViewRegistry: readonly TerminalViewDefinition[] = [
   {
     key: 'L',
     label: 'Logs view',
-    purpose: 'Future full-screen runtime log and status inspection view.',
-    shellStatus: 'empty_shell'
+    purpose: 'Read-only runtime log and status snapshot inspection view.',
+    shellStatus: 'implemented_terminal_slice'
   },
   {
     key: 'I',

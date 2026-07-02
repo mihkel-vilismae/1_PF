@@ -57,11 +57,11 @@ function assertNotIncludes(text, unexpected, label) {
 
 const logsView = runTerminal(['--view-shell-smoke=L']);
 assertIncludes(logsView, 'VIEW L — LOGS VIEW', 'logs view title');
-assertIncludes(logsView, 'CORE LOG / STATUS SHELLS', 'core log shell section');
-assertIncludes(logsView, 'LOG PANEL PLACEHOLDERS', 'placeholder panels section');
-assertIncludes(logsView, 'Logs implementation: shell placeholders only', 'logs shell status row');
-assertIncludes(logsView, 'No files are tailed or read from this view slice.', 'no tail/read copy');
-assertIncludes(logsView, 'No worker, DB, playback, auth, file-copy, or cron behavior runs.', 'no effects copy');
+assertIncludes(logsView, 'CORE LOG / STATUS SNAPSHOTS', 'core log shell section');
+assertIncludes(logsView, 'SELECTED LOG DETAIL', 'placeholder panels section');
+assertIncludes(logsView, 'Logs implementation: read-only snapshot inspector', 'logs shell status row');
+assertIncludes(logsView, 'Reads seven allowlisted runtime files when View L is active.', 'no tail/read copy');
+assertIncludes(logsView, 'No writes, DB, worker, playback, auth, file-copy, or cron behavior runs.', 'no effects copy');
 assertNotIncludes(logsView, 'EMPTY VIEW SHELL ONLY', 'logs view is no longer generic empty shell');
 for (const label of logLabels) assertIncludes(logsView, label, `log label ${label}`);
 for (const path of logPaths) assertIncludes(logsView, path, `log path ${path}`);
@@ -76,8 +76,8 @@ assertIncludes(view6, 'QUEUE-BACKED PLAYBACK - FUTURE DISABLED', 'view 6 queue p
 assertIncludes(view6, 'FIXTURE-BACKED PLAYBACK - CURRENT ENABLED', 'view 6 fixture contract remains available');
 
 const logsRenderer = read('terminal/demo/src/ui/renderLogsView.ts');
-for (const forbidden of ['node:fs', 'readFile', 'watchFile']) {
-  assertNotIncludes(logsRenderer, forbidden, `logs renderer must not use file APIs: ${forbidden}`);
+for (const forbidden of ['node:fs', 'readFile', 'writeFile', 'appendFile', 'watchFile']) {
+  assertNotIncludes(logsRenderer, forbidden, `logs renderer must not use direct file APIs: ${forbidden}`);
 }
 
 const docs = [
@@ -88,16 +88,16 @@ const docs = [
   'CHANGELOG.md'
 ].map(read).join('\n');
 for (const marker of [
-  'View `L` logs shell',
-  'CORE LOG / STATUS SHELLS',
-  'LOG PANEL PLACEHOLDERS',
-  'shell placeholders only',
-  'no file tailing',
-  'View `0` and View `6` have later view-specific contracts'
+  'View `L` logs read-only inspection view',
+  'CORE LOG / STATUS SNAPSHOTS',
+  'SELECTED LOG DETAIL',
+  'read-only snapshot inspector',
+  'Snapshot states',
+  'View `L` may read the seven allowlisted files while active'
 ]) {
   assertIncludes(docs, marker, 'logs shell docs marker');
 }
 for (const label of logLabels) assertIncludes(docs, label, `docs log label ${label}`);
 
 console.log('terminal_demo_logs_view_shell: PASS');
-console.log('verified: View L logs shell labels/placeholders, no file tailing, no runtime side effects, View 0/View 6 contracts preserved');
+console.log('verified: View L logs snapshot inspector labels/detail panel, read-only boundary, no runtime side effects, View 0/View 6 contracts preserved');

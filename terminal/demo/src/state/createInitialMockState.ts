@@ -8,6 +8,7 @@ import { resolveDemoRuntimePaths } from '../config/demoRuntimePaths.js';
 import type { ActionItemState, DemoTerminalState, StagePanelRow, WorkerPanelRow } from './DemoTerminalState.js';
 import { createStartStageModalState } from '../startStageModal/StartStageModalState.js';
 import { createView0TestSelectorState } from '../view0/View0TestSelectorState.js';
+import { terminalLogsRegistry } from '../logs/TerminalLogsRegistry.js';
 
 const initialActions: ActionItemState[] = [
   {
@@ -133,6 +134,7 @@ export function createInitialMockState(): DemoTerminalState {
     activeViewKey: 'D',
     activeTestPageCode: null,
     view0TestSelector: createView0TestSelectorState(),
+    logsView: { snapshots: [], selectedLogId: terminalLogsRegistry[0].id },
     sectionHeaderIdsVisible: false,
     startStageModal: createStartStageModalState(false),
     mediaRows: mockMediaRows.map((row) => ({ ...row })),
