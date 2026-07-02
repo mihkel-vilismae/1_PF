@@ -1,3 +1,11 @@
+# 2.0.21 - View L canonical logs registry
+
+- Added `terminal/demo/src/logs/TerminalLogsRegistry.ts` as the canonical seven-entry allowlist for View `L` log/status/truth inspection.
+- Rewired the existing View `L` shell registry to derive from the canonical registry instead of duplicating runtime paths.
+- Added `proof:terminal-demo-logs-registry` to prove the registry contains exactly the seven allowed entries and has no runtime file side effects.
+
+Scope: registry/proof/docs only. No log reading, tailing, writing, DB writes, worker execution, auth execution, playback, cron behavior, or View 0/View 6 behavior changed.
+
 # 2.0.20 - Preserve View 6 validation evidence snapshot
 
 ## 2026-07-02

@@ -587,6 +587,8 @@ For PF_login terminal Demo Mode, View `L` may render log/status/truth labels as 
 
 Logs shells must say `shell placeholders only` and must not tail/read runtime files until a later behavior slice explicitly wires and proves that capability. View `0` and View `6` are unchanged by the logs-shell slice.
 
+The canonical View `L` allowlist lives in `terminal/demo/src/logs/TerminalLogsRegistry.ts`. It must contain exactly the seven allowed log/status/truth entries and must remain free of file I/O APIs until a later read-only snapshot reader slice explicitly wires and proves reading behavior.
+
 ### PF_login iCloudPD Auth Shell Defaults
 
 For PF_login terminal Demo Mode, View `D` may show an `iCloudPD authorization` section and View `I` may show NEW AUTH button shells. These are shell-only unless a later slice explicitly wires and proves iCloudPD execution. Older compatibility auth buttons must not appear in View `I`. View `0` and View `6` are unchanged by the auth-shell slice.

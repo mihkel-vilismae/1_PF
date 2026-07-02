@@ -97,6 +97,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/proofs/terminal_demo_view6_codex_placeholder_proof.md` | View 6 fixture button placeholder proof. |
 | `docs/proofs/terminal_demo_view6_codex_placeholder_complete_proof.md` | Aggregated View 6 placeholder completion proof. |
 | `docs/proofs/terminal_demo_view6_codex_playback_handoff_proof.md` | View 6 Codex playback handoff proof. |
+| `docs/proofs/terminal_demo_logs_registry_proof.md` | View L canonical seven-entry log/status/truth registry proof. |
 
 ## Architecture and specs
 
@@ -106,6 +107,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | `docs/20_architecture_and_specs/v2_goals/goals.md` | Authoritative V2 real playback goals: autonomous playback, autonomous recovery, and screen on/off tier-2 goal. |
 | `docs/20_architecture_and_specs/openspec/v2_operator_pages_openspec.md` | V2 pages `01` through `09`, shared components, reuse-first implementation contract, and proof boundaries. |
 | `docs/20_architecture_and_specs/openspec/terminal_demo_v2_operator_rc_handoff_openspec.md` | Terminal Demo v2.0 Real Demo Mode operator RC handoff, proof pack, boundaries, and implementation prompt. |
+| `docs/20_architecture_and_specs/openspec/terminal_demo_logs_view_shell_openspec.md` | Terminal View L logs shell and canonical logs registry contract. |
 | `docs/20_architecture_and_specs/openspec/V2_ImplementationStatus.md` | Element-by-element V2 implementation state tracker synchronized with the planned status overlay. |
 | `docs/20_architecture_and_specs/openspec/V2_GoalSummary.md` | Authoritative summary of the V2 planning conversation, requested placements, constraints, and final Real Playback intent. |
 | `docs/20_architecture_and_specs/openspec/V2_IssueRegister.md` | Known V2 design issues, unresolved items, and verification gaps. |

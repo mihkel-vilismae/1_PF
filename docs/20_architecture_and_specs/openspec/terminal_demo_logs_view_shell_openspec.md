@@ -64,3 +64,31 @@ Required visible sections:
 - The page states it is `shell placeholders only`.
 - The page states there is no file tailing or reading.
 - View `0` and View `6` have later view-specific contracts that remain outside the logs shell.
+
+
+## Canonical registry slice
+
+Version `2.0.21` promotes the seven-file list into a canonical TypeScript registry:
+
+```text
+terminal/demo/src/logs/TerminalLogsRegistry.ts
+```
+
+The registry is the only allowed source for the View `L` core log/status/truth file identities in this slice. It contains exactly seven entries with these fields:
+
+| Field | Meaning |
+|---|---|
+| `id` | Stable machine identifier for the allowed file. |
+| `label` | Operator-facing filename label. |
+| `relativePath` | Runtime path relative to the repository/runtime root. |
+| `kind` | `jsonl` or `json`. |
+| `role` | `action_log`, `truth_log`, or `status_snapshot`. |
+| `purpose` | Short operator-facing reason this file exists. |
+
+This registry slice remains read-only by construction: it imports no file APIs and does not read, tail, watch, create, append, or delete any runtime file. Snapshot reading is deferred to the next slice.
+
+Proof:
+
+```bash
+npm run proof:terminal-demo-logs-registry
+```

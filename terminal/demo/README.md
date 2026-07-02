@@ -151,6 +151,20 @@ Proof:
 npm run proof:terminal-demo-logs-view-shell
 ```
 
+Version `2.0.21` adds the canonical View `L` log registry for the next read-only implementation slices. The registry lives at:
+
+```text
+terminal/demo/src/logs/TerminalLogsRegistry.ts
+```
+
+It contains exactly seven allowed log/status/truth entries and only defines identities, labels, paths, file kinds, roles, and purposes. It does not read, tail, watch, create, or modify runtime files. The existing shell view derives its labels from this canonical registry.
+
+Proof:
+
+```bash
+npm run proof:terminal-demo-logs-registry
+```
+
 ## Section header ID overlay
 
 Version `2.0.7` adds a display-only section header ID overlay for operator screenshots and implementation discussions. Press `H` to toggle `section_header_id_overlay` on/off. The default view stays unprefixed. When enabled, each `SectionHeader` receives a stable Pane/Section prefix such as:
