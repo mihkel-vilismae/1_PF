@@ -1,21 +1,25 @@
 # Terminal Demo View 6 Codex Playback Handoff
 
-## Current Boundary
+## Status
 
-View 6 fixture buttons open a placeholder modal with this exact message:
+This handoff is complete in v2.0.18.
+
+The earlier placeholder boundary used:
 
 ```text
 this will be done by Codex
+CODEX_DEFERRED
+launchesPlayback=false
 ```
 
-The action result is `CODEX_DEFERRED` and logged evidence records `launchesPlayback=false`.
+That historical placeholder has been superseded by real fixture playback artifact generation.
 
-## Fixture Inputs
+## Implemented fixture inputs
 
 - `terminal/demo/test_data/playback_fixtures/gps_valid_01.jpg`
 - `terminal/demo/test_data/playback_fixtures/gps_valid_video_02_tartu.mp4`
 
-## Buttons Waiting For Codex Playback Wiring
+## Implemented buttons
 
 - Play fixture image in HTML browser
 - Play fixture video in HTML browser
@@ -24,19 +28,18 @@ The action result is `CODEX_DEFERRED` and logged evidence records `launchesPlayb
 - Show fixture image with address overlay
 - Show fixture video with address overlay
 
-Codex owns browser/fullscreen/address-overlay execution in the later real-playback slice, not in this placeholder merge.
+The buttons now generate browser-renderable HTML viewer artifacts and shared terminal action-log evidence using `action=view6_fixture_playback_real`.
 
-Only after fixture playback works, switch future queue-backed buttons from disabled planning controls to queue-backed controls.
+Only after fixture playback remains stable should future queue-backed buttons switch from disabled planning controls to queue-backed controls.
 
 ## Do Not Do
 
-Do not add cron, auth, DB writes, worker calls, or queue execution as part of the placeholder handoff. Do not claim real playback until a later proof launches and verifies it.
+Do not add cron, auth, DB writes, worker calls, or queue execution as part of the fixture playback implementation. Do not claim browser visual proof or real fullscreen proof from static artifact generation.
 
-## Proof Handoff
+## Proof
 
 Run:
 
 ```bash
-npm run proof:terminal-demo-view6-codex-placeholder-complete
-npm run proof:terminal-demo-view6-codex-playback-handoff
+npm run proof:terminal-demo-view6-real-fixture-playback
 ```

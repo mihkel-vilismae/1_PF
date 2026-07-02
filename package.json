@@ -1,7 +1,7 @@
 {
   "name": "photo-frame-dashboard-frontend",
   "private": true,
-  "version": "2.0.17",
+  "version": "2.0.18",
   "type": "module",
   "scripts": {
     "api": "node --import tsx server/index.ts",
@@ -268,7 +268,8 @@
     "proof:terminal-demo-view6-codex-playback-handoff": "node tools/run-terminal-demo-view6-codex-playback-handoff-proof.mjs",
     "proof:terminal-demo-view-shell-beeline-preflight": "node tools/run-terminal-demo-view-shell-beeline-preflight-proof.mjs",
     "proof:terminal-demo-auth-view-shells": "node tools/run-terminal-demo-auth-view-shells-proof.mjs",
-    "proof:terminal-demo-logs-view-shell": "node tools/run-terminal-demo-logs-view-shell-proof.mjs"
+    "proof:terminal-demo-logs-view-shell": "node tools/run-terminal-demo-logs-view-shell-proof.mjs",
+    "proof:terminal-demo-view6-real-fixture-playback": "node tools/run-terminal-demo-view6-real-fixture-playback-proof.mjs"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",

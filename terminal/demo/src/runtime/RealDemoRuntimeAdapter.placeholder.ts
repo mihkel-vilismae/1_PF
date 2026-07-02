@@ -24,7 +24,7 @@ import { findHitbox } from '../ui/terminalMouse.js';
 import { runManualStageFromModal } from '../run/ManualStageRunController.js';
 import { canSwitchTerminalView, withActiveTerminalView } from '../views/TerminalViewState.js';
 import type { TerminalViewKey } from '../views/TerminalViewRegistry.js';
-import { isView6FixtureButtonKey, runView6CodexPlaceholder } from '../playback/View6CodexPlaceholder.js';
+import { isView6FixtureButtonKey, runView6FixturePlayback } from '../playback/View6FixturePlayback.js';
 import { createView0TestSelectorState, type View0TestSelectorState } from '../view0/View0TestSelectorState.js';
 import { handleView0DefaultEnter, handleView0SelectorInput, writeView0Opened } from '../view0/View0DefaultTestRouteController.js';
 import { applyScreenOnOffState, createInitialScreenOnOffState, recordScreenOnOffActivity, toggleScreenOnOffState, type ScreenMonitorActivityInput } from '../screenOnOff/terminalScreenMonitorState.js';
@@ -96,7 +96,7 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
       this.state = this.buildState(result.messages);
       return [this.getState()];
     }
-    if (this.activeViewKey === '6' && isView6FixtureButtonKey(normalized)) return [this.showView6CodexPlaceholder(normalized)];
+    if (this.activeViewKey === '6' && isView6FixtureButtonKey(normalized)) return [this.runView6FixturePlayback(normalized)];
     if (canSwitchTerminalView(normalized, this.startStageModal.isOpen)) return [this.switchView(normalized)];
     if (normalized === 'W') return [this.toggleBatchSize()];
     if (normalized === 'Q') return this.runQStoryboard();
@@ -218,10 +218,10 @@ export class RealDemoRuntimeAdapterPlaceholder implements DemoRuntimeAdapter {
     return this.getState();
   }
 
-  // Shows the View 6 placeholder modal without launching playback.
-  private showView6CodexPlaceholder(key: '1' | '2' | '3' | '4' | '5' | '6'): DemoTerminalState {
-    const result = runView6CodexPlaceholder({ boundary: this.boundary, key });
-    this.state = { ...this.buildState(result.lines), currentRun: { title: 'VIEW 6 CODEX PLACEHOLDER MODAL', lines: result.lines } };
+  // Runs real fixture-backed View 6 playback artifact generation.
+  private runView6FixturePlayback(key: '1' | '2' | '3' | '4' | '5' | '6'): DemoTerminalState {
+    const result = runView6FixturePlayback({ boundary: this.boundary, key });
+    this.state = { ...this.buildState(result.lines), currentRun: { title: 'VIEW 6 REAL FIXTURE PLAYBACK', lines: result.lines } };
     this.snapshots.setSnapshots([]);
     return this.getState();
   }

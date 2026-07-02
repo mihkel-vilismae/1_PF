@@ -2,7 +2,7 @@
 
 ## Scope
 
-View `6` is no longer a blank shell. It renders a fixture-backed playback contract page while keeping real playback deferred.
+View `6` is no longer a blank shell. It renders a fixture-backed playback contract page and now generates real browser-renderable fixture playback artifacts.
 
 The page must show:
 
@@ -22,4 +22,4 @@ The page must show:
 
 ## Non-Claims
 
-This slice does not launch browser playback, fullscreen playback, address-overlay playback, worker execution, queue execution, auth, DB writes, cron, or hardware behavior.
+This slice does not prove browser visual rendering, real fullscreen display, worker execution, queue execution, auth, DB writes, cron, or hardware behavior. Queue-backed playback remains disabled.

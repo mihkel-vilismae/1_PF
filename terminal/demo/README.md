@@ -787,3 +787,7 @@ The active view registry is:
 Vocabulary: `View` contains `Pane`; `Pane` contains `Section`; `Section` may contain `Subsection`; `Modal` is a view-scoped overlay.
 
 This slice is intentionally a shell only. The non-default views show empty placeholder screens and do not run buttons, workers, auth, playback, DB writes, file copies, or cron. When `start_stage_modal` is open, modal keys `1`-`5` keep their modal behavior instead of switching views.
+
+## View 6 real fixture playback
+
+View `6` fixture buttons generate browser-renderable HTML viewer artifacts for image, video, fullscreen-capable no-overlay, and fixture address-overlay modes. Queue-backed playback remains visible but disabled. Run `npm run proof:terminal-demo-view6-real-fixture-playback` to validate the artifact and shared JSONL evidence contract.

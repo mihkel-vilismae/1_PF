@@ -1,6 +1,6 @@
 // Defines the View 6 fixture-backed playback contract.
 // Queue-backed controls are visible but disabled in this slice.
-// Enabled fixture controls stop at a Codex placeholder modal.
+// Enabled fixture controls generate real browser-renderable playback artifacts.
 
 export type View6MediaType = 'image' | 'video';
 export type View6PlaybackMode = 'html_browser' | 'fullscreen_no_overlay' | 'address_overlay';
