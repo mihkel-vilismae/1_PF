@@ -25,6 +25,10 @@ This index classifies non-skill documentation files and separates current truth 
 
 ## Recent additions
 
+- `docs/30_status_snapshots/2026-07-02/view6_validation_preflight_hardening/README.md` — historical index for the v2.0.19 View 6 validation/hardening snapshot.
+- `docs/30_status_snapshots/2026-07-02/view6_validation_preflight_hardening/PF_login_v2.0.19_view6_validation_slice_by_slice_report.md` — slice-by-slice validation report for View 6 real fixture-backed playback hardening.
+- `docs/30_status_snapshots/2026-07-02/view6_validation_preflight_hardening/PF_login_v2.0.19_view6_validation_proof_artifacts.zip` — compact proof artifact bundle for the v2.0.19 View 6 validation run.
+
 - `docs/10_runbooks/master_branch_roundtrip_workflow.md` — reusable workflow for branching from `master`, maintaining branch handoff metadata during development, and uploading sibling branches together before merge-back.
 - `docs/50_audits_and_migrations/TERMINAL_DEMO_VIEW0_VIEW6_MERGE_INTAKE_20260702.md` — pre-implementation audit for merging View 0 and View 6 terminal-demo branch artifacts into the target branch; not runtime proof.
 - `docs/20_architecture_and_specs/reference/BRANCH_HANDOFF_AND_MERGE_CONTRACT.md` — reusable branch ZIP handoff and merge-intake contract standard.

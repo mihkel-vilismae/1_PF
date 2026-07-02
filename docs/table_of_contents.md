@@ -148,6 +148,7 @@ Use current-truth docs, code, tests, generated evidence, and runtime output befo
 | Path | Use |
 | --- | --- |
 | `docs/30_status_snapshots/` | Dated status snapshots. Use for history and evidence trails; verify against current code/tests before current claims. |
+| `docs/30_status_snapshots/2026-07-02/view6_validation_preflight_hardening/` | Historical View 6 v2.0.19 validation/hardening snapshot with slice report, proof artifacts ZIP, and SHA files. |
 
 ## Backlog, tasks, and active workflow
 

@@ -1,3 +1,15 @@
+# 2.0.20 - Preserve View 6 validation evidence snapshot
+
+## 2026-07-02
+
+- Added the v2.0.19 View 6 validation/hardening slice-by-slice report under `docs/30_status_snapshots/2026-07-02/view6_validation_preflight_hardening/`.
+- Added the compact v2.0.19 View 6 proof artifact bundle and SHA-256 files to the same historical snapshot folder.
+- Updated `docs/table_of_contents.md`, `docs/DOC_INDEX.md`, and `docs/30_status_snapshots/README.md` so the historical snapshot is discoverable.
+- Added `proof:terminal-demo-view6-validation-snapshot` to prove the snapshot files, SHA, and TOC/index references stay present.
+- Preserved the full Git ZIP by SHA reference only; the full repo ZIP is intentionally not nested inside the repo.
+
+Scope: documentation/evidence preservation only. No View 6 runtime behavior, playback queue execution, DB writes, cron behavior, auth execution, worker execution, or View 1 file-copy behavior changed.
+
 # 2.0.17 - Merge View 0 and View 6 terminal branches
 
 ## 2.0.19 - View 6 validation proof hardening

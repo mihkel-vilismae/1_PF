@@ -58,6 +58,11 @@ The following categorized current-status snapshots now have canonical copies und
 
 The old `docs/categorized/current_implementation_status_docs/*.md` paths are retained as compatibility pointers only. The category `main_readme.md` remains in place until the old-index replacement slice.
 
+
+## 2026-07-02 View 6 validation/hardening snapshot
+
+The latest View 6 validation/hardening historical snapshot is [View 6 validation preflight hardening snapshot](2026-07-02/view6_validation_preflight_hardening/README.md). It preserves the v2.0.19 slice-by-slice report, proof artifact bundle, and SHA files. Treat it as evidence for that baseline only; re-run current proofs before making current implementation claims.
+
 ## 2026-05-25 main-goal implementation snapshot
 
 Estonian timestamp: 2026-05-25 20:55 EEST
