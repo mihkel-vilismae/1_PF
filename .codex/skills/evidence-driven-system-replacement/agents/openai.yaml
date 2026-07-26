@@ -1,0 +1,4 @@
+interface:
+  display_name: "Evidence-Driven System Replacement"
+  short_description: "Verify responsibilities before replacing systems"
+  default_prompt: "Use $evidence-driven-system-replacement in ANALYZE_ONLY mode to establish the immutable baseline, verify current configuration and behavior, map current and proposed responsibilities, identify clean substitution seams, define parity and rollback requirements, and block assumption-driven replacement decisions."
