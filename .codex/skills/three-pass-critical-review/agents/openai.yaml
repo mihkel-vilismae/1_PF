@@ -1,0 +1,4 @@
+interface:
+  display_name: "Three-Pass Critical Review"
+  short_description: "Author, challenge, then decide independently"
+  default_prompt: "Use $three-pass-critical-review at STANDARD depth: freeze a strong proposal, run an independent adversarial critique without editing it, then make an evidence-based judgment and output one self-contained authoritative corrected artifact."
